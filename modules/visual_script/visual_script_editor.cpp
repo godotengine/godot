@@ -491,10 +491,6 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
 		}
 
-		if (node_styles.has(node->get_category())) {
-			gnode->add_style_override("frame", node_styles[node->get_category()]);
-		}
-
 		gnode->set_meta("__vnode", node);
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged", this, "_node_moved", varray(E->get()));
@@ -525,6 +521,25 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_resizable(true);
 			gnode->set_custom_minimum_size(vsc->get_size() * EDSCALE);
 			gnode->connect("resize_request", this, "_comment_node_resized", varray(E->get()));
+		}
+
+		if (node_styles.has(node->get_category())) {
+			Ref<StyleBoxFlat> sbf = node_styles[node->get_category()];
+			if (gnode->is_comment())
+				sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("comment", "GraphNode");
+
+			Color c = sbf->get_border_color(MARGIN_TOP);
+			c.a = 1;
+			if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
+				Color mono_color = ((c.r + c.g + c.b) / 3) < 0.5 ? Color(1.0, 1.0, 1.0) : Color(0, 0, 0);
+				mono_color.a = 0.85;
+				c = mono_color;
+			}
+
+			gnode->add_color_override("title_color", c);
+			c.a = 0.7;
+			gnode->add_color_override("close_color", c);
+			gnode->add_style_override("frame", sbf);
 		}
 
 		int slot_idx = 0;
@@ -2753,12 +2768,12 @@ void VisualScriptEditor::_notification(int p_what) {
 		signal_editor->connect("changed", this, "_update_members");
 
 		List<Pair<String, Color> > colors;
-		colors.push_back(Pair<String, Color>("functions", Color(1, 0.9, 0.9)));
-		colors.push_back(Pair<String, Color>("data", Color(0.9, 1.0, 0.9)));
-		colors.push_back(Pair<String, Color>("operators", Color(0.9, 0.9, 1.0)));
-		colors.push_back(Pair<String, Color>("flow_control", Color(1.0, 1.0, 1.0)));
-		colors.push_back(Pair<String, Color>("custom", Color(0.8, 1.0, 1.0)));
-		colors.push_back(Pair<String, Color>("constants", Color(1.0, 0.8, 1.0)));
+		colors.push_back(Pair<String, Color>("flow_control", Color::html("#f4f4f4")));
+		colors.push_back(Pair<String, Color>("functions", Color::html("#f58581")));
+		colors.push_back(Pair<String, Color>("data", Color::html("#80f6cf")));
+		colors.push_back(Pair<String, Color>("operators", Color::html("#ab97df")));
+		colors.push_back(Pair<String, Color>("custom", Color::html("#80bbf6")));
+		colors.push_back(Pair<String, Color>("constants", Color::html("#f680b0")));
 
 		for (List<Pair<String, Color> >::Element *E = colors.front(); E; E = E->next()) {
 			print_line(E->get().first);

@@ -165,6 +165,9 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 	exceptions.push_back("ProceduralSky");
 	exceptions.push_back("EditorControlAnchor");
 	exceptions.push_back("DefaultProjectIcon");
+	exceptions.push_back("GuiCloseCustomizable");
+	exceptions.push_back("GuiGraphNodePort");
+	exceptions.push_back("GuiResizer");
 
 	clock_t begin_time = clock();
 
@@ -227,6 +230,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
+
+	bool use_gn_headers = EDITOR_DEF("interface/theme/use_graph_node_headers", false);
 
 	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
 
@@ -764,28 +769,40 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphNode
 
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(Color(0, 0, 0, 0.3), 16, 24, 16, 5);
+	const int gn_margin_side = 28;
+	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(Color(0, 0, 0, 0.3), gn_margin_side, 24, gn_margin_side, 5);
 	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color_all(Color(1, 1, 1, 0.6));
-	graphsb->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(0, 0, 0, 0.4), 16, 24, 16, 5);
+	graphsb->set_border_color_all(Color(1, 1, 1, 0.9));
+	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(0, 0, 0, 0.4), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbselected->set_border_width_all(border_width);
 	graphsbselected->set_border_color_all(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
 	graphsbselected->set_shadow_size(8 * EDSCALE);
 	graphsbselected->set_shadow_color(shadow_color);
-	graphsbselected->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(0, 0, 0, 0.3), 16, 24, 16, 5);
+	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(0, 0, 0, 0.3), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color_all(Color(1, 1, 1, 0.6));
-	graphsbcomment->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(Color(0, 0, 0, 0.4), 16, 24, 16, 5);
+	graphsbcomment->set_border_color_all(Color(1, 1, 1, 0.9));
+	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(Color(0, 0, 0, 0.4), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbcommentselected->set_border_width_all(border_width);
 	graphsbcommentselected->set_border_color_all(Color(1, 1, 1, 0.9));
-	graphsbcommentselected->set_border_width(MARGIN_TOP, 22 * EDSCALE + border_width);
+
+	if (use_gn_headers) {
+		graphsb->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+		graphsbselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+		graphsbcomment->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+		graphsbcommentselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+	}
+
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
+	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
+	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
+	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_icon("close", "GraphNode", theme->get_icon("GuiCloseCustomizable", "EditorIcons"));
+	theme->set_icon("resizer", "GraphNode", theme->get_icon("GuiResizer", "EditorIcons"));
+	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
 
 	// FileDialog
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
