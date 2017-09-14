@@ -5274,7 +5274,7 @@ EditorNode::EditorNode() {
 	clear_button->connect("pressed", this, "_clear_search_box");
 
 	property_editable_warning = memnew (Button);
-	property_editable_warning->set_text(TTR("Changes my be lost!"));
+	property_editable_warning->set_text(TTR("Changes may be lost!"));
 	prop_editor_base->add_child(property_editable_warning);
 	property_editable_warning_dialog = memnew( AcceptDialog );
 	gui_base->add_child(property_editable_warning_dialog);
