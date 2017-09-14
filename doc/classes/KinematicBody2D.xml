@@ -63,6 +63,7 @@
 			<argument index="0" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
+				Moves the body along the given vector. The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the colliding body.
 			</description>
 		</method>
 		<method name="move_and_slide">
@@ -97,7 +98,7 @@
 			<argument index="1" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-				Return true if there would be a collision if the body moved from the given point in the given direction.
+				Returns true if there would be a collision if the body moved from the given point in the given direction.
 			</description>
 		</method>
 	</methods>
