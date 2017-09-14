@@ -52,6 +52,7 @@ struct _VariantCall {
 		Vector<Variant::Type> arg_types;
 		Vector<StringName> arg_names;
 		Variant::Type return_type;
+		bool is_const;
 
 #ifdef DEBUG_ENABLED
 		bool returns;
@@ -145,11 +146,16 @@ struct _VariantCall {
 #endif
 	}
 
+	static void make_func_non_const(Variant::Type p_type, const StringName &p_name) {
+		type_funcs[p_type].functions[p_name].is_const = false;
+	}
+
 	static void addfunc(Variant::Type p_type, Variant::Type p_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
 
 		FuncData funcdata;
 		funcdata.func = p_func;
 		funcdata.default_args = p_defaultarg;
+		funcdata.is_const = true;
 #ifdef DEBUG_ENABLED
 		funcdata.return_type = p_return;
 		funcdata.returns = p_return != Variant::NIL;
@@ -1237,6 +1243,17 @@ Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, cons
 	return E->get().default_args;
 }
 
+bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) {
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return true;
+
+	return E->get().is_const;
+}
+
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
 
 	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[type];
@@ -1359,6 +1376,8 @@ void register_variant_methods() {
 	_VariantCall::construct_funcs = memnew_arr(_VariantCall::ConstructFunc, Variant::VARIANT_MAX);
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
+#define MKFUNCNC(m_vtype, m_method) \
+	_VariantCall::make_func_non_const(Variant::m_vtype, _scs_create(#m_method));
 #define ADDFUNC0(m_vtype, m_ret, m_class, m_method, m_defarg) \
 	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
 #define ADDFUNC1(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
@@ -1553,6 +1572,9 @@ void register_variant_methods() {
 	ADDFUNC0(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0(DICTIONARY, ARRAY, Dictionary, values, varray());
 
+	MKFUNCNC(DICTIONARY, clear);
+	MKFUNCNC(DICTIONARY, erase);
+
 	ADDFUNC0(ARRAY, INT, Array, size, varray());
 	ADDFUNC0(ARRAY, BOOL, Array, empty, varray());
 	ADDFUNC0(ARRAY, NIL, Array, clear, varray());
@@ -1578,6 +1600,20 @@ void register_variant_methods() {
 	ADDFUNC0(ARRAY, NIL, Array, invert, varray());
 	ADDFUNC0(ARRAY, ARRAY, Array, duplicate, varray());
 
+	MKFUNCNC(ARRAY, clear);
+	MKFUNCNC(ARRAY, push_back);
+	MKFUNCNC(ARRAY, push_front);
+	MKFUNCNC(ARRAY, append);
+	MKFUNCNC(ARRAY, resize);
+	MKFUNCNC(ARRAY, insert);
+	MKFUNCNC(ARRAY, remove);
+	MKFUNCNC(ARRAY, erase);
+	MKFUNCNC(ARRAY, pop_back);
+	MKFUNCNC(ARRAY, pop_front);
+	MKFUNCNC(ARRAY, sort);
+	MKFUNCNC(ARRAY, sort_custom);
+	MKFUNCNC(ARRAY, invert);
+
 	ADDFUNC0(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, NIL, PoolByteArray, set, INT, "idx", INT, "byte", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, push_back, INT, "byte", varray());
@@ -1588,11 +1624,19 @@ void register_variant_methods() {
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_BYTE_ARRAY, NIL, PoolByteArray, invert, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, subarray, INT, "from", INT, "to", varray());
-
 	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
 	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
 	ADDFUNC2(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
+
+	MKFUNCNC(POOL_BYTE_ARRAY, set);
+	MKFUNCNC(POOL_BYTE_ARRAY, push_back);
+	MKFUNCNC(POOL_BYTE_ARRAY, append);
+	MKFUNCNC(POOL_BYTE_ARRAY, append_array);
+	MKFUNCNC(POOL_BYTE_ARRAY, remove);
+	MKFUNCNC(POOL_BYTE_ARRAY, insert);
+	MKFUNCNC(POOL_BYTE_ARRAY, resize);
+	MKFUNCNC(POOL_BYTE_ARRAY, invert);
 
 	ADDFUNC0(POOL_INT_ARRAY, INT, PoolIntArray, size, varray());
 	ADDFUNC2(POOL_INT_ARRAY, NIL, PoolIntArray, set, INT, "idx", INT, "integer", varray());
@@ -1604,6 +1648,15 @@ void register_variant_methods() {
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_INT_ARRAY, NIL, PoolIntArray, invert, varray());
 
+	MKFUNCNC(POOL_INT_ARRAY, set);
+	MKFUNCNC(POOL_INT_ARRAY, push_back);
+	MKFUNCNC(POOL_INT_ARRAY, append);
+	MKFUNCNC(POOL_INT_ARRAY, append_array);
+	MKFUNCNC(POOL_INT_ARRAY, remove);
+	MKFUNCNC(POOL_INT_ARRAY, insert);
+	MKFUNCNC(POOL_INT_ARRAY, resize);
+	MKFUNCNC(POOL_INT_ARRAY, invert);
+
 	ADDFUNC0(POOL_REAL_ARRAY, INT, PoolRealArray, size, varray());
 	ADDFUNC2(POOL_REAL_ARRAY, NIL, PoolRealArray, set, INT, "idx", REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, push_back, REAL, "value", varray());
@@ -1613,6 +1666,15 @@ void register_variant_methods() {
 	ADDFUNC2(POOL_REAL_ARRAY, INT, PoolRealArray, insert, INT, "idx", REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_REAL_ARRAY, NIL, PoolRealArray, invert, varray());
+
+	MKFUNCNC(POOL_REAL_ARRAY, set);
+	MKFUNCNC(POOL_REAL_ARRAY, push_back);
+	MKFUNCNC(POOL_REAL_ARRAY, append);
+	MKFUNCNC(POOL_REAL_ARRAY, append_array);
+	MKFUNCNC(POOL_REAL_ARRAY, remove);
+	MKFUNCNC(POOL_REAL_ARRAY, insert);
+	MKFUNCNC(POOL_REAL_ARRAY, resize);
+	MKFUNCNC(POOL_REAL_ARRAY, invert);
 
 	ADDFUNC0(POOL_STRING_ARRAY, INT, PoolStringArray, size, varray());
 	ADDFUNC2(POOL_STRING_ARRAY, NIL, PoolStringArray, set, INT, "idx", STRING, "string", varray());
@@ -1625,6 +1687,15 @@ void register_variant_methods() {
 	ADDFUNC0(POOL_STRING_ARRAY, NIL, PoolStringArray, invert, varray());
 	ADDFUNC1(POOL_STRING_ARRAY, STRING, PoolStringArray, join, STRING, "delimiter", varray());
 
+	MKFUNCNC(POOL_STRING_ARRAY, set);
+	MKFUNCNC(POOL_STRING_ARRAY, push_back);
+	MKFUNCNC(POOL_STRING_ARRAY, append);
+	MKFUNCNC(POOL_STRING_ARRAY, append_array);
+	MKFUNCNC(POOL_STRING_ARRAY, remove);
+	MKFUNCNC(POOL_STRING_ARRAY, insert);
+	MKFUNCNC(POOL_STRING_ARRAY, resize);
+	MKFUNCNC(POOL_STRING_ARRAY, invert);
+
 	ADDFUNC0(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, size, varray());
 	ADDFUNC2(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, set, INT, "idx", VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, push_back, VECTOR2, "vector2", varray());
@@ -1634,6 +1705,15 @@ void register_variant_methods() {
 	ADDFUNC2(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, insert, INT, "idx", VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, invert, varray());
+
+	MKFUNCNC(POOL_VECTOR2_ARRAY, set);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, push_back);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, append);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, append_array);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, remove);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, insert);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, resize);
+	MKFUNCNC(POOL_VECTOR2_ARRAY, invert);
 
 	ADDFUNC0(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, size, varray());
 	ADDFUNC2(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, set, INT, "idx", VECTOR3, "vector3", varray());
@@ -1645,6 +1725,15 @@ void register_variant_methods() {
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, invert, varray());
 
+	MKFUNCNC(POOL_VECTOR3_ARRAY, set);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, push_back);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, append);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, append_array);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, remove);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, insert);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, resize);
+	MKFUNCNC(POOL_VECTOR3_ARRAY, invert);
+
 	ADDFUNC0(POOL_COLOR_ARRAY, INT, PoolColorArray, size, varray());
 	ADDFUNC2(POOL_COLOR_ARRAY, NIL, PoolColorArray, set, INT, "idx", COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, push_back, COLOR, "color", varray());
@@ -1654,6 +1743,15 @@ void register_variant_methods() {
 	ADDFUNC2(POOL_COLOR_ARRAY, INT, PoolColorArray, insert, INT, "idx", COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_COLOR_ARRAY, NIL, PoolColorArray, invert, varray());
+
+	MKFUNCNC(POOL_COLOR_ARRAY, set);
+	MKFUNCNC(POOL_COLOR_ARRAY, push_back);
+	MKFUNCNC(POOL_COLOR_ARRAY, append);
+	MKFUNCNC(POOL_COLOR_ARRAY, append_array);
+	MKFUNCNC(POOL_COLOR_ARRAY, remove);
+	MKFUNCNC(POOL_COLOR_ARRAY, insert);
+	MKFUNCNC(POOL_COLOR_ARRAY, resize);
+	MKFUNCNC(POOL_COLOR_ARRAY, invert);
 
 	//pointerbased
 
