@@ -1298,6 +1298,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(refresh);
 
 	favorite = memnew(ToolButton);
+	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->connect("toggled", this, "_favorite_toggled");
 	pathhb->add_child(favorite);
