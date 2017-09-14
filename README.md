@@ -2,9 +2,9 @@
 
 ## Godot Engine
 
-Homepage: https://godotengine.org
+首页: https://godotengine.org
 
-#### 2D and 3D cross-platform game engine
+#### 一个跨平台的2D和3D游戏引擎 
 
 Godot Engine is a feature-packed, cross-platform game engine to create 2D and
 3D games from a unified interface. It provides a comprehensive set of common
