@@ -530,6 +530,14 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 	EditorFileSystem::get_singleton()->scan();
 }
 
+void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	EditorExport::get_singleton()->add_export_plugin(p_exporter);
+}
+
+void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
+	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
+}
+
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
@@ -585,6 +593,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save_layout"), &EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer"), &EditorPlugin::add_import_plugin);
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_export_plugin", "exporter"), &EditorPlugin::add_export_plugin);
+	ClassDB::bind_method(D_METHOD("remove_export_plugin", "exporter"), &EditorPlugin::remove_export_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);

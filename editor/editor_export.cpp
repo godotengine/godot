@@ -476,19 +476,66 @@ void EditorExportPlatform::_edit_filter_list(Set<String> &r_list, const String &
 	memdelete(da);
 }
 
-Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata) {
+void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap) {
+
+	ExtraFile ef;
+	ef.data = p_file;
+	ef.path = p_path;
+	ef.remap = p_remap;
+	extra_files.push_back(ef);
+}
+
+void EditorExportPlugin::add_shared_object(const String &p_path) {
+
+	shared_objects.push_back(p_path);
+}
+
+void EditorExportPlugin::_export_file_script(const String &p_path, const PoolVector<String> &p_features) {
+
+	if (get_script_instance()) {
+		get_script_instance()->call("_export_file", p_path, p_features);
+	}
+}
+
+void EditorExportPlugin::_export_file(const String &p_path, const Set<String> &p_features) {
+}
+
+void EditorExportPlugin::skip() {
+
+	skipped = true;
+}
+
+void EditorExportPlugin::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("add_shared_object", "path"), &EditorExportPlugin::add_shared_object);
+	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
+	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
+
+	BIND_VMETHOD(MethodInfo("_export_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::POOL_STRING_ARRAY, "features")));
+}
+
+EditorExportPlugin::EditorExportPlugin() {
+	skipped = false;
+}
+
+Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
 	platform->get_preset_features(p_preset, &feature_list);
 	//figure out features
 	Set<String> features;
+	PoolVector<String> features_pv;
 	for (List<String>::Element *E = feature_list.front(); E; E = E->next()) {
 		features.insert(E->get());
+		features_pv.push_back(E->get());
 	}
+
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 
 	//figure out paths of files that will be exported
 	Set<String> paths;
+	Vector<String> path_remaps;
 
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		//find stuff
@@ -551,9 +598,42 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			p_func(p_udata, path + ".import", array, idx, total);
 
 		} else {
+
+			bool do_export = true;
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (export_plugins[i]->get_script_instance()) { //script based
+					export_plugins[i]->_export_file_script(path, features_pv);
+				} else {
+					export_plugins[i]->_export_file(path, features);
+				}
+				if (p_so_func) {
+					for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
+						p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
+					}
+				}
+
+				for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+					p_func(p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total);
+					if (export_plugins[i]->extra_files[j].remap) {
+						do_export = false; //if remap, do not
+						path_remaps.push_back(path);
+						path_remaps.push_back(export_plugins[i]->extra_files[j].path);
+					}
+				}
+
+				if (export_plugins[i]->skipped) {
+					do_export = false;
+				}
+				export_plugins[i]->_clear();
+
+				if (!do_export)
+					break; //apologies, not exporting
+			}
 			//just store it as it comes
-			Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-			p_func(p_udata, path, array, idx, total);
+			if (do_export) {
+				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+				p_func(p_udata, path, array, idx, total);
+			}
 		}
 
 		idx++;
@@ -575,9 +655,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	}
 
+	ProjectSettings::CustomMap custom_map;
+	if (path_remaps.size()) {
+		custom_map["path_remap/remapped_paths"] = path_remaps;
+	}
+
 	String config_file = "project.binary";
 	String engine_cfb = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp" + config_file;
-	ProjectSettings::get_singleton()->save_custom(engine_cfb, ProjectSettings::CustomMap(), custom_list);
+	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
 	p_func(p_udata, "res://" + config_file, data, idx, total);
@@ -865,6 +950,23 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 void EditorExport::remove_export_preset(int p_idx) {
 
 	export_presets.remove(p_idx);
+}
+
+void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
+
+	if (export_plugins.find(p_plugin) == 1) {
+		export_plugins.push_back(p_plugin);
+	}
+}
+
+void EditorExport::remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
+
+	export_plugins.erase(p_plugin);
+}
+
+Vector<Ref<EditorExportPlugin> > EditorExport::get_export_plugins() {
+
+	return export_plugins;
 }
 
 void EditorExport::_notification(int p_what) {

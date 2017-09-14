@@ -124,6 +124,7 @@ class EditorExportPlatform : public Reference {
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
+	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const String &p_path);
 
 private:
 	struct SavedData {
@@ -189,7 +190,7 @@ public:
 	virtual String get_name() const = 0;
 	virtual Ref<Texture> get_logo() const = 0;
 
-	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata);
+	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = NULL);
 
 	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path);
@@ -219,11 +220,47 @@ public:
 	EditorExportPlatform();
 };
 
+class EditorExportPlugin : public Reference {
+	GDCLASS(EditorExportPlugin, Reference)
+
+	friend class EditorExportPlatform;
+
+	Vector<String> shared_objects;
+	struct ExtraFile {
+		String path;
+		Vector<uint8_t> data;
+		bool remap;
+	};
+	Vector<ExtraFile> extra_files;
+	bool skipped;
+
+	_FORCE_INLINE_ void _clear() {
+		shared_objects.clear();
+		extra_files.clear();
+		skipped = false;
+	}
+
+	void _export_file_script(const String &p_path, const PoolVector<String> &p_features);
+
+protected:
+	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
+	void add_shared_object(const String &p_path);
+	void skip();
+
+	virtual void _export_file(const String &p_path, const Set<String> &p_features);
+
+	static void _bind_methods();
+
+public:
+	EditorExportPlugin();
+};
+
 class EditorExport : public Node {
 	GDCLASS(EditorExport, Node);
 
 	Vector<Ref<EditorExportPlatform> > export_platforms;
 	Vector<Ref<EditorExportPreset> > export_presets;
+	Vector<Ref<EditorExportPlugin> > export_plugins;
 
 	Timer *save_timer;
 	bool block_save;
@@ -250,6 +287,10 @@ public:
 	int get_export_preset_count() const;
 	Ref<EditorExportPreset> get_export_preset(int p_idx);
 	void remove_export_preset(int p_idx);
+
+	void add_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
+	void remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin);
+	Vector<Ref<EditorExportPlugin> > get_export_plugins();
 
 	void load_config();
 

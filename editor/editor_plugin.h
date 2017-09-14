@@ -191,6 +191,9 @@ public:
 	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
 
+	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+
 	EditorPlugin();
 	virtual ~EditorPlugin();
 };
