@@ -39,6 +39,8 @@
 
 #include "thirdparty/misc/yuv2rgb.h"
 
+#include "servers/audio_server.h"
+
 #include <string.h>
 
 class MkvReader : public mkvparser::IMkvReader {
@@ -47,6 +49,8 @@ public:
 	MkvReader(const String &p_file) {
 
 		file = FileAccess::open(p_file, FileAccess::READ);
+
+		ERR_EXPLAIN("Failed loading resource: '" + p_file+"';");
 		ERR_FAIL_COND(!file);
 	}
 	~MkvReader() {
@@ -120,7 +124,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			if (audio->isOpen()) {
 
 				audio_frame = memnew(WebMFrame);
-				pcm = (int16_t *)memalloc(sizeof(int16_t) * audio->getBufferSamples() * webm->getChannels());
+				pcm = (float *)memalloc(sizeof(float) * audio->getBufferSamples() * webm->getChannels());
 			} else {
 
 				memdelete(audio);
@@ -167,6 +171,7 @@ void VideoStreamPlaybackWebm::stop() {
 void VideoStreamPlaybackWebm::play() {
 
 	stop();
+
 
 	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
@@ -222,6 +227,8 @@ Ref<Texture> VideoStreamPlaybackWebm::get_texture() {
 
 	return texture;
 }
+
+
 void VideoStreamPlaybackWebm::update(float p_delta) {
 
 	if ((!playing || paused) || !video)
@@ -247,9 +254,10 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 	const bool hasAudio = (audio && mix_callback);
 	while ((hasAudio && (!audio_buffer_full || !has_enough_video_frames())) || (!hasAudio && video_frames_pos == 0)) {
 
-		if (hasAudio && !audio_buffer_full && audio_frame->isValid() && audio->getPCMS16(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
+		if (hasAudio && !audio_buffer_full && audio_frame->isValid() && audio->getPCMS(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
 
 			const int mixed = mix_callback(mix_udata, pcm, num_decoded_samples);
+
 			if (mixed != num_decoded_samples) {
 
 				samples_offset = mixed;
@@ -319,7 +327,10 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							}
 
 							if (converted)
-								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data)); //Zero copy send to visual server
+							{
+								Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
+								texture->set_data(img); //Zero copy send to visual server
+							}
 						}
 
 						break;
@@ -395,34 +406,6 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 
 /**/
 
-RES ResourceFormatLoaderVideoStreamWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	Ref<VideoStreamWebm> stream = memnew(VideoStreamWebm);
-	stream->set_file(p_path);
-	if (r_error)
-		*r_error = OK;
-	return stream;
-}
-
-void ResourceFormatLoaderVideoStreamWebm::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("webm");
-}
-bool ResourceFormatLoaderVideoStreamWebm::handles_type(const String &p_type) const {
-
-	return (p_type == "VideoStream" || p_type == "VideoStreamWebm");
-}
-
-String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_path) const {
-
-	const String exl = p_path.get_extension().to_lower();
-	if (exl == "webm")
-		return "VideoStreamWebm";
-	return "";
-}
-
-/**/
-
 VideoStreamWebm::VideoStreamWebm()
 	: audio_track(0) {}
 
@@ -439,6 +422,22 @@ void VideoStreamWebm::set_file(const String &p_file) {
 
 	file = p_file;
 }
+String VideoStreamWebm::get_file() {
+
+	return file;
+}
+
+
+void VideoStreamWebm::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamWebm::set_file);
+	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamWebm::get_file);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_file", "get_file");
+
+}
+
 void VideoStreamWebm::set_audio_track(int p_track) {
 
 	audio_track = p_track;

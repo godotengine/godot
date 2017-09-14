@@ -32,6 +32,7 @@
 
 #include "os/memory.h"
 #include "typedefs.h"
+#include "servers/audio_server.h"
 
 struct AudioRBResampler {
 
@@ -53,11 +54,14 @@ struct AudioRBResampler {
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 
-	int16_t *read_buf;
-	int16_t *rb;
+	float *read_buf;
+	float *rb;
+
+
+	uint32_t copy_stereo(AudioFrame *dest, int count);
 
 	template <int C>
-	uint32_t _resample(int32_t *p_dest, int p_todo, int32_t p_increment);
+	uint32_t _resample(AudioFrame *p_dest, int p_todo);
 
 public:
 	_FORCE_INLINE_ void flush() {
@@ -97,7 +101,7 @@ public:
 		return rb && rb_read_pos != rb_write_pos;
 	}
 
-	_FORCE_INLINE_ int16_t *get_write_buffer() { return read_buf; }
+	_FORCE_INLINE_ float *get_write_buffer() { return read_buf; }
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
 
 		ERR_FAIL_COND(p_frames >= rb_len);
@@ -151,7 +155,7 @@ public:
 
 	Error setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed = -1);
 	void clear();
-	bool mix(int32_t *p_dest, int p_frames);
+	bool mix(AudioFrame *p_dest, int p_frames);
 
 	AudioRBResampler();
 	~AudioRBResampler();

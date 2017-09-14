@@ -44,7 +44,7 @@ public:
 	{
 		return m_numSamples;
 	}
-
+	bool getPCMS(WebMFrame &frame, float *buffer, int &numOutSamples);
 	bool getPCMS16(WebMFrame &frame, short *buffer, int &numOutSamples);
 
 private:
