@@ -45,7 +45,7 @@ class CollisionShape : public Spatial {
 
 	Node *debug_shape;
 
-	void resource_changed(RES res);
+	virtual void _resource_changed(RES res);
 	bool disabled;
 
 	void _create_debug_shape();

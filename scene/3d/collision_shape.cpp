@@ -99,7 +99,7 @@ void CollisionShape::_notification(int p_what) {
 	}
 }
 
-void CollisionShape::resource_changed(RES res) {
+void CollisionShape::_resource_changed(RES res) {
 
 	update_gizmo();
 }
@@ -120,7 +120,7 @@ String CollisionShape::get_configuration_warning() const {
 void CollisionShape::_bind_methods() {
 
 	//not sure if this should do anything
-	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape::resource_changed);
+	ClassDB::bind_method(D_METHOD("_resource_changed", "resource"), &CollisionShape::_resource_changed);
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape::set_disabled);

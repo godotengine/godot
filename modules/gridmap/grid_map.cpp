@@ -711,7 +711,7 @@ void GridMap::clear() {
 	_clear_internal();
 }
 
-void GridMap::resource_changed(const RES &p_res) {
+void GridMap::_resource_changed(const RES &p_res) {
 
 	_recreate_octant_data();
 }
@@ -756,7 +756,7 @@ void GridMap::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_recreate_octants"),&GridMap::_recreate_octants);
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
-	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
+	ClassDB::bind_method(D_METHOD("_resource_changed", "resource"), &GridMap::_resource_changed);
 
 	ClassDB::bind_method(D_METHOD("set_center_x", "enable"), &GridMap::set_center_x);
 	ClassDB::bind_method(D_METHOD("get_center_x"), &GridMap::get_center_x);
