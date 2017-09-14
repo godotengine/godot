@@ -701,13 +701,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_separator();
 			}
 
-			menu->add_icon_item(get_icon("Load", "EditorIcons"), "Load", OBJ_MENU_LOAD);
+			menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
 
 			if (!RES(v).is_null()) {
 
-				menu->add_icon_item(get_icon("EditResource", "EditorIcons"), "Edit", OBJ_MENU_EDIT);
-				menu->add_icon_item(get_icon("Del", "EditorIcons"), "Clear", OBJ_MENU_CLEAR);
-				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), "Make Unique", OBJ_MENU_MAKE_UNIQUE);
+				menu->add_icon_item(get_icon("EditResource", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
+				menu->add_icon_item(get_icon("Del", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
+				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 				RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file() && r->get_import_metadata().is_valid()) {
 					menu->add_separator();

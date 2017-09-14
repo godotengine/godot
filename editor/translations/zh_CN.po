@@ -1362,11 +1362,15 @@ msgstr "拷贝资源"
 
 #: editor/editor_node.cpp
 msgid "Make Built-In"
-msgstr "使之内置"
+msgstr "转为内置"
 
 #: editor/editor_node.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "使子资源唯一化"
+msgstr "独立子资源"
+
+#: editor/property_editor.cpp
+msgid "Make Unique"
+msgstr "转为独立资源"
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
