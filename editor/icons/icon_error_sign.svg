@@ -1,7 +1,6 @@
 <svg width="32" height="32" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1020.4)">
-<path d="m10 1048.4h12l6-6v-12l-6-6h-12l-6 6v12z" fill="#ff8484" fill-rule="evenodd"/>
-<rect x="14" y="1028.4" width="4" height="9" fill="#fff"/>
-<rect x="14" y="1040.4" width="4" height="4" fill="#fff"/>
+<path d="m10 1048.4h12l6-6v-12l-6-6h-12l-6 6v12z" fill="#ff5d5d" fill-rule="evenodd"/>
+<path transform="translate(0 1020.4)" d="m14 8l1 10h2l1-10h-4zm2 12a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2z" fill="#fff"/>
 </g>
 </svg>
