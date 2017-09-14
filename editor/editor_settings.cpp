@@ -739,6 +739,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("docks/property_editor/texture_preview_width", 48);
 	set("docks/property_editor/auto_refresh_interval", 0.3);
 	set("text_editor/help/doc_path", "");
+	set("text_editor/help/show_help_index", true);
 
 	set("filesystem/import/ask_save_before_reimport", false);
 
