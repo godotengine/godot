@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  video_stream.h                                                       */
+/*  resource_importer_webm.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,61 +27,69 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#include "resource_importer_webm.h"
 
+#include "io/resource_saver.h"
+#include "os/file_access.h"
 #include "scene/resources/texture.h"
+#include "video_stream_webm.h"
 
-class VideoStreamPlayback : public Resource {
+String ResourceImporterWebm::get_importer_name() const {
 
-	GDCLASS(VideoStreamPlayback, Resource);
+	return "Webm";
+}
 
-protected:
-	static void _bind_methods();
+String ResourceImporterWebm::get_visible_name() const {
 
-public:
-	typedef int (*AudioMixCallback)(void *p_udata, const float *p_data, int p_frames);
+	return "Webm";
+}
+void ResourceImporterWebm::get_recognized_extensions(List<String> *p_extensions) const {
 
-	virtual void stop() = 0;
-	virtual void play() = 0;
+	p_extensions->push_back("webm");
+}
 
-	virtual bool is_playing() const = 0;
+String ResourceImporterWebm::get_save_extension() const {
+	return "webmstr";
+}
 
-	virtual void set_paused(bool p_paused) = 0;
-	virtual bool is_paused() const = 0;
+String ResourceImporterWebm::get_resource_type() const {
 
-	virtual void set_loop(bool p_enable) = 0;
-	virtual bool has_loop() const = 0;
+	return "VideoStreamWebm";
+}
 
-	virtual float get_length() const = 0;
+bool ResourceImporterWebm::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
-	virtual float get_playback_position() const = 0;
-	virtual void seek(float p_time) = 0;
+	return true;
+}
 
-	virtual void set_audio_track(int p_idx) = 0;
+int ResourceImporterWebm::get_preset_count() const {
+	return 0;
+}
+String ResourceImporterWebm::get_preset_name(int p_idx) const {
 
-	//virtual int mix(int16_t* p_bufer,int p_frames)=0;
+	return String();
+}
 
-	virtual Ref<Texture> get_texture() = 0;
-	virtual void update(float p_delta) = 0;
+void ResourceImporterWebm::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) = 0;
-	virtual int get_channels() const = 0;
-	virtual int get_mix_rate() const = 0;
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+}
 
-	VideoStreamPlayback();
-};
+Error ResourceImporterWebm::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
-class VideoStream : public Resource {
+	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
+	if (!f) {
+		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	}
+	memdelete(f);
 
-	GDCLASS(VideoStream, Resource);
-	OBJ_SAVE_TYPE(VideoStream); //children are all saved as AudioStream, so they can be exchanged
+	VideoStreamWebm *stream = memnew(VideoStreamWebm);
+	stream->set_file(p_source_file);
 
-public:
-	virtual void set_audio_track(int p_track) = 0;
-	virtual Ref<VideoStreamPlayback> instance_playback() = 0;
+	Ref<VideoStreamWebm> webm_stream = Ref<VideoStreamWebm>(stream);
 
-	VideoStream() {}
-};
+	return ResourceSaver::save(p_save_path + ".webmstr", webm_stream);
+}
 
-#endif
+ResourceImporterWebm::ResourceImporterWebm() {
+}

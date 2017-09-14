@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
-
+#include "resource_importer_webm.h"
 #include "video_stream_webm.h"
-
-static ResourceFormatLoaderVideoStreamWebm *webm_stream_loader = NULL;
 
 void register_webm_types() {
 
-	webm_stream_loader = memnew(ResourceFormatLoaderVideoStreamWebm);
-	ResourceLoader::add_resource_format_loader(webm_stream_loader);
+#ifdef TOOLS_ENABLED
+	Ref<ResourceImporterWebm> webm_import;
+	webm_import.instance();
+	ResourceFormatImporter::get_singleton()->add_importer(webm_import);
+#endif
 	ClassDB::register_class<VideoStreamWebm>();
 }
 
 void unregister_webm_types() {
-
-	memdelete(webm_stream_loader);
 }

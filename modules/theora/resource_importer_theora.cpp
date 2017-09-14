@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  video_stream.h                                                       */
+/*  resource_importer_theora.cpp                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,61 +27,63 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#include "resource_importer_theora.h"
 
+#include "io/resource_saver.h"
+#include "os/file_access.h"
 #include "scene/resources/texture.h"
 
-class VideoStreamPlayback : public Resource {
+String ResourceImporterTheora::get_importer_name() const {
 
-	GDCLASS(VideoStreamPlayback, Resource);
+	return "Theora";
+}
 
-protected:
-	static void _bind_methods();
+String ResourceImporterTheora::get_visible_name() const {
 
-public:
-	typedef int (*AudioMixCallback)(void *p_udata, const float *p_data, int p_frames);
+	return "Theora";
+}
+void ResourceImporterTheora::get_recognized_extensions(List<String> *p_extensions) const {
 
-	virtual void stop() = 0;
-	virtual void play() = 0;
+	p_extensions->push_back("ogv");
+	p_extensions->push_back("ogm");
+}
 
-	virtual bool is_playing() const = 0;
+String ResourceImporterTheora::get_save_extension() const {
+	return "ogvstr";
+}
 
-	virtual void set_paused(bool p_paused) = 0;
-	virtual bool is_paused() const = 0;
+String ResourceImporterTheora::get_resource_type() const {
 
-	virtual void set_loop(bool p_enable) = 0;
-	virtual bool has_loop() const = 0;
+	return "VideoStreamTheora";
+}
 
-	virtual float get_length() const = 0;
+bool ResourceImporterTheora::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
-	virtual float get_playback_position() const = 0;
-	virtual void seek(float p_time) = 0;
+	return true;
+}
 
-	virtual void set_audio_track(int p_idx) = 0;
+int ResourceImporterTheora::get_preset_count() const {
+	return 0;
+}
+String ResourceImporterTheora::get_preset_name(int p_idx) const {
 
-	//virtual int mix(int16_t* p_bufer,int p_frames)=0;
+	return String();
+}
 
-	virtual Ref<Texture> get_texture() = 0;
-	virtual void update(float p_delta) = 0;
+void ResourceImporterTheora::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
-	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) = 0;
-	virtual int get_channels() const = 0;
-	virtual int get_mix_rate() const = 0;
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+}
 
-	VideoStreamPlayback();
-};
+Error ResourceImporterTheora::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
-class VideoStream : public Resource {
+	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	stream->set_file(p_source_file);
 
-	GDCLASS(VideoStream, Resource);
-	OBJ_SAVE_TYPE(VideoStream); //children are all saved as AudioStream, so they can be exchanged
+	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
 
-public:
-	virtual void set_audio_track(int p_track) = 0;
-	virtual Ref<VideoStreamPlayback> instance_playback() = 0;
+	return ResourceSaver::save(p_save_path + ".ogvstr", ogv_stream);
+}
 
-	VideoStream() {}
-};
-
-#endif
+ResourceImporterTheora::ResourceImporterTheora() {
+}
