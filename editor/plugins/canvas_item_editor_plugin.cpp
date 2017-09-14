@@ -2301,19 +2301,24 @@ void CanvasItemEditor::_notification(int p_what) {
 			Rect2 r = canvas_item->get_item_rect();
 			Transform2D xform = canvas_item->get_transform();
 
-			float anchors[4];
-			Vector2 pivot;
+			if (r != se->prev_rect || xform != se->prev_xform) {
+				viewport->update();
+				se->prev_rect = r;
+				se->prev_xform = xform;
+			}
+
 			if (Object::cast_to<Control>(canvas_item)) {
+				float anchors[4];
+				Vector2 pivot;
+
 				pivot = Object::cast_to<Control>(canvas_item)->get_pivot_offset();
 				anchors[MARGIN_LEFT] = Object::cast_to<Control>(canvas_item)->get_anchor(MARGIN_LEFT);
 				anchors[MARGIN_RIGHT] = Object::cast_to<Control>(canvas_item)->get_anchor(MARGIN_RIGHT);
 				anchors[MARGIN_TOP] = Object::cast_to<Control>(canvas_item)->get_anchor(MARGIN_TOP);
 				anchors[MARGIN_BOTTOM] = Object::cast_to<Control>(canvas_item)->get_anchor(MARGIN_BOTTOM);
 
-				if (r != se->prev_rect || xform != se->prev_xform || pivot != se->prev_pivot || anchors[MARGIN_LEFT] != se->prev_anchors[MARGIN_LEFT] || anchors[MARGIN_RIGHT] != se->prev_anchors[MARGIN_RIGHT] || anchors[MARGIN_TOP] != se->prev_anchors[MARGIN_TOP] || anchors[MARGIN_BOTTOM] != se->prev_anchors[MARGIN_BOTTOM]) {
+				if (pivot != se->prev_pivot || anchors[MARGIN_LEFT] != se->prev_anchors[MARGIN_LEFT] || anchors[MARGIN_RIGHT] != se->prev_anchors[MARGIN_RIGHT] || anchors[MARGIN_TOP] != se->prev_anchors[MARGIN_TOP] || anchors[MARGIN_BOTTOM] != se->prev_anchors[MARGIN_BOTTOM]) {
 					viewport->update();
-					se->prev_rect = r;
-					se->prev_xform = xform;
 					se->prev_pivot = pivot;
 					se->prev_anchors[MARGIN_LEFT] = anchors[MARGIN_LEFT];
 					se->prev_anchors[MARGIN_RIGHT] = anchors[MARGIN_RIGHT];
