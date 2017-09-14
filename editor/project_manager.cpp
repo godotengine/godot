@@ -59,11 +59,13 @@ public:
 	enum Mode {
 		MODE_NEW,
 		MODE_IMPORT,
-		MODE_INSTALL
+		MODE_INSTALL,
+		MODE_RENAME
 	};
 
 private:
 	Mode mode;
+	Button *browse;
 	Label *pp, *pn;
 	Label *error;
 	LineEdit *project_path;
@@ -91,20 +93,20 @@ private:
 			return "";
 		}
 
-		if (mode != MODE_IMPORT) {
+		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
 
-			if (d->file_exists("project.godot")) {
+			if (valid_path != "" && !d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, project.godot must not exist."));
+				error->set_text(TTR("Invalid project path, project.godot must exist."));
 				memdelete(d);
 				return "";
 			}
 
 		} else {
 
-			if (valid_path != "" && !d->file_exists("project.godot")) {
+			if (d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, project.godot must exist."));
+				error->set_text(TTR("Invalid project path, project.godot must not exist."));
 				memdelete(d);
 				return "";
 			}
@@ -172,6 +174,17 @@ private:
 
 	void _text_changed(const String &p_text) {
 		_test_path();
+		error->set_text("");
+		if (p_text == "") {
+
+			error->set_text(TTR("Name cannot be empty"));
+			get_ok()->set_disabled(true);
+			return;
+		}
+		get_ok()->set_disabled(false);
+	}
+
+	void _name_changed(const String &p_text) {
 	}
 
 	void ok_pressed() {
@@ -182,138 +195,165 @@ private:
 			return;
 		}
 
-		if (mode == MODE_IMPORT) {
-			// nothing to do
-		} else {
-			if (mode == MODE_NEW) {
+		if (mode == MODE_RENAME) {
 
-				ProjectSettings::CustomMap initial_settings;
-				initial_settings["application/config/name"] = project_name->get_text();
-				initial_settings["application/config/icon"] = "res://icon.png";
-				initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
+			String dir = _test_path();
+			if (dir == "") {
+				error->set_text(TTR("Invalid project path (changed anything?)."));
+				return;
+			}
 
-				if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("/project.godot"), initial_settings, Vector<String>(), false)) {
-					error->set_text(TTR("Couldn't create project.godot in project path."));
-				} else {
-					ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+			ProjectSettings *current = memnew(ProjectSettings);
+			current->add_singleton(ProjectSettings::Singleton("Current"));
 
-					FileAccess *f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
-					if (!f) {
-						error->set_text(TTR("Couldn't create project.godot in project path."));
-					} else {
-						f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
-						f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
-						f->store_line("[resource]");
-						f->store_line("background_mode = 2");
-						f->store_line("background_sky = SubResource( 1 )");
-						memdelete(f);
-					}
-				}
+			if (current->setup(dir, "")) {
+				error->set_text(TTR("Couldn't get project.godot in project path."));
+			} else {
+				ProjectSettings::CustomMap edited_settings;
+				edited_settings["application/config/name"] = project_name->get_text();
 
-			} else if (mode == MODE_INSTALL) {
-
-				FileAccess *src_f = NULL;
-				zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
-
-				unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
-				if (!pkg) {
-
-					dialog_error->set_text(TTR("Error opening package file, not in zip format."));
-					return;
-				}
-
-				int ret = unzGoToFirstFile(pkg);
-
-				Vector<String> failed_files;
-
-				int idx = 0;
-				while (ret == UNZ_OK) {
-
-					//get filename
-					unz_file_info info;
-					char fname[16384];
-					ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
-
-					String path = fname;
-
-					int depth = 1; //stuff from github comes with tag
-					bool skip = false;
-					while (depth > 0) {
-						int pp = path.find("/");
-						if (pp == -1) {
-							skip = true;
-							break;
-						}
-						path = path.substr(pp + 1, path.length());
-						depth--;
-					}
-
-					if (skip || path == String()) {
-						//
-					} else if (path.ends_with("/")) { // a dir
-
-						path = path.substr(0, path.length() - 1);
-
-						DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-						da->make_dir(dir.plus_file(path));
-						memdelete(da);
-
-					} else {
-
-						Vector<uint8_t> data;
-						data.resize(info.uncompressed_size);
-
-						//read
-						unzOpenCurrentFile(pkg);
-						unzReadCurrentFile(pkg, data.ptr(), data.size());
-						unzCloseCurrentFile(pkg);
-
-						FileAccess *f = FileAccess::open(dir.plus_file(path), FileAccess::WRITE);
-
-						if (f) {
-							f->store_buffer(data.ptr(), data.size());
-							memdelete(f);
-						} else {
-							failed_files.push_back(path);
-						}
-					}
-
-					idx++;
-					ret = unzGoToNextFile(pkg);
-				}
-
-				unzClose(pkg);
-
-				if (failed_files.size()) {
-					String msg = TTR("The following files failed extraction from package:") + "\n\n";
-					for (int i = 0; i < failed_files.size(); i++) {
-
-						if (i > 15) {
-							msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
-							break;
-						}
-						msg += failed_files[i] + "\n";
-					}
-
-					dialog_error->set_text(msg);
-					dialog_error->popup_centered_minsize();
-
-				} else {
-					dialog_error->set_text(TTR("Package Installed Successfully!"));
-					dialog_error->popup_centered_minsize();
+				if (current->save_custom(dir.plus_file("/project.godot"), edited_settings, Vector<String>(), true)) {
+					error->set_text(TTR("Couldn't edit project.godot in project path."));
 				}
 			}
+
+			hide();
+			emit_signal("project_renamed");
+		} else {
+
+			if (mode == MODE_IMPORT) {
+				// nothing to do
+			} else {
+				if (mode == MODE_NEW) {
+
+					ProjectSettings::CustomMap initial_settings;
+					initial_settings["application/config/name"] = project_name->get_text();
+					initial_settings["application/config/icon"] = "res://icon.png";
+					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
+
+					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("/project.godot"), initial_settings, Vector<String>(), false)) {
+						error->set_text(TTR("Couldn't create project.godot in project path."));
+					} else {
+						ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+
+						FileAccess *f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
+						if (!f) {
+							error->set_text(TTR("Couldn't create project.godot in project path."));
+						} else {
+							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+							f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
+							f->store_line("[resource]");
+							f->store_line("background_mode = 2");
+							f->store_line("background_sky = SubResource( 1 )");
+							memdelete(f);
+						}
+					}
+
+				} else if (mode == MODE_INSTALL) {
+
+					FileAccess *src_f = NULL;
+					zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+					if (!pkg) {
+
+						dialog_error->set_text(TTR("Error opening package file, not in zip format."));
+						return;
+					}
+
+					int ret = unzGoToFirstFile(pkg);
+
+					Vector<String> failed_files;
+
+					int idx = 0;
+					while (ret == UNZ_OK) {
+
+						//get filename
+						unz_file_info info;
+						char fname[16384];
+						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+
+						String path = fname;
+
+						int depth = 1; //stuff from github comes with tag
+						bool skip = false;
+						while (depth > 0) {
+							int pp = path.find("/");
+							if (pp == -1) {
+								skip = true;
+								break;
+							}
+							path = path.substr(pp + 1, path.length());
+							depth--;
+						}
+
+						if (skip || path == String()) {
+							//
+						} else if (path.ends_with("/")) { // a dir
+
+							path = path.substr(0, path.length() - 1);
+
+							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							da->make_dir(dir.plus_file(path));
+							memdelete(da);
+
+						} else {
+
+							Vector<uint8_t> data;
+							data.resize(info.uncompressed_size);
+
+							//read
+							unzOpenCurrentFile(pkg);
+							unzReadCurrentFile(pkg, data.ptr(), data.size());
+							unzCloseCurrentFile(pkg);
+
+							FileAccess *f = FileAccess::open(dir.plus_file(path), FileAccess::WRITE);
+
+							if (f) {
+								f->store_buffer(data.ptr(), data.size());
+								memdelete(f);
+							} else {
+								failed_files.push_back(path);
+							}
+						}
+
+						idx++;
+						ret = unzGoToNextFile(pkg);
+					}
+
+					unzClose(pkg);
+
+					if (failed_files.size()) {
+						String msg = TTR("The following files failed extraction from package:") + "\n\n";
+						for (int i = 0; i < failed_files.size(); i++) {
+
+							if (i > 15) {
+								msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
+								break;
+							}
+							msg += failed_files[i] + "\n";
+						}
+
+						dialog_error->set_text(msg);
+						dialog_error->popup_centered_minsize();
+
+					} else {
+						dialog_error->set_text(TTR("Package Installed Successfully!"));
+						dialog_error->popup_centered_minsize();
+					}
+				}
+			}
+
+			dir = dir.replace("\\", "/");
+			if (dir.ends_with("/"))
+				dir = dir.substr(0, dir.length() - 1);
+			String proj = dir.replace("/", "::");
+			EditorSettings::get_singleton()->set("projects/" + proj, dir);
+			EditorSettings::get_singleton()->save();
+
+			hide();
+			emit_signal("project_created", dir);
 		}
-
-		dir = dir.replace("\\", "/");
-		if (dir.ends_with("/"))
-			dir = dir.substr(0, dir.length() - 1);
-		String proj = dir.replace("/", "::");
-		EditorSettings::get_singleton()->set("projects/" + proj, dir);
-		EditorSettings::get_singleton()->save();
-
-		hide();
-		emit_signal("project_created", dir);
 	}
 
 protected:
@@ -325,6 +365,7 @@ protected:
 		ClassDB::bind_method("_path_selected", &NewProjectDialog::_path_selected);
 		ClassDB::bind_method("_file_selected", &NewProjectDialog::_file_selected);
 		ADD_SIGNAL(MethodInfo("project_created"));
+		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
 
 public:
@@ -340,44 +381,85 @@ public:
 		mode = p_mode;
 	}
 
+	void set_project_path(const String &p_path) {
+		project_path->set_text(p_path);
+	}
+
 	void show_dialog() {
 
-		project_path->clear();
-		project_name->clear();
+		if (mode == MODE_RENAME) {
 
-		if (mode == MODE_IMPORT) {
-			set_title(TTR("Import Existing Project"));
-			get_ok()->set_text(TTR("Import"));
-			pp->set_text(TTR("Project Path (Must Exist):"));
-			pn->set_text(TTR("Project Name:"));
-			pn->hide();
-			project_name->hide();
+			project_path->set_editable(false);
+			browse->set_disabled(true);
 
-			popup_centered(Size2(500, 125) * EDSCALE);
-
-		} else if (mode == MODE_NEW) {
-
-			set_title(TTR("Create New Project"));
-			get_ok()->set_text(TTR("Create"));
+			set_title(TTR("Rename Project"));
+			get_ok()->set_text(TTR("Rename"));
 			pp->set_text(TTR("Project Path:"));
 			pn->set_text(TTR("Project Name:"));
 			pn->show();
 			project_name->show();
 
-			popup_centered(Size2(500, 145) * EDSCALE);
-		} else if (mode == MODE_INSTALL) {
+			String dir = _test_path();
+			if (dir == "") {
+				error->set_text(TTR("Invalid project path (changed anything?)."));
+				return;
+			}
+			ProjectSettings *current = memnew(ProjectSettings);
+			current->add_singleton(ProjectSettings::Singleton("Current"));
 
-			set_title(TTR("Install Project:") + " " + zip_title);
-			get_ok()->set_text(TTR("Install"));
-			pp->set_text(TTR("Project Path:"));
-			pn->hide();
-			project_name->hide();
+			if (current->setup(dir, "")) {
+				error->set_text(TTR("Couldn't get project.godot in project path."));
+			} else {
+				if (current->has("application/config/name")) {
+					String appname = current->get("application/config/name");
+					project_name->set_text(appname);
+				}
+			}
 
 			popup_centered(Size2(500, 125) * EDSCALE);
-		}
-		project_path->grab_focus();
+			project_name->grab_focus();
 
-		_test_path();
+		} else {
+
+			project_path->clear();
+			project_name->clear();
+			project_path->set_editable(true);
+			browse->set_disabled(false);
+
+			if (mode == MODE_IMPORT) {
+				set_title(TTR("Import Existing Project"));
+				get_ok()->set_text(TTR("Import"));
+				pp->set_text(TTR("Project Path (Must Exist):"));
+				pn->set_text(TTR("Project Name:"));
+				pn->hide();
+				project_name->hide();
+
+				popup_centered(Size2(500, 125) * EDSCALE);
+
+			} else if (mode == MODE_NEW) {
+
+				set_title(TTR("Create New Project"));
+				get_ok()->set_text(TTR("Create"));
+				pp->set_text(TTR("Project Path:"));
+				pn->set_text(TTR("Project Name:"));
+				pn->show();
+				project_name->show();
+
+				popup_centered(Size2(500, 145) * EDSCALE);
+			} else if (mode == MODE_INSTALL) {
+
+				set_title(TTR("Install Project:") + " " + zip_title);
+				get_ok()->set_text(TTR("Install"));
+				pp->set_text(TTR("Project Path:"));
+				pn->hide();
+				project_name->hide();
+
+				popup_centered(Size2(500, 125) * EDSCALE);
+			}
+			project_path->grab_focus();
+
+			_test_path();
+		}
 	}
 
 	NewProjectDialog() {
@@ -399,7 +481,7 @@ public:
 		pphb->add_child(project_path);
 		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
 
-		Button *browse = memnew(Button);
+		browse = memnew(Button);
 		pphb->add_child(browse);
 		browse->set_text(TTR("Browse"));
 		browse->connect("pressed", this, "_browse_path");
@@ -495,6 +577,7 @@ void ProjectManager::_update_project_buttons() {
 
 	erase_btn->set_disabled(selected_list.size() < 1);
 	open_btn->set_disabled(selected_list.size() < 1);
+	rename_btn->set_disabled(selected_list.size() < 1);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -889,6 +972,10 @@ void ProjectManager::_load_recent_projects() {
 	tabs->set_current_tab(0);
 }
 
+void ProjectManager::_on_project_renamed() {
+	_load_recent_projects();
+}
+
 void ProjectManager::_on_project_created(const String &dir) {
 	bool has_already = false;
 	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
@@ -1091,6 +1178,21 @@ void ProjectManager::_import_project() {
 	npdialog->show_dialog();
 }
 
+void ProjectManager::_rename_project() {
+
+	if (selected_list.size() == 0) {
+		return;
+	}
+
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/" + selected);
+		npdialog->set_project_path(path);
+		npdialog->set_mode(NewProjectDialog::MODE_RENAME);
+		npdialog->show_dialog();
+	}
+}
+
 void ProjectManager::_erase_project_confirm() {
 
 	if (selected_list.size() == 0) {
@@ -1185,10 +1287,12 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_scan_begin", &ProjectManager::_scan_begin);
 	ClassDB::bind_method("_import_project", &ProjectManager::_import_project);
 	ClassDB::bind_method("_new_project", &ProjectManager::_new_project);
+	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
 	ClassDB::bind_method("_load_recent_projects", &ProjectManager::_load_recent_projects);
+	ClassDB::bind_method("_on_project_renamed", &ProjectManager::_on_project_renamed);
 	ClassDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
 	ClassDB::bind_method("_update_scroll_pos", &ProjectManager::_update_scroll_pos);
 	ClassDB::bind_method("_panel_draw", &ProjectManager::_panel_draw);
@@ -1349,6 +1453,12 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(import);
 	import->connect("pressed", this, "_import_project");
 
+	Button *rename = memnew(Button);
+	rename->set_text(TTR("Rename"));
+	tree_vb->add_child(rename);
+	rename->connect("pressed", this, "_rename_project");
+	rename_btn = rename;
+
 	Button *erase = memnew(Button);
 	erase->set_text(TTR("Remove"));
 	tree_vb->add_child(erase);
@@ -1404,6 +1514,7 @@ ProjectManager::ProjectManager() {
 	npdialog = memnew(NewProjectDialog);
 	gui_base->add_child(npdialog);
 
+	npdialog->connect("project_renamed", this, "_on_project_renamed");
 	npdialog->connect("project_created", this, "_on_project_created");
 	_load_recent_projects();
 

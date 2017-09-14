@@ -45,6 +45,7 @@ class ProjectManager : public Control {
 
 	Button *erase_btn;
 	Button *open_btn;
+	Button *rename_btn;
 	Button *run_btn;
 
 	FileDialog *scan_dir;
@@ -79,6 +80,7 @@ class ProjectManager : public Control {
 	void _open_project_confirm();
 	void _import_project();
 	void _new_project();
+	void _rename_project();
 	void _erase_project();
 	void _erase_project_confirm();
 	void _update_project_buttons();
@@ -87,6 +89,7 @@ class ProjectManager : public Control {
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
+	void _on_project_renamed();
 	void _update_scroll_pos(const String &dir);
 	void _scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects);
 
