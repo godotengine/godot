@@ -1,4 +1,4 @@
-[![GODOT](/logo.png)](https://godotengine.org)
+﻿[![GODOT](/logo.png)](https://godotengine.org)
 
 ## Godot Engine
 
@@ -13,7 +13,7 @@ wheel. Games can be exported in one click to a number of platforms, including
 the major desktop platforms (Linux, Mac OSX, Windows) as well as mobile
 (Android, iOS) and web-based (HTML5) platforms.
 
-#### Free, open source and community-driven
+#### 开源、免费、以及社区维护
 
 Godot is completely free and open source under the very permissive MIT license.
 No strings attached, no royalties, nothing. The users' games are theirs, down
