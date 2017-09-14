@@ -112,41 +112,49 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 
 #ifdef SVG_ENABLED
 	Dictionary dark_icon_color_dictionary;
-	//convert color:                              FROM       TO
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#4f4f4f"); // common icon color
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#000000"); // white
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#000000"); // script darker color
+	if (!dark_theme) {
+		//convert color:                              FROM       TO
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#4f4f4f"); // common icon color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#000000"); // white
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#000000"); // script darker color
 
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#cea4f1", "#bb6dff"); // animation
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fc9c9c", "#ff5f5f"); // spatial
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#6d90ff"); // 2d
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#0843ff"); // 2d dark
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#29d739"); // control
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#cea4f1", "#bb6dff"); // animation
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fc9c9c", "#ff5f5f"); // spatial
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#6d90ff"); // 2d
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#0843ff"); // 2d dark
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#29d739"); // control
 
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff3333"); // error
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00db50"); // success
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffd684", "#ffad07"); // warning
+		// rainbow
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffeb70", "#ffe337"); // yellow
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9dff70", "#74ff34"); // green
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70ffb9", "#2cff98"); // aqua
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70deff", "#22ccff"); // blue
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9f70ff", "#702aff"); // purple
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff70ac", "#ff2781"); // pink
 
-	// rainbow
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffeb70", "#ffe337"); // yellow
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9dff70", "#74ff34"); // green
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70ffb9", "#2cff98"); // aqua
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#70deff", "#22ccff"); // blue
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#9f70ff", "#702aff"); // purple
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff70ac", "#ff2781"); // pink
+		// audio gradient
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff4040"); // red
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e1dc7a", "#d6cf4b"); // yellow
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00f010"); // green
 
-	// audio gradient
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff4040"); // red
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e1dc7a", "#d6cf4b"); // yellow
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00f010"); // green
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffd684", "#fea900"); // mesh (orange)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#40a2ff", "#68b6ff"); // shape (blue)
 
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffd684", "#fea900"); // mesh (orange)
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#40a2ff", "#68b6ff"); // shape (blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff8484", "#ff3333"); // remove (red)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84ffb1", "#00db50"); // add (green)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84c2ff", "#5caeff"); // selection (blue)
 
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84c2ff", "#5caeff"); // selection (blue)
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea686c", "#e3383d"); // key xform (red)
+	}
 
-	ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea686c", "#e3383d"); // key xform (red)
+	// these ones should be converted even if we are using a dark theme
+	const Color error_color = p_theme->get_color("error_color", "Editor");
+	const Color success_color = p_theme->get_color("success_color", "Editor");
+	const Color warning_color = p_theme->get_color("warning_color", "Editor");
+	dark_icon_color_dictionary[Color::html("#ff5d5d")] = error_color;
+	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
+	dark_icon_color_dictionary[Color::html("#ffdd65")] = warning_color;
 
 	List<String> exceptions;
 	exceptions.push_back("EditorPivot");
@@ -160,14 +168,14 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 
 	clock_t begin_time = clock();
 
-	ImageLoaderSVG::set_convert_colors(dark_theme ? NULL : &dark_icon_color_dictionary);
+	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
 
 	// generate icons
 	if (!only_thumbs)
 		for (int i = 0; i < editor_icons_count; i++) {
 			List<String>::Element *is_exception = exceptions.find(editor_icons_names[i]);
 			if (is_exception) exceptions.erase(is_exception);
-			Ref<ImageTexture> icon = editor_generate_icon(i, !dark_theme && !is_exception);
+			Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
 
