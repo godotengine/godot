@@ -150,7 +150,7 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	void set_shadow_depth_range(ShadowDepthRange p_mode);
+	void set_shadow_depth_range(ShadowDepthRange p_range);
 	ShadowDepthRange get_shadow_depth_range() const;
 
 	void set_blend_splits(bool p_enable);

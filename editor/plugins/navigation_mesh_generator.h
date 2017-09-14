@@ -56,7 +56,7 @@ protected:
 			rcPolyMeshDetail *detail_mesh, Vector<float> &verticies, Vector<int> &indices);
 
 public:
-	static void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_base);
+	static void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node);
 	static void clear(Ref<NavigationMesh> p_nav_mesh);
 };
 

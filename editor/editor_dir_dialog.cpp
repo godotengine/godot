@@ -64,7 +64,7 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 	}
 }
 
-void EditorDirDialog::reload(const String &p_with_path) {
+void EditorDirDialog::reload(const String &p_path) {
 
 	if (!is_visible_in_tree()) {
 		must_reload = true;
@@ -73,7 +73,7 @@ void EditorDirDialog::reload(const String &p_with_path) {
 
 	tree->clear();
 	TreeItem *root = tree->create_item();
-	_update_dir(root, EditorFileSystem::get_singleton()->get_filesystem(), p_with_path);
+	_update_dir(root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
 	_item_collapsed(root);
 	must_reload = false;
 }

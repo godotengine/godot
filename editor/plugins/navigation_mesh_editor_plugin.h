@@ -56,7 +56,7 @@ class NavigationMeshEditor : public Control {
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-	void _notification(int p_what);
+	void _notification(int p_option);
 
 public:
 	void edit(NavigationMeshInstance *p_nav_mesh_instance);
@@ -74,8 +74,8 @@ class NavigationMeshEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "NavigationMesh"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	NavigationMeshEditorPlugin(EditorNode *p_node);
