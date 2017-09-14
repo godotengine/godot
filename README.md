@@ -35,7 +35,7 @@ Official binaries for the Godot editor and the export templates can be found
 
 #### Compiling from source
 
-[See the official docs](http://docs.godotengine.org/en/latest/development/compiling/)
+[See the official docs](http://docs.godotengine.org/en/latest/reference/_compiling.html)
 for compilation instructions for every supported platform.
 
 ### Community
@@ -52,7 +52,7 @@ on Freenode.
 The official documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
-The [class reference](http://docs.godotengine.org/en/latest/classes/)
+The [class reference](http://docs.godotengine.org/en/latest/classes/_classes.html)
 is also accessible from within the engine.
 
 The official demos are maintained in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
@@ -63,4 +63,4 @@ such as text and video tutorials, demos, etc. Consult the [community channels](h
 for more info.
 
 [![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
+[![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)

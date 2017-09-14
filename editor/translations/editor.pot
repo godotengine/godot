@@ -6424,6 +6424,10 @@ msgstr ""
 msgid "Invalid unique name."
 msgstr ""
 
+#: editor/property_editor.cpp
+msgid "Make Unique"
+msgstr ""
+
 #: platform/winrt/export/export.cpp
 msgid "Invalid product GUID."
 msgstr ""
