@@ -2002,7 +2002,7 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc += E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "/constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "constant", PROPERTY_HINT_ENUM, cc), "set_singleton", "get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
