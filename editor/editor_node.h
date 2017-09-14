@@ -262,6 +262,9 @@ private:
 	Button *property_forward;
 	SceneTreeDock *scene_tree_dock;
 	PropertyEditor *property_editor;
+	Button *property_editable_warning;
+	AcceptDialog *property_editable_warning_dialog;
+	void _property_editable_warning_pressed();
 	NodeDock *node_dock;
 	ImportDock *import_dock;
 	VBoxContainer *prop_editor_vb;
@@ -605,6 +608,7 @@ private:
 	void _check_gui_base_size();
 
 	void _license_tree_selected();
+
 
 protected:
 	void _notification(int p_what);
