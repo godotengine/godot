@@ -73,13 +73,13 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->add_fallback(FontFallback);
 
 // the custom spacings might only work with Noto Sans
-#define MAKE_DEFAULT_FONT(m_name, m_size)                 \
-	Ref<DynamicFont> m_name;                              \
-	m_name.instance();                                    \
-	m_name->set_size(m_size);                             \
-	m_name->set_font_data(DefaultFont);                   \
-	m_name->set_spacing(DynamicFont::SPACING_TOP, -1);    \
-	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -1); \
+#define MAKE_DEFAULT_FONT(m_name, m_size)                       \
+	Ref<DynamicFont> m_name;                                    \
+	m_name.instance();                                          \
+	m_name->set_size(m_size);                                   \
+	m_name->set_font_data(DefaultFont);                         \
+	m_name->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);    \
+	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE); \
 	MAKE_FALLBACKS(m_name);
 
 void editor_register_fonts(Ref<Theme> p_theme) {
@@ -119,7 +119,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
-	dfmono->set_font_ptr(_font_source_code_pro, _font_source_code_pro_size);
+	dfmono->set_font_ptr(_font_mononoki_Regular, _font_mononoki_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
 	MAKE_DEFAULT_FONT(df, int(EditorSettings::get_singleton()->get("interface/font_size")) * EDSCALE);
@@ -147,7 +147,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFont> df_doc_code;
 	df_doc_code.instance();
-	df_doc_code->set_size(int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
+	df_doc_code->set_size(int(EDITOR_DEF("text_editor/help/help_source_font_size", 18)) * EDSCALE);
+	df_doc_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
+	df_doc_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
 	df_doc_code->set_font_data(dfmono);
 	MAKE_FALLBACKS(df_doc_code);
 

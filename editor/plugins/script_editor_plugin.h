@@ -187,6 +187,8 @@ class ScriptEditor : public PanelContainer {
 	HSplitContainer *script_split;
 	ItemList *members_overview;
 	bool members_overview_enabled;
+	ItemList *help_overview;
+	bool help_overview_enabled;
 	VSplitContainer *list_split;
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
@@ -293,6 +295,10 @@ class ScriptEditor : public PanelContainer {
 
 	void _members_overview_selected(int p_idx);
 	void _script_selected(int p_idx);
+
+	void _update_help_overview_visibility();
+	void _update_help_overview();
+	void _help_overview_selected(int p_idx);
 
 	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
 

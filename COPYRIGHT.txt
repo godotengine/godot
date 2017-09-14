@@ -150,9 +150,9 @@ Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/source_code_pro.otf
-Comment: Source Code Pro font
-Copyright: 2010, 2012, Adobe Systems Incorporated
+Files: ./thirdparty/fonts/mononoki_Regular.ttf
+Comment: Mononoki font
+Copyright: 2013, Matthias Tellen
 License: OFL-1.1
 
 Files: ./thirdparty/freetype/

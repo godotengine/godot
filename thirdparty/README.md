@@ -59,10 +59,10 @@ Files extracted from upstream source:
 
 Use UI font if exists, because it has tight vertial metrix and good for UI.
 
-### Adobe Source Code Pro Regular
+### Mononoki Regular
 
-- Upstream: https://github.com/adobe-fonts/source-code-pro
-- Version: 2.030
+- Upstream: https://github.com/madmalik/mononoki
+- Version: 1.2
 - License: OFL-1.1
 
 ### DroidSans*.ttf
