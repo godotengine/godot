@@ -84,5 +84,9 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="BUILD_SOLIDS" value="0">
+		</constant>
+		<constant name="BUILD_SEGMENTS" value="1">
+		</constant>
 	</constants>
 </class>

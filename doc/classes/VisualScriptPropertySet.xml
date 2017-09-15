@@ -149,5 +149,29 @@
 		</constant>
 		<constant name="CALL_MODE_INSTANCE" value="2">
 		</constant>
+		<constant name="CALL_MODE_BASIC_TYPE" value="3">
+		</constant>
+		<constant name="ASSIGN_OP_NONE" value="0">
+		</constant>
+		<constant name="ASSIGN_OP_ADD" value="1">
+		</constant>
+		<constant name="ASSIGN_OP_SUB" value="2">
+		</constant>
+		<constant name="ASSIGN_OP_MUL" value="3">
+		</constant>
+		<constant name="ASSIGN_OP_DIV" value="4">
+		</constant>
+		<constant name="ASSIGN_OP_MOD" value="5">
+		</constant>
+		<constant name="ASSIGN_OP_SHIFT_LEFT" value="6">
+		</constant>
+		<constant name="ASSIGN_OP_SHIFT_RIGHT" value="7">
+		</constant>
+		<constant name="ASSIGN_OP_BIT_AND" value="8">
+		</constant>
+		<constant name="ASSIGN_OP_BIT_OR" value="9">
+		</constant>
+		<constant name="ASSIGN_OP_BIT_XOR" value="10">
+		</constant>
 	</constants>
 </class>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlugin" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_export_begin" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="features" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_export_file" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="features" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="file" type="PoolByteArray">
+			</argument>
+			<argument index="2" name="remap" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_shared_object">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="skip">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

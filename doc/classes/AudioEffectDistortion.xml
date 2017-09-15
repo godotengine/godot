@@ -93,5 +93,15 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MODE_CLIP" value="0">
+		</constant>
+		<constant name="MODE_ATAN" value="1">
+		</constant>
+		<constant name="MODE_LOFI" value="2">
+		</constant>
+		<constant name="MODE_OVERDRIVE" value="3">
+		</constant>
+		<constant name="MODE_WAVESHAPE" value="4">
+		</constant>
 	</constants>
 </class>

@@ -545,5 +545,11 @@
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="5">
 		</constant>
+		<constant name="ALIGN_LEFT" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
 	</constants>
 </class>

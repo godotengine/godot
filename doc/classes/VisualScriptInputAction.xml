@@ -45,5 +45,13 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MODE_PRESSED" value="0">
+		</constant>
+		<constant name="MODE_RELEASED" value="1">
+		</constant>
+		<constant name="MODE_JUST_PRESSED" value="2">
+		</constant>
+		<constant name="MODE_JUST_RELEASED" value="3">
+		</constant>
 	</constants>
 </class>

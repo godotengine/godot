@@ -395,5 +395,17 @@
 		<constant name="MODE_MASK" value="3">
 			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
+		<constant name="SHADOW_FILTER_NONE" value="0">
+		</constant>
+		<constant name="SHADOW_FILTER_PCF3" value="1">
+		</constant>
+		<constant name="SHADOW_FILTER_PCF5" value="2">
+		</constant>
+		<constant name="SHADOW_FILTER_PCF7" value="3">
+		</constant>
+		<constant name="SHADOW_FILTER_PCF9" value="4">
+		</constant>
+		<constant name="SHADOW_FILTER_PCF13" value="5">
+		</constant>
 	</constants>
 </class>

@@ -29,5 +29,121 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MATH_SIN" value="0">
+		</constant>
+		<constant name="MATH_COS" value="1">
+		</constant>
+		<constant name="MATH_TAN" value="2">
+		</constant>
+		<constant name="MATH_SINH" value="3">
+		</constant>
+		<constant name="MATH_COSH" value="4">
+		</constant>
+		<constant name="MATH_TANH" value="5">
+		</constant>
+		<constant name="MATH_ASIN" value="6">
+		</constant>
+		<constant name="MATH_ACOS" value="7">
+		</constant>
+		<constant name="MATH_ATAN" value="8">
+		</constant>
+		<constant name="MATH_ATAN2" value="9">
+		</constant>
+		<constant name="MATH_SQRT" value="10">
+		</constant>
+		<constant name="MATH_FMOD" value="11">
+		</constant>
+		<constant name="MATH_FPOSMOD" value="12">
+		</constant>
+		<constant name="MATH_FLOOR" value="13">
+		</constant>
+		<constant name="MATH_CEIL" value="14">
+		</constant>
+		<constant name="MATH_ROUND" value="15">
+		</constant>
+		<constant name="MATH_ABS" value="16">
+		</constant>
+		<constant name="MATH_SIGN" value="17">
+		</constant>
+		<constant name="MATH_POW" value="18">
+		</constant>
+		<constant name="MATH_LOG" value="19">
+		</constant>
+		<constant name="MATH_EXP" value="20">
+		</constant>
+		<constant name="MATH_ISNAN" value="21">
+		</constant>
+		<constant name="MATH_ISINF" value="22">
+		</constant>
+		<constant name="MATH_EASE" value="23">
+		</constant>
+		<constant name="MATH_DECIMALS" value="24">
+		</constant>
+		<constant name="MATH_STEPIFY" value="25">
+		</constant>
+		<constant name="MATH_LERP" value="26">
+		</constant>
+		<constant name="MATH_DECTIME" value="27">
+		</constant>
+		<constant name="MATH_RANDOMIZE" value="28">
+		</constant>
+		<constant name="MATH_RAND" value="29">
+		</constant>
+		<constant name="MATH_RANDF" value="30">
+		</constant>
+		<constant name="MATH_RANDOM" value="31">
+		</constant>
+		<constant name="MATH_SEED" value="32">
+		</constant>
+		<constant name="MATH_RANDSEED" value="33">
+		</constant>
+		<constant name="MATH_DEG2RAD" value="34">
+		</constant>
+		<constant name="MATH_RAD2DEG" value="35">
+		</constant>
+		<constant name="MATH_LINEAR2DB" value="36">
+		</constant>
+		<constant name="MATH_DB2LINEAR" value="37">
+		</constant>
+		<constant name="LOGIC_MAX" value="38">
+		</constant>
+		<constant name="LOGIC_MIN" value="39">
+		</constant>
+		<constant name="LOGIC_CLAMP" value="40">
+		</constant>
+		<constant name="LOGIC_NEAREST_PO2" value="41">
+		</constant>
+		<constant name="OBJ_WEAKREF" value="42">
+		</constant>
+		<constant name="FUNC_FUNCREF" value="43">
+		</constant>
+		<constant name="TYPE_CONVERT" value="44">
+		</constant>
+		<constant name="TYPE_OF" value="45">
+		</constant>
+		<constant name="TYPE_EXISTS" value="46">
+		</constant>
+		<constant name="TEXT_CHAR" value="47">
+		</constant>
+		<constant name="TEXT_STR" value="48">
+		</constant>
+		<constant name="TEXT_PRINT" value="49">
+		</constant>
+		<constant name="TEXT_PRINTERR" value="50">
+		</constant>
+		<constant name="TEXT_PRINTRAW" value="51">
+		</constant>
+		<constant name="VAR_TO_STR" value="52">
+		</constant>
+		<constant name="STR_TO_VAR" value="53">
+		</constant>
+		<constant name="VAR_TO_BYTES" value="54">
+		</constant>
+		<constant name="BYTES_TO_VAR" value="55">
+		</constant>
+		<constant name="COLORN" value="56">
+		</constant>
+		<constant name="FUNC_MAX" value="57">
+		</constant>
 	</constants>
 </class>

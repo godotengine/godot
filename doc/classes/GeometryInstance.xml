@@ -149,15 +149,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FLAG_MAX" value="1" enum="">
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="">
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="">
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="">
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="">
+		<constant name="FLAG_USE_BAKED_LIGHT" value="0">
+		</constant>
+		<constant name="FLAG_MAX" value="1">
 		</constant>
 	</constants>
 </class>

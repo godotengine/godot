@@ -650,5 +650,19 @@
 		</constant>
 		<constant name="MSAA_16X" value="4">
 		</constant>
+		<constant name="USAGE_2D" value="0">
+		</constant>
+		<constant name="USAGE_2D_NO_SAMPLING" value="1">
+		</constant>
+		<constant name="USAGE_3D" value="2">
+		</constant>
+		<constant name="USAGE_3D_NO_EFFECTS" value="3">
+		</constant>
+		<constant name="CLEAR_MODE_ALWAYS" value="0">
+		</constant>
+		<constant name="CLEAR_MODE_NEVER" value="1">
+		</constant>
+		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2">
+		</constant>
 	</constants>
 </class>

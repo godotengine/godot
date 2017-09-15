@@ -183,5 +183,17 @@
 		</constant>
 		<constant name="CALL_MODE_BASIC_TYPE" value="3">
 		</constant>
+		<constant name="CALL_MODE_SINGLETON" value="4">
+		</constant>
+		<constant name="RPC_DISABLED" value="0">
+		</constant>
+		<constant name="RPC_RELIABLE" value="1">
+		</constant>
+		<constant name="RPC_UNRELIABLE" value="2">
+		</constant>
+		<constant name="RPC_RELIABLE_TO_ID" value="3">
+		</constant>
+		<constant name="RPC_UNRELIABLE_TO_ID" value="4">
+		</constant>
 	</constants>
 </class>

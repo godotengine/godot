@@ -66,6 +66,14 @@
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
+		<method name="add_export_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="exporter" type="EditorExportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_import_plugin">
 			<return type="void">
 			</return>
@@ -264,6 +272,14 @@
 			</argument>
 			<description>
 				Remove a custom type added by [method EditorPlugin.add_custom_type]
+			</description>
+		</method>
+		<method name="remove_export_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="exporter" type="EditorExportPlugin">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="remove_import_plugin">

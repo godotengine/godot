@@ -493,5 +493,15 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0">
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1">
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3">
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+		</constant>
 	</constants>
 </class>

@@ -135,5 +135,11 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="MIX_TARGET_STEREO" value="0">
+		</constant>
+		<constant name="MIX_TARGET_SURROUND" value="1">
+		</constant>
+		<constant name="MIX_TARGET_CENTER" value="2">
+		</constant>
 	</constants>
 </class>

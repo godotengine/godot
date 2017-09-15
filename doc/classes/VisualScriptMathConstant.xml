@@ -29,5 +29,23 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MATH_CONSTANT_ONE" value="0">
+		</constant>
+		<constant name="MATH_CONSTANT_PI" value="1">
+		</constant>
+		<constant name="MATH_CONSTANT_2PI" value="2">
+		</constant>
+		<constant name="MATH_CONSTANT_HALF_PI" value="3">
+		</constant>
+		<constant name="MATH_CONSTANT_E" value="4">
+		</constant>
+		<constant name="MATH_CONSTANT_SQRT2" value="5">
+		</constant>
+		<constant name="MATH_CONSTANT_INF" value="6">
+		</constant>
+		<constant name="MATH_CONSTANT_NAN" value="7">
+		</constant>
+		<constant name="MATH_CONSTANT_MAX" value="8">
+		</constant>
 	</constants>
 </class>

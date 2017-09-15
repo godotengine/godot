@@ -173,5 +173,9 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="VISIBILITY_ALWAYS" value="0">
+		</constant>
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1">
+		</constant>
 	</constants>
 </class>

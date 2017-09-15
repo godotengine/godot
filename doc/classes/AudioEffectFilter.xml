@@ -77,5 +77,13 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="FILTER_6DB" value="0">
+		</constant>
+		<constant name="FILTER_12DB" value="1">
+		</constant>
+		<constant name="FILTER_18DB" value="2">
+		</constant>
+		<constant name="FILTER_24DB" value="3">
+		</constant>
 	</constants>
 </class>

@@ -71,5 +71,73 @@
 		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
 			Render array as triangle fans.
 		</constant>
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0">
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1">
+		</constant>
+		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="64">
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		</constant>
+		<constant name="ARRAY_COMPRESS_BASE" value="9">
+		</constant>
+		<constant name="ARRAY_COMPRESS_VERTEX" value="512">
+		</constant>
+		<constant name="ARRAY_COMPRESS_NORMAL" value="1024">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TANGENT" value="2048">
+		</constant>
+		<constant name="ARRAY_COMPRESS_COLOR" value="4096">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384">
+		</constant>
+		<constant name="ARRAY_COMPRESS_BONES" value="32768">
+		</constant>
+		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536">
+		</constant>
+		<constant name="ARRAY_COMPRESS_INDEX" value="131072">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288">
+		</constant>
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792">
+		</constant>
+		<constant name="ARRAY_VERTEX" value="0">
+		</constant>
+		<constant name="ARRAY_NORMAL" value="1">
+		</constant>
+		<constant name="ARRAY_TANGENT" value="2">
+		</constant>
+		<constant name="ARRAY_COLOR" value="3">
+		</constant>
+		<constant name="ARRAY_TEX_UV" value="4">
+		</constant>
+		<constant name="ARRAY_TEX_UV2" value="5">
+		</constant>
+		<constant name="ARRAY_BONES" value="6">
+		</constant>
+		<constant name="ARRAY_WEIGHTS" value="7">
+		</constant>
+		<constant name="ARRAY_INDEX" value="8">
+		</constant>
+		<constant name="ARRAY_MAX" value="9">
+		</constant>
 	</constants>
 </class>

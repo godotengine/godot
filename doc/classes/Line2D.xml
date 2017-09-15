@@ -21,7 +21,7 @@
 			</description>
 		</method>
 		<method name="get_begin_cap_mode" qualifiers="const">
-			<return type="int" enum="LineCapMode">
+			<return type="int" enum="Line2D.LineCapMode">
 			</return>
 			<description>
 			</description>
@@ -33,7 +33,7 @@
 			</description>
 		</method>
 		<method name="get_end_cap_mode" qualifiers="const">
-			<return type="int" enum="LineCapMode">
+			<return type="int" enum="Line2D.LineCapMode">
 			</return>
 			<description>
 			</description>
@@ -45,7 +45,7 @@
 			</description>
 		</method>
 		<method name="get_joint_mode" qualifiers="const">
-			<return type="int" enum="LineJointMode">
+			<return type="int" enum="Line2D.LineJointMode">
 			</return>
 			<description>
 			</description>
@@ -89,7 +89,7 @@
 			</description>
 		</method>
 		<method name="get_texture_mode" qualifiers="const">
-			<return type="int" enum="LineTextureMode">
+			<return type="int" enum="Line2D.LineTextureMode">
 			</return>
 			<description>
 			</description>
@@ -112,7 +112,7 @@
 		<method name="set_begin_cap_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int" enum="LineCapMode">
+			<argument index="0" name="mode" type="int" enum="Line2D.LineCapMode">
 			</argument>
 			<description>
 			</description>
@@ -128,7 +128,7 @@
 		<method name="set_end_cap_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int" enum="LineCapMode">
+			<argument index="0" name="mode" type="int" enum="Line2D.LineCapMode">
 			</argument>
 			<description>
 			</description>
@@ -144,7 +144,7 @@
 		<method name="set_joint_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int" enum="LineJointMode">
+			<argument index="0" name="mode" type="int" enum="Line2D.LineJointMode">
 			</argument>
 			<description>
 			</description>
@@ -194,7 +194,7 @@
 		<method name="set_texture_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int" enum="LineTextureMode">
+			<argument index="0" name="mode" type="int" enum="Line2D.LineTextureMode">
 			</argument>
 			<description>
 			</description>
@@ -209,15 +209,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="LineCapMode">
+		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode">
 		</member>
 		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color">
 		</member>
-		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="LineCapMode">
+		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode">
 		</member>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 		</member>
-		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="LineJointMode">
+		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode">
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
 		</member>
@@ -227,7 +227,7 @@
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="LineTextureMode">
+		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode">
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width">
 		</member>

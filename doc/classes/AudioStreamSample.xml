@@ -125,5 +125,17 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="FORMAT_8_BITS" value="0">
+		</constant>
+		<constant name="FORMAT_16_BITS" value="1">
+		</constant>
+		<constant name="FORMAT_IMA_ADPCM" value="2">
+		</constant>
+		<constant name="LOOP_DISABLED" value="0">
+		</constant>
+		<constant name="LOOP_FORWARD" value="1">
+		</constant>
+		<constant name="LOOP_PING_PONG" value="2">
+		</constant>
 	</constants>
 </class>

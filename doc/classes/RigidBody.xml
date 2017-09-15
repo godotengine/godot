@@ -437,5 +437,13 @@
 		<constant name="MODE_CHARACTER" value="2">
 			Character body. This behaves like a rigid body, but can not rotate.
 		</constant>
+		<constant name="AXIS_LOCK_DISABLED" value="0">
+		</constant>
+		<constant name="AXIS_LOCK_X" value="1">
+		</constant>
+		<constant name="AXIS_LOCK_Y" value="2">
+		</constant>
+		<constant name="AXIS_LOCK_Z" value="3">
+		</constant>
 	</constants>
 </class>

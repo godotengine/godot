@@ -18,7 +18,7 @@
 			</description>
 		</method>
 		<method name="reference">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<description>
 				Increase the internal reference counter. Use this only if you really know what you are doing.

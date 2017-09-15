@@ -227,5 +227,11 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="TANGENT_FREE" value="0">
+		</constant>
+		<constant name="TANGENT_LINEAR" value="1">
+		</constant>
+		<constant name="TANGENT_MODE_COUNT" value="2">
+		</constant>
 	</constants>
 </class>

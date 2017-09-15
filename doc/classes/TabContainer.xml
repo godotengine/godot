@@ -190,6 +190,12 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="decrement" type="Texture">

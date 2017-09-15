@@ -233,7 +233,7 @@
 			</description>
 		</method>
 		<method name="get_power_state">
-			<return type="int" enum="PowerState">
+			<return type="int" enum="OS.PowerState">
 			</return>
 			<description>
 			</description>
@@ -840,15 +840,15 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7">
 		</constant>
-		<constant name="POWERSTATE_UNKNOWN" value="0">
+		<constant name="OS::POWERSTATE_UNKNOWN" value="0">
 		</constant>
-		<constant name="POWERSTATE_ON_BATTERY" value="1">
+		<constant name="OS::POWERSTATE_ON_BATTERY" value="1">
 		</constant>
-		<constant name="POWERSTATE_NO_BATTERY" value="2">
+		<constant name="OS::POWERSTATE_NO_BATTERY" value="2">
 		</constant>
-		<constant name="POWERSTATE_CHARGING" value="3">
+		<constant name="OS::POWERSTATE_CHARGING" value="3">
 		</constant>
-		<constant name="POWERSTATE_CHARGED" value="4">
+		<constant name="OS::POWERSTATE_CHARGED" value="4">
 		</constant>
 	</constants>
 </class>

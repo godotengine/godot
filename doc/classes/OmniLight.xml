@@ -51,5 +51,13 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="SHADOW_DUAL_PARABOLOID" value="0">
+		</constant>
+		<constant name="SHADOW_CUBE" value="1">
+		</constant>
+		<constant name="SHADOW_DETAIL_VERTICAL" value="0">
+		</constant>
+		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1">
+		</constant>
 	</constants>
 </class>

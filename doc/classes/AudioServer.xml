@@ -307,5 +307,11 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="SPEAKER_MODE_STEREO" value="0">
+		</constant>
+		<constant name="SPEAKER_SURROUND_51" value="2">
+		</constant>
+		<constant name="SPEAKER_SURROUND_71" value="3">
+		</constant>
 	</constants>
 </class>

@@ -185,5 +185,9 @@
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2">
 		</constant>
+		<constant name="DISPLAY_THUMBNAILS" value="0">
+		</constant>
+		<constant name="DISPLAY_LIST" value="1">
+		</constant>
 	</constants>
 </class>

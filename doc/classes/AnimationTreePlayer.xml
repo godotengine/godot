@@ -659,5 +659,9 @@
 		<constant name="NODE_TRANSITION" value="9">
 			Transition node.
 		</constant>
+		<constant name="ANIMATION_PROCESS_FIXED" value="0">
+		</constant>
+		<constant name="ANIMATION_PROCESS_IDLE" value="1">
+		</constant>
 	</constants>
 </class>
