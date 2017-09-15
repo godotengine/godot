@@ -92,14 +92,14 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 //----------------------------------------------------------------------------
 
 LineBuilder::LineBuilder() {
-	joint_mode = LINE_JOINT_SHARP;
+	joint_mode = Line2D::LINE_JOINT_SHARP;
 	width = 10;
 	default_color = Color(0.4, 0.5, 1);
 	gradient = NULL;
 	sharp_limit = 2.f;
 	round_precision = 8;
-	begin_cap_mode = LINE_CAP_NONE;
-	end_cap_mode = LINE_CAP_NONE;
+	begin_cap_mode = Line2D::LINE_CAP_NONE;
+	end_cap_mode = Line2D::LINE_CAP_NONE;
 
 	_interpolate_color = false;
 	_last_index[0] = 0;
@@ -141,7 +141,7 @@ void LineBuilder::build() {
 	float current_distance1 = 0.f;
 	float total_distance = 0.f;
 	_interpolate_color = gradient != NULL;
-	bool distance_required = _interpolate_color || texture_mode == LINE_TEXTURE_TILE;
+	bool distance_required = _interpolate_color || texture_mode == Line2D::LINE_TEXTURE_TILE;
 	if (distance_required)
 		total_distance = calculate_total_distance(points);
 	if (_interpolate_color)
@@ -153,7 +153,7 @@ void LineBuilder::build() {
 	float uvx1 = 0.f;
 
 	// Begin cap
-	if (begin_cap_mode == LINE_CAP_BOX) {
+	if (begin_cap_mode == Line2D::LINE_CAP_BOX) {
 		// Push back first vertices a little bit
 		pos_up0 -= f0 * hw;
 		pos_down0 -= f0 * hw;
@@ -161,8 +161,8 @@ void LineBuilder::build() {
 		total_distance += width;
 		current_distance0 += hw;
 		current_distance1 = current_distance0;
-	} else if (begin_cap_mode == LINE_CAP_ROUND) {
-		if (texture_mode == LINE_TEXTURE_TILE) {
+	} else if (begin_cap_mode == Line2D::LINE_CAP_ROUND) {
+		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			uvx0 = 0.5f;
 		}
 		new_arc(pos0, pos_up0 - pos0, -Math_PI, color0, Rect2(0.f, 0.f, 1.f, 1.f));
@@ -247,15 +247,15 @@ void LineBuilder::build() {
 			corner_pos_down = corner_pos_in;
 		}
 
-		LineJointMode current_joint_mode = joint_mode;
+		Line2D::LineJointMode current_joint_mode = joint_mode;
 
 		Vector2 pos_up1, pos_down1;
 		if (intersection_result == SEGMENT_INTERSECT) {
 			// Fallback on bevel if sharp angle is too high (because it would produce very long miters)
-			if (current_joint_mode == LINE_JOINT_SHARP && corner_pos_out.distance_squared_to(pos1) / hw_sq > sharp_limit_sq) {
-				current_joint_mode = LINE_JOINT_BEVEL;
+			if (current_joint_mode == Line2D::LINE_JOINT_SHARP && corner_pos_out.distance_squared_to(pos1) / hw_sq > sharp_limit_sq) {
+				current_joint_mode = Line2D::LINE_JOINT_BEVEL;
 			}
-			if (current_joint_mode == LINE_JOINT_SHARP) {
+			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
 				// In this case, we won't create joint geometry,
 				// The previous and next line quads will directly share an edge.
 				pos_up1 = corner_pos_up;
@@ -284,7 +284,7 @@ void LineBuilder::build() {
 		if (_interpolate_color) {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
-		if (texture_mode == LINE_TEXTURE_TILE) {
+		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			uvx0 = current_distance0 / width;
 			uvx1 = current_distance1 / width;
 		}
@@ -298,7 +298,7 @@ void LineBuilder::build() {
 		pos0 = pos1;
 		current_distance0 = current_distance1;
 		if (intersection_result == SEGMENT_INTERSECT) {
-			if (current_joint_mode == LINE_JOINT_SHARP) {
+			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
 				pos_up0 = pos_up1;
 				pos_down0 = pos_down1;
 			} else {
@@ -317,7 +317,7 @@ void LineBuilder::build() {
 		// From this point, bu0 and bd0 concern the next segment
 
 		// Add joint geometry
-		if (current_joint_mode != LINE_JOINT_SHARP) {
+		if (current_joint_mode != Line2D::LINE_JOINT_SHARP) {
 
 			/* ________________ cbegin
 			 *               / \
@@ -337,9 +337,9 @@ void LineBuilder::build() {
 				cend = pos_up0;
 			}
 
-			if (current_joint_mode == LINE_JOINT_BEVEL) {
+			if (current_joint_mode == Line2D::LINE_JOINT_BEVEL) {
 				strip_add_tri(cend, orientation);
-			} else if (current_joint_mode == LINE_JOINT_ROUND) {
+			} else if (current_joint_mode == Line2D::LINE_JOINT_ROUND) {
 				Vector2 vbegin = cbegin - pos1;
 				Vector2 vend = cend - pos1;
 				strip_add_arc(pos1, vbegin.angle_to(vend), orientation);
@@ -360,7 +360,7 @@ void LineBuilder::build() {
 	Vector2 pos_down1 = pos1 - u0 * hw;
 
 	// End cap (box)
-	if (end_cap_mode == LINE_CAP_BOX) {
+	if (end_cap_mode == Line2D::LINE_CAP_BOX) {
 		pos_up1 += f0 * hw;
 		pos_down1 += f0 * hw;
 	}
@@ -371,14 +371,14 @@ void LineBuilder::build() {
 	if (_interpolate_color) {
 		color1 = gradient->get_color(gradient->get_points_count() - 1);
 	}
-	if (texture_mode == LINE_TEXTURE_TILE) {
+	if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 		uvx1 = current_distance1 / width;
 	}
 
 	strip_add_quad(pos_up1, pos_down1, color1, uvx1);
 
 	// End cap (round)
-	if (end_cap_mode == LINE_CAP_ROUND) {
+	if (end_cap_mode == Line2D::LINE_CAP_ROUND) {
 		// Note: color is not used in case we don't interpolate...
 		Color color = _interpolate_color ? gradient->get_color(gradient->get_points_count() - 1) : Color(0, 0, 0);
 		new_arc(pos1, pos_up1 - pos1, Math_PI, color, Rect2(uvx1 - 0.5f, 0.f, 1.f, 1.f));
@@ -396,7 +396,7 @@ void LineBuilder::strip_begin(Vector2 up, Vector2 down, Color color, float uvx) 
 		colors.push_back(color);
 	}
 
-	if (texture_mode != LINE_TEXTURE_NONE) {
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		uvs.push_back(Vector2(uvx, 0.f));
 		uvs.push_back(Vector2(uvx, 1.f));
 	}
@@ -420,7 +420,7 @@ void LineBuilder::strip_new_quad(Vector2 up, Vector2 down, Color color, float uv
 		colors.push_back(color);
 	}
 
-	if (texture_mode != LINE_TEXTURE_NONE) {
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		uvs.push_back(uvs[_last_index[UP]]);
 		uvs.push_back(uvs[_last_index[DOWN]]);
 		uvs.push_back(Vector2(uvx, UP));
@@ -449,7 +449,7 @@ void LineBuilder::strip_add_quad(Vector2 up, Vector2 down, Color color, float uv
 		colors.push_back(color);
 	}
 
-	if (texture_mode != LINE_TEXTURE_NONE) {
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		uvs.push_back(Vector2(uvx, 0.f));
 		uvs.push_back(Vector2(uvx, 1.f));
 	}
@@ -476,7 +476,7 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 
 	Orientation opposite_orientation = orientation == UP ? DOWN : UP;
 
-	if (texture_mode != LINE_TEXTURE_NONE) {
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		// UVs are just one slice of the texture all along
 		// (otherwise we can't share the bottom vertice)
 		uvs.push_back(uvs[_last_index[opposite_orientation]]);
@@ -541,7 +541,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	vertices.push_back(center);
 	if (_interpolate_color)
 		colors.push_back(color);
-	if (texture_mode != LINE_TEXTURE_NONE)
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE)
 		uvs.push_back(interpolate(uv_rect, Vector2(0.5f, 0.5f)));
 
 	// Arc vertices
@@ -552,7 +552,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 		vertices.push_back(rpos);
 		if (_interpolate_color)
 			colors.push_back(color);
-		if (texture_mode != LINE_TEXTURE_NONE) {
+		if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 			Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));
 			uvs.push_back(interpolate(uv_rect, 0.5f * (tsc + Vector2(1.f, 1.f))));
 			tt += angle_step;
@@ -565,7 +565,7 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	vertices.push_back(rpos);
 	if (_interpolate_color)
 		colors.push_back(color);
-	if (texture_mode != LINE_TEXTURE_NONE) {
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		tt = tt_begin + angle_delta;
 		Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));
 		uvs.push_back(interpolate(uv_rect, 0.5f * (tsc + Vector2(1.f, 1.f))));

@@ -174,7 +174,7 @@ bool power_osx::GetPowerInfo_MacOSX() {
 
 	nsecs_left = -1;
 	percent_left = -1;
-	power_state = POWERSTATE_UNKNOWN;
+	power_state = OS::POWERSTATE_UNKNOWN;
 
 	if (blob != NULL) {
 		CFArrayRef list = IOPSCopyPowerSourcesList(blob);
@@ -194,13 +194,13 @@ bool power_osx::GetPowerInfo_MacOSX() {
 			}
 
 			if (!have_battery) {
-				power_state = POWERSTATE_NO_BATTERY;
+				power_state = OS::POWERSTATE_NO_BATTERY;
 			} else if (charging) {
-				power_state = POWERSTATE_CHARGING;
+				power_state = OS::POWERSTATE_CHARGING;
 			} else if (have_ac) {
-				power_state = POWERSTATE_CHARGED;
+				power_state = OS::POWERSTATE_CHARGED;
 			} else {
-				power_state = POWERSTATE_ON_BATTERY;
+				power_state = OS::POWERSTATE_ON_BATTERY;
 			}
 
 			CFRelease(list);
@@ -218,11 +218,11 @@ bool power_osx::UpdatePowerInfo() {
 	return false;
 }
 
-PowerState power_osx::get_power_state() {
+OS::PowerState power_osx::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 
@@ -243,7 +243,7 @@ int power_osx::get_power_percent_left() {
 }
 
 power_osx::power_osx()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 power_osx::~power_osx() {

@@ -976,7 +976,7 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-PowerState OS_JavaScript::get_power_state() {
+OS::PowerState OS_JavaScript::get_power_state() {
 	return power_manager->get_power_state();
 }
 

@@ -2353,7 +2353,7 @@ bool OS_Windows::is_vsync_enabled() const {
 	return true;
 }
 
-PowerState OS_Windows::get_power_state() {
+OS::PowerState OS_Windows::get_power_state() {
 	return power_manager->get_power_state();
 }
 

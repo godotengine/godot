@@ -514,6 +514,10 @@ void Curve::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
+
+	BIND_ENUM_CONSTANT(TANGENT_FREE);
+	BIND_ENUM_CONSTANT(TANGENT_LINEAR);
+	BIND_ENUM_CONSTANT(TANGENT_MODE_COUNT);
 }
 
 int Curve2D::get_point_count() const {

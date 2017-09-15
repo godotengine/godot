@@ -405,6 +405,12 @@ void OmniLight::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "omni_attenuation", PROPERTY_HINT_EXP_EASING), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_detail", PROPERTY_HINT_ENUM, "Vertical,Horizontal"), "set_shadow_detail", "get_shadow_detail");
+
+	BIND_ENUM_CONSTANT(SHADOW_DUAL_PARABOLOID);
+	BIND_ENUM_CONSTANT(SHADOW_CUBE);
+
+	BIND_ENUM_CONSTANT(SHADOW_DETAIL_VERTICAL);
+	BIND_ENUM_CONSTANT(SHADOW_DETAIL_HORIZONTAL);
 }
 
 OmniLight::OmniLight()

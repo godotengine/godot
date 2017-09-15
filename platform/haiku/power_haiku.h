@@ -31,11 +31,13 @@
 #ifndef PLATFORM_HAIKU_POWER_HAIKU_H_
 #define PLATFORM_HAIKU_POWER_HAIKU_H_
 
+#include <os/os.h>
+
 class PowerHaiku {
 private:
 	int nsecs_left;
 	int percent_left;
-	PowerState power_state;
+	OS::PowerState power_state;
 
 	bool UpdatePowerInfo();
 
@@ -43,7 +45,7 @@ public:
 	PowerHaiku();
 	virtual ~PowerHaiku();
 
-	PowerState get_power_state();
+	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };

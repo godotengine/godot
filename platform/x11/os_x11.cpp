@@ -2167,7 +2167,7 @@ void OS_X11::set_context(int p_context) {
 	}
 }
 
-PowerState OS_X11::get_power_state() {
+OS::PowerState OS_X11::get_power_state() {
 	return power_manager->get_power_state();
 }
 

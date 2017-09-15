@@ -485,7 +485,7 @@ bool OS::is_vsync_enabled() const {
 	return true;
 }
 
-PowerState OS::get_power_state() {
+OS::PowerState OS::get_power_state() {
 	return POWERSTATE_UNKNOWN;
 }
 int OS::get_power_seconds_left() {

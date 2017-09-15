@@ -31,11 +31,13 @@
 #ifndef PLATFORM_IPHONE_POWER_IPHONE_H_
 #define PLATFORM_IPHONE_POWER_IPHONE_H_
 
+#include <os/os.h>
+
 class PowerIphone {
 private:
 	int nsecs_left;
 	int percent_left;
-	PowerState power_state;
+	OS::PowerState power_state;
 
 	bool UpdatePowerInfo();
 
@@ -43,7 +45,7 @@ public:
 	PowerIphone();
 	virtual ~PowerIphone();
 
-	PowerState get_power_state();
+	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };

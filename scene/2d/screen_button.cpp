@@ -399,6 +399,9 @@ void TouchScreenButton::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("released"));
+
+	BIND_ENUM_CONSTANT(VISIBILITY_ALWAYS);
+	BIND_ENUM_CONSTANT(VISIBILITY_TOUCHSCREEN_ONLY);
 }
 
 TouchScreenButton::TouchScreenButton() {

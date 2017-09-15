@@ -30,15 +30,15 @@
 
 #include "power_iphone.h"
 
-bool PowerState::UpdatePowerInfo() {
+bool OS::PowerState::UpdatePowerInfo() {
 	return false;
 }
 
-PowerState PowerIphone::get_power_state() {
+OS::PowerState PowerIphone::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 
@@ -59,7 +59,7 @@ int PowerIphone::get_power_percent_left() {
 }
 
 PowerIphone::PowerIphone()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 	// TODO Auto-generated constructor stub
 }
 

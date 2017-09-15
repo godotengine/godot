@@ -30,7 +30,6 @@
 #ifndef LINE2D_H
 #define LINE2D_H
 
-#include "line_builder.h"
 #include "node_2d.h"
 
 class Line2D : public Node2D {
@@ -38,6 +37,24 @@ class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D)
 
 public:
+	enum LineJointMode {
+		LINE_JOINT_SHARP = 0,
+		LINE_JOINT_BEVEL,
+		LINE_JOINT_ROUND
+	};
+
+	enum LineCapMode {
+		LINE_CAP_NONE = 0,
+		LINE_CAP_BOX,
+		LINE_CAP_ROUND
+	};
+
+	enum LineTextureMode {
+		LINE_TEXTURE_NONE = 0,
+		LINE_TEXTURE_TILE
+		// TODO STRETCH mode
+	};
+
 	Line2D();
 
 	void set_points(const PoolVector<Vector2> &p_points);

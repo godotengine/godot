@@ -308,6 +308,10 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
 	ADD_SIGNAL(MethodInfo("finished"));
+
+	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
+	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
+	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {

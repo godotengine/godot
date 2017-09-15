@@ -36,7 +36,7 @@
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "os/power.h"
+#include "os/os.h"
 #include "os/semaphore.h"
 #include "os/thread.h"
 
@@ -303,7 +303,7 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
-	PowerState get_power_state();
+	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 
