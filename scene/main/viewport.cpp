@@ -1533,7 +1533,9 @@ void Viewport::_gui_call_input(Control *p_control, const InputEvent &p_input) {
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (!cant_stop_me_now && control->data.stop_mouse && (ev.type == InputEvent::MOUSE_BUTTON || ev.type == InputEvent::MOUSE_MOTION))
+			bool stop = control->data.stop_mouse && (ev.type == InputEvent::MOUSE_BUTTON || ev.type == InputEvent::MOUSE_MOTION) ||
+						control->data.stop_touch && (ev.type == InputEvent::SCREEN_TOUCH || ev.type == InputEvent::SCREEN_DRAG);
+			if (!cant_stop_me_now && stop)
 				break;
 		}
 
