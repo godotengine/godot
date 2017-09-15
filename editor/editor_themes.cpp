@@ -157,6 +157,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 	exceptions.push_back("ProceduralSky");
 	exceptions.push_back("EditorControlAnchor");
 	exceptions.push_back("DefaultProjectIcon");
+	exceptions.push_back("MiniCheckerboard");
 
 	clock_t begin_time = clock();
 
@@ -803,6 +804,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 
+	// ColorPicker
+	theme->set_icon("screen_picker", "ColorPicker", theme->get_icon("ColorPick", "EditorIcons"));
+	theme->set_icon("add_preset", "ColorPicker", theme->get_icon("Add", "EditorIcons"));
+	theme->set_icon("mini_checkerboard", "ColorPicker", theme->get_icon("MiniCheckerboard", "EditorIcons"));
+	theme->set_icon("mini_checkerboard", "ColorPickerButton", theme->get_icon("MiniCheckerboard", "EditorIcons"));
+	
 	// FileDialog
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
 
