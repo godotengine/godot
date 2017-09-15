@@ -36,6 +36,7 @@
 #include "resource.h"
 
 #include "gdnative/gdnative.h"
+#include "gdnative_api_struct.h"
 
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource)
@@ -77,7 +78,7 @@ class GDNativeLibrary : public Resource {
 
 	String library_paths[NUM_PLATFORMS];
 
-	bool singleton_gdnative = false;
+	bool singleton_gdnative;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
