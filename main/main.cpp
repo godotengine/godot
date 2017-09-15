@@ -990,8 +990,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 		}
 
+#ifdef TOOLS_ENABLED
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		OS::get_singleton()->set_icon(icon);
+#endif
 	}
 
 	MAIN_PRINT("Main: DCC");
@@ -1082,6 +1084,7 @@ bool Main::start() {
 
 	ERR_FAIL_COND_V(!_start_success, false);
 
+	bool hasicon = false;
 	bool editor = false;
 	String doc_tool;
 	List<String> removal_docs;
@@ -1519,8 +1522,10 @@ bool Main::start() {
 				if (iconpath != "") {
 					Ref<Image> icon;
 					icon.instance();
-					if (icon->load(iconpath) == OK)
+					if (icon->load(iconpath) == OK) {
 						OS::get_singleton()->set_icon(icon);
+						hasicon = true;
+					}
 				}
 			}
 		}
@@ -1535,6 +1540,11 @@ bool Main::start() {
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
 		}
 #endif
+	}
+
+	if (!hasicon) {
+		Ref<Image> icon = memnew(Image(app_icon_png));
+		OS::get_singleton()->set_icon(icon);
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
