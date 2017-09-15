@@ -670,34 +670,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 			switch (p_a.type) {
 
 				DEFAULT_OP_FAIL(NIL);
-				case BOOL: {
-					switch (p_b.type) {
-						case BOOL: {
-							int64_t b = p_b._data._bool;
-							if (b == 0) {
-
-								r_valid = false;
-								_RETURN("Division By False");
-							}
-							_RETURN(p_a._data._bool / b);
-
-						} break;
-						case INT: {
-							int64_t b = p_b._data._int;
-							if (b == 0) {
-
-								r_valid = false;
-								_RETURN("Division By Zero");
-							}
-							_RETURN(p_a._data._bool / b);
-
-						} break;
-						case REAL: _RETURN(p_a._data._bool / p_b._data._real);
-						default: {}
-					}
-					r_valid = false;
-					return;
-				};
+				DEFAULT_OP_NUM(/, BOOL, _bool);
 				case INT: {
 					switch (p_b.type) {
 						case BOOL: {
