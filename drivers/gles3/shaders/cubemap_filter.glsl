@@ -24,7 +24,7 @@ uniform sampler2D source_panorama; //texunit:0
 #endif
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
-uniform sampler2DArray source_dual_paraboloid_array; //texunit:0
+uniform lowp sampler2DArray source_dual_paraboloid_array; //texunit:0
 uniform int source_array_index;
 #endif
 
