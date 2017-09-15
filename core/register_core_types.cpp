@@ -68,6 +68,7 @@ static _Engine *_engine = NULL;
 static _ClassDB *_classdb = NULL;
 static _Marshalls *_marshalls = NULL;
 static TranslationLoaderPO *resource_format_po = NULL;
+static _JSON *_json = NULL;
 
 static IP *ip = NULL;
 
@@ -162,6 +163,8 @@ void register_core_types() {
 	ClassDB::register_class<AStar>();
 	ClassDB::register_class<EncodedObjectAsID>();
 
+	ClassDB::register_class<JSONParseResult>();
+
 	ip = IP::create();
 
 	_geometry = memnew(_Geometry);
@@ -172,6 +175,7 @@ void register_core_types() {
 	_engine = memnew(_Engine);
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
+	_json = memnew(_JSON);
 }
 
 void register_core_settings() {
@@ -193,6 +197,7 @@ void register_core_singletons() {
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Input", Input::get_singleton()));
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("InputMap", InputMap::get_singleton()));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JSON", _JSON::get_singleton()));
 }
 
 void unregister_core_types() {
@@ -203,6 +208,7 @@ void unregister_core_types() {
 	memdelete(_engine);
 	memdelete(_classdb);
 	memdelete(_marshalls);
+	memdelete(_json);
 
 	memdelete(_geometry);
 
