@@ -184,7 +184,7 @@ int ARVRController::get_joystick_id() const {
 
 int ARVRController::is_button_pressed(int p_button) const {
 	int joy_id = get_joystick_id();
-	if (joy_id == 0) {
+	if (joy_id == -1) {
 		return false;
 	};
 
@@ -193,7 +193,7 @@ int ARVRController::is_button_pressed(int p_button) const {
 
 float ARVRController::get_joystick_axis(int p_axis) const {
 	int joy_id = get_joystick_id();
-	if (joy_id == 0) {
+	if (joy_id == -1) {
 		return 0.0;
 	};
 
