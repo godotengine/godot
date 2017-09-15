@@ -1,3 +1,4 @@
+#ifdef TOOLS_ENABLED
 #include "gd_native_library_editor.h"
 #include "gdnative.h"
 
@@ -118,3 +119,4 @@ GDNativeLibraryEditor::GDNativeLibraryEditor()
 	updating=false;
 	libraries->connect("item_edited",this,"_item_edited");
 }
+#endif
