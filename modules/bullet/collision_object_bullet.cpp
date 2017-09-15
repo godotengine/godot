@@ -85,8 +85,7 @@ void CollisionObjectBullet::destroyBulletCollisionObject() {
 void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_collisionObject) {
 	bt_collision_object = p_collisionObject;
 	bt_collision_object->setUserPointer(this);
-	bt_collision_object->setUserIndex(static_cast<int>(SpaceBullet::QUERY_TYPE_EXE)); // This is used to know if the query must be executed or not for this object
-	bt_collision_object->setUserIndex2(type);
+	bt_collision_object->setUserIndex(type);
 	// Force the enabling of collision and avoid problems
 	set_collision_enabled(collisionsEnabled);
 }

@@ -51,7 +51,8 @@ public:
 	enum Type {
 		TYPE_AREA = 0,
 		TYPE_RIGID_BODY,
-		TYPE_SOFT_BODY
+		TYPE_SOFT_BODY,
+		TYPE_KINEMATIC_GHOST_BODY
 	};
 
 	struct ShapeWrapper {

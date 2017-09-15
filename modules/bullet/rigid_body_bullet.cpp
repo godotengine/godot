@@ -183,7 +183,7 @@ RigidBodyBullet::KinematicUtilities::KinematicUtilities(RigidBodyBullet *p_owner
 
 	m_ghostObject->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
 	m_ghostObject->setUserPointer(p_owner);
-	m_ghostObject->setUserIndex(static_cast<int>(SpaceBullet::QUERY_TYPE_SKIP));
+	m_ghostObject->setUserIndex(TYPE_KINEMATIC_GHOST_BODY);
 
 	resetDefShape();
 }

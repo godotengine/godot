@@ -88,14 +88,6 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
-public:
-	/// This is used to know if the query must be executed or not for this object
-	/// This is set to bullet collision object using setUserIndex();
-	enum QUERY_TYPE {
-		QUERY_TYPE_SKIP = 0,
-		QUERY_TYPE_EXE = 1
-	};
-
 private:
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);

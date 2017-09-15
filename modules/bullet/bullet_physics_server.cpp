@@ -80,7 +80,8 @@ void BulletPhysicsServer::_bind_methods() {
 }
 
 BulletPhysicsServer::BulletPhysicsServer()
-	: PhysicsServer(), active(true), stepper(NULL), activeSpace(NULL) {}
+	: PhysicsServer(), active(true), stepper(NULL), activeSpace(NULL) {
+}
 
 BulletPhysicsServer::~BulletPhysicsServer() {
 	bulletdelete(stepper);
@@ -555,7 +556,7 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 }
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
-	CollisionObjectBullet *body = rigid_body_owner.get(p_body);
+	CollisionObjectBullet *body = get_collisin_object(p_body);
 	if (!body) {
 		body = soft_body_owner.get(p_body);
 	}
@@ -565,10 +566,7 @@ void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
-	CollisionObjectBullet *body = rigid_body_owner.get(p_body);
-	if (!body) {
-		body = soft_body_owner.get(p_body);
-	}
+	CollisionObjectBullet *body = get_collisin_object(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
@@ -1318,4 +1316,27 @@ void BulletPhysicsServer::finish() {
 
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {
 	return 0;
+}
+
+CollisionObjectBullet *BulletPhysicsServer::get_collisin_object(RID p_object) const {
+	if (rigid_body_owner.owns(p_object)) {
+		return rigid_body_owner.getornull(p_object);
+	}
+	if (area_owner.owns(p_object)) {
+		return area_owner.getornull(p_object);
+	}
+	if (soft_body_owner.owns(p_object)) {
+		return soft_body_owner.getornull(p_object);
+	}
+	return NULL;
+}
+
+RigidCollisionObjectBullet *BulletPhysicsServer::get_rigid_collisin_object(RID p_object) const {
+	if (rigid_body_owner.owns(p_object)) {
+		return rigid_body_owner.getornull(p_object);
+	}
+	if (area_owner.owns(p_object)) {
+		return area_owner.getornull(p_object);
+	}
+	return NULL;
 }
