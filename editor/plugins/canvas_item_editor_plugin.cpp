@@ -3848,6 +3848,20 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						continue;
 					}
 					memdelete(instanced_scene);
+				} else if (type == "Texture" ||
+						   type == "ImageTexture" ||
+						   type == "ViewportTexture" ||
+						   type == "CurveTexture" ||
+						   type == "GradientTexture" ||
+						   type == "StreamTexture" ||
+						   type == "AtlasTexture" ||
+						   type == "LargeTexture") {
+					Ref<Texture> texture = ResourceLoader::load(files[i]);
+					if (texture.is_valid() == false) {
+						continue;
+					}
+				} else {
+					continue;
 				}
 				can_instance = true;
 				break;
