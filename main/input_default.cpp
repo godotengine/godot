@@ -80,7 +80,7 @@ bool InputDefault::is_key_pressed(int p_scancode) const {
 bool InputDefault::is_mouse_button_pressed(int p_button) const {
 
 	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask & (1 << p_button)) != 0;
+	return (mouse_button_mask & (1 << (p_button - 1))) != 0;
 }
 
 static int _combine_device(int p_value, int p_device) {
@@ -265,10 +265,11 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && !mb->is_doubleclick()) {
 
-		if (mb->is_pressed())
-			mouse_button_mask |= (1 << mb->get_button_index());
-		else
-			mouse_button_mask &= ~(1 << mb->get_button_index());
+		if (mb->is_pressed()) {
+			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
+		} else {
+			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
+		}
 
 		if (main_loop && emulate_touch && mb->get_button_index() == 1) {
 			Ref<InputEventScreenTouch> touch_event;

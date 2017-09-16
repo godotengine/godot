@@ -76,18 +76,29 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	} else
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 
-	float inertia = EDITOR_DEF("editors/3d/orbit_inertia", 0.5);
-	inertia = MAX(0, inertia);
+	//when not being manipulated, move softly
+	float free_orbit_inertia = EDITOR_DEF("editors/3d/free_orbit_inertia", 0.5);
+	float free_translation_inertia = EDITOR_DEF("editors/3d/free_translation_inertia", 0.5);
+	//when being manipulated, move more quickly
+	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.5);
+	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.5);
+
+	//determine if being manipulated
+	bool manipulated = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+	float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
+	float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
 
 	Cursor old_camera_cursor = camera_cursor;
 	camera_cursor = cursor;
 
-	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, p_interp_delta * (1 / inertia));
-	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, p_interp_delta * (1 / inertia));
+	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.0, p_interp_delta * (1 / orbit_inertia)));
+	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.0, p_interp_delta * (1 / orbit_inertia)));
 
-	bool disable_interp = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+	camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.0, p_interp_delta * (1 / translation_inertia)));
+	camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.0, p_interp_delta * (1 / translation_inertia)));
 
-	if (p_interp_delta == 0 || disable_interp || is_freelook_active()) {
+	if (p_interp_delta == 0 || is_freelook_active()) {
 		camera_cursor = cursor;
 	}
 
