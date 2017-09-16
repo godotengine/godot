@@ -291,7 +291,7 @@ public:
 	const Set<RID> *m_exclude;
 
 	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude)
-		: m_self_object(p_self_object), m_result(p_result), m_exclude(p_exclude), m_collided(false), m_min_distance(1e20) {}
+		: m_self_object(p_self_object), m_result(p_result), m_exclude(p_exclude), m_collided(false), m_min_distance(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
 		const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
@@ -309,7 +309,7 @@ public:
 
 	virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
 
-		if (m_min_distance > cp.getDistance()) {
+		if (cp.getDistance() <= m_min_distance) {
 			m_min_distance = cp.getDistance();
 
 			CollisionObjectBullet *colObj;
