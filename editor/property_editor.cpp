@@ -175,7 +175,13 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					emit_signal("variant_changed");
 					hide();
 				} break;
-
+				case OBJ_MENU_SHOW_IN_EXPLORER:{
+					RefPtr RefPtr = v;
+					Ref<Resource> res_orig = RefPtr;
+					String dir = Globals::get_singleton()->globalize_path(res_orig->get_path());
+					dir = dir.substr(0, dir.find_last("/"));
+					OS::get_singleton()->shell_open(String("file://") + dir);
+				}
 				case OBJ_MENU_COPY: {
 
 					EditorSettings::get_singleton()->set_resource_clipboard(v);
@@ -708,6 +714,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				menu->add_icon_item(get_icon("EditResource", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+				menu->add_separator();
+				menu->add_item(TTR("Show In File Manager"), OBJ_MENU_SHOW_IN_EXPLORER);
 				RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file() && r->get_import_metadata().is_valid()) {
 					menu->add_separator();
