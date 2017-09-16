@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectAmplify" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Amplifies the volume of an audio source.
+		Adds a Amplify audio effect to an Audio bus.
+		Increases or decreases the volume of the selected audio bus.
 	</brief_description>
 	<description>
-		Amplifies the volume of an audio source. Increase gain of the audio being routed through the bus.
+		Increases or decreases the volume being routed through the audio bus.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +16,6 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the set maximum volume.
 			</description>
 		</method>
 		<method name="set_volume_db">
@@ -24,13 +24,12 @@
 			<argument index="0" name="volume" type="float">
 			</argument>
 			<description>
-				Sets the maximum volume.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
-			The effect's volume limit.
+			Amount of amplification. Positive values make the sound louder, negative values make it quieter. Value can range from -80 to 24. Default value: [code]0[/code].
 		</member>
 	</members>
 	<constants>

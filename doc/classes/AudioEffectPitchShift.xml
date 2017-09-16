@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPitchShift" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a Pitch shift audio effect to an Audio bus.
+		Raises or lowers the pitch of original sound.
 	</brief_description>
 	<description>
+		Allows modulation of pitch independently of tempo. All frequencies can be increased/decreased with minimal effect on transients.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +29,7 @@
 	</methods>
 	<members>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+			Pitch value. Can range from 0 (-1 octave) to 16 (+16 octaves).
 		</member>
 	</members>
 	<constants>

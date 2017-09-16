@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectDelay" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a Delay audio effect to an Audio bus. Plays input signal back after a period of time.
+		Two tap delay and feedback options.
 	</brief_description>
 	<description>
+		Plays input signal back after a period of time. The delayed signal may be played back multiple times to create the sound of a repeating, decaying echo. Delay effects range from a subtle echo effect to a pronounced blending of previous sounds with new sounds.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -194,30 +197,43 @@
 	</methods>
 	<members>
 		<member name="dry" type="float" setter="set_dry" getter="get_dry">
+			Output percent of original sound. At 0, only delayed sounds are output. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="feedback/active" type="bool" setter="set_feedback_active" getter="is_feedback_active">
+			If [code]true[/code] feedback is enabled. Default value: [code]false[/code].
 		</member>
 		<member name="feedback/delay_ms" type="float" setter="set_feedback_delay_ms" getter="get_feedback_delay_ms">
+			Feedback delay time in milliseconds. Default value: [code]340[/code].
 		</member>
 		<member name="feedback/level_db" type="float" setter="set_feedback_level_db" getter="get_feedback_level_db">
+			Sound level for [code]tap1[/code]. Default value: [code]-6 dB[/code].
 		</member>
 		<member name="feedback/lowpass" type="float" setter="set_feedback_lowpass" getter="get_feedback_lowpass">
+			Low-pass filter for feedback. Frequencies below the Low Cut value are filtered out of the source signal. Default value: [code]16000[/code].
 		</member>
 		<member name="tap1/active" type="bool" setter="set_tap1_active" getter="is_tap1_active">
+			If [code]true[/code], [code]tap1[/code] will be enabled. Default value: [code]true[/code].
 		</member>
 		<member name="tap1/delay_ms" type="float" setter="set_tap1_delay_ms" getter="get_tap1_delay_ms">
+			[b]Tap1[/b] delay time in milliseconds. Default value: [code]250ms[/code].
 		</member>
 		<member name="tap1/level_db" type="float" setter="set_tap1_level_db" getter="get_tap1_level_db">
+			Sound level for [code]tap1[/code]. Default value: [code]-6 dB[/code].
 		</member>
 		<member name="tap1/pan" type="float" setter="set_tap1_pan" getter="get_tap1_pan">
+			Pan position for [code]tap1[/code]. Value can range from -1 (fully left) to 1 (fully right). Default value: [code]0.2[/code].
 		</member>
 		<member name="tap2/active" type="bool" setter="set_tap2_active" getter="is_tap2_active">
+			If [code]true[/code], [code]tap2[/code] will be enabled. Default value: [code]true[/code].
 		</member>
 		<member name="tap2/delay_ms" type="float" setter="set_tap2_delay_ms" getter="get_tap2_delay_ms">
+			[b]Tap2[/b] delay time in milliseconds. Default value: [code]500ms[/code].
 		</member>
 		<member name="tap2/level_db" type="float" setter="set_tap2_level_db" getter="get_tap2_level_db">
+			Sound level for [code]tap2[/code]. Default value: [code]-12 dB[/code].
 		</member>
 		<member name="tap2/pan" type="float" setter="set_tap2_pan" getter="get_tap2_pan">
+			Pan position for [code]tap2[/code]. Value can range from -1 (fully left) to 1 (fully right). Default value: [code]-0.4[/code].
 		</member>
 	</members>
 	<constants>
