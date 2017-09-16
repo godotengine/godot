@@ -77,11 +77,11 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 
 	//when not being manipulated, move softly
-	float free_orbit_inertia = EDITOR_DEF("editors/3d/free_orbit_inertia", 0.5);
-	float free_translation_inertia = EDITOR_DEF("editors/3d/free_translation_inertia", 0.5);
+	float free_orbit_inertia = EDITOR_DEF("editors/3d/free_orbit_inertia", 0.15);
+	float free_translation_inertia = EDITOR_DEF("editors/3d/free_translation_inertia", 0.15);
 	//when being manipulated, move more quickly
-	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.5);
-	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.5);
+	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.075);
+	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.075);
 
 	//determine if being manipulated
 	bool manipulated = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
