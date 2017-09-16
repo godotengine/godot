@@ -189,7 +189,7 @@ Vector<Pair<String, Ref<Texture> > > EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 	Vector<Pair<String, Ref<Texture> > > sorted_list;
 
 	if (search_text == String() || list.size() == 0)
-		return sorted_list;
+		return list;
 
 	Vector<float> scores;
 	scores.resize(list.size());
