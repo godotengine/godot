@@ -97,6 +97,14 @@ protected:
 	static _OS *singleton;
 
 public:
+	enum PowerState {
+		POWERSTATE_UNKNOWN, /**< cannot determine power status */
+		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
+		POWERSTATE_NO_BATTERY, /**< Plugged in, no battery available */
+		POWERSTATE_CHARGING, /**< Plugged in, charging battery */
+		POWERSTATE_CHARGED /**< Plugged in, battery charged */
+	};
+
 	enum Weekday {
 		DAY_SUNDAY,
 		DAY_MONDAY,
@@ -303,7 +311,7 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
-	OS::PowerState get_power_state();
+	PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 
@@ -312,6 +320,7 @@ public:
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
