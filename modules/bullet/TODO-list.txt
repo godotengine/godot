@@ -1,6 +1,0 @@
-FUNCTIONS:
-bool BulletPhysicsDirectSpaceState::cast_motion         - Must be implemented
-bool BulletPhysicsDirectSpaceState::collide_shape       - Must be implemented
-bool BulletPhysicsDirectSpaceState::rest_info           - Must be implemented
-int BulletPhysicsDirectSpaceState::intersect_point		- Must be implemented
-BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume	- Must be implemented

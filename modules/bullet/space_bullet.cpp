@@ -430,7 +430,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	btVector3 bt_point;
 	G_TO_B(p_point, bt_point);
 
-	btSphereShape sphere_point(0.f); // TODO Test if it works with 0, otherwise use a small number
+	btSphereShape sphere_point(0.f);
 	btCollisionObject collision_object_point;
 	collision_object_point.setCollisionShape(&sphere_point);
 	collision_object_point.setWorldTransform(btTransform(btQuaternion::getIdentity(), bt_point));
