@@ -219,7 +219,7 @@ Generic6DOFJointSW::Generic6DOFJointSW(BodySW *rbA, BodySW *rbB, const Transform
 }
 
 void Generic6DOFJointSW::calculateAngleInfo() {
-	Basis relative_frame = m_calculatedTransformA.basis.inverse() * m_calculatedTransformB.basis;
+	Basis relative_frame = m_calculatedTransformB.basis.inverse() * m_calculatedTransformA.basis;
 
 	m_calculatedAxisAngleDiff = relative_frame.get_euler();
 

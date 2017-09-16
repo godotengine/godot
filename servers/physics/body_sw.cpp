@@ -45,8 +45,9 @@ void BodySW::_update_transform_dependant() {
 	// update inertia tensor
 	Basis tb = principal_inertia_axes;
 	Basis tbt = tb.transposed();
-	tb.scale(_inv_inertia);
-	_inv_inertia_tensor = tb * tbt;
+	Basis diag;
+	diag.scale(_inv_inertia);
+	_inv_inertia_tensor = tb * diag * tbt;
 }
 
 void BodySW::update_inertias() {
