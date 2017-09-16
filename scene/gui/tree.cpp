@@ -2010,7 +2010,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 		if (!k->is_pressed())
 			return;
-		if (k->get_alt() || k->get_command() || (k->get_shift() && k->get_unicode() == 0) || k->get_metakey())
+		if (k->get_command() || (k->get_shift() && k->get_unicode() == 0) || k->get_metakey())
 			return;
 		if (!root)
 			return;
@@ -2025,48 +2025,47 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		break;                                     \
 	}
 			case KEY_RIGHT: {
+				bool dobreak = true;
 
 				//TreeItem *next = NULL;
 				if (!selected_item)
 					break;
-				if (select_mode == SELECT_ROW)
+				if (select_mode == SELECT_ROW) {
 					EXIT_BREAK;
-				if (selected_col >= (columns.size() - 1))
-					EXIT_BREAK;
-				if (select_mode == SELECT_MULTI) {
-					selected_col++;
-					emit_signal("cell_selected");
-				} else {
-
-					selected_item->select(selected_col + 1);
 				}
+				if (selected_col > (columns.size() - 1)) {
+					EXIT_BREAK;
+				}
+				if (k->get_alt()) {
+					selected_item->set_collapsed(false);
+					TreeItem *next = selected_item->get_children();
+					while (next && next != selected_item->next) {
+						next->set_collapsed(false);
+						next = next->get_next_visible();
+					}
+				} else if (selected_col == (columns.size() - 1)) {
+					if (selected_item->get_children() != NULL && selected_item->is_collapsed()) {
+						selected_item->set_collapsed(false);
+					} else {
+						selected_col = 0;
+						dobreak = false; // fall through to key_down
+					}
+				} else {
+					if (select_mode == SELECT_MULTI) {
+						selected_col++;
+						emit_signal("cell_selected");
+					} else {
 
+						selected_item->select(selected_col + 1);
+					}
+				}
 				update();
 				ensure_cursor_is_visible();
 				accept_event();
-
-			} break;
-			case KEY_LEFT: {
-
-				//TreeItem *next = NULL;
-				if (!selected_item)
+				if (dobreak) {
 					break;
-				if (select_mode == SELECT_ROW)
-					EXIT_BREAK;
-				if (selected_col <= 0)
-					EXIT_BREAK;
-				if (select_mode == SELECT_MULTI) {
-					selected_col--;
-					emit_signal("cell_selected");
-				} else {
-
-					selected_item->select(selected_col - 1);
 				}
-
-				update();
-				accept_event();
-
-			} break;
+			}
 			case KEY_DOWN: {
 
 				TreeItem *next = NULL;
@@ -2113,6 +2112,48 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				accept_event();
 
 			} break;
+			case KEY_LEFT: {
+				bool dobreak = true;
+
+				//TreeItem *next = NULL;
+				if (!selected_item)
+					break;
+				if (select_mode == SELECT_ROW) {
+					EXIT_BREAK;
+				}
+				if (selected_col < 0) {
+					EXIT_BREAK;
+				}
+				if (k->get_alt()) {
+					selected_item->set_collapsed(true);
+					TreeItem *next = selected_item->get_children();
+					while (next && next != selected_item->next) {
+						next->set_collapsed(true);
+						next = next->get_next_visible();
+					}
+				} else if (selected_col == 0) {
+					if (selected_item->get_children() != NULL && !selected_item->is_collapsed()) {
+						selected_item->set_collapsed(true);
+					} else {
+						selected_col = columns.size() - 1;
+						dobreak = false; // fall through to key_up
+					}
+				} else {
+					if (select_mode == SELECT_MULTI) {
+						selected_col--;
+						emit_signal("cell_selected");
+					} else {
+
+						selected_item->select(selected_col - 1);
+					}
+				}
+				update();
+				accept_event();
+
+				if (dobreak) {
+					break;
+				}
+			}
 			case KEY_UP: {
 
 				TreeItem *prev = NULL;
