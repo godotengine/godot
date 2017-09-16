@@ -23,7 +23,7 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs the Transform from four [Vector3]. Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
@@ -34,7 +34,7 @@
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from a [Basis] and [Vector3].
+				Constructs the Transform from a [Basis] and [Vector3].
 			</description>
 		</method>
 		<method name="Transform">
@@ -43,7 +43,7 @@
 			<argument index="0" name="from" type="Transform2D">
 			</argument>
 			<description>
-				Construct the Transform from a [Transform2D].
+				Constructs the Transform from a [Transform2D].
 			</description>
 		</method>
 		<method name="Transform">
@@ -52,7 +52,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Construct the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
+				Constructs the Transform from a [Quat]. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="Transform">
@@ -61,7 +61,7 @@
 			<argument index="0" name="from" type="Basis">
 			</argument>
 			<description>
-				Construct the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
+				Constructs the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="affine_inverse">
@@ -79,7 +79,7 @@
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Interpolate to other Transform by weight amount (0-1).
+				Interpolates the transform to other Transform by weight amount (0-1).
 			</description>
 		</method>
 		<method name="inverse">
@@ -104,7 +104,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns a transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">
@@ -115,7 +115,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform around given axis by phi. The axis must be a normalized vector.
+				Rotates the transform around given axis by phi. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
@@ -124,7 +124,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scale the transform by the specified 3D scaling factors.
+				Scales the transform by the specified 3D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -133,7 +133,7 @@
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
-				Translate the transform by the specified offset.
+				Translates the transform by the specified offset.
 			</description>
 		</method>
 		<method name="xform">
@@ -151,7 +151,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Inverse-transforms vector "v" by this transform.
+				Inverse-transforms the given vector "v" by this transform.
 			</description>
 		</method>
 	</methods>

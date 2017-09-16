@@ -4,7 +4,7 @@
 		Most basic 3D game object, parent of all 3D related nodes.
 	</brief_description>
 	<description>
-		Most basic 3D game object, with a 3D [Transform] and visibility settings. All 3D physics nodes and sprites inherit from Spatial. Use Spatial as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Spatial. Use Spatial as a parent node to move, scale, rotate and show/hide children in a 3D project.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,35 +15,35 @@
 			<return type="SpatialGizmo">
 			</return>
 			<description>
-				Return the SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
+				Returns the SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
 			<description>
-				Return the global transform, relative to worldspace.
+				Returns the global transform, relative to worldspace.
 			</description>
 		</method>
 		<method name="get_parent_spatial" qualifiers="const">
 			<return type="Spatial">
 			</return>
 			<description>
-				Return the parent [Spatial], or an empty [Object] if no parent exists or parent is not of type [Spatial].
+				Returns the parent [Spatial], or an empty [Object] if no parent exists or parent is not of type [Spatial].
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
-				Return the rotation (in radians).
+				Returns the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_rotation_deg" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
-				Return the rotation (in degrees).
+				Returns the rotation (in degrees).
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -56,7 +56,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Return the local transform, relative to the bone parent.
+				Returns the local transform, relative to the bone parent.
 			</description>
 		</method>
 		<method name="get_translation" qualifiers="const">
@@ -69,7 +69,7 @@
 			<return type="World">
 			</return>
 			<description>
-				Return current [World] resource this Spatial node is registered to.
+				Returns the current [World] resource this Spatial node is registered to.
 			</description>
 		</method>
 		<method name="global_rotate">
@@ -80,7 +80,7 @@
 			<argument index="1" name="radians" type="float">
 			</argument>
 			<description>
-				Rotate current node along normal [Vector3] by angle in radians in Global space.
+				Rotates the current node along normal [Vector3] by angle in radians in Global space.
 			</description>
 		</method>
 		<method name="global_translate">
@@ -89,49 +89,49 @@
 			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
-				Move current node by [Vector3] offset in Global space.
+				Moves the node by [Vector3] offset in Global space.
 			</description>
 		</method>
 		<method name="hide">
 			<return type="void">
 			</return>
 			<description>
-				Disable rendering of this node. Change Spatial Visible property to false.
+				Disables rendering of this node. Change Spatial Visible property to false.
 			</description>
 		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node sends notification that its local transformation changed. Spatial will not propagate this by default.
+				Returns whether node notifies about its local transformation changes. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is set as Toplevel, ignoring its parent node transformations.
+				Returns whether this node is set as Toplevel, that is whether it ignores its parent nodes transformations.
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node sends notification that its transformation changed. Spatial will not propagate this by default.
+				Returns whether the node notifies about its global and local transformation changes. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_visible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is set to be visible.
+				Returns whether the node is set to be visible.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this node is visible, taking into consideration that its parents visibility.
+				Returns whether the node is visible, taking into consideration that its parents visibility.
 			</description>
 		</method>
 		<method name="look_at">
@@ -155,14 +155,14 @@
 			<argument index="2" name="up" type="Vector3">
 			</argument>
 			<description>
-				Moves itself to specified position and then rotates itself to point into direction of target position. Operations take place in global space.
+				Moves the node to specified position and then rotates itself to point into direction of target position. Operations take place in global space.
 			</description>
 		</method>
 		<method name="orthonormalize">
 			<return type="void">
 			</return>
 			<description>
-				Reset this node transformations (like scale, skew and taper) preserving its rotation and translation. Performs orthonormalization on this node [Transform3D].
+				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation. Performs orthonormalization on this node [Transform3D].
 			</description>
 		</method>
 		<method name="rotate">
@@ -173,7 +173,7 @@
 			<argument index="1" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on given normal [Vector3] by angle in radians.
+				Rotates the node in local space on given normal [Vector3] by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_x">
@@ -182,7 +182,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on X axis by angle in radians.
+				Rotates the node in local space on X axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_y">
@@ -191,7 +191,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on Y axis by angle in radians.
+				Rotates the node in local space on Y axis by angle in radians.
 			</description>
 		</method>
 		<method name="rotate_z">
@@ -200,7 +200,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Rotates node in local space on Z axis by angle in radians.
+				Rotates the node in local space on Z axis by angle in radians.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -209,7 +209,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Makes this node ignore its parents tranformations. Node tranformations are only in global space.
+				Makes the node ignore its parents tranformations. Node tranformations are only in global space.
 			</description>
 		</method>
 		<method name="set_gizmo">
@@ -243,7 +243,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set whether this node ignores notification that its transformation changed.
+				Set whether the node ignores notification that its transformation (global or local) changed.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
@@ -252,7 +252,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether this node sends notification that its local transformation changed. Spatial will not propagate this by default.
+				Set whether the node notifies about its local transformation changes. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_notify_transform">
@@ -261,7 +261,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether this node sends notification that its transformation changed. Spatial will not propagate this by default.
+				Set whether the node notifies about its global and local transformation changes. Spatial will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_rotation">
@@ -320,7 +320,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Enable rendering of this node. Change Spatial Visible property to false.
+				Enables rendering of this node. Change Spatial Visible property to "True".
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
@@ -329,7 +329,7 @@
 			<argument index="0" name="local_point" type="Vector3">
 			</argument>
 			<description>
-				Tranform [Vector3] from this node local space to world space.
+				Tranforms [Vector3] "local_point" from this node's local space to world space.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
@@ -338,7 +338,7 @@
 			<argument index="0" name="global_point" type="Vector3">
 			</argument>
 			<description>
-				Tranform [Vector3] from world space to this node local space.
+				Tranforms [Vector3] "global_point" from world space to this node's local space.
 			</description>
 		</method>
 		<method name="translate">
@@ -347,14 +347,14 @@
 			<argument index="0" name="offset" type="Vector3">
 			</argument>
 			<description>
-				Change node position by given offset [Vector3].
+				Changes the node's position by given offset [Vector3].
 			</description>
 		</method>
 		<method name="update_gizmo">
 			<return type="void">
 			</return>
 			<description>
-				Update [SpatialGizmo] of this node.
+				Updates the [SpatialGizmo] of this node.
 			</description>
 		</method>
 	</methods>
@@ -384,23 +384,23 @@
 	<signals>
 		<signal name="visibility_changed">
 			<description>
-				Emitted when node visibility changed.
+				Emitted when node visibility changes.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
-			Spatial nodes receive this notification when their global transform changes. This means that either the current or a parent node changed its transform.
+			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 			In order for NOTIFICATION_TRANSFORM_CHANGED to work user first needs to ask for it, with set_notify_transform(true).
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41" enum="">
-			Spatial nodes receive this notification when they are registered to new [World] resource.
+			Spatial nodes receives this notification when they are registered to new [World] resource.
 		</constant>
 		<constant name="NOTIFICATION_EXIT_WORLD" value="42" enum="">
-			Spatial nodes receive this notification when they are unregistered from current [World] resource.
+			Spatial nodes receives this notification when they are unregistered from current [World] resource.
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43" enum="">
-			Spatial nodes receive this notification when their visibility changes.
+			Spatial nodes receives this notification when their visibility changes.
 		</constant>
 	</constants>
 </class>
