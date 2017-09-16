@@ -103,7 +103,7 @@ public:
 		if (needs) {
 			btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 			CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
-			if (gObj && m_exclude->has(gObj->get_self())) {
+			if (m_exclude->has(gObj->get_self())) {
 				return false;
 			}
 			return true;
@@ -117,7 +117,7 @@ public:
 
 		PhysicsDirectSpaceState::ShapeResult &result = m_results[count];
 
-		result.shape = -1;
+		result.shape = convexResult.m_localShapeInfo->m_shapePart;
 		result.rid = gObj->get_self();
 		result.collider_id = gObj->get_instance_id();
 		result.collider = 0 == result.collider_id ? NULL : ObjectDB::get_instance(result.collider_id);
@@ -127,12 +127,12 @@ public:
 	}
 };
 
-struct GodotClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
+struct GodotKinClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const RigidBodyBullet *m_self_object;
 	const bool m_ignore_areas;
 
-	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_ignore_areas)
+	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_ignore_areas)
 		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
@@ -153,6 +153,35 @@ public:
 		} else {
 			return false;
 		}
+	}
+};
+
+struct GodotClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
+public:
+	const Set<RID> *m_exclude;
+	int m_shapePart;
+
+	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude)
+		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_exclude(p_exclude) {}
+
+	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
+		const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
+		if (needs) {
+			btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
+			CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+			if (m_exclude->has(gObj->get_self())) {
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	virtual btScalar addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
+		btScalar res = btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
+		m_shapePart = convexResult.m_localShapeInfo->m_shapePart;
+		return res;
 	}
 };
 
@@ -210,6 +239,107 @@ public:
 	}
 };
 
+struct GodotAllVectorsContactResultCallback : public btCollisionWorld::ContactResultCallback {
+public:
+	const btCollisionObject *m_self_object;
+	Vector3 *m_results;
+	int m_resultMax;
+	int m_count;
+	const Set<RID> *m_exclude;
+
+	GodotAllVectorsContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude)
+		: m_self_object(p_self_object), m_results(p_results), m_exclude(p_exclude), m_resultMax(p_resultMax), m_count(0) {}
+
+	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
+		const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
+		if (needs) {
+			btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
+			CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+			if (m_exclude->has(gObj->get_self())) {
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
+
+		if (cp.getDistance() <= 0) {
+			if (m_self_object == colObj0Wrap->getCollisionObject()) {
+				B_TO_G(cp.m_localPointB, m_results[m_count]);
+			} else {
+				B_TO_G(cp.m_localPointA, m_results[m_count]);
+			}
+
+			++m_count;
+		}
+
+		return m_count < m_resultMax;
+	}
+};
+
+struct GodotRestInfoContactResultCallback : public btCollisionWorld::ContactResultCallback {
+public:
+	const btCollisionObject *m_self_object;
+	PhysicsDirectSpaceState::ShapeRestInfo *m_result;
+	bool m_collided;
+	real_t m_min_distance;
+	const btCollisionObject *m_rest_info_collision_object;
+	btVector3 m_rest_info_bt_point;
+	const Set<RID> *m_exclude;
+
+	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude)
+		: m_self_object(p_self_object), m_result(p_result), m_exclude(p_exclude), m_collided(false), m_min_distance(1e20) {}
+
+	virtual bool needsCollision(btBroadphaseProxy *proxy0) const {
+		const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
+		if (needs) {
+			btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
+			CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+			if (m_exclude->has(gObj->get_self())) {
+				return false;
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
+
+		if (m_min_distance > cp.getDistance()) {
+			m_min_distance = cp.getDistance();
+
+			CollisionObjectBullet *colObj;
+			if (m_self_object == colObj0Wrap->getCollisionObject()) {
+				colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
+				m_result->shape = cp.m_index1;
+				B_TO_G(cp.getPositionWorldOnB(), m_result->point);
+				m_rest_info_bt_point = cp.getPositionWorldOnB();
+				m_rest_info_collision_object = colObj1Wrap->getCollisionObject();
+			} else {
+				colObj = static_cast<CollisionObjectBullet *>(colObj0Wrap->getCollisionObject()->getUserPointer());
+				m_result->shape = cp.m_index0;
+				B_TO_G(cp.m_normalWorldOnB * -1, m_result->normal);
+				m_rest_info_bt_point = cp.getPositionWorldOnA();
+				m_rest_info_collision_object = colObj0Wrap->getCollisionObject();
+			}
+
+			if (colObj)
+				m_result->collider_id = colObj->get_instance_id();
+			else
+				m_result->collider_id = 0;
+			m_result->rid = colObj->get_self();
+
+			m_collided = true;
+		}
+
+		return cp.getDistance();
+	}
+};
+
 struct GodotRecoverAndClosestContactResultCallback : public btCollisionWorld::ContactResultCallback {
 public:
 	btVector3 m_pointNormalWorld;
@@ -225,14 +355,14 @@ public:
 	btVector3 m_recover_penetration;
 
 	GodotRecoverAndClosestContactResultCallback()
-		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(NULL), m_ignore_areas(true), m_most_penetrated_distance(9999999999), m_recover_penetration(0, 0, 0) {}
+		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(NULL), m_ignore_areas(true), m_most_penetrated_distance(1e20), m_recover_penetration(0, 0, 0) {}
 
 	GodotRecoverAndClosestContactResultCallback(const RigidBodyBullet *p_self_object, bool p_ignore_areas)
 		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas), m_most_penetrated_distance(9999999999), m_recover_penetration(0, 0, 0) {}
 
 	void reset() {
 		m_pointCollisionObject = NULL;
-		m_most_penetrated_distance = 9999999999;
+		m_most_penetrated_distance = 1e20;
 		m_recover_penetration.setZero();
 	}
 
@@ -360,38 +490,147 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 		return 0;
 	}
 
-	btVector3 scale;
-	G_TO_B(p_xform.basis.get_scale(), scale);
-	btConvex->setLocalScaling(scale);
+	btVector3 scale_with_margin;
+	G_TO_B(p_xform.basis.get_scale(), scale_with_margin);
+	btConvex->setLocalScaling(scale_with_margin);
 
 	btTransform bt_xform;
 	G_TO_B(p_xform, bt_xform);
 
-	// Setup query
-	GodotAllConvexResultCallback btResult(p_results, p_result_max, &p_exclude);
-	btResult.m_collisionFilterGroup = p_collision_layer;
-	btResult.m_collisionFilterMask = p_object_type_mask;
-	space->dynamicsWorld->convexSweepTest(btConvex, bt_xform, bt_xform, btResult);
+	btCollisionObject collision_object;
+	collision_object.setCollisionShape(btConvex);
+	collision_object.setWorldTransform(bt_xform);
+
+	GodotAllContactResultCallback btQuery(&collision_object, p_results, p_result_max, &p_exclude);
+	btQuery.m_collisionFilterGroup = p_collision_layer;
+	btQuery.m_collisionFilterMask = p_object_type_mask;
+	btQuery.m_closestDistanceThreshold = p_margin;
+	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 
 	bulletdelete(btConvex);
 
-	// The results is already populated by GodotAllConvexResultCallback
-	return btResult.count;
+	return btQuery.m_count;
 }
 
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_layer, uint32_t p_object_type_mask, ShapeRestInfo *r_info) {
-	WARN_PRINT("This function must be implemented")
-	return false;
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+
+	btConvexShape *bt_convex_shape = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
+	if (!bt_convex_shape) {
+		bulletdelete(bt_convex_shape);
+		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		return 0;
+	}
+
+	btVector3 bt_motion;
+	G_TO_B(p_motion, bt_motion);
+
+	btVector3 scale_with_margin;
+	G_TO_B(p_xform.basis.get_scale() + Vector3(p_margin, p_margin, p_margin), scale_with_margin);
+	bt_convex_shape->setLocalScaling(scale_with_margin);
+
+	btTransform bt_xform_from;
+	G_TO_B(p_xform, bt_xform_from);
+
+	btTransform bt_xform_to(bt_xform_from);
+	bt_xform_to.getOrigin() += bt_motion;
+
+	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude);
+	btResult.m_collisionFilterGroup = p_collision_layer;
+	btResult.m_collisionFilterMask = p_object_type_mask;
+
+	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult);
+
+	if (btResult.hasHit()) {
+		if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
+			B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
+		}
+		CollisionObjectBullet *collision_object = static_cast<CollisionObjectBullet *>(btResult.m_hitCollisionObject->getUserPointer());
+		p_closest_safe = p_closest_unsafe = btResult.m_closestHitFraction;
+		B_TO_G(btResult.m_hitPointWorld, r_info->point);
+		B_TO_G(btResult.m_hitNormalWorld, r_info->normal);
+		r_info->rid = collision_object->get_self();
+		r_info->collider_id = collision_object->get_instance_id();
+		r_info->shape = btResult.m_shapePart;
+	}
+
+	bulletdelete(bt_convex_shape);
+	return btResult.hasHit();
 }
 
 bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_layer, uint32_t p_object_type_mask) {
-	WARN_PRINT("This function must be implemented")
-	return false;
+	if (p_result_max <= 0)
+		return 0;
+
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+
+	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
+	if (!btConvex) {
+		bulletdelete(btConvex);
+		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		return 0;
+	}
+
+	btVector3 scale_with_margin;
+	G_TO_B(p_shape_xform.basis.get_scale(), scale_with_margin);
+	btConvex->setLocalScaling(scale_with_margin);
+
+	btTransform bt_xform;
+	G_TO_B(p_shape_xform, bt_xform);
+
+	btCollisionObject collision_object;
+	collision_object.setCollisionShape(btConvex);
+	collision_object.setWorldTransform(bt_xform);
+
+	GodotAllVectorsContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude);
+	btQuery.m_collisionFilterGroup = p_collision_layer;
+	btQuery.m_collisionFilterMask = p_object_type_mask;
+	btQuery.m_closestDistanceThreshold = p_margin;
+	space->dynamicsWorld->contactTest(&collision_object, btQuery);
+
+	bulletdelete(btConvex);
+
+	return btQuery.m_count;
 }
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_layer, uint32_t p_object_type_mask) {
-	WARN_PRINT("This function must be implemented")
-	return false;
+
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+
+	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
+	if (!btConvex) {
+		bulletdelete(btConvex);
+		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		return 0;
+	}
+
+	btVector3 scale_with_margin;
+	G_TO_B(p_shape_xform.basis.get_scale() + Vector3(p_margin, p_margin, p_margin), scale_with_margin);
+	btConvex->setLocalScaling(scale_with_margin);
+
+	btTransform bt_xform;
+	G_TO_B(p_shape_xform, bt_xform);
+
+	btCollisionObject collision_object;
+	collision_object.setCollisionShape(btConvex);
+	collision_object.setWorldTransform(bt_xform);
+
+	GodotRestInfoContactResultCallback btQuery(&collision_object, r_info, &p_exclude);
+	btQuery.m_collisionFilterGroup = p_collision_layer;
+	btQuery.m_collisionFilterMask = p_object_type_mask;
+	btQuery.m_closestDistanceThreshold = p_margin;
+	space->dynamicsWorld->contactTest(&collision_object, btQuery);
+
+	bulletdelete(btConvex);
+
+	if (btQuery.m_collided) {
+		if (btCollisionObject::CO_RIGID_BODY == btQuery.m_rest_info_collision_object->getInternalType()) {
+			B_TO_G(static_cast<const btRigidBody *>(btQuery.m_rest_info_collision_object)->getVelocityInLocalPoint(btQuery.m_rest_info_bt_point), r_info->linear_velocity);
+		}
+		B_TO_G(btQuery.m_rest_info_bt_point, r_info->point);
+	}
+
+	return btQuery.m_collided;
 }
 
 Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const {
@@ -440,15 +679,9 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 		}
 	}
 
-	//if (out_distance > 0) {
-	// Penetrated
 	Vector3 out;
 	B_TO_G(out_closest_point, out);
 	return out;
-	//} else {
-	//	// Overlap return always 0
-	//	return Vector3();
-	//}
 }
 
 SpaceBullet::SpaceBullet(bool p_create_soft_world)
@@ -987,7 +1220,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			//shape_xform_to.getBasis() *= body_unsafe_positino.getBasis();
 			shape_xform_to.getOrigin() += recovered_motion;
 
-			GodotClosestConvexResultCallback btResult(shape_xform_from.getOrigin(), shape_xform_to.getOrigin(), p_body, IGNORE_AREAS_TRUE);
+			GodotKinClosestConvexResultCallback btResult(shape_xform_from.getOrigin(), shape_xform_to.getOrigin(), p_body, IGNORE_AREAS_TRUE);
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
 			btResult.m_collisionFilterMask = p_body->get_collision_mask();
 
