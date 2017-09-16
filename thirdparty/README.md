@@ -59,11 +59,11 @@ Files extracted from upstream source:
 
 Use UI font if exists, because it has tight vertial metrix and good for UI.
 
-### Mononoki Regular
+### Hack Regular
 
-- Upstream: https://github.com/madmalik/mononoki
-- Version: 1.2
-- License: OFL-1.1
+- Upstream: https://github.com/source-foundry/Hack
+- Version: 2.020
+- License: Hack Open Font License v2.0
 
 ### DroidSans*.ttf
 
