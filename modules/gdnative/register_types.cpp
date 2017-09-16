@@ -99,7 +99,6 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 void actual_discoverer_handler() {
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
-
 	Set<String> file_paths = get_gdnative_singletons(dir);
 
 	Array files;
@@ -118,10 +117,9 @@ GDNativeSingletonDiscover *discoverer = NULL;
 
 static void editor_init_callback() {
 
-	GDNativeLibraryEditor *library_editor = memnew( GDNativeLibraryEditor );
+	GDNativeLibraryEditor *library_editor = memnew(GDNativeLibraryEditor);
 	library_editor->set_name(TTR("GDNative"));
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
-
 
 	discoverer = memnew(GDNativeSingletonDiscover);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");

@@ -609,7 +609,6 @@ private:
 
 	void _license_tree_selected();
 
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
