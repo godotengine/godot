@@ -2793,11 +2793,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						int ini = selection.from_line;
 						int end = selection.to_line;
 						for (int i = ini; i <= end; i++) {
-							if (text[i][0] == '#')
+							if (get_line(i).begins_with("#"))
 								_remove_text(i, 0, i, 1);
 						}
 					} else {
-						if (text[cursor.line][0] == '#')
+						if (get_line(cursor.line).begins_with("#"))
 							_remove_text(cursor.line, 0, cursor.line, 1);
 					}
 					update();
