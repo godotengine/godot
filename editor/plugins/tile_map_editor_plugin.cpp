@@ -72,6 +72,14 @@ void TileMapEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 
+		case OPTION_PAINTING: {
+			// NOTE: We do not set tool = TOOL_PAINTING as this begins painting
+			// immediately without pressing the left mouse button first
+			tool = TOOL_NONE;
+
+			canvas_item_editor->update();
+
+		} break;
 		case OPTION_BUCKET: {
 
 			tool = TOOL_BUCKET;
@@ -703,7 +711,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				return true;
 
 			} else {
-
+				// Mousebutton was released
 				if (tool != TOOL_NONE) {
 
 					if (tool == TOOL_PAINTING) {
@@ -801,6 +809,9 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						undo_redo->add_undo_method(this, "_fill_points", points, pop);
 
 						undo_redo->commit_action();
+
+						// We want to keep the bucket-tool active
+						return true;
 					}
 
 					tool = TOOL_NONE;
@@ -1046,9 +1057,25 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		if (tool != TOOL_NONE || !mouse_over)
+		if (!mouse_over) {
+			// Editor shortcuts should not fire if mouse not in viewport
 			return false;
+		}
 
+		if (ED_IS_SHORTCUT("tile_map_editor/paint_tile", p_event)) {
+			// NOTE: We do not set tool = TOOL_PAINTING as this begins painting
+			// immediately without pressing the left mouse button first
+			tool = TOOL_NONE;
+			canvas_item_editor->update();
+
+			return true;
+		}
+		if (ED_IS_SHORTCUT("tile_map_editor/bucket_fill", p_event)) {
+			tool = TOOL_BUCKET;
+			canvas_item_editor->update();
+
+			return true;
+		}
 		if (ED_IS_SHORTCUT("tile_map_editor/erase_selection", p_event)) {
 			_menu_option(OPTION_ERASE_SELECTION);
 
@@ -1458,7 +1485,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase selection"), KEY_DELETE);
 	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find tile"), KEY_MASK_CMD + KEY_F);
-	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"));
+	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"), KEY_T);
 	ED_SHORTCUT("tile_map_editor/mirror_x", TTR("Mirror X"), KEY_A);
 	ED_SHORTCUT("tile_map_editor/mirror_y", TTR("Mirror Y"), KEY_S);
 
@@ -1512,7 +1539,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	PopupMenu *p = options->get_popup();
 
-	p->add_item(TTR("Bucket"), OPTION_BUCKET);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P), OPTION_PAINTING);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_G), OPTION_BUCKET);
 	p->add_separator();
 	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
