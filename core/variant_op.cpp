@@ -493,7 +493,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
-				DEFAULT_OP_FAIL(COLOR);
+				DEFAULT_OP_LOCALMEM(+, COLOR, Color);
 
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
@@ -549,7 +549,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
-				DEFAULT_OP_FAIL(COLOR);
+				DEFAULT_OP_LOCALMEM(-, COLOR, Color);
 
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
@@ -645,7 +645,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					r_valid = false;
 					return;
 				} break;
-					DEFAULT_OP_FAIL(COLOR);
+					DEFAULT_OP_LOCALMEM_NUM(*, COLOR, Color);
 
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
@@ -717,7 +717,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					DEFAULT_OP_FAIL(BASIS);
 					DEFAULT_OP_FAIL(TRANSFORM);
 
-					DEFAULT_OP_FAIL(COLOR);
+					DEFAULT_OP_LOCALMEM_NUM(/, COLOR, Color);
 
 					DEFAULT_OP_FAIL(NODE_PATH);
 					DEFAULT_OP_FAIL(_RID);
@@ -797,7 +797,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
-				DEFAULT_OP_FAIL(COLOR);
+				DEFAULT_OP_LOCALMEM_NEG(COLOR, Color);
 
 				DEFAULT_OP_FAIL(NODE_PATH);
 				DEFAULT_OP_FAIL(_RID);
