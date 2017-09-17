@@ -178,7 +178,7 @@ public:
 	void set_border_width_all(int p_size);
 	int get_border_width_min() const;
 
-	void set_border_width(Margin p_margin, int p_size);
+	void set_border_width(Margin p_margin, int p_width);
 	int get_border_width(Margin p_margin) const;
 
 	//blend
@@ -214,7 +214,7 @@ public:
 	int get_shadow_size() const;
 
 	//ANTI_ALIASING
-	void set_anti_aliased(const bool &p_anit_aliasing);
+	void set_anti_aliased(const bool &p_anti_aliased);
 	bool is_anti_aliased() const;
 	//tempAA
 	void set_aa_size(const int &p_aa_size);

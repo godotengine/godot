@@ -3338,9 +3338,9 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
-Error EditorNode::export_preset(const String &preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after) {
+Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after) {
 
-	export_defer.preset = preset;
+	export_defer.preset = p_preset;
 	export_defer.path = p_path;
 	export_defer.debug = p_debug;
 	export_defer.password = p_password;

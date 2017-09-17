@@ -87,8 +87,8 @@ public:
 	Error compile(const String &p_pattern);
 	void _init(const String &p_pattern = "");
 
-	Ref<RegExMatch> search(const String &p_subject, int offset = 0, int end = -1) const;
-	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_start = 0, int p_end = -1) const;
+	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
 
 	bool is_valid() const;
 	String get_pattern() const;

@@ -715,7 +715,7 @@ public:
 
 	void show_warning(const String &p_text, const String &p_title = "Warning!");
 
-	Error export_preset(const String &p_platform, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
+	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
 
 	static void register_editor_types();
 	static void unregister_editor_types();
