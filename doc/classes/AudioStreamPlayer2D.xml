@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Plays audio in 2D.
 	</brief_description>
 	<description>
+		Plays audio that dampens with distance from screen center.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/learning/features/audio/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -69,6 +72,7 @@
 			<argument index="0" name="from_pos" type="float" default="0.0">
 			</argument>
 			<description>
+				Plays the audio from the given position 'from_pos', in seconds.
 			</description>
 		</method>
 		<method name="seek">
@@ -77,6 +81,7 @@
 			<argument index="0" name="to_pos" type="float">
 			</argument>
 			<description>
+				Sets the position from which audio will be played, in seconds.
 			</description>
 		</method>
 		<method name="set_area_mask">
@@ -139,30 +144,40 @@
 			<return type="void">
 			</return>
 			<description>
+				Stops the audio.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask">
+			Areas in which this sound plays.
 		</member>
 		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation">
+			Dampens audio over distance with this as an exponent.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
+			If [code]true[/code], audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
+			Bus on which this audio is playing.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
+			Maximum distance from which audio is still hearable.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
+			If [code]true[/code], audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] object to be played.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
+			Base volume without dampening.
 		</member>
 	</members>
 	<signals>
 		<signal name="finished">
 			<description>
+				Emitted when the audio stops playing.
 			</description>
 		</signal>
 	</signals>
