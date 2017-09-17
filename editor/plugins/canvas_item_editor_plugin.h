@@ -81,11 +81,16 @@ class CanvasItemEditor : public VBoxContainer {
 
 	enum MenuOption {
 		SNAP_USE,
-		SNAP_SHOW_GRID,
+		SNAP_USE_NODE_PARENT,
+		SNAP_USE_NODE_ANCHORS,
+		SNAP_USE_NODE_SIDES,
+		SNAP_USE_OTHER_NODES,
+		SNAP_USE_GRID,
 		SNAP_USE_ROTATION,
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
+		SHOW_GRID,
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		LOCK_SELECTED,
@@ -174,6 +179,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *zoom_plus;
 
 	Transform2D transform;
+	bool show_grid;
 	bool show_rulers;
 	bool show_helpers;
 	float zoom;
@@ -184,8 +190,12 @@ class CanvasItemEditor : public VBoxContainer {
 
 	float snap_rotation_step;
 	float snap_rotation_offset;
+	bool snap_active;
+	bool snap_node_parent;
+	bool snap_node_anchors;
+	bool snap_node_sides;
+	bool snap_other_nodes;
 	bool snap_grid;
-	bool snap_show_grid;
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
@@ -251,6 +261,10 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *move_button;
 	ToolButton *rotate_button;
 
+	ToolButton *snap_button;
+	MenuButton *snap_config_menu;
+	PopupMenu *smartsnap_config_popup;
+
 	ToolButton *pivot_button;
 	ToolButton *pan_button;
 
@@ -260,8 +274,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *group_button;
 	ToolButton *ungroup_button;
 
-	MenuButton *edit_menu;
-	PopupMenu *skeleton_menu;
+	MenuButton *skeleton_menu;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -378,6 +391,8 @@ class CanvasItemEditor : public VBoxContainer {
 	void _zoom_reset();
 	void _zoom_plus();
 
+	void _toggle_snap(bool p_status);
+
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
 
@@ -432,7 +447,7 @@ public:
 		SNAP_DEFAULT = 0x03,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL);
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }

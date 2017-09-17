@@ -264,7 +264,7 @@ void CanvasItemEditor::_snap_other_nodes(Point2 p_value, Point2 &r_current_snap,
 	}
 }
 
-Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const CanvasItem *p_canvas_item) {
+Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const CanvasItem *p_canvas_item, unsigned int p_forced_modes) {
 	Point2 dist[2];
 	bool snapped[2] = { false, false };
 
@@ -277,7 +277,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		Point2 end;
 		rotation = p_canvas_item->get_global_transform_with_canvas().get_rotation();
 
-		if (p_modes & SNAP_NODE_PARENT) {
+		if ((snap_active && snap_node_parent && (p_modes & SNAP_NODE_PARENT)) || (p_forced_modes & SNAP_NODE_PARENT)) {
 			// Parent sides and center
 			bool can_snap = false;
 			if (const Control *c = Object::cast_to<Control>(p_canvas_item)) {
@@ -298,7 +298,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Self anchors (for sides)
-		if (p_modes & SNAP_NODE_ANCHORS) {
+		if ((snap_active && snap_node_anchors && (p_modes & SNAP_NODE_ANCHORS)) || (p_forced_modes & SNAP_NODE_ANCHORS)) {
 			if (const Control *c = Object::cast_to<Control>(p_canvas_item)) {
 				begin = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_LEFT), c->get_anchor(MARGIN_TOP))));
 				end = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_RIGHT), c->get_anchor(MARGIN_BOTTOM))));
@@ -308,7 +308,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Self sides (for anchors)
-		if (p_modes & SNAP_NODE_SIDES) {
+		if ((snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
 			begin = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->get_item_rect().get_position());
 			end = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->get_item_rect().get_position() + p_canvas_item->get_item_rect().get_size());
 			_snap_if_closer(p_target, begin, output, snapped, rotation);
@@ -316,12 +316,12 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 
 		// Other nodes sides
-		if (p_modes & SNAP_OTHER_NODES) {
+		if ((snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
 			_snap_other_nodes(p_target, output, snapped, get_tree()->get_edited_scene_root(), p_canvas_item);
 		}
 	}
 
-	if ((p_modes & SNAP_GRID) && snap_grid && rotation == 0.0) {
+	if (((snap_active && snap_grid && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && rotation == 0.0) {
 		// Grid
 		Point2 offset = grid_offset;
 		if (snap_relative) {
@@ -336,9 +336,11 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		grid_output.x = Math::stepify(p_target.x - offset.x, grid_step.x * Math::pow(2.0, grid_step_multiplier)) + offset.x;
 		grid_output.y = Math::stepify(p_target.y - offset.y, grid_step.y * Math::pow(2.0, grid_step_multiplier)) + offset.y;
 		_snap_if_closer(p_target, grid_output, output, snapped, 0.0, -1.0);
-	} else if ((p_modes & SNAP_PIXEL) && snap_pixel && rotation == 0.0) {
+	}
+
+	if (((snap_pixel && (p_modes & SNAP_PIXEL)) || (p_forced_modes & SNAP_PIXEL)) && rotation == 0.0) {
 		// Pixel
-		output = p_target.snapped(Size2(1, 1));
+		output = output.snapped(Size2(1, 1));
 	}
 
 	return output;
@@ -375,12 +377,12 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 					_edit_set_pivot(mouse_pos);
 				}
 			}
-		} else if ((snap_grid || snap_show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
+		} else if ((snap_grid || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
 			// Multiply the grid size
 			grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
 			viewport_base->update();
 			viewport->update();
-		} else if ((snap_grid || snap_show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
+		} else if ((snap_grid || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
 			// Divide the grid size
 			Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
 			if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0)
@@ -421,8 +423,13 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["grid_step"] = grid_step;
 	state["snap_rotation_offset"] = snap_rotation_offset;
 	state["snap_rotation_step"] = snap_rotation_step;
+	state["snap_active"] = snap_active;
+	state["snap_node_parent"] = snap_node_parent;
+	state["snap_node_anchors"] = snap_node_anchors;
+	state["snap_node_sides"] = snap_node_sides;
+	state["snap_other_nodes"] = snap_other_nodes;
 	state["snap_grid"] = snap_grid;
-	state["snap_show_grid"] = snap_show_grid;
+	state["show_grid"] = show_grid;
 	state["show_rulers"] = show_rulers;
 	state["show_helpers"] = show_helpers;
 	state["snap_rotation"] = snap_rotation;
@@ -461,16 +468,45 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		snap_rotation_offset = state["snap_rotation_offset"];
 	}
 
-	if (state.has("snap_grid")) {
-		snap_grid = state["snap_grid"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
-		edit_menu->get_popup()->set_item_checked(idx, snap_grid);
+	if (state.has("snap_active")) {
+		snap_active = state["snap_active"];
+		snap_button->set_pressed(snap_active);
 	}
 
-	if (state.has("snap_show_grid")) {
-		snap_show_grid = state["snap_show_grid"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_SHOW_GRID);
-		edit_menu->get_popup()->set_item_checked(idx, snap_show_grid);
+	if (state.has("snap_node_parent")) {
+		snap_node_parent = state["snap_node_parent"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_PARENT);
+		smartsnap_config_popup->set_item_checked(idx, snap_node_parent);
+	}
+
+	if (state.has("snap_node_anchors")) {
+		snap_node_anchors = state["snap_node_anchors"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_ANCHORS);
+		smartsnap_config_popup->set_item_checked(idx, snap_node_anchors);
+	}
+
+	if (state.has("snap_node_sides")) {
+		snap_node_sides = state["snap_node_sides"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_SIDES);
+		smartsnap_config_popup->set_item_checked(idx, snap_node_sides);
+	}
+
+	if (state.has("snap_other_nodes")) {
+		snap_other_nodes = state["snap_other_nodes"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_OTHER_NODES);
+		smartsnap_config_popup->set_item_checked(idx, snap_other_nodes);
+	}
+
+	if (state.has("snap_grid")) {
+		snap_grid = state["snap_grid"];
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_GRID);
+		snap_config_menu->get_popup()->set_item_checked(idx, snap_grid);
+	}
+
+	if (state.has("show_grid")) {
+		show_grid = state["show_grid"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
+		view_menu->get_popup()->set_item_checked(idx, show_grid);
 	}
 
 	if (state.has("show_rulers")) {
@@ -487,26 +523,26 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
 	if (state.has("snap_rotation")) {
 		snap_rotation = state["snap_rotation"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
-		edit_menu->get_popup()->set_item_checked(idx, snap_rotation);
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
+		snap_config_menu->get_popup()->set_item_checked(idx, snap_rotation);
 	}
 
 	if (state.has("snap_relative")) {
 		snap_relative = state["snap_relative"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
-		edit_menu->get_popup()->set_item_checked(idx, snap_relative);
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+		snap_config_menu->get_popup()->set_item_checked(idx, snap_relative);
 	}
 
 	if (state.has("snap_pixel")) {
 		snap_pixel = state["snap_pixel"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
-		edit_menu->get_popup()->set_item_checked(idx, snap_pixel);
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
+		snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 	}
 
 	if (state.has("skeleton_show_bones")) {
 		skeleton_show_bones = state["skeleton_show_bones"];
-		int idx = skeleton_menu->get_item_index(SKELETON_SHOW_BONES);
-		skeleton_menu->set_item_checked(idx, skeleton_show_bones);
+		int idx = skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES);
+		skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 	}
 
 	viewport->update();
@@ -1719,7 +1755,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 				Vector2 anchor = c_trans_rev.xform(dto - drag_from + drag_point_from);
 				anchor = _position_to_anchor(control, anchor);
 
-				Vector2 anchor_snapped = c_trans_rev.xform(snap_point(dto - drag_from + drag_point_from, SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_NODE_SIDES, _get_single_item()));
+				Vector2 anchor_snapped = c_trans_rev.xform(snap_point(dto - drag_from + drag_point_from, SNAP_GRID | SNAP_OTHER_NODES, _get_single_item(), SNAP_NODE_PARENT | SNAP_NODE_SIDES));
 				anchor_snapped = _position_to_anchor(control, anchor_snapped).snapped(Vector2(0.00001, 0.00001));
 
 				bool use_y = Math::abs(drag_vector.y) > Math::abs(drag_vector.x);
@@ -2050,7 +2086,7 @@ void CanvasItemEditor::_draw_rulers() {
 
 	// The rule transform
 	Transform2D ruler_transform;
-	if (snap_show_grid || snap_grid) {
+	if (show_grid || snap_grid) {
 		ruler_transform = Transform2D();
 		if (snap_relative && get_item_count() > 0) {
 			ruler_transform.translate(_find_topleftmost_point());
@@ -2131,7 +2167,7 @@ void CanvasItemEditor::_draw_focus() {
 }
 
 void CanvasItemEditor::_draw_grid() {
-	if (snap_show_grid) {
+	if (show_grid) {
 		//Draw the grid
 		Size2 s = viewport->get_size();
 		int last_cell = 0;
@@ -2758,6 +2794,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
 		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
 		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
+		snap_button->set_icon(get_icon("Snap", "EditorIcons"));
+		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
 		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
 		select_handle = get_icon("EditorHandle", "EditorIcons");
@@ -2806,6 +2845,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
 		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
 		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
+		snap_button->set_icon(get_icon("Snap", "EditorIcons"));
+		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
 		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
 		select_handle = get_icon("EditorHandle", "EditorIcons");
@@ -3042,41 +3084,65 @@ void CanvasItemEditor::_zoom_plus() {
 	viewport_base->update();
 }
 
+void CanvasItemEditor::_toggle_snap(bool p_status) {
+	snap_active = p_status;
+	viewport->update();
+	viewport_base->update();
+}
+
 void CanvasItemEditor::_popup_callback(int p_op) {
 
 	last_option = MenuOption(p_op);
 	switch (p_op) {
 
-		case SNAP_USE: {
-			snap_grid = !snap_grid;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
-			edit_menu->get_popup()->set_item_checked(idx, snap_grid);
+		case SHOW_GRID: {
+			show_grid = !show_grid;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
+			view_menu->get_popup()->set_item_checked(idx, show_grid);
 			viewport->update();
 			viewport_base->update();
 		} break;
-		case SNAP_SHOW_GRID: {
-			snap_show_grid = !snap_show_grid;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_SHOW_GRID);
-			edit_menu->get_popup()->set_item_checked(idx, snap_show_grid);
-			viewport->update();
-			viewport_base->update();
+		case SNAP_USE_NODE_PARENT: {
+			snap_node_parent = !snap_node_parent;
+			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_PARENT);
+			smartsnap_config_popup->set_item_checked(idx, snap_node_parent);
+		} break;
+		case SNAP_USE_NODE_ANCHORS: {
+			snap_node_anchors = !snap_node_anchors;
+			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_ANCHORS);
+			smartsnap_config_popup->set_item_checked(idx, snap_node_anchors);
+		} break;
+		case SNAP_USE_NODE_SIDES: {
+			snap_node_sides = !snap_node_sides;
+			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_SIDES);
+			smartsnap_config_popup->set_item_checked(idx, snap_node_sides);
+		} break;
+		case SNAP_USE_OTHER_NODES: {
+			snap_other_nodes = !snap_other_nodes;
+			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_OTHER_NODES);
+			smartsnap_config_popup->set_item_checked(idx, snap_other_nodes);
+		} break;
+		case SNAP_USE_GRID: {
+			snap_grid = !snap_grid;
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_GRID);
+			snap_config_menu->get_popup()->set_item_checked(idx, snap_grid);
 		} break;
 		case SNAP_USE_ROTATION: {
 			snap_rotation = !snap_rotation;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
-			edit_menu->get_popup()->set_item_checked(idx, snap_rotation);
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
+			snap_config_menu->get_popup()->set_item_checked(idx, snap_rotation);
 		} break;
 		case SNAP_RELATIVE: {
 			snap_relative = !snap_relative;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
-			edit_menu->get_popup()->set_item_checked(idx, snap_relative);
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+			snap_config_menu->get_popup()->set_item_checked(idx, snap_relative);
 			viewport->update();
 			viewport_base->update();
 		} break;
 		case SNAP_USE_PIXEL: {
 			snap_pixel = !snap_pixel;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
-			edit_menu->get_popup()->set_item_checked(idx, snap_pixel);
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
+			snap_config_menu->get_popup()->set_item_checked(idx, snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
 			((SnapDialog *)snap_dialog)->set_fields(grid_offset, grid_step, snap_rotation_offset, snap_rotation_step);
@@ -3084,8 +3150,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SKELETON_SHOW_BONES: {
 			skeleton_show_bones = !skeleton_show_bones;
-			int idx = skeleton_menu->get_item_index(SKELETON_SHOW_BONES);
-			skeleton_menu->set_item_checked(idx, skeleton_show_bones);
+			int idx = skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES);
+			skeleton_menu->get_popup()->set_item_checked(idx, skeleton_show_bones);
 			viewport->update();
 		} break;
 		case SHOW_HELPERS: {
@@ -3448,7 +3514,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				n2d->set_meta("_edit_bone_", true);
 				if (!skeleton_show_bones)
-					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
+					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
 			viewport->update();
 
@@ -3467,7 +3533,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				n2d->set_meta("_edit_bone_", Variant());
 				if (!skeleton_show_bones)
-					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
+					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
 			viewport->update();
 
@@ -3487,7 +3553,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				canvas_item->set_meta("_edit_ik_", true);
 				if (!skeleton_show_bones)
-					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
+					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
 
 			viewport->update();
@@ -3507,7 +3573,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				n2d->set_meta("_edit_ik_", Variant());
 				if (!skeleton_show_bones)
-					skeleton_menu->activate_item(skeleton_menu->get_item_index(SKELETON_SHOW_BONES));
+					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
 			viewport->update();
 
@@ -3573,6 +3639,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_zoom_minus", &CanvasItemEditor::_zoom_minus);
 	ClassDB::bind_method("_zoom_reset", &CanvasItemEditor::_zoom_reset);
 	ClassDB::bind_method("_zoom_plus", &CanvasItemEditor::_zoom_plus);
+	ClassDB::bind_method("_toggle_snap", &CanvasItemEditor::_toggle_snap);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
@@ -3735,6 +3802,41 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	hb->add_child(memnew(VSeparator));
 
+	snap_button = memnew(ToolButton);
+	hb->add_child(snap_button);
+	snap_button->set_toggle_mode(true);
+	snap_button->connect("toggled", this, "_toggle_snap");
+	snap_button->set_tooltip(TTR("Toggles snapping"));
+	snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap"), KEY_S));
+
+	snap_config_menu = memnew(MenuButton);
+	hb->add_child(snap_config_menu);
+	snap_config_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
+	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
+	snap_config_menu->set_tooltip(TTR("Snapping options"));
+
+	PopupMenu *p = snap_config_menu->get_popup();
+	p->connect("id_pressed", this, "_popup_callback");
+	p->set_hide_on_checkable_item_selection(false);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_grid", TTR("Snap to grid")), SNAP_USE_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap...")), SNAP_CONFIGURE);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Relative")), SNAP_RELATIVE);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
+	p->add_submenu_item(TTR("Smart snapping"), "SmartSnapping");
+
+	smartsnap_config_popup = memnew(PopupMenu);
+	p->add_child(smartsnap_config_popup);
+	smartsnap_config_popup->set_name("SmartSnapping");
+	smartsnap_config_popup->connect("id_pressed", this, "_popup_callback");
+	smartsnap_config_popup->set_hide_on_checkable_item_selection(false);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_parent", TTR("Snap to parent")), SNAP_USE_NODE_PARENT);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_anchors", TTR("Snap to node anchor")), SNAP_USE_NODE_ANCHORS);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_sides", TTR("Snap to node sides")), SNAP_USE_NODE_SIDES);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_other_nodes", TTR("Snap to other nodes")), SNAP_USE_OTHER_NODES);
+
+	hb->add_child(memnew(VSeparator));
+
 	lock_button = memnew(ToolButton);
 	hb->add_child(lock_button);
 
@@ -3758,35 +3860,23 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	hb->add_child(memnew(VSeparator));
 
-	edit_menu = memnew(MenuButton);
-	edit_menu->set_text(TTR("Edit"));
-	hb->add_child(edit_menu);
-	edit_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
+	skeleton_menu = memnew(MenuButton);
+	hb->add_child(skeleton_menu);
 
-	PopupMenu *p;
-	p = edit_menu->get_popup();
+	p = skeleton_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap"), KEY_S), SNAP_USE);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Show Grid"), KEY_G), SNAP_SHOW_GRID);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Relative")), SNAP_RELATIVE);
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap..")), SNAP_CONFIGURE);
+	p->connect("id_pressed", this, "_popup_callback");
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
 	p->add_separator();
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_show_bones", TTR("Show Bones")), SKELETON_SHOW_BONES);
 	p->add_separator();
-	p->add_submenu_item(TTR("Skeleton.."), "skeleton");
-	skeleton_menu = memnew(PopupMenu);
-	p->add_child(skeleton_menu);
-	skeleton_menu->set_name("skeleton");
-	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
-	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
-	skeleton_menu->add_separator();
-	skeleton_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_show_bones", TTR("Show Bones")), SKELETON_SHOW_BONES);
-	skeleton_menu->add_separator();
-	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
-	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
-	skeleton_menu->set_hide_on_checkable_item_selection(false);
-	skeleton_menu->connect("id_pressed", this, "_popup_callback");
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
+	p->set_hide_on_checkable_item_selection(false);
+	p->connect("id_pressed", this, "_popup_callback");
+
+	hb->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
@@ -3794,7 +3884,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	view_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
 
 	p = view_menu->get_popup();
-
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Show Grid"), KEY_G), SHOW_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show helpers"), KEY_H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show rulers"), KEY_R), SHOW_RULERS);
 	p->add_separator();
@@ -3885,6 +3975,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot = true;
 	key_scale = false;
 
+	show_grid = false;
 	show_helpers = false;
 	show_rulers = false;
 	zoom = 1;
@@ -3893,12 +3984,16 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	grid_step_multiplier = 0;
 	snap_rotation_offset = 0;
 	snap_rotation_step = 15 / (180 / Math_PI);
-	snap_grid = false;
-	snap_show_grid = false;
+	snap_active = false;
+	snap_node_parent = true;
+	snap_node_anchors = true;
+	snap_node_sides = true;
+	snap_other_nodes = true;
+	snap_grid = true;
 	snap_rotation = false;
 	snap_pixel = false;
 	skeleton_show_bones = true;
-	skeleton_menu->set_item_checked(skeleton_menu->get_item_index(SKELETON_SHOW_BONES), true);
+	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	box_selecting = false;
 	//zoom=0.5;
 	singleton = this;

@@ -52,7 +52,7 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_button[UV_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
 
 			b_snap_grid->set_icon(get_icon("Grid", "EditorIcons"));
-			b_snap_enable->set_icon(get_icon("Snap", "EditorIcons"));
+			b_snap_enable->set_icon(get_icon("SnapGrid", "EditorIcons"));
 			uv_icon_zoom->set_texture(get_icon("Zoom", "EditorIcons"));
 
 			get_tree()->connect("node_removed", this, "_node_removed");
