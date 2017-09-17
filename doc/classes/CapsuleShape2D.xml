@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CapsuleShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Capsule 2D shape resource for physics.
+		Capsule shape for 2D collisions.
 	</brief_description>
 	<description>
-		Capsule 2D shape resource for physics. A capsule (or sometimes called "pill") is like a line grown in all directions. It has a radius and a height, and is often useful for modeling biped characters.
+		Capsule shape for 2D collisions.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -46,8 +46,10 @@
 	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height">
+			The capsule's height.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+			The capsules's radius.
 		</member>
 	</members>
 	<constants>

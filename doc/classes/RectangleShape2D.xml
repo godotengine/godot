@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RectangleShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Rectangle Shape for 2D Physics.
+		Rectangle shape for 2D collisions.
 	</brief_description>
 	<description>
-		Rectangle Shape for 2D Physics. This shape is useful for modeling box-like 2D objects.
+		Rectangle shape for 2D collisions. This shape is useful for modeling box-like 2D objects.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 	</methods>
 	<members>
 		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents">
+			The rectangle's half extents. The width and height of this shape is twice the half extents.
 		</member>
 	</members>
 	<constants>

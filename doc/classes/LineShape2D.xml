@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LineShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Line shape for 2D collision objects.
+		Line shape for 2D collisions.
 	</brief_description>
 	<description>
-		Line shape for 2D collision objects. It works like a 2D plane and will not allow any body to go to the negative side. Not recommended for rigid bodies, and usually not recommended for static bodies either because it forces checks against it on every frame.
+		Line shape for 2D collisions. It works like a 2D plane and will not allow any body to go to the negative side. Not recommended for rigid bodies, and usually not recommended for static bodies either because it forces checks against it on every frame.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -46,8 +46,10 @@
 	</methods>
 	<members>
 		<member name="d" type="float" setter="set_d" getter="get_d">
+			The line's distance from the origin.
 		</member>
 		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal">
+			The line's normal.
 		</member>
 	</members>
 	<constants>
