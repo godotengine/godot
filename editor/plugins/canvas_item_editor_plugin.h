@@ -58,6 +58,8 @@ public:
 	Vector2 prev_pivot;
 	float prev_anchors[4];
 
+	Transform2D pre_drag_xform;
+
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
 
