@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CanvasLayer" inherits="Node" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Canvas Item layer.
+		Canvas drawing layer.
 	</brief_description>
 	<description>
-		Canvas Item layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
+		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -131,12 +131,16 @@
 	</methods>
 	<members>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer">
+			Layer index for draw order. Lower values are drawn first. Default value: [code]1[/code].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The layer's base offset.
 		</member>
 		<member name="rotation" type="float" setter="set_rotationd" getter="get_rotationd">
+			The layer's rotation in degrees.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale">
+			The layer's scale.
 		</member>
 	</members>
 	<constants>
