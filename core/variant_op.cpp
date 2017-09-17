@@ -87,7 +87,6 @@ bool Variant::booleanize(bool &r_valid) const {
 #define DEFAULT_OP_NUM(m_op, m_name, m_type)                           \
 	case m_name: {                                                     \
 		switch (p_b.type) {                                            \
-			case BOOL: _RETURN(p_a._data.m_type m_op p_b._data._bool); \
 			case INT: _RETURN(p_a._data.m_type m_op p_b._data._int);   \
 			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real); \
 			default: {}                                                \
@@ -479,7 +478,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 			switch (p_a.type) {
 
 				DEFAULT_OP_FAIL(NIL);
-				DEFAULT_OP_NUM(+, BOOL, _bool);
+				DEFAULT_OP_FAIL(BOOL);
 				DEFAULT_OP_NUM(+, INT, _int);
 				DEFAULT_OP_NUM(+, REAL, _real);
 				DEFAULT_OP_STR(+, STRING, String);
@@ -535,7 +534,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 			switch (p_a.type) {
 
 				DEFAULT_OP_FAIL(NIL);
-				DEFAULT_OP_NUM(-, BOOL, _bool);
+				DEFAULT_OP_FAIL(BOOL);
 				DEFAULT_OP_NUM(-, INT, _int);
 				DEFAULT_OP_NUM(-, REAL, _real);
 				DEFAULT_OP_FAIL(STRING);
@@ -574,7 +573,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 			switch (p_a.type) {
 
 				DEFAULT_OP_FAIL(NIL);
-				DEFAULT_OP_NUM(*, BOOL, _bool);
+				DEFAULT_OP_FAIL(BOOL);
 				DEFAULT_OP_NUM_VEC(*, INT, _int);
 				DEFAULT_OP_NUM_VEC(*, REAL, _real);
 				DEFAULT_OP_FAIL(STRING);
@@ -668,44 +667,16 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 		} break;
 		case OP_DIVIDE: {
 			switch (p_a.type) {
-
 				DEFAULT_OP_FAIL(NIL);
-				DEFAULT_OP_NUM(/, BOOL, _bool);
-				case INT: {
-					switch (p_b.type) {
-						case BOOL: {
-							int64_t b = p_b._data._bool;
-							if (b == 0) {
-
-								r_valid = false;
-								_RETURN("Division By False");
-							}
-							_RETURN(p_a._data._int / b);
-
-						} break;
-						case INT: {
-							int64_t b = p_b._data._int;
-							if (b == 0) {
-
-								r_valid = false;
-								_RETURN("Division By Zero");
-							}
-							_RETURN(p_a._data._int / b);
-
-						} break;
-						case REAL: _RETURN(p_a._data._int / p_b._data._real);
-						default: {}
-					}
-					r_valid = false;
-					return;
-				};
-					DEFAULT_OP_NUM(/, REAL, _real);
-					DEFAULT_OP_FAIL(STRING);
-					DEFAULT_OP_LOCALMEM_NUM(/, VECTOR2, Vector2);
-					DEFAULT_OP_FAIL(RECT2);
-					DEFAULT_OP_FAIL(TRANSFORM2D);
-					DEFAULT_OP_LOCALMEM_NUM(/, VECTOR3, Vector3);
-					DEFAULT_OP_FAIL(PLANE);
+				DEFAULT_OP_FAIL(BOOL);
+				DEFAULT_OP_NUM(/, INT, _int);
+				DEFAULT_OP_NUM(/, REAL, _real);
+				DEFAULT_OP_FAIL(STRING);
+				DEFAULT_OP_LOCALMEM_NUM(/, VECTOR2, Vector2);
+				DEFAULT_OP_FAIL(RECT2);
+				DEFAULT_OP_FAIL(TRANSFORM2D);
+				DEFAULT_OP_LOCALMEM_NUM(/, VECTOR3, Vector3);
+				DEFAULT_OP_FAIL(PLANE);
 				case QUAT: {
 					if (p_b.type != REAL) {
 						r_valid = false;
