@@ -56,10 +56,13 @@
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
+			Raw audio data.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
+			If [code]true[/code], audio will loop continuously. Default value: [code]false[/code].
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset">
+			If loop is [code]true[/code], loop starts from this position, in seconds.
 		</member>
 	</members>
 	<constants>
