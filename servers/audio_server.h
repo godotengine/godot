@@ -35,6 +35,8 @@
 #include "servers/audio/audio_effect.h"
 #include "variant.h"
 
+class AudioDriverDummy;
+
 class AudioDriver {
 
 	static AudioDriver *singleton;
@@ -90,8 +92,11 @@ class AudioDriverManager {
 	static AudioDriver *drivers[MAX_DRIVERS];
 	static int driver_count;
 
+	static AudioDriverDummy dummy_driver;
+
 public:
 	static void add_driver(AudioDriver *p_driver);
+	static void initialize(int p_driver);
 	static int get_driver_count();
 	static AudioDriver *get_driver(int p_driver);
 };

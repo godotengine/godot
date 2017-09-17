@@ -137,11 +137,7 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	//physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
-	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
-		ERR_PRINT("Initializing audio failed.");
-	}
+	AudioDriverManager::initialize(p_audio_driver);
 
 	power_manager = memnew(PowerHaiku);
 }
