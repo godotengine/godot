@@ -183,17 +183,18 @@ void DirAccessUnix::list_dir_end() {
 	_cisdir = false;
 }
 
-#ifdef HAVE_MNTENT
+#if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 static bool _filter_drive(struct mntent *mnt) {
 	// Ignore devices that don't point to /dev
 	if (strncmp(mnt->mnt_fsname, "/dev", 4) != 0) {
 		return false;
 	}
 
-	// Accept devices mounted at /media, /mnt or /home
+	// Accept devices mounted at common locations
 	if (strncmp(mnt->mnt_dir, "/media", 6) == 0 ||
 			strncmp(mnt->mnt_dir, "/mnt", 4) == 0 ||
-			strncmp(mnt->mnt_dir, "/home", 5) == 0) {
+			strncmp(mnt->mnt_dir, "/home", 5) == 0 ||
+			strncmp(mnt->mnt_dir, "/run/media", 10) == 0) {
 		return true;
 	}
 
@@ -204,7 +205,7 @@ static bool _filter_drive(struct mntent *mnt) {
 
 static void _get_drives(List<String> *list) {
 
-#ifdef HAVE_MNTENT
+#if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions
 	FILE *mtab = setmntent("/etc/mtab", "r");
 	if (mtab) {
