@@ -1682,9 +1682,10 @@ bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool
 			break;
 	}
 	ERR_FAIL_COND_V(!se, false);
-	tab_container->add_child(se);
 
+	// load script before adding as child else editor will crash at theme loading
 	se->set_edited_script(p_script);
+	tab_container->add_child(se);
 	se->set_tooltip_request_func("_get_debug_tooltip", this);
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
