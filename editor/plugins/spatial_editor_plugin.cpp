@@ -92,11 +92,11 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 	Cursor old_camera_cursor = camera_cursor;
 	camera_cursor = cursor;
 
-	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.0, p_interp_delta * (1 / orbit_inertia)));
-	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.0, p_interp_delta * (1 / orbit_inertia)));
+	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
 
-	camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.0, p_interp_delta * (1 / translation_inertia)));
-	camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.0, p_interp_delta * (1 / translation_inertia)));
+	camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
+	camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
 
 	if (p_interp_delta == 0 || is_freelook_active()) {
 		camera_cursor = cursor;
