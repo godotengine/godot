@@ -2804,8 +2804,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 								_remove_text(i, 0, i, 1);
 						}
 					} else {
-						if (get_line(cursor.line).begins_with("#"))
+						if (get_line(cursor.line).begins_with("#")) {
 							_remove_text(cursor.line, 0, cursor.line, 1);
+							if (cursor.column >= get_line(cursor.line).length()) {
+								cursor.column = MAX(0, get_line(cursor.line).length() - 1);
+							}
+						}
 					}
 					update();
 				}
