@@ -540,14 +540,6 @@ void RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int 
 
 		it = _get_next_item(it);
 
-		if (p_mode == PROCESS_POINTER && r_click_item && itp && !it && p_click_pos.y > p_ofs.y + y + lh) {
-			//at the end of all, return this
-			if (r_outside) *r_outside = true;
-			*r_click_item = itp;
-			*r_click_char = rchar;
-			return;
-		}
-
 		if (it && (p_line + 1 < p_frame->lines.size()) && p_frame->lines[p_line + 1].from == it) {
 
 			if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh) {
