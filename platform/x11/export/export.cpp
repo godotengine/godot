@@ -50,6 +50,7 @@ void register_x11_exporter() {
 	platform->set_release_64("linux_x11_64_release");
 	platform->set_debug_64("linux_x11_64_debug");
 	platform->set_os_name("X11");
+	platform->set_chmod_flags(0755);
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }

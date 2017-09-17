@@ -1246,8 +1246,12 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	}
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->copy(template_path, p_path);
+	Error err = da->copy(template_path, p_path, get_chmod_flags());
 	memdelete(da);
+
+	if (err != OK) {
+		return err;
+	}
 
 	String pck_path = p_path.get_basename() + ".pck";
 
@@ -1302,5 +1306,17 @@ void EditorExportPlatformPC::get_platform_features(List<String> *r_features) {
 	}
 }
 
+int EditorExportPlatformPC::get_chmod_flags() const {
+
+	return chmod_flags;
+}
+
+void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
+
+	chmod_flags = p_flags;
+}
+
 EditorExportPlatformPC::EditorExportPlatformPC() {
+
+	chmod_flags = -1;
 }

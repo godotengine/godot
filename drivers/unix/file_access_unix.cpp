@@ -274,6 +274,15 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	};
 }
 
+Error FileAccessUnix::_chmod(const String &p_path, int p_mod) {
+	int err = chmod(p_path.utf8().get_data(), p_mod);
+	if (!err) {
+		return OK;
+	}
+
+	return FAILED;
+}
+
 FileAccess *FileAccessUnix::create_libc() {
 
 	return memnew(FileAccessUnix);

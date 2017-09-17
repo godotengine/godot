@@ -319,6 +319,7 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	Set<String> extra_features;
 
 	bool use64;
+	int chmod_flags;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
@@ -346,6 +347,9 @@ public:
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features);
+
+	int get_chmod_flags() const;
+	void set_chmod_flags(int p_flags);
 
 	EditorExportPlatformPC();
 };
