@@ -82,7 +82,7 @@
 				Returns the arc sine of 's' in radians. Use to get the angle of sine 's'.
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
-				s = asin(0.5)				
+				s = asin(0.5)
 				[/codeblock]
 			</description>
 		</method>
@@ -92,6 +92,14 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
+				Assert that the condition is true. If the condition is false a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always true.
+				[codeblock]
+				# Speed should always be between 0 and 20
+				speed = -10
+				assert(speed < 20) # Is true and program continues
+				assert(speed >= 0) # Is false and program stops
+				assert(speed >= 0 &amp;&amp; speed < 20) # Or combined
+				[/codeblock]
 			</description>
 		</method>
 		<method name="atan">
@@ -100,6 +108,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
+				Returns the arc tangent of 's' in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you always want an exact angle.
+				[codeblock]
+				a = atan(0.5) # a is 0.463648
+				[/codeblock]
 			</description>
 		</method>
 		<method name="atan2">
@@ -110,10 +123,9 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Returns the arc tangent of y/x in radians. Use to get the angle of tangent y/x. To compute the value, the function takes into account the sign of both arguments in order to determine the quadrant.
+				Returns the arc tangent of y/x in radians. Use to get the angle of tangent y/x. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				[codeblock]
-				# a is 3.141593
-				a = atan(0,-1)
+				a = atan(0,-1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -134,10 +146,8 @@
 			<description>
 				Rounds 's' upward, returning the smallest integral value that is not less than 's'.
 				[codeblock]
-				# i is 2
-				i = ceil(1.45)
-				# i is 2
-				i = ceil(1.001)
+				i = ceil(1.45)  # i is 2
+				i = ceil(1.001) # i is 2
 				[/codeblock]
 			</description>
 		</method>
@@ -303,7 +313,10 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns [b]e[/b] raised to the power of 's'. [b]e[/b] sometimes called "Euler's number" is a mathematical constant whose value is approximately 2.71828.
+				Raises the Euler's constant [b]e[/b] to the power of 's' and returns it. [b] has an approximate value of 2.71828.
+				[codeblock]
+				a = exp(2) # approximately 7.39
+				[/codeblock]
 			</description>
 		</method>
 		<method name="floor">
@@ -312,7 +325,13 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the largest integer value (rounded down) that is less than or equal to 's'.
+				Rounds 's' to the closest smaller integer and returns it.
+				[codeblock]
+				# a is 2
+				a = floor(2.99)
+				# a is -3
+				a = floor(-2.99)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="fmod">
@@ -338,6 +357,26 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
+				Returns the floating-point remainder of x/y that wraps equally in positive and negative.
+				[codeblock]
+				var i = -10;
+				while i < 0:
+				    prints(i, fposmod(i, 10))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-10 10
+				-9 1
+				-8 2
+				-7 3
+				-6 4
+				-5 5
+				-4 6
+				-3 7
+				-2 8
+				-1 9
+				[/codeblock]
 			</description>
 		</method>
 		<method name="funcref">
@@ -348,6 +387,14 @@
 			<argument index="1" name="funcname" type="String">
 			</argument>
 			<description>
+				Returns a reference to the specified function 'funcname' in the 'instance' node. As functions aren't first-class objects in GDscript, use 'funcref' to store a function in a variable and call it later.
+				[codeblock]
+				func foo():
+				    return("bar")
+
+				a = funcref(self, "foo")
+				print(a.call_func()) # prints bar
+				[/codeblock]
 			</description>
 		</method>
 		<method name="hash">
@@ -358,8 +405,7 @@
 			<description>
 				Returns the integer hash of the variable passed.
 				[codeblock]
-				# print 177670
-				print(hash("a"))
+				print(hash("a")) # prints 177670
 				[/codeblock]
 			</description>
 		</method>
@@ -396,9 +442,8 @@
 				func _ready():
 				    var id = get_instance_id()
 				    var inst = instance_from_id(id)
-				    print(inst.foo)
+				    print(inst.foo) # prints bar
 				[/codeblock]
-				Prints "bar"
 			</description>
 		</method>
 		<method name="inverse_lerp">
@@ -413,7 +458,7 @@
 			<description>
 				Returns a normalized value considering the given range.
 				[codeblock]
-				inverse_lerp(3, 5, 4) # return 0.5
+				inverse_lerp(3, 5, 4) # returns 0.5
 				[/codeblock]
 			</description>
 		</method>
@@ -444,9 +489,8 @@
 				Returns length of Variant 'var'. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
 				[codeblock]
 				a = [1, 2, 3, 4]
-				print(len(a))
+				len(a) # returns 4
 				[/codeblock]
-				Prints 4
 			</description>
 		</method>
 		<method name="lerp">
@@ -460,6 +504,9 @@
 			</argument>
 			<description>
 				Linear interpolates between two values by a normalized value.
+				[codeblock]
+				lerp(1, 3, 0.5) # returns 2
+				[/codeblock]
 			</description>
 		</method>
 		<method name="linear2db">
@@ -492,8 +539,7 @@
 			<description>
 				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log funcation on your calculator which is a base 10 logarithm.
 				[codeblock]
-				# a is 2.302585
-				a = log(10)
+				log(10) # returns 2.302585
 				[/codeblock]
 			</description>
 		</method>
@@ -507,10 +553,8 @@
 			<description>
 				Returns the maximum of two values.
 				[codeblock]
-				# a is 2
-				a = max(1,2)
-				# a is -3.99
-				a = max(-3.99, -4)
+				max(1,2) # returns 2
+				max(-3.99, -4) # returns -3.99
 				[/codeblock]
 			</description>
 		</method>
@@ -524,10 +568,8 @@
 			<description>
 				Returns the minimum of two values.
 				[codeblock]
-				# a is 1
-				a = min(1,2)
-				# a is -4
-				a = min(-3.99, -4)
+				min(1,2) # returns 1
+				min(-3.99, -4) # returns -4
 				[/codeblock]
 			</description>
 		</method>
@@ -537,14 +579,11 @@
 			<argument index="0" name="val" type="int">
 			</argument>
 			<description>
-				Returns the nearest larger power of 2 for an integer.
+				Returns the nearest larger power of 2 for integer 'val'.
 				[codeblock]
-				# a is 4
-				a = nearest_po2(3)
-				# a is 4
-				a = nearest_po2(4)
-				# a is 8
-				a = nearest_po2(5)
+				nearest_po2(3) # returns 4
+				nearest_po2(4) # returns 4
+				nearest_po2(5) # returns 8
 				[/codeblock]
 			</description>
 		</method>
@@ -559,7 +598,7 @@
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
-				    print(p[0])
+				    print(p[0]) # prints a
 				else:
 				    print("unexpected results")
 				[/codeblock]
@@ -575,8 +614,7 @@
 			<description>
 				Returns the result of 'x' raised to the power of 'y'.
 				[codeblock]
-				# a is 32
-				a = pow(2,5)
+				pow(2,5) # returns 32
 				[/codeblock]
 			</description>
 		</method>
@@ -590,6 +628,7 @@
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
@@ -599,9 +638,8 @@
 				Converts one or more arguments to strings in the best way possible and prints them to the console.
 				[codeblock]
 				a = [1,2,3]
-				print("a","b",a)
+				print("a","b",a) # prints ab[1, 2, 3]
 				[/codeblock]
-				Prints ab[1, 2, 3]
 			</description>
 		</method>
 		<method name="print_stack">
@@ -609,6 +647,10 @@
 			</return>
 			<description>
 				Print a stack track at code location, only works when running with debugger turned on.
+				Output in the console would look something like this:
+				[codeblock]
+				Frame 0 - res://test.gd:16 in function '_process'
+				[/codeblock]
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">
@@ -616,6 +658,9 @@
 			</return>
 			<description>
 				Print one or more arguments to strings in the best way possible to standard error line.
+				[codeblock]
+				printerr("prints to stderr")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="printraw" qualifiers="vararg">
@@ -623,6 +668,11 @@
 			</return>
 			<description>
 				Print one or more arguments to strings in the best way possible to console. No newline is added at the end.
+				[codeblock]
+				printraw("A")
+				printraw("B")
+				# prints AB
+				[/codeblock]
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
@@ -630,6 +680,9 @@
 			</return>
 			<description>
 				Print one or more arguments to the console with a space between each argument.
+				[codeblock]
+				prints("A", "B", "C") # prints A B C
+				[/codeblock]
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
@@ -637,6 +690,9 @@
 			</return>
 			<description>
 				Print one or more arguments to the console with a tab between each argument.
+				[codeblock]
+				printt("A", "B", "C") # prints A       B       C
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rad2deg">
@@ -646,6 +702,9 @@
 			</argument>
 			<description>
 				Convert from radians to degrees.
+				[codeblock]
+				rad2deg(0.523599) # returns 30
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rand_range">
@@ -657,6 +716,9 @@
 			</argument>
 			<description>
 				Random range, any floating point value between 'from' and 'to'.
+				[codeblock]
+				prints(rand_range(0, 1), rand_range(0, 1)) # prints 0.135591 0.405263
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rand_seed">
@@ -673,13 +735,21 @@
 			</return>
 			<description>
 				Return a random floating point value between 0 and 1.
+				[codeblock]
+				randf() # returns 0.375671
+				[/codeblock]
 			</description>
 		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
 			<description>
-				Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use remainder. For example, to get a random integer between 0 and 19 inclusive, you can use randi() % 20.
+				Return a random 32 bit integer. Use remainder to obtain a random value between 0 and N (where N is smaller than 2^32 -1).
+				[codeblock]
+				randi() % 20      # returns random number between 0 and 19
+				randi() % 100     # returns random number between 0 and 99
+				randi() % 100 + 1 # returns random number between 1 and 100
+				[/codeblock]
 			</description>
 		</method>
 		<method name="randomize">
@@ -687,6 +757,10 @@
 			</return>
 			<description>
 				Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
+				[codeblock]
+				func _ready():
+				    randomize()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
@@ -694,6 +768,29 @@
 			</return>
 			<description>
 				Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial, final-1, increment).
+				[codeblock]
+				for i in range(4):
+				    print(i)
+				for i in range(2, 5):
+				    print(i)
+				for i in range(0, 6, 2):
+				    print(i)
+				[/codeblock]
+				Output:
+				[codeblock]
+				0
+				1
+				2
+				3
+
+				2
+				3
+				4
+
+				0
+				2
+				4
+				[/codeblock]
 			</description>
 		</method>
 		<method name="range_lerp">
@@ -723,6 +820,9 @@
 			</argument>
 			<description>
 				Returns the integral value that is nearest to s, with halfway cases rounded away from zero.
+				[codeblock]
+				round(2.6) # returns 3
+				[/codeblock]
 			</description>
 		</method>
 		<method name="seed">
@@ -732,6 +832,10 @@
 			</argument>
 			<description>
 				Set seed for the random number generator.
+				[codeblock]
+				my_seed = "Godot Rocks"
+				seed(my_seed.hash())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sign">
@@ -740,7 +844,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Return sign (-1 or +1).
+				Return sign of 's' -1 or 1.
+				[codeblock]
+				sign(-6) # returns -1
+				sign(6)  # returns 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sin">
@@ -749,7 +857,10 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the sine of an angle of s radians.
+				Return the sine of angle 's' in radians.
+				[codeblock]
+				sin(0.523599) # returns 0.5
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sinh">
@@ -758,7 +869,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the hyperbolic sine of s.
+				Return the hyperbolic sine of 's'.
+				[codeblock]
+				a = log(2.0) # returns 0.693147
+				sinh(a) # returns 0.75
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sqrt">
@@ -767,7 +882,10 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the square root of s.
+				Return the square root of 's'.
+				[codeblock]
+				sqrt(9) # returns 3
+				[/codeblock]
 			</description>
 		</method>
 		<method name="stepify">
@@ -786,6 +904,12 @@
 			</return>
 			<description>
 				Convert one or more arguments to string in the best way possible.
+				[codeblock]
+				var a = [10, 20, 30]
+				var b = str(a);
+				len(a) # returns 3
+				len(b) # returns 12
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str2var">
@@ -795,6 +919,11 @@
 			</argument>
 			<description>
 				Convert a formatted string that was returned by [method var2str] to the original value.
+				[codeblock]
+				a = '{ "a": 1, "b": 2 }'
+				b = str2var(a)
+				print(b['a']) # prints 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tan">
@@ -803,7 +932,10 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the tangent of an angle of s radians.
+				Return the tangent of angle 's' in radians.
+				[codeblock]
+				tan( deg2rad(45) ) # returns 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="tanh">
@@ -812,7 +944,11 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the hyperbolic tangent of s.
+				Returns the hyperbolic tangent of 's'.
+				[codeblock]
+				a = log(2.0) # returns 0.693147
+				tanh(a)      # returns 0.6
+				[/codeblock]
 			</description>
 		</method>
 		<method name="to_json">
@@ -821,7 +957,12 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Convert a Variant to json text.
+				Convert a Variant 'var' to json text and return the result. Useful for serializing data to store or send over the network
+				[codeblock]
+				a = { 'a': 1, 'b': 2 }
+				b = to_json(a)
+				print(b) # {"a":1, "b":2}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="type_exists">
@@ -844,6 +985,13 @@
 			</argument>
 			<description>
 				Return the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0]) # prints a
+				else:
+				    print("unexpected results")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="validate_json">
@@ -852,7 +1000,15 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
-				This method is used to validate the structure and data types of a piece of JSON, similar to XML Schema for XML.
+				Check that 'json' is valid json data. Return empty string if valid. Return error message if not valid.
+				[codeblock]
+				j = to_json([1, 2, 3])
+				v = validate_json(j)
+				if not v:
+				    print("valid")
+				else:
+				    prints("invalid", v)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="var2bytes">
@@ -871,6 +1027,17 @@
 			</argument>
 			<description>
 				Convert a value to a formatted string that can later be parsed using [method str2var].
+				[codeblock]
+				a = { 'a': 1, 'b': 2 }
+				print(var2str(a))
+				[/codeblock]
+				prints
+				[codeblock]
+				{
+				"a": 1,
+				"b": 2
+				}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="weakref">
