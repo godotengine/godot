@@ -40,6 +40,16 @@
 const String init_symbol = "godot_gdnative_init";
 const String terminate_symbol = "godot_gdnative_terminate";
 
+#define GDAPI_FUNC(name, ret_type, ...) .name = name,
+#define GDAPI_FUNC_VOID(name, ...) .name = name,
+
+const godot_gdnative_api_struct api_struct = {
+	GODOT_GDNATIVE_API_FUNCTIONS
+};
+
+#undef GDAPI_FUNC
+#undef GDAPI_FUNC_VOID
+
 String GDNativeLibrary::platform_names[NUM_PLATFORMS + 1] = {
 	"X11_32bit",
 	"X11_64bit",
@@ -91,7 +101,7 @@ GDNativeLibrary::Platform GDNativeLibrary::current_platform =
 #endif
 
 GDNativeLibrary::GDNativeLibrary()
-	: library_paths() {
+	: library_paths(), singleton_gdnative(false) {
 }
 
 GDNativeLibrary::~GDNativeLibrary() {
@@ -249,6 +259,7 @@ bool GDNative::initialize() {
 
 	godot_gdnative_init_options options;
 
+	options.api_struct = &api_struct;
 	options.in_editor = Engine::get_singleton()->is_editor_hint();
 	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
