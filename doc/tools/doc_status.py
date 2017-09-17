@@ -253,6 +253,9 @@ class ClassStatus:
                 for sub_tag in list(tag):
                     status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
+            elif tag.tag in ['tutorials', 'demos']:
+                pass  # Ignore those tags for now
+
             elif tag.tag in ['theme_items']:
                 pass  # Ignore those tags, since they seem to lack description at all
 
@@ -361,7 +364,7 @@ if len(input_class_list) < 1:
 ################################################################################
 
 table = [table_column_names]
-table_row_chars = '+- '
+table_row_chars = '| - '
 table_column_chars = '|'
 
 total_status = ClassStatus('Total')
@@ -423,7 +426,7 @@ for row in table:
 
 divider_string = table_row_chars[0]
 for cell_i in range(len(table[0])):
-    divider_string += table_row_chars[1] * (table_column_sizes[cell_i] + 2) + table_row_chars[0]
+    divider_string += table_row_chars[1] + table_row_chars[2] * (table_column_sizes[cell_i]) + table_row_chars[1] + table_row_chars[0]
 print(divider_string)
 
 for row_i, row in enumerate(table):
@@ -431,9 +434,9 @@ for row_i, row in enumerate(table):
     for cell_i, cell in enumerate(row):
         padding_needed = table_column_sizes[cell_i] - nonescape_len(cell) + 2
         if cell_i == 0:
-            row_string += table_row_chars[2] + cell + table_row_chars[2] * (padding_needed - 1)
+            row_string += table_row_chars[3] + cell + table_row_chars[3] * (padding_needed - 1)
         else:
-            row_string += table_row_chars[2] * math.floor(padding_needed / 2) + cell + table_row_chars[2] * math.ceil((padding_needed / 2))
+            row_string += table_row_chars[3] * math.floor(padding_needed / 2) + cell + table_row_chars[3] * math.ceil((padding_needed / 2))
         row_string += table_column_chars
 
     print(row_string)
