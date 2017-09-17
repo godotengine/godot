@@ -4,7 +4,7 @@
 		Box shape resource.
 	</brief_description>
 	<description>
-		Box shape resource, which can be set into a [PhysicsBody] or area.
+		3D box shape that can be a child of a [PhysicsBody] or [Area].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 	</methods>
 	<members>
 		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
+			The shape's half extents.
 		</member>
 	</members>
 	<constants>
