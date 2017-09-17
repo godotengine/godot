@@ -476,7 +476,7 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 	Color font_color = get_color("font_color", "PopupMenu");
 	Color font_color_title = get_color("font_color_hover", "PopupMenu");
 	font_color_title.a *= 0.8;
-	Ref<Texture> slot_icon = get_icon("NodeRealSlot", "EditorIcons");
+	Ref<Texture> slot_icon = get_icon("VisualShaderPort", "EditorIcons");
 
 	Size2 size = get_node_size(p_node);
 	Point2 pos = anim_tree->node_get_pos(p_node);
@@ -599,7 +599,7 @@ void AnimationTreeEditor::_draw_node(const StringName &p_node) {
 
 	if (editable) {
 
-		Ref<Texture> arrow = get_icon("arrow", "Tree");
+		Ref<Texture> arrow = get_icon("GuiDropdown", "EditorIcons");
 		Point2 arrow_ofs(w - arrow->get_width(), Math::floor((h - arrow->get_height()) / 2));
 		arrow->draw(ci, ofs + arrow_ofs);
 	}
@@ -671,7 +671,7 @@ Point2 AnimationTreeEditor::_get_slot_pos(const StringName &p_node_id, bool p_in
 
 	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
 	Ref<Font> font = get_font("font", "PopupMenu");
-	Ref<Texture> slot_icon = get_icon("NodeRealSlot", "EditorIcons");
+	Ref<Texture> slot_icon = get_icon("VisualShaderPort", "EditorIcons");
 
 	Size2 size = get_node_size(p_node_id);
 	Point2 pos = anim_tree->node_get_pos(p_node_id);
