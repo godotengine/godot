@@ -74,7 +74,7 @@ private:
 	struct ExcludedShapeSW {
 		Shape2DSW *local_shape;
 		const CollisionObject2DSW *against_object;
-		Shape2DSW *against_shape;
+		int against_shape_index;
 	};
 
 	uint64_t elapsed_time[ELAPSED_TIME_MAX];

@@ -580,7 +580,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 							ExcludedShapeSW esp;
 							esp.local_shape = body_shape;
 							esp.against_object = col_obj;
-							esp.against_shape = against_shape;
+							esp.against_shape_index = shape_idx;
 							excluded_shape_pairs[excluded_shape_pair_count++] = esp;
 						}
 					}
@@ -649,7 +649,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 				for (int k = 0; k < excluded_shape_pair_count; k++) {
 
-					if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape == against_shape) {
+					if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape_index == shape_idx) {
 						excluded = true;
 						break;
 					}
@@ -780,7 +780,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			bool excluded = false;
 			for (int k = 0; k < excluded_shape_pair_count; k++) {
 
-				if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape == against_shape) {
+				if (excluded_shape_pairs[k].local_shape == body_shape && excluded_shape_pairs[k].against_object == col_obj && excluded_shape_pairs[k].against_shape_index == shape_idx) {
 					excluded = true;
 					break;
 				}
