@@ -286,7 +286,7 @@
 			</description>
 		</method>
 		<method name="get_screen_orientation" qualifiers="const">
-			<return type="int" enum="_OS.ScreenOrientation">
+			<return type="int" enum="OS.ScreenOrientation">
 			</return>
 			<description>
 				Returns the current screen orientation, the return value will be one of the SCREEN_ORIENTATION constants in this class.
@@ -331,7 +331,7 @@
 		<method name="get_system_dir" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="dir" type="int" enum="_OS.SystemDir">
+			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
 			</argument>
 			<description>
 			</description>
@@ -660,7 +660,7 @@
 		<method name="set_screen_orientation">
 			<return type="void">
 			</return>
-			<argument index="0" name="orientation" type="int" enum="_OS.ScreenOrientation">
+			<argument index="0" name="orientation" type="int" enum="OS.ScreenOrientation">
 			</argument>
 			<description>
 				Sets the current screen orientation, the argument value must be one of the SCREEN_ORIENTATION constants in this class.
@@ -840,15 +840,15 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7">
 		</constant>
-		<constant name="OS::POWERSTATE_UNKNOWN" value="0">
+		<constant name="POWERSTATE_UNKNOWN" value="0">
 		</constant>
-		<constant name="OS::POWERSTATE_ON_BATTERY" value="1">
+		<constant name="POWERSTATE_ON_BATTERY" value="1">
 		</constant>
-		<constant name="OS::POWERSTATE_NO_BATTERY" value="2">
+		<constant name="POWERSTATE_NO_BATTERY" value="2">
 		</constant>
-		<constant name="OS::POWERSTATE_CHARGING" value="3">
+		<constant name="POWERSTATE_CHARGING" value="3">
 		</constant>
-		<constant name="OS::POWERSTATE_CHARGED" value="4">
+		<constant name="POWERSTATE_CHARGED" value="4">
 		</constant>
 	</constants>
 </class>

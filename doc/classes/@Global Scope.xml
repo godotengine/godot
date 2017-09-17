@@ -38,6 +38,8 @@
 		<member name="InputMap" type="InputMap" setter="" getter="">
 			[InputMap] singleton
 		</member>
+		<member name="JSON" type="JSON" setter="" getter="">
+		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
 		</member>

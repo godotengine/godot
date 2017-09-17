@@ -388,7 +388,7 @@
 			Shadow filter type. May be one of [code][None, PCF5, PCF9, PCF13][/code]. Default value: [code]None[/code].
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
-			Smoothing value for shadows. 
+			Smoothing value for shadows.
 		</member>
 		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length">
 			Smooth shadow gradient length.

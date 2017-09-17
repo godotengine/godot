@@ -108,12 +108,38 @@
 				Get the name of the current action.
 			</description>
 		</method>
+		<method name="get_max_steps" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_version" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Get the version, each time a new action is committed, the version number of the UndoRedo is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
+			</description>
+		</method>
+		<method name="redo">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_steps">
+			<return type="void">
+			</return>
+			<argument index="0" name="max_steps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="undo">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>

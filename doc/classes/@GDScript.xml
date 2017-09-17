@@ -96,9 +96,9 @@
 				[codeblock]
 				# Speed should always be between 0 and 20
 				speed = -10
-				assert(speed < 20) # Is true and program continues
-				assert(speed >= 0) # Is false and program stops
-				assert(speed >= 0 &amp;&amp; speed < 20) # Or combined
+				assert(speed &lt; 20) # Is true and program continues
+				assert(speed &gt;= 0) # Is false and program stops
+				assert(speed &gt;= 0 &amp;&amp; speed &lt; 20) # Or combined
 				[/codeblock]
 			</description>
 		</method>
@@ -360,7 +360,7 @@
 				Returns the floating-point remainder of x/y that wraps equally in positive and negative.
 				[codeblock]
 				var i = -10;
-				while i < 0:
+				while i &lt; 0:
 				    prints(i, fposmod(i, 10))
 				    i += 1
 				[/codeblock]
