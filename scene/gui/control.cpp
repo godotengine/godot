@@ -809,9 +809,9 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
-	while (theme_owner) {
+	StringName class_name = type;
 
-		StringName class_name = type;
+	while (theme_owner) {
 
 		while (class_name != StringName()) {
 			if (theme_owner->data.theme->has_stylebox(p_name, class_name)) {
@@ -829,6 +829,14 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 			theme_owner = NULL;
 	}
 
+	class_name = type;
+
+	while (class_name != StringName()) {
+		if (Theme::get_default()->has_stylebox(p_name, class_name))
+			return Theme::get_default()->get_stylebox(p_name, class_name);
+
+		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	}
 	return Theme::get_default()->get_stylebox(p_name, type);
 }
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) const {
