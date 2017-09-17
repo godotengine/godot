@@ -599,8 +599,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["global/default_project_export_path"] = PropertyInfo(Variant::STRING, "global/default_project_export_path", PROPERTY_HINT_GLOBAL_DIR);
 	set("interface/show_script_in_scene_tabs", false);
 
-	set("text_editor/theme/color_theme", "Default");
-	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Default");
+	set("text_editor/theme/color_theme", "Adaptive");
+	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default");
 
 	set("text_editor/theme/line_spacing", 4);
 
@@ -924,13 +924,13 @@ void EditorSettings::load_favorites() {
 }
 
 void EditorSettings::list_text_editor_themes() {
-	String themes = "Default";
+	String themes = "Adaptive,Default";
 	DirAccess *d = DirAccess::open(settings_path + "/text_editor_themes");
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (file != String()) {
-			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default") {
+			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default" && file.get_basename().to_lower() != "adaptive") {
 				themes += "," + file.get_basename();
 			}
 			file = d->get_next();
@@ -942,7 +942,7 @@ void EditorSettings::list_text_editor_themes() {
 }
 
 void EditorSettings::load_text_editor_theme() {
-	if (get("text_editor/theme/color_theme") == "Default") {
+	if (get("text_editor/theme/color_theme") == "Default" || get("text_editor/theme/color_theme") == "Adaptive") {
 		_load_default_text_editor_theme(); // sorry for "Settings changed" console spam
 		return;
 	}
@@ -999,7 +999,7 @@ bool EditorSettings::save_text_editor_theme() {
 
 	String p_file = get("text_editor/theme/color_theme");
 
-	if (p_file.get_file().to_lower() == "default") {
+	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive") {
 		return false;
 	}
 	String theme_path = get_settings_path() + "/text_editor_themes/" + p_file + ".tet";
@@ -1011,7 +1011,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		p_file += ".tet";
 	}
 
-	if (p_file.get_file().to_lower() == "default.tet") {
+	if (p_file.get_file().to_lower() == "default.tet" || p_file.get_file().to_lower() == "adaptive.tet") {
 		return false;
 	}
 	if (_save_text_editor_theme(p_file)) {

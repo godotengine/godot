@@ -634,6 +634,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "TextEdit", style_widget);
 	theme->set_stylebox("focus", "TextEdit", style_widget_hover);
 	theme->set_constant("side_margin", "TabContainer", 0);
+	theme->set_icon("tab", "TextEdit", theme->get_icon("GuiTab", "EditorIcons"));
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));
@@ -781,6 +782,80 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// FileDialog
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
+
+	// adaptive script theme constants
+	// for comments and elements with lower relevance
+	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
+
+	const float mono_value = mono_color.r;
+	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.1);
+	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.3);
+	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.5);
+	const Color alpha4 = Color(mono_value, mono_value, mono_value, 0.7);
+
+	// editor main color
+	const Color main_color = Color::html(dark_theme ? "#57b3ff" : "#0480ff");
+
+	const Color symbol_color = Color::html("#5792ff").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
+	const Color keyword_color = main_color.linear_interpolate(mono_color, 0.4);
+	const Color basetype_color = Color::html(dark_theme ? "#42ffc2" : "#00c161");
+	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
+	const Color comment_color = dim_color;
+	const Color string_color = Color::html(dark_theme ? "#ffd942" : "#ffd118").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
+
+	const Color te_background_color = Color(0, 0, 0, 0);
+	const Color completion_background_color = base_color;
+	const Color completion_selected_color = alpha1;
+	const Color completion_existing_color = alpha2;
+	const Color completion_scroll_color = alpha1;
+	const Color completion_font_color = font_color;
+	const Color text_color = font_color;
+	const Color line_number_color = dim_color;
+	const Color caret_color = mono_color;
+	const Color caret_background_color = mono_color.inverted();
+	const Color text_selected_color = dark_color_3;
+	const Color selection_color = alpha3;
+	const Color brace_mismatch_color = error_color;
+	const Color current_line_color = alpha1;
+	const Color line_length_guideline_color = warning_color;
+	const Color word_highlighted_color = alpha1;
+	const Color number_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
+	const Color function_color = main_color;
+	const Color member_variable_color = mono_color;
+	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
+	const Color breakpoint_color = error_color;
+	const Color search_result_color = alpha1;
+	const Color search_result_border_color = alpha4;
+
+	theme->set_color("text_editor/theme/symbol_color", "Editor", symbol_color);
+	theme->set_color("text_editor/theme/keyword_color", "Editor", keyword_color);
+	theme->set_color("text_editor/theme/basetype_color", "Editor", basetype_color);
+	theme->set_color("text_editor/theme/type_color", "Editor", type_color);
+	theme->set_color("text_editor/theme/comment_color", "Editor", comment_color);
+	theme->set_color("text_editor/theme/string_color", "Editor", string_color);
+	theme->set_color("text_editor/theme/background_color", "Editor", te_background_color);
+	theme->set_color("text_editor/theme/completion_background_color", "Editor", completion_background_color);
+	theme->set_color("text_editor/theme/completion_selected_color", "Editor", completion_selected_color);
+	theme->set_color("text_editor/theme/completion_existing_color", "Editor", completion_existing_color);
+	theme->set_color("text_editor/theme/completion_scroll_color", "Editor", completion_scroll_color);
+	theme->set_color("text_editor/theme/completion_font_color", "Editor", completion_font_color);
+	theme->set_color("text_editor/theme/text_color", "Editor", text_color);
+	theme->set_color("text_editor/theme/line_number_color", "Editor", line_number_color);
+	theme->set_color("text_editor/theme/caret_color", "Editor", caret_color);
+	theme->set_color("text_editor/theme/caret_background_color", "Editor", caret_background_color);
+	theme->set_color("text_editor/theme/text_selected_color", "Editor", text_selected_color);
+	theme->set_color("text_editor/theme/selection_color", "Editor", selection_color);
+	theme->set_color("text_editor/theme/brace_mismatch_color", "Editor", brace_mismatch_color);
+	theme->set_color("text_editor/theme/current_line_color", "Editor", current_line_color);
+	theme->set_color("text_editor/theme/line_length_guideline_color", "Editor", line_length_guideline_color);
+	theme->set_color("text_editor/theme/word_highlighted_color", "Editor", word_highlighted_color);
+	theme->set_color("text_editor/theme/number_color", "Editor", number_color);
+	theme->set_color("text_editor/theme/function_color", "Editor", function_color);
+	theme->set_color("text_editor/theme/member_variable_color", "Editor", member_variable_color);
+	theme->set_color("text_editor/theme/mark_color", "Editor", mark_color);
+	theme->set_color("text_editor/theme/breakpoint_color", "Editor", breakpoint_color);
+	theme->set_color("text_editor/theme/search_result_color", "Editor", search_result_color);
+	theme->set_color("text_editor/theme/search_result_border_color", "Editor", search_result_border_color);
 
 	return theme;
 }

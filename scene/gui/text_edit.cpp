@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "text_edit.h"
 
+#include "editor/editor_scale.h"
 #include "message_queue.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -729,13 +730,12 @@ void TextEdit::_notification(int p_what) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
 				}
 
-				if (text.is_breakpoint(line)) {
-
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.breakpoint_color);
-				}
-
 				if (line == cursor.line) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
+				}
+
+				if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
 				}
 
 				// draw breakpoint marker
