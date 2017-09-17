@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CircleShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Circular Shape for 2D Physics.
+		Circular shape for 2D collisions.
 	</brief_description>
 	<description>
-		Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and its collision detection with everything else is very fast.
+		Circular shape for 2D collisions. This shape is useful for modeling balls or small characters and its collision detection with everything else is very fast.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+			The circle's radius.
 		</member>
 	</members>
 	<constants>
