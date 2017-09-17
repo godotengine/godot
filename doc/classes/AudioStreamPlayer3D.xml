@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer3D" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Plays 3D sound in 3D space
 	</brief_description>
 	<description>
+		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/learning/features/audio/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -123,6 +126,7 @@
 			<argument index="0" name="from_pos" type="float" default="0.0">
 			</argument>
 			<description>
+				Plays the audio from the given position 'from_pos', in seconds.
 			</description>
 		</method>
 		<method name="seek">
@@ -131,6 +135,7 @@
 			<argument index="0" name="to_pos" type="float">
 			</argument>
 			<description>
+				Sets the position from which audio will be played, in seconds.
 			</description>
 		</method>
 		<method name="set_area_mask">
@@ -265,67 +270,94 @@
 			<return type="void">
 			</return>
 			<description>
+				Stops the audio.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask">
+			Areas in which this sound plays.
 		</member>
 		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz">
+			Dampens audio above this frequency, in Hz.
 		</member>
 		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db">
+			Amount how much the filter affects the loudness, in dB.
 		</member>
 		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" enum="AudioStreamPlayer3D.AttenuationModel">
+			Decides if audio should get quieter with distance linearly, quadratically or logarithmically.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
+			If [code]true[/code], audio plays audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
+			Bus on which this audio is playing.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking">
+			Decides in which step the Doppler effect should be calculated.
 		</member>
 		<member name="emission_angle_degrees" type="float" setter="set_emission_angle" getter="get_emission_angle">
+			The angle in which the audio reaches cameras undampened.
 		</member>
 		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled">
+			If [code]true[/code], the audio should be dampened according to the direction of the sound.
 		</member>
 		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db">
+			dampens audio if camera is outside of 'emission_angle_degrees' and 'emission_angle_enabled' is set by this factor, in dB.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db">
+			Sets the absolute maximum of the soundlevel, in dB.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
+			Sets the distance from wich the 'out_of_range_mode' takes effect. Has no effect if set to 0.
 		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
+			Decides if audio should pause when source is outside of 'max_distance' range.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
+			If [code]true[/code], audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] object to be played.
 		</member>
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db">
+			Base sound level unaffected by dampening, in dB.
 		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size">
+			Factor for the attenuation effect.
 		</member>
 	</members>
 	<signals>
 		<signal name="finished">
 			<description>
+				Fires when the audio stops playing.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0">
+			Linear dampening of loudness according to distance.
 		</constant>
 		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1">
+			Squared dampening of loudness according to distance.
 		</constant>
 		<constant name="ATTENUATION_LOGARITHMIC" value="2">
+			Logarithmic dampening of loudness according to distance.
 		</constant>
 		<constant name="OUT_OF_RANGE_MIX" value="0">
+			Mix this audio in, even when it's out of range.
 		</constant>
 		<constant name="OUT_OF_RANGE_PAUSE" value="1">
+			Pause this audio when it gets out of range.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+			Disables doppler tracking.
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+			Executes doppler trackin in idle step.
 		</constant>
 		<constant name="DOPPLER_TRACKING_FIXED_STEP" value="2">
+			Executes doppler tracking in fixed step.
 		</constant>
 	</constants>
 </class>
