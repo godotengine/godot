@@ -307,8 +307,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 	if (exec_path != "") {
 		bool found = false;
 
-		// get our filename without our path (note, not using exec_path.get_basename anymore because not all file systems have dots in their file names!)
-		String filebase_name = exec_path.get_file();
+		// get our filename without our path (note, using exec_path.get_file before get_basename anymore because not all file systems have dots in their file names!)
+		String filebase_name = exec_path.get_file().get_basename();
 
 		// try to open at the location of executable
 		String datapack_name = exec_path.get_base_dir().plus_file(filebase_name) + ".pck";
