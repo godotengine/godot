@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer" inherits="Node" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Plays back audio.
 	</brief_description>
 	<description>
+		Plays background audio.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,6 +59,7 @@
 			<argument index="0" name="from_pos" type="float" default="0.0">
 			</argument>
 			<description>
+				Plays the audio from the given position 'from_pos', in seconds.
 			</description>
 		</method>
 		<method name="seek">
@@ -65,6 +68,7 @@
 			<argument index="0" name="to_pos" type="float">
 			</argument>
 			<description>
+				Sets the position from which audio will be played, in seconds.
 			</description>
 		</method>
 		<method name="set_autoplay">
@@ -111,26 +115,33 @@
 			<return type="void">
 			</return>
 			<description>
+				Stops the audio.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
+			If [code]true[/code], audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
+			Bus on which this audio is playing.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget">
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
+			If [code]true[/code], audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] object to be played.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
+			Volume of sound, in dB.
 		</member>
 	</members>
 	<signals>
 		<signal name="finished">
 			<description>
+				Emitted when the audio stops playing.
 			</description>
 		</signal>
 	</signals>
