@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibilityNotifier" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Detect when the node is visible on screen.
+		Detects when the node is visible on screen.
 	</brief_description>
 	<description>
-		The VisibilityNotifier is used to notify when its bounding box enters the screen, is visible on the screen, or when it exits the screen.
+		The VisibilityNotifier detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a [Camera]'s view.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +15,14 @@
 			<return type="Rect3">
 			</return>
 			<description>
-				Return the visibility bounding box of the VisibilityNotifier.
+				Returns the bounding box of the VisibilityNotifier.
 			</description>
 		</method>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if any part of the bounding box is on the screen.
+				If [code]true[/code] the bounding box is on the screen.
 			</description>
 		</method>
 		<method name="set_aabb">
@@ -37,6 +37,7 @@
 	</methods>
 	<members>
 		<member name="aabb" type="Rect3" setter="set_aabb" getter="get_aabb">
+			The VisibilityNotifier's bounding box.
 		</member>
 	</members>
 	<signals>
