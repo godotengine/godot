@@ -21,8 +21,8 @@
 			<argument index="2" name="action" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Add custom button to the dialog and return the created button.
-				The button titled with [i]text[/i] and the [i]action[/i] will be passed to [custom_action] signal when it is pressed.
+				Adds a button with label [i]text[/i] and a custom [i]action[/i] to the dialog and returns the created button. [i]action[/i] will be passed to the [custom_action] signal when pressed.
+				If [code]true[/code], [i]right[/i] will place the button to the right of any sibling buttons. Default value: [code]false[/code].
 			</description>
 		</method>
 		<method name="add_cancel">
@@ -31,7 +31,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Add custom cancel button to the dialog and return the created button.
+				Adds a button with label [i]name[/i] and a cancel action to the dialog and returns the created button.
 			</description>
 		</method>
 		<method name="get_hide_on_ok" qualifiers="const">
@@ -68,7 +68,7 @@
 			<argument index="0" name="line_edit" type="Node">
 			</argument>
 			<description>
-				Register a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
+				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
 			</description>
 		</method>
 		<method name="set_hide_on_ok">
@@ -99,14 +99,14 @@
 	<signals>
 		<signal name="confirmed">
 			<description>
-				Emitted when accepted.
+				Emitted when the dialog is accepted.
 			</description>
 		</signal>
 		<signal name="custom_action">
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Emitted with a custom button is added.
+				Emitted when a custom button is pressed. See [method add_button].
 			</description>
 		</signal>
 	</signals>
