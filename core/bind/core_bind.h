@@ -669,4 +669,50 @@ public:
 	_Engine();
 };
 
+class _JSON;
+
+class JSONParseResult : public Reference {
+	GDCLASS(JSONParseResult, Reference)
+
+	friend class _JSON;
+
+	Error error;
+	String error_string;
+	int error_line;
+
+	Variant result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_error(Error p_error);
+	Error get_error() const;
+
+	void set_error_string(const String &p_error_string);
+	String get_error_string() const;
+
+	void set_error_line(int p_error_line);
+	int get_error_line() const;
+
+	void set_result(const Variant &p_result);
+	Variant get_result() const;
+};
+
+class _JSON : public Object {
+	GDCLASS(_JSON, Object)
+
+protected:
+	static void _bind_methods();
+	static _JSON *singleton;
+
+public:
+	static _JSON *get_singleton() { return singleton; }
+
+	String print(const Variant &p_value);
+	Ref<JSONParseResult> parse(const String &p_json);
+
+	_JSON();
+};
+
 #endif // CORE_BIND_H
