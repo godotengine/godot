@@ -1546,7 +1546,7 @@ public:
 					value = Variant::evaluate(Variant::OP_ADD, value, p_argument);
 				} break;
 				case VisualScriptPropertySet::ASSIGN_OP_SUB: {
-					value = Variant::evaluate(Variant::OP_SUBSTRACT, value, p_argument);
+					value = Variant::evaluate(Variant::OP_SUBTRACT, value, p_argument);
 				} break;
 				case VisualScriptPropertySet::ASSIGN_OP_MUL: {
 					value = Variant::evaluate(Variant::OP_MULTIPLY, value, p_argument);
