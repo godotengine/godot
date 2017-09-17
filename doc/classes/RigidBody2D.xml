@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Rigid body 2D node.
+		Physics Body whose position is determined through physics simulation in 2D space.
 	</brief_description>
 	<description>
-		Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid body, Kinematic, Character or Static.
-		Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.
-		As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
+		This is the node that implements full 2D physics. This means that you do not control a RigidBody2D directly. Instead you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
+		This node can use custom force integration, for writing complex physics motion behavior per node.
+		This node can shift state between regular Rigid body, Kinematic, Character or Static.
+		Character mode forbids this node from being rotated.
+		As a warning, don't change RigidBody2D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -382,36 +384,53 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
+			Damps RigidBody2D's rotational forces.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
+			RigidBody2D's rotational velocity.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+			RigidBody2D's bounciness.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
+			If [code]true[/code] RigidBody2D will not calculate forces and will act as a static body while there is no movement. It will wake up when other forces are applied through other collisions or when the [code]apply_impulse[/code] method is used. Default value: [code]true[/code]
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
+			If [code]true[/code] RigidBody2D will emit signals when it collides with another RigidBody2D.
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
+			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
+			If [code]true[/code] continuous collision detection is used. Default value: [code]false[/code]
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
+			If [code]true[/code] internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+			The body friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
+			This is multiplied by the global 2D gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 2d" to produce RigidBody2D's gravity. E.g. a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
+			RigidBody2D's linear damp. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
+			RigidBody2D's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass">
+			RigidBody2D's mass.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
+			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
+			If [code]true[/code] RigidBody2D is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
+			RigidBody2D's weight based on its mass and the global 2D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 2d".
 		</member>
 	</members>
 	<signals>
