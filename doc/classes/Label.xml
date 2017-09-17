@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Label" inherits="Control" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Control that displays formatted text.
+		Displays plain text in a line or wrapped inside a rectangle. For formatted text, use [RichTextLabel].
 	</brief_description>
 	<description>
-		Label is a control that displays formatted text, optionally autowrapping it to the [Control] area. It inherits from range to be able to scroll wrapped text vertically.
+		Label displays plain text on the screen. It gives you control over the horizontal and vertical alignment, and can wrap the text inside the node's bounding rectangle. It doesn't support bold, italics or other formatting. For that, use [RichTextLabel] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,14 +22,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of lines.
+				Returns the amount of lines of text the Label has.
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the height of a line.
+				Returns the font size in pixels.
 			</description>
 		</method>
 		<method name="get_lines_skipped" qualifiers="const">
@@ -98,14 +98,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if text would be cut off if it is too wide.
+				Return [code]true[/code] if text would be cut off if it is too wide.
 			</description>
 		</method>
 		<method name="is_uppercase" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if text is displayed in all capitals.
+				Return [code]true[/code] if text is displayed in all capitals.
 			</description>
 		</method>
 		<method name="set_align">
@@ -201,22 +201,31 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align">
+			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [code]ALIGN_*[/code] constants.
 		</member>
 		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap">
+			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: false.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text">
+			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.
 		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped">
+			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible">
+			Limits the lines of text the node shows on screen.
 		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
+			Limits the count of visible characters. If you set [code]percent_visible[/code] to 50, only up to half of the text's characters will display on screen. Useful to animate the text in a dialog box.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
+			The text to display on screen.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase">
+			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
 		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign">
+			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [code]VALIGN_*[/code] constants.
 		</member>
 	</members>
 	<constants>
