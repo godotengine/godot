@@ -340,46 +340,67 @@
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
+			The Light2D's [Color].
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
+			If [code]true[/code] Light2D will only appear when editing the scene. Default value: [code]false[/code].
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
+			If [code]true[/code] Light2D will emit light. Default value: [code]true[/code].
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+			The Light2D's energy value. The larger the value, the stronger the light.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Light2D.Mode">
+			The Light2D's mode. See MODE_* constants for values.
 		</member>
 		<member name="offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset">
+			The offset of the Light2D's [code]texture[/code].
 		</member>
 		<member name="range_height" type="float" setter="set_height" getter="get_height">
+			The height of the Light2D. Used with 2D normal mapping.
 		</member>
 		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask">
+			The layer mask. Only objects with a matching mask will be affected by the Light2D.
 		</member>
 		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max">
+			Maximum layer value of objects that are affected by the Light2D. Default value: [code]0[/code].
 		</member>
 		<member name="range_layer_min" type="int" setter="set_layer_range_min" getter="get_layer_range_min">
+			Minimum layer value of objects that are affected by the Light2D. Default value: [code]0[/code].
 		</member>
 		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max">
+			Maximum [code]Z[/code] value of objects that are affected by the Light2D. Default value: [code]1024[/code].
 		</member>
 		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min">
+			Minimum [code]z[/code] value of objects that are affected by the Light2D. Default value: [code]-1024[/code].
 		</member>
 		<member name="shadow_buffer_size" type="int" setter="set_shadow_buffer_size" getter="get_shadow_buffer_size">
+			Shadow buffer size. Default value: [code]2048[/code].
 		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
+			[Color] of shadows cast by the Light2D.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled">
+			If [code]true[/code] the Light2D will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
+			Shadow filter type. May be one of [code][None, PCF5, PCF9, PCF13][/code]. Default value: [code]None[/code].
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
+			Smoothing value for shadows. 
 		</member>
 		<member name="shadow_gradient_length" type="float" setter="set_shadow_gradient_length" getter="get_shadow_gradient_length">
+			Smooth shadow gradient length.
 		</member>
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask">
+			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching shadow mask will cast shadows.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+			[Texture] used for the Light2D's appearance.
 		</member>
 		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale">
+			The [code]texture[/code]'s scale factor.
 		</member>
 	</members>
 	<constants>
