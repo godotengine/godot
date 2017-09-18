@@ -248,7 +248,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	performance = memnew(Performance);
 	globals->add_singleton(ProjectSettings::Singleton("Performance", performance));
 
-	GLOBAL_DEF("debug/settings/backtrace/message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF("debug/settings/crash_handler/message", String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
 
 	MAIN_PRINT("Main: Parse CMDLine");
 

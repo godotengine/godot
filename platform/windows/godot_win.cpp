@@ -156,32 +156,36 @@ int widechar_main(int argc, wchar_t **argv) {
 	return os.get_exit_code();
 };
 
+int _main() {
+	LPWSTR *wc_argv;
+	int argc;
+	int result;
+
+	wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	if (NULL == wc_argv) {
+		wprintf(L"CommandLineToArgvW failed\n");
+		return 0;
+	}
+
+	result = widechar_main(argc, wc_argv);
+
+	LocalFree(wc_argv);
+	return result;
+}
+
 int main(int _argc, char **_argv) {
 // _argc and _argv are ignored
 // we are going to use the WideChar version of them instead
 
 #ifdef CRASH_HANDLER_EXCEPTION
 	__try {
-#endif
-		LPWSTR *wc_argv;
-		int argc;
-		int result;
-
-		wc_argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
-		if (NULL == wc_argv) {
-			wprintf(L"CommandLineToArgvW failed\n");
-			return 0;
-		}
-
-		result = widechar_main(argc, wc_argv);
-
-		LocalFree(wc_argv);
-		return result;
-#ifdef CRASH_HANDLER_EXCEPTION
+		return _main();
 	} __except (CrashHandlerException(GetExceptionInformation())) {
 		return 1;
 	}
+#else
+	return _main();
 #endif
 }
 
