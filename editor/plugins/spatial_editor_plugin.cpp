@@ -77,11 +77,11 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 
 	//when not being manipulated, move softly
-	float free_orbit_inertia = EDITOR_DEF("editors/3d/free_orbit_inertia", 0.15);
-	float free_translation_inertia = EDITOR_DEF("editors/3d/free_translation_inertia", 0.15);
+	float free_orbit_inertia = EDITOR_DEF("editors/3d/orbit_inertia", 0.15);
+	float free_translation_inertia = EDITOR_DEF("editors/3d/translation_inertia", 0.15);
 	//when being manipulated, move more quickly
-	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.075);
-	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.075);
+	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.1);
+	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.1);
 
 	float zoom_inertia = EDITOR_DEF("editors/3d/zoom_inertia", 0.0);
 

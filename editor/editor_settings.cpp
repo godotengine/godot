@@ -661,38 +661,47 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/3d/default_z_near", 0.1);
 	set("editors/3d/default_z_far", 500.0);
 
+	// navigation
 	set("editors/3d/navigation_scheme", 0);
 	hints["editors/3d/navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/navigation_scheme", PROPERTY_HINT_ENUM, "Godot,Maya,Modo");
 	set("editors/3d/zoom_style", 0);
 	hints["editors/3d/zoom_style"] = PropertyInfo(Variant::INT, "editors/3d/zoom_style", PROPERTY_HINT_ENUM, "Vertical, Horizontal");
+
+	set("editors/3d/emulate_3_button_mouse", false);
 	set("editors/3d/orbit_modifier", 0);
 	hints["editors/3d/orbit_modifier"] = PropertyInfo(Variant::INT, "editors/3d/orbit_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
 	set("editors/3d/pan_modifier", 1);
 	hints["editors/3d/pan_modifier"] = PropertyInfo(Variant::INT, "editors/3d/pan_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
 	set("editors/3d/zoom_modifier", 4);
 	hints["editors/3d/zoom_modifier"] = PropertyInfo(Variant::INT, "editors/3d/zoom_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
+
 	set("editors/3d/emulate_numpad", false);
-	set("editors/3d/emulate_3_button_mouse", false);
 	set("editors/3d/warped_mouse_panning", true);
 
+	// navigation feel
 	set("editors/3d/orbit_sensitivity", 0.4);
+	hints["editors/3d/orbit_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/orbit_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
 
+	set("editors/3d/orbit_inertia", 0.15);
+	hints["editors/3d/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	set("editors/3d/translation_inertia", 0.15);
+	hints["editors/3d/translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	set("editors/3d/zoom_inertia", 0.1);
 	hints["editors/3d/zoom_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/zoom_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	set("editors/3d/manipulation_orbit_inertia", 0.1);
+	hints["editors/3d/manipulation_orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/manipulation_orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+	set("editors/3d/manipulation_translation_inertia", 0.1);
+	hints["editors/3d/manipulation_translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
-	set("editors/3d/orbit_inertia", 0.2);
-	hints["editors/3d/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-
-	set("editors/3d/freelook_inertia", 0.2);
+	// freelook
+	set("editors/3d/freelook_inertia", 0.1);
 	hints["editors/3d/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-
 	set("editors/3d/freelook_base_speed", 0.5);
 	hints["editors/3d/freelook_base_speed"] = PropertyInfo(Variant::REAL, "editors/3d/freelook_base_speed", PROPERTY_HINT_RANGE, "0.0, 10, 0.1");
-
 	set("editors/3d/freelook_activation_modifier", 0);
 	hints["editors/3d/freelook_activation_modifier"] = PropertyInfo(Variant::INT, "editors/3d/freelook_activation_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
-
-	set("editors/3d/freelook_modifier_speed_factor", 5.0);
+	set("editors/3d/freelook_modifier_speed_factor", 3.0);
+	hints["editors/3d/freelook_modifier_speed_factor"] = PropertyInfo(Variant::REAL, "editors/3d/freelook_modifier_speed_factor", PROPERTY_HINT_RANGE, "0.0, 10.0, 0.1");
 
 	set("editors/2d/bone_width", 5);
 	set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
