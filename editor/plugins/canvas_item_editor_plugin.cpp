@@ -3438,7 +3438,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_INSERT_POS_SCALE:
 		case ANIM_INSERT_ROT_SCALE:
 		case ANIM_INSERT_POS_ROT_SCALE: {
-
 			static const bool key_toggles[7][3]={
 				{true,false,false},
 				{false,true,false},
@@ -3451,12 +3450,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			key_pos=key_toggles[p_op-ANIM_INSERT_POS][0];
 			key_rot=key_toggles[p_op-ANIM_INSERT_POS][1];
 			key_scale=key_toggles[p_op-ANIM_INSERT_POS][2];
-
 			for(int i=ANIM_INSERT_POS;i<=ANIM_INSERT_POS_ROT_SCALE;i++) {
 				int idx = animation_menu->get_popup()->get_item_index(i);
 				animation_menu->get_popup()->set_item_checked(idx,i==p_op);
 			}
-
 		} break;*/
 		case ANIM_COPY_POSE: {
 

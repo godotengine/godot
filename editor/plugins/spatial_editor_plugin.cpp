@@ -2894,7 +2894,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 	if (parent_spatial)
 		global_transform = parent_spatial->get_global_transform();
 
-	global_transform.origin = _get_instance_position(p_point);
+	global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 
 	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
 
@@ -4832,6 +4832,15 @@ void SpatialEditorPlugin::set_state(const Dictionary &p_state) {
 void SpatialEditor::snap_cursor_to_plane(const Plane &p_plane) {
 
 	//cursor.pos=p_plane.project(cursor.pos);
+}
+
+Vector3 SpatialEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
+	if (is_snap_enabled()) {
+		p_target.x = Math::snap_scalar(0.0, get_translate_snap(), p_target.x);
+		p_target.y = Math::snap_scalar(0.0, get_translate_snap(), p_target.y);
+		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
+	}
+	return p_target;
 }
 
 void SpatialEditorPlugin::_bind_methods() {
