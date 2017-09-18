@@ -1623,8 +1623,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
 	tabs->set_area_as_parent_rect();
-	tabs->set_margin(MARGIN_LEFT, -EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel", "TabContainer")->get_margin(MARGIN_LEFT));
-	tabs->set_margin(MARGIN_RIGHT, EditorNode::get_singleton()->get_gui_base()->get_stylebox("panel", "TabContainer")->get_margin(MARGIN_LEFT));
 	add_child(tabs);
 
 	{ //debugger
