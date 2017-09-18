@@ -799,15 +799,15 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-
+		float zoom_factor = 1 + (ZOOM_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 
 			case BUTTON_WHEEL_UP: {
-				scale_cursor_distance(is_freelook_active() ? ZOOM_MULTIPLIER : 1.0 / ZOOM_MULTIPLIER);
+				scale_cursor_distance(is_freelook_active() ? zoom_factor : 1.0 / zoom_factor);
 			} break;
 
 			case BUTTON_WHEEL_DOWN: {
-				scale_cursor_distance(is_freelook_active() ? 1.0 / ZOOM_MULTIPLIER : ZOOM_MULTIPLIER);
+				scale_cursor_distance(is_freelook_active() ? 1.0 / zoom_factor : zoom_factor);
 			} break;
 
 			case BUTTON_RIGHT: {
