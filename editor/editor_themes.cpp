@@ -426,19 +426,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
 	// Tabs
-	const int tab_default_margin_side = 10 * EDSCALE;
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
+
 	style_tab_selected->set_border_width_all(border_width);
 	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
 	style_tab_selected->set_border_color_all(dark_color_3);
 	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
-	style_tab_selected->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
-	style_tab_selected->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
+	style_tab_selected->set_default_margin(MARGIN_LEFT, 10 * EDSCALE);
+	style_tab_selected->set_default_margin(MARGIN_RIGHT, 10 * EDSCALE);
 	style_tab_selected->set_bg_color(tab_color);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-	style_tab_unselected->set_bg_color(Color(0.0, 0.0, 0.0, 0.0));
-	style_tab_unselected->set_border_color_all(Color(0.0, 0.0, 0.0, 0.0));
+	style_tab_unselected->set_draw_center(false);
+	style_tab_unselected->set_border_width_all(0);
 
 	// Editor background
 	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
@@ -688,29 +688,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("separator", "HSeparator", make_line_stylebox(separator_color, border_width));
 	theme->set_stylebox("separator", "VSeparator", make_line_stylebox(separator_color, border_width, 0, true));
 
-	// HACK Debuger panel
-	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
-	const int v_offset = theme->get_font("font", "Tabs")->get_height() + style_tab_selected->get_minimum_size().height + default_margin_size * EDSCALE;
-	style_panel_debugger->set_expand_margin_size(MARGIN_TOP, -v_offset);
-	theme->set_stylebox("debugger_panel", "EditorStyles", style_panel_debugger);
-
 	// Debugger
-	Ref<StyleBoxFlat> style_debugger_contents = style_content_panel->duplicate();
-	style_debugger_contents->set_default_margin(MARGIN_LEFT, 0);
-	style_debugger_contents->set_default_margin(MARGIN_BOTTOM, 0);
-	style_debugger_contents->set_default_margin(MARGIN_RIGHT, 0);
-	style_debugger_contents->set_border_width_all(0);
-	style_debugger_contents->set_expand_margin_size(MARGIN_TOP, -v_offset);
-	theme->set_constant("extra_margin", "DebuggerPanel", default_margin_size * EDSCALE + border_width);
-	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_debugger_contents);
-	Ref<StyleBoxFlat> style_tab_fg_debugger = style_tab_selected->duplicate();
-	style_tab_fg_debugger->set_expand_margin_size(MARGIN_LEFT, default_margin_size * EDSCALE + border_width);
-	style_tab_fg_debugger->set_default_margin(MARGIN_LEFT, tab_default_margin_side - default_margin_size * EDSCALE);
-	theme->set_stylebox("DebuggerTabFG", "EditorStyles", style_tab_fg_debugger);
-	Ref<StyleBoxFlat> style_tab_bg_debugger = style_tab_unselected->duplicate();
-	style_tab_bg_debugger->set_expand_margin_size(MARGIN_LEFT, default_margin_size * EDSCALE + border_width);
-	style_tab_bg_debugger->set_default_margin(MARGIN_LEFT, tab_default_margin_side - default_margin_size * EDSCALE);
-	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_bg_debugger);
+
+	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
+	style_panel_debugger->set_border_width(MARGIN_BOTTOM, 0);
+	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
+	theme->set_stylebox("DebuggerTabFG", "EditorStyles", style_tab_selected);
+	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_unselected);
+
+	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
+	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height() + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
+	style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
+	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
 
 	// LineEdit
 	theme->set_stylebox("normal", "LineEdit", style_widget);
