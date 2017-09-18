@@ -332,11 +332,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_default->set_draw_center(true);
 
 	// Button and widgets
-	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
+	const float extra_spacing = EDITOR_DEF("interface/theme/additional_spacing", 0.0);
 
+	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
+	style_widget->set_default_margin(MARGIN_LEFT, (extra_spacing + 6) * EDSCALE);
+	style_widget->set_default_margin(MARGIN_TOP, (extra_spacing + default_margin_size) * EDSCALE);
+	style_widget->set_default_margin(MARGIN_RIGHT, (extra_spacing + 6) * EDSCALE);
+	style_widget->set_default_margin(MARGIN_BOTTOM, (extra_spacing + default_margin_size) * EDSCALE);
 	style_widget->set_bg_color(dark_color_1);
-	style_widget->set_default_margin(MARGIN_LEFT, 6 * EDSCALE);
-	style_widget->set_default_margin(MARGIN_RIGHT, 6 * EDSCALE);
 	style_widget->set_border_color_all(dark_color_2);
 
 	Ref<StyleBoxFlat> style_widget_disabled = style_widget->duplicate();
@@ -368,7 +371,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tabs
 	const int tab_default_margin_side = 10 * EDSCALE;
-	Ref<StyleBoxFlat> style_tab_selected = style_default->duplicate();
+	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 	style_tab_selected->set_border_width_all(border_width);
 	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
 	style_tab_selected->set_border_color_all(dark_color_3);
@@ -391,7 +394,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("Focus", "EditorStyles", style_focus);
 
 	// Menu
-	Ref<StyleBoxEmpty> style_menu = style_empty;
+	Ref<StyleBoxFlat> style_menu = style_widget->duplicate();
+	style_menu->set_draw_center(false);
+	style_menu->set_border_width_all(0);
 	theme->set_stylebox("panel", "PanelContainer", style_menu);
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
@@ -403,13 +408,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("PlayButtonPanel", "EditorStyles", style_empty); //make_stylebox(theme->get_icon("GuiPlayButtonGroup", "EditorIcons"), 16, 16, 16, 16, 8, 4, 8, 4));
 
 	//MenuButton
-	Ref<StyleBoxFlat> style_menu_hover_border = style_default->duplicate();
+	Ref<StyleBoxFlat> style_menu_hover_border = style_widget->duplicate();
 	style_menu_hover_border->set_draw_center(false);
 	style_menu_hover_border->set_border_width_all(0);
 	style_menu_hover_border->set_border_width(MARGIN_BOTTOM, border_width);
 	style_menu_hover_border->set_border_color_all(accent_color);
 
-	Ref<StyleBoxFlat> style_menu_hover_bg = style_default->duplicate();
+	Ref<StyleBoxFlat> style_menu_hover_bg = style_widget->duplicate();
 	style_menu_hover_bg->set_border_width_all(0);
 	style_menu_hover_bg->set_bg_color(dark_color_1);
 
@@ -504,7 +509,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
-
+	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size) * EDSCALE);
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
 	style_tree_bg->set_bg_color(dark_color_1);
@@ -524,6 +529,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("custom_button_font_highlight", "Tree", font_color_hl);
 	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_color_selected", "Tree", font_color);
+	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tree_btn = style_default->duplicate();
 	style_tree_btn->set_bg_color(contrast_color_1);
@@ -579,7 +585,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
 	theme->set_stylebox("bg_focus", "ItemList", style_focus);
 	theme->set_stylebox("bg", "ItemList", style_itemlist_bg);
-	theme->set_constant("vseparation", "ItemList", 5 * EDSCALE);
+	theme->set_constant("vseparation", "ItemList", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_color("font_color", "ItemList", font_color);
 
 	// Tabs & TabContainer
@@ -802,6 +808,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
+
+	// GridContainer
+	theme->set_constant("vseperation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
 
 	// FileDialog
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
