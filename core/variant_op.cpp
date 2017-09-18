@@ -143,56 +143,13 @@
 
 Variant::operator bool() const {
 
-	bool b;
-	return booleanize(b);
+	return booleanize();
 }
 
-bool Variant::booleanize(bool &r_valid) const {
-
-	r_valid = true;
-	switch (type) {
-		case NIL:
-			return false;
-		case BOOL:
-			return _data._bool;
-		case INT:
-			return _data._int;
-		case REAL:
-			return _data._real;
-		case STRING:
-			return (*reinterpret_cast<const String *>(_data._mem)) != "";
-		case VECTOR2:
-		case RECT2:
-		case TRANSFORM2D:
-		case VECTOR3:
-		case PLANE:
-		case RECT3:
-		case QUAT:
-		case BASIS:
-		case TRANSFORM:
-		case COLOR:
-		case _RID:
-			return (*reinterpret_cast<const RID *>(_data._mem)).is_valid();
-		case OBJECT:
-			return _get_obj().obj;
-		case NODE_PATH:
-			return (*reinterpret_cast<const NodePath *>(_data._mem)) != NodePath();
-		case DICTIONARY:
-		case ARRAY:
-		case POOL_BYTE_ARRAY:
-		case POOL_INT_ARRAY:
-		case POOL_REAL_ARRAY:
-		case POOL_STRING_ARRAY:
-		case POOL_VECTOR2_ARRAY:
-		case POOL_VECTOR3_ARRAY:
-		case POOL_COLOR_ARRAY:
-			r_valid = false;
-			return false;
-		default: {
-		}
-	}
-
-	return false;
+// We consider all unitialized or empty types to be false based on the type's
+// zeroiness.
+bool Variant::booleanize() const {
+	return !is_zero();
 }
 
 #define _RETURN(m_what) \
@@ -401,12 +358,6 @@ bool Variant::booleanize(bool &r_valid) const {
 		PoolVector<m_type> sum = array_a;                                                                  \
 		sum.append_array(array_b);                                                                         \
 		_RETURN(sum);                                                                                      \
-	}
-
-#define DEFAULT_OP_FAIL(m_name) \
-	case m_name: {              \
-		r_valid = false;        \
-		return;                 \
 	}
 
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,
@@ -1177,12 +1128,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_AND, p_a.type) {
 			CASE_TYPE_ALL(math, OP_AND) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN(l && r);
 			}
@@ -1190,12 +1137,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_OR, p_a.type) {
 			CASE_TYPE_ALL(math, OP_OR) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN(l || r);
 			}
@@ -1203,12 +1146,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_XOR, p_a.type) {
 			CASE_TYPE_ALL(math, OP_XOR) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN((l || r) && !(l && r));
 			}
@@ -1216,9 +1155,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_NOT, p_a.type) {
 			CASE_TYPE_ALL(math, OP_NOT) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
 				_RETURN(!l);
 			}
 		}

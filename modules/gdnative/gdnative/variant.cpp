@@ -480,10 +480,9 @@ godot_bool GDAPI godot_variant_hash_compare(const godot_variant *p_self, const g
 	return self->hash_compare(*other);
 }
 
-godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self, godot_bool *r_valid) {
+godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self) {
 	const Variant *self = (const Variant *)p_self;
-	bool &valid = *r_valid;
-	return self->booleanize(valid);
+	return self->booleanize();
 }
 
 void GDAPI godot_variant_destroy(godot_variant *p_self) {
