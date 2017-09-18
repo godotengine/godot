@@ -908,7 +908,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 			Variant::Operator vop = Variant::OP_MAX;
 			switch (op->op) {
 				case GDParser::OperatorNode::OP_ADD: vop = Variant::OP_ADD; break;
-				case GDParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBSTRACT; break;
+				case GDParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBTRACT; break;
 				case GDParser::OperatorNode::OP_MUL: vop = Variant::OP_MULTIPLY; break;
 				case GDParser::OperatorNode::OP_DIV: vop = Variant::OP_DIVIDE; break;
 				case GDParser::OperatorNode::OP_MOD: vop = Variant::OP_MODULE; break;

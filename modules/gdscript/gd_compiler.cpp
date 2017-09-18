@@ -131,7 +131,7 @@ int GDCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDParser:
 	switch (p_expression->op) {
 
 		case GDParser::OperatorNode::OP_ASSIGN_ADD: var_op = Variant::OP_ADD; break;
-		case GDParser::OperatorNode::OP_ASSIGN_SUB: var_op = Variant::OP_SUBSTRACT; break;
+		case GDParser::OperatorNode::OP_ASSIGN_SUB: var_op = Variant::OP_SUBTRACT; break;
 		case GDParser::OperatorNode::OP_ASSIGN_MUL: var_op = Variant::OP_MULTIPLY; break;
 		case GDParser::OperatorNode::OP_ASSIGN_DIV: var_op = Variant::OP_DIVIDE; break;
 		case GDParser::OperatorNode::OP_ASSIGN_MOD: var_op = Variant::OP_MODULE; break;
@@ -759,7 +759,7 @@ int GDCompiler::_parse_expression(CodeGen &codegen, const GDParser::Node *p_expr
 					if (!_create_binary_operator(codegen, on, Variant::OP_ADD, p_stack_level)) return -1;
 				} break;
 				case GDParser::OperatorNode::OP_SUB: {
-					if (!_create_binary_operator(codegen, on, Variant::OP_SUBSTRACT, p_stack_level)) return -1;
+					if (!_create_binary_operator(codegen, on, Variant::OP_SUBTRACT, p_stack_level)) return -1;
 				} break;
 				case GDParser::OperatorNode::OP_MUL: {
 					if (!_create_binary_operator(codegen, on, Variant::OP_MULTIPLY, p_stack_level)) return -1;
