@@ -371,7 +371,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_tab_selected = style_default->duplicate();
 	style_tab_selected->set_border_width_all(border_width);
 	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
-	style_tab_selected->set_border_color_all(dark_color_3);
+	style_tab_selected->set_border_color_all(highlight_tabs ? tab_color : dark_color_3);
 	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
 	style_tab_selected->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
 	style_tab_selected->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
@@ -601,7 +601,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Content of each tab
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
-	style_content_panel->set_border_color_all(dark_color_3);
+	style_content_panel->set_border_color_all(highlight_tabs ? tab_color : dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	// compensate the border
 	style_content_panel->set_default_margin(MARGIN_TOP, margin_size_extra);
