@@ -2016,6 +2016,5 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
 	add_child(clear_inherit_confirm);
 
-	vbc->add_constant_override("separation", 4);
 	set_process_input(true);
 }

@@ -1812,8 +1812,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	display_mode = DISPLAY_THUMBNAILS;
 
 	path = "res://";
-
-	add_constant_override("separation", 4);
 }
 
 FileSystemDock::~FileSystemDock() {

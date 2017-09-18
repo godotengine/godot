@@ -103,13 +103,11 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 
 			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
-			add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
-			add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

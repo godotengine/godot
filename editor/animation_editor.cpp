@@ -3933,7 +3933,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	key_editor_tab = memnew(TabContainer);
 	key_editor_tab->set_tab_align(TabContainer::ALIGN_LEFT);
 	hb->add_child(key_editor_tab);
-	key_editor_tab->set_custom_minimum_size(Size2(200, 0));
+	key_editor_tab->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 
 	key_editor = memnew(PropertyEditor);
 	key_editor->set_area_as_parent_rect();
@@ -4050,8 +4050,6 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	cleanup_dialog->get_ok()->set_text(TTR("Clean-Up"));
 
 	cleanup_dialog->connect("confirmed", this, "_menu_track", varray(TRACK_MENU_CLEAN_UP_CONFIRM));
-
-	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	track_editor->set_clip_contents(true);
 }
