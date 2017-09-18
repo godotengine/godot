@@ -386,6 +386,8 @@ public:
 	void begin_complex_operation();
 	void end_complex_operation();
 
+	bool is_insert_text_operation();
+
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
