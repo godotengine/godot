@@ -677,6 +677,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("editors/3d/orbit_sensitivity", 0.4);
 
+	set("editors/3d/zoom_inertia", 0.1);
+	hints["editors/3d/zoom_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/zoom_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
+
 	set("editors/3d/orbit_inertia", 0.2);
 	hints["editors/3d/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
