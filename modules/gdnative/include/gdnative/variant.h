@@ -190,7 +190,7 @@ godot_bool GDAPI godot_variant_operator_less(const godot_variant *p_self, const 
 
 godot_bool GDAPI godot_variant_hash_compare(const godot_variant *p_self, const godot_variant *p_other);
 
-godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self, godot_bool *r_valid);
+godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self);
 
 void GDAPI godot_variant_destroy(godot_variant *p_self);
 

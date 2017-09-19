@@ -143,56 +143,13 @@
 
 Variant::operator bool() const {
 
-	bool b;
-	return booleanize(b);
+	return booleanize();
 }
 
-bool Variant::booleanize(bool &r_valid) const {
-
-	r_valid = true;
-	switch (type) {
-		case NIL:
-			return false;
-		case BOOL:
-			return _data._bool;
-		case INT:
-			return _data._int;
-		case REAL:
-			return _data._real;
-		case STRING:
-			return (*reinterpret_cast<const String *>(_data._mem)) != "";
-		case VECTOR2:
-		case RECT2:
-		case TRANSFORM2D:
-		case VECTOR3:
-		case PLANE:
-		case RECT3:
-		case QUAT:
-		case BASIS:
-		case TRANSFORM:
-		case COLOR:
-		case _RID:
-			return (*reinterpret_cast<const RID *>(_data._mem)).is_valid();
-		case OBJECT:
-			return _get_obj().obj;
-		case NODE_PATH:
-			return (*reinterpret_cast<const NodePath *>(_data._mem)) != NodePath();
-		case DICTIONARY:
-		case ARRAY:
-		case POOL_BYTE_ARRAY:
-		case POOL_INT_ARRAY:
-		case POOL_REAL_ARRAY:
-		case POOL_STRING_ARRAY:
-		case POOL_VECTOR2_ARRAY:
-		case POOL_VECTOR3_ARRAY:
-		case POOL_COLOR_ARRAY:
-			r_valid = false;
-			return false;
-		default: {
-		}
-	}
-
-	return false;
+// We consider all unitialized or empty types to be false based on the type's
+// zeroiness.
+bool Variant::booleanize() const {
+	return !is_zero();
 }
 
 #define _RETURN(m_what) \
@@ -403,12 +360,6 @@ bool Variant::booleanize(bool &r_valid) const {
 		_RETURN(sum);                                                                                      \
 	}
 
-#define DEFAULT_OP_FAIL(m_name) \
-	case m_name: {              \
-		r_valid = false;        \
-		return;                 \
-	}
-
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 		const Variant &p_b, Variant &r_ret, bool &r_valid) {
 
@@ -421,11 +372,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
 					_RETURN(p_b._get_obj().obj == NULL);
-				_RETURN(false);
+				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_EQUAL, BOOL) {
-				if (p_b.type != BOOL) _RETURN(false);
+				if (p_b.type != BOOL)
+					_RETURN_FAIL;
 				_RETURN(p_a._data._bool == p_b._data._bool);
 			}
 
@@ -434,11 +386,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
 				if (p_b.type == NIL)
 					_RETURN(p_a._get_obj().obj == NULL);
+				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_EQUAL, DICTIONARY) {
 				if (p_b.type != DICTIONARY)
-					_RETURN(false);
+					_RETURN_FAIL;
 
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
@@ -448,7 +401,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_EQUAL, ARRAY) {
 				if (p_b.type != ARRAY)
-					_RETURN(false);
+					_RETURN_FAIL;
 
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
@@ -495,11 +448,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
 					_RETURN(p_b._get_obj().obj != NULL);
-				_RETURN(true);
+				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, BOOL) {
-				if (p_b.type != BOOL) _RETURN(true);
+				if (p_b.type != BOOL)
+					_RETURN_FAIL;
 				_RETURN(p_a._data._bool != p_b._data._bool);
 			}
 
@@ -508,11 +462,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
 				if (p_b.type == NIL)
 					_RETURN(p_a._get_obj().obj != NULL);
+				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, DICTIONARY) {
 				if (p_b.type != DICTIONARY)
-					_RETURN(true);
+					_RETURN_FAIL;
 
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
@@ -522,7 +477,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {
 				if (p_b.type != ARRAY)
-					_RETURN(true);
+					_RETURN_FAIL;
 
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
@@ -580,13 +535,14 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			CASE_TYPE(math, OP_LESS, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
+				if (p_b.type != OBJECT)
+					_RETURN_FAIL;
+				_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
 			}
 
 			CASE_TYPE(math, OP_LESS, ARRAY) {
 				if (p_b.type != ARRAY)
-					_RETURN(false);
+					_RETURN_FAIL;
 
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
@@ -633,8 +589,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_LESS_EQUAL, p_a.type) {
 			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
+				if (p_b.type != OBJECT)
+					_RETURN_FAIL;
+				_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
@@ -682,13 +639,14 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			CASE_TYPE(math, OP_GREATER, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj > p_b._get_obj().obj));
+				if (p_b.type != OBJECT)
+					_RETURN_FAIL;
+				_RETURN((p_a._get_obj().obj > p_b._get_obj().obj));
 			}
 
 			CASE_TYPE(math, OP_GREATER, ARRAY) {
 				if (p_b.type != ARRAY)
-					_RETURN(false);
+					_RETURN_FAIL;
 
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
@@ -735,8 +693,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_GREATER_EQUAL, p_a.type) {
 			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj >= p_b._get_obj().obj));
+				if (p_b.type != OBJECT)
+					_RETURN_FAIL;
+				_RETURN((p_a._get_obj().obj >= p_b._get_obj().obj));
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
@@ -771,10 +730,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_ADD, p_a.type) {
 			CASE_TYPE(math, OP_ADD, ARRAY) {
-				if (p_a.type != p_b.type) {
-					r_valid = false;
-					return;
-				}
+				if (p_a.type != p_b.type)
+					_RETURN_FAIL;
+
 				const Array &array_a = *reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array &array_b = *reinterpret_cast<const Array *>(p_b._data._mem);
 				Array sum;
@@ -853,65 +811,54 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_MULTIPLY, p_a.type) {
 			CASE_TYPE(math, OP_MULTIPLY, TRANSFORM2D) {
-				if (p_b.type == TRANSFORM2D) {
-					_RETURN(*p_a._data._transform2d * *p_b._data._transform2d);
-				};
-				if (p_b.type == VECTOR2) {
-					_RETURN(p_a._data._transform2d->xform(*(const Vector2 *)p_b._data._mem));
-				};
-				r_valid = false;
-				return;
+				switch (p_b.type) {
+					case TRANSFORM2D: {
+						_RETURN(*p_a._data._transform2d * *p_b._data._transform2d);
+					}
+					case VECTOR2: {
+						_RETURN(p_a._data._transform2d->xform(*(const Vector2 *)p_b._data._mem));
+					}
+					default: _RETURN_FAIL;
+				}
 			}
 
 			CASE_TYPE(math, OP_MULTIPLY, QUAT) {
 				switch (p_b.type) {
 					case VECTOR3: {
-
 						_RETURN(reinterpret_cast<const Quat *>(p_a._data._mem)->xform(*(const Vector3 *)p_b._data._mem));
-					} break;
+					}
 					case QUAT: {
-
 						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * *reinterpret_cast<const Quat *>(p_b._data._mem));
-					} break;
+					}
 					case REAL: {
 						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._real);
-					} break;
-					default: {}
-				};
-				r_valid = false;
-				return;
+					}
+					default: _RETURN_FAIL;
+				}
 			}
 
 			CASE_TYPE(math, OP_MULTIPLY, BASIS) {
 				switch (p_b.type) {
 					case VECTOR3: {
-
 						_RETURN(p_a._data._basis->xform(*(const Vector3 *)p_b._data._mem));
-					};
+					}
 					case BASIS: {
-
 						_RETURN(*p_a._data._basis * *p_b._data._basis);
-					};
-					default: {}
-				};
-				r_valid = false;
-				return;
+					}
+					default: _RETURN_FAIL;
+				}
 			}
 
 			CASE_TYPE(math, OP_MULTIPLY, TRANSFORM) {
 				switch (p_b.type) {
 					case VECTOR3: {
-
 						_RETURN(p_a._data._transform->xform(*(const Vector3 *)p_b._data._mem));
-					};
+					}
 					case TRANSFORM: {
-
 						_RETURN(*p_a._data._transform * *p_b._data._transform);
-					};
-					default: {}
-				};
-				r_valid = false;
-				return;
+					}
+					default: _RETURN_FAIL;
+				}
 			}
 
 			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, INT, *, _int);
@@ -943,18 +890,15 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_DIVIDE, p_a.type) {
 			CASE_TYPE(math, OP_DIVIDE, QUAT) {
-				if (p_b.type != REAL) {
-					r_valid = false;
-					return;
-				}
+				if (p_b.type != REAL)
+					_RETURN_FAIL;
 #ifdef DEBUG_ENABLED
 				if (p_b._data._real == 0) {
 					r_valid = false;
 					_RETURN("Division By Zero");
 				}
 #endif
-				_RETURN(
-						*reinterpret_cast<const Quat *>(p_a._data._mem) / p_b._data._real);
+				_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) / p_b._data._real);
 			}
 
 			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, INT, _int);
@@ -1054,9 +998,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_MODULE, p_a.type) {
 			CASE_TYPE(math, OP_MODULE, INT) {
-				if (p_b.type != INT) {
+				if (p_b.type != INT)
 					_RETURN_FAIL;
-				}
 #ifdef DEBUG_ENABLED
 				if (p_b._data._int == 0) {
 					r_valid = false;
@@ -1067,15 +1010,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			CASE_TYPE(math, OP_MODULE, STRING) {
-				const String *format =
-						reinterpret_cast<const String *>(p_a._data._mem);
+				const String *format = reinterpret_cast<const String *>(p_a._data._mem);
 
 				String result;
 				bool error;
 				if (p_b.type == ARRAY) {
 					// e.g. "frog %s %d" % ["fish", 12]
-					const Array *args =
-							reinterpret_cast<const Array *>(p_b._data._mem);
+					const Array *args = reinterpret_cast<const Array *>(p_b._data._mem);
 					result = format->sprintf(*args, &error);
 				} else {
 					// e.g. "frog %d" % 12
@@ -1127,6 +1068,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int << p_b._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_SHIFT_LEFT)
 			_RETURN_FAIL;
 		}
@@ -1137,6 +1079,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int >> p_b._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_SHIFT_RIGHT)
 			_RETURN_FAIL;
 		}
@@ -1147,6 +1090,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int & p_b._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_AND)
 			_RETURN_FAIL;
 		}
@@ -1157,6 +1101,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int | p_b._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_OR)
 			_RETURN_FAIL;
 		}
@@ -1167,6 +1112,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN_FAIL;
 				_RETURN(p_a._data._int ^ p_b._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_XOR)
 			_RETURN_FAIL;
 		}
@@ -1175,18 +1121,15 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_BIT_NEGATE, INT) {
 				_RETURN(~p_a._data._int);
 			}
+
 			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_NEGATE)
 			_RETURN_FAIL;
 		}
 
 		SWITCH_OP(math, OP_AND, p_a.type) {
 			CASE_TYPE_ALL(math, OP_AND) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN(l && r);
 			}
@@ -1194,12 +1137,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_OR, p_a.type) {
 			CASE_TYPE_ALL(math, OP_OR) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN(l || r);
 			}
@@ -1207,12 +1146,8 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_XOR, p_a.type) {
 			CASE_TYPE_ALL(math, OP_XOR) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
-				bool r = p_b.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
+				bool r = p_b.booleanize();
 
 				_RETURN((l || r) && !(l && r));
 			}
@@ -1220,9 +1155,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 		SWITCH_OP(math, OP_NOT, p_a.type) {
 			CASE_TYPE_ALL(math, OP_NOT) {
-				bool l = p_a.booleanize(r_valid);
-				if (!r_valid)
-					return;
+				bool l = p_a.booleanize();
 				_RETURN(!l);
 			}
 		}

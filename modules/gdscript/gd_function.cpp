@@ -982,15 +982,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				GET_VARIANT_PTR(test, 1);
 
-				bool valid;
-				bool result = test->booleanize(valid);
-#ifdef DEBUG_ENABLED
-				if (!valid) {
+				bool result = test->booleanize();
 
-					err_text = "cannot evaluate conditional expression of type: " + Variant::get_type_name(test->get_type());
-					break;
-				}
-#endif
 				if (result) {
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
@@ -1006,15 +999,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				GET_VARIANT_PTR(test, 1);
 
-				bool valid;
-				bool result = test->booleanize(valid);
-#ifdef DEBUG_ENABLED
-				if (!valid) {
+				bool result = test->booleanize();
 
-					err_text = "cannot evaluate conditional expression of type: " + Variant::get_type_name(test->get_type());
-					break;
-				}
-#endif
 				if (!result) {
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
@@ -1107,14 +1093,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(test, 1);
 
 #ifdef DEBUG_ENABLED
-				bool valid;
-				bool result = test->booleanize(valid);
-
-				if (!valid) {
-
-					err_text = "cannot evaluate conditional expression of type: " + Variant::get_type_name(test->get_type());
-					break;
-				}
+				bool result = test->booleanize();
 
 				if (!result) {
 
