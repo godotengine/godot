@@ -172,14 +172,14 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 		if (!is_canvas_focused()) {
 			focus_canvas();
 		}
-		mask |= 1 << ev->get_button_index();
-	} else if (mask & (1 << ev->get_button_index())) {
-		mask &= ~(1 << ev->get_button_index());
+		mask |= ev->get_button_index();
+	} else if (mask & ev->get_button_index()) {
+		mask &= ~ev->get_button_index();
 	} else {
 		// release event, but press was outside the canvas, so ignore
 		return false;
 	}
-	ev->set_button_mask(mask >> 1);
+	ev->set_button_mask(mask);
 
 	_input->parse_input_event(ev);
 	// prevent selection dragging
@@ -200,7 +200,7 @@ static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *m
 	Ref<InputEventMouseMotion> ev;
 	ev.instance();
 	dom2godot_mod(mouse_event, ev);
-	ev->set_button_mask(input_mask >> 1);
+	ev->set_button_mask(input_mask);
 
 	ev->set_position(pos);
 	ev->set_global_position(ev->get_position());
@@ -227,7 +227,7 @@ static EM_BOOL _wheel_callback(int event_type, const EmscriptenWheelEvent *wheel
 
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_button_mask(_input->get_mouse_button_mask() >> 1);
+	ev->set_button_mask(_input->get_mouse_button_mask());
 	ev->set_position(_input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -291,7 +291,7 @@ static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *
 
 		Ref<InputEventMouseButton> ev_mouse;
 		ev_mouse.instance();
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask() >> 1);
+		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
 		dom2godot_mod(touch_event, ev_mouse);
 
 		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
@@ -334,7 +334,7 @@ static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *t
 		Ref<InputEventMouseMotion> ev_mouse;
 		ev_mouse.instance();
 		dom2godot_mod(touch_event, ev_mouse);
-		ev_mouse->set_button_mask(_input->get_mouse_button_mask() >> 1);
+		ev_mouse->set_button_mask(_input->get_mouse_button_mask());
 
 		const EmscriptenTouchPoint &first_touch = touch_event->touches[lowest_id_index];
 		ev_mouse->set_position(Point2(first_touch.canvasX, first_touch.canvasY));
