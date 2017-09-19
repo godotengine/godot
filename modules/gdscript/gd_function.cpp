@@ -271,6 +271,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 	if (ScriptDebugger::get_singleton())
 		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
 
+#define GD_ERR_BREAK(m_cond) ERR_BREAK(m_cond)
+
 #define CHECK_SPACE(m_space) \
 	ERR_BREAK((ip + m_space) > _code_size)
 
@@ -281,6 +283,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 		break;
 
 #else
+#define GD_ERR_BREAK(m_cond)
 #define CHECK_SPACE(m_space)
 #define GET_VARIANT_PTR(m_v, m_code_ofs) \
 	Variant *m_v;                        \
@@ -302,9 +305,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 	bool exit_ok = false;
 
+#ifdef DEBUG_ENABLED
 	while (ip < _code_size) {
-
 		int last_opcode = _code_ptr[ip];
+#else
+	while (true) {
+#endif
+
 		switch (_code_ptr[ip]) {
 
 			case OPCODE_OPERATOR: {
@@ -313,21 +320,21 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				bool valid;
 				Variant::Operator op = (Variant::Operator)_code_ptr[ip + 1];
-				ERR_BREAK(op >= Variant::OP_MAX);
+				GD_ERR_BREAK(op >= Variant::OP_MAX);
 
 				GET_VARIANT_PTR(a, 2);
 				GET_VARIANT_PTR(b, 3);
 				GET_VARIANT_PTR(dst, 4);
 
 #ifdef DEBUG_ENABLED
+
 				Variant ret;
 				Variant::evaluate(op, *a, *b, ret, valid);
 #else
 				Variant::evaluate(op, *a, *b, *dst, valid);
 #endif
-
-				if (!valid) {
 #ifdef DEBUG_ENABLED
+				if (!valid) {
 
 					if (ret.get_type() == Variant::STRING) {
 						//return a string when invalid with the error
@@ -336,13 +343,10 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					} else {
 						err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
 					}
-#endif
 					break;
 				}
-#ifdef DEBUG_ENABLED
 				*dst = ret;
 #endif
-
 				ip += 5;
 				continue;
 			}
@@ -355,7 +359,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(dst, 3);
 
 #ifdef DEBUG_ENABLED
-
 				if (a->get_type() != Variant::OBJECT || a->operator Object *() == NULL) {
 
 					err_text = "Left operand of 'is' is not an instance of anything.";
@@ -367,7 +370,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					break;
 				}
 #endif
-
 				Object *obj_A = *a;
 				Object *obj_B = *b;
 
@@ -399,12 +401,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					GDNativeClass *nc = Object::cast_to<GDNativeClass>(obj_B);
 
+#ifdef DEBUG_ENABLED
 					if (!nc) {
 
 						err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
 						break;
 					}
-
+#endif
 					extends_ok = ClassDB::is_parent_class(obj_A->get_class_name(), nc->get_name());
 				}
 
@@ -423,6 +426,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				bool valid;
 				dst->set(*index, *value, &valid);
 
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
 					if (v != "") {
@@ -433,7 +437,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "').";
 					break;
 				}
-
+#endif
 				ip += 4;
 				continue;
 			}
@@ -453,6 +457,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = src->get(*index, &valid);
 
 #endif
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					String v = index->operator String();
 					if (v != "") {
@@ -463,7 +468,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
 					break;
 				}
-#ifdef DEBUG_ENABLED
 				*dst = ret;
 #endif
 				ip += 4;
@@ -478,18 +482,19 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				int indexname = _code_ptr[ip + 2];
 
-				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
 				dst->set_named(*index, *value, &valid);
 
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					String err_type;
 					err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "').";
 					break;
 				}
-
+#endif
 				ip += 4;
 				continue;
 			}
@@ -502,7 +507,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				int indexname = _code_ptr[ip + 2];
 
-				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
@@ -513,7 +518,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #else
 				*dst = src->get_named(*index, &valid);
 #endif
-
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (src->has_method(*index)) {
 						err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' ?";
@@ -522,7 +527,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					}
 					break;
 				}
-#ifdef DEBUG_ENABLED
 				*dst = ret;
 #endif
 				ip += 4;
@@ -532,7 +536,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(3);
 				int indexname = _code_ptr[ip + 1];
-				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 				GET_VARIANT_PTR(src, 2);
 
@@ -554,7 +558,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(3);
 				int indexname = _code_ptr[ip + 1];
-				ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 				GET_VARIANT_PTR(dst, 2);
 				bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
@@ -615,11 +619,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				Variant::CallError err;
 				*dst = Variant::construct(t, (const Variant **)argptrs, argc, err);
 
+#ifdef DEBUG_ENABLED
 				if (err.error != Variant::CallError::CALL_OK) {
 
 					err_text = _get_call_error(err, "'" + Variant::get_type_name(t) + "' constructor", (const Variant **)argptrs);
 					break;
 				}
+#endif
 
 				ip += 4 + argc;
 				//construct a basic type
@@ -677,10 +683,10 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(base, 2);
 				int nameg = _code_ptr[ip + 3];
 
-				ERR_BREAK(nameg < 0 || nameg >= _global_names_count);
+				GD_ERR_BREAK(nameg < 0 || nameg >= _global_names_count);
 				const StringName *methodname = &_global_names_ptr[nameg];
 
-				ERR_BREAK(argc < 0);
+				GD_ERR_BREAK(argc < 0);
 				ip += 4;
 				CHECK_SPACE(argc + 1);
 				Variant **argptrs = call_args;
@@ -711,7 +717,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				if (GDScriptLanguage::get_singleton()->profiling) {
 					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
 				}
-#endif
 
 				if (err.error != Variant::CallError::CALL_OK) {
 
@@ -742,6 +747,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
 					break;
 				}
+#endif
 
 				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
 				ip += argc + 1;
@@ -753,7 +759,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				GDFunctions::Function func = GDFunctions::Function(_code_ptr[ip + 1]);
 				int argc = _code_ptr[ip + 2];
-				ERR_BREAK(argc < 0);
+				GD_ERR_BREAK(argc < 0);
 
 				ip += 3;
 				CHECK_SPACE(argc + 1);
@@ -770,6 +776,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				GDFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
 
+#ifdef DEBUG_ENABLED
 				if (err.error != Variant::CallError::CALL_OK) {
 
 					String methodstr = GDFunctions::get_func_name(func);
@@ -781,6 +788,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					}
 					break;
 				}
+#endif
 				ip += argc + 1;
 				continue;
 			}
@@ -792,8 +800,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(2);
 				int self_fun = _code_ptr[ip + 1];
-#ifdef DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
 				if (self_fun < 0 || self_fun >= _global_names_count) {
 
 					err_text = "compiler bug, function name not found";
@@ -898,10 +906,11 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				retvalue = gdfs;
 
 				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
+					//do the oneshot connect
 					GET_VARIANT_PTR(argobj, 1);
 					GET_VARIANT_PTR(argname, 2);
-					//do the oneshot connect
 
+#ifdef DEBUG_ENABLED
 					if (argobj->get_type() != Variant::OBJECT) {
 						err_text = "First argument of yield() not of type object.";
 						break;
@@ -910,6 +919,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 						err_text = "Second argument of yield() not a string (for signal name).";
 						break;
 					}
+#endif
 					Object *obj = argobj->operator Object *();
 					String signal = argname->operator String();
 #ifdef DEBUG_ENABLED
@@ -932,10 +942,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 #endif
 					Error err = obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+#ifdef DEBUG_ENABLED
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";
 						break;
 					}
+#endif
 				}
 
 				exit_ok = true;
@@ -944,10 +956,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			case OPCODE_YIELD_RESUME: {
 
 				CHECK_SPACE(2);
+#ifdef DEBUG_ENABLED
 				if (!p_state) {
 					err_text = ("Invalid Resume (bug?)");
 					break;
 				}
+#endif
 				GET_VARIANT_PTR(result, 1);
 				*result = p_state->result;
 				ip += 2;
@@ -958,7 +972,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				CHECK_SPACE(2);
 				int to = _code_ptr[ip + 1];
 
-				ERR_BREAK(to < 0 || to > _code_size);
+				GD_ERR_BREAK(to < 0 || to > _code_size);
 				ip = to;
 				continue;
 			}
@@ -979,7 +993,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 				if (result) {
 					int to = _code_ptr[ip + 2];
-					ERR_BREAK(to < 0 || to > _code_size);
+					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
 					continue;
 				}
@@ -1003,7 +1017,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 				if (!result) {
 					int to = _code_ptr[ip + 2];
-					ERR_BREAK(to < 0 || to > _code_size);
+					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
 					continue;
 				}
@@ -1033,23 +1047,26 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				bool valid;
 				if (!container->iter_init(*counter, valid)) {
+#ifdef DEBUG_ENABLED
 					if (!valid) {
 						err_text = "Unable to iterate on object of type  " + Variant::get_type_name(container->get_type()) + "'.";
 						break;
 					}
+#endif
 					int jumpto = _code_ptr[ip + 3];
-					ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
 					continue;
 				}
 				GET_VARIANT_PTR(iterator, 4);
 
 				*iterator = container->iter_get(*counter, valid);
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "'.";
 					break;
 				}
-
+#endif
 				ip += 5; //skip regular iterate which is always next
 				continue;
 			}
@@ -1062,23 +1079,26 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				bool valid;
 				if (!container->iter_next(*counter, valid)) {
+#ifdef DEBUG_ENABLED
 					if (!valid) {
 						err_text = "Unable to iterate on object of type  " + Variant::get_type_name(container->get_type()) + "' (type changed since first iteration?).";
 						break;
 					}
+#endif
 					int jumpto = _code_ptr[ip + 3];
-					ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
 					continue;
 				}
 				GET_VARIANT_PTR(iterator, 4);
 
 				*iterator = container->iter_get(*counter, valid);
+#ifdef DEBUG_ENABLED
 				if (!valid) {
 					err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
 					break;
 				}
-
+#endif
 				ip += 5; //loop again
 				continue;
 			}
@@ -1103,7 +1123,6 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 #endif
-
 				ip += 2;
 				continue;
 			}
@@ -1157,6 +1176,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			}
 		}
 
+#ifdef DEBUG_ENABLED
 		if (exit_ok)
 			break;
 		//error
@@ -1182,6 +1202,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), ERR_HANDLER_SCRIPT);
 		}
 
+#endif
 		break;
 	}
 
