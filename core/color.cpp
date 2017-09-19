@@ -250,6 +250,14 @@ Color Color::html(const String &p_color) {
 		return Color();
 	if (color[0] == '#')
 		color = color.substr(1, color.length() - 1);
+	if (color.length() == 3 || color.length() == 4) {
+		String exp_color;
+		for (int i = 0; i < color.length(); i++) {
+			exp_color += color[i];
+			exp_color += color[i];
+		}
+		color = exp_color;
+	}
 
 	bool alpha = false;
 
