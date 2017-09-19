@@ -208,8 +208,11 @@ void GraphNode::_notification(int p_what) {
 		Ref<Texture> close = get_icon("close");
 		Ref<Texture> resizer = get_icon("resizer");
 		int close_offset = get_constant("close_offset");
+		int close_h_offset = get_constant("close_h_offset");
+		Color close_color = get_color("close_color");
 		Ref<Font> title_font = get_font("title_font");
 		int title_offset = get_constant("title_offset");
+		int title_h_offset = get_constant("title_h_offset");
 		Color title_color = get_color("title_color");
 		Point2i icofs = -port->get_size() * 0.5;
 		int edgeofs = get_constant("port_offset");
@@ -236,10 +239,10 @@ void GraphNode::_notification(int p_what) {
 		if (show_close)
 			w -= close->get_width();
 
-		draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT), -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
+		draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
 		if (show_close) {
-			Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT), -close->get_height() + close_offset);
-			draw_texture(close, cpos);
+			Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
+			draw_texture(close, cpos, close_color);
 			close_rect.position = cpos;
 			close_rect.size = close->get_size();
 		} else {
