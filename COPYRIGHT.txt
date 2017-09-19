@@ -150,10 +150,10 @@ Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/mononoki_Regular.ttf
-Comment: Mononoki font
-Copyright: 2013, Matthias Tellen
-License: OFL-1.1
+Files: ./thirdparty/fonts/Hack_Regular.ttf
+Comment: Hack font
+Copyright: 2015-2017, Christopher Simpkins (with Reserved Font Name Hack).
+License: Hack Open Font License v2.0
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
