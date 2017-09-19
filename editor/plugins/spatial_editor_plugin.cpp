@@ -77,13 +77,13 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 
 	//when not being manipulated, move softly
-	float free_orbit_inertia = EDITOR_DEF("editors/3d/orbit_inertia", 0.15);
-	float free_translation_inertia = EDITOR_DEF("editors/3d/translation_inertia", 0.15);
+	float free_orbit_inertia = EDITOR_DEF("editors/3d/navigation_feel/orbit_inertia", 0.15);
+	float free_translation_inertia = EDITOR_DEF("editors/3d/navigation_feel/translation_inertia", 0.15);
 	//when being manipulated, move more quickly
-	float manip_orbit_inertia = EDITOR_DEF("editors/3d/manipulation_orbit_inertia", 0.1);
-	float manip_translation_inertia = EDITOR_DEF("editors/3d/manipulation_translation_inertia", 0.1);
+	float manip_orbit_inertia = EDITOR_DEF("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.1);
+	float manip_translation_inertia = EDITOR_DEF("editors/3d/navigation_feel/manipulation_translation_inertia", 0.1);
 
-	float zoom_inertia = EDITOR_DEF("editors/3d/zoom_inertia", 0.0);
+	float zoom_inertia = EDITOR_DEF("editors/3d/navigation_feel/zoom_inertia", 0.1);
 
 	//determine if being manipulated
 	bool manipulated = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
@@ -812,7 +812,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_RIGHT: {
 
-				NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
+				NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 
 				if (b->is_pressed() && _edit.gizmo.is_valid()) {
 					//restore
@@ -858,7 +858,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed()) {
 					int mod = _get_key_modifier(b);
-					if (mod == _get_key_modifier_setting("editors/3d/freelook_activation_modifier")) {
+					if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
 						freelook_active = true;
 					}
 				} else {
@@ -910,7 +910,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed()) {
 
-					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
+					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 					if ((nav_scheme == NAVIGATION_MAYA || nav_scheme == NAVIGATION_MODO) && b->get_alt()) {
 						break;
 					}
@@ -1119,7 +1119,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_gizmo_select(_edit.mouse_pos, true);
 		}
 
-		NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
+		NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 		NavigationMode nav_mode = NAVIGATION_NONE;
 
 		if (_edit.gizmo.is_valid()) {
@@ -1442,11 +1442,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				int mod = _get_key_modifier(m);
 
-				if (mod == _get_key_modifier_setting("editors/3d/pan_modifier"))
+				if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier"))
 					nav_mode = NAVIGATION_PAN;
-				else if (mod == _get_key_modifier_setting("editors/3d/zoom_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/navigation/zoom_modifier"))
 					nav_mode = NAVIGATION_ZOOM;
-				else if (mod == _get_key_modifier_setting("editors/3d/orbit_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/navigation/orbit_modifier"))
 					nav_mode = NAVIGATION_ORBIT;
 
 			} else if (nav_scheme == NAVIGATION_MAYA) {
@@ -1454,16 +1454,16 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					nav_mode = NAVIGATION_PAN;
 			}
 
-		} else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
+		} else if (EditorSettings::get_singleton()->get("editors/3d/navigation/emulate_3_button_mouse")) {
 			// Handle trackpad (no external mouse) use case
 			int mod = _get_key_modifier(m);
 
 			if (mod) {
-				if (mod == _get_key_modifier_setting("editors/3d/pan_modifier"))
+				if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier"))
 					nav_mode = NAVIGATION_PAN;
-				else if (mod == _get_key_modifier_setting("editors/3d/zoom_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/navigation/zoom_modifier"))
 					nav_mode = NAVIGATION_ZOOM;
-				else if (mod == _get_key_modifier_setting("editors/3d/orbit_modifier"))
+				else if (mod == _get_key_modifier_setting("editors/3d/navigation/orbit_modifier"))
 					nav_mode = NAVIGATION_ORBIT;
 			}
 		}
@@ -1496,7 +1496,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (nav_scheme == NAVIGATION_MAYA && m->get_shift())
 					zoom_speed *= zoom_speed_modifier;
 
-				NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/zoom_style").operator int();
+				NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/navigation/zoom_style").operator int();
 				if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
 					if (m->get_relative().x > 0)
 						scale_cursor_distance(1 - m->get_relative().x * zoom_speed);
@@ -1514,7 +1514,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			case NAVIGATION_ORBIT: {
 				Point2i relative = _get_warped_mouse_motion(m);
 
-				real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/orbit_sensitivity");
+				real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 				real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 
 				cursor.x_rot += relative.y * radians_per_pixel;
@@ -1533,7 +1533,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (!orthogonal) {
 					Point2i relative = _get_warped_mouse_motion(m);
 
-					real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/orbit_sensitivity");
+					real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 					real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 
 					cursor.x_rot += relative.y * radians_per_pixel;
@@ -1670,7 +1670,7 @@ void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 
 Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
-	if (bool(EDITOR_DEF("editors/3d/warped_mouse_panning", false))) {
+	if (bool(EDITOR_DEF("editors/3d/navigation/warped_mouse_panning", false))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
@@ -1724,10 +1724,10 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 		speed_modifier = true;
 	}
 
-	real_t inertia = EDITOR_DEF("editors/3d/freelook_inertia", 0.2);
+	real_t inertia = EDITOR_DEF("editors/3d/freelook/freelook_inertia", 0.1);
 	inertia = MAX(0, inertia);
-	const real_t base_speed = EDITOR_DEF("editors/3d/freelook_base_speed", 0.5);
-	const real_t modifier_speed_factor = EDITOR_DEF("editors/3d/freelook_modifier_speed_factor", 5);
+	const real_t base_speed = EDITOR_DEF("editors/3d/freelook/freelook_base_speed", 0.5);
+	const real_t modifier_speed_factor = EDITOR_DEF("editors/3d/freelook/freelook_modifier_speed_factor", 3);
 
 	real_t speed = base_speed * cursor.distance;
 	if (speed_modifier)
