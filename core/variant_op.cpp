@@ -207,6 +207,32 @@ bool Variant::booleanize(bool &r_valid) const {
 		return;          \
 	}
 
+#define _FALLBACK_OP_EQUAL _RETURN(false)
+#define _FALLBACK_OP_NOT_EQUAL _RETURN(true)
+#define _FALLBACK_OP_LESS _RETURN_FAIL
+#define _FALLBACK_OP_LESS_EQUAL _RETURN_FAIL
+#define _FALLBACK_OP_GREATER _RETURN_FAIL
+#define _FALLBACK_OP_GREATER_EQUAL _RETURN_FAIL
+#define _FALLBACK_OP_ADD _RETURN_FAIL
+#define _FALLBACK_OP_SUBTRACT _RETURN_FAIL
+#define _FALLBACK_OP_MULTIPLY _RETURN_FAIL
+#define _FALLBACK_OP_DIVIDE _RETURN_FAIL
+#define _FALLBACK_OP_NEGATE _RETURN_FAIL
+#define _FALLBACK_OP_POSITIVE _RETURN_FAIL
+#define _FALLBACK_OP_MODULE _RETURN_FAIL
+#define _FALLBACK_OP_STRING_CONCAT _RETURN_FAIL
+#define _FALLBACK_OP_SHIFT_LEFT _RETURN_FAIL
+#define _FALLBACK_OP_SHIFT_RIGHT _RETURN_FAIL
+#define _FALLBACK_OP_BIT_AND _RETURN_FAIL
+#define _FALLBACK_OP_BIT_OR _RETURN_FAIL
+#define _FALLBACK_OP_BIT_XOR _RETURN_FAIL
+#define _FALLBACK_OP_BIT_NEGATE _RETURN_FAIL
+#define _FALLBACK_OP_AND _RETURN_FAIL
+#define _FALLBACK_OP_OR _RETURN_FAIL
+#define _FALLBACK_OP_XOR _RETURN_FAIL
+#define _FALLBACK_OP_NOT _RETURN_FAIL
+#define _FALLBACK_OP_IN _RETURN_FAIL
+
 #define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type)      \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                           \
 		switch (p_b.type) {                                            \
@@ -214,8 +240,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real); \
 			default: {}                                                \
 		}                                                              \
-		r_valid = false;                                               \
-		return;                                                        \
+		_FALLBACK_##m_op_name                                          \
 	};
 
 #ifdef DEBUG_ENABLED
@@ -238,8 +263,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			}                                                   \
 			default: {}                                         \
 		}                                                       \
-		r_valid = false;                                        \
-		return;                                                 \
+		_FALLBACK_##m_op_name                                   \
 	};
 #else
 #define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type)     \
@@ -249,8 +273,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			case REAL: _RETURN(p_a._data.m_type / p_b._data._real); \
 			default: {}                                             \
 		}                                                           \
-		r_valid = false;                                            \
-		return;                                                     \
+		_FALLBACK_##m_op_name                                       \
 	};
 #endif
 
@@ -273,8 +296,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			case VECTOR3: _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
 			default: {}                                                                                      \
 		}                                                                                                    \
-		r_valid = false;                                                                                     \
-		return;                                                                                              \
+		_FALLBACK_##m_op_name                                                                                \
 	};
 
 #define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                                            \
@@ -284,8 +306,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			case NODE_PATH: _RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const NodePath *>(p_a._data._mem)); \
 			default: {}                                                                                                                          \
 		}                                                                                                                                        \
-		r_valid = false;                                                                                                                         \
-		return;                                                                                                                                  \
+		_FALLBACK_##m_op_name                                                                                                                    \
 	};
 
 #define DEFAULT_OP_STR(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                \
@@ -295,24 +316,21 @@ bool Variant::booleanize(bool &r_valid) const {
 			case NODE_PATH: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
 			default: {}                                                                                                                          \
 		}                                                                                                                                        \
-		r_valid = false;                                                                                                                         \
-		return;                                                                                                                                  \
+		_FALLBACK_##m_op_name                                                                                                                    \
 	};
 
 #define DEFAULT_OP_LOCALMEM_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                     \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
 		if (p_b.type == m_name)                                                                                                \
 			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const m_type *>(p_a._data._mem)); \
-		r_valid = false;                                                                                                       \
-		return;                                                                                                                \
+		_FALLBACK_##m_op_name                                                                                                  \
 	};
 
 #define DEFAULT_OP_LOCALMEM(m_prefix, m_op_name, m_name, m_op, m_type)                                                         \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
 		if (p_b.type == m_name)                                                                                                \
 			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-		r_valid = false;                                                                                                       \
-		return;                                                                                                                \
+		_FALLBACK_##m_op_name                                                                                                  \
 	};
 
 #define DEFAULT_OP_LOCALMEM_NEG(m_prefix, m_op_name, m_name, m_type) \
@@ -333,8 +351,7 @@ bool Variant::booleanize(bool &r_valid) const {
 			case REAL: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._real);                                     \
 			default: {}                                                                                                                     \
 		}                                                                                                                                   \
-		r_valid = false;                                                                                                                    \
-		return;                                                                                                                             \
+		_FALLBACK_##m_op_name                                                                                                               \
 	}
 
 #define DEFAULT_OP_PTR(m_op, m_name, m_sub)                             \
@@ -343,16 +360,14 @@ bool Variant::booleanize(bool &r_valid) const {
 			case m_name: _RETURN(p_a._data.m_sub m_op p_b._data.m_sub); \
 			default: {}                                                 \
 		}                                                               \
-		r_valid = false;                                                \
-		return;                                                         \
+		_FALLBACK_##m_op_name                                           \
 	}
 
 #define DEFAULT_OP_PTRREF(m_prefix, m_op_name, m_name, m_op, m_sub) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                        \
 		if (p_b.type == m_name)                                     \
 			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);        \
-		r_valid = false;                                            \
-		return;                                                     \
+		_FALLBACK_##m_op_name                                       \
 	}
 
 #define DEFAULT_OP_ARRAY_EQ(m_prefix, m_op_name, m_name, m_type) \
