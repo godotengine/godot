@@ -33,6 +33,7 @@
 #include "math_defs.h"
 #include "math_funcs.h"
 #include "typedefs.h"
+#include "ustring.h"
 
 /**
  * Hashing functions
@@ -127,5 +128,38 @@ static inline uint64_t make_uint64_t(T p_in) {
 	_u.t = p_in;
 	return _u._u64;
 }
+
+struct HashMapHasherDefault {
+	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
+	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
+
+	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash(uint64_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const float p_float) { return hash_djb2_one_float(p_float); }
+	static _FORCE_INLINE_ uint32_t hash(const double p_double) { return hash_djb2_one_float(p_double); }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return (uint32_t)p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return (uint32_t)p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return (uint32_t)p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return (uint32_t)p_wchar; }
+	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
+};
+
+template <typename T>
+struct HashMapComparatorDefault {
+	static bool compare(const T &p_lhs, const T &p_rhs) {
+		return p_lhs == p_rhs;
+	}
+
+	bool compare(const float &p_lhs, const float &p_rhs) {
+		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+	}
+
+	bool compare(const double &p_lhs, const double &p_rhs) {
+		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+	}
+};
 
 #endif
