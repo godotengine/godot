@@ -460,7 +460,7 @@ void EditorSettings::setup_network() {
 
 	List<IP_Address> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
-	String lip;
+	String lip = "127.0.0.1";
 	String hint;
 	String current = has("network/debug/remote_host") ? get("network/debug/remote_host") : "";
 	int port = has("network/debug/remote_port") ? (int)get("network/debug/remote_port") : 6007;
@@ -469,8 +469,9 @@ void EditorSettings::setup_network() {
 
 		String ip = E->get();
 
-		if (lip == "")
-			lip = ip;
+		// link-local IPv6 addresses don't work, skipping them
+		if (ip.begins_with("fe80:0:0:0:")) // fe80::/64
+			continue;
 		if (ip == current)
 			lip = current; //so it saves
 		if (hint != "")
