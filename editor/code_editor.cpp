@@ -1065,7 +1065,7 @@ void CodeTextEditor::_font_resize_timeout() {
 		int size = font->get_size() + font_resize_val;
 
 		if (size >= 8 && size <= 96) {
-			EditorSettings::get_singleton()->set("interface/source_font_size", size);
+			EditorSettings::get_singleton()->set("interface/source_font_size", size / EDSCALE);
 			font->set_size(size);
 		}
 
