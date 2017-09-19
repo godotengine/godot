@@ -577,7 +577,7 @@ real_t CameraMatrix::get_fov() const {
 	if ((matrix[8] == 0) && (matrix[9] == 0)) {
 		return Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
 	} else {
-		// our frustum is asymetrical need to calculate the left planes angle seperately..
+		// our frustum is asymmetrical need to calculate the left planes angle separately..
 		Plane left_plane = Plane(matrix[3] + matrix[0],
 				matrix[7] + matrix[4],
 				matrix[11] + matrix[8],
