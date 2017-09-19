@@ -86,6 +86,7 @@ public:
 
 private:
 	bool debugging_enabled;
+	int chmod_flags;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -148,6 +149,9 @@ public:
 
 	bool is_debugging_enabled() const;
 	void set_debugging_enabled(bool p_enabled);
+
+	int get_chmod_flags() const;
+	void set_chmod_flags(int p_flags);
 
 	Error export_project_files(EditorExportSaveFunction p_func, void *p_udata, bool p_make_bundles);
 

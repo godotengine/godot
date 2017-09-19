@@ -47,6 +47,7 @@ void register_x11_exporter() {
 		exporter->set_debug_binary64("linux_x11_64_debug");
 		exporter->set_name("Linux X11");
 		exporter->set_logo(logo);
+		exporter->set_chmod_flags(0755);
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
 }

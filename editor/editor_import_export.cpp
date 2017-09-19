@@ -511,6 +511,16 @@ void EditorExportPlatform::set_debugging_enabled(bool p_enabled) {
 	debugging_enabled = p_enabled;
 }
 
+int EditorExportPlatform::get_chmod_flags() const {
+
+	return chmod_flags;
+}
+
+void EditorExportPlatform::set_chmod_flags(int p_flags) {
+
+	chmod_flags = p_flags;
+}
+
 bool EditorExportPlatformPC::_set(const StringName &p_name, const Variant &p_value) {
 
 	String n = p_name;
@@ -1244,6 +1254,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst, bool p_make_bundles, int 
 EditorExportPlatform::EditorExportPlatform() {
 
 	debugging_enabled = true;
+	chmod_flags = 0;
 }
 
 Error EditorExportPlatformPC::export_project(const String &p_path, bool p_debug, int p_flags) {
@@ -1333,6 +1344,15 @@ Error EditorExportPlatformPC::export_project(const String &p_path, bool p_debug,
 	memdelete(src_exe);
 
 	Error err = export_mode == EXPORT_ZIP ? save_zip(dstfile, bundle) : save_pack(dst, bundle);
+	dst->close();
+
+	if (err == OK) {
+		int flags = get_chmod_flags();
+		if (flags) {
+			err = dst->_chmod(p_path, flags);
+		}
+	}
+
 	memdelete(dst);
 	return err;
 }

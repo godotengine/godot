@@ -78,6 +78,8 @@ public:
 
 	virtual uint64_t _get_modified_time(const String &p_file);
 
+	virtual Error _chmod(const String &p_path, int p_mod);
+
 	FileAccessUnix();
 	virtual ~FileAccessUnix();
 };
