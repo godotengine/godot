@@ -237,12 +237,12 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 struct godot_gdnative_api_struct; // Forward declaration
 
 typedef struct {
-	const struct godot_gdnative_api_struct *api_struct;
 	godot_bool in_editor;
 	uint64_t core_api_hash;
 	uint64_t editor_api_hash;
 	uint64_t no_api_hash;
 	godot_object *gd_native_library; // pointer to GDNativeLibrary that is being initialized
+	const struct godot_gdnative_api_struct *api_struct;
 } godot_gdnative_init_options;
 
 typedef struct {
