@@ -2676,7 +2676,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case VECTOR2: {
-			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
 
 			int64_t idx = r_iter;
 			idx++;
