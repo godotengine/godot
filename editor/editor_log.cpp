@@ -85,7 +85,11 @@ void EditorLog::clear() {
 
 void EditorLog::add_message(const String &p_msg, bool p_error) {
 
+	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
+	log->push_font(doc_code_font);
+
 	log->add_newline();
+
 	if (p_error) {
 		log->push_color(get_color("error_color", "Editor"));
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
@@ -100,6 +104,8 @@ void EditorLog::add_message(const String &p_msg, bool p_error) {
 
 	if (p_error)
 		log->pop();
+
+	log->pop(); // pop font;
 }
 
 /*
