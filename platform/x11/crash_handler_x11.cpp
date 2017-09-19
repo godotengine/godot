@@ -39,6 +39,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <signal.h>
+#include <stdlib.h>
 
 static void handle_crash(int sig) {
 	if (OS::get_singleton() == NULL)
