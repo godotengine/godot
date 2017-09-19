@@ -604,15 +604,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_border_color_all(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	// compensate the border
-	style_content_panel->set_default_margin(MARGIN_TOP, margin_size_extra);
-	style_content_panel->set_default_margin(MARGIN_RIGHT, margin_size_extra);
-	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra);
-	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra);
+	style_content_panel->set_default_margin(MARGIN_TOP, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(MARGIN_RIGHT, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(MARGIN_BOTTOM, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin(MARGIN_LEFT, margin_size_extra * EDSCALE);
 
 	// this is the stylebox used in 3d and 2d viewports (no borders)
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
 	style_content_panel_vp->set_default_margin(MARGIN_LEFT, border_width * 2);
-	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size);
+	style_content_panel_vp->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
 	style_content_panel_vp->set_default_margin(MARGIN_RIGHT, border_width * 2);
 	style_content_panel_vp->set_default_margin(MARGIN_BOTTOM, border_width * 2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
@@ -635,6 +635,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_debugger_contents->set_default_margin(MARGIN_RIGHT, 0);
 	style_debugger_contents->set_border_width_all(0);
 	style_debugger_contents->set_expand_margin_size(MARGIN_TOP, -v_offset);
+	theme->set_constant("extra_margin", "DebuggerPanel", default_margin_size * EDSCALE + border_width);
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_debugger_contents);
 	Ref<StyleBoxFlat> style_tab_fg_debugger = style_tab_selected->duplicate();
 	style_tab_fg_debugger->set_expand_margin_size(MARGIN_LEFT, default_margin_size * EDSCALE + border_width);
@@ -668,6 +669,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "VSplitContainer", default_margin_size * 2 * EDSCALE);
+
+	// Containers
+	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);
+	theme->set_constant("separation", "HBoxContainer", default_margin_size * EDSCALE);
+	theme->set_constant("separation", "VBoxContainer", default_margin_size * EDSCALE);
+	theme->set_constant("margin_left", "MarginContainer", 0);
+	theme->set_constant("margin_top", "MarginContainer", 0);
+	theme->set_constant("margin_right", "MarginContainer", 0);
+	theme->set_constant("margin_bottom", "MarginContainer", 0);
+	theme->set_constant("hseparation", "GridContainer", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "GridContainer", default_margin_size * EDSCALE);
 
 	// WindowDialog
 	Ref<StyleBoxFlat> style_window = style_popup->duplicate();

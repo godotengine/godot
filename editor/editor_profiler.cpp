@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "editor_profiler.h"
 
+#include "editor_scale.h"
 #include "editor_settings.h"
 #include "os/os.h"
 
@@ -656,14 +657,14 @@ EditorProfiler::EditorProfiler() {
 	hb->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect("value_changed", this, "_cursor_metric_changed");
 
-	hb->add_constant_override("separation", 8);
+	hb->add_constant_override("separation", 8 * EDSCALE);
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	variables = memnew(Tree);
-	variables->set_custom_minimum_size(Size2(300, 0));
+	variables->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
@@ -674,10 +675,10 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_min_width(0, 60);
 	variables->set_column_title(1, "Time");
 	variables->set_column_expand(1, false);
-	variables->set_column_min_width(1, 60);
+	variables->set_column_min_width(1, 60 * EDSCALE);
 	variables->set_column_title(2, "Calls");
 	variables->set_column_expand(2, false);
-	variables->set_column_min_width(2, 60);
+	variables->set_column_min_width(2, 60 * EDSCALE);
 	variables->connect("item_edited", this, "_item_edited");
 
 	graph = memnew(TextureRect);
@@ -690,8 +691,6 @@ EditorProfiler::EditorProfiler() {
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	add_constant_override("separation", 3);
 
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);
