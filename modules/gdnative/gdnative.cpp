@@ -40,8 +40,8 @@
 const String init_symbol = "godot_gdnative_init";
 const String terminate_symbol = "godot_gdnative_terminate";
 
-#define GDAPI_FUNC(name, ret_type, ...) .name = name,
-#define GDAPI_FUNC_VOID(name, ...) .name = name,
+#define GDAPI_FUNC(name, ret_type, ...) name,
+#define GDAPI_FUNC_VOID(name, ...) name,
 
 const godot_gdnative_api_struct api_struct = {
 	GODOT_GDNATIVE_API_FUNCTIONS
