@@ -283,7 +283,7 @@ void GraphEdit::_notification(int p_what) {
 		zoom_minus->set_icon(get_icon("minus"));
 		zoom_reset->set_icon(get_icon("reset"));
 		zoom_plus->set_icon(get_icon("more"));
-		snap_button->set_icon(get_icon("snap"));
+		snap_button->set_icon(get_icon("SnapGrid"));
 		//zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
 	}
 	if (p_what == NOTIFICATION_DRAW) {

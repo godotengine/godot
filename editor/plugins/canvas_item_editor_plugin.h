@@ -70,7 +70,6 @@ class CanvasItemEditor : public VBoxContainer {
 	EditorNode *editor;
 
 	enum Tool {
-
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
@@ -82,15 +81,18 @@ class CanvasItemEditor : public VBoxContainer {
 
 	enum MenuOption {
 		SNAP_USE,
-		SNAP_SHOW_GRID,
+		SNAP_USE_NODE_PARENT,
+		SNAP_USE_NODE_ANCHORS,
+		SNAP_USE_NODE_SIDES,
+		SNAP_USE_OTHER_NODES,
+		SNAP_USE_GRID,
 		SNAP_USE_ROTATION,
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
-		ZOOM_IN,
-		ZOOM_OUT,
-		ZOOM_RESET,
-		ZOOM_SET,
+		SHOW_GRID,
+		SHOW_HELPERS,
+		SHOW_RULERS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -163,6 +165,8 @@ class CanvasItemEditor : public VBoxContainer {
 	Tool tool;
 	bool first_update;
 	Control *viewport;
+	Control *viewport_base;
+	Control *viewport_scrollable;
 
 	bool can_move_pivot;
 
@@ -170,14 +174,28 @@ class CanvasItemEditor : public VBoxContainer {
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
 
+	ToolButton *zoom_minus;
+	ToolButton *zoom_reset;
+	ToolButton *zoom_plus;
+
 	Transform2D transform;
+	bool show_grid;
+	bool show_rulers;
+	bool show_helpers;
 	float zoom;
-	Vector2 snap_offset;
-	Vector2 snap_step;
+
+	Point2 grid_offset;
+	Point2 grid_step;
+	int grid_step_multiplier;
+
 	float snap_rotation_step;
 	float snap_rotation_offset;
+	bool snap_active;
+	bool snap_node_parent;
+	bool snap_node_anchors;
+	bool snap_node_sides;
+	bool snap_other_nodes;
 	bool snap_grid;
-	bool snap_show_grid;
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
@@ -203,18 +221,6 @@ class CanvasItemEditor : public VBoxContainer {
 	};
 
 	Vector<_SelectResult> selection_results;
-
-	struct LockList {
-		Point2 pos;
-		bool lock;
-		bool group;
-		LockList() {
-			lock = false;
-			group = false;
-		}
-	};
-
-	List<LockList> lock_list;
 
 	struct BoneList {
 
@@ -255,6 +261,10 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *move_button;
 	ToolButton *rotate_button;
 
+	ToolButton *snap_button;
+	MenuButton *snap_config_menu;
+	PopupMenu *smartsnap_config_popup;
+
 	ToolButton *pivot_button;
 	ToolButton *pan_button;
 
@@ -264,8 +274,7 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *group_button;
 	ToolButton *ungroup_button;
 
-	MenuButton *edit_menu;
-	PopupMenu *skeleton_menu;
+	MenuButton *skeleton_menu;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -277,6 +286,9 @@ class CanvasItemEditor : public VBoxContainer {
 	Button *key_insert_button;
 
 	PopupMenu *selection_menu;
+
+	Control *top_ruler;
+	Control *left_ruler;
 
 	//PopupMenu *popup;
 	DragType drag;
@@ -290,6 +302,11 @@ class CanvasItemEditor : public VBoxContainer {
 	Ref<Texture> select_handle;
 	Ref<Texture> anchor_handle;
 
+	Ref<ShortCut> drag_pivot_shortcut;
+	Ref<ShortCut> set_pivot_shortcut;
+	Ref<ShortCut> multiply_grid_step_shortcut;
+	Ref<ShortCut> divide_grid_step_shortcut;
+
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, int limit = 0);
@@ -299,10 +316,6 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag);
 
 	ConfirmationDialog *snap_dialog;
-
-	AcceptDialog *value_dialog;
-	Label *dialog_label;
-	SpinBox *dialog_val;
 
 	CanvasItem *ref_item;
 
@@ -317,9 +330,8 @@ class CanvasItemEditor : public VBoxContainer {
 	void _prepare_drag(const Point2 &p_click_pos);
 	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
 
-	float _anchor_snap(float p_anchor, bool *p_snapped = NULL, float p_opposite_anchor = -1);
-	Vector2 _anchor_to_position(Control *p_control, Vector2 anchor);
-	Vector2 _position_to_anchor(Control *p_control, Vector2 position);
+	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
+	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
@@ -330,7 +342,6 @@ class CanvasItemEditor : public VBoxContainer {
 	void incend(float &beg, float &end, float inc, float minsize, bool p_symmetric);
 
 	void _append_canvas_item(CanvasItem *p_item);
-	void _dialog_value_changed(double);
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
@@ -339,25 +350,48 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Point2 _find_topleftmost_point();
 
-	void _find_canvas_items_span(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform);
+	void _build_bones_list(Node *p_node);
+
+	void _get_encompassing_rect(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform);
 
 	Object *_get_editor_data(Object *p_what);
 
-	CanvasItem *get_single_item();
+	CanvasItem *_get_single_item();
 	int get_item_count();
 	void _keying_changed();
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
+	void _draw_text_at_position(Point2 p_position, String p_string, Margin p_side);
+	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 
-	void _viewport_gui_input(const Ref<InputEvent> &p_event);
-	void _viewport_draw();
+	void _draw_rulers();
+	void _draw_focus();
+	void _draw_grid();
+	void _draw_selection();
+	void _draw_axis();
+	void _draw_bones();
+	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
+
+	void _draw_viewport();
+
+	void _viewport_base_gui_input(const Ref<InputEvent> &p_event);
+	void _draw_viewport_base();
 
 	void _focus_selection(int p_op);
 
+	void _snap_if_closer(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
+	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap);
+
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_full_rect();
+
+	void _zoom_minus();
+	void _zoom_reset();
+	void _zoom_plus();
+
+	void _toggle_snap(bool p_status);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
@@ -402,7 +436,18 @@ protected:
 	static CanvasItemEditor *singleton;
 
 public:
-	Vector2 snap_point(Vector2 p_target, Vector2 p_start = Vector2(0, 0)) const;
+	enum SnapMode {
+		SNAP_GRID = 1 << 0,
+		SNAP_PIXEL = 1 << 1,
+		SNAP_NODE_PARENT = 1 << 2,
+		SNAP_NODE_ANCHORS = 1 << 3,
+		SNAP_NODE_SIDES = 1 << 4,
+		SNAP_OTHER_NODES = 1 << 5,
+
+		SNAP_DEFAULT = 0x03,
+	};
+
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
