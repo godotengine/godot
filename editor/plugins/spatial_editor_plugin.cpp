@@ -2566,11 +2566,18 @@ void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (scene != NULL) {
-			if (scene.is_valid()) {
-				Node *instance = scene->instance();
-				if (instance) {
-					preview_node->add_child(instance);
+		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+		if (mesh != NULL || scene != NULL) {
+			if (mesh != NULL) {
+				MeshInstance *mesh_instance = memnew(MeshInstance);
+				mesh_instance->set_mesh(mesh);
+				preview_node->add_child(mesh_instance);
+			} else {
+				if (scene.is_valid()) {
+					Node *instance = scene->instance();
+					if (instance) {
+						preview_node->add_child(instance);
+					}
 				}
 			}
 			editor->get_scene_root()->add_child(preview_node);
@@ -2606,13 +2613,29 @@ bool SpatialEditorViewport::_cyclical_dependency_exists(const String &p_target_s
 }
 
 bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
-	Ref<PackedScene> sdata = ResourceLoader::load(path);
-	if (!sdata.is_valid()) { // invalid scene
-		return false;
+	RES res = ResourceLoader::load(path);
+
+	Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+	Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+
+	Node *instanced_scene = NULL;
+
+	if (mesh != NULL || scene != NULL) {
+		if (mesh != NULL) {
+			MeshInstance *mesh_instance = memnew(MeshInstance);
+			mesh_instance->set_mesh(mesh);
+			mesh_instance->set_name(mesh->get_name());
+			instanced_scene = mesh_instance;
+		} else {
+			if (!scene.is_valid()) { // invalid scene
+				return false;
+			} else {
+				instanced_scene = scene->instance();
+			}
+		}
 	}
 
-	Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-	if (!instanced_scene) { // error on instancing
+	if (instanced_scene == NULL) {
 		return false;
 	}
 
@@ -2661,7 +2684,8 @@ void SpatialEditorViewport::_perform_drop_data() {
 			continue;
 		}
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (scene != NULL) {
+		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+		if (mesh != NULL || scene != NULL) {
 			bool success = _create_instance(target_node, path, drop_pos);
 			if (!success) {
 				error_files.push_back(path);
@@ -2694,9 +2718,11 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 
 			List<String> scene_extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+			List<String> mesh_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Mesh", &mesh_extensions);
 
 			for (int i = 0; i < files.size(); i++) {
-				if (scene_extensions.find(files[i].get_extension())) {
+				if (mesh_extensions.find(files[i].get_extension()) || scene_extensions.find(files[i].get_extension())) {
 					RES res = ResourceLoader::load(files[i]);
 					if (res.is_null()) {
 						continue;
@@ -2710,6 +2736,13 @@ bool SpatialEditorViewport::can_drop_data_fw(const Point2 &p_point, const Varian
 							continue;
 						}
 						memdelete(instanced_scene);
+					} else if (type == "Mesh" || "ArrayMesh" || "PrimitiveMesh") {
+						Ref<Mesh> mesh = ResourceLoader::load(files[i]);
+						if (!mesh.is_valid()) {
+							continue;
+						}
+					} else {
+						continue;
 					}
 					can_instance = true;
 					break;
