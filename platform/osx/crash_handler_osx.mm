@@ -43,6 +43,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
