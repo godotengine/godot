@@ -17,7 +17,7 @@
                   android:launchMode="singleTask"
                   android:screenOrientation="landscape"
                   android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize">
-                                                                                                  
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -26,7 +26,7 @@
 	<service android:name="org.godotengine.godot.GodotDownloaderService" />
 
 
-  
+
 
 $$ADD_APPLICATION_CHUNKS$$
 
@@ -200,6 +200,6 @@ $$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.custom.18"/>
 <uses-permission android:name="godot.custom.19"/>
 
-<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="23"/>
-         
-</manifest> 
+<uses-sdk android:minSdkVersion="18" android:targetSdkVersion="23"/>
+
+</manifest>

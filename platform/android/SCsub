@@ -73,7 +73,7 @@ for x in env.android_gradle_plugins:
 gradle_classpath = ""
 for x in env.android_gradle_classpath:
 	gradle_classpath += "\t\tclasspath \"" + x + "\"\n"
-	
+
 gradle_res_dirs_text = ""
 
 for x in env.android_res_dirs:
@@ -93,13 +93,13 @@ gradle_asset_dirs_text = ""
 
 gradle_default_config_text = ""
 
-minSdk = 14
+minSdk = 18
 targetSdk = 23
 
 for x in env.android_default_config:
-    if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk: 
+    if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk:
         x = "minSdkVersion " + str(minSdk)
-    if x.startswith("targetSdkVersion") and int(x.split(" ")[-1]) > targetSdk: 
+    if x.startswith("targetSdkVersion") and int(x.split(" ")[-1]) > targetSdk:
         x = "targetSdkVersion " + str(targetSdk)
 
     gradle_default_config_text += x + "\n\t\t"
