@@ -42,7 +42,7 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 
 		case ADDR_TYPE_SELF: {
 
-			if (!p_instance) {
+			if (unlikely(!p_instance)) {
 				r_error = "Cannot access self without instance.";
 				return NULL;
 			}
@@ -54,7 +54,7 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 		} break;
 		case ADDR_TYPE_MEMBER: {
 			//member indexing is O(1)
-			if (!p_instance) {
+			if (unlikely(!p_instance)) {
 				r_error = "Cannot access member without instance.";
 				return NULL;
 			}
@@ -279,7 +279,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #define GET_VARIANT_PTR(m_v, m_code_ofs)                                                       \
 	Variant *m_v;                                                                              \
 	m_v = _get_variant(_code_ptr[ip + m_code_ofs], p_instance, _class, self, stack, err_text); \
-	if (!m_v)                                                                                  \
+	if (unlikely(!m_v))                                                                        \
 		break;
 
 #else
