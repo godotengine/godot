@@ -188,7 +188,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					// Drag tangent
 
-					Vector2 point_pos = curve.get_point_pos(_selected_point);
+					Vector2 point_pos = curve.get_point_position(_selected_point);
 					Vector2 control_pos = get_world_pos(mpos);
 
 					Vector2 dir = (control_pos - point_pos).normalized();
@@ -378,7 +378,7 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 	const float r = _hover_radius * _hover_radius;
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
-		Vector2 p = get_view_pos(curve.get_point_pos(i));
+		Vector2 p = get_view_pos(curve.get_point_position(i));
 		if (p.distance_squared_to(pos) <= r) {
 			return i;
 		}
@@ -525,8 +525,8 @@ Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
 	else
 		dir = Vector2(1, _curve_ref->get_point_right_tangent(i));
 
-	Vector2 point_pos = get_view_pos(_curve_ref->get_point_pos(i));
-	Vector2 control_pos = get_view_pos(_curve_ref->get_point_pos(i) + dir);
+	Vector2 point_pos = get_view_pos(_curve_ref->get_point_position(i));
+	Vector2 control_pos = get_view_pos(_curve_ref->get_point_position(i) + dir);
 
 	return point_pos + _tangents_length * (control_pos - point_pos).normalized();
 }
@@ -549,8 +549,8 @@ static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 		plot_func(Vector2(0, y), Vector2(1.f, y), true);
 
 	} else {
-		Vector2 first_point = curve.get_point_pos(0);
-		Vector2 last_point = curve.get_point_pos(curve.get_point_count() - 1);
+		Vector2 first_point = curve.get_point_position(0);
+		Vector2 last_point = curve.get_point_position(curve.get_point_count() - 1);
 
 		// Edge lines
 		plot_func(Vector2(0, first_point.y), first_point, false);
@@ -559,8 +559,8 @@ static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 		// Draw section by section, so that we get maximum precision near points.
 		// It's an accurate representation, but slower than using the baked one.
 		for (int i = 1; i < curve.get_point_count(); ++i) {
-			Vector2 a = curve.get_point_pos(i - 1);
-			Vector2 b = curve.get_point_pos(i);
+			Vector2 a = curve.get_point_position(i - 1);
+			Vector2 b = curve.get_point_position(i);
 
 			Vector2 pos = a;
 			Vector2 prev_pos = a;
@@ -667,7 +667,7 @@ void CurveEditor::_draw() {
 		const Color tangent_color(0.5, 0.5, 1, 1);
 
 		int i = _selected_point;
-		Vector2 pos = curve.get_point_pos(i);
+		Vector2 pos = curve.get_point_position(i);
 
 		if (i != 0) {
 			Vector2 control_pos = get_tangent_view_pos(i, TANGENT_LEFT);
@@ -718,7 +718,7 @@ void CurveEditor::_draw() {
 	const Color selected_point_color(1, 0.5, 0.5);
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
-		Vector2 pos = curve.get_point_pos(i);
+		Vector2 pos = curve.get_point_position(i);
 		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(3), i == _selected_point ? selected_point_color : point_color);
 		// TODO Circles are prettier. Needs a fix! Or a texture
 		//draw_circle(pos, 2, point_color);
@@ -728,7 +728,7 @@ void CurveEditor::_draw() {
 
 	if (_hover_point != -1) {
 		const Color hover_color = line_color;
-		Vector2 pos = curve.get_point_pos(_hover_point);
+		Vector2 pos = curve.get_point_position(_hover_point);
 		stroke_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color);
 	}
 

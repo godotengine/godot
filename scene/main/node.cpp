@@ -2693,7 +2693,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
-	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_pos"), &Node::move_child);
+	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
 	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);

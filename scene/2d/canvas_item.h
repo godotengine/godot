@@ -298,10 +298,10 @@ public:
 	bool get_use_parent_material() const;
 
 	Ref<InputEvent> make_input_local(const Ref<InputEvent> &p_event) const;
-	Vector2 make_canvas_pos_local(const Vector2 &screen_point) const;
+	Vector2 make_canvas_position_local(const Vector2 &screen_point) const;
 
 	Vector2 get_global_mouse_position() const;
-	Vector2 get_local_mouse_pos() const;
+	Vector2 get_local_mouse_position() const;
 
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;

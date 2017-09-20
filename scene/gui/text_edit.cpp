@@ -1773,7 +1773,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (mb->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
 
-				menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
+				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 				menu->set_size(Vector2(1, 1));
 				menu->popup();
 				grab_focus();
@@ -1844,7 +1844,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (k->is_pressed()) {
 
-					highlighted_word = get_word_at_pos(get_local_mouse_pos());
+					highlighted_word = get_word_at_pos(get_local_mouse_position());
 					update();
 
 				} else {
@@ -3499,7 +3499,7 @@ String TextEdit::get_text() {
 String TextEdit::get_text_for_lookup_completion() {
 
 	int row, col;
-	_get_mouse_pos(get_local_mouse_pos(), row, col);
+	_get_mouse_pos(get_local_mouse_position(), row, col);
 
 	String longthing;
 	int len = text.size();

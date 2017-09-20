@@ -97,7 +97,7 @@ int AudioStreamPlaybackOGGVorbis::get_loop_count() const {
 	return loops;
 }
 
-float AudioStreamPlaybackOGGVorbis::get_pos() const {
+float AudioStreamPlaybackOGGVorbis::get_position() const {
 
 	return float(frames_mixed) / vorbis_stream->sample_rate;
 }

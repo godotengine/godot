@@ -129,7 +129,7 @@
 				Get the length (in seconds) of the currently being played animation.
 			</description>
 		</method>
-		<method name="get_current_animation_pos" qualifiers="const">
+		<method name="get_current_animation_position" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -143,7 +143,7 @@
 				Return the default blend time between animations.
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -245,7 +245,7 @@
 		<method name="seek">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos_sec" type="float">
+			<argument index="0" name="seconds" type="float">
 			</argument>
 			<argument index="1" name="update" type="bool" default="false">
 			</argument>

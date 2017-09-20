@@ -168,7 +168,7 @@
 				Get a [String] saved in Pascal format from the file.
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -258,7 +258,7 @@
 		<method name="seek">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 				Change the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
@@ -267,7 +267,7 @@
 		<method name="seek_end">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="int" default="0">
+			<argument index="0" name="position" type="int" default="0">
 			</argument>
 			<description>
 				Change the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.

@@ -306,7 +306,7 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="pos" type="Vector2">
+			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<argument index="2" name="impulse" type="Vector2">
 			</argument>

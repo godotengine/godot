@@ -90,7 +90,7 @@ public:
 
 	virtual void seek(size_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file
-	virtual size_t get_pos() const = 0; ///< get position in the file
+	virtual size_t get_position() const = 0; ///< get position in the file
 	virtual size_t get_len() const = 0; ///< get size of the file
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF

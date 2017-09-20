@@ -367,7 +367,7 @@ void FindReplaceBar::_show_search() {
 
 	if (!get_search_text().empty()) {
 		search_text->select_all();
-		search_text->set_cursor_pos(search_text->get_text().length());
+		search_text->set_cursor_position(search_text->get_text().length());
 		search_current();
 	}
 }

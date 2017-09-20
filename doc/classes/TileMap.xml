@@ -39,7 +39,7 @@
 		<method name="get_cellv" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Return the tile index of the cell referenced by a Vector2.
@@ -222,7 +222,7 @@
 		<method name="map_to_world" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="mappos" type="Vector2">
+			<argument index="0" name="map_position" type="Vector2">
 			</argument>
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
@@ -264,7 +264,7 @@
 		<method name="set_cellv">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="tile" type="int">
 			</argument>
@@ -442,7 +442,7 @@
 		<method name="world_to_map" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="worldpos" type="Vector2">
+			<argument index="0" name="world_position" type="Vector2">
 			</argument>
 			<description>
 				Return the tilemap (grid-based) coordinates corresponding to the absolute world position given as an argument.

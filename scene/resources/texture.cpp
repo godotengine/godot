@@ -70,7 +70,7 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture::has_alpha);
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &Texture::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &Texture::get_flags);
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "pos", "modulate", "transpose", "normal_map"), &Texture::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose", "normal_map"), &Texture::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose", "normal_map"), &Texture::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &Texture::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
@@ -488,7 +488,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 		while (mipmaps > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 
-			f->seek(f->get_pos() + size);
+			f->seek(f->get_position() + size);
 			mipmaps = f->get_32();
 			size = f->get_32();
 
@@ -610,7 +610,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 				ERR_FAIL_V(ERR_FILE_CORRUPT);
 			}
 
-			f->seek(f->get_pos() + ofs);
+			f->seek(f->get_position() + ofs);
 
 			PoolVector<uint8_t> img_data;
 			img_data.resize(total_size - ofs);

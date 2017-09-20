@@ -80,13 +80,13 @@ void Font::update_changes() {
 
 void Font::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "pos", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_ascent"), &Font::get_ascent);
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 }
 

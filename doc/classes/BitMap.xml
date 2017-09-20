@@ -32,7 +32,7 @@
 		<method name="get_bit" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Returns bitmap's value at the specified position.
@@ -55,7 +55,7 @@
 		<method name="set_bit">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="bit" type="bool">
 			</argument>

@@ -4571,15 +4571,15 @@ msgid "Curve Point #"
 msgstr "Точка Кривой #"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Point Pos"
+msgid "Set Curve Point Position"
 msgstr "Установить позицию точки кривой"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve In Pos"
+msgid "Set Curve In Position"
 msgstr "Установить позицию входа кривой"
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Out Pos"
+msgid "Set Curve Out Position"
 msgstr "Установить позицию выхода кривой"
 
 #: editor/plugins/path_editor_plugin.cpp

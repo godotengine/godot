@@ -76,14 +76,14 @@ void AnimationPlayerEditor::_notification(int p_what) {
 						}
 					}
 				}
-				frame->set_value(player->get_current_animation_pos());
-				key_editor->set_anim_pos(player->get_current_animation_pos());
+				frame->set_value(player->get_current_animation_position());
+				key_editor->set_anim_pos(player->get_current_animation_position());
 				EditorNode::get_singleton()->get_property_editor()->refresh();
 
 			} else if (last_active) {
 				//need the last frame after it stopped
 
-				frame->set_value(player->get_current_animation_pos());
+				frame->set_value(player->get_current_animation_position());
 			}
 
 			last_active = player->is_playing();
@@ -197,7 +197,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 	if (current != "") {
 
-		float time = player->get_current_animation_pos();
+		float time = player->get_current_animation_position();
 
 		if (current == player->get_current_animation() && player->is_playing()) {
 
@@ -245,7 +245,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 
 	if (current != "") {
 
-		float time = player->get_current_animation_pos();
+		float time = player->get_current_animation_position();
 		if (current == player->get_current_animation())
 			player->stop(); //so it wont blend with itself
 
@@ -944,7 +944,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	}
 
 	if (player->is_valid() && !p_set) {
-		float cpos = player->get_current_animation_pos();
+		float cpos = player->get_current_animation_position();
 
 		player->seek_delta(pos, pos - cpos);
 	} else {

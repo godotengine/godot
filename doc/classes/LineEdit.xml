@@ -66,7 +66,7 @@
 				Return the align mode of the [LineEdit].
 			</description>
 		</method>
-		<method name="get_cursor_pos" qualifiers="const">
+		<method name="get_cursor_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -169,10 +169,10 @@
 				Set text alignment of the [LineEdit].
 			</description>
 		</method>
-		<method name="set_cursor_pos">
+		<method name="set_cursor_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 				Set the cursor position inside the [LineEdit], causing it to scroll if needed.

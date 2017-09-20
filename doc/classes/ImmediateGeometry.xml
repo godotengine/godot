@@ -28,7 +28,7 @@
 		<method name="add_vertex">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<description>
 				Add a vertex with the currently set color/uv/etc.

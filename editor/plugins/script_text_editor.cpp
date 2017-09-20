@@ -306,7 +306,7 @@ Variant ScriptTextEditor::get_edit_state() {
 
 	Dictionary state;
 
-	state["scroll_pos"] = code_editor->get_text_edit()->get_v_scroll();
+	state["scroll_position"] = code_editor->get_text_edit()->get_v_scroll();
 	state["column"] = code_editor->get_text_edit()->cursor_get_column();
 	state["row"] = code_editor->get_text_edit()->cursor_get_line();
 
@@ -509,7 +509,7 @@ void ScriptTextEditor::ensure_focus() {
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 
 	Dictionary state = p_state;
-	code_editor->get_text_edit()->set_v_scroll(state["scroll_pos"]);
+	code_editor->get_text_edit()->set_v_scroll(state["scroll_position"]);
 	code_editor->get_text_edit()->cursor_set_column(state["column"]);
 	code_editor->get_text_edit()->cursor_set_line(state["row"]);
 	code_editor->get_text_edit()->grab_focus();
@@ -1397,7 +1397,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
 						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
-					color_panel->set_position(get_global_transform().xform(get_local_mouse_pos()));
+					color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
 				} else {
 					have_color = false;
 				}
@@ -1445,7 +1445,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 		context_menu->add_separator();
 		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 	}
-	context_menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }

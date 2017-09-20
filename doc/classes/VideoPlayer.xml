@@ -39,7 +39,7 @@
 				Get the name of the video stream.
 			</description>
 		</method>
-		<method name="get_stream_pos" qualifiers="const">
+		<method name="get_stream_position" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>

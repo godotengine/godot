@@ -987,15 +987,15 @@ void ProjectManager::_on_project_created(const String &dir) {
 		}
 	}
 	if (has_already) {
-		_update_scroll_pos(dir);
+		_update_scroll_position(dir);
 	} else {
 		_load_recent_projects();
-		_update_scroll_pos(dir);
+		_update_scroll_position(dir);
 	}
 	_open_project();
 }
 
-void ProjectManager::_update_scroll_pos(const String &dir) {
+void ProjectManager::_update_scroll_position(const String &dir) {
 	for (int i = 0; i < scroll_childs->get_child_count(); i++) {
 		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_childs->get_child(i));
 		Label *fpath = Object::cast_to<Label>(hb->get_node(NodePath("project/path")));
@@ -1294,7 +1294,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_load_recent_projects", &ProjectManager::_load_recent_projects);
 	ClassDB::bind_method("_on_project_renamed", &ProjectManager::_on_project_renamed);
 	ClassDB::bind_method("_on_project_created", &ProjectManager::_on_project_created);
-	ClassDB::bind_method("_update_scroll_pos", &ProjectManager::_update_scroll_pos);
+	ClassDB::bind_method("_update_scroll_position", &ProjectManager::_update_scroll_position);
 	ClassDB::bind_method("_panel_draw", &ProjectManager::_panel_draw);
 	ClassDB::bind_method("_panel_input", &ProjectManager::_panel_input);
 	ClassDB::bind_method("_unhandled_input", &ProjectManager::_unhandled_input);

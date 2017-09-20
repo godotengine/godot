@@ -58,7 +58,7 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int 
 		fa->seek(offs);
 	} else if (whence == SEEK_CUR) {
 
-		fa->seek(fa->get_pos() + offs);
+		fa->seek(fa->get_position() + offs);
 	} else if (whence == SEEK_END) {
 
 		fa->seek_end(offs);
@@ -89,7 +89,7 @@ long AudioStreamPlaybackOGGVorbis::_ov_tell_func(void *_f) {
 	//printf("close %p\n",_f);
 
 	FileAccess *fa = (FileAccess *)_f;
-	return fa->get_pos();
+	return fa->get_position();
 }
 
 int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_bufer, int p_frames) {
@@ -203,7 +203,7 @@ void AudioStreamPlaybackOGGVorbis::stop() {
 	//_clear();
 }
 
-float AudioStreamPlaybackOGGVorbis::get_pos() const {
+float AudioStreamPlaybackOGGVorbis::get_position() const {
 
 	int32_t frames = int32_t(frames_mixed);
 	if (frames < 0)

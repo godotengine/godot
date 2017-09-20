@@ -172,8 +172,8 @@ void BitMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
 	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image"), &BitMap::create_from_image_alpha);
 
-	ClassDB::bind_method(D_METHOD("set_bit", "pos", "bit"), &BitMap::set_bit);
-	ClassDB::bind_method(D_METHOD("get_bit", "pos"), &BitMap::get_bit);
+	ClassDB::bind_method(D_METHOD("set_bit", "position", "bit"), &BitMap::set_bit);
+	ClassDB::bind_method(D_METHOD("get_bit", "position"), &BitMap::get_bit);
 
 	ClassDB::bind_method(D_METHOD("set_bit_rect", "p_rect", "bit"), &BitMap::set_bit_rect);
 	ClassDB::bind_method(D_METHOD("get_true_bit_count"), &BitMap::get_true_bit_count);

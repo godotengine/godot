@@ -147,7 +147,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="pos" type="int">
+			<argument index="1" name="position" type="int">
 			</argument>
 			<description>
 				Set the order of a configuration value (influences when saved to the config file).

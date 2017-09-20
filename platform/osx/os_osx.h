@@ -152,7 +152,7 @@ public:
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
-	virtual void warp_mouse_pos(const Point2 &p_to);
+	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);

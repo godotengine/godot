@@ -172,8 +172,8 @@ void ShaderGraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("node_add","shader_type","node_type","id"),&ShaderGraph::node_add);
 	ClassDB::bind_method(D_METHOD("node_remove","shader_type","id"),&ShaderGraph::node_remove);
-	ClassDB::bind_method(D_METHOD("node_set_pos","shader_type","id","pos"),&ShaderGraph::node_set_pos);
-	ClassDB::bind_method(D_METHOD("node_get_pos","shader_type","id"),&ShaderGraph::node_get_pos);
+	ClassDB::bind_method(D_METHOD("node_set_position","shader_type","id","position"),&ShaderGraph::node_set_position);
+	ClassDB::bind_method(D_METHOD("node_get_position","shader_type","id"),&ShaderGraph::node_get_position);
 
 	ClassDB::bind_method(D_METHOD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
 
@@ -501,7 +501,7 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 	_request_update();
 }
 
-void ShaderGraph::node_set_pos(ShaderType p_type,int p_id, const Vector2& p_pos) {
+void ShaderGraph::node_set_position(ShaderType p_type,int p_id, const Vector2& p_pos) {
 	ERR_FAIL_INDEX(p_type,3);
 
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
@@ -509,7 +509,7 @@ void ShaderGraph::node_set_pos(ShaderType p_type,int p_id, const Vector2& p_pos)
 	_request_update();
 
 }
-Vector2 ShaderGraph::node_get_pos(ShaderType p_type,int p_id) const {
+Vector2 ShaderGraph::node_get_position(ShaderType p_type,int p_id) const {
 	ERR_FAIL_INDEX_V(p_type,3,Vector2());
 
 	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),Vector2());
@@ -1245,7 +1245,7 @@ Variant ShaderGraph::node_get_state(ShaderType p_type,int p_id) const {
 	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),Variant());
 	const Node& n = shader[p_type].node_map[p_id];
 	Dictionary s;
-	s["pos"]=n.pos;
+	s["position"]=n.pos;
 	s["param1"]=n.param1;
 	s["param2"]=n.param2;
 	Array keys;
@@ -1263,12 +1263,12 @@ void ShaderGraph::node_set_state(ShaderType p_type,int p_id,const Variant& p_sta
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	Dictionary d = p_state;
-	ERR_FAIL_COND(!d.has("pos"));
+	ERR_FAIL_COND(!d.has("position"));
 	ERR_FAIL_COND(!d.has("param1"));
 	ERR_FAIL_COND(!d.has("param2"));
 	ERR_FAIL_COND(!d.has("default_keys"));
 
-	n.pos=d["pos"];
+	n.pos=d["position"];
 	n.param1=d["param1"];
 	n.param2=d["param2"];
 	Array keys = d["default_keys"];

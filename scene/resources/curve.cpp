@@ -241,7 +241,7 @@ int Curve::set_point_offset(int p_index, float offset) {
 	return i;
 }
 
-Vector2 Curve::get_point_pos(int p_index) const {
+Vector2 Curve::get_point_position(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, _points.size(), Vector2(0, 0));
 	return _points[p_index].pos;
 }
@@ -480,11 +480,10 @@ real_t Curve::interpolate_baked(real_t offset) {
 
 void Curve::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_point", "pos", "left_tangent", "right_tangent", "left_mode", "right_mode"),
-			&Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);
-	ClassDB::bind_method(D_METHOD("get_point_pos", "index"), &Curve::get_point_pos);
+	ClassDB::bind_method(D_METHOD("get_point_position", "index"), &Curve::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_value", "index", "y"), &Curve::set_point_value);
 	ClassDB::bind_method(D_METHOD("set_point_offset", "index", "offset"), &Curve::set_point_value);
 	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &Curve::interpolate);
@@ -539,7 +538,7 @@ void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-void Curve2D::set_point_pos(int p_index, const Vector2 &p_pos) {
+void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
@@ -547,7 +546,7 @@ void Curve2D::set_point_pos(int p_index, const Vector2 &p_pos) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
-Vector2 Curve2D::get_point_pos(int p_index) const {
+Vector2 Curve2D::get_point_position(int p_index) const {
 
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].pos;
@@ -891,12 +890,12 @@ PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const 
 void Curve2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve2D::get_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "pos", "in", "out", "atpos"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("set_point_pos", "idx", "pos"), &Curve2D::set_point_pos);
-	ClassDB::bind_method(D_METHOD("get_point_pos", "idx"), &Curve2D::get_point_pos);
-	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "pos"), &Curve2D::set_point_in);
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve2D::set_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve2D::get_point_position);
+	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "position"), &Curve2D::set_point_in);
 	ClassDB::bind_method(D_METHOD("get_point_in", "idx"), &Curve2D::get_point_in);
-	ClassDB::bind_method(D_METHOD("set_point_out", "idx", "pos"), &Curve2D::set_point_out);
+	ClassDB::bind_method(D_METHOD("set_point_out", "idx", "position"), &Curve2D::set_point_out);
 	ClassDB::bind_method(D_METHOD("get_point_out", "idx"), &Curve2D::get_point_out);
 	ClassDB::bind_method(D_METHOD("remove_point", "idx"), &Curve2D::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve2D::clear_points);
@@ -916,9 +915,6 @@ void Curve2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
-	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), "set_points_out","get_points_out");
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), "set_points_pos","get_points_pos");
-*/
 }
 
 Curve2D::Curve2D() {
@@ -955,7 +951,7 @@ void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
-void Curve3D::set_point_pos(int p_index, const Vector3 &p_pos) {
+void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
@@ -963,7 +959,7 @@ void Curve3D::set_point_pos(int p_index, const Vector3 &p_pos) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
-Vector3 Curve3D::get_point_pos(int p_index) const {
+Vector3 Curve3D::get_point_position(int p_index) const {
 
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].pos;
@@ -1386,14 +1382,14 @@ PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const 
 void Curve3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve3D::get_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "pos", "in", "out", "atpos"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("set_point_pos", "idx", "pos"), &Curve3D::set_point_pos);
-	ClassDB::bind_method(D_METHOD("get_point_pos", "idx"), &Curve3D::get_point_pos);
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve3D::set_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve3D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_tilt", "idx", "tilt"), &Curve3D::set_point_tilt);
 	ClassDB::bind_method(D_METHOD("get_point_tilt", "idx"), &Curve3D::get_point_tilt);
-	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "pos"), &Curve3D::set_point_in);
+	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "position"), &Curve3D::set_point_in);
 	ClassDB::bind_method(D_METHOD("get_point_in", "idx"), &Curve3D::get_point_in);
-	ClassDB::bind_method(D_METHOD("set_point_out", "idx", "pos"), &Curve3D::set_point_out);
+	ClassDB::bind_method(D_METHOD("set_point_out", "idx", "position"), &Curve3D::set_point_out);
 	ClassDB::bind_method(D_METHOD("get_point_out", "idx"), &Curve3D::get_point_out);
 	ClassDB::bind_method(D_METHOD("remove_point", "idx"), &Curve3D::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve3D::clear_points);
@@ -1414,9 +1410,6 @@ void Curve3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_data", "_get_data");
-	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), "set_points_out","get_points_out");
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), "set_points_pos","get_points_pos");
-*/
 }
 
 Curve3D::Curve3D() {

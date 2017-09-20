@@ -72,7 +72,7 @@ static uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 static long zipio_tell(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = *(FileAccess **)opaque;
-	return f->get_pos();
+	return f->get_position();
 };
 
 static long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
@@ -83,7 +83,7 @@ static long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 	switch (origin) {
 
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = f->get_pos() + offset;
+			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
 			pos = f->get_len() + offset;

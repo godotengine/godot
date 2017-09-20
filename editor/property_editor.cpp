@@ -2368,7 +2368,7 @@ void PropertyEditor::_mark_drop_fields(TreeItem *p_at) {
 
 Variant PropertyEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-	TreeItem *item = tree->get_item_at_pos(p_point);
+	TreeItem *item = tree->get_item_at_position(p_point);
 	if (!item)
 		return Variant();
 
@@ -2376,7 +2376,7 @@ Variant PropertyEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 	if (!d.has("name"))
 		return Variant();
 
-	int col = tree->get_column_at_pos(p_point);
+	int col = tree->get_column_at_position(p_point);
 	if (col == 0) {
 
 		Dictionary dp;
@@ -2407,11 +2407,11 @@ Variant PropertyEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 bool PropertyEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 
-	TreeItem *item = tree->get_item_at_pos(p_point);
+	TreeItem *item = tree->get_item_at_position(p_point);
 	if (!item)
 		return false;
 
-	int col = tree->get_column_at_pos(p_point);
+	int col = tree->get_column_at_position(p_point);
 	if (col != 1)
 		return false;
 
@@ -2419,11 +2419,11 @@ bool PropertyEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 void PropertyEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 
-	TreeItem *item = tree->get_item_at_pos(p_point);
+	TreeItem *item = tree->get_item_at_position(p_point);
 	if (!item)
 		return;
 
-	int col = tree->get_column_at_pos(p_point);
+	int col = tree->get_column_at_position(p_point);
 	if (col != 1)
 		return;
 

@@ -253,7 +253,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		err = FAILED;
 
 	if (err == OK) {
-		f->seek(f->get_pos() + tga_header.id_length);
+		f->seek(f->get_position() + tga_header.id_length);
 
 		PoolVector<uint8_t> palette;
 
@@ -269,7 +269,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		}
 
 		PoolVector<uint8_t>::Write src_image_w = src_image.write();
-		f->get_buffer(&src_image_w[0], src_image_len - f->get_pos());
+		f->get_buffer(&src_image_w[0], src_image_len - f->get_position());
 
 		PoolVector<uint8_t>::Read src_image_r = src_image.read();
 

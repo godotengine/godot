@@ -1528,7 +1528,7 @@ void Tree::_range_click_timeout() {
 
 	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
-		Point2 pos = get_local_mouse_pos() - cache.bg->get_offset();
+		Point2 pos = get_local_mouse_position() - cache.bg->get_offset();
 		if (show_column_titles) {
 			pos.y -= _get_title_button_height();
 
@@ -1676,7 +1676,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 					p_item->select(col);
 					emit_signal("multi_selected", p_item, col, true);
 					if (p_button == BUTTON_RIGHT) {
-						emit_signal("item_rmb_selected", get_local_mouse_pos());
+						emit_signal("item_rmb_selected", get_local_mouse_position());
 					}
 
 					//p_item->selected_signal.call(col);
@@ -1697,7 +1697,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 						select_single_item(p_item, root, col, selected_item, &inrange);
 						if (p_button == BUTTON_RIGHT) {
-							emit_signal("item_rmb_selected", get_local_mouse_pos());
+							emit_signal("item_rmb_selected", get_local_mouse_position());
 						}
 					} else {
 
@@ -1713,7 +1713,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 							}
 
 							if (p_button == BUTTON_RIGHT) {
-								emit_signal("item_rmb_selected", get_local_mouse_pos());
+								emit_signal("item_rmb_selected", get_local_mouse_position());
 							}
 						}
 					}
@@ -1914,7 +1914,7 @@ void Tree::_text_editor_modal_close() {
 		return;
 	}
 
-	if (value_editor->has_point(value_editor->get_local_mouse_pos()))
+	if (value_editor->has_point(value_editor->get_local_mouse_position()))
 		return;
 
 	text_editor_enter(text_editor->get_text());
@@ -2470,7 +2470,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				if (cache.click_type == Cache::CLICK_BUTTON) {
 					// make sure in case of wrong reference after reconstructing whole TreeItems
-					cache.click_item = get_item_at_pos(cache.click_pos);
+					cache.click_item = get_item_at_position(cache.click_pos);
 					emit_signal("button_pressed", cache.click_item, cache.click_column, cache.click_id);
 				}
 				cache.click_type = Cache::CLICK_NONE;
@@ -2530,7 +2530,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				}
 				if (!root || (!root->get_children() && hide_root)) {
 					if (b->get_button_index() == BUTTON_RIGHT && allow_rmb_select) {
-						emit_signal("empty_tree_rmb_selected", get_local_mouse_pos());
+						emit_signal("empty_tree_rmb_selected", get_local_mouse_position());
 					}
 					break;
 				}
@@ -3428,7 +3428,7 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	return NULL;
 }
 
-int Tree::get_column_at_pos(const Point2 &p_pos) const {
+int Tree::get_column_at_position(const Point2 &p_pos) const {
 
 	if (root) {
 
@@ -3454,7 +3454,7 @@ int Tree::get_column_at_pos(const Point2 &p_pos) const {
 	return -1;
 }
 
-int Tree::get_drop_section_at_pos(const Point2 &p_pos) const {
+int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 
 	if (root) {
 
@@ -3479,7 +3479,7 @@ int Tree::get_drop_section_at_pos(const Point2 &p_pos) const {
 
 	return -100;
 }
-TreeItem *Tree::get_item_at_pos(const Point2 &p_pos) const {
+TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 
 	if (root) {
 
@@ -3652,9 +3652,9 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column"), &Tree::_get_item_rect, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_item_at_pos", "pos"), &Tree::get_item_at_pos);
-	ClassDB::bind_method(D_METHOD("get_column_at_pos", "pos"), &Tree::get_column_at_pos);
-	ClassDB::bind_method(D_METHOD("get_drop_section_at_pos", "pos"), &Tree::get_drop_section_at_pos);
+	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
+	ClassDB::bind_method(D_METHOD("get_column_at_position", "position"), &Tree::get_column_at_position);
+	ClassDB::bind_method(D_METHOD("get_drop_section_at_position", "position"), &Tree::get_drop_section_at_position);
 
 	ClassDB::bind_method(D_METHOD("ensure_cursor_is_visible"), &Tree::ensure_cursor_is_visible);
 
@@ -3680,8 +3680,8 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::OBJECT, "item"), PropertyInfo(Variant::INT, "column"), PropertyInfo(Variant::BOOL, "selected")));
-	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
-	ADD_SIGNAL(MethodInfo("empty_tree_rmb_selected", PropertyInfo(Variant::VECTOR2, "pos")));
+	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::VECTOR2, "position")));
+	ADD_SIGNAL(MethodInfo("empty_tree_rmb_selected", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("item_edited"));
 	ADD_SIGNAL(MethodInfo("item_rmb_edited"));
 	ADD_SIGNAL(MethodInfo("item_custom_button_pressed"));

@@ -43,7 +43,7 @@ void Path2D::_notification(int p_what) {
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
-			Vector2 prev_p = curve->get_point_pos(i);
+			Vector2 prev_p = curve->get_point_position(i);
 
 			for (int j = 1; j <= 8; j++) {
 

@@ -95,7 +95,7 @@ void FileAccessAndroid::seek_end(int64_t p_position) {
 	pos = len + p_position;
 }
 
-size_t FileAccessAndroid::get_pos() const {
+size_t FileAccessAndroid::get_position() const {
 
 	return pos;
 }

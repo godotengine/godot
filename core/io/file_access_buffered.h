@@ -72,7 +72,7 @@ protected:
 	int get_cache_size();
 
 public:
-	virtual size_t get_pos() const; ///< get position in the file
+	virtual size_t get_position() const; ///< get position in the file
 	virtual size_t get_len() const; ///< get size of the file
 
 	virtual void seek(size_t p_position); ///< seek to a given position

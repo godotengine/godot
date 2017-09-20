@@ -65,10 +65,10 @@
 				Get whether a right click can select items.
 			</description>
 		</method>
-		<method name="get_column_at_pos" qualifiers="const">
+		<method name="get_column_at_position" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Get the column index under the given point.
@@ -113,10 +113,10 @@
 				Get the flags of the current drop mode.
 			</description>
 		</method>
-		<method name="get_drop_section_at_pos" qualifiers="const">
+		<method name="get_drop_section_at_position" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -146,10 +146,10 @@
 				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
-		<method name="get_item_at_pos" qualifiers="const">
+		<method name="get_item_at_position" qualifiers="const">
 			<return type="TreeItem">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Get the tree item at the specified position (relative to the tree origin position).
@@ -342,7 +342,7 @@
 			</description>
 		</signal>
 		<signal name="empty_tree_rmb_selected">
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Emitted when the right mouse button is pressed if RMB selection is active and the tree is empty.
@@ -378,7 +378,7 @@
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Emitted when an item is selected with right mouse button.

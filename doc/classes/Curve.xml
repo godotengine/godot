@@ -12,7 +12,7 @@
 		<method name="add_point">
 			<return type="int">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="left_tangent" type="float" default="0">
 			</argument>
@@ -77,7 +77,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_point_pos" qualifiers="const">
+		<method name="get_point_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="index" type="int">

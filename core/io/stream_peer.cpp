@@ -405,9 +405,9 @@ void StreamPeer::_bind_methods() {
 
 void StreamPeerBuffer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("seek", "pos"), &StreamPeerBuffer::seek);
+	ClassDB::bind_method(D_METHOD("seek", "position"), &StreamPeerBuffer::seek);
 	ClassDB::bind_method(D_METHOD("get_size"), &StreamPeerBuffer::get_size);
-	ClassDB::bind_method(D_METHOD("get_pos"), &StreamPeerBuffer::get_pos);
+	ClassDB::bind_method(D_METHOD("get_position"), &StreamPeerBuffer::get_position);
 	ClassDB::bind_method(D_METHOD("resize", "size"), &StreamPeerBuffer::resize);
 	ClassDB::bind_method(D_METHOD("set_data_array", "data"), &StreamPeerBuffer::set_data_array);
 	ClassDB::bind_method(D_METHOD("get_data_array"), &StreamPeerBuffer::get_data_array);
@@ -484,7 +484,7 @@ int StreamPeerBuffer::get_size() const {
 	return data.size();
 }
 
-int StreamPeerBuffer::get_pos() const {
+int StreamPeerBuffer::get_position() const {
 
 	return pointer;
 }

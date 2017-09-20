@@ -513,7 +513,7 @@ void CreateDialog::_favorite_activated() {
 
 Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-	TreeItem *ti = favorites->get_item_at_pos(p_point);
+	TreeItem *ti = favorites->get_item_at_position(p_point);
 	if (ti) {
 		Dictionary d;
 		d["type"] = "create_favorite_drag";
@@ -544,12 +544,12 @@ void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 	Dictionary d = p_data;
 
-	TreeItem *ti = favorites->get_item_at_pos(p_point);
+	TreeItem *ti = favorites->get_item_at_position(p_point);
 	if (!ti)
 		return;
 
 	String drop_at = ti->get_text(0);
-	int ds = favorites->get_drop_section_at_pos(p_point);
+	int ds = favorites->get_drop_section_at_position(p_point);
 
 	int drop_idx = favorite_list.find(drop_at);
 	if (drop_idx < 0)

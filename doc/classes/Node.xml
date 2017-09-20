@@ -441,7 +441,7 @@
 			</return>
 			<argument index="0" name="child_node" type="Node">
 			</argument>
-			<argument index="1" name="to_pos" type="int">
+			<argument index="1" name="to_position" type="int">
 			</argument>
 			<description>
 				Move a child node to a different position (order) amongst the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.

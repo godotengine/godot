@@ -177,7 +177,7 @@
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="release_pos" type="Vector2">
+			<argument index="2" name="release_position" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -230,7 +230,7 @@
 	<theme_items>
 		<theme_item name="bezier_len_neg" type="int">
 		</theme_item>
-		<theme_item name="bezier_len_pos" type="int">
+		<theme_item name="bezier_len_position" type="int">
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>

@@ -452,7 +452,7 @@ float Camera2D::get_drag_margin(Margin p_margin) const {
 	return drag_margin[p_margin];
 }
 
-Vector2 Camera2D::get_camera_pos() const {
+Vector2 Camera2D::get_camera_position() const {
 
 	return camera_pos;
 }
@@ -673,7 +673,7 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_margin", "margin", "drag_margin"), &Camera2D::set_drag_margin);
 	ClassDB::bind_method(D_METHOD("get_drag_margin", "margin"), &Camera2D::get_drag_margin);
 
-	ClassDB::bind_method(D_METHOD("get_camera_pos"), &Camera2D::get_camera_pos);
+	ClassDB::bind_method(D_METHOD("get_camera_position"), &Camera2D::get_camera_position);
 	ClassDB::bind_method(D_METHOD("get_camera_screen_center"), &Camera2D::get_camera_screen_center);
 
 	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &Camera2D::set_zoom);

@@ -679,7 +679,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 	String base_path = local_path.get_base_dir();
 
-	uint64_t tag_end = f->get_pos();
+	uint64_t tag_end = f->get_position();
 
 	while (true) {
 
@@ -741,7 +741,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 			fw->store_line("[ext_resource path=\"" + path + "\" type=\"" + type + "\" id=" + itos(index) + "]");
 
-			tag_end = f->get_pos();
+			tag_end = f->get_position();
 		}
 	}
 

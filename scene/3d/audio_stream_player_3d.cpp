@@ -611,10 +611,10 @@ bool AudioStreamPlayer3D::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayer3D::get_pos() {
+float AudioStreamPlayer3D::get_position() {
 
 	if (stream_playback.is_valid()) {
-		return stream_playback->get_pos();
+		return stream_playback->get_position();
 	}
 
 	return 0;
@@ -802,12 +802,12 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_db", "max_db"), &AudioStreamPlayer3D::set_max_db);
 	ClassDB::bind_method(D_METHOD("get_max_db"), &AudioStreamPlayer3D::get_max_db);
 
-	ClassDB::bind_method(D_METHOD("play", "from_pos"), &AudioStreamPlayer3D::play, DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("seek", "to_pos"), &AudioStreamPlayer3D::seek);
+	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer3D::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer3D::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer3D::stop);
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer3D::is_playing);
-	ClassDB::bind_method(D_METHOD("get_pos"), &AudioStreamPlayer3D::get_pos);
+	ClassDB::bind_method(D_METHOD("get_position"), &AudioStreamPlayer3D::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer3D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer3D::get_bus);

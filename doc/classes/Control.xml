@@ -106,7 +106,7 @@
 		<method name="can_drop_data" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="data" type="Variant">
 			</argument>
@@ -116,7 +116,7 @@
 		<method name="drop_data" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="data" type="Variant">
 			</argument>
@@ -177,7 +177,7 @@
 		<method name="get_cursor_shape" qualifiers="const">
 			<return type="int" enum="Control.CursorShape">
 			</return>
-			<argument index="0" name="pos" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Return the cursor shape at a certain position in the control.
@@ -199,7 +199,7 @@
 		<method name="get_drag_data" qualifiers="virtual">
 			<return type="Object">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -390,7 +390,7 @@
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="atpos" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Return the tooltip, which will appear when the cursor is resting over this control.
@@ -596,7 +596,7 @@
 		<method name="set_begin">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Sets MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
@@ -646,7 +646,7 @@
 		<method name="set_end">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Sets MARGIN_RIGHT and MARGIN_BOTTOM at the same time. This is a helper (see [method set_margin]).
@@ -675,7 +675,7 @@
 		<method name="set_global_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Move the Control to a new position, relative to the top-left corner of the [i]window[/i] Control, and without changing current anchor mode. (see [method set_margin]).
@@ -729,7 +729,7 @@
 		<method name="set_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="pos" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Move the Control to a new position, relative to the top-left corner of the parent Control, changing all margins if needed and without changing current anchor mode. This is a helper (see [method set_margin]).
@@ -826,7 +826,7 @@
 		<method name="warp_mouse">
 			<return type="void">
 			</return>
-			<argument index="0" name="to_pos" type="Vector2">
+			<argument index="0" name="to_position" type="Vector2">
 			</argument>
 			<description>
 			</description>

@@ -423,7 +423,7 @@ Ref<VisualScriptNode> VisualScript::get_node(const StringName &p_func, int p_id)
 	return func.nodes[p_id].node;
 }
 
-void VisualScript::set_node_pos(const StringName &p_func, int p_id, const Point2 &p_pos) {
+void VisualScript::set_node_position(const StringName &p_func, int p_id, const Point2 &p_pos) {
 
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!functions.has(p_func));
@@ -433,7 +433,7 @@ void VisualScript::set_node_pos(const StringName &p_func, int p_id, const Point2
 	func.nodes[p_id].pos = p_pos;
 }
 
-Point2 VisualScript::get_node_pos(const StringName &p_func, int p_id) const {
+Point2 VisualScript::get_node_position(const StringName &p_func, int p_id) const {
 
 	ERR_FAIL_COND_V(!functions.has(p_func), Point2());
 	const Function &func = functions[p_func];
@@ -1273,14 +1273,14 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function_scroll", "name", "ofs"), &VisualScript::set_function_scroll);
 	ClassDB::bind_method(D_METHOD("get_function_scroll", "name"), &VisualScript::get_function_scroll);
 
-	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node", "pos"), &VisualScript::add_node, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("add_node", "func", "id", "node", "position"), &VisualScript::add_node, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("remove_node", "func", "id"), &VisualScript::remove_node);
 	ClassDB::bind_method(D_METHOD("get_function_node_id", "name"), &VisualScript::get_function_node_id);
 
 	ClassDB::bind_method(D_METHOD("get_node", "func", "id"), &VisualScript::get_node);
 	ClassDB::bind_method(D_METHOD("has_node", "func", "id"), &VisualScript::has_node);
-	ClassDB::bind_method(D_METHOD("set_node_pos", "func", "id", "pos"), &VisualScript::set_node_pos);
-	ClassDB::bind_method(D_METHOD("get_node_pos", "func", "id"), &VisualScript::get_node_pos);
+	ClassDB::bind_method(D_METHOD("set_node_position", "func", "id", "position"), &VisualScript::set_node_position);
+	ClassDB::bind_method(D_METHOD("get_node_position", "func", "id"), &VisualScript::get_node_position);
 
 	ClassDB::bind_method(D_METHOD("sequence_connect", "func", "from_node", "from_output", "to_node"), &VisualScript::sequence_connect);
 	ClassDB::bind_method(D_METHOD("sequence_disconnect", "func", "from_node", "from_output", "to_node"), &VisualScript::sequence_disconnect);

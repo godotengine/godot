@@ -65,7 +65,7 @@ static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 static long godot_tell(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = (FileAccess *)opaque;
-	return f->get_pos();
+	return f->get_position();
 };
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
@@ -76,7 +76,7 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 	switch (origin) {
 
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = f->get_pos() + offset;
+			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
 			pos = f->get_len() + offset;
@@ -301,7 +301,7 @@ void FileAccessZip::seek_end(int64_t p_position) {
 	unzSeekCurrentFile(zfile, get_len() + p_position);
 };
 
-size_t FileAccessZip::get_pos() const {
+size_t FileAccessZip::get_position() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);

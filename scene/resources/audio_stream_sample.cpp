@@ -61,7 +61,7 @@ int AudioStreamPlaybackSample::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackSample::get_pos() const {
+float AudioStreamPlaybackSample::get_position() const {
 
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }

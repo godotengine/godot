@@ -271,7 +271,7 @@
 				Return the input source for a given node input.
 			</description>
 		</method>
-		<method name="node_get_pos" qualifiers="const">
+		<method name="node_get_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="id" type="String">
@@ -300,12 +300,12 @@
 				Rename a node in the graph.
 			</description>
 		</method>
-		<method name="node_set_pos">
+		<method name="node_set_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="String">
 			</argument>
-			<argument index="1" name="screen_pos" type="Vector2">
+			<argument index="1" name="screen_position" type="Vector2">
 			</argument>
 			<description>
 				Sets position of a node in the graph given its name and position.
@@ -531,7 +531,7 @@
 			</return>
 			<argument index="0" name="id" type="String">
 			</argument>
-			<argument index="1" name="pos_sec" type="float">
+			<argument index="1" name="seconds" type="float">
 			</argument>
 			<description>
 				Sets time seek value of a TimeSeek node given its name and value.

@@ -199,7 +199,7 @@ public:
 	int find_metadata(const Variant &p_metadata) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
-	int get_item_at_pos(const Point2 &p_pos, bool p_exact = false) const;
+	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
 	void set_icon_scale(real_t p_scale);

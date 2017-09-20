@@ -178,9 +178,9 @@ int AudioStreamPlaybackRandomPitch::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackRandomPitch::get_pos() const {
+float AudioStreamPlaybackRandomPitch::get_position() const {
 	if (playing.is_valid()) {
-		return playing->get_pos();
+		return playing->get_position();
 	}
 
 	return 0;

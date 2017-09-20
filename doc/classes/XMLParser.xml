@@ -133,7 +133,7 @@
 		<method name="seek">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="pos" type="int">
+			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
 				Move the buffer cursor to a certain offset (since the beginning) and read the next node there. This returns an error code.

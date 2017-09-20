@@ -254,7 +254,7 @@ void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
 
 Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-	TreeItem *ti = tree->get_item_at_pos(p_point);
+	TreeItem *ti = tree->get_item_at_position(p_point);
 	if (!ti)
 		return Variant();
 

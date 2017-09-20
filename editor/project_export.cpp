@@ -434,7 +434,7 @@ void ProjectExportDialog::_delete_preset_confirm() {
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
 	if (p_from == presets) {
-		int pos = presets->get_item_at_pos(p_point, true);
+		int pos = presets->get_item_at_position(p_point, true);
 
 		if (pos >= 0) {
 			Dictionary d;
@@ -455,7 +455,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 		}
 	} else if (p_from == patches) {
 
-		TreeItem *item = patches->get_item_at_pos(p_point);
+		TreeItem *item = patches->get_item_at_position(p_point);
 
 		if (item && item->get_cell_mode(0) == TreeItem::CELL_MODE_CHECK) {
 
@@ -482,7 +482,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 		if (!d.has("type") || String(d["type"]) != "export_preset")
 			return false;
 
-		if (presets->get_item_at_pos(p_point, true) < 0 && !presets->is_pos_at_end_of_items(p_point))
+		if (presets->get_item_at_position(p_point, true) < 0 && !presets->is_pos_at_end_of_items(p_point))
 			return false;
 	} else if (p_from == patches) {
 
@@ -492,7 +492,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 
 		patches->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 
-		TreeItem *item = patches->get_item_at_pos(p_point);
+		TreeItem *item = patches->get_item_at_position(p_point);
 
 		if (!item) {
 
@@ -511,8 +511,8 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		int to_pos = -1;
 
-		if (presets->get_item_at_pos(p_point, true) >= 0) {
-			to_pos = presets->get_item_at_pos(p_point, true);
+		if (presets->get_item_at_position(p_point, true) >= 0) {
+			to_pos = presets->get_item_at_position(p_point, true);
 		}
 
 		if (to_pos == -1 && !presets->is_pos_at_end_of_items(p_point))
@@ -541,7 +541,7 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		int from_pos = d["patch"];
 
-		TreeItem *item = patches->get_item_at_pos(p_point);
+		TreeItem *item = patches->get_item_at_position(p_point);
 		if (!item)
 			return;
 

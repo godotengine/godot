@@ -1240,7 +1240,7 @@ bool OS_OSX::is_mouse_grab_enabled() const {
 	return mouse_grab;
 }
 
-void OS_OSX::warp_mouse_pos(const Point2 &p_to) {
+void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 
 	//copied from windows impl with osx native calls
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {

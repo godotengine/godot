@@ -278,7 +278,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	SavedData sd;
 	sd.path_utf8 = p_path.utf8();
-	sd.ofs = pd->f->get_pos();
+	sd.ofs = pd->f->get_position();
 	sd.size = p_data.size();
 
 	pd->f->store_buffer(p_data.ptr(), p_data.size());
@@ -736,7 +736,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	f->store_32(pd.file_ofs.size()); //amount of files
 
-	size_t header_size = f->get_pos();
+	size_t header_size = f->get_position();
 
 	//precalculate header size
 

@@ -54,7 +54,7 @@ void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && p_event->is_pressed()) {
 
 		update();
-		int x = p_event->get_pos().x;
+		int x = p_event->get_position().x;
 		int total_w = get_size().width-get_size().height-3;
 		if (x>total_w+3) {
 
@@ -333,7 +333,7 @@ void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event->get_button_index()==1 && p_event->is_pressed()) {
 
 		update();
-		Point2 p = Vector2(p_event->get_pos().x,p_event->get_pos().y)/get_size();
+		Point2 p = Vector2(p_event->get_position().x,p_event->get_position().y)/get_size();
 		p.y=1.0-p.y;
 		grabbed=-1;
 		grabbing=true;
@@ -384,7 +384,7 @@ void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing  && grabbed != -1) {
 
-		Point2 p = Vector2(p_event->get_pos().x,p_event->get_pos().y)/get_size();
+		Point2 p = Vector2(p_event->get_position().x,p_event->get_position().y)/get_size();
 		p.y=1.0-p.y;
 
 		p.x = CLAMP(p.x,0.0,1.0);
@@ -1205,7 +1205,7 @@ void ShaderGraphView::_move_node(int p_id,const Vector2& p_to) {
 
 	ERR_FAIL_COND(!node_map.has(p_id));
 	node_map[p_id]->set_offset(p_to);
-	graph->node_set_pos(type,p_id,p_to);
+	graph->node_set_position(type,p_id,p_to);
 }
 
 void ShaderGraphView::_duplicate_nodes_request()
@@ -2463,7 +2463,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	gn->connect("close_request",this,"_node_removed",varray(p_id),CONNECT_DEFERRED);
 	graph_edit->add_child(gn);
 	node_map[p_id]=gn;
-	gn->set_offset(graph->node_get_pos(type,p_id));
+	gn->set_offset(graph->node_get_position(type,p_id));
 
 
 }
@@ -2657,7 +2657,7 @@ void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 	while(true) {
 		bool valid=true;
 		for(List<int>::Element *E=existing.front();E;E=E->next()) {
-			Vector2 pos = graph->node_get_pos(type,E->get());
+			Vector2 pos = graph->node_get_position(type,E->get());
 			if (init_ofs==pos) {
 				init_ofs+=Vector2(20,20);
 				valid=false;
@@ -2672,7 +2672,7 @@ void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Add Shader Graph Node"));
 	ur->add_do_method(graph.ptr(),"node_add",type,p_type,newid);
-	ur->add_do_method(graph.ptr(),"node_set_pos",type,newid,init_ofs);
+	ur->add_do_method(graph.ptr(),"node_set_position",type,newid,init_ofs);
 	ur->add_undo_method(graph.ptr(),"node_remove",type,newid);
 	ur->add_do_method(this,"_update_graph");
 	ur->add_undo_method(this,"_update_graph");
@@ -2765,7 +2765,7 @@ void ShaderGraphEditor::_add_node(int p_type) {
 void ShaderGraphEditor::_popup_requested(const Vector2 &p_position)
 {
 	Vector2 scroll_ofs=graph_edits[tabs->get_current_tab()]->get_graph_edit()->get_scroll_ofs();
-	next_location = get_local_mouse_pos() + scroll_ofs;
+	next_location = get_local_mouse_position() + scroll_ofs;
 	popup->set_global_position(p_position);
 	popup->set_size( Size2( 200, 0) );
 	popup->popup();

@@ -149,8 +149,8 @@ public:
 	String get_placeholder() const;
 	void set_placeholder_alpha(float p_alpha);
 	float get_placeholder_alpha() const;
-	void set_cursor_pos(int p_pos);
-	int get_cursor_pos() const;
+	void set_cursor_position(int p_pos);
+	int get_cursor_position() const;
 	void set_max_length(int p_max_length);
 	int get_max_length() const;
 	void append_at_cursor(String p_text);

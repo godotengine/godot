@@ -4452,15 +4452,15 @@ msgid "Curve Point #"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Point Pos"
+msgid "Set Curve Point Position"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve In Pos"
+msgid "Set Curve In Position"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-msgid "Set Curve Out Pos"
+msgid "Set Curve Out Position"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp

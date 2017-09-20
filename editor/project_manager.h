@@ -90,7 +90,7 @@ class ProjectManager : public Control {
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
 	void _on_project_renamed();
-	void _update_scroll_pos(const String &dir);
+	void _update_scroll_position(const String &dir);
 	void _scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects);
 
 	void _install_project(const String &p_zip_path, const String &p_title);

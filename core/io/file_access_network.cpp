@@ -350,7 +350,7 @@ void FileAccessNetwork::seek_end(int64_t p_position) {
 
 	seek(total_size + p_position);
 }
-size_t FileAccessNetwork::get_pos() const {
+size_t FileAccessNetwork::get_position() const {
 
 	ERR_FAIL_COND_V(!opened, 0);
 	return pos;

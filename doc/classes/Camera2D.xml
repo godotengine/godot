@@ -38,7 +38,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_camera_pos" qualifiers="const">
+		<method name="get_camera_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>

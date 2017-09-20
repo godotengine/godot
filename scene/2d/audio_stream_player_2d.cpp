@@ -284,10 +284,10 @@ bool AudioStreamPlayer2D::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayer2D::get_pos() {
+float AudioStreamPlayer2D::get_position() {
 
 	if (stream_playback.is_valid()) {
-		return stream_playback->get_pos();
+		return stream_playback->get_position();
 	}
 
 	return 0;
@@ -390,12 +390,12 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer2D::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer2D::get_volume_db);
 
-	ClassDB::bind_method(D_METHOD("play", "from_pos"), &AudioStreamPlayer2D::play, DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("seek", "to_pos"), &AudioStreamPlayer2D::seek);
+	ClassDB::bind_method(D_METHOD("play", "from_position"), &AudioStreamPlayer2D::play, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek", "to_position"), &AudioStreamPlayer2D::seek);
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer2D::stop);
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer2D::is_playing);
-	ClassDB::bind_method(D_METHOD("get_pos"), &AudioStreamPlayer2D::get_pos);
+	ClassDB::bind_method(D_METHOD("get_position"), &AudioStreamPlayer2D::get_position);
 
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer2D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer2D::get_bus);

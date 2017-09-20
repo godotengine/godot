@@ -353,7 +353,7 @@ public:
 
 	virtual int get_contact_count() const { return body->contact_count; }
 
-	virtual Vector2 get_contact_local_pos(int p_contact_idx) const {
+	virtual Vector2 get_contact_local_position(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
 		return body->contacts[p_contact_idx].local_pos;
 	}
@@ -370,7 +370,7 @@ public:
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, RID());
 		return body->contacts[p_contact_idx].collider;
 	}
-	virtual Vector2 get_contact_collider_pos(int p_contact_idx) const {
+	virtual Vector2 get_contact_collider_position(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
 		return body->contacts[p_contact_idx].collider_pos;
 	}
@@ -384,7 +384,7 @@ public:
 	}
 	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const;
 
-	virtual Vector2 get_contact_collider_velocity_at_pos(int p_contact_idx) const {
+	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
 		return body->contacts[p_contact_idx].collider_velocity_at_pos;
 	}

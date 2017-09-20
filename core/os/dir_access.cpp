@@ -312,7 +312,7 @@ Error DirAccess::copy(String p_from, String p_to, int chmod_flags) {
 	}
 
 	fsrc->seek_end(0);
-	int size = fsrc->get_pos();
+	int size = fsrc->get_position();
 	fsrc->seek(0);
 	err = OK;
 	while (size--) {

@@ -23,7 +23,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos">
+		<method name="get_position">
 			<return type="float">
 			</return>
 			<description>
@@ -56,16 +56,16 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="from_pos" type="float" default="0.0">
+			<argument index="0" name="from_position" type="float" default="0.0">
 			</argument>
 			<description>
-				Plays the audio from the given position 'from_pos', in seconds.
+				Plays the audio from the given position 'from_position', in seconds.
 			</description>
 		</method>
 		<method name="seek">
 			<return type="void">
 			</return>
-			<argument index="0" name="to_pos" type="float">
+			<argument index="0" name="to_position" type="float">
 			</argument>
 			<description>
 				Sets the position from which audio will be played, in seconds.

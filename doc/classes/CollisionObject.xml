@@ -16,7 +16,7 @@
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
-			<argument index="2" name="click_pos" type="Vector3">
+			<argument index="2" name="click_position" type="Vector3">
 			</argument>
 			<argument index="3" name="click_normal" type="Vector3">
 			</argument>
@@ -209,7 +209,7 @@
 			</argument>
 			<argument index="1" name="event" type="Object">
 			</argument>
-			<argument index="2" name="click_pos" type="Vector3">
+			<argument index="2" name="click_position" type="Vector3">
 			</argument>
 			<argument index="3" name="click_normal" type="Vector3">
 			</argument>

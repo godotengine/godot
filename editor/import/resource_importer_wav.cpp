@@ -141,7 +141,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		/* chunk size */
 		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_pos(); //save file pos, so we can skip to next chunk safely
+		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
 

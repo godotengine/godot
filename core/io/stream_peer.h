@@ -111,7 +111,7 @@ public:
 
 	void seek(int p_pos);
 	int get_size() const;
-	int get_pos() const;
+	int get_position() const;
 	void resize(int p_size);
 
 	void set_data_array(const PoolVector<uint8_t> &p_data);

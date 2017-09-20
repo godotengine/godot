@@ -138,10 +138,10 @@ public:
 
 	int get_connection_input_count();
 	int get_connection_output_count();
-	Vector2 get_connection_input_pos(int p_idx);
+	Vector2 get_connection_input_position(int p_idx);
 	int get_connection_input_type(int p_idx);
 	Color get_connection_input_color(int p_idx);
-	Vector2 get_connection_output_pos(int p_idx);
+	Vector2 get_connection_output_position(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
 

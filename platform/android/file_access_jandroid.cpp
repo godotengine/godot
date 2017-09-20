@@ -106,7 +106,7 @@ void FileAccessJAndroid::seek_end(int64_t p_position) {
 	seek(get_len());
 }
 
-size_t FileAccessJAndroid::get_pos() const {
+size_t FileAccessJAndroid::get_position() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V(!is_open(), 0);

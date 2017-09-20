@@ -49,7 +49,7 @@ Variant Control::edit_get_state() const {
 
 	Dictionary s;
 	s["rect"] = get_rect();
-	s["rot"] = get_rotation();
+	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
 	Array anchors;
 	anchors.push_back(get_anchor(MARGIN_LEFT));
@@ -66,7 +66,7 @@ void Control::edit_set_state(const Variant &p_state) {
 	Rect2 state = s["rect"];
 	set_position(state.position);
 	set_size(state.size);
-	set_rotation(s["rot"]);
+	set_rotation(s["rotation"]);
 	set_scale(s["scale"]);
 	Array anchors = s["anchors"];
 	set_anchor(MARGIN_LEFT, anchors[0]);
@@ -2477,12 +2477,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_anchor", "margin"), &Control::get_anchor);
 	ClassDB::bind_method(D_METHOD("set_margin", "margin", "offset"), &Control::set_margin);
 	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset", "push_opposite_anchor"), &Control::set_anchor_and_margin, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_begin", "pos"), &Control::set_begin);
-	ClassDB::bind_method(D_METHOD("set_end", "pos"), &Control::set_end);
-	ClassDB::bind_method(D_METHOD("set_position", "pos"), &Control::set_position);
+	ClassDB::bind_method(D_METHOD("set_begin", "position"), &Control::set_begin);
+	ClassDB::bind_method(D_METHOD("set_end", "position"), &Control::set_end);
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &Control::set_position);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Control::set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
-	ClassDB::bind_method(D_METHOD("set_global_position", "pos"), &Control::set_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Control::set_global_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_deg", "degrees"), &Control::set_rotation_deg);
 	// TODO: Obsolete this method (old name) properly (GH-4397)
@@ -2560,12 +2560,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_grow_direction"), &Control::get_v_grow_direction);
 
 	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
-	ClassDB::bind_method(D_METHOD("get_tooltip", "atpos"), &Control::get_tooltip, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
 
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_cursor_shape", "pos"), &Control::get_cursor_shape, DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("get_cursor_shape", "position"), &Control::get_cursor_shape, DEFVAL(Point2()));
 
 	ClassDB::bind_method(D_METHOD("set_focus_neighbour", "margin", "neighbour"), &Control::set_focus_neighbour);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbour", "margin"), &Control::get_focus_neighbour);
@@ -2583,7 +2583,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 
-	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Control::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Control::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
 
@@ -2593,9 +2593,9 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_drag_data", PropertyInfo(Variant::VECTOR2, "pos")));
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "pos"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "pos"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_drag_data", PropertyInfo(Variant::VECTOR2, "position")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 
 	ADD_GROUP("Anchor", "anchor_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_LEFT);

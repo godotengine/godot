@@ -43,7 +43,7 @@
 				Return the number of enabled input slots (connections) to the GraphNode.
 			</description>
 		</method>
-		<method name="get_connection_input_pos">
+		<method name="get_connection_input_position">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -77,7 +77,7 @@
 				Return the number of enabled output slots (connections) of the GraphNode.
 			</description>
 		</method>
-		<method name="get_connection_output_pos">
+		<method name="get_connection_output_position">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="idx" type="int">

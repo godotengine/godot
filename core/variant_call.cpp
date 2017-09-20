@@ -1394,7 +1394,7 @@ void register_variant_methods() {
 	ADDFUNC2(STRING, STRING, String, format, NIL, "values", STRING, "placeholder", varray("{_}"));
 	ADDFUNC2(STRING, STRING, String, replace, STRING, "what", STRING, "forwhat", varray());
 	ADDFUNC2(STRING, STRING, String, replacen, STRING, "what", STRING, "forwhat", varray());
-	ADDFUNC2(STRING, STRING, String, insert, INT, "pos", STRING, "what", varray());
+	ADDFUNC2(STRING, STRING, String, insert, INT, "position", STRING, "what", varray());
 	ADDFUNC0(STRING, STRING, String, capitalize, varray());
 	ADDFUNC2(STRING, POOL_STRING_ARRAY, String, split, STRING, "divisor", BOOL, "allow_empty", varray(true));
 	ADDFUNC2(STRING, POOL_REAL_ARRAY, String, split_floats, STRING, "divisor", BOOL, "allow_empty", varray(true));
@@ -1402,14 +1402,14 @@ void register_variant_methods() {
 	ADDFUNC0(STRING, STRING, String, to_upper, varray());
 	ADDFUNC0(STRING, STRING, String, to_lower, varray());
 
-	ADDFUNC1(STRING, STRING, String, left, INT, "pos", varray());
-	ADDFUNC1(STRING, STRING, String, right, INT, "pos", varray());
+	ADDFUNC1(STRING, STRING, String, left, INT, "position", varray());
+	ADDFUNC1(STRING, STRING, String, right, INT, "position", varray());
 	ADDFUNC2(STRING, STRING, String, strip_edges, BOOL, "left", BOOL, "right", varray(true, true));
 	ADDFUNC0(STRING, STRING, String, get_extension, varray());
 	ADDFUNC0(STRING, STRING, String, get_basename, varray());
 	ADDFUNC1(STRING, STRING, String, plus_file, STRING, "file", varray());
 	ADDFUNC1(STRING, INT, String, ord_at, INT, "at", varray());
-	ADDFUNC2(STRING, NIL, String, erase, INT, "pos", INT, "chars", varray());
+	ADDFUNC2(STRING, NIL, String, erase, INT, "position", INT, "chars", varray());
 	ADDFUNC0(STRING, INT, String, hash, varray());
 	ADDFUNC0(STRING, STRING, String, md5_text, varray());
 	ADDFUNC0(STRING, STRING, String, sha256_text, varray());
@@ -1560,9 +1560,9 @@ void register_variant_methods() {
 	ADDFUNC1(ARRAY, NIL, Array, push_back, NIL, "value", varray());
 	ADDFUNC1(ARRAY, NIL, Array, push_front, NIL, "value", varray());
 	ADDFUNC1(ARRAY, NIL, Array, append, NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, resize, INT, "pos", varray());
-	ADDFUNC2(ARRAY, NIL, Array, insert, INT, "pos", NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, remove, INT, "pos", varray());
+	ADDFUNC1(ARRAY, NIL, Array, resize, INT, "size", varray());
+	ADDFUNC2(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
+	ADDFUNC1(ARRAY, NIL, Array, remove, INT, "position", varray());
 	ADDFUNC1(ARRAY, NIL, Array, erase, NIL, "value", varray());
 	ADDFUNC0(ARRAY, NIL, Array, front, varray());
 	ADDFUNC0(ARRAY, NIL, Array, back, varray());
@@ -1728,10 +1728,10 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "pos", Variant::VECTOR2, "size", Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "x", Variant::REAL, "y", Variant::REAL, "width", Variant::REAL, "height", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Transform2D_init2, Variant::TRANSFORM2D, "rot", Variant::REAL, "pos", Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Transform2D_init2, Variant::TRANSFORM2D, "rotation", Variant::REAL, "position", Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Transform2D_init3, Variant::TRANSFORM2D, "x_axis", Variant::VECTOR2, "y_axis", Variant::VECTOR2, "origin", Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Vector3_init1, Variant::VECTOR3, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL);
@@ -1746,7 +1746,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Rect3_init1, Variant::RECT3, "pos", Variant::VECTOR3, "size", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Rect3_init1, Variant::RECT3, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);

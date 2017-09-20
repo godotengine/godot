@@ -422,9 +422,9 @@ int InputDefault::get_mouse_button_mask() const {
 	return mouse_button_mask; // do not trust OS implementaiton, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
-void InputDefault::warp_mouse_pos(const Vector2 &p_to) {
+void InputDefault::warp_mouse_position(const Vector2 &p_to) {
 
-	OS::get_singleton()->warp_mouse_pos(p_to);
+	OS::get_singleton()->warp_mouse_position(p_to);
 }
 
 Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
@@ -447,7 +447,7 @@ Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_moti
 	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
-		OS::get_singleton()->warp_mouse_pos(pos_warped + p_rect.position);
+		OS::get_singleton()->warp_mouse_position(pos_warped + p_rect.position);
 	}
 
 	return rel_warped;
