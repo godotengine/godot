@@ -4426,22 +4426,6 @@ void EditorNode::_dim_timeout() {
 	}
 }
 
-void EditorNode::_check_gui_base_size() {
-	if (gui_base->get_size().width > 1200 * EDSCALE) {
-		for (int i = 0; i < singleton->main_editor_button_vb->get_child_count(); i++) {
-			ToolButton *btn = Object::cast_to<ToolButton>(singleton->main_editor_button_vb->get_child(i));
-			if (btn == singleton->distraction_free) continue;
-			btn->set_text(btn->get_name());
-		}
-	} else {
-		for (int i = 0; i < singleton->main_editor_button_vb->get_child_count(); i++) {
-			ToolButton *btn = Object::cast_to<ToolButton>(singleton->main_editor_button_vb->get_child(i));
-			if (btn == singleton->distraction_free) continue;
-			btn->set_text("");
-		}
-	}
-}
-
 void EditorNode::open_export_template_manager() {
 
 	export_template_manager->popup_manager();
@@ -4521,7 +4505,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_open_imported"), &EditorNode::_open_imported);
 	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
 	ClassDB::bind_method(D_METHOD("_dim_timeout"), &EditorNode::_dim_timeout);
-	ClassDB::bind_method(D_METHOD("_check_gui_base_size"), &EditorNode::_check_gui_base_size);
 
 	ClassDB::bind_method(D_METHOD("_resources_reimported"), &EditorNode::_resources_reimported);
 
@@ -4671,7 +4654,6 @@ EditorNode::EditorNode() {
 	gui_base = memnew(Panel);
 	theme_base->add_child(gui_base);
 	gui_base->set_area_as_parent_rect();
-	gui_base->connect("item_rect_changed", this, "_check_gui_base_size");
 
 	Ref<Theme> theme = create_editor_theme();
 	theme_base->set_theme(theme);
