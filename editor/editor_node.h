@@ -605,7 +605,6 @@ private:
 
 	void _start_dimming(bool p_dimming);
 	void _dim_timeout();
-	void _check_gui_base_size();
 
 	void _license_tree_selected();
 
