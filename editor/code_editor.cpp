@@ -993,14 +993,14 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void CodeTextEditor::_zoom_in() {
-	font_resize_val += 1;
+	font_resize_val += EDSCALE;
 
 	if (font_resize_timer->get_time_left() == 0)
 		font_resize_timer->start();
 }
 
 void CodeTextEditor::_zoom_out() {
-	font_resize_val -= 1;
+	font_resize_val -= EDSCALE;
 
 	if (font_resize_timer->get_time_left() == 0)
 		font_resize_timer->start();
@@ -1064,11 +1064,10 @@ void CodeTextEditor::_font_resize_timeout() {
 	Ref<DynamicFont> font = text_editor->get_font("font");
 
 	if (font.is_valid()) {
-		int size = font->get_size() + font_resize_val;
-
-		if (size >= 8 && size <= 96) {
-			EditorSettings::get_singleton()->set("interface/source_font_size", size);
-			font->set_size(size);
+		int new_size = CLAMP(font->get_size() + font_resize_val, 8 * EDSCALE, 96 * EDSCALE);
+		if (new_size != font->get_size()) {
+			EditorSettings::get_singleton()->set("interface/source_font_size", new_size / EDSCALE);
+			font->set_size(new_size);
 		}
 
 		font_resize_val = 0;
