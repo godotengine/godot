@@ -164,50 +164,50 @@ bool Variant::booleanize() const {
 		return;          \
 	}
 
-#define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type)      \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                           \
-		switch (p_b.type) {                                            \
-			case INT: _RETURN(p_a._data.m_type m_op p_b._data._int);   \
-			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real); \
-			default: {}                                                \
-		}                                                              \
-		r_valid = false;                                               \
-		return;                                                        \
+#define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type)             \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                  \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);   \
+		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real); \
+                                                                              \
+		_RETURN_FAIL                                                          \
+	};
+
+#define DEFAULT_OP_NUM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)        \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                  \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);   \
+		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real); \
+		if (p_b.type == NIL) _RETURN(!p_b.type m_op NIL);                     \
+                                                                              \
+		_RETURN_FAIL                                                          \
 	};
 
 #ifdef DEBUG_ENABLED
 #define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
-		switch (p_b.type) {                                     \
-			case INT: {                                         \
-				if (p_b._data._int == 0) {                      \
-					r_valid = false;                            \
-					_RETURN("Division By Zero");                \
-				}                                               \
-				_RETURN(p_a._data.m_type / p_b._data._int);     \
+		if (p_b.type == INT) {                                  \
+			if (p_b._data._int == 0) {                          \
+				r_valid = false;                                \
+				_RETURN("Division By Zero");                    \
 			}                                                   \
-			case REAL: {                                        \
-				if (p_b._data._real == 0) {                     \
-					r_valid = false;                            \
-					_RETURN("Division By Zero");                \
-				}                                               \
-				_RETURN(p_a._data.m_type / p_b._data._real);    \
-			}                                                   \
-			default: {}                                         \
+			_RETURN(p_a._data.m_type / p_b._data._int);         \
 		}                                                       \
-		r_valid = false;                                        \
-		return;                                                 \
+		if (p_b.type == REAL) {                                 \
+			if (p_b._data._real == 0) {                         \
+				r_valid = false;                                \
+				_RETURN("Division By Zero");                    \
+			}                                                   \
+			_RETURN(p_a._data.m_type / p_b._data._real);        \
+		}                                                       \
+                                                                \
+		_RETURN_FAIL                                            \
 	};
 #else
-#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type)     \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                        \
-		switch (p_b.type) {                                         \
-			case INT: _RETURN(p_a._data.m_type / p_b._data._int);   \
-			case REAL: _RETURN(p_a._data.m_type / p_b._data._real); \
-			default: {}                                             \
-		}                                                           \
-		r_valid = false;                                            \
-		return;                                                     \
+#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type)            \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                               \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type / p_b._data._int);   \
+		if (p_b.type == REAL) _RETURN(p_a._data.m_type / p_b._data._real); \
+                                                                           \
+		_RETURN_FAIL                                                       \
 	};
 #endif
 
@@ -221,55 +221,65 @@ bool Variant::booleanize() const {
 		_RETURN(p_a._data.m_type);                              \
 	};
 
-#define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                                        \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                 \
-		switch (p_b.type) {                                                                                  \
-			case INT: _RETURN(p_a._data.m_type m_op p_b._data._int);                                         \
-			case REAL: _RETURN(p_a._data.m_type m_op p_b._data._real);                                       \
-			case VECTOR2: _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
-			case VECTOR3: _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
-			default: {}                                                                                      \
-		}                                                                                                    \
-		r_valid = false;                                                                                     \
-		return;                                                                                              \
+#define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                                               \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                        \
+		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);                                         \
+		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real);                                       \
+		if (p_b.type == VECTOR2) _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
+		if (p_b.type == VECTOR3) _RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
+                                                                                                                    \
+		_RETURN_FAIL                                                                                                \
 	};
 
-#define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                                            \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                     \
-		switch (p_b.type) {                                                                                                                      \
-			case STRING: _RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const String *>(p_a._data._mem));      \
-			case NODE_PATH: _RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const NodePath *>(p_a._data._mem)); \
-			default: {}                                                                                                                          \
-		}                                                                                                                                        \
-		r_valid = false;                                                                                                                         \
-		return;                                                                                                                                  \
+#define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                   \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                            \
+		if (p_b.type == STRING) _RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const String *>(p_a._data._mem));      \
+		if (p_b.type == NODE_PATH) _RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const NodePath *>(p_a._data._mem)); \
+                                                                                                                                                        \
+		_RETURN_FAIL                                                                                                                                    \
 	};
 
-#define DEFAULT_OP_STR(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                     \
-		switch (p_b.type) {                                                                                                                      \
-			case STRING: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));      \
-			case NODE_PATH: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
-			default: {}                                                                                                                          \
-		}                                                                                                                                        \
-		r_valid = false;                                                                                                                         \
-		return;                                                                                                                                  \
+#define DEFAULT_OP_STR(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                       \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                            \
+		if (p_b.type == STRING) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));      \
+		if (p_b.type == NODE_PATH) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
+                                                                                                                                                        \
+		_RETURN_FAIL                                                                                                                                    \
+	};
+
+#define DEFAULT_OP_STR_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                                                  \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                            \
+		if (p_b.type == STRING) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));      \
+		if (p_b.type == NODE_PATH) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
+		if (p_b.type == NIL) _RETURN(!p_b.type m_op NIL);                                                                                               \
+                                                                                                                                                        \
+		_RETURN_FAIL                                                                                                                                    \
 	};
 
 #define DEFAULT_OP_LOCALMEM_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                     \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
 		if (p_b.type == m_name)                                                                                                \
 			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const m_type *>(p_a._data._mem)); \
-		r_valid = false;                                                                                                       \
-		return;                                                                                                                \
+                                                                                                                               \
+		_RETURN_FAIL                                                                                                           \
 	};
 
 #define DEFAULT_OP_LOCALMEM(m_prefix, m_op_name, m_name, m_op, m_type)                                                         \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
 		if (p_b.type == m_name)                                                                                                \
 			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-		r_valid = false;                                                                                                       \
-		return;                                                                                                                \
+                                                                                                                               \
+		_RETURN_FAIL                                                                                                           \
+	};
+
+#define DEFAULT_OP_LOCALMEM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                    \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
+		if (p_b.type == m_name)                                                                                                \
+			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
+		if (p_b.type == NIL)                                                                                                   \
+			_RETURN(!p_b.type m_op NIL);                                                                                       \
+                                                                                                                               \
+		_RETURN_FAIL                                                                                                           \
 	};
 
 #define DEFAULT_OP_LOCALMEM_NEG(m_prefix, m_op_name, m_name, m_type) \
@@ -282,38 +292,47 @@ bool Variant::booleanize() const {
 		_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem));  \
 	}
 
-#define DEFAULT_OP_LOCALMEM_NUM(m_prefix, m_op_name, m_name, m_op, m_type)                                                                  \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                \
-		switch (p_b.type) {                                                                                                                 \
-			case m_name: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-			case INT: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                       \
-			case REAL: _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._real);                                     \
-			default: {}                                                                                                                     \
-		}                                                                                                                                   \
-		r_valid = false;                                                                                                                    \
-		return;                                                                                                                             \
+#define DEFAULT_OP_LOCALMEM_NUM(m_prefix, m_op_name, m_name, m_op, m_type)                                                                         \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                       \
+		if (p_b.type == m_name) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
+		if (p_b.type == INT) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                       \
+		if (p_b.type == REAL) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._real);                                     \
+                                                                                                                                                   \
+		_RETURN_FAIL                                                                                                                               \
 	}
 
-#define DEFAULT_OP_PTR(m_op, m_name, m_sub)                             \
-	case m_name: {                                                      \
-		switch (p_b.type) {                                             \
-			case m_name: _RETURN(p_a._data.m_sub m_op p_b._data.m_sub); \
-			default: {}                                                 \
-		}                                                               \
-		r_valid = false;                                                \
-		return;                                                         \
+#define DEFAULT_OP_PTR(m_op, m_name, m_sub)                \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {               \
+		if (p_b.type == m_name)                            \
+			_RETURN(p_a._data.m_sub m_op p_b._data.m_sub); \
+                                                           \
+		_RETURN_FAIL                                       \
 	}
 
 #define DEFAULT_OP_PTRREF(m_prefix, m_op_name, m_name, m_op, m_sub) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                        \
 		if (p_b.type == m_name)                                     \
 			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);        \
-		r_valid = false;                                            \
-		return;                                                     \
+                                                                    \
+		_RETURN_FAIL                                                \
 	}
 
-#define DEFAULT_OP_ARRAY_EQ(m_prefix, m_op_name, m_name, m_type) \
-	DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, !=, !=, true, false, false)
+#define DEFAULT_OP_PTRREF_NULL(m_prefix, m_op_name, m_name, m_op, m_sub) \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                             \
+		if (p_b.type == m_name)                                          \
+			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);             \
+		if (p_b.type == NIL)                                             \
+			_RETURN(!p_b.type m_op NIL);                                 \
+                                                                         \
+		_RETURN_FAIL                                                     \
+	}
+
+#define DEFAULT_OP_ARRAY_EQ(m_prefix, m_op_name, m_name, m_type)                                  \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                      \
+		if (p_b.type == NIL)                                                                      \
+			_RETURN(false)                                                                        \
+		DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, !=, !=, true, false, false) \
+	}
 
 #define DEFAULT_OP_ARRAY_LT(m_prefix, m_op_name, m_name, m_type) \
 	DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, <, !=, false, a_len < array_b.size(), true)
@@ -321,38 +340,39 @@ bool Variant::booleanize() const {
 #define DEFAULT_OP_ARRAY_GT(m_prefix, m_op_name, m_name, m_type) \
 	DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, >, !=, false, a_len < array_b.size(), true)
 
-#define DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                \
-		if (p_a.type != p_b.type) {                                                                         \
-			r_valid = false;                                                                                \
-			return;                                                                                         \
-		}                                                                                                   \
-		const PoolVector<m_type> &array_a = *reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);  \
-		const PoolVector<m_type> &array_b = *reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);  \
-                                                                                                            \
-		int a_len = array_a.size();                                                                         \
-		if (a_len m_opa array_b.size()) {                                                                   \
-			_RETURN(m_ret_s);                                                                               \
-		} else {                                                                                            \
-                                                                                                            \
-			PoolVector<m_type>::Read ra = array_a.read();                                                   \
-			PoolVector<m_type>::Read rb = array_b.read();                                                   \
-                                                                                                            \
-			for (int i = 0; i < a_len; i++) {                                                               \
-				if (ra[i] m_opb rb[i])                                                                      \
-					_RETURN(m_ret_f);                                                                       \
-			}                                                                                               \
-                                                                                                            \
-			_RETURN(m_ret_def);                                                                             \
-		}                                                                                                   \
+#define DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f)      \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                     \
+		DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f) \
+	}
+
+#define DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f) \
+	if (p_a.type != p_b.type)                                                                                    \
+		_RETURN_FAIL                                                                                             \
+                                                                                                                 \
+	const PoolVector<m_type> &array_a = *reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);           \
+	const PoolVector<m_type> &array_b = *reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);           \
+                                                                                                                 \
+	int a_len = array_a.size();                                                                                  \
+	if (a_len m_opa array_b.size()) {                                                                            \
+		_RETURN(m_ret_s);                                                                                        \
+	} else {                                                                                                     \
+                                                                                                                 \
+		PoolVector<m_type>::Read ra = array_a.read();                                                            \
+		PoolVector<m_type>::Read rb = array_b.read();                                                            \
+                                                                                                                 \
+		for (int i = 0; i < a_len; i++) {                                                                        \
+			if (ra[i] m_opb rb[i])                                                                               \
+				_RETURN(m_ret_f);                                                                                \
+		}                                                                                                        \
+                                                                                                                 \
+		_RETURN(m_ret_def);                                                                                      \
 	}
 
 #define DEFAULT_OP_ARRAY_ADD(m_prefix, m_op_name, m_name, m_type)                                          \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                               \
-		if (p_a.type != p_b.type) {                                                                        \
-			r_valid = false;                                                                               \
-			_RETURN(NIL);                                                                                  \
-		}                                                                                                  \
+		if (p_a.type != p_b.type)                                                                          \
+			_RETURN_FAIL;                                                                                  \
+                                                                                                           \
 		const PoolVector<m_type> &array_a = *reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem); \
 		const PoolVector<m_type> &array_b = *reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem); \
 		PoolVector<m_type> sum = array_a;                                                                  \
@@ -372,12 +392,17 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
 					_RETURN(p_b._get_obj().obj == NULL);
-				_RETURN_FAIL;
+
+				_RETURN(false);
 			}
 
 			CASE_TYPE(math, OP_EQUAL, BOOL) {
-				if (p_b.type != BOOL)
+				if (p_b.type != BOOL) {
+					if (p_b.type == NIL)
+						_RETURN(false);
 					_RETURN_FAIL;
+				}
+
 				_RETURN(p_a._data._bool == p_b._data._bool);
 			}
 
@@ -386,12 +411,16 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
 				if (p_b.type == NIL)
 					_RETURN(p_a._get_obj().obj == NULL);
+
 				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_EQUAL, DICTIONARY) {
-				if (p_b.type != DICTIONARY)
+				if (p_b.type != DICTIONARY) {
+					if (p_b.type == NIL)
+						_RETURN(false);
 					_RETURN_FAIL;
+				}
 
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
@@ -400,9 +429,11 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			CASE_TYPE(math, OP_EQUAL, ARRAY) {
-				if (p_b.type != ARRAY)
+				if (p_b.type != ARRAY) {
+					if (p_b.type == NIL)
+						_RETURN(false);
 					_RETURN_FAIL;
-
+				}
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
 
@@ -418,21 +449,21 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN(true);
 			}
 
-			DEFAULT_OP_NUM(math, OP_EQUAL, INT, ==, _int);
-			DEFAULT_OP_NUM(math, OP_EQUAL, REAL, ==, _real);
-			DEFAULT_OP_STR(math, OP_EQUAL, STRING, ==, String);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, VECTOR2, ==, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, RECT2, ==, Rect2);
-			DEFAULT_OP_PTRREF(math, OP_EQUAL, TRANSFORM2D, ==, _transform2d);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, VECTOR3, ==, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, PLANE, ==, Plane);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, QUAT, ==, Quat);
-			DEFAULT_OP_PTRREF(math, OP_EQUAL, RECT3, ==, _rect3);
-			DEFAULT_OP_PTRREF(math, OP_EQUAL, BASIS, ==, _basis);
-			DEFAULT_OP_PTRREF(math, OP_EQUAL, TRANSFORM, ==, _transform);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, COLOR, ==, Color);
-			DEFAULT_OP_STR(math, OP_EQUAL, NODE_PATH, ==, NodePath);
-			DEFAULT_OP_LOCALMEM(math, OP_EQUAL, _RID, ==, RID);
+			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, INT, ==, _int);
+			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, REAL, ==, _real);
+			DEFAULT_OP_STR_NULL(math, OP_EQUAL, STRING, ==, String);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR2, ==, Vector2);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, RECT2, ==, Rect2);
+			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, TRANSFORM2D, ==, _transform2d);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR3, ==, Vector3);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, PLANE, ==, Plane);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, QUAT, ==, Quat);
+			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, RECT3, ==, _rect3);
+			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, BASIS, ==, _basis);
+			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, TRANSFORM, ==, _transform);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, COLOR, ==, Color);
+			DEFAULT_OP_STR_NULL(math, OP_EQUAL, NODE_PATH, ==, NodePath);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, _RID, ==, RID);
 
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_BYTE_ARRAY, uint8_t);
 			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, POOL_INT_ARRAY, int);
@@ -448,12 +479,18 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
 					_RETURN(p_b._get_obj().obj != NULL);
-				_RETURN_FAIL;
+
+				_RETURN(true);
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, BOOL) {
-				if (p_b.type != BOOL)
+				if (p_b.type != BOOL) {
+					if (p_b.type == NIL)
+						_RETURN(true);
+
 					_RETURN_FAIL;
+				}
+
 				_RETURN(p_a._data._bool != p_b._data._bool);
 			}
 
@@ -462,12 +499,16 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
 				if (p_b.type == NIL)
 					_RETURN(p_a._get_obj().obj != NULL);
+
 				_RETURN_FAIL;
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, DICTIONARY) {
-				if (p_b.type != DICTIONARY)
+				if (p_b.type != DICTIONARY) {
+					if (p_b.type == NIL)
+						_RETURN(true);
 					_RETURN_FAIL;
+				}
 
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
@@ -476,8 +517,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {
-				if (p_b.type != ARRAY)
+				if (p_b.type != ARRAY) {
+					if (p_b.type == NIL)
+						_RETURN(true);
+
 					_RETURN_FAIL;
+				}
 
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
@@ -494,21 +539,21 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN(true);
 			}
 
-			DEFAULT_OP_NUM(math, OP_NOT_EQUAL, INT, !=, _int);
-			DEFAULT_OP_NUM(math, OP_NOT_EQUAL, REAL, !=, _real);
-			DEFAULT_OP_STR(math, OP_NOT_EQUAL, STRING, !=, String);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, VECTOR2, !=, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, RECT2, !=, Rect2);
-			DEFAULT_OP_PTRREF(math, OP_NOT_EQUAL, TRANSFORM2D, !=, _transform2d);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, VECTOR3, !=, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, PLANE, !=, Plane);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, QUAT, !=, Quat);
-			DEFAULT_OP_PTRREF(math, OP_NOT_EQUAL, RECT3, !=, _rect3);
-			DEFAULT_OP_PTRREF(math, OP_NOT_EQUAL, BASIS, !=, _basis);
-			DEFAULT_OP_PTRREF(math, OP_NOT_EQUAL, TRANSFORM, !=, _transform);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, COLOR, !=, Color);
-			DEFAULT_OP_STR(math, OP_NOT_EQUAL, NODE_PATH, !=, NodePath);
-			DEFAULT_OP_LOCALMEM(math, OP_NOT_EQUAL, _RID, !=, RID);
+			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, INT, !=, _int);
+			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, REAL, !=, _real);
+			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, STRING, !=, String);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR2, !=, Vector2);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, RECT2, !=, Rect2);
+			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, TRANSFORM2D, !=, _transform2d);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR3, !=, Vector3);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, PLANE, !=, Plane);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, QUAT, !=, Quat);
+			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, RECT3, !=, _rect3);
+			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, BASIS, !=, _basis);
+			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, TRANSFORM, !=, _transform);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, COLOR, !=, Color);
+			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, NODE_PATH, !=, NodePath);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, _RID, !=, RID);
 
 			CASE_TYPE(math, OP_NOT_EQUAL, POOL_BYTE_ARRAY);
 			CASE_TYPE(math, OP_NOT_EQUAL, POOL_INT_ARRAY);
