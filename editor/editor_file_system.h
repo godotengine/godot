@@ -206,6 +206,14 @@ class EditorFileSystem : public Node {
 
 	Vector<String> _get_dependencies(const String &p_path);
 
+	struct ImportFile {
+		String path;
+		int order;
+		bool operator<(const ImportFile &p_if) const {
+			return order < p_if.order;
+		}
+	};
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

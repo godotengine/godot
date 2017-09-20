@@ -308,6 +308,31 @@ void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_l
 	}
 }
 
+int ResourceLoader::get_import_order(const String &p_path) {
+
+	String path = _path_remap(p_path);
+
+	String local_path;
+	if (path.is_rel_path())
+		local_path = "res://" + path;
+	else
+		local_path = ProjectSettings::get_singleton()->localize_path(path);
+
+	for (int i = 0; i < loader_count; i++) {
+
+		if (!loader[i]->recognize_path(local_path))
+			continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
+
+		return loader[i]->get_import_order(p_path);
+	}
+
+	return 0;
+}
+
 bool ResourceLoader::is_import_valid(const String &p_path) {
 
 	String path = _path_remap(p_path);

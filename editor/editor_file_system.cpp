@@ -1498,10 +1498,22 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	importing = true;
 	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
-	for (int i = 0; i < p_files.size(); i++) {
-		pr.step(p_files[i].get_file(), i);
 
-		_reimport_file(p_files[i]);
+	Vector<ImportFile> files;
+
+	for (int i = 0; i < p_files.size(); i++) {
+		ImportFile ifile;
+		ifile.path = p_files[i];
+		ifile.order = ResourceFormatImporter::get_singleton()->get_import_order(p_files[i]);
+		files.push_back(ifile);
+	}
+
+	files.sort();
+
+	for (int i = 0; i < files.size(); i++) {
+		pr.step(files[i].path.get_file(), i);
+
+		_reimport_file(files[i].path);
 	}
 
 	_save_filesystem_cache();

@@ -381,6 +381,9 @@ Error ColladaImport::_create_material(const String &p_target) {
 		String texfile = effect.get_texture_path(effect.diffuse.texture, collada);
 		if (texfile != "") {
 
+			if (texfile.begins_with("/")) {
+				texfile = texfile.replace_first("/", "res://");
+			}
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
 
@@ -401,6 +404,10 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 		String texfile = effect.get_texture_path(effect.specular.texture, collada);
 		if (texfile != "") {
+
+			if (texfile.begins_with("/")) {
+				texfile = texfile.replace_first("/", "res://");
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
@@ -424,6 +431,10 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 		String texfile = effect.get_texture_path(effect.emission.texture, collada);
 		if (texfile != "") {
+
+			if (texfile.begins_with("/")) {
+				texfile = texfile.replace_first("/", "res://");
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {
@@ -450,6 +461,10 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 		String texfile = effect.get_texture_path(effect.bump.texture, collada);
 		if (texfile != "") {
+
+			if (texfile.begins_with("/")) {
+				texfile = texfile.replace_first("/", "res://");
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(texfile, "Texture");
 			if (texture.is_valid()) {

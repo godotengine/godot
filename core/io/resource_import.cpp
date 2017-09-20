@@ -87,6 +87,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				path_found = true; //first match must have priority
 			} else if (assign == "type") {
 				r_path_and_type.type = value;
+			} else if (assign == "importer") {
+				r_path_and_type.importer = value;
 			} else if (assign == "valid") {
 				if (r_valid) {
 					*r_valid = value;
@@ -182,6 +184,29 @@ bool ResourceFormatImporter::recognize_path(const String &p_path, const String &
 bool ResourceFormatImporter::can_be_imported(const String &p_path) const {
 
 	return ResourceFormatLoader::recognize_path(p_path);
+}
+
+int ResourceFormatImporter::get_import_order(const String &p_path) const {
+
+	Ref<ResourceImporter> importer;
+
+	if (FileAccess::exists(p_path + ".import")) {
+
+		PathAndType pat;
+		Error err = _get_path_and_type(p_path, pat);
+
+		if (err == OK) {
+			importer = get_importer_by_name(pat.importer);
+		}
+	} else {
+
+		importer = get_importer_by_extension(p_path.get_extension().to_lower());
+	}
+
+	if (importer.is_valid())
+		return importer->get_import_order();
+
+	return 0;
 }
 
 bool ResourceFormatImporter::handles_type(const String &p_type) const {
@@ -291,7 +316,7 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 	return ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
 }
 
-Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) {
+Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {
 
 	for (Set<Ref<ResourceImporter> >::Element *E = importers.front(); E; E = E->next()) {
 		if (E->get()->get_importer_name() == p_name) {
@@ -315,7 +340,7 @@ void ResourceFormatImporter::get_importers_for_extension(const String &p_extensi
 	}
 }
 
-Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const String &p_extension) {
+Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const String &p_extension) const {
 
 	Ref<ResourceImporter> importer;
 	float priority = 0;

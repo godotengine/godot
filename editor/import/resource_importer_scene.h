@@ -96,6 +96,7 @@ class ResourceImporterScene : public ResourceImporter {
 
 		PRESET_MULTIPLE_SCENES,
 		PRESET_MULTIPLE_SCENES_AND_MATERIALS,
+		PRESET_MAX
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
@@ -118,6 +119,7 @@ public:
 
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual int get_import_order() const { return 100; } //after everything
 
 	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes);
 

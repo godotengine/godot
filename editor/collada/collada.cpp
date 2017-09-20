@@ -1918,7 +1918,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 			for (int j = 0; j < key_count; j++) {
 				track.keys[j].data.resize(output_len);
 				for (int k = 0; k < output_len; k++)
-					track.keys[j].data[k] = output[l + j * stride + k]; //super weird but should work
+					track.keys[j].data[k] = output[l + j * stride + k]; //super weird but should work:
 			}
 
 			if (sampler.has("INTERPOLATION")) {
