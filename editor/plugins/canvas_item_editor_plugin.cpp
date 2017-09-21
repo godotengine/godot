@@ -3710,6 +3710,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	viewport_base = memnew(Control);
 	palette_split->add_child(viewport_base);
+	viewport_base->set_clip_contents(true);
 	viewport_base->connect("draw", this, "_draw_viewport_base");
 	viewport_base->connect("gui_input", this, "_viewport_base_gui_input");
 	viewport_base->set_focus_mode(FOCUS_ALL);
