@@ -2577,6 +2577,8 @@ void CanvasItemEditor::_draw_bones() {
 }
 
 void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p_xform) {
+	ERR_FAIL_COND(!p_node);
+
 	RID viewport_ci = viewport->get_canvas_item();
 
 	Transform2D transform_ci = p_xform;
@@ -2605,6 +2607,8 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 }
 
 void CanvasItemEditor::_build_bones_list(Node *p_node) {
+	ERR_FAIL_COND(!p_node);
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_build_bones_list(p_node->get_child(i));
 	}
@@ -2626,6 +2630,8 @@ void CanvasItemEditor::_build_bones_list(Node *p_node) {
 }
 
 void CanvasItemEditor::_get_encompassing_rect(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform) {
+	ERR_FAIL_COND(!p_node);
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_get_encompassing_rect(p_node->get_child(i), r_rect, p_xform);
 	}
