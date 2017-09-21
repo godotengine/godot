@@ -708,6 +708,16 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
 	}
+
+	if (!p_enabled && !get_borderless_window()) {
+		// put decorations back if the window wasn't suppoesed to be borderless
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 1;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+	}
 }
 
 int OS_X11::get_screen_count() const {
