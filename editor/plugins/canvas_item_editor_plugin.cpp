@@ -2693,7 +2693,8 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_grid();
 	_draw_selection();
 	_draw_axis();
-	_draw_locks_and_groups(editor->get_edited_scene(), transform);
+	if (editor->get_edited_scene())
+		_draw_locks_and_groups(editor->get_edited_scene(), transform);
 
 	RID ci = viewport->get_canvas_item();
 	VisualServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
