@@ -1,5 +1,6 @@
 <svg width="128" height="128" version="1.1" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -924.36)">
+<path transform="translate(0 924.36)" d="m64 2a44 44 0 0 0 -44 44 44 44 0 0 0 24 39.189v5.8105 5 3c0 5.0515 3.3756 9.2769 8 10.578v16.422h24v-16.422c4.6244-1.3012 8-5.5266 8-10.578v-3-5-5.8574a44 44 0 0 0 24 -39.143 44 44 0 0 0 -44 -44zm0 20a24 24 0 0 1 24 24 24 24 0 0 1 -24 24 24 24 0 0 1 -24 -24 24 24 0 0 1 24 -24z" fill-opacity=".29412" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".98824" stroke-width="2.2"/>
 <path transform="translate(0 924.36)" d="m64 6a40 40 0 0 0 -40 40 40 40 0 0 0 24 36.607v15.393a8 8 0 0 0 8 8h16a8 8 0 0 0 8 -8v-15.363a40 40 0 0 0 24 -36.637 40 40 0 0 0 -40 -40zm0 12a28 28 0 0 1 28 28 28 28 0 0 1 -28 28 28 28 0 0 1 -28 -28 28 28 0 0 1 28 -28zm-8 96v8h16v-8h-16z" fill="#f7f5cf"/>
 </g>
 </svg>

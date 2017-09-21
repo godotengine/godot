@@ -2595,12 +2595,12 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 	}
 
 	if (ci) {
-		Ref<Texture> lock = get_icon("Lock", "EditorIcons");
+		Ref<Texture> lock = get_icon("LockViewport", "EditorIcons");
 		if (p_node->has_meta("_edit_lock_")) {
 			lock->draw(viewport_ci, transform_ci.xform(Point2(0, 0)));
 		}
 
-		Ref<Texture> group = get_icon("Group", "EditorIcons");
+		Ref<Texture> group = get_icon("GroupViewport", "EditorIcons");
 		if (ci->has_meta("_edit_group_")) {
 			Vector2 ofs = transform_ci.xform(Point2(0, 0));
 			if (ci->has_meta("_edit_lock_"))

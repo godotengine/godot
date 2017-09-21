@@ -1,8 +1,8 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
-<path transform="translate(0 1036.4)" d="m8.832 6.1445a4 4 0 0 1 -2.6914 2.6855l9.8594 7.1699-7.168-9.8555z" fill="#a5efac" fill-rule="evenodd"/>
+<path transform="translate(0 1036.4)" d="m5 0a5 5 0 0 0 -5 5 5 5 0 0 0 5 5 5 5 0 0 0 1.0566 -0.11914l9.9434 6.1191-6.1172-9.9395a5 5 0 0 0 0.11719 -1.0605 5 5 0 0 0 -5 -5z" fill-opacity=".39216" style="paint-order:fill markers stroke"/>
+<path transform="translate(0 1036.4)" d="m5 1a4 4 0 0 0 -4 4 4 4 0 0 0 4 4 4 4 0 0 0 1.1406 -0.16992l9.8594 7.1699-7.168-9.8555a4 4 0 0 0 0.16797 -1.1445 4 4 0 0 0 -4 -4z" fill="#a5efac" fill-rule="evenodd"/>
 <ellipse cx="3" cy="1039.4" r="2" fill="#6e6e6e"/>
-<ellipse cx="4" cy="1040.4" rx="4" ry="4" fill="#a5efac" style="paint-order:fill markers stroke"/>
 <circle cx="5" cy="1041.4" r="0" fill="#a5efac" style="paint-order:fill markers stroke"/>
 </g>
 </svg>
