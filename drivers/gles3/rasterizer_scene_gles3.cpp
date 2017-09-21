@@ -2404,6 +2404,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 
 	//store camera into ubo
 	store_camera(p_cam_projection, state.ubo_data.projection_matrix);
+	store_camera(p_cam_projection.inverse(), state.ubo_data.inv_projection_matrix);
 	store_transform(p_cam_transform, state.ubo_data.camera_matrix);
 	store_transform(p_cam_transform.affine_inverse(), state.ubo_data.camera_inverse_matrix);
 

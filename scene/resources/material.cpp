@@ -268,6 +268,10 @@ void SpatialMaterial::init_shaders() {
 
 	shader_names->grow = "grow";
 
+	shader_names->proximity_fade_distance = "proximity_fade_distance";
+	shader_names->distance_fade_min = "distance_fade_min";
+	shader_names->distance_fade_max = "distance_fade_max";
+
 	shader_names->metallic_texture_channel = "metallic_texture_channel";
 	shader_names->roughness_texture_channel = "roughness_texture_channel";
 	shader_names->ao_texture_channel = "ao_texture_channel";
@@ -399,6 +403,14 @@ void SpatialMaterial::_update_shader() {
 	code += "uniform float metallic;\n";
 	if (grow_enabled) {
 		code += "uniform float grow;\n";
+	}
+
+	if (proximity_fade_enabled) {
+		code += "uniform float proximity_fade_distance;\n";
+	}
+	if (distance_fade_enabled) {
+		code += "uniform float distance_fade_min;\n";
+		code += "uniform float distance_fade_max;\n";
 	}
 
 	if (flags[FLAG_USE_ALPHA_SCISSOR]) {
@@ -725,8 +737,19 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (features[FEATURE_TRANSPARENT] || features[FLAG_USE_ALPHA_SCISSOR]) {
+	} else if (features[FEATURE_TRANSPARENT] || features[FLAG_USE_ALPHA_SCISSOR] || distance_fade_enabled || proximity_fade_enabled) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
+	}
+
+	if (proximity_fade_enabled) {
+		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
+		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
+		code += "\tworld_pos.xyz/=world_pos.w;\n";
+		code += "\tALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
+	}
+
+	if (distance_fade_enabled) {
+		code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
 	}
 
 	if (features[FEATURE_RIM]) {
@@ -1231,6 +1254,14 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
+	if (property.name == "proximity_fade_distacne" && !proximity_fade_enabled) {
+		property.usage = 0;
+	}
+
+	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && !distance_fade_enabled) {
+		property.usage = 0;
+	}
+
 	if (property.name == "params_alpha_scissor_threshold" && !flags[FLAG_USE_ALPHA_SCISSOR]) {
 		property.usage = 0;
 	}
@@ -1526,6 +1557,60 @@ void SpatialMaterial::set_on_top_of_alpha() {
 	set_flag(FLAG_DISABLE_DEPTH_TEST, true);
 }
 
+void SpatialMaterial::set_proximity_fade(bool p_enable) {
+
+	proximity_fade_enabled = p_enable;
+	_queue_shader_change();
+	_change_notify();
+}
+
+bool SpatialMaterial::is_proximity_fade_enabled() const {
+
+	return proximity_fade_enabled;
+}
+
+void SpatialMaterial::set_proximity_fade_distance(float p_distance) {
+
+	proximity_fade_distance = p_distance;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
+}
+float SpatialMaterial::get_proximity_fade_distance() const {
+
+	return proximity_fade_distance;
+}
+
+void SpatialMaterial::set_distance_fade(bool p_enable) {
+
+	distance_fade_enabled = p_enable;
+	_queue_shader_change();
+	_change_notify();
+}
+bool SpatialMaterial::is_distance_fade_enabled() const {
+
+	return distance_fade_enabled;
+}
+
+void SpatialMaterial::set_distance_fade_max_distance(float p_distance) {
+
+	distance_fade_max_distance = p_distance;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_max, distance_fade_max_distance);
+}
+float SpatialMaterial::get_distance_fade_max_distance() const {
+
+	return distance_fade_max_distance;
+}
+
+void SpatialMaterial::set_distance_fade_min_distance(float p_distance) {
+
+	distance_fade_min_distance = p_distance;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_min, distance_fade_min_distance);
+}
+
+float SpatialMaterial::get_distance_fade_min_distance() const {
+
+	return distance_fade_min_distance;
+}
+
 void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);
@@ -1672,6 +1757,21 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction_texture_channel", "channel"), &SpatialMaterial::set_refraction_texture_channel);
 	ClassDB::bind_method(D_METHOD("get_refraction_texture_channel"), &SpatialMaterial::get_refraction_texture_channel);
 
+	ClassDB::bind_method(D_METHOD("set_proximity_fade", "enabled"), &SpatialMaterial::set_proximity_fade);
+	ClassDB::bind_method(D_METHOD("is_proximity_fade_enabled"), &SpatialMaterial::is_proximity_fade_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &SpatialMaterial::set_proximity_fade_distance);
+	ClassDB::bind_method(D_METHOD("get_proximity_fade_distance"), &SpatialMaterial::get_proximity_fade_distance);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade", "enabled"), &SpatialMaterial::set_distance_fade);
+	ClassDB::bind_method(D_METHOD("is_distance_fade_enabled"), &SpatialMaterial::is_distance_fade_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_max_distance", "distance"), &SpatialMaterial::set_distance_fade_max_distance);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_max_distance"), &SpatialMaterial::get_distance_fade_max_distance);
+
+	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &SpatialMaterial::set_distance_fade_min_distance);
+	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &SpatialMaterial::get_distance_fade_min_distance);
+
 	ADD_GROUP("Flags", "flags_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_transparent"), "set_feature", "get_feature", FEATURE_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_unshaded"), "set_flag", "get_flag", FLAG_UNSHADED);
@@ -1795,6 +1895,14 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_TRIPLANAR);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "uv2_triplanar_sharpness", PROPERTY_HINT_EXP_EASING), "set_uv2_triplanar_blend_sharpness", "get_uv2_triplanar_blend_sharpness");
 
+	ADD_GROUP("Proximity Fade", "proximity_fade_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_proximity_fade_distance", "get_proximity_fade_distance");
+	ADD_GROUP("Distance Fade", "distance_fade_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enable"), "set_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
 	BIND_ENUM_CONSTANT(TEXTURE_ROUGHNESS);
@@ -1915,6 +2023,12 @@ SpatialMaterial::SpatialMaterial()
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 	set_alpha_scissor_threshold(0.98);
+
+	proximity_fade_enabled = false;
+	distance_fade_enabled = false;
+	set_proximity_fade_distance(1);
+	set_distance_fade_min_distance(0);
+	set_distance_fade_max_distance(10);
 
 	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);

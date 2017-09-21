@@ -61,6 +61,7 @@ layout(location=12) in highp vec4 instance_custom_data;
 layout(std140) uniform SceneData { //ubo:0
 
 	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
 	highp mat4 camera_inverse_matrix;
 	highp mat4 camera_matrix;
 
@@ -643,6 +644,7 @@ FRAGMENT_SHADER_GLOBALS
 layout(std140) uniform SceneData {
 
 	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
 	highp mat4 camera_inverse_matrix;
 	highp mat4 camera_matrix;
 

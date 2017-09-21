@@ -75,6 +75,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["CAMERA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["MODELVIEW_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["TIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["vertex"].built_ins["VIEWPORT_SIZE"] = ShaderLanguage::TYPE_VEC2;
 
@@ -115,6 +116,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["WORLD_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_CAMERA_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_PROJECTION_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["TIME"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEWPORT_SIZE"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[VS::SHADER_SPATIAL].functions["fragment"].can_discard = true;

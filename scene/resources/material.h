@@ -232,6 +232,8 @@ private:
 			uint64_t deep_parallax : 1;
 			uint64_t billboard_mode : 2;
 			uint64_t grow : 1;
+			uint64_t proximity_fade : 1;
+			uint64_t distance_fade : 1;
 		};
 
 		uint64_t key;
@@ -274,6 +276,8 @@ private:
 		mk.billboard_mode = billboard_mode;
 		mk.deep_parallax = deep_parallax ? 1 : 0;
 		mk.grow = grow_enabled;
+		mk.proximity_fade = proximity_fade_enabled;
+		mk.distance_fade = distance_fade_enabled;
 
 		return mk;
 	}
@@ -308,6 +312,9 @@ private:
 		StringName uv1_blend_sharpness;
 		StringName uv2_blend_sharpness;
 		StringName grow;
+		StringName proximity_fade_distance;
+		StringName distance_fade_min;
+		StringName distance_fade_max;
 
 		StringName metallic_texture_channel;
 		StringName roughness_texture_channel;
@@ -369,6 +376,13 @@ private:
 	bool deep_parallax;
 	int deep_parallax_min_layers;
 	int deep_parallax_max_layers;
+
+	bool proximity_fade_enabled;
+	float proximity_fade_distance;
+
+	bool distance_fade_enabled;
+	float distance_fade_max_distance;
+	float distance_fade_min_distance;
 
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
@@ -534,6 +548,21 @@ public:
 	float get_alpha_scissor_threshold() const;
 
 	void set_on_top_of_alpha();
+
+	void set_proximity_fade(bool p_enable);
+	bool is_proximity_fade_enabled() const;
+
+	void set_proximity_fade_distance(float p_distance);
+	float get_proximity_fade_distance() const;
+
+	void set_distance_fade(bool p_enable);
+	bool is_distance_fade_enabled() const;
+
+	void set_distance_fade_max_distance(float p_distance);
+	float get_distance_fade_max_distance() const;
+
+	void set_distance_fade_min_distance(float p_distance);
+	float get_distance_fade_min_distance() const;
 
 	void set_metallic_texture_channel(TextureChannel p_channel);
 	TextureChannel get_metallic_texture_channel() const;

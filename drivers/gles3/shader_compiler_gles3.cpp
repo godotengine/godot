@@ -750,6 +750,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
