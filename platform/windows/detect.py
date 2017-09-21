@@ -64,6 +64,7 @@ def get_opts():
     return [
         ('mingw_prefix_32', 'MinGW prefix (Win32)', mingw32),
         ('mingw_prefix_64', 'MinGW prefix (Win64)', mingw64),
+        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
     ]
 
 
@@ -213,11 +214,20 @@ def configure(env):
 
             env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
 
+            if (env["debug_symbols"] == "yes"):
+               env.Prepend(CCFLAGS=['-g1'])
+            if (env["debug_symbols"] == "full"):
+               env.Prepend(CCFLAGS=['-g2'])
+
         elif (env["target"] == "release_debug"):
             env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+            if (env["debug_symbols"] == "yes"):
+               env.Prepend(CCFLAGS=['-g1'])
+            if (env["debug_symbols"] == "full"):
+               env.Prepend(CCFLAGS=['-g2'])
 
         elif (env["target"] == "debug"):
-            env.Append(CCFLAGS=['-g', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+            env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
         ## Compiler configuration
 

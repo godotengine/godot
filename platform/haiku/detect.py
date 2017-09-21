@@ -21,7 +21,7 @@ def can_build():
 def get_opts():
 
     return [
-        ('debug_release', 'Add debug symbols to release version', 'no')
+        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
     ]
 
 
@@ -36,16 +36,21 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        if (env["debug_release"] == "yes"):
+        env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
             env.Prepend(CCFLAGS=['-g2'])
-        else:
-            env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
 
     elif (env["target"] == "release_debug"):
         env.Prepend(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Prepend(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     ## Architecture
 

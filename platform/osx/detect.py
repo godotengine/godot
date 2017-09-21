@@ -22,6 +22,7 @@ def get_opts():
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
+        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes'),
     ]
 
 
@@ -36,10 +37,18 @@ def configure(env):
 	## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-O2', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
         env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        if (env["debug_symbols"] == "yes"):
+            env.Prepend(CCFLAGS=['-g1'])
+        if (env["debug_symbols"] == "full"):
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
         env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
