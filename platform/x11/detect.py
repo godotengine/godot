@@ -138,6 +138,7 @@ def configure(env):
     elif (env["target"] == "debug"):
 
         env.Prepend(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(LINKFLAGS=['-rdynamic'])
 
     env.ParseConfig('pkg-config x11 --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')

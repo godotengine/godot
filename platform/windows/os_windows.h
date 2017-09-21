@@ -31,6 +31,7 @@
 #define OS_WINDOWS_H
 
 #include "context_gl_win.h"
+#include "crash_handler_win.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "servers/physics/physics_server_sw.h"
@@ -38,8 +39,8 @@
 #include "servers/visual_server.h"
 
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/unix/ip_unix.h"
+#include "drivers/wasapi/audio_driver_wasapi.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
@@ -136,6 +137,8 @@ class OS_Windows : public OS {
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
+
+	CrashHandler crash_handler;
 
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
@@ -276,6 +279,9 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

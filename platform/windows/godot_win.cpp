@@ -156,10 +156,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	return os.get_exit_code();
 };
 
-int main(int _argc, char **_argv) {
-	// _argc and _argv are ignored
-	// we are going to use the WideChar version of them instead
-
+int _main() {
 	LPWSTR *wc_argv;
 	int argc;
 	int result;
@@ -175,6 +172,21 @@ int main(int _argc, char **_argv) {
 
 	LocalFree(wc_argv);
 	return result;
+}
+
+int main(int _argc, char **_argv) {
+// _argc and _argv are ignored
+// we are going to use the WideChar version of them instead
+
+#ifdef CRASH_HANDLER_EXCEPTION
+	__try {
+		return _main();
+	} __except (CrashHandlerException(GetExceptionInformation())) {
+		return 1;
+	}
+#else
+	return _main();
+#endif
 }
 
 HINSTANCE godot_hinstance = NULL;

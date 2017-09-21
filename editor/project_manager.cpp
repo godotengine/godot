@@ -945,6 +945,10 @@ void ProjectManager::_open_project_confirm() {
 
 		args.push_back("-editor");
 
+		if (OS::get_singleton()->is_disable_crash_handler()) {
+			args.push_back("--disable-crash-handler");
+		}
+
 		String exec = OS::get_singleton()->get_executable_path();
 
 		OS::ProcessID pid = 0;
@@ -984,6 +988,10 @@ void ProjectManager::_run_project_confirm() {
 
 		args.push_back("-path");
 		args.push_back(path);
+
+		if (OS::get_singleton()->is_disable_crash_handler()) {
+			args.push_back("--disable-crash-handler");
+		}
 
 		String exec = OS::get_singleton()->get_executable_path();
 
