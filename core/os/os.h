@@ -334,6 +334,8 @@ public:
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
 
+	virtual Error move_path_to_trash(String p_dir) { return FAILED; }
+
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,
 		SYSTEM_DIR_DCIM,
