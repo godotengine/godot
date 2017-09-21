@@ -560,8 +560,23 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 				int ofs = ((i + tex_y + rect_margin) * tex.texture_size + j + tex_x + rect_margin) * 2;
 				ERR_FAIL_COND(ofs >= tex.imgdata.size());
-				wr[ofs + 0] = 255; //grayscale as 1
-				wr[ofs + 1] = slot->bitmap.buffer[i * slot->bitmap.width + j];
+				switch (slot->bitmap.pixel_mode) {
+					case FT_PIXEL_MODE_MONO: {
+						int byte = i * slot->bitmap.pitch + (j >> 3);
+						int bit = 1 << (7 - (j % 8));
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = slot->bitmap.buffer[byte] & bit ? 255 : 0;
+					} break;
+					case FT_PIXEL_MODE_GRAY:
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = slot->bitmap.buffer[i * slot->bitmap.pitch + j];
+						break;
+						// TODO: FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_BGRA
+					default:
+						ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(slot->bitmap.pixel_mode));
+						ERR_FAIL();
+						break;
+				}
 			}
 		}
 	}
