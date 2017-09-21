@@ -41,7 +41,7 @@ void AudioStreamPlaybackSample::start(float p_from_pos) {
 		ima_adpcm[i].window_ofs = 0;
 	}
 
-	seek_pos(p_from_pos);
+	seek(p_from_pos);
 	sign = 1;
 	active = true;
 }
@@ -61,11 +61,11 @@ int AudioStreamPlaybackSample::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackSample::get_position() const {
+float AudioStreamPlaybackSample::get_playback_position() const {
 
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }
-void AudioStreamPlaybackSample::seek_pos(float p_time) {
+void AudioStreamPlaybackSample::seek(float p_time) {
 
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
 		return; //no seeking in ima-adpcm

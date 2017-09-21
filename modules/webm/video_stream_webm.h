@@ -81,8 +81,8 @@ public:
 
 	virtual float get_length() const;
 
-	virtual float get_position() const;
-	virtual void seek_pos(float p_time);
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
 
 	virtual void set_audio_track(int p_idx);
 

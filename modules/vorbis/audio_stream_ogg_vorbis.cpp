@@ -180,7 +180,7 @@ void AudioStreamPlaybackOGGVorbis::play(float p_from) {
 	frames_mixed = 0;
 	playing = true;
 	if (p_from > 0) {
-		seek_pos(p_from);
+		seek(p_from);
 	}
 }
 
@@ -203,7 +203,7 @@ void AudioStreamPlaybackOGGVorbis::stop() {
 	//_clear();
 }
 
-float AudioStreamPlaybackOGGVorbis::get_position() const {
+float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 
 	int32_t frames = int32_t(frames_mixed);
 	if (frames < 0)
@@ -211,7 +211,7 @@ float AudioStreamPlaybackOGGVorbis::get_position() const {
 	return double(frames) / stream_srate;
 }
 
-void AudioStreamPlaybackOGGVorbis::seek_pos(float p_time) {
+void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 
 	if (!playing)
 		return;

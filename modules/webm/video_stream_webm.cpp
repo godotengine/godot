@@ -204,11 +204,11 @@ float VideoStreamPlaybackWebm::get_length() const {
 	return 0.0f;
 }
 
-float VideoStreamPlaybackWebm::get_position() const {
+float VideoStreamPlaybackWebm::get_playback_position() const {
 
 	return video_pos;
 }
-void VideoStreamPlaybackWebm::seek_pos(float p_time) {
+void VideoStreamPlaybackWebm::seek(float p_time) {
 
 	//Not implemented
 }

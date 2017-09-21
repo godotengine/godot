@@ -140,8 +140,8 @@ public:
 
 	virtual int get_loop_count() const;
 
-	virtual float get_position() const;
-	virtual void seek_pos(float p_time);
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
 
 	void set_file(const String &p_file);
 
