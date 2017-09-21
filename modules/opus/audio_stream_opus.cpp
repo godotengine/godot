@@ -247,7 +247,7 @@ void AudioStreamPlaybackOpus::play(float p_from) {
 	frames_mixed = pre_skip;
 	playing = true;
 	if (p_from > 0) {
-		seek_pos(p_from);
+		seek(p_from);
 	}
 }
 
@@ -256,7 +256,7 @@ void AudioStreamPlaybackOpus::stop() {
 	playing = false;
 }
 
-void AudioStreamPlaybackOpus::seek_pos(float p_time) {
+void AudioStreamPlaybackOpus::seek(float p_time) {
 	if (!playing) return;
 	ogg_int64_t pcm_offset = (ogg_int64_t)(p_time * osrate);
 	bool ok = op_pcm_seek(opus_file, pcm_offset) == 0;
@@ -340,7 +340,7 @@ float AudioStreamPlaybackOpus::get_length() const {
 	return length;
 }
 
-float AudioStreamPlaybackOpus::get_position() const {
+float AudioStreamPlaybackOpus::get_playback_position() const {
 
 	int32_t frames = int32_t(frames_mixed);
 	if (frames < 0)

@@ -282,7 +282,7 @@ float VideoPlayer::get_stream_position() const {
 
 	if (playback.is_null())
 		return 0;
-	return playback->get_position();
+	return playback->get_playback_position();
 };
 
 Ref<Texture> VideoPlayer::get_video_texture() {

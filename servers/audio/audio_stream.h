@@ -45,8 +45,8 @@ public:
 
 	virtual int get_loop_count() const = 0; //times it looped
 
-	virtual float get_position() const = 0;
-	virtual void seek_pos(float p_time) = 0;
+	virtual float get_playback_position() const = 0;
+	virtual void seek(float p_time) = 0;
 
 	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames) = 0;
 
@@ -133,8 +133,8 @@ public:
 
 	virtual int get_loop_count() const; //times it looped
 
-	virtual float get_position() const;
-	virtual void seek_pos(float p_time);
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
 
 	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames);
 

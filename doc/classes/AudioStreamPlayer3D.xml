@@ -78,7 +78,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_position">
+		<method name="get_playback_position">
 			<return type="float">
 			</return>
 			<description>

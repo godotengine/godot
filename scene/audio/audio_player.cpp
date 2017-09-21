@@ -193,10 +193,10 @@ bool AudioStreamPlayer::is_playing() const {
 	return false;
 }
 
-float AudioStreamPlayer::get_position() {
+float AudioStreamPlayer::get_playback_position() {
 
 	if (stream_playback.is_valid()) {
-		return stream_playback->get_position();
+		return stream_playback->get_playback_position();
 	}
 
 	return 0;
@@ -284,7 +284,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayer::stop);
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
-	ClassDB::bind_method(D_METHOD("get_position"), &AudioStreamPlayer::get_position);
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::get_playback_position);
 
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
