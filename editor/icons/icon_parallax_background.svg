@@ -1,15 +1,6 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
 <ellipse cx="3" cy="1039.4" r="2" fill="#6e6e6e"/>
-<path d="m1 1039.4a1 1 0 0 1 1 -1v1z" fill="#e0e0e0" fill-opacity=".99608"/>
-<path transform="scale(-1,1)" d="m-15 1039.4a1 1 0 0 1 1 -1v1z" fill="#e0e0e0" fill-opacity=".99608"/>
-<rect x="2" y="1038.4" width="12" height="1" fill="#e0e0e0" fill-opacity=".99608"/>
-<rect x="2" y="1049.4" width="12" height="1" fill="#e0e0e0" fill-opacity=".99608"/>
-<path transform="scale(1,-1)" d="m1-1049.4a1 1 0 0 1 1 -1v1z" fill="#e0e0e0" fill-opacity=".99608"/>
-<path transform="scale(-1)" d="m-15-1049.4a1 1 0 0 1 1 -1v1z" fill="#e0e0e0" fill-opacity=".99608"/>
-<rect x="1" y="1039.4" width="1" height="10" fill="#e0e0e0" fill-opacity=".99608"/>
-<rect x="14" y="1039.4" width="1" height="10" fill="#e0e0e0" fill-opacity=".99608"/>
-<path d="m7 1041.4-3 3 3 3z" fill="#e0e0e0" fill-opacity=".99608" fill-rule="evenodd"/>
-<path d="m9 1041.4 3 3-3 3z" fill="#e0e0e0" fill-opacity=".99608" fill-rule="evenodd"/>
+<path transform="translate(0 1036.4)" d="m2 2a1 1 0 0 0 -1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1 -1v-10a1 1 0 0 0 -1 -1h-12zm0 1h12v10h-12v-10zm5 2l-3 3 3 3v-6zm2 0v6l3-3-3-3z" fill="#e0e0e0" fill-opacity=".99608"/>
 </g>
 </svg>

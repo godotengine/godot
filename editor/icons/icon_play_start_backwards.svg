@@ -1,8 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<path d="m8.9999 1048.4v-8l-7 4z" fill-rule="evenodd" stroke="#e0e0e0" stroke-linejoin="round" stroke-width="2"/>
-<path d="m13 1039.4c-0.55226 1e-4 -0.99994 0.4477-1 1v8c5.5e-5 0.5523 0.44774 0.9999 1 1h1v-1h1v-8h-1v-1z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
-<circle cx="14" cy="1040.4" r="1"/>
-<circle cx="14" cy="1048.4" r="1"/>
+<g transform="translate(0 -1036.4)">
+<path d="m13 1039.4a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-1c-0.55226-1e-4 -0.99994-0.4477-1-1v-8c5.5e-5 -0.5523 0.44774-0.9999 1-1zm-4.9746 0c0.54154 0.014 0.97365 0.4563 0.97461 0.998v8c3.92e-4 0.8389-0.97003 1.3055-1.625 0.7813l-5-4c-0.49938-0.4004-0.49938-1.1601 0-1.5605l5-4c0.18422-0.1473 0.41459-0.2249 0.65039-0.2188z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#e0e0e0" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
 </g>
 </svg>

@@ -1,12 +1,7 @@
 <svg width="16" height="12" version="1.1" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1040.4)">
-<rect y="1050.4" width="4" height="2" fill="#e0e0e0"/>
-<rect y="1040.4" width="2" height="12" fill="#e0e0e0"/>
-<rect y="1040.4" width="4" height="2" fill="#e0e0e0"/>
-<rect transform="scale(-1,1)" x="-16" y="1050.4" width="4" height="2" fill="#e0e0e0"/>
-<rect transform="scale(-1,1)" x="-16" y="1040.4" width="2" height="12" fill="#e0e0e0"/>
-<rect transform="scale(-1,1)" x="-16" y="1040.4" width="4" height="2" fill="#e0e0e0"/>
-<path transform="translate(0 1040.4)" d="m3 3v6h2a3 3 0 0 0 3 -3v-3h-2v3a1 1 0 0 1 -1 1v-4h-2z" fill="#bd91f1"/>
-<path d="m9 1042.4v2h1a1 1 0 0 1 1 1 1 1 0 0 1 -1 1 2 2 0 0 0 -1.7324 1 2 2 0 0 0 -0.26562 1h-0.00195v0.047 1.9531h2 3v-2h-3a3 3 0 0 0 2.5977 -1.5 3 3 0 0 0 0 -3 3 3 0 0 0 -2.5977 -1.5001h-1z" fill="#dcc5f8"/>
+<path transform="translate(0 1040.4)" d="m0 0v2 10h2 2v-2h-2v-8h2v-2h-2-2zm12 0v2h2v8h-2v2h4v-2-10h-4z" fill="#e0e0e0"/>
+<path transform="translate(0 1040.4)" d="m9 2v2h1a1 1 0 0 1 1 1 1 1 0 0 1 -1 1 2 2 0 0 0 -1.7324 1 2 2 0 0 0 -0.26562 1h-0.0019531v0.046875 1.9531h2 3v-2h-3a3 3 0 0 0 2.5977 -1.5 3 3 0 0 0 0 -3 3 3 0 0 0 -2.5977 -1.5h-1zm-6 1v6h2a3 3 0 0 0 3 -3v-3h-2v3a1 1 0 0 1 -1 1v-4h-2z" fill="#bd91f1"/>
+<path d="m9 1042.4v2h1a1 1 0 0 1 1 1 1 1 0 0 1 -1 1 2 2 0 0 0 -1.7324 1 2 2 0 0 0 -0.26562 1h-0.00195v0.047 1.9531h2 3v-2h-3a3 3 0 0 0 2.5977 -1.5 3 3 0 0 0 0 -3 3 3 0 0 0 -2.5977 -1.5001h-1z" fill="#fff" fill-opacity=".39216"/>
 </g>
 </svg>

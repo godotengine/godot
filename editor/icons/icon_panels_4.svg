@@ -1,8 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<rect x="9" y="1045.4" width="7" height="7"/>
-<rect y="1045.4" width="7" height="7"/>
-<rect x="9" y="1036.4" width="7" height="7"/>
-<rect y="1036.4" width="7" height="7"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m0 0v7h7v-7h-7zm9 0v7h7v-7h-7zm-9 9v7h7v-7h-7zm9 0v7h7v-7h-7z" fill="#e0e0e0"/>
 </g>
 </svg>

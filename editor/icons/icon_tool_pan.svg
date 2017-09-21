@@ -1,13 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0" fill-opacity=".99608">
-<path transform="translate(0 1036.4)" d="m6 8v7h6v-2h2v-5h-8z"/>
-<rect x="6" y="1039.4" width="2" height="8"/>
-<rect x="9" y="1038.4" width="2" height="8"/>
-<rect x="12" y="1040.4" width="2" height="8"/>
-<circle cx="7" cy="1039.4" r="1"/>
-<circle cx="10" cy="1038.4" r="1"/>
-<circle cx="13" cy="1040.4" r="1"/>
-<circle cx="12" cy="1049.4" r="2"/>
-<path d="m3.5251 1045.6c-0.52015-0.3803-1.1943-0.4556-1.6499 0-0.45566 0.4556-0.45564 1.1943-2.36e-5 1.6499l4.1248 4.1248 1.6499-2.7593z"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m10 1a1 1 0 0 0 -1 1v6h-1v-5a1 1 0 0 0 -1 -1 1 1 0 0 0 -1 1v8 0.033203l-2.4746-1.8086c-0.52015-0.3803-1.1948-0.4556-1.6504 0-0.45566 0.4556-0.45561 1.1948 0 1.6504l4.125 4.125h6a2 2 0 0 0 2 -2v-5-4a1 1 0 0 0 -1 -1 1 1 0 0 0 -1 1v4h-1v-6a1 1 0 0 0 -1 -1z" fill="#e0e0e0" fill-opacity=".99608"/>
 </g>
 </svg>

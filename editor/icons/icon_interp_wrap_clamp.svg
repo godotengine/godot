@@ -1,9 +1,5 @@
 <svg width="16" height="8" version="1.1" viewBox="0 0 16 8" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1044.4)">
-<rect x="1" y="1045.4" width="2" height="6" rx="1.7383e-5" ry="1.7383e-5" fill="#e0e0e0"/>
-<rect x="13" y="1045.4" width="2" height="6" rx="1.7383e-5" ry="1.7383e-5" fill="#e0e0e0"/>
-<path d="m5 1048.4h6" fill="none" stroke="#e0e0e0" stroke-width="2"/>
-<path d="m6 1046.4-2 2 2 2" fill="none" stroke="#e0e0e0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-<path d="m10 1046.4 2 2-2 2" fill="none" stroke="#e0e0e0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+<path transform="translate(0 1044.4)" d="m1 1v6h2v-2.9863-3.0137h-2zm2 3.0137a1.0001 1.0001 0 0 0 0.29297 0.69336l2 2a1 1 0 0 0 1.4141 0 1 1 0 0 0 0 -1.4141l-0.29297-0.29297h3.1719l-0.29297 0.29297a1 1 0 0 0 0 1.4141 1 1 0 0 0 1.4141 0l2-2a1.0001 1.0001 0 0 0 0.29297 -0.72266 1.0001 1.0001 0 0 0 -0.29297 -0.69141l-2-2a1 1 0 0 0 -0.7207 -0.29102 1 1 0 0 0 -0.69336 0.29102 1 1 0 0 0 0 1.4141l0.29297 0.29297h-3.1719l0.29297-0.29297a1 1 0 0 0 0 -1.4141 1 1 0 0 0 -0.7207 -0.29102 1 1 0 0 0 -0.69336 0.29102l-2 2a1.0001 1.0001 0 0 0 -0.29297 0.7207zm10-0.029297v3.0156h2v-6h-2v2.9844z" fill="#e0e0e0"/>
 </g>
 </svg>

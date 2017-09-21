@@ -7,8 +7,6 @@
 </defs>
 <g transform="translate(0 -1037.4)">
 <path d="m8 1040.4a7 7 0 0 0 -7 7 7 7 0 0 0 0.68555 3h12.631a7 7 0 0 0 0.68359 -3 7 7 0 0 0 -7 -7z" fill="url(#a)"/>
-<rect x="2" y="1047.4" width="3" height="2" ry="1" fill="#fff"/>
-<rect x="7" y="1045.4" width="4" height="2" ry="1" fill="#fff"/>
-<rect x="9" y="1044.4" width="4" height="2" ry="1" fill="#fff"/>
+<path transform="translate(0 1037.4)" d="m10 7c-0.554 0-1 0.446-1 1h-1c-0.554 0-1 0.446-1 1s0.446 1 1 1h2c0.554 0 1-0.446 1-1h1c0.554 0 1-0.446 1-1s-0.446-1-1-1h-2zm-7 3c-0.554 0-1 0.446-1 1s0.446 1 1 1h1c0.554 0 1-0.446 1-1s-0.446-1-1-1h-1z" fill="#fff"/>
 </g>
 </svg>

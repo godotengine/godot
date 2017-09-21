@@ -1,7 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#a5b7f3" fill-opacity=".98824">
-<circle cx="3" cy="1049.4" r="2"/>
-<path d="m12 1039.4c0 2.0648-0.49246 2.8244-1.1367 3.2754-0.64426 0.451-1.7129 0.6055-2.9629 0.7305s-2.6814 0.2205-3.9121 1.082c-1.2307 0.8615-1.9883 2.4769-1.9883 4.9121h2c0-2.0648 0.49246-2.8224 1.1367-3.2734 0.64426-0.451 1.7129-0.6055 2.9629-0.7305s2.6814-0.2205 3.9121-1.082c1.2307-0.8615 1.9883-2.4789 1.9883-4.9141h-2z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
-<path d="m10 1040.4h6l-3-4z" fill-rule="evenodd"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m13 0l-3 4h1.9473c-0.1385 1.3203-0.5583 1.9074-1.084 2.2754-0.64426 0.451-1.7129 0.60547-2.9629 0.73047s-2.6814 0.22053-3.9121 1.082c-0.89278 0.62493-1.5321 1.6522-1.8184 3.0957a2 2 0 0 0 -1.1699 1.8164 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -0.84961 -1.6328c0.19235-0.88496 0.55306-1.3373 0.98633-1.6406 0.64426-0.451 1.7129-0.60547 2.9629-0.73047s2.6814-0.22053 3.9121-1.082c1.0528-0.73697 1.7552-2.032 1.9375-3.9141h2.0508l-3-4z" fill="#a5b7f3" fill-opacity=".98824"/>
 </g>
 </svg>

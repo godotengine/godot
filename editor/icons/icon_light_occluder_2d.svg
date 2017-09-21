@@ -1,11 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#a5b7f3" fill-opacity=".98824">
-<rect x="1" y="1039.4" width="14" height="2"/>
-<rect x="1" y="1042.4" width="14" height="2"/>
-<rect x="1" y="1045.4" width="14" height="2"/>
-<rect x="1" y="1048.4" width="14" height="2"/>
-<rect x="2" y="1037.4" width="1" height="14"/>
-<rect x="13" y="1037.4" width="1" height="14"/>
-<rect x="1" y="1037.4" width="14" height=".99998"/>
+<g transform="translate(0 -1036.4)">
+<path d="m8 1037.4c-2.7614 0-5 2.2386-5 5 0.00253 1.9858 1.18 3.7819 3 4.5762v2.4238h4v-2.4199c1.8213-0.7949 2.999-2.5929 3-4.5801 0-2.7614-2.2386-5-5-5zm0 2v6c-1.6569 0-3-1.3431-3-3s1.3431-3 3-3zm-1 11v1h2v-1z" fill="#a5b7f3" fill-opacity=".98824"/>
 </g>
 </svg>

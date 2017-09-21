@@ -1,10 +1,5 @@
 <svg width="16" height="8" version="1.1" viewBox="0 0 16 8" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1044.4)" fill="#e0e0e0">
-<path transform="translate(0 1044.4)" d="m12 1v2a1 1 0 0 1 1 1 1 1 0 0 1 -1 1v2a3 3 0 0 0 3 -3 3 3 0 0 0 -3 -3z"/>
-<path transform="translate(0 1044.4)" d="m4 1a3 3 0 0 0 -3 3 3 3 0 0 0 3 3v-2a1 1 0 0 1 -1 -1 1 1 0 0 1 1 -1v-2z"/>
-<rect x="9" y="1045.4" width="3" height="2" rx="6.5185e-6" ry="1.7383e-5"/>
-<rect x="4" y="1049.4" width="3" height="2" rx="6.5185e-6" ry="1.7383e-5"/>
-<path d="m7 1048.4v4l3-2z" fill-rule="evenodd"/>
-<path d="m9 1044.4v4l-3-2z" fill-rule="evenodd"/>
+<path transform="translate(0 1044.4)" d="m9 0l-3 2 3 2v-1h3a1 1 0 0 1 1 1 1 1 0 0 1 -1 1v2a3 3 0 0 0 3 -3 3 3 0 0 0 -3 -3h-3v-1zm-5 1a3 3 0 0 0 -3 3 3 3 0 0 0 3 3h3v1l3-2-3-2v1h-3a1 1 0 0 1 -1 -1 1 1 0 0 1 1 -1v-2z"/>
 </g>
 </svg>

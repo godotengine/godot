@@ -1,6 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<circle cx="6" cy="1046.4" r="5"/>
-<circle cx="12" cy="1039.4" r="1"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m12 2a1 1 0 0 0 -1 1 1 1 0 0 0 1 1 1 1 0 0 0 1 -1 1 1 0 0 0 -1 -1zm-6 3a5 5 0 0 0 -5 5 5 5 0 0 0 5 5 5 5 0 0 0 5 -5 5 5 0 0 0 -5 -5z" fill="#e0e0e0"/>
 </g>
 </svg>

@@ -1,12 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#a5efac">
-<rect x="1" y="1037.4" width="2" height="2"/>
-<rect x="13" y="1037.4" width="2" height="2"/>
-<rect x="4" y="1037.4" width="8" height="2"/>
-<rect x="4" y="1049.4" width="8" height="2"/>
-<rect x="13" y="1049.4" width="2" height="2"/>
-<rect x="1" y="1049.4" width="2" height="2"/>
-<rect transform="rotate(90)" x="1040.4" y="-3" width="8" height="2"/>
-<rect transform="rotate(90)" x="1040.4" y="-15" width="8" height="2"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m1 1v2h2v-2h-2zm3 0v2h8v-2h-8zm9 0v2h2v-2h-2zm-12 3v8h2v-8h-2zm12 0v8h2v-8h-2zm-12 9v2h2v-2h-2zm3 0v2h8v-2h-8zm9 0v2h2v-2h-2z" fill="#a5efac"/>
 </g>
 </svg>

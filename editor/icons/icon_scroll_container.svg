@@ -1,9 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#a5efac">
-<path transform="translate(0 1036.4)" d="m3 1c-1.1046 0-2 0.89543-2 2v10c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-10c0-1.1046-0.89543-2-2-2zm0 2h10v10h-10z"/>
-<path d="m10 1042.4v4l2-2z"/>
-<path d="m6 1042.4v4l-2-2z"/>
-<path d="m6 1042.4h4l-2-2z"/>
-<path d="m6 1046.4h4l-2 2z"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m3 1c-1.1046 0-2 0.89543-2 2v10c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-10c0-1.1046-0.89543-2-2-2h-10zm0 2h10v10h-10v-10zm5 1l-2 2h4l-2-2zm2 2v4l2-2-2-2zm0 4h-4l2 2 2-2zm-4 0v-4l-2 2 2 2z" fill="#a5efac"/>
 </g>
 </svg>

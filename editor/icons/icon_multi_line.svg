@@ -1,10 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<rect x="10" y="1037.4" width="5" height="1.9999"/>
-<rect transform="rotate(90)" x="1037.4" y="-8" width="2" height="7"/>
-<rect x="1" y="1041.4" width="11" height="1.9999"/>
-<rect x="1" y="1045.4" width="4" height="1.9999"/>
-<rect x="7" y="1045.4" width="8" height="1.9999"/>
-<rect x="1" y="1049.4" width="13" height="1.9999"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m1 1v2h7v-2h-7zm9 0v2h5v-2h-5zm-9 4v2h11v-2h-11zm0 4v2h4v-2h-4zm6 0v2h8v-2h-8zm-6 4v2h13v-2h-13z" fill="#e0e0e0"/>
 </g>
 </svg>

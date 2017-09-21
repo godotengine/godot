@@ -1,10 +1,7 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
-<rect y="1042.4" width="4" height="4" fill="#84ffb1"/>
-<rect x="4" y="1042.4" width="4" height="4" fill="#ff8484"/>
-<rect x="8" y="1042.4" width="4" height="4" fill="#84ffb1"/>
-<rect x="12" y="1042.4" width="4" height="4" fill="#ff8484"/>
-<rect x="4" y="1038.4" width="4" height="4" fill="#84c2ff"/>
-<rect x="4" y="1046.4" width="4" height="4" fill="#84c2ff"/>
+<path transform="translate(0 1036.4)" d="m0 6v4h4v-4h-4zm8 0v4h4v-4h-4z" fill="#84ffb1"/>
+<path transform="translate(0 1036.4)" d="m4 6v4h4v-4h-4zm8 0v4h4v-4h-4z" fill="#ff8484"/>
+<path transform="translate(0 1036.4)" d="m4 2v4h4v-4h-4zm0 8v4h4v-4h-4z" fill="#84c2ff"/>
 </g>
 </svg>
