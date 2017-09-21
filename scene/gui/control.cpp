@@ -1726,20 +1726,6 @@ Rect2 Control::get_item_rect() const {
 	return Rect2(Point2(), get_size());
 }
 
-void Control::set_area_as_parent_rect(int p_margin) {
-
-	data.anchor[MARGIN_LEFT] = ANCHOR_BEGIN;
-	data.margin[MARGIN_LEFT] = p_margin;
-	data.anchor[MARGIN_TOP] = ANCHOR_BEGIN;
-	data.margin[MARGIN_TOP] = p_margin;
-	data.anchor[MARGIN_RIGHT] = ANCHOR_END;
-	data.margin[MARGIN_RIGHT] = -p_margin;
-	data.anchor[MARGIN_BOTTOM] = ANCHOR_END;
-	data.margin[MARGIN_BOTTOM] = -p_margin;
-
-	_size_changed();
-}
-
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
 
 	ERR_FAIL_COND(p_icon.is_null());
@@ -2611,7 +2597,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
-	ClassDB::bind_method(D_METHOD("set_area_as_parent_rect", "margin"), &Control::set_area_as_parent_rect, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("show_modal", "exclusive"), &Control::show_modal, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);

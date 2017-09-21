@@ -367,7 +367,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 		current = 0;
 		previous = 0;
 	}
-	c->set_area_as_parent_rect();
+	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	if (tabs_visible)
 		c->set_margin(MARGIN_TOP, _get_top_margin());
 	Ref<StyleBox> sb = get_stylebox("panel");
@@ -401,7 +401,7 @@ void TabContainer::set_current_tab(int p_current) {
 		Control *c = tabs[i];
 		if (i == current) {
 			c->show();
-			c->set_area_as_parent_rect();
+			c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 			if (tabs_visible)
 				c->set_margin(MARGIN_TOP, _get_top_margin());
 			c->set_margin(Margin(MARGIN_TOP), c->get_margin(Margin(MARGIN_TOP)) + sb->get_margin(Margin(MARGIN_TOP)));

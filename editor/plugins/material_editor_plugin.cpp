@@ -335,7 +335,7 @@ MaterialEditor::MaterialEditor() {
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	add_child(hb);
-	hb->set_area_as_parent_rect(2);
+	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew( VBoxContainer );
 	hb->add_child(vb_shape);

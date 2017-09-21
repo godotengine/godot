@@ -348,8 +348,6 @@ public:
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
 
-	void set_area_as_parent_rect(int p_margin = 0);
-
 	void show_modal(bool p_exclusive = false);
 
 	void set_theme(const Ref<Theme> &p_theme);

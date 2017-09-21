@@ -894,7 +894,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	Panel *features_panel = memnew(Panel);
 	custom_feature_display = memnew(RichTextLabel);
 	features_panel->add_child(custom_feature_display);
-	custom_feature_display->set_area_as_parent_rect(10 * EDSCALE);
+	custom_feature_display->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 10 * EDSCALE);
 	custom_feature_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
 	sections->add_child(feature_vb);

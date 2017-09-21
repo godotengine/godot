@@ -374,7 +374,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	l = memnew(Label);
 	l->set_text(TTR("Press a Key.."));
-	l->set_area_as_parent_rect();
+	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);

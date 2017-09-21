@@ -1504,7 +1504,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	Control *input_base = memnew(Control);
 	input_base->set_name(TTR("Input Map"));
-	input_base->set_area_as_parent_rect();
+	input_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	tab_container->add_child(input_base);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -1552,7 +1552,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	l = memnew(Label);
 	l->set_text(TTR("Press a Key.."));
-	l->set_area_as_parent_rect();
+	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP, 20);
 	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);

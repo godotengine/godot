@@ -1790,7 +1790,7 @@ EditorHelp::EditorHelp() {
 	{
 		class_desc = memnew(RichTextLabel);
 		vbc->add_child(class_desc);
-		class_desc->set_area_as_parent_rect();
+		class_desc->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 		class_desc->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
 		class_desc->connect("meta_clicked", this, "_class_desc_select");
@@ -1900,7 +1900,7 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	rich_text->set_area_as_parent_rect();
+	rich_text->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
