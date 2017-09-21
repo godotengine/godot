@@ -1,13 +1,6 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)" fill="#e0e0e0">
 <rect x="6" y="1042.4" width="6" height="6"/>
-<rect x="6" y="1037.4" width="6" height="4" fill-opacity=".32549"/>
-<rect x="1" y="1037.4" width="4" height="4" fill-opacity=".32549"/>
-<rect x="1" y="1042.4" width="4" height="6" fill-opacity=".32549"/>
-<rect x="1" y="1049.4" width="4" height="2" fill-opacity=".32549"/>
-<rect x="6" y="1049.4" width="6" height="2" fill-opacity=".32549"/>
-<rect x="13" y="1042.4" width="2" height="6" fill-opacity=".32549"/>
-<rect x="13" y="1037.4" width="2" height="4" fill-opacity=".32549"/>
-<rect x="13" y="1049.4" width="2" height="2" fill-opacity=".32549"/>
+<path transform="translate(0 1036.4)" d="m1 1v4h4v-4h-4zm5 0v4h6v-4h-6zm7 0v4h2v-4h-2zm-12 5v6h4v-6h-4zm12 0v6h2v-6h-2zm-12 7v2h4v-2h-4zm5 0v2h6v-2h-6zm7 0v2h2v-2h-2z" fill-opacity=".32549"/>
 </g>
 </svg>

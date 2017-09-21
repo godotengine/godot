@@ -1,13 +1,6 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
-<rect transform="rotate(90)" x="1037.4" y="-3" width="10" height="2" fill="#ff8484"/>
-<g transform="matrix(-.57144 0 0 .66666 -2.0001 354.46)" fill="#ff8484">
-<path transform="matrix(0 1.4412 1.2943 0 1331.1 1030.7)" d="m8.1225-1036.6h-3.1225-3.1225l1.5612-2.7042 1.5612-2.7041 1.5612 2.7041z" fill="#ff8484"/>
-</g>
-<rect x="7" y="1037.4" width="8" height="2" fill="#e0e0e0"/>
-<rect x="9" y="1041.4" width="6" height="2" fill="#e0e0e0"/>
-<rect x="9" y="1045.4" width="6" height="2" fill="#e0e0e0"/>
-<rect x="7" y="1049.4" width="8" height="2" fill="#e0e0e0"/>
-<rect transform="rotate(90)" x="1045.4" y="-4" width="2" height="3" fill="#ff8484"/>
+<path transform="translate(0 1036.4)" d="m1 1v8 2h2 1v2l2-1.5 2-1.5-2-1.5-2-1.5v2h-1v-8h-2z" fill="#ff8484"/>
+<path transform="translate(0 1036.4)" d="m7 1v2h8v-2h-8zm2 4v2h6v-2h-6zm0 4v2h6v-2h-6zm-2 4v2h8v-2h-8z" fill="#e0e0e0"/>
 </g>
 </svg>

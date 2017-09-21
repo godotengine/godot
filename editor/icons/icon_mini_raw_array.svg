@@ -1,9 +1,7 @@
 <svg width="16" height="12" version="1.1" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1040.4)">
 <path transform="translate(0 1040.4)" d="m0 0v2 8 2h4v-2h-2v-8h2v-2h-2-2zm12 0v2h2v8h-2v2h4v-2-8-2h-2-2z" fill="#e0e0e0"/>
-<rect x="2" y="1046.4" width="2" height="3" fill="#69ec9e"/>
-<rect x="5" y="1043.4" width="1" height="2" fill="#69ec9e"/>
-<path d="m5 1043.4a3 3 0 0 0 -3 3h2a1 1 0 0 1 1 -1v-2z" fill="#69ec9e"/>
-<path d="m6 1049.4v-6h2v4a1 1 0 0 0 1 -1v-3h2v3 1a1 1 0 0 0 1 -1v-3h2v3a3 3 0 0 1 -3 3h-2v-0.1758a3 3 0 0 1 -1 0.1758h-2z" fill="#aaf4c8"/>
+<path transform="translate(0 1040.4)" d="m5 3a3 3 0 0 0 -3 3v3h2v-3a1 1 0 0 1 1 -1h1v4h2a3 3 0 0 0 1 -0.17578v0.17578h2a3 3 0 0 0 3 -3v-3h-2v3a1 1 0 0 1 -1 1v-1-3h-2v3a1 1 0 0 1 -1 1v-4h-2-1z" fill="#69ec9e"/>
+<path d="m6 1049.4v-6h2v4a1 1 0 0 0 1 -1v-3h2v3 1a1 1 0 0 0 1 -1v-3h2v3a3 3 0 0 1 -3 3h-2v-0.1758a3 3 0 0 1 -1 0.1758h-2z" fill="#fff" fill-opacity=".39216"/>
 </g>
 </svg>

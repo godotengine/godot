@@ -1,13 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
-<circle cx="3" cy="1049.4" r="2" fill="#fc9c9c" fill-opacity=".99608"/>
-<rect x="2" y="1039.4" width="2" height="8.5" fill="#fc9c9c" fill-opacity=".99608"/>
-<circle cx="3" cy="1039.4" r="2" fill="#fc9c9c" fill-opacity=".99608"/>
-<rect transform="rotate(90)" x="1038.4" y="-11.5" width="2" height="8.5" fill="#fc9c9c" fill-opacity=".99608"/>
-<circle cx="13" cy="1039.4" r="2" fill="#fc9c9c" fill-opacity=".99608"/>
-<rect x="12" y="1039.1" width="2" height="8.5" fill="#fc9c9c" fill-opacity=".99608"/>
-<circle cx="13" cy="1049.4" r="2" fill="#fc9c9c" fill-opacity=".99608"/>
-<rect transform="rotate(90)" x="1048.4" y="-12.25" width="2" height="8.5" fill="#fc9c9c" fill-opacity=".99608"/>
-<path d="m3 1039.4 10 10" fill="none" stroke="#fc9c9c" stroke-opacity=".99608" stroke-width="2"/>
+<path transform="translate(0 1036.4)" d="m3 1a2 2 0 0 0 -2 2 2 2 0 0 0 1 1.7305v6.541a2 2 0 0 0 -1 1.7285 2 2 0 0 0 2 2 2 2 0 0 0 1.7305 -1h6.541a2 2 0 0 0 1.7285 1 2 2 0 0 0 2 -2 2 2 0 0 0 -1.0312 -1.75h0.03125v-6.5215a2 2 0 0 0 1 -1.7285 2 2 0 0 0 -2 -2 2 2 0 0 0 -1.7305 1h-6.541a2 2 0 0 0 -1.7285 -1zm2.4141 3h5.8574a2 2 0 0 0 0.72852 0.73047v5.8555l-6.5859-6.5859zm-1.4141 1.4141l6.5859 6.5859h-5.8574a2 2 0 0 0 -0.72852 -0.73047v-5.8555z" fill="#fc9c9c" fill-opacity=".99608"/>
 </g>
 </svg>

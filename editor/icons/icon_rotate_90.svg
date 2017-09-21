@@ -1,8 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<path d="m8 1038.4a6 6 0 0 1 6 6h-6z"/>
-<rect x="7" y="1038.4" width="2" height="7"/>
-<path transform="translate(0 1036.4)" d="m8 1a7 7 0 0 0 -7 7 7 7 0 0 0 7 7 7 7 0 0 0 7 -7 7 7 0 0 0 -7 -7zm0 2a5 5 0 0 1 5 5 5 5 0 0 1 -5 5 5 5 0 0 1 -5 -5 5 5 0 0 1 5 -5z"/>
-<rect transform="rotate(90)" x="1043.4" y="-14" width="2" height="7"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m8 1c-3.8541 0-7 3.1459-7 7 0 3.8542 3.1459 7 7 7 3.7179 0 6.7102-2.9486 6.9219-6.6152a1 1 0 0 0 0.078125 -0.38477 1 1 0 0 0 -0.078125 -0.38867 1 1 0 0 0 -0.001953 -0.0039062c-0.21589-3.6627-3.2049-6.6074-6.9199-6.6074zm0 2v5h5c0 2.7733-2.2267 5-5 5-2.7733 0-5-2.2267-5-5 0-2.7732 2.2267-5 5-5z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#e0e0e0" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="filter-blend-mode:normal;filter-gaussianBlur-deviation:0;font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
 </g>
 </svg>

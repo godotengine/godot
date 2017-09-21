@@ -1,7 +1,6 @@
 <svg width="16" height="12" version="1.1" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1040.4)">
-<path d="m4 1042.4-0.9082 2.1816-1.0918-2.1816h-2l2 4-2 4h2l0.9082-2.1816 1.0918 2.1816h2l-2-4 2-4z" fill="#f6a86e"/>
-<path d="m9 1042.4a3 3 0 0 0 -3 3v5h2v-2h1v-2h-1v-1a1 1 0 0 1 1 -1h1v-2h-1z" fill="#f8bf95"/>
-<path transform="translate(0 1040.4)" d="m10 4v2 2 2h2v-2l1 1 1-1v2h2v-2-2-2h-2l-1 2-1-2h-2z" fill="#f6a86e"/>
+<path transform="translate(0 1040.4)" d="m0 2l2 4-2 4h2l0.9082-2.1816 1.0918 2.1816h2l-2-4 2-4h-2l-0.9082 2.1816-1.0918-2.1816h-2zm6 8h2v-2h1v-2h-1v-1a1 1 0 0 1 1 -1h1v-2h-1a3 3 0 0 0 -3 3v5zm4-6v2 2 2h2v-2l1 1 1-1v2h2v-2-2-2h-2l-1 2-1-2h-2z" fill="#f6a86e"/>
+<path d="m9 1042.4a3 3 0 0 0 -3 3v5h2v-2h1v-2h-1v-1a1 1 0 0 1 1 -1h1v-2h-1z" fill="#fff" fill-opacity=".39216"/>
 </g>
 </svg>

@@ -1,5 +1,7 @@
 <svg width="10" height="10" version="1.1" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1042.4)">
-<path d="m2 1051.4v-8l6 4z" fill="#f3f3f3" fill-rule="evenodd" stroke="#e4e4e4" stroke-linejoin="round" stroke-width="2"/>
+<g>
+<path d="m1.9883 1042.4c-0.5469 0.01-0.98717 0.4511-0.98828 0.998v8c1.163e-4 0.7986 0.89011 1.275 1.5547 0.8321l6-4c0.59363-0.3959 0.59363-1.2682 0-1.6641l-6-4c-0.1678-0.1111-0.3652-0.1689-0.56641-0.166z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#fff" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+</g>
 </g>
 </svg>

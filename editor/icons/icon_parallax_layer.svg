@@ -1,8 +1,6 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
 <ellipse cx="3" cy="1039.4" r="2" fill="#6e6e6e"/>
-<path d="m7 1041.4-3 3 3 3z" fill="#a5b7f3" fill-opacity=".98824" fill-rule="evenodd"/>
-<path d="m9 1041.4 3 3-3 3z" fill="#a5b7f3" fill-opacity=".98824" fill-rule="evenodd"/>
-<path transform="translate(0 1036.4)" d="m3 1c-1.1046 0-2 0.89543-2 2v10c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-10c0-1.1046-0.89543-2-2-2zm0 1h10c0.55228 9.6e-6 0.99999 0.44772 1 1v10c-1e-5 0.55228-0.44772 0.99999-1 1h-10c-0.55228-1e-5 -0.99999-0.44772-1-1v-10c9.6e-6 -0.55228 0.44772-0.99999 1-1z" fill="#a5b7f3" fill-opacity=".98824"/>
+<path transform="translate(0 1036.4)" d="m3 1c-1.1046 0-2 0.89543-2 2v10c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-10c0-1.1046-0.89543-2-2-2h-10zm0 1h10c0.55228 9.6e-6 0.99999 0.44772 1 1v10c-1e-5 0.55228-0.44772 0.99999-1 1h-10c-0.55228-1e-5 -0.99999-0.44772-1-1v-10c9.6e-6 -0.55228 0.44772-0.99999 1-1zm4 3l-3 3 3 3v-6zm2 0v6l3-3-3-3z" fill="#a5b7f3" fill-opacity=".98824" fill-rule="evenodd"/>
 </g>
 </svg>

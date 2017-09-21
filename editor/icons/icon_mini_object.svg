@@ -1,11 +1,5 @@
 <svg width="16" height="12" version="1.1" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1040.4)" fill="#79f3e8">
-<path d="m8 1050.4a3 3 0 0 0 3 -3 3 3 0 0 0 -3 -3v-2h-2v8h2zm0-2v-2a1 1 0 0 1 1 1 1 1 0 0 1 -1 1z"/>
-<path d="m3 1050.4a3 3 0 0 1 -3 -3h2a1 1 0 0 0 1 1v2z"/>
-<path d="m3 1044.4a3 3 0 0 0 -3 3h2a1 1 0 0 1 1 -1v-2z"/>
-<path d="m15 1044.4v5a3 3 0 0 1 -3 3v-2a1 1 0 0 0 1 -1v-5h2z"/>
-<path d="m3 1050.4a3 3 0 0 0 3 -3h-2a1 1 0 0 1 -1 1v2z"/>
-<path d="m3 1044.4a3 3 0 0 1 3 3h-2a1 1 0 0 0 -1 -1v-2z"/>
-<rect x="11" y="1050.4" width="1" height="2"/>
+<g transform="translate(0 -1040.4)">
+<path transform="translate(0 1040.4)" d="m6 2v5 3h2a3 3 0 0 0 3 -3 3 3 0 0 0 -3 -3v-2h-2zm0 5a3 3 0 0 0 -3 -3 3 3 0 0 0 -3 3 3 3 0 0 0 3 3 3 3 0 0 0 3 -3zm7-3v5a1 1 0 0 1 -1 1h-1v2h1a3 3 0 0 0 3 -3v-5h-2zm-10 2a1 1 0 0 1 1 1 1 1 0 0 1 -1 1 1 1 0 0 1 -1 -1 1 1 0 0 1 1 -1zm5 0a1 1 0 0 1 1 1 1 1 0 0 1 -1 1v-2z" fill="#79f3e8"/>
 </g>
 </svg>

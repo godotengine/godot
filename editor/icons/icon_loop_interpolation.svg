@@ -1,10 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0" fill-opacity=".99608">
-<circle cx="3" cy="1048.4" r="2"/>
-<path transform="translate(0 1036.4)" d="m4 3a2 2 0 0 0 -1.7324 1 2 2 0 0 0 -0.26562 1h-0.0019531v0.046875 6.9531h2v-5-2h2v-2h-2z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
-<path d="m6 1037.4v6l4-3z" fill-rule="evenodd"/>
-<circle cx="13" cy="1040.4" r="2"/>
-<path transform="translate(0 1036.4)" d="m12 4v5 2h-2v2h2a2 2 0 0 0 1.7324 -1 2 2 0 0 0 0.26562 -1h0.001953v-7h-2z" color="#000000" color-rendering="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
-<path d="m10 1045.4v6l-4-3z" fill-rule="evenodd"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m6 1v2h-2a2 2 0 0 0 -1.7324 1 2 2 0 0 0 -0.26562 1h-0.0019531v0.046875 5.2246a2 2 0 0 0 -1 1.7285 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -1 -1.7305v-3.2695-2h2v2l4-3-4-3zm7 1a2 2 0 0 0 -2 2 2 2 0 0 0 1 1.7305v3.2695 2h-2v-2l-4 3 4 3v-2h2a2 2 0 0 0 1.7324 -1 2 2 0 0 0 0.26562 -1h0.001953v-5.2715a2 2 0 0 0 1 -1.7285 2 2 0 0 0 -2 -2z" fill="#e0e0e0" fill-opacity=".99608"/>
 </g>
 </svg>

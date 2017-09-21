@@ -1,8 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#a5efac">
-<path transform="translate(0 1036.4)" d="m3 3c-1.1046 0-2 0.89543-2 2v6c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-6c0-1.1046-0.89543-2-2-2zm0 2h10v6h-10z"/>
-<rect x="4" y="1042.4" width="1" height="4"/>
-<rect x="6" y="1042.4" width="1" height="4"/>
-<rect x="8" y="1042.4" width="1" height="4"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m3 3c-1.1046 0-2 0.89543-2 2v6c0 1.1046 0.89543 2 2 2h10c1.1046 0 2-0.89543 2-2v-6c0-1.1046-0.89543-2-2-2h-10zm0 2h10v6h-10v-6zm1 1v4h1v-4h-1zm2 0v4h1v-4h-1zm2 0v4h1v-4h-1z" fill="#a5efac"/>
 </g>
 </svg>

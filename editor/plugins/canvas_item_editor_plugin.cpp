@@ -2044,7 +2044,8 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 }
 
 void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string, Margin p_side) {
-	Color color = Color(0.8, 0.8, 0.8, 0.5);
+	Color color = get_color("font_color", "Editor");
+	color.a = 0.8;
 	Ref<Font> font = get_font("font", "Label");
 	Size2 text_size = font->get_string_size(p_string);
 	switch (p_side) {
@@ -2079,9 +2080,11 @@ void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_posi
 }
 
 void CanvasItemEditor::_draw_rulers() {
-	Color graduation_color = Color(0.5, 0.5, 0.5, 1);
+	Color graduation_color = get_color("font_color", "Editor");
+	graduation_color.a = 0.5;
 	Color bg_color = get_color("dark_color_2", "Editor");
-	Color font_color = Color(0.8, 0.8, 0.8, 1);
+	Color font_color = get_color("font_color", "Editor");
+	font_color.a = 0.8;
 	Ref<Font> font = get_font("rulers", "EditorFonts");
 
 	// The rule transform
@@ -2182,13 +2185,14 @@ void CanvasItemEditor::_draw_grid() {
 			real_grid_offset = grid_offset;
 		}
 
+		const Color grid_minor_color = get_color("grid_minor_color", "Editor");
 		if (grid_step.x != 0) {
 			for (int i = 0; i < s.width; i++) {
 				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					viewport->draw_line(Point2(i, 0), Point2(i, s.height), Color(0.3, 0.7, 1, 0.3));
+					viewport->draw_line(Point2(i, 0), Point2(i, s.height), grid_minor_color);
 				last_cell = cell;
 			}
 		}
@@ -2199,7 +2203,7 @@ void CanvasItemEditor::_draw_grid() {
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					viewport->draw_line(Point2(0, i), Point2(s.width, i), Color(0.3, 0.7, 1, 0.3));
+					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_minor_color);
 				last_cell = cell;
 			}
 		}

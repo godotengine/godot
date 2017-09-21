@@ -1,10 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0">
-<path d="m8 1038.4a6 6 0 0 1 6 6h-6z"/>
-<rect x="7" y="1038.4" width="2" height="7"/>
-<path transform="translate(0 1036.4)" d="m8 1a7 7 0 0 0 -7 7 7 7 0 0 0 7 7 7 7 0 0 0 7 -7 7 7 0 0 0 -7 -7zm0 2a5 5 0 0 1 5 5 5 5 0 0 1 -5 5 5 5 0 0 1 -5 -5 5 5 0 0 1 5 -5z"/>
-<rect transform="rotate(-90)" x="-1045.4" y="2" width="2" height="7"/>
-<path d="m8 1050.4a6 6 0 0 1 -6 -6h6z"/>
-<path d="m14 1044.4a6 6 0 0 1 -6 6v-6z"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m8 1a7 7 0 0 0 -7 7 7 7 0 0 0 7 7 7 7 0 0 0 7 -7 7 7 0 0 0 -7 -7zm0 2v5h-5a5 5 0 0 1 5 -5z" fill="#e0e0e0"/>
 </g>
 </svg>

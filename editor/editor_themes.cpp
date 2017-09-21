@@ -307,6 +307,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
 
+	// 2d grid color
+	const Color grid_minor_color = Color(font_color.r, font_color.g, font_color.b, 0.1);
+	const Color grid_major_color = Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.05);
+	theme->set_color("grid_major_color", "Editor", grid_major_color);
+	theme->set_color("grid_minor_color", "Editor", grid_minor_color);
+
 	const int thumb_size = EDITOR_DEF("filesystem/file_dialog/thumbnail_size", 64);
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
@@ -571,9 +577,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("title_button_hover", "Tree", style_tree_title);
 	theme->set_stylebox("title_button_pressed", "Tree", style_tree_title);
 
-	// Color prop_category_color = dark_color_1.linear_interpolate(mono_color, 0.12) : dark_color_1.linear_interpolate(Color(0, 0, 0, 1), 0.2);
-	// Color prop_section_color = dark_color_1.linear_interpolate(mono_color, 0.09) : dark_color_1.linear_interpolate(Color(0, 1, 0, 1), 0.1);
-	// Color prop_subsection_color = dark_color_1.linear_interpolate(mono_color, 0.06) : dark_color_1.linear_interpolate(Color(0, 0, 0, 1), 0.1);
 	Color prop_category_color = dark_color_1.linear_interpolate(mono_color, 0.12);
 	Color prop_section_color = dark_color_1.linear_interpolate(mono_color, 0.09);
 	Color prop_subsection_color = dark_color_1.linear_interpolate(mono_color, 0.06);
@@ -617,6 +620,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("close", "Tabs", theme->get_icon("GuiClose", "EditorIcons"));
 	theme->set_stylebox("button_pressed", "Tabs", style_menu);
 	theme->set_stylebox("button", "Tabs", style_menu);
+	theme->set_icon("increment", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
+	theme->set_icon("decrement", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
 
 	// Content of each tab
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
@@ -803,11 +808,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphEdit
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
-	theme->set_color("grid_major", "GraphEdit", Color(font_color.r, font_color.g, font_color.b, 0.1));
-	theme->set_color("grid_minor", "GraphEdit", Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.05));
+	theme->set_color("grid_major", "GraphEdit", grid_major_color);
+	theme->set_color("grid_minor", "GraphEdit", grid_minor_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
 	theme->set_icon("reset", "GraphEdit", theme->get_icon("ZoomReset", "EditorIcons"));
+	theme->set_icon("snap", "GraphEdit", theme->get_icon("SnapGrid", "EditorIcons"));
+	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * EDSCALE);
+	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * EDSCALE);
 
 	// GraphNode
 
@@ -866,7 +874,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color main_color = Color::html(dark_theme ? "#57b3ff" : "#0480ff");
 
 	const Color symbol_color = Color::html("#5792ff").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
-	const Color keyword_color = main_color.linear_interpolate(mono_color, 0.4);
+	const Color keyword_color = Color::html("#ff7185");
 	const Color basetype_color = Color::html(dark_theme ? "#42ffc2" : "#00c161");
 	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
 	const Color comment_color = dim_color;

@@ -1,6 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#e0e0e0" fill-rule="evenodd">
-<path d="m8 1043.9v6l6-3v-6z"/>
-<path transform="translate(0 1036.4)" d="m7.9629 1.002a1.0001 1.0001 0 0 0 -0.41016 0.10352l-6 3a1.0001 1.0001 0 0 0 -0.55273 0.89453v6a1.0001 1.0001 0 0 0 0.55273 0.89453l6 3a1.0001 1.0001 0 0 0 0.89453 0l6-3a1.0001 1.0001 0 0 0 0.55273 -0.89453v-6a1.0001 1.0001 0 0 0 -0.55273 -0.89453l-6-3a1.0001 1.0001 0 0 0 -0.48438 -0.10352zm0.037109 2.1172l3.7637 1.8809-3.7637 1.8828-3.7637-1.8828 3.7637-1.8809zm-5 3.498l4 2v3.7656l-4-2v-3.7656zm10 0v3.7656l-4 2v-3.7656l4-2z" color="#000000" color-rendering="auto" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="block-progression:tb;isolation:auto;mix-blend-mode:normal;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m7.9629 1.002a1.0001 1.0001 0 0 0 -0.41016 0.10352l-6 3a1.0001 1.0001 0 0 0 -0.55273 0.89453v6a1.0001 1.0001 0 0 0 0.55273 0.89453l6 3a1.0001 1.0001 0 0 0 0.89453 0l6-3a1.0001 1.0001 0 0 0 0.55273 -0.89453v-6a1.0001 1.0001 0 0 0 -0.55273 -0.89453l-6-3a1.0001 1.0001 0 0 0 -0.48438 -0.10352zm0.037109 2.1172l3.7637 1.8809-3.7637 1.8828-3.7637-1.8828 3.7637-1.8809zm-5 3.498l4 2v3.7656l-4-2v-3.7656z" fill="#e0e0e0" fill-rule="evenodd"/>
 </g>
 </svg>
