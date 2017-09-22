@@ -1013,7 +1013,7 @@
 		</constant>
 		<constant name="ERR_TIMEOUT" value="24">
 		</constant>
-		<constant name="ERR_CANT_AQUIRE_RESOURCE" value="28">
+		<constant name="ERR_CANT_ACQUIRE_RESOURCE" value="28">
 		</constant>
 		<constant name="ERR_INVALID_DATA" value="30">
 		</constant>

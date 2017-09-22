@@ -47,11 +47,11 @@ void Array::_ref(const Array &p_from) const {
 	ERR_FAIL_COND(!_fp); // should NOT happen.
 
 	if (_fp == _p)
-		return; //wathever it is, nothing to do here move along
+		return; // whatever it is, nothing to do here move along
 
 	bool success = _fp->refcount.ref();
 
-	ERR_FAIL_COND(!success); //should really not happen either
+	ERR_FAIL_COND(!success); // should really not happen either
 
 	_unref();
 
