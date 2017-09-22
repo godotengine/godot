@@ -30,6 +30,7 @@
 #ifndef ERROR_MACROS_H
 #define ERROR_MACROS_H
 
+#include "typedefs.h"
 /**
  * Error macros. Unlike exceptions and asserts, these macros try to mantain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the
@@ -130,7 +131,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX(m_index, m_size)                                                                                    \
 	do {                                                                                                                   \
-		if ((m_index) < 0 || (m_index) >= (m_size)) {                                                                      \
+		if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Index " _STR(m_index) " out of size (" _STR(m_size) ")."); \
 			return;                                                                                                        \
 		} else                                                                                                             \
@@ -144,7 +145,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                                        \
 	do {                                                                                                                   \
-		if ((m_index) < 0 || (m_index) >= (m_size)) {                                                                      \
+		if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Index " _STR(m_index) " out of size (" _STR(m_size) ")."); \
 			return m_retval;                                                                                               \
 		} else                                                                                                             \
@@ -156,7 +157,7 @@ extern bool _err_error_exists;
 */
 #define CRASH_BAD_INDEX(m_index, m_size)                                                                                          \
 	do {                                                                                                                          \
-		if ((m_index) < 0 || (m_index) >= (m_size)) {                                                                             \
+		if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                   \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Index " _STR(m_index) " out of size (" _STR(m_size) ")."); \
 			GENERATE_TRAP                                                                                                         \
 		}                                                                                                                         \
@@ -168,7 +169,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_NULL(m_param)                                                                              \
 	{                                                                                                       \
-		if (!m_param) {                                                                                     \
+		if (unlikely(!m_param)) {                                                                           \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter ' " _STR(m_param) " ' is null."); \
 			return;                                                                                         \
 		} else                                                                                              \
@@ -177,7 +178,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_NULL_V(m_param, m_retval)                                                                  \
 	{                                                                                                       \
-		if (!m_param) {                                                                                     \
+		if (unlikely(!m_param)) {                                                                           \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Parameter ' " _STR(m_param) " ' is null."); \
 			return m_retval;                                                                                \
 		} else                                                                                              \
@@ -190,7 +191,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_COND(m_cond)                                                                              \
 	{                                                                                                      \
-		if (m_cond) {                                                                                      \
+		if (unlikely(m_cond)) {                                                                            \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true."); \
 			return;                                                                                        \
 		} else                                                                                             \
@@ -202,7 +203,7 @@ extern bool _err_error_exists;
 
 #define CRASH_COND(m_cond)                                                                                        \
 	{                                                                                                             \
-		if (m_cond) {                                                                                             \
+		if (unlikely(m_cond)) {                                                                                   \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: Condition ' " _STR(m_cond) " ' is true."); \
 			GENERATE_TRAP                                                                                         \
 		}                                                                                                         \
@@ -216,7 +217,7 @@ extern bool _err_error_exists;
 
 #define ERR_FAIL_COND_V(m_cond, m_retval)                                                                                            \
 	{                                                                                                                                \
-		if (m_cond) {                                                                                                                \
+		if (unlikely(m_cond)) {                                                                                                      \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. returned: " _STR(m_retval)); \
 			return m_retval;                                                                                                         \
 		} else                                                                                                                       \
@@ -229,7 +230,7 @@ extern bool _err_error_exists;
 
 #define ERR_CONTINUE(m_cond)                                                                                             \
 	{                                                                                                                    \
-		if (m_cond) {                                                                                                    \
+		if (unlikely(m_cond)) {                                                                                          \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Continuing..:"); \
 			continue;                                                                                                    \
 		} else                                                                                                           \
@@ -242,7 +243,7 @@ extern bool _err_error_exists;
 
 #define ERR_BREAK(m_cond)                                                                                              \
 	{                                                                                                                  \
-		if (m_cond) {                                                                                                  \
+		if (unlikely(m_cond)) {                                                                                        \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Breaking..:"); \
 			break;                                                                                                     \
 		} else                                                                                                         \

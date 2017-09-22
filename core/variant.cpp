@@ -2469,10 +2469,10 @@ Variant::Variant(const Vector<Color> &p_array) {
 
 void Variant::operator=(const Variant &p_variant) {
 
-	if (this == &p_variant)
+	if (unlikely(this == &p_variant))
 		return;
 
-	if (type != p_variant.type) {
+	if (unlikely(type != p_variant.type)) {
 		reference(p_variant);
 		return;
 	}
