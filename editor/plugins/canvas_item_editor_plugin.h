@@ -280,7 +280,7 @@ class CanvasItemEditor : public VBoxContainer {
 	MenuButton *animation_menu;
 	MenuButton *anchor_menu;
 
-	Button *key_loc_button;
+	Button *key_pos_button;
 	Button *key_rot_button;
 	Button *key_scale_button;
 	Button *key_insert_button;
