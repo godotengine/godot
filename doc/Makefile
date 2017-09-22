@@ -1,5 +1,5 @@
 BASEDIR = $(CURDIR)
-CLASSES = $(BASEDIR)/base/classes.xml
+CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
 
