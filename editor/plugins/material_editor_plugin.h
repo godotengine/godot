@@ -30,6 +30,7 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
+#include "editor/property_editor.h"
 // FIXME: Disabled as (according to reduz) users were complaining that it gets in the way
 // Waiting for PropertyEditor rewrite (planned for 3.1) to be refactored.
 #if 0
@@ -101,4 +102,13 @@ public:
 };
 
 #endif
+
+class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin)
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+};
+
 #endif // MATERIAL_EDITOR_PLUGIN_H

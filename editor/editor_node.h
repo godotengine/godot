@@ -608,6 +608,8 @@ private:
 
 	void _license_tree_selected();
 
+	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -775,6 +777,10 @@ public:
 	EditorNode();
 	~EditorNode();
 	void get_singleton(const char *arg1, bool arg2);
+
+	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	Vector<Ref<EditorResourceConversionPlugin> > find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);

@@ -53,6 +53,19 @@ class PropertyValueEvaluator;
 class CreateDialog;
 class PropertySelector;
 
+class EditorResourceConversionPlugin : public Reference {
+
+	GDCLASS(EditorResourceConversionPlugin, Reference)
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String converts_to() const;
+	virtual bool handles(const Ref<Resource> &p_resource) const;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+};
+
 class CustomPropertyEditor : public Popup {
 
 	GDCLASS(CustomPropertyEditor, Popup);
@@ -68,7 +81,8 @@ class CustomPropertyEditor : public Popup {
 		OBJ_MENU_PASTE = 5,
 		OBJ_MENU_NEW_SCRIPT = 6,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 7,
-		TYPE_BASE_ID = 100
+		TYPE_BASE_ID = 100,
+		CONVERT_BASE_ID = 1000
 	};
 
 	enum {

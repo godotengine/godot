@@ -1611,6 +1611,12 @@ float SpatialMaterial::get_distance_fade_min_distance() const {
 	return distance_fade_min_distance;
 }
 
+RID SpatialMaterial::get_shader_rid() const {
+
+	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
+	return shader_map[current_key].shader;
+}
+
 void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_albedo", "albedo"), &SpatialMaterial::set_albedo);

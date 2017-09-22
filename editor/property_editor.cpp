@@ -53,6 +53,49 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 
+void EditorResourceConversionPlugin::_bind_methods() {
+
+	MethodInfo mi;
+	mi.name = "_convert";
+	mi.return_val.type = Variant::OBJECT;
+	mi.return_val.class_name = "Resource";
+	mi.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;
+	mi.return_val.hint_string = "Resource";
+	mi.arguments.push_back(mi.return_val);
+	mi.arguments[0].name = "resource";
+
+	BIND_VMETHOD(mi)
+
+	mi.name = "_handles";
+	mi.return_val = PropertyInfo(Variant::BOOL, "");
+
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_converts_to"));
+}
+
+String EditorResourceConversionPlugin::converts_to() const {
+
+	if (get_script_instance())
+		return get_script_instance()->call("_converts_to");
+
+	return "";
+}
+
+bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	if (get_script_instance())
+		return get_script_instance()->call("_handles", p_resource);
+
+	return false;
+}
+
+Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) {
+
+	if (get_script_instance())
+		return get_script_instance()->call("_convert", p_resource);
+
+	return Ref<Resource>();
+}
+
 void CustomPropertyEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -213,6 +256,20 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				} break;
 				default: {
 
+					if (p_which >= CONVERT_BASE_ID) {
+
+						int to_type = p_which - CONVERT_BASE_ID;
+
+						Vector<Ref<EditorResourceConversionPlugin> > conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+
+						ERR_FAIL_INDEX(to_type, conversions.size());
+
+						Ref<Resource> new_res = conversions[to_type]->convert(v);
+
+						v = new_res;
+						emit_signal("variant_changed");
+						break;
+					}
 					ERR_FAIL_COND(inheritors_array.empty());
 
 					String intype = inheritors_array[p_which - TYPE_BASE_ID];
@@ -900,6 +957,27 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				if (paste_valid) {
 
 					menu->add_item(TTR("Paste"), OBJ_MENU_PASTE);
+				}
+			}
+
+			if (!RES(v).is_null()) {
+
+				Vector<Ref<EditorResourceConversionPlugin> > conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(RES(v));
+				if (conversions.size()) {
+					menu->add_separator();
+				}
+				for (int i = 0; i < conversions.size(); i++) {
+					String what = conversions[i]->converts_to();
+					Ref<Texture> icon;
+					if (has_icon(what, "EditorIcons")) {
+
+						icon = get_icon(what, "EditorIcons");
+					} else {
+
+						icon = get_icon(what, "Resource");
+					}
+
+					menu->add_icon_item(icon, vformat(TTR("Convert To %s"), what), CONVERT_BASE_ID + i);
 				}
 			}
 

@@ -3247,6 +3247,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_virtual_class<ScriptEditor>();
 	ClassDB::register_virtual_class<EditorInterface>();
 	ClassDB::register_class<EditorExportPlugin>();
+	ClassDB::register_class<EditorResourceConversionPlugin>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	//ClassDB::register_class<EditorScenePostImport>();
@@ -4431,6 +4432,27 @@ void EditorNode::open_export_template_manager() {
 	export_template_manager->popup_manager();
 }
 
+void EditorNode::add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin) {
+	resource_conversion_plugins.push_back(p_plugin);
+}
+
+void EditorNode::remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin) {
+	resource_conversion_plugins.erase(p_plugin);
+}
+
+Vector<Ref<EditorResourceConversionPlugin> > EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
+
+	Vector<Ref<EditorResourceConversionPlugin> > ret;
+
+	for (int i = 0; i < resource_conversion_plugins.size(); i++) {
+		if (resource_conversion_plugins[i].is_valid() && resource_conversion_plugins[i]->handles(p_for_resource)) {
+			ret.push_back(resource_conversion_plugins[i]);
+		}
+	}
+
+	return ret;
+}
+
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
@@ -5497,6 +5519,11 @@ EditorNode::EditorNode() {
 	resource_preview->add_preview_generator(Ref<EditorMeshPreviewPlugin>(memnew(EditorMeshPreviewPlugin)));
 	resource_preview->add_preview_generator(Ref<EditorBitmapPreviewPlugin>(memnew(EditorBitmapPreviewPlugin)));
 
+	{
+		Ref<SpatialMaterialConversionPlugin> spatial_mat_convert;
+		spatial_mat_convert.instance();
+		resource_conversion_plugins.push_back(spatial_mat_convert);
+	}
 	circle_step_msec = OS::get_singleton()->get_ticks_msec();
 	circle_step_frame = Engine::get_singleton()->get_frames_drawn();
 	circle_step = 0;
