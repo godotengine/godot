@@ -115,15 +115,15 @@ public:
 
 	virtual int get_contact_count() const;
 
-	virtual Vector3 get_contact_local_pos(int p_contact_idx) const;
+	virtual Vector3 get_contact_local_position(int p_contact_idx) const;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const;
 	virtual int get_contact_local_shape(int p_contact_idx) const;
 
 	virtual RID get_contact_collider(int p_contact_idx) const;
-	virtual Vector3 get_contact_collider_pos(int p_contact_idx) const;
+	virtual Vector3 get_contact_collider_position(int p_contact_idx) const;
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const;
 	virtual int get_contact_collider_shape(int p_contact_idx) const;
-	virtual Vector3 get_contact_collider_velocity_at_pos(int p_contact_idx) const;
+	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const;
 
 	virtual real_t get_step() const { return deltaTime; }
 	virtual void integrate_forces() {

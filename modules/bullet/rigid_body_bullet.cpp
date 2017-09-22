@@ -132,7 +132,7 @@ int BulletPhysicsDirectBodyState::get_contact_count() const {
 	return body->collisionsCount;
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_local_pos(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState::get_contact_local_position(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].hitLocalLocation;
 }
 
@@ -148,7 +148,7 @@ RID BulletPhysicsDirectBodyState::get_contact_collider(int p_contact_idx) const 
 	return body->collisions[p_contact_idx].otherObject->get_self();
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_collider_pos(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState::get_contact_collider_position(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].hitWorldLocation;
 }
 
@@ -160,7 +160,7 @@ int BulletPhysicsDirectBodyState::get_contact_collider_shape(int p_contact_idx) 
 	return body->collisions[p_contact_idx].other_object_shape;
 }
 
-Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_pos(int p_contact_idx) const {
+Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(int p_contact_idx) const {
 	RigidBodyBullet::CollisionData &colDat = body->collisions[p_contact_idx];
 	btVector3 hitLocation;
 	G_TO_B(colDat.hitLocalLocation, hitLocation);
