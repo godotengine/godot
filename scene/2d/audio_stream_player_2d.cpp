@@ -145,7 +145,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				if (!area2d->is_overriding_audio_bus())
 					continue;
 
-				StringName bus_name = area2d->get_audio_bus();
+				StringName bus_name = area2d->get_audio_bus_name();
 				bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 				break;
 			}

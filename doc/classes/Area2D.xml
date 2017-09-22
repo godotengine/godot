@@ -18,7 +18,7 @@
 				Return the angular damp rate.
 			</description>
 		</method>
-		<method name="get_audio_bus" qualifiers="const">
+		<method name="get_audio_bus_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -167,7 +167,7 @@
 				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
-		<method name="set_audio_bus">
+		<method name="set_audio_bus_name">
 			<return type="void">
 			</return>
 			<argument index="0" name="name" type="String">
@@ -320,7 +320,7 @@
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
 			The rate at which objects stop spinning in this area. Represents the amount of speed lost per second. If 1.0, physics bodies in the area stop rotating immediately. If 0.0, they never slow down. Does not incorporate external forces. The physics-update's rate affects 'angular_damp'.
 		</member>
-		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus">
+		<member name="audio_bus_name" type="String" setter="set_audio_bus_name" getter="get_audio_bus_name">
 			The name of the Area2D's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus">
