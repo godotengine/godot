@@ -168,6 +168,11 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool dark_theme = tr
 	exceptions.push_back("GuiCloseCustomizable");
 	exceptions.push_back("GuiGraphNodePort");
 	exceptions.push_back("GuiResizer");
+	exceptions.push_back("ZoomMore");
+	exceptions.push_back("ZoomLess");
+	exceptions.push_back("ZoomReset");
+	exceptions.push_back("LockViewport");
+	exceptions.push_back("GroupViewport");
 
 	clock_t begin_time = clock();
 
@@ -528,7 +533,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("radio_checked", "PopupMenu", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("radio_unchecked", "PopupMenu", theme->get_icon("GuiUnchecked", "EditorIcons"));
+	theme->set_icon("submenu", "PopupMenu", theme->get_icon("ArrowRight", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size) * EDSCALE);
+
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
 	style_tree_bg->set_bg_color(dark_color_1);
@@ -548,6 +555,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("custom_button_font_highlight", "Tree", font_color_hl);
 	theme->set_color("font_color", "Tree", font_color);
 	theme->set_color("font_color_selected", "Tree", font_color);
+	theme->set_color("title_button_color", "Tree", font_color);
+	theme->set_color("guide_color", "Tree", Color(mono_color.r, mono_color.g, mono_color.b, 0.05));
+	theme->set_color("drop_position_color", "Tree", accent_color);
 	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 
 	Ref<StyleBoxFlat> style_tree_btn = style_default->duplicate();
