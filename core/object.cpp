@@ -1052,7 +1052,7 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Variant::Ca
 Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
 
 	if (_block_signals)
-		return ERR_CANT_AQUIRE_RESOURCE; //no emit, signals blocked
+		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
 
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {

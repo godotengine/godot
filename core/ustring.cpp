@@ -1755,7 +1755,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	register int c;
 	int exp = 0; /* Exponent read from "EX" field. */
 	int fracExp = 0; /* Exponent that derives from the fractional
-				 * part. Under normal circumstatnces, it is
+				 * part. Under normal circumstances, it is
 				 * the negative of the number of digits in F.
 				 * However, if I is very long, the last digits
 				 * of I get dropped (otherwise a long I with a
@@ -2332,12 +2332,12 @@ int String::findn(String p_str, int p_from) const {
 
 int String::rfind(String p_str, int p_from) const {
 
-	//stabilish a limit
+	// establish a limit
 	int limit = length() - p_str.length();
 	if (limit < 0)
 		return -1;
 
-	//stabilish a starting point
+	// establish a starting point
 	if (p_from < 0)
 		p_from = limit;
 	else if (p_from > limit)
@@ -2347,7 +2347,7 @@ int String::rfind(String p_str, int p_from) const {
 	int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2378,12 +2378,12 @@ int String::rfind(String p_str, int p_from) const {
 }
 int String::rfindn(String p_str, int p_from) const {
 
-	//stabilish a limit
+	// establish a limit
 	int limit = length() - p_str.length();
 	if (limit < 0)
 		return -1;
 
-	//stabilish a starting point
+	// establish a starting point
 	if (p_from < 0)
 		p_from = limit;
 	else if (p_from > limit)
