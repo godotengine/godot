@@ -338,6 +338,13 @@ Error FileAccessCompressed::get_error() const {
 	return read_eof ? ERR_FILE_EOF : OK;
 }
 
+void FileAccessCompressed::flush() {
+	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND(!writing);
+
+	// compressed files keep data in memory till close()
+}
+
 void FileAccessCompressed::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);

@@ -129,6 +129,7 @@ protected:
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
@@ -142,8 +143,6 @@ public:
 	void wm_minimized(bool p_minimized);
 
 	virtual String get_name();
-
-	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 

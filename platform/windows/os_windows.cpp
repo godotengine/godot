@@ -48,6 +48,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "stream_peer_winsock.h"
 #include "tcp_server_winsock.h"
+#include "windows_terminal_logger.h"
 
 #include <process.h>
 #include <regstr.h>
@@ -203,6 +204,13 @@ void OS_Windows::initialize_core() {
 	IP_Unix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
+}
+
+void OS_Windows::initialize_logger() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(WindowsTerminalLogger));
+	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 bool OS_Windows::can_draw() const {
@@ -1231,38 +1239,6 @@ void OS_Windows::finalize_core() {
 	StreamPeerWinsock::cleanup();
 }
 
-void OS_Windows::vprint(const char *p_format, va_list p_list, bool p_stderr) {
-
-	const unsigned int BUFFER_SIZE = 16384;
-	char buf[BUFFER_SIZE + 1]; // +1 for the terminating character
-	int len = vsnprintf(buf, BUFFER_SIZE, p_format, p_list);
-	if (len <= 0)
-		return;
-	if (len >= BUFFER_SIZE)
-		len = BUFFER_SIZE; // Output is too big, will be truncated
-	buf[len] = 0;
-
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
-	if (wlen < 0)
-		return;
-
-	wchar_t *wbuf = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
-	wbuf[wlen] = 0;
-
-	if (p_stderr)
-		fwprintf(stderr, L"%ls", wbuf);
-	else
-		wprintf(L"%ls", wbuf);
-
-#ifdef STDOUT_FILE
-//vwfprintf(stdo,p_format,p_list);
-#endif
-	free(wbuf);
-
-	fflush(stdout);
-};
-
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
 
 	if (!is_no_window_mode_enabled())
@@ -1674,107 +1650,6 @@ void OS_Windows::request_attention() {
 	info.dwTimeout = 0;
 	info.uCount = 2;
 	FlashWindowEx(&info);
-}
-
-void OS_Windows::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
-	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon == INVALID_HANDLE_VALUE) {
-
-		const char *err_details;
-		if (p_rationale && p_rationale[0])
-			err_details = p_rationale;
-		else
-			err_details = p_code;
-
-		switch (p_type) {
-			case ERR_ERROR:
-				print("ERROR: %s: %s\n", p_function, err_details);
-				print("   At: %s:%i\n", p_file, p_line);
-				break;
-			case ERR_WARNING:
-				print("WARNING: %s: %s\n", p_function, err_details);
-				print("     At: %s:%i\n", p_file, p_line);
-				break;
-			case ERR_SCRIPT:
-				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
-				print("          At: %s:%i\n", p_file, p_line);
-				break;
-			case ERR_SHADER:
-				print("SHADER ERROR: %s: %s\n", p_function, err_details);
-				print("          At: %s:%i\n", p_file, p_line);
-				break;
-		}
-
-	} else {
-
-		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
-		GetConsoleScreenBufferInfo(hCon, &sbi);
-
-		WORD current_fg = sbi.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
-
-		uint32_t basecol = 0;
-		switch (p_type) {
-			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
-			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
-		}
-
-		basecol |= current_bg;
-
-		if (p_rationale && p_rationale[0]) {
-
-			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-			switch (p_type) {
-				case ERR_ERROR: print("ERROR: "); break;
-				case ERR_WARNING: print("WARNING: "); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
-				case ERR_SHADER: print("SHADER ERROR: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			print("%s\n", p_rationale);
-
-			SetConsoleTextAttribute(hCon, basecol);
-			switch (p_type) {
-				case ERR_ERROR: print("   At: "); break;
-				case ERR_WARNING: print("     At: "); break;
-				case ERR_SCRIPT: print("          At: "); break;
-				case ERR_SHADER: print("          At: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			print("%s:%i\n", p_file, p_line);
-
-		} else {
-
-			SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-			switch (p_type) {
-				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
-				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
-				case ERR_SHADER: print("SCRIPT ERROR: %s: ", p_function); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
-			print("%s\n", p_code);
-
-			SetConsoleTextAttribute(hCon, basecol);
-			switch (p_type) {
-				case ERR_ERROR: print("   At: "); break;
-				case ERR_WARNING: print("     At: "); break;
-				case ERR_SCRIPT: print("          At: "); break;
-				case ERR_SHADER: print("          At: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon, current_fg | current_bg);
-			print("%s:%i\n", p_file, p_line);
-		}
-
-		SetConsoleTextAttribute(hCon, sbi.wAttributes);
-	}
 }
 
 String OS_Windows::get_name() {
@@ -2402,6 +2277,8 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 #ifdef XAUDIO2_ENABLED
 	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
+
+	_set_logger(memnew(WindowsTerminalLogger));
 }
 
 OS_Windows::~OS_Windows() {

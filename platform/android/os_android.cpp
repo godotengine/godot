@@ -47,6 +47,15 @@
 #include "file_access_jandroid.h"
 #endif
 
+class AndroidLogger : public Logger {
+public:
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) {
+		__android_log_vprint(p_err ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "godot", p_format, p_list);
+	}
+
+	virtual ~AndroidLogger() {}
+};
+
 int OS_Android::get_video_driver_count() const {
 
 	return 1;
@@ -111,6 +120,13 @@ void OS_Android::initialize_core() {
 #endif
 }
 
+void OS_Android::initialize_logger() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(AndroidLogger));
+	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+	_set_logger(memnew(CompositeLogger(loggers)));
+}
+
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
@@ -162,21 +178,7 @@ void OS_Android::delete_main_loop() {
 }
 
 void OS_Android::finalize() {
-
 	memdelete(input);
-}
-
-void OS_Android::vprint(const char *p_format, va_list p_list, bool p_stderr) {
-
-	__android_log_vprint(p_stderr ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "godot", p_format, p_list);
-}
-
-void OS_Android::print(const char *p_format, ...) {
-
-	va_list argp;
-	va_start(argp, p_format);
-	__android_log_vprint(ANDROID_LOG_INFO, "godot", p_format, argp);
-	va_end(argp);
 }
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
@@ -737,6 +739,8 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	set_keep_screen_on_func = p_set_keep_screen_on_func;
 	alert_func = p_alert_func;
 	use_reload_hooks = false;
+
+	_set_logger(memnew(AndroidLogger));
 }
 
 OS_Android::~OS_Android() {

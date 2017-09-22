@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  error_macros.cpp                                                     */
+/*  syslog_logger.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,73 +27,22 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "error_macros.h"
+
+#ifndef SYSLOG_LOGGER_H
+#define SYSLOG_LOGGER_H
+
+#ifdef UNIX_ENABLED
 
 #include "io/logger.h"
-#include "os/os.h"
 
-bool _err_error_exists = false;
+class SyslogLogger : public Logger {
+public:
+	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type);
 
-static ErrorHandlerList *error_handler_list = NULL;
+	virtual ~SyslogLogger();
+};
 
-void _err_set_last_error(const char *p_err) {
+#endif
 
-	OS::get_singleton()->set_last_error(p_err);
-}
-
-void _err_clear_last_error() {
-
-	OS::get_singleton()->clear_last_error();
-}
-
-void add_error_handler(ErrorHandlerList *p_handler) {
-
-	_global_lock();
-	p_handler->next = error_handler_list;
-	error_handler_list = p_handler;
-	_global_unlock();
-}
-
-void remove_error_handler(ErrorHandlerList *p_handler) {
-
-	_global_lock();
-
-	ErrorHandlerList *prev = NULL;
-	ErrorHandlerList *l = error_handler_list;
-
-	while (l) {
-
-		if (l == p_handler) {
-
-			if (prev)
-				prev->next = l->next;
-			else
-				error_handler_list = l->next;
-			break;
-		}
-		prev = l;
-		l = l->next;
-	}
-
-	_global_unlock();
-}
-
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, ErrorHandlerType p_type) {
-
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", (Logger::ErrorType)p_type);
-
-	_global_lock();
-	ErrorHandlerList *l = error_handler_list;
-	while (l) {
-
-		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", p_type);
-		l = l->next;
-	}
-
-	_global_unlock();
-
-	if (_err_error_exists) {
-		OS::get_singleton()->clear_last_error();
-		_err_error_exists = false;
-	}
-}
+#endif

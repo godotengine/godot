@@ -149,6 +149,7 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -161,8 +162,6 @@ public:
 
 	static OS *get_singleton();
 
-	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false);
-	virtual void print(const char *p_format, ...);
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual void set_mouse_show(bool p_show);

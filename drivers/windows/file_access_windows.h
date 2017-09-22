@@ -64,6 +64,7 @@ public:
 
 	virtual Error get_error() const; ///< get last error
 
+	virtual void flush();
 	virtual void store_8(uint8_t p_dest); ///< store a byte
 
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists

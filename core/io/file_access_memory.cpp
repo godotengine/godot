@@ -170,6 +170,10 @@ Error FileAccessMemory::get_error() const {
 	return pos >= length ? ERR_FILE_EOF : OK;
 }
 
+void FileAccessMemory::flush() {
+	ERR_FAIL_COND(!data);
+}
+
 void FileAccessMemory::store_8(uint8_t p_byte) {
 
 	ERR_FAIL_COND(!data);

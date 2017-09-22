@@ -146,6 +146,11 @@ Error FileAccessAndroid::get_error() const {
 	return eof ? ERR_FILE_EOF : OK; //not sure what else it may happen
 }
 
+void FileAccessAndroid::flush() {
+
+	ERR_FAIL();
+}
+
 void FileAccessAndroid::store_8(uint8_t p_dest) {
 
 	ERR_FAIL();

@@ -19,6 +19,7 @@ common_win = [
     "stream_peer_winsock.cpp",
     "joypad.cpp",
     "power_windows.cpp",
+    "windows_terminal_logger.cpp"
 ]
 
 restarget = "godot_res" + env["OBJSUFFIX"]

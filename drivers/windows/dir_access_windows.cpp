@@ -162,10 +162,10 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
+	p_dir = fix_path(p_dir);
 	if (p_dir.is_rel_path())
 		p_dir = get_current_dir().plus_file(p_dir);
 
-	p_dir = fix_path(p_dir);
 	p_dir = p_dir.replace("/", "\\");
 
 	bool success;

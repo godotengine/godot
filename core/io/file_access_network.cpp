@@ -456,6 +456,10 @@ Error FileAccessNetwork::get_error() const {
 	return pos == total_size ? ERR_FILE_EOF : OK;
 }
 
+void FileAccessNetwork::flush() {
+	ERR_FAIL();
+}
+
 void FileAccessNetwork::store_8(uint8_t p_dest) {
 
 	ERR_FAIL();

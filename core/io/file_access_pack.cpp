@@ -293,6 +293,11 @@ Error FileAccessPack::get_error() const {
 	return OK;
 }
 
+void FileAccessPack::flush() {
+
+	ERR_FAIL();
+}
+
 void FileAccessPack::store_8(uint8_t p_dest) {
 
 	ERR_FAIL();

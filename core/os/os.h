@@ -32,6 +32,7 @@
 
 #include "engine.h"
 #include "image.h"
+#include "io/logger.h"
 #include "list.h"
 #include "os/main_loop.h"
 #include "ustring.h"
@@ -60,6 +61,11 @@ class OS {
 	char *last_error;
 
 	void *_stack_bottom;
+
+	Logger *_logger;
+
+protected:
+	void _set_logger(Logger *p_logger);
 
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
@@ -108,6 +114,7 @@ protected:
 	virtual int get_audio_driver_count() const = 0;
 	virtual const char *get_audio_driver_name(int p_driver) const = 0;
 
+	virtual void initialize_logger();
 	virtual void initialize_core() = 0;
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
 
@@ -127,18 +134,10 @@ public:
 
 	static OS *get_singleton();
 
-	enum ErrorType {
-		ERR_ERROR,
-		ERR_WARNING,
-		ERR_SCRIPT,
-		ERR_SHADER
-	};
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
+	void print(const char *p_format, ...);
+	void printerr(const char *p_format, ...);
 
-	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
-
-	virtual void print(const char *p_format, ...);
-	virtual void printerr(const char *p_format, ...);
-	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false) = 0;
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
 
