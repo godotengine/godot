@@ -186,8 +186,8 @@ public:
 	void set_audio_bus_override(bool p_override);
 	bool is_overriding_audio_bus() const;
 
-	void set_audio_bus(const StringName &p_audio_bus);
-	StringName get_audio_bus() const;
+	void set_audio_bus_name(const StringName &p_audio_bus);
+	StringName get_audio_bus_name() const;
 
 	Area2D();
 	~Area2D();

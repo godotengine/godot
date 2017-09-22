@@ -557,12 +557,12 @@ bool Area2D::is_overriding_audio_bus() const {
 	return audio_bus_override;
 }
 
-void Area2D::set_audio_bus(const StringName &p_audio_bus) {
+void Area2D::set_audio_bus_name(const StringName &p_audio_bus) {
 
 	audio_bus = p_audio_bus;
 }
 
-StringName Area2D::get_audio_bus() const {
+StringName Area2D::get_audio_bus_name() const {
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
@@ -644,8 +644,8 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area2D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area2D::overlaps_area);
 
-	ClassDB::bind_method(D_METHOD("set_audio_bus", "name"), &Area2D::set_audio_bus);
-	ClassDB::bind_method(D_METHOD("get_audio_bus"), &Area2D::get_audio_bus);
+	ClassDB::bind_method(D_METHOD("set_audio_bus_name", "name"), &Area2D::set_audio_bus_name);
+	ClassDB::bind_method(D_METHOD("get_audio_bus_name"), &Area2D::get_audio_bus_name);
 
 	ClassDB::bind_method(D_METHOD("set_audio_bus_override", "enable"), &Area2D::set_audio_bus_override);
 	ClassDB::bind_method(D_METHOD("is_overriding_audio_bus"), &Area2D::is_overriding_audio_bus);
@@ -679,7 +679,7 @@ void Area2D::_bind_methods() {
 
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
