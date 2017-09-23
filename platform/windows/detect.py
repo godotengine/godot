@@ -64,6 +64,7 @@ def get_opts():
     return [
         ('mingw_prefix_32', 'MinGW prefix (Win32)', mingw32),
         ('mingw_prefix_64', 'MinGW prefix (Win64)', mingw64),
+        ('use_lto', 'Use link time optimization (when using MingW)', 'no'),
         ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
     ]
 
@@ -256,10 +257,14 @@ def configure(env):
         env["CC"] = mingw_prefix + "gcc"
         env['AS'] = mingw_prefix + "as"
         env['CXX'] = mingw_prefix + "g++"
-        env['AR'] = mingw_prefix + "ar"
-        env['RANLIB'] = mingw_prefix + "ranlib"
+        env['AR'] = mingw_prefix + "gcc-ar"
+        env['RANLIB'] = mingw_prefix + "gcc-ranlib"
         env['LD'] = mingw_prefix + "g++"
         env["x86_libtheora_opt_gcc"] = True
+
+        if (env["use_lto"] == "yes"):
+            env.Append(CCFLAGS=['-flto'])
+            env.Append(LINKFLAGS=['-flto'])
 
         ## Compile flags
 
