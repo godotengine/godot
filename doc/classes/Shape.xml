@@ -4,7 +4,7 @@
 		Base class for all 3D Shapes.
 	</brief_description>
 	<description>
-		Base class for all 2D Shapes. All 3D shapes inherit from this.
+		Base class for all 3D Shapes. All 3D shapes inherit from this.
 	</description>
 	<tutorials>
 	</tutorials>
