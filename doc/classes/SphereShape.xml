@@ -28,7 +28,7 @@
 	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius">
-			The sphere's radius. The diameter of this shape is double the radius.
+			The sphere's radius. The shape's diameter is double the radius.
 		</member>
 	</members>
 	<constants>
