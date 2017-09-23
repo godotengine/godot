@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RayShape" inherits="Shape" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Ray shape for 3D collisions.
 	</brief_description>
 	<description>
+		Ray shape for 3D collisions, which can be set into a [PhysicsBody] or [Area]. A ray is not really a collision body, instead it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +28,7 @@
 	</methods>
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length">
+			The ray's length.
 		</member>
 	</members>
 	<constants>
