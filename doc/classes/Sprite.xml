@@ -4,7 +4,7 @@
 		General purpose Sprite node.
 	</brief_description>
 	<description>
-		General purpose Sprite node. This Sprite node can show any texture as a sprite. The texture can be used as a spritesheet for animation, or only a region from a bigger texture can referenced, like an atlas.
+		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -202,37 +202,49 @@
 	</methods>
 	<members>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
+			If [code]true[/code] texture will be centered. Default value: [code]true[/code].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
+			If [code]true[/code] texture is flipped horizontally. Default value: [code]false[/code].
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
+			If [code]true[/code] texture is flipped vertically. Default value: [code]false[/code].
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+			Current frame to display from sprite sheet. [code]vframes[/code] or [code]hframes[/code] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
+			The number of horizontal frames in the sprite sheet.
 		</member>
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The texture's drawing offset.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
+			If [code]true[/code] texture will be cut from a larger atlas texture. See [code]region_rect[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="region_filter_clip" type="bool" setter="set_region_filter_clip" getter="is_region_filter_clip_enabled">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
+			The region of the atlas texture to display. [code]region_enabled[/code] must be [code]true[/code].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+			[Texture] object to draw.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes">
+			The number of vertical frames in the sprite sheet.
 		</member>
 	</members>
 	<signals>
 		<signal name="frame_changed">
 			<description>
+				Emitted when the [code]frame[/code] changes.
 			</description>
 		</signal>
 		<signal name="texture_changed">
 			<description>
+				Emitted when the [code]texture[/code] changes.
 			</description>
 		</signal>
 	</signals>
