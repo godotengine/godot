@@ -4,9 +4,8 @@
 		Static body for 2D Physics.
 	</brief_description>
 	<description>
-		Static body for 2D Physics. A static body is a simple body that is not intended to move. They don't consume any CPU resources in contrast to a [RigidBody2D] so they are great for scenario collision.
-		A static body can also be animated by using simulated motion mode. This is useful for implementing functionalities such as moving platforms. When this mode is active the body can be animated and automatically computes linear and angular velocity to apply in that frame and to influence other bodies.
-		Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
+		Static body for 2D Physics. A StaticBody2D is a body that is not intended to move. It is ideal for implementing objects in the environment, such as walls or platforms.
+		Additionally, a constant linear or angular velocity can be set for the static body, which will affect colliding bodies as if it were moving (for example, a conveyor belt).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -80,12 +79,16 @@
 	</methods>
 	<members>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
 		</member>
 		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity">
+			Constant angular velocity for the body. This does not rotate the body, but affects colliding bodies, as if it were rotating.
 		</member>
 		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity">
+			Constant linear velocity for the body. This does not move the body, but affects colliding bodies, as if it were moving.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+			The body's friction. Values range from [code]0[/code] (no friction) to [code]1[/code] (full friction).
 		</member>
 	</members>
 	<constants>
