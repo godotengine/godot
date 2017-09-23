@@ -228,9 +228,11 @@
 	<constants>
 	</constants>
 	<theme_items>
+		<theme_item name="SnapGrid" type="Texture">
+		</theme_item>
 		<theme_item name="bezier_len_neg" type="int">
 		</theme_item>
-		<theme_item name="bezier_len_position" type="int">
+		<theme_item name="bezier_len_pos" type="int">
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
 		</theme_item>
@@ -243,8 +245,6 @@
 		<theme_item name="more" type="Texture">
 		</theme_item>
 		<theme_item name="reset" type="Texture">
-		</theme_item>
-		<theme_item name="snap" type="Texture">
 		</theme_item>
 	</theme_items>
 </class>

@@ -47,6 +47,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_line_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_percent_visible" qualifiers="const">
 			<return type="float">
 			</return>
@@ -79,6 +85,12 @@
 			</description>
 		</method>
 		<method name="get_visible_characters" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>

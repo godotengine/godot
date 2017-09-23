@@ -172,7 +172,7 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="rot" type="float">
+			<argument index="1" name="rotation" type="float">
 			</argument>
 			<argument index="2" name="scale" type="Vector2">
 			</argument>

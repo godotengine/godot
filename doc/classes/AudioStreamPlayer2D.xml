@@ -36,12 +36,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_position">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_stream" qualifiers="const">
 			<return type="AudioStream">
 			</return>

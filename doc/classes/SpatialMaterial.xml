@@ -105,6 +105,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_distance_fade_max_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_distance_fade_min_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_emission" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -182,6 +194,12 @@
 			</description>
 		</method>
 		<method name="get_point_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_proximity_fade_distance" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -297,7 +315,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_distance_fade_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_grow_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_proximity_fade_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -439,6 +469,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_distance_fade">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_distance_fade_max_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="distance" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_distance_fade_min_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="distance" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_emission">
 			<return type="void">
 			</return>
@@ -551,6 +605,22 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="point_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_proximity_fade">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_proximity_fade_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="distance" type="float">
 			</argument>
 			<description>
 			</description>
@@ -745,6 +815,12 @@
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="SpatialMaterial.DetailUV">
 		</member>
+		<member name="distance_fade_enable" type="bool" setter="set_distance_fade" getter="is_distance_fade_enabled">
+		</member>
+		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance">
+		</member>
+		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance">
+		</member>
 		<member name="emission" type="Color" setter="set_emission" getter="get_emission">
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature">
@@ -810,6 +886,10 @@
 		<member name="particles_anim_loop" type="int" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
 		</member>
 		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">
+		</member>
+		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance">
+		</member>
+		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled">
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature">
 		</member>

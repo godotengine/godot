@@ -368,9 +368,9 @@
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
-			<argument index="2" name="loc" type="Vector3">
+			<argument index="2" name="location" type="Vector3">
 			</argument>
-			<argument index="3" name="rot" type="Quat">
+			<argument index="3" name="rotation" type="Quat">
 			</argument>
 			<argument index="4" name="scale" type="Vector3">
 			</argument>

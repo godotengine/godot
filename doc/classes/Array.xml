@@ -213,7 +213,7 @@
 			</description>
 		</method>
 		<method name="resize">
-			<argument index="0" name="position" type="int">
+			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
 				Resize the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.

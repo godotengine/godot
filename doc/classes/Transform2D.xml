@@ -36,7 +36,7 @@
 		<method name="Transform2D">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="rot" type="float">
+			<argument index="0" name="rotation" type="float">
 			</argument>
 			<argument index="1" name="position" type="Vector2">
 			</argument>
