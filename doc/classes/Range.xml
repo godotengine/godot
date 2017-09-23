@@ -138,29 +138,38 @@
 			<argument index="0" name="with" type="Node">
 			</argument>
 			<description>
+				Binds two Ranges together along with any Ranges previously grouped with either of them. When any of Range's member variables change, it will share the new value with all other Ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
 			<return type="void">
 			</return>
 			<description>
+				Stop Range from sharing its member variables with any other Range.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
+			If [code]true[/code] and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max">
+			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code]. Default value: 100.
 		</member>
 		<member name="min_value" type="float" setter="set_min" getter="get_min">
+			Minimum value. Range is clamped if [code]value[/code] is less than [code]min_value[/code]. Default value: 0.
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page">
+			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
+			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step">
+			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value">
+			Range's current value.
 		</member>
 	</members>
 	<signals>
