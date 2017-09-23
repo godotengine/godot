@@ -589,11 +589,29 @@ class VisualServerRaster : public VisualServer {
 #endif
 
 	void _draw_margins();
+	static void _changes_changed() {}
 
 public:
+//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
+//#define DEBUG_CHANGES
+
+#ifdef DEBUG_CHANGES
+	_FORCE_INLINE_ static void redraw_request() {
+		changes++;
+		_changes_changed();
+	}
+
+#define DISPLAY_CHANGED \
+	changes++;          \
+	_changes_changed();
+
+#else
 	_FORCE_INLINE_ static void redraw_request() { changes++; }
 
-#define DISPLAY_CHANGED changes++;
+#define DISPLAY_CHANGED \
+	changes++;
+#endif
+//	print_line(String("CHANGED: ") + __FUNCTION__);
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }

@@ -1564,6 +1564,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.blend_mode = Shader::CanvasItem::BLEND_MODE_MIX;
 			p_shader->canvas_item.uses_screen_texture = false;
 			p_shader->canvas_item.uses_screen_uv = false;
+			p_shader->canvas_item.uses_time = false;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
@@ -1595,6 +1596,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.unshaded = false;
 			p_shader->spatial.no_depth_test = false;
 			p_shader->spatial.uses_sss = false;
+			p_shader->spatial.uses_time = false;
 			p_shader->spatial.uses_vertex_lighting = false;
 			p_shader->spatial.uses_screen_texture = false;
 			p_shader->spatial.uses_vertex = false;

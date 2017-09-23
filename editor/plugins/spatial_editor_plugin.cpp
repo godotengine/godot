@@ -70,20 +70,17 @@
 #define MAX_FOV 179
 
 void SpatialEditorViewport::_update_camera(float p_interp_delta) {
-	if (orthogonal) {
-		//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
-		camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
-	} else
-		camera->set_perspective(get_fov(), get_znear(), get_zfar());
+
+	bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 
 	//when not being manipulated, move softly
-	float free_orbit_inertia = EDITOR_DEF("editors/3d/navigation_feel/orbit_inertia", 0.15);
-	float free_translation_inertia = EDITOR_DEF("editors/3d/navigation_feel/translation_inertia", 0.15);
+	float free_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+	float free_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
 	//when being manipulated, move more quickly
-	float manip_orbit_inertia = EDITOR_DEF("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.1);
-	float manip_translation_inertia = EDITOR_DEF("editors/3d/navigation_feel/manipulation_translation_inertia", 0.1);
+	float manip_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_orbit_inertia");
+	float manip_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_translation_inertia");
 
-	float zoom_inertia = EDITOR_DEF("editors/3d/navigation_feel/zoom_inertia", 0.1);
+	float zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
 
 	//determine if being manipulated
 	bool manipulated = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
@@ -104,21 +101,30 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		camera_cursor = cursor;
 	}
 
-	float tolerance = 0.0001;
+	float tolerance = 0.001;
 	bool equal = true;
-	if (Math::abs(old_camera_cursor.x_rot - camera_cursor.x_rot) > tolerance || Math::abs(old_camera_cursor.y_rot - camera_cursor.y_rot) > tolerance)
+	if (Math::abs(old_camera_cursor.x_rot - camera_cursor.x_rot) > tolerance || Math::abs(old_camera_cursor.y_rot - camera_cursor.y_rot) > tolerance) {
 		equal = false;
+	}
 
-	if (equal && old_camera_cursor.pos.distance_squared_to(camera_cursor.pos) > tolerance * tolerance)
+	if (equal && old_camera_cursor.pos.distance_squared_to(camera_cursor.pos) > tolerance * tolerance) {
 		equal = false;
+	}
 
-	if (equal && Math::abs(old_camera_cursor.distance - camera_cursor.distance) > tolerance)
+	if (equal && Math::abs(old_camera_cursor.distance - camera_cursor.distance) > tolerance) {
 		equal = false;
+	}
 
-	if (!equal || p_interp_delta == 0 || is_freelook_active()) {
+	if (!equal || p_interp_delta == 0 || is_freelook_active() || is_orthogonal != orthogonal) {
 
 		camera->set_global_transform(to_camera_transform(camera_cursor));
 		update_transform_gizmo_view();
+
+		if (orthogonal) {
+			//camera->set_orthogonal(size.width*cursor.distance,get_znear(),get_zfar());
+			camera->set_orthogonal(2 * cursor.distance, 0.1, 8192);
+		} else
+			camera->set_perspective(get_fov(), get_znear(), get_zfar());
 	}
 }
 

@@ -690,11 +690,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/navigation_feel/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	set("editors/3d/navigation_feel/translation_inertia", 0.15);
 	hints["editors/3d/navigation_feel/translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	set("editors/3d/navigation_feel/zoom_inertia", 0.1);
+	set("editors/3d/navigation_feel/zoom_inertia", 0.075);
 	hints["editors/3d/navigation_feel/zoom_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/zoom_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	set("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.1);
+	set("editors/3d/navigation_feel/manipulation_orbit_inertia", 0.075);
 	hints["editors/3d/navigation_feel/manipulation_orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/manipulation_orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
-	set("editors/3d/navigation_feel/manipulation_translation_inertia", 0.1);
+	set("editors/3d/navigation_feel/manipulation_translation_inertia", 0.075);
 	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
 	// freelook
