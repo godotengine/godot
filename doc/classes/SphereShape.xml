@@ -4,7 +4,7 @@
 		Sphere shape for 3D collisions.
 	</brief_description>
 	<description>
-		Sphere shape for 3D collisions. This shape is useful for modeling sphere-like 3D objects.
+		Sphere shape for 3D collisions, which can be set into a [PhysicsBody] or [Area]. This shape is useful for modeling sphere-like 3D objects.
 	</description>
 	<tutorials>
 	</tutorials>
