@@ -41,11 +41,12 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 	switch ((p_address & ADDR_TYPE_MASK) >> ADDR_BITS) {
 
 		case ADDR_TYPE_SELF: {
-
+#ifdef DEBUG_ENABLED
 			if (unlikely(!p_instance)) {
 				r_error = "Cannot access self without instance.";
 				return NULL;
 			}
+#endif
 			return &self;
 		} break;
 		case ADDR_TYPE_CLASS: {
@@ -53,18 +54,22 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 			return &p_script->_static_ref;
 		} break;
 		case ADDR_TYPE_MEMBER: {
-			//member indexing is O(1)
+#ifdef DEBUG_ENABLED
 			if (unlikely(!p_instance)) {
 				r_error = "Cannot access member without instance.";
 				return NULL;
 			}
+#endif
+			//member indexing is O(1)
 			return &p_instance->members[address];
 		} break;
 		case ADDR_TYPE_CLASS_CONSTANT: {
 
 			//todo change to index!
 			GDScript *o = p_script;
+#ifdef DEBUG_ENABLED
 			ERR_FAIL_INDEX_V(address, _global_names_count, NULL);
+#endif
 			const StringName *sn = &_global_names_ptr[address];
 
 			while (o) {
@@ -84,18 +89,22 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 			ERR_FAIL_V(NULL);
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
+#ifdef DEBUG_ENABLED
 			ERR_FAIL_INDEX_V(address, _constant_count, NULL);
+#endif
 			return &_constants_ptr[address];
 		} break;
 		case ADDR_TYPE_STACK:
 		case ADDR_TYPE_STACK_VARIABLE: {
+#ifdef DEBUG_ENABLED
 			ERR_FAIL_INDEX_V(address, _stack_size, NULL);
+#endif
 			return &p_stack[address];
 		} break;
 		case ADDR_TYPE_GLOBAL: {
-
+#ifdef DEBUG_ENABLED
 			ERR_FAIL_INDEX_V(address, GDScriptLanguage::get_singleton()->get_global_array_size(), NULL);
-
+#endif
 			return &GDScriptLanguage::get_singleton()->get_global_array()[address];
 		} break;
 		case ADDR_TYPE_NIL: {
