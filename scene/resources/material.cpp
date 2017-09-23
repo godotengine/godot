@@ -737,7 +737,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (features[FEATURE_TRANSPARENT] || features[FLAG_USE_ALPHA_SCISSOR] || distance_fade_enabled || proximity_fade_enabled) {
+	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || distance_fade_enabled || proximity_fade_enabled) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
@@ -857,10 +857,10 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec3 detail_norm = mix(NORMALMAP,detail_norm_tex.rgb,detail_tex.a);\n";
 		code += "\tNORMALMAP = mix(NORMALMAP,detail_norm,detail_mask_tex.r);\n";
 		code += "\tALBEDO.rgb = mix(ALBEDO.rgb,detail,detail_mask_tex.r);\n";
+	}
 
-		if (flags[FLAG_USE_ALPHA_SCISSOR]) {
-			code += "\tALPHA_SCISSOR=alpha_scissor_threshold;\n";
-		}
+	if (flags[FLAG_USE_ALPHA_SCISSOR]) {
+		code += "\tALPHA_SCISSOR=alpha_scissor_threshold;\n";
 	}
 
 	code += "}\n";
