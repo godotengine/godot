@@ -1,7 +1,5 @@
 <svg width="6" height="16" version="1.1" viewBox="0 0 6 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)" fill="#fff" fill-opacity=".39216">
-<circle cx="3" cy="1038.4" r="2"/>
-<circle cx="3" cy="1044.4" r="2"/>
-<circle cx="3" cy="1050.4" r="2"/>
+<g transform="translate(0 -1036.4)">
+<path transform="translate(0 1036.4)" d="m3 0a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2zm0 6a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2zm0 6a2 2 0 0 0 -2 2 2 2 0 0 0 2 2 2 2 0 0 0 2 -2 2 2 0 0 0 -2 -2z" fill="#fff" fill-opacity=".39216"/>
 </g>
 </svg>
