@@ -1699,6 +1699,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = false;
 	}
+	return Variant();
 }
 
 #define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)                             \
