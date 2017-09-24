@@ -282,8 +282,13 @@
 			<description>
 			</description>
 		</method>
+<<<<<<< HEAD
 	</methods>
 	<members>
+=======
+</methods>	      		      
+	<members>			  
+>>>>>>> e3622ec0c... Update Particles2D.xml
 		<member name="amount" type="int" setter="set_amount" getter="get_amount">
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder">
