@@ -341,6 +341,10 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase,
 		return DVector<Vector2>();
 	}
 
+	if (id == prev_id) {
+		return PoolVector<Vector2>();
+	}
+
 	Rect2i r = node->get_item_rect();
 	r.pos = r.pos / node->get_cell_size();
 	r.size = r.size / node->get_cell_size();
