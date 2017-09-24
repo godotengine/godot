@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python
 
-EnsureSConsVersion(0, 14)
+EnsureSConsVersion(0, 98, 1)
 
 
 import string
