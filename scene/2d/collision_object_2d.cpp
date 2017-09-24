@@ -82,7 +82,7 @@ uint32_t CollisionObject2D::create_shape_owner(Object *p_owner) {
 	uint32_t id;
 
 	if (shapes.size() == 0) {
-		id = 1;
+		id = 0;
 	} else {
 		id = shapes.back()->key() + 1;
 	}
