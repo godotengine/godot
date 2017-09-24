@@ -12512,7 +12512,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the currently assigned stream. This is not the file name, but a field inside the file. If no stream is assigned, if returns "&lt;No Stream&gt;".
+				Return the name of the currently assigned stream [Resource]. This is not the file name, but the name property of the resource, which can be empty if not defined. If no stream is assigned, if returns "&lt;No Stream&gt;".
 			</description>
 		</method>
 		<method name="get_tempo_scale" qualifiers="const">
