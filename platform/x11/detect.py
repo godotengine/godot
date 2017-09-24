@@ -120,6 +120,9 @@ def configure(env):
     if (env["use_lto"] == "yes"):
         env.Append(CCFLAGS=['-flto'])
         env.Append(LINKFLAGS=['-flto'])
+        if (env["use_llvm"] == "no"):
+            env['RANLIB'] = 'gcc-ranlib'
+            env['AR'] = 'gcc-ar'
 
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
