@@ -29,6 +29,17 @@
 /*************************************************************************/
 #include "stream_peer_openssl.h"
 
+// Compatibility with OpenSSL 1.1.0.
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#define BIO_set_num(b, n)
+#else
+#define BIO_set_num(b, n) ((b)->num = (n))
+
+#define BIO_set_init(b, i) ((b)->init = (i))
+#define BIO_set_data(b, p) ((b)->ptr = (p))
+#define BIO_get_data(b) ((b)->ptr)
+#endif
+
 //hostname matching code from curl
 
 bool StreamPeerOpenSSL::_match_host_name(const char *name, const char *hostname) {
@@ -157,10 +168,10 @@ int StreamPeerOpenSSL::_cert_verify_callback(X509_STORE_CTX *x509_ctx, void *arg
 }
 
 int StreamPeerOpenSSL::_bio_create(BIO *b) {
-	b->init = 1;
-	b->num = 0;
-	b->ptr = NULL;
-	b->flags = 0;
+	BIO_set_init(b, 1);
+	BIO_set_num(b, 0);
+	BIO_set_data(b, NULL);
+	BIO_clear_flags(b, ~0);
 	return 1;
 }
 
@@ -168,9 +179,9 @@ int StreamPeerOpenSSL::_bio_destroy(BIO *b) {
 	if (b == NULL)
 		return 0;
 
-	b->ptr = NULL; /* sb_tls_remove() will free it */
-	b->init = 0;
-	b->flags = 0;
+	BIO_set_data(b, NULL); /* sb_tls_remove() will free it */
+	BIO_set_init(b, 0);
+	BIO_clear_flags(b, ~0);
 	return 1;
 }
 
@@ -178,7 +189,7 @@ int StreamPeerOpenSSL::_bio_read(BIO *b, char *buf, int len) {
 
 	if (buf == NULL || len <= 0) return 0;
 
-	StreamPeerOpenSSL *sp = (StreamPeerOpenSSL *)b->ptr;
+	StreamPeerOpenSSL *sp = (StreamPeerOpenSSL *)BIO_get_data(b);
 
 	ERR_FAIL_COND_V(sp == NULL, 0);
 
@@ -212,7 +223,7 @@ int StreamPeerOpenSSL::_bio_write(BIO *b, const char *buf, int len) {
 
 	if (buf == NULL || len <= 0) return 0;
 
-	StreamPeerOpenSSL *sp = (StreamPeerOpenSSL *)b->ptr;
+	StreamPeerOpenSSL *sp = (StreamPeerOpenSSL *)BIO_get_data(b);
 
 	ERR_FAIL_COND_V(sp == NULL, 0);
 
@@ -258,6 +269,26 @@ int StreamPeerOpenSSL::_bio_puts(BIO *b, const char *str) {
 	return _bio_write(b, str, strlen(str));
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+BIO_METHOD *StreamPeerOpenSSL::_bio_method = NULL;
+
+BIO_METHOD *StreamPeerOpenSSL::_get_bio_method() {
+	if (_bio_method) // already initialized.
+		return _bio_method;
+
+	/* it's a source/sink BIO */
+	_bio_method = BIO_meth_new(100 | 0x400, "streampeer glue");
+	BIO_meth_set_write(_bio_method, _bio_write);
+	BIO_meth_set_read(_bio_method, _bio_read);
+	BIO_meth_set_puts(_bio_method, _bio_puts);
+	BIO_meth_set_gets(_bio_method, _bio_gets);
+	BIO_meth_set_ctrl(_bio_method, _bio_ctrl);
+	BIO_meth_set_create(_bio_method, _bio_create);
+	BIO_meth_set_destroy(_bio_method, _bio_destroy);
+
+	return _bio_method;
+}
+#else
 BIO_METHOD StreamPeerOpenSSL::_bio_method = {
 	/* it's a source/sink BIO */
 	(100 | 0x400),
@@ -270,6 +301,11 @@ BIO_METHOD StreamPeerOpenSSL::_bio_method = {
 	_bio_create,
 	_bio_destroy
 };
+
+BIO_METHOD *StreamPeerOpenSSL::_get_bio_method() {
+	return &_bio_method;
+}
+#endif
 
 Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname) {
 
@@ -330,8 +366,8 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	}
 
 	ssl = SSL_new(ctx);
-	bio = BIO_new(&_bio_method);
-	bio->ptr = this;
+	bio = BIO_new(_get_bio_method());
+	BIO_set_data(bio, this);
 	SSL_set_bio(ssl, bio, bio);
 
 	if (p_for_hostname != String()) {
@@ -532,7 +568,9 @@ void StreamPeerOpenSSL::initialize_ssl() {
 	load_certs_func = _load_certs;
 
 	_create = _create_func;
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	CRYPTO_malloc_init(); // Initialize malloc, free, etc for OpenSSL's use
+#endif
 	SSL_library_init(); // Initialize OpenSSL's SSL libraries
 	SSL_load_error_strings(); // Load SSL error strings
 	ERR_load_BIO_strings(); // Load BIO error strings
