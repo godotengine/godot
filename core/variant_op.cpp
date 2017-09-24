@@ -1519,7 +1519,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 		} break;
 		default: {
-			set(p_index.operator String(), p_value, r_valid);
+			set(p_index.operator String(), p_value, &valid);
 		} break;
 	}
 
