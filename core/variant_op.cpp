@@ -1214,54 +1214,485 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 void Variant::set_named(const StringName &p_index, const Variant &p_value, bool *r_valid) {
 
-	if (type == OBJECT) {
+	bool valid = false;
+	switch (type) {
+		case VECTOR2: {
+			if (p_value.type == Variant::INT) {
+				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._int;
+					valid = true;
+				}
+			} else if (p_value.type == Variant::REAL) {
+				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._real;
+					valid = true;
+				}
+			}
+
+		} break;
+		case RECT2: {
+
+			if (p_value.type == Variant::VECTOR2) {
+				Rect2 *v = reinterpret_cast<Rect2 *>(_data._mem);
+				//scalar name
+				if (p_index == CoreStringNames::singleton->position) {
+					v->position = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->size) {
+					v->size = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->end) {
+					v->size = *reinterpret_cast<const Vector2 *>(p_value._data._mem) - v->position;
+					valid = true;
+				}
+			}
+		} break;
+		case TRANSFORM2D: {
+
+			if (p_value.type == Variant::VECTOR2) {
+				Transform2D *v = _data._transform2d;
+				if (p_index == CoreStringNames::singleton->x) {
+					v->elements[0] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->elements[1] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->origin) {
+					v->elements[2] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
+					valid = true;
+				}
+			}
+
+		} break;
+		case VECTOR3: {
+
+			if (p_value.type == Variant::INT) {
+				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->z = p_value._data._int;
+					valid = true;
+				}
+			} else if (p_value.type == Variant::REAL) {
+				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->z = p_value._data._real;
+					valid = true;
+				}
+			}
+
+		} break;
+		case PLANE: {
+
+			if (p_value.type == Variant::INT) {
+				Plane *v = reinterpret_cast<Plane *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->normal.x = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->normal.y = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->normal.z = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->d) {
+					v->d = p_value._data._int;
+					valid = true;
+				}
+			} else if (p_value.type == Variant::REAL) {
+				Plane *v = reinterpret_cast<Plane *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->normal.x = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->normal.y = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->normal.z = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->d) {
+					v->d = p_value._data._real;
+					valid = true;
+				}
+
+			} else if (p_value.type == Variant::VECTOR3) {
+				Plane *v = reinterpret_cast<Plane *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->normal) {
+					v->normal = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
+					valid = true;
+				}
+			}
+
+		} break;
+		case QUAT: {
+
+			if (p_value.type == Variant::INT) {
+				Quat *v = reinterpret_cast<Quat *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->z = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->w) {
+					v->w = p_value._data._int;
+					valid = true;
+				}
+			} else if (p_value.type == Variant::REAL) {
+				Quat *v = reinterpret_cast<Quat *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->x) {
+					v->x = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->y = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->z = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->w) {
+					v->w = p_value._data._real;
+					valid = true;
+				}
+			}
+
+		} break; // 10
+		case RECT3: {
+
+			if (p_value.type == Variant::VECTOR3) {
+				Rect3 *v = _data._rect3;
+				//scalar name
+				if (p_index == CoreStringNames::singleton->position) {
+					v->position = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->size) {
+					v->size = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->end) {
+					v->size = *reinterpret_cast<const Vector3 *>(p_value._data._mem) - v->position;
+					valid = true;
+				}
+			}
+		} break;
+		case BASIS: {
+
+			if (p_value.type == Variant::VECTOR3) {
+				Basis *v = _data._basis;
+				//scalar name
+				if (p_index == CoreStringNames::singleton->x) {
+					v->set_axis(0, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->y) {
+					v->set_axis(1, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->z) {
+					v->set_axis(2, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
+					valid = true;
+				}
+			}
+		} break;
+		case TRANSFORM: {
+
+			if (p_value.type == Variant::BASIS && p_index == CoreStringNames::singleton->basis) {
+				_data._transform->basis = *p_value._data._basis;
+				valid = true;
+			} else if (p_value.type == Variant::VECTOR3 && p_index == CoreStringNames::singleton->origin) {
+				_data._transform->origin = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
+				valid = true;
+			}
+
+		} break;
+		case COLOR: {
+
+			if (p_value.type == Variant::INT) {
+				Color *v = reinterpret_cast<Color *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->r) {
+					v->r = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->g) {
+					v->g = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->b) {
+					v->b = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->a) {
+					v->a = p_value._data._int;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->r8) {
+					v->r = p_value._data._int / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->g8) {
+					v->g = p_value._data._int / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->b8) {
+					v->b = p_value._data._int / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->a8) {
+					v->a = p_value._data._int / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->h) {
+					v->set_hsv(p_value._data._int, v->get_s(), v->get_v());
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->s) {
+					v->set_hsv(v->get_h(), p_value._data._int, v->get_v());
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->v) {
+					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int);
+					valid = true;
+				}
+			} else if (p_value.type == Variant::REAL) {
+				Color *v = reinterpret_cast<Color *>(_data._mem);
+				if (p_index == CoreStringNames::singleton->r) {
+					v->r = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->g) {
+					v->g = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->b) {
+					v->b = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->a) {
+					v->a = p_value._data._real;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->r8) {
+					v->r = p_value._data._real / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->g8) {
+					v->g = p_value._data._real / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->b8) {
+					v->b = p_value._data._real / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->a8) {
+					v->a = p_value._data._real / 255.0;
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->h) {
+					v->set_hsv(p_value._data._real, v->get_s(), v->get_v());
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->s) {
+					v->set_hsv(v->get_h(), p_value._data._real, v->get_v());
+					valid = true;
+				} else if (p_index == CoreStringNames::singleton->v) {
+					v->set_hsv(v->get_h(), v->get_v(), p_value._data._real);
+					valid = true;
+				}
+			}
+		} break;
+		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-		if (!_get_obj().obj) {
-			if (r_valid)
-				*r_valid = false;
-			return;
-		} else {
-
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
-				if (r_valid)
-					*r_valid = false;
-				return;
+			if (!_get_obj().obj) {
+				break;
+			} else if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+				break;
 			}
-		}
 
 #endif
-		_get_obj().obj->set(p_index, p_value, r_valid);
-		return;
+			_get_obj().obj->set(p_index, p_value, &valid);
+
+		} break;
+		default: {
+			set(p_index.operator String(), p_value, r_valid);
+		} break;
 	}
 
-	set(p_index.operator String(), p_value, r_valid);
+	if (r_valid) {
+		*r_valid = valid;
+	}
 }
 
 Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 
-	if (type == OBJECT) {
+	if (r_valid) {
+		*r_valid = true;
+	}
+	switch (type) {
+		case VECTOR2: {
+			const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->x;
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->y;
+			}
+
+		} break;
+		case RECT2: {
+
+			const Rect2 *v = reinterpret_cast<const Rect2 *>(_data._mem);
+			//scalar name
+			if (p_index == CoreStringNames::singleton->position) {
+				return v->position;
+			} else if (p_index == CoreStringNames::singleton->size) {
+				return v->size;
+			} else if (p_index == CoreStringNames::singleton->end) {
+				return v->size + v->position;
+			}
+		} break;
+		case TRANSFORM2D: {
+
+			const Transform2D *v = _data._transform2d;
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->elements[0];
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->elements[1];
+			} else if (p_index == CoreStringNames::singleton->origin) {
+				return v->elements[2];
+			}
+
+		} break;
+		case VECTOR3: {
+
+			const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->x;
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->y;
+			} else if (p_index == CoreStringNames::singleton->z) {
+				return v->z;
+			}
+
+		} break;
+		case PLANE: {
+
+			const Plane *v = reinterpret_cast<const Plane *>(_data._mem);
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->normal.x;
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->normal.y;
+			} else if (p_index == CoreStringNames::singleton->z) {
+				return v->normal.z;
+			} else if (p_index == CoreStringNames::singleton->d) {
+				return v->d;
+			} else if (p_index == CoreStringNames::singleton->normal) {
+				return v->normal;
+			}
+
+		} break;
+		case QUAT: {
+
+			const Quat *v = reinterpret_cast<const Quat *>(_data._mem);
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->x;
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->y;
+			} else if (p_index == CoreStringNames::singleton->z) {
+				return v->z;
+			} else if (p_index == CoreStringNames::singleton->w) {
+				return v->w;
+			}
+
+		} break; // 10
+		case RECT3: {
+
+			const Rect3 *v = _data._rect3;
+			//scalar name
+			if (p_index == CoreStringNames::singleton->position) {
+				return v->position;
+			} else if (p_index == CoreStringNames::singleton->size) {
+				return v->size;
+			} else if (p_index == CoreStringNames::singleton->end) {
+				return v->size + v->position;
+			}
+		} break;
+		case BASIS: {
+
+			const Basis *v = _data._basis;
+			//scalar name
+			if (p_index == CoreStringNames::singleton->x) {
+				return v->get_axis(0);
+			} else if (p_index == CoreStringNames::singleton->y) {
+				return v->get_axis(1);
+			} else if (p_index == CoreStringNames::singleton->z) {
+				return v->get_axis(2);
+			}
+
+		} break;
+		case TRANSFORM: {
+
+			if (p_index == CoreStringNames::singleton->basis) {
+				return _data._transform->basis;
+			} else if (p_index == CoreStringNames::singleton->origin) {
+				return _data._transform->origin;
+			}
+
+		} break;
+		case COLOR: {
+
+			const Color *v = reinterpret_cast<const Color *>(_data._mem);
+			if (p_index == CoreStringNames::singleton->r) {
+				return v->r;
+			} else if (p_index == CoreStringNames::singleton->g) {
+				return v->g;
+			} else if (p_index == CoreStringNames::singleton->b) {
+				return v->b;
+			} else if (p_index == CoreStringNames::singleton->a) {
+				return v->a;
+			} else if (p_index == CoreStringNames::singleton->r8) {
+				return v->r * 255.0;
+			} else if (p_index == CoreStringNames::singleton->g8) {
+				return v->g * 255.0;
+			} else if (p_index == CoreStringNames::singleton->b8) {
+				return v->b * 255.0;
+			} else if (p_index == CoreStringNames::singleton->a8) {
+				return v->a * 255.0;
+			} else if (p_index == CoreStringNames::singleton->h) {
+				return v->get_h();
+			} else if (p_index == CoreStringNames::singleton->s) {
+				return v->get_s();
+			} else if (p_index == CoreStringNames::singleton->v) {
+				return v->get_v();
+			}
+		} break;
+		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
-		if (!_get_obj().obj) {
-			if (r_valid)
-				*r_valid = false;
-			return "Instance base is null.";
-		} else {
-
-			if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+			if (!_get_obj().obj) {
 				if (r_valid)
 					*r_valid = false;
-				return "Attempted use of stray pointer object.";
+				return "Instance base is null.";
+			} else {
+
+				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null() && !ObjectDB::instance_validate(_get_obj().obj)) {
+					if (r_valid)
+						*r_valid = false;
+					return "Attempted use of stray pointer object.";
+				}
 			}
-		}
 
 #endif
 
-		return _get_obj().obj->get(p_index, r_valid);
+			return _get_obj().obj->get(p_index, r_valid);
+
+		} break;
+		default: {
+			return get(p_index.operator String(), r_valid);
+		}
 	}
 
-	return get(p_index.operator String(), r_valid);
+	if (r_valid) {
+		*r_valid = false;
+	}
 }
 
 #define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)                             \

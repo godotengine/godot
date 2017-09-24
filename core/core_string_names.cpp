@@ -47,4 +47,27 @@ CoreStringNames::CoreStringNames()
 	  _sections_unfolded(StaticCString::create("_sections_unfolded")),
 #endif
 	  _custom_features(StaticCString::create("_custom_features")) {
+
+	x = StaticCString::create("x");
+	y = StaticCString::create("y");
+	z = StaticCString::create("z");
+	w = StaticCString::create("w");
+	r = StaticCString::create("r");
+	g = StaticCString::create("g");
+	b = StaticCString::create("b");
+	a = StaticCString::create("a");
+	position = StaticCString::create("position");
+	size = StaticCString::create("size");
+	end = StaticCString::create("end");
+	basis = StaticCString::create("basis");
+	origin = StaticCString::create("origin");
+	normal = StaticCString::create("normal");
+	d = StaticCString::create("d");
+	h = StaticCString::create("h");
+	s = StaticCString::create("s");
+	v = StaticCString::create("v");
+	r8 = StaticCString::create("r8");
+	g8 = StaticCString::create("g8");
+	b8 = StaticCString::create("b8");
+	a8 = StaticCString::create("a8");
 }
