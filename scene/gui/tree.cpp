@@ -2135,8 +2135,15 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					if (selected_item->get_children() != NULL && !selected_item->is_collapsed()) {
 						selected_item->set_collapsed(true);
 					} else {
-						selected_col = columns.size() - 1;
-						dobreak = false; // fall through to key_up
+						if (columns.size() == 1) { // goto parent with one column
+							TreeItem *parent = selected_item->get_parent();
+							if (selected_item != get_root() && parent && parent->is_selectable(selected_col) && !(hide_root && parent == get_root())) {
+								select_single_item(parent, get_root(), selected_col);
+							}
+						} else {
+							selected_col = columns.size() - 1;
+							dobreak = false; // fall through to key_up
+						}
 					}
 				} else {
 					if (select_mode == SELECT_MULTI) {
@@ -2149,6 +2156,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				}
 				update();
 				accept_event();
+				ensure_cursor_is_visible();
 
 				if (dobreak) {
 					break;
