@@ -113,6 +113,7 @@ class TileMapEditor : public VBoxContainer {
 	Rect2i bucket_cache_rect;
 	int bucket_cache_tile;
 	PoolVector<Vector2> bucket_cache;
+	List<Point2i> bucket_queue;
 
 	struct CellOp {
 		int idx;
