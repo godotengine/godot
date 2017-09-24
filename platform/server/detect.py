@@ -98,6 +98,9 @@ def configure(env):
     if (env['builtin_squish'] == 'no' and env["tools"] == "yes"):
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
+    if env['builtin_zstd'] == 'no':
+        env.ParseConfig('pkg-config libzstd --cflags --libs')
+
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
 

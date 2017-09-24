@@ -33,9 +33,9 @@
 #include "zip_io.h"
 
 #include "thirdparty/misc/fastlz.h"
-#include "thirdparty/zstd/zstd.h"
 
 #include <zlib.h>
+#include <zstd.h>
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 

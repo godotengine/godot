@@ -83,24 +83,8 @@ thirdparty_minizip_sources = [
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
-thirdparty_zstd_dir = "#thirdparty/zstd/"
-thirdparty_zstd_sources = [
-	"common/entropy_common.c",
-	"common/error_private.c",
-	"common/fse_decompress.c",
-	"common/pool.c",
-	"common/threading.c",
-	"common/xxhash.c",
-	"common/zstd_common.c",
-	"compress/fse_compress.c",
-	"compress/huf_compress.c",
-	"compress/zstd_compress.c",
-	"compress/zstdmt_compress.c",
-	"decompress/huf_decompress.c",
-	"decompress/zstd_decompress.c",
-]
-thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
-env.add_source_files(env.core_sources, thirdparty_zstd_sources)
+if "builtin_zstd" in env and env["builtin_zstd"] == "yes":
+    SConscript("#thirdparty/zstd/SCsub")
 
 
 # Godot's own sources
@@ -123,5 +107,4 @@ SConscript('helper/SCsub')
 # Build it all as a library
 lib = env.Library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
-env.Append(CPPPATH=["#thirdparty/zstd", "#thirdparty/zstd/common"])
 Export('env')
