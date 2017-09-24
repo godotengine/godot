@@ -15,121 +15,203 @@
 			<return type="Rect2">
 			</return>
 			<description>
+			  Return the particles rect with position and size attributes
 			</description>
 		</method>
 		<method name="get_amount" qualifiers="const">
 			<return type="int">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the amount of particles spawned at each emission
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_draw_order" qualifiers="const">
 			<return type="int" enum="Particles2D.DrawOrder">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the draw order of the particles list
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_explosiveness_ratio" qualifiers="const">
 			<return type="float">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return length of intervals between particle emissions
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_fixed_fps" qualifiers="const">
 			<return type="int">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the amount of fixed FPS
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_fractional_delta" qualifiers="const">
 			<return type="bool">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return true if fractional delta is enabled.
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_h_frames" qualifiers="const">
 			<return type="int">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the particle system's amount of horizontal frames
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_lifetime" qualifiers="const">
 			<return type="float">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the amount of seconds that each particle will be visible
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_normal_map" qualifiers="const">
 			<return type="Texture">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the texture which conforms the normal map
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_one_shot" qualifiers="const">
 			<return type="bool">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return whether the particle system is configured as one-shot
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_pre_process_time" qualifiers="const">
-			<return type="float">
+		  <return type="float">
 			</return>
 			<description>
+			  Return the amount of seconds particles will be processed before they are shown for the first time.
 			</description>
 		</method>
 		<method name="get_process_material" qualifiers="const">
 			<return type="Material">
 			</return>
 			<description>
+			  Return a material
 			</description>
 		</method>
 		<method name="get_randomness_ratio" qualifiers="const">
 			<return type="float">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the randomness ratio of the particle system
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_speed_scale" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+			  Return the value of particles speed scale
 			</description>
 		</method>p
 		<method name="get_texture" qualifiers="const">
 			<return type="Texture">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the texture for emitted particles
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_use_local_coordinates" qualifiers="const">
 			<return type="bool">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return whether local coordinates are enabled or not
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_v_frames" qualifiers="const">
 			<return type="int">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the particle system's amount of vertical frames
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="get_visibility_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
+<<<<<<< HEAD
 			<description>			 
+=======
+			<description>
+			  Return the particle system's visibility rect
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="is_emitting" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+<<<<<<< HEAD
+=======
+			  Return whether this emitter is currently emitting or not
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
 			<description>
+<<<<<<< HEAD
 			 
+=======
+			  Restart the particle system
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="set_amount">
@@ -138,6 +220,10 @@
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+<<<<<<< HEAD
+=======
+			  Set the amount of particles spawned at each emission
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="set_draw_order">
@@ -146,6 +232,7 @@
 			<argument index="0" name="order" type="int" enum="Particles2D.DrawOrder">
 			</argument>
 			<description>
+			  Set the draw order of the particles list 
 			</description>
 		</method>
 		<method name="set_emitting">
@@ -154,6 +241,10 @@
 			<argument index="0" name="emitting" type="bool">
 			</argument>
 			<description>
+<<<<<<< HEAD
+=======
+			  If this is set to true then the particle emitter will emit particles, if it's false it will not
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="set_explosiveness_ratio">
@@ -162,6 +253,7 @@
 			<argument index="0" name="ratio" type="float">
 			</argument>
 			<description>
+			  Set length of intervals between particle emissions to a min value of 0 and a max value of 1
 			</description>
 		</method>
 		<method name="set_fixed_fps">
@@ -170,6 +262,7 @@
 			<argument index="0" name="fps" type="int">
 			</argument>
 			<description>
+			  Set the targeted FPS of the particle system.
 			</description>
 		</method>
 		<method name="set_fractional_delta">
@@ -178,6 +271,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			  If this is set to true the fractional delta (time between each frame) will be enabled
 			</description>
 		</method>
 		<method name="set_h_frames">
@@ -186,6 +280,7 @@
 			<argument index="0" name="frames" type="int">
 			</argument>
 			<description>
+			  Set the number of horizontal frames for the particle system
 			</description>
 		</method>
 		<method name="set_lifetime">
@@ -194,6 +289,10 @@
 			<argument index="0" name="secs" type="float">
 			</argument>
 			<description>
+<<<<<<< HEAD
+=======
+			  Set the amount of seconds that each particle will be visible
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="set_normal_map">
@@ -202,6 +301,7 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
+			  Set normal map to a texture
 			</description>
 		</method>
 		<method name="set_one_shot">
@@ -209,7 +309,12 @@
 			</return>
 			<argument index="0" name="secs" type="bool">
 			</argument>
+<<<<<<< HEAD
 			<description>	
+=======
+			<description>
+			  Set as one-shot. If enabled, the system will stop after timeout, otherwise it will automatically restart.
+>>>>>>> 751d0009858f3798db04fed974a49576bad1a811
 			</description>
 		</method>
 		<method name="set_pre_process_time">
@@ -218,6 +323,7 @@
 			<argument index="0" name="secs" type="float">
 			</argument>
 			<description>
+			  Set the amount of seconds particles will be processed before they are shown for the first time.
 			</description>
 		</method>
 		<method name="set_process_material">
@@ -226,6 +332,7 @@
 			<argument index="0" name="material" type="Material">
 			</argument>
 			<description>
+			  Set a material which will be validated and processed
 			</description>
 		</method>
 		<method name="set_randomness_ratio">
@@ -234,6 +341,7 @@
 			<argument index="0" name="ratio" type="float">
 			</argument>
 			<description>
+			  Set the randomness ratio of the particle system
 			</description>
 		</method>
 		<method name="set_speed_scale">
@@ -242,6 +350,7 @@
 			<argument index="0" name="scale" type="float">
 			</argument>
 			<description>
+			  Set the speed scale of particles to a floating point value
 			</description>
 		</method>
 		<method name="set_texture">
@@ -250,6 +359,7 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
+			  Set the texture for emitted particles
 			</description>
 		</method>
 		<method name="set_use_local_coordinates">
@@ -258,6 +368,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+			  If set to true local coordinates will be enabled
 			</description>
 		</method>
 		<method name="set_v_frames">		
@@ -266,6 +377,7 @@
 			<argument index="0" name="frames" type="int">
 			</argument>
 			<description>
+			  Set the particle system's amount of vertical frames
 			</description>
 		</method>
 		<method name="set_visibility_rect">
@@ -274,64 +386,65 @@
 			<argument index="0" name="aabb" type="Rect2">
 			</argument>
 			<description>
+			  Set the particle system's visibility rect to a Rect2 value
 			</description>
 		</method>
 	      </methods>
 	      
 	<members>			  
 		<member name="amount" type="int" setter="set_amount" getter="get_amount">
-		  The amount of particles that will be spawned on each emission
+		  The number of particles that will be spawned on each emission.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder">
-		  The particle list's drawing order 
+		  The particle list's drawing order. 
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
-		  If true the emitter is currently emitting, if false it is not
+		  If [code]true[/code] the emitter is currently emitting, if false it is not.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
-		  The length of intervals between particle emissions, which can range from 0 to 1
+		  The length of intervals between particle emissions, which can range from 0 to 1.
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
-		  The particle system's targeted FPS
+		  The particle system's targeted FPS.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
-		  If true the fractional delta (time between each frame) will be enabled, if false it will not
+		  If [code]true[/code] the fractional delta (time between each frame) will be enabled, if false it will not.
 		</member>
 		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames">
-		  The amount of horizontal frames
+		  The number of horizontal frames.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
-		  The amount of seconds that each particle will be visible
+		  The length of time that each particle will be visible.
 		</member>		
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
-		  If true local coordinates are enabled, if false they are not
+		  If [code]true[/code] local coordinates are enabled, if false they are not.
 		</member>
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
-		  2D normal map 
+		  2D normal map.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
-		  If true, the system will stop after timeout, if false it will automatically restart.
+		  If [code]true[/code], the system will stop after timeout, if false it will automatically restart.
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
-		  The amount of seconds particles are processed before they are shown for the first time.
+		  The length of time particles are processed before they are shown for the first time.
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
-		  A material which will be validated and processed
+		  A material which will be validated and processed.
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
-		  The particle system's randomness ratio 
+		  The particle system's randomness ratio.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
-		  The particles speed scale 
+		  The particles' speed scale.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-		  The emitted particles texture
+		  The emitted particles' texture.
 		</member>
 		<member name="v_frames" type="int" setter="set_v_frames" getter="get_v_frames">
-		  The particle system's amount of vertical frames		  
+		  The number of vertical frames.		 
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
-		  The particle system's visibility rect
+		  The particle system's visibility [Rect2].
 		</member>
 	</members>
 	<constants>
