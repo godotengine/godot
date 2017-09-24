@@ -1536,6 +1536,7 @@ void main() {
 
 #if defined(ENABLE_AO)
 	float ao=1.0;
+	float ao_light_affect=0.0;
 #endif
 
 	float alpha = 1.0;
@@ -1920,7 +1921,11 @@ FRAGMENT_SHADER_CODE
 
 #if defined(ENABLE_AO)
 	ambient_light*=ao;
+	ao_light_affect = mix(1.0,ao,ao_light_affect);
+	specular_light*=ao_light_affect;
+	diffuse_light*=ao_light_affect;
 #endif
+
 
 
 	//energu conservation

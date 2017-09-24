@@ -268,6 +268,8 @@ void SpatialMaterial::init_shaders() {
 
 	shader_names->grow = "grow";
 
+	shader_names->ao_light_affect = "ao_light_affect";
+
 	shader_names->proximity_fade_distance = "proximity_fade_distance";
 	shader_names->distance_fade_min = "distance_fade_min";
 	shader_names->distance_fade_max = "distance_fade_max";
@@ -462,6 +464,7 @@ void SpatialMaterial::_update_shader() {
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
 		code += "uniform sampler2D texture_ambient_occlusion : hint_white;\n";
 		code += "uniform vec4 ao_texture_channel;\n";
+		code += "uniform float ao_light_affect;\n";
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -796,6 +799,8 @@ void SpatialMaterial::_update_shader() {
 				code += "\tAO = dot(texture(texture_ambient_occlusion,base_uv),ao_texture_channel);\n";
 			}
 		}
+
+		code += "\tAO_LIGHT_AFFECT = ao_light_affect;\n";
 	}
 
 	if (features[FEATURE_SUBSURACE_SCATTERING]) {
@@ -1010,6 +1015,16 @@ void SpatialMaterial::set_rim_tint(float p_rim_tint) {
 float SpatialMaterial::get_rim_tint() const {
 
 	return rim_tint;
+}
+
+void SpatialMaterial::set_ao_light_affect(float p_ao_light_affect) {
+
+	ao_light_affect = p_ao_light_affect;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_light_affect, p_ao_light_affect);
+}
+float SpatialMaterial::get_ao_light_affect() const {
+
+	return ao_light_affect;
 }
 
 void SpatialMaterial::set_clearcoat(float p_clearcoat) {
@@ -1745,6 +1760,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
 	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
 
+	ClassDB::bind_method(D_METHOD("set_ao_light_affect", "amount"), &SpatialMaterial::set_ao_light_affect);
+	ClassDB::bind_method(D_METHOD("get_ao_light_affect"), &SpatialMaterial::get_ao_light_affect);
+
 	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &SpatialMaterial::set_alpha_scissor_threshold);
 	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &SpatialMaterial::get_alpha_scissor_threshold);
 
@@ -1853,6 +1871,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Ambient Occlusion", "ao_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled"), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
@@ -2035,6 +2054,8 @@ SpatialMaterial::SpatialMaterial()
 	set_proximity_fade_distance(1);
 	set_distance_fade_min_distance(0);
 	set_distance_fade_max_distance(10);
+
+	set_ao_light_affect(0.0);
 
 	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
