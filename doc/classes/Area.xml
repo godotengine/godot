@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Area" inherits="CollisionObject" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		General purpose area detection and influence for 3D physics.
+		General purpose area node for detection and 3D physics influence.
 	</brief_description>
 	<description>
-		General purpose area detection for 3D physics. Areas can be used for detection of objects that enter/exit them, as well as overriding space parameters (changing gravity, damping, etc). For this, use any space override different from AREA_SPACE_OVERRIDE_DISABLE and point gravity at the center of mass.
+		3D area that detects [CollisionObject] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -88,14 +88,14 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the areas that are totally or partially inside this area.
+				Returns a list of intersecting [Area]\ s.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies ([PhysicsBody]) that are totally or partially inside this area.
+				Returns a list of intersecting [PhysicsBody]\ s.
 			</description>
 		</method>
 		<method name="get_priority" qualifiers="const">
@@ -169,7 +169,7 @@
 			<argument index="0" name="area" type="Node">
 			</argument>
 			<description>
-				Return whether the area passed is totally or partially inside this area.
+				If [code]true[/code] the given area overlaps the Area.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
@@ -178,7 +178,7 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Return whether the body passed is totally or partially inside this area.
+				If [code]true[/code] the given body overlaps the Area.
 			</description>
 		</method>
 		<method name="set_angular_damp">
@@ -374,30 +374,43 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
 		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus">
+			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus">
+			If [code]true[/code] the area's audio bus overrides the default audio bus. Default value: [code]false[/code].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [code]collision_mask[/code].
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+			The physics layers this area scans to determine collision detection.
 		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity">
+			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
 		</member>
 		<member name="gravity_distance_scale" type="float" setter="set_gravity_distance_scale" getter="get_gravity_distance_scale">
+			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point">
+			If [code]true[/code] gravity is calculated from a point (set via [code]gravity_vec[/code]). Also see [code]space_override[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector">
+			The area's gravity vector (not normalized). If gravity is a point (see [method is_gravity_a_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable">
+			If [code]true[/code] other monitoring areas can detect this area. Default value: [code]true[/code].
 		</member>
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring">
+			If [code]true[/code] the area detects bodies or areas entering and exiting it. Default value: [code]true[/code].
 		</member>
 		<member name="priority" type="float" setter="set_priority" getter="get_priority">
+			The area's priority. Higher priority areas are processed first. Default value: 0.
 		</member>
 		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount">
 		</member>
@@ -408,6 +421,7 @@
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity">
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area.SpaceOverride">
+			Override mode for gravity and damping calculations within this area. See the SPACE_OVERRIDE_* constants for values.
 		</member>
 	</members>
 	<signals>
@@ -415,14 +429,14 @@
 			<argument index="0" name="area" type="Object">
 			</argument>
 			<description>
-				This signal is triggered only once when an area enters this area. The only parameter passed is the area that entered this area.
+				Emitted when another area enters.
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<argument index="0" name="area" type="Object">
 			</argument>
 			<description>
-				This signal is triggered only once when an area exits this area. The only parameter passed is the area that exited this area.
+				Emitted when another area exits.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -435,7 +449,7 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				This signal triggers only once when an area enters this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
+				Emitted when another area enters, reporting which areas overlapped.
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -448,21 +462,21 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				This signal triggers only once when an area exits this area. The first parameter is the area's [RID]. The second one is the area as an object. The third one is the index of the shape entering this area, and the fourth one is the index of the shape in this area that reported the entering.
+				Emitted when another area exits, reporting which areas were overlapping.
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-				This signal is triggered only once when a body enters this area. The only parameter passed is the body that entered this area.
+				Emitted when a [PhysicsBody] object enters.
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-				This signal is triggered only once when a body exits this area. The only parameter passed is the body that exited this area.
+				Emitted when a [PhysicsBody2D] object exits.
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -475,7 +489,7 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				This signal triggers only once when a body enters this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape of the body that entered this area, and the fourth one is the index of the shape in this area that reported the entering.
+				Emitted when a [PhysicsBody2D] object enters, reporting which shapes overlapped.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -488,20 +502,25 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				This signal triggers only once when a body exits this area. The first parameter is the body's [RID]. The second one is the body as an object. The third one is the index of the shape exiting this area, and the fourth one is the index of the shape in this area that reported the exit.
+				Emitted when a [PhysicsBody2D] object exits, reporting which shapes were overlapping.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="SPACE_OVERRIDE_DISABLED" value="0">
+			This area does not affect gravity/damping.
 		</constant>
 		<constant name="SPACE_OVERRIDE_COMBINE" value="1">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order).
 		</constant>
 		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order), ignoring any lower priority areas.
 		</constant>
 		<constant name="SPACE_OVERRIDE_REPLACE" value="3">
+			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
 		</constant>
 		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+			This area replaces any gravity/damping calculated so far (in [code]priority[/code] order), but keeps calculating the rest of the areas.
 		</constant>
 	</constants>
 </class>
