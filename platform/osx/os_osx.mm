@@ -1733,29 +1733,6 @@ String OS_OSX::get_executable_path() const {
 	}
 }
 
-String OS_OSX::get_resource_dir() const {
-	/*
-  Bastiaan Olij - I'm leaving this code commented out but in place so we can have a further discussion about this later on.
-  For loading the package file from the resource folder it makes more sense to make this call work in ProjectSettings::setup
-  instead of relying on changing the current working folder as is the case right now (see godot_main_osx.mm).
-  The problem is that when this function returns a value we try and load a project.godot file from this resources folder and
-  stop attempting to load anything else if that fails. That breaks our tools build.
-  One possible solution is to only apply this logic in a non-tools build with an ifdef block. 
-
-  For now however, just returning this to working condition.
-
-	// start with our executable path
-	String path = get_executable_path();
-
-	int pos = path.find_last("/Contents/MacOS/");
-	if (pos < 0)
-		return OS::get_resource_dir();
-
-	return path.substr(0, pos) + "/Contents/Resources/";
-*/
-	return OS::get_resource_dir();
-}
-
 // Returns string representation of keys, if they are printable.
 //
 static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
