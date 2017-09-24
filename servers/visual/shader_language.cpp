@@ -267,6 +267,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CF_BREAK, "break" },
 	{ TK_CF_CONTINUE, "continue" },
 	{ TK_CF_RETURN, "return" },
+	{ TK_CF_DISCARD, "discard" },
 	{ TK_UNIFORM, "uniform" },
 	{ TK_VARYING, "varying" },
 	{ TK_ARG_IN, "in" },
@@ -3803,6 +3804,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				func_node->name = name;
 				func_node->return_type = type;
 				func_node->return_precision = precision;
+
+				if (p_functions.has(name)) {
+					func_node->can_discard = p_functions[name].can_discard;
+				}
 
 				func_node->body = alloc_node<BlockNode>();
 				func_node->body->parent_function = func_node;
