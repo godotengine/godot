@@ -5,10 +5,10 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Godot Engine</name>
-  <summary>Multi-platform 2D and 3D game engine with a feature rich editor</summary>
+  <summary>Multi-platform 2D and 3D game engine with a feature-rich editor</summary>
   <description>
     <p>
-      Godot is an advanced, feature packed, multi-platform 2D and 3D game
+      Godot is an advanced, feature-packed, multi-platform 2D and 3D game
       engine. It provides a huge set of common tools, so you can just focus on
       making your game without reinventing the wheel.
     </p>
@@ -21,7 +21,7 @@
   <screenshots>
     <screenshot type="default" width="1330" height="720">
       <caption>3D project loaded in the Godot Engine editor</caption>
-      <image>http://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
+      <image>https://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://godotengine.org</url>
