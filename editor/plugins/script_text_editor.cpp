@@ -1455,7 +1455,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
 	code_editor->add_constant_override("separation", 0);
-	code_editor->set_area_as_parent_rect();
+	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->connect("validate_script", this, "_validate_script");
 	code_editor->connect("load_theme_settings", this, "_load_theme_settings");
 	code_editor->set_code_complete_func(_code_complete_scripts, this);

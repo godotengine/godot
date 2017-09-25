@@ -1426,7 +1426,7 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin(EditorNode *p_node) {
 	editor->add_bottom_panel_item(TTR("Animation"), anim_editor);
 	/*
 	editor->get_viewport()->add_child(anim_editor);
-	anim_editor->set_area_as_parent_rect();
+	anim_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	anim_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
 	anim_editor->set_margin( MARGIN_TOP, 75 );
 	anim_editor->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END);

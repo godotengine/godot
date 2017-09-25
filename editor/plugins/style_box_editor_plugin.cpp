@@ -57,7 +57,7 @@ StyleBoxEditor::StyleBoxEditor() {
 
 	panel = memnew(Panel);
 	add_child(panel);
-	panel->set_area_as_parent_rect();
+	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("StyleBox Preview:"));

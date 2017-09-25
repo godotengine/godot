@@ -1471,6 +1471,110 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 	}
 }
 
+void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
+	if (!is_inside_tree())
+		return;
+
+	Point2 new_pos;
+	Size2 min_size = get_minimum_size();
+	Size2 new_size = get_size();
+	Size2 parent_size = get_parent_area_size();
+
+	// Width
+	switch (p_preset) {
+		case PRESET_TOP_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_HCENTER_WIDE:
+		case PRESET_WIDE:
+			new_size.x = parent_size.x - 2 * p_margin;
+			break;
+		default:
+			if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
+				new_size.x = min_size.x;
+			}
+			break;
+	}
+
+	// Height
+	switch (p_preset) {
+		case PRESET_LEFT_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_VCENTER_WIDE:
+		case PRESET_WIDE:
+			new_size.y = parent_size.y - 2 * p_margin;
+			break;
+		default:
+			if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_WIDTH) {
+				new_size.y = min_size.y;
+			}
+			break;
+	}
+
+	// x pos
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_CENTER_LEFT:
+		case PRESET_TOP_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_LEFT_WIDE:
+		case PRESET_HCENTER_WIDE:
+		case PRESET_WIDE:
+			new_pos.x = p_margin;
+			break;
+
+		case PRESET_CENTER_TOP:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_CENTER:
+		case PRESET_VCENTER_WIDE:
+			new_pos.x = (parent_size.x - new_size.x) / 2.0;
+			break;
+
+		case PRESET_TOP_RIGHT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_RIGHT_WIDE:
+			new_pos.x = parent_size.x - new_size.x - p_margin;
+			break;
+	}
+
+	// y pos
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_TOP_RIGHT:
+		case PRESET_CENTER_TOP:
+		case PRESET_LEFT_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_TOP_WIDE:
+		case PRESET_VCENTER_WIDE:
+		case PRESET_WIDE:
+			new_pos.y = p_margin;
+			break;
+
+		case PRESET_CENTER_LEFT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_CENTER:
+		case PRESET_HCENTER_WIDE:
+			new_pos.y = (parent_size.y - new_size.y) / 2.0;
+			break;
+
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_BOTTOM_WIDE:
+			new_pos.y = parent_size.y - new_size.y - p_margin;
+			break;
+	}
+
+	set_position(new_pos);
+	set_size(new_size);
+}
+
+void Control::set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
+	set_anchors_preset(p_preset);
+	set_margins_preset(p_preset, p_resize_mode, p_margin);
+}
+
 float Control::get_anchor(Margin p_margin) const {
 
 	return data.anchor[p_margin];
@@ -1620,20 +1724,6 @@ Rect2 Control::get_rect() const {
 Rect2 Control::get_item_rect() const {
 
 	return Rect2(Point2(), get_size());
-}
-
-void Control::set_area_as_parent_rect(int p_margin) {
-
-	data.anchor[MARGIN_LEFT] = ANCHOR_BEGIN;
-	data.margin[MARGIN_LEFT] = p_margin;
-	data.anchor[MARGIN_TOP] = ANCHOR_BEGIN;
-	data.margin[MARGIN_TOP] = p_margin;
-	data.anchor[MARGIN_RIGHT] = ANCHOR_END;
-	data.margin[MARGIN_RIGHT] = -p_margin;
-	data.anchor[MARGIN_BOTTOM] = ANCHOR_END;
-	data.margin[MARGIN_BOTTOM] = -p_margin;
-
-	_size_changed();
 }
 
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
@@ -2471,9 +2561,11 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
+	ClassDB::bind_method(D_METHOD("set_anchors_preset", "preset", "keep_margin"), &Control::set_anchors_preset, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_margins_preset", "preset", "resize_mode", "margin"), &Control::set_margins_preset, DEFVAL(PRESET_MODE_MINSIZE), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_anchors_and_margins_preset", "preset", "resize_mode", "margin"), &Control::set_anchors_and_margins_preset, DEFVAL(PRESET_MODE_MINSIZE), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_anchor", "margin", "anchor", "keep_margin", "push_opposite_anchor"), &Control::set_anchor, DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_set_anchor", "margin", "anchor"), &Control::_set_anchor);
-	ClassDB::bind_method(D_METHOD("set_anchors_preset", "preset", "keep_margin"), &Control::set_anchors_preset, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_anchor", "margin"), &Control::get_anchor);
 	ClassDB::bind_method(D_METHOD("set_margin", "margin", "offset"), &Control::set_margin);
 	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor", "offset", "push_opposite_anchor"), &Control::set_anchor_and_margin, DEFVAL(false));
@@ -2505,7 +2597,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
-	ClassDB::bind_method(D_METHOD("set_area_as_parent_rect", "margin"), &Control::set_area_as_parent_rect, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("show_modal", "exclusive"), &Control::show_modal, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
@@ -2688,6 +2779,11 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_VCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_HCENTER_WIDE);
 	BIND_ENUM_CONSTANT(PRESET_WIDE);
+
+	BIND_ENUM_CONSTANT(PRESET_MODE_MINSIZE);
+	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_HEIGHT);
+	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_WIDTH);
+	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_SIZE);
 
 	BIND_ENUM_CONSTANT(SIZE_EXPAND);
 	BIND_ENUM_CONSTANT(SIZE_FILL);

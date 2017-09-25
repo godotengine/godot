@@ -1478,7 +1478,7 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(addon_library);
-	addon_library->set_area_as_parent_rect();
+	addon_library->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	addon_library->hide();
 }
 

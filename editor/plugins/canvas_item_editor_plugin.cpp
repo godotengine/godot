@@ -3050,7 +3050,7 @@ void CanvasItemEditor::_set_full_rect() {
 
 		Control *c = Object::cast_to<Control>(E->get());
 
-		undo_redo->add_do_method(c, "set_anchors_preset", PRESET_WIDE);
+		undo_redo->add_do_method(c, "set_anchors_preset", Control::PRESET_WIDE);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_LEFT, 0);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_TOP, 0);
 		undo_redo->add_do_method(c, "set_margin", MARGIN_RIGHT, 0);
@@ -3301,7 +3301,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
 		case ANCHOR_ALIGN_WIDE: {
-			_set_anchors_preset(PRESET_WIDE);
+			_set_anchors_preset(Control::PRESET_WIDE);
 		} break;
 		case ANCHOR_ALIGN_WIDE_FIT: {
 			_set_full_rect();
@@ -3698,7 +3698,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
-	hb->set_area_as_parent_rect();
+	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	bottom_split = memnew(VSplitContainer);
 	add_child(bottom_split);
@@ -3721,19 +3721,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport_base->add_child(viewport_scrollable);
 	viewport_scrollable->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport_scrollable->set_draw_behind_parent(true);
-	viewport_scrollable->set_area_as_parent_rect();
+	viewport_scrollable->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	viewport_scrollable->set_begin(Point2(RULER_WIDTH, RULER_WIDTH));
 
 	ViewportContainer *scene_tree = memnew(ViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
 	scene_tree->set_stretch(true);
-	scene_tree->set_area_as_parent_rect();
+	scene_tree->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	scene_tree->add_child(p_editor->get_scene_root());
 
 	viewport = memnew(CanvasItemEditorViewport(p_editor, this));
 	viewport_scrollable->add_child(viewport);
 	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
-	viewport->set_area_as_parent_rect();
+	viewport->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	viewport->set_clip_contents(true);
 	viewport->connect("draw", this, "_draw_viewport");
 
@@ -4059,7 +4059,7 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin(EditorNode *p_node) {
 	canvas_item_editor = memnew(CanvasItemEditor(editor));
 	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(canvas_item_editor);
-	canvas_item_editor->set_area_as_parent_rect();
+	canvas_item_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	canvas_item_editor->hide();
 }
 

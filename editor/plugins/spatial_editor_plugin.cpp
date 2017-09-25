@@ -2842,7 +2842,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ViewportContainer *c = memnew(ViewportContainer);
 	c->set_stretch(true);
 	add_child(c);
-	c->set_area_as_parent_rect();
+	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	viewport = memnew(Viewport);
 	viewport->set_disable_input(true);
 
@@ -2850,7 +2850,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface = memnew(Control);
 	surface->set_drag_forwarding(this);
 	add_child(surface);
-	surface->set_area_as_parent_rect();
+	surface->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera);
 	camera->set_disable_gizmo(true);
@@ -4222,7 +4222,7 @@ void SpatialEditor::_toggle_maximize_view(Object *p_viewport) {
 
 		for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 			if (i == (uint32_t)index)
-				viewports[i]->set_area_as_parent_rect();
+				viewports[i]->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 			else
 				viewports[i]->hide();
 		}
@@ -4648,7 +4648,7 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor->get_viewport()->add_child(spatial_editor);
 
-	//spatial_editor->set_area_as_parent_rect();
+	//spatial_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	spatial_editor->hide();
 	spatial_editor->connect("transform_key_request", editor, "_transform_keyed");
 

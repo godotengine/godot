@@ -461,7 +461,7 @@ void ColorPicker::_screen_pick_pressed() {
 		screen = memnew(Control);
 		r->add_child(screen);
 		screen->set_as_toplevel(true);
-		screen->set_area_as_parent_rect();
+		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", this, "_screen_input");
 	}

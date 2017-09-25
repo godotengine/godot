@@ -4671,11 +4671,11 @@ EditorNode::EditorNode() {
 
 	theme_base = memnew(Control);
 	add_child(theme_base);
-	theme_base->set_area_as_parent_rect();
+	theme_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	gui_base = memnew(Panel);
 	theme_base->add_child(gui_base);
-	gui_base->set_area_as_parent_rect();
+	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	Ref<Theme> theme = create_editor_theme();
 	theme_base->set_theme(theme);
@@ -4694,7 +4694,7 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_area_as_parent_rect(8);
+	main_vbox->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->set_margin(MARGIN_TOP, 5 * EDSCALE);
 
 	menu_hb = memnew(HBoxContainer);
@@ -5083,7 +5083,7 @@ EditorNode::EditorNode() {
 	play_cc = memnew(CenterContainer);
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	menu_hb->add_child(play_cc);
-	play_cc->set_area_as_parent_rect();
+	play_cc->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	play_cc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 10);
 	play_cc->set_margin(MARGIN_TOP, 5);
 

@@ -124,6 +124,13 @@ public:
 		PRESET_WIDE
 	};
 
+	enum LayoutPresetMode {
+		PRESET_MODE_MINSIZE,
+		PRESET_MODE_KEEP_WIDTH,
+		PRESET_MODE_KEEP_HEIGHT,
+		PRESET_MODE_KEEP_SIZE
+	};
+
 private:
 	struct CComparator {
 
@@ -294,34 +301,32 @@ public:
 
 	/* POSITIONING */
 
-	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false, bool p_push_opposite_anchor = true);
-	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin = false);
+	void set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
+	void set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 
+	void set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin = false, bool p_push_opposite_anchor = true);
 	float get_anchor(Margin p_margin) const;
 
 	void set_margin(Margin p_margin, float p_value);
+	float get_margin(Margin p_margin) const;
+
+	void set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor = true);
 
 	void set_begin(const Point2 &p_point); // helper
 	void set_end(const Point2 &p_point); // helper
 
-	void set_h_grow_direction(GrowDirection p_direction);
-	GrowDirection get_h_grow_direction() const;
-
-	void set_v_grow_direction(GrowDirection p_direction);
-	GrowDirection get_v_grow_direction() const;
-
-	float get_margin(Margin p_margin) const;
 	Point2 get_begin() const;
 	Point2 get_end() const;
 
 	void set_position(const Point2 &p_point);
-	void set_size(const Size2 &p_size);
 	void set_global_position(const Point2 &p_point);
-
 	Point2 get_position() const;
 	Point2 get_global_position() const;
+
+	void set_size(const Size2 &p_size);
 	Size2 get_size() const;
+
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
@@ -331,13 +336,17 @@ public:
 	float get_rotation() const;
 	float get_rotation_deg() const;
 
+	void set_h_grow_direction(GrowDirection p_direction);
+	GrowDirection get_h_grow_direction() const;
+
+	void set_v_grow_direction(GrowDirection p_direction);
+	GrowDirection get_v_grow_direction() const;
+
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
 
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
-
-	void set_area_as_parent_rect(int p_margin = 0);
 
 	void show_modal(bool p_exclusive = false);
 
@@ -449,6 +458,7 @@ VARIANT_ENUM_CAST(Control::FocusMode);
 VARIANT_ENUM_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
+VARIANT_ENUM_CAST(Control::LayoutPresetMode);
 VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);

@@ -3900,7 +3900,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	//menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 
 	hb = memnew(HBoxContainer);
-	hb->set_area_as_parent_rect();
+	hb->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	ec->add_child(hb);
 	hb->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -3912,14 +3912,14 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	track_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	track_pos = memnew(Control);
-	track_pos->set_area_as_parent_rect();
+	track_pos->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	track_pos->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	track_editor->add_child(track_pos);
 	track_pos->connect("draw", this, "_track_position_draw");
 
 	select_anim_warning = memnew(Label);
 	track_editor->add_child(select_anim_warning);
-	select_anim_warning->set_area_as_parent_rect();
+	select_anim_warning->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	select_anim_warning->set_text(TTR("Select an AnimationPlayer from the Scene Tree to edit animations."));
 	select_anim_warning->set_autowrap(true);
 	select_anim_warning->set_align(Label::ALIGN_CENTER);
@@ -3936,7 +3936,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	key_editor_tab->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 
 	key_editor = memnew(PropertyEditor);
-	key_editor->set_area_as_parent_rect();
+	key_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	key_editor->hide_top_label();
 	key_editor->set_name(TTR("Key"));
 	key_editor_tab->add_child(key_editor);

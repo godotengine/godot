@@ -773,7 +773,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
-	main_vb->set_area_as_parent_rect(0);
+	main_vb->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	HBoxContainer *hb_tools = memnew(HBoxContainer);
 	main_vb->add_child(hb_tools);
 

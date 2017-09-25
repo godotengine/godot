@@ -2921,7 +2921,7 @@ ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) 
 
 
 		//editor->get_viewport()->add_child(shader_editor);
-		//shader_editor->set_area_as_parent_rect();
+		//shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		//shader_editor->hide();
 
 }
