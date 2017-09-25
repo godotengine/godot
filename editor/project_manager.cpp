@@ -51,9 +51,9 @@
 #include "version.h"
 #include "version_hash.gen.h"
 
-class NewProjectDialog : public ConfirmationDialog {
+class ProjectDialog : public ConfirmationDialog {
 
-	GDCLASS(NewProjectDialog, ConfirmationDialog);
+	GDCLASS(ProjectDialog, ConfirmationDialog);
 
 public:
 	enum Mode {
@@ -64,20 +64,56 @@ public:
 	};
 
 private:
+	enum MessageType {
+		MESSAGE_ERROR,
+		MESSAGE_WARNING,
+		MESSAGE_SUCCESS
+	};
+
 	Mode mode;
 	Button *browse;
-	Label *pp, *pn;
-	Label *error;
+	Button *create_dir;
+	Container *name_container;
+	Container *path_container;
+	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
+	ToolButton *status_btn;
 	FileDialog *fdialog;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
+	String fav_dir;
+
+	String created_folder_path;
+
+	void set_message(const String &p_msg, MessageType p_type = MESSAGE_SUCCESS) {
+		msg->set_text(p_msg);
+		if (p_msg == "") {
+			status_btn->set_icon(get_icon("StatusSuccess", "EditorIcons"));
+			return;
+		}
+		msg->hide();
+		switch (p_type) {
+			case MESSAGE_ERROR:
+				msg->add_color_override("font_color", get_color("error_color", "Editor"));
+				status_btn->set_icon(get_icon("StatusError", "EditorIcons"));
+				msg->show();
+				break;
+			case MESSAGE_WARNING:
+				msg->add_color_override("font_color", get_color("warning_color", "Editor"));
+				status_btn->set_icon(get_icon("StatusWarning", "EditorIcons"));
+				break;
+			case MESSAGE_SUCCESS:
+				msg->add_color_override("font_color", get_color("success_color", "Editor"));
+				status_btn->set_icon(get_icon("StatusSuccess", "EditorIcons"));
+				break;
+		}
+	}
 
 	String _test_path() {
 
-		error->set_text("");
+		set_message(" ");
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		String valid_path;
@@ -88,7 +124,7 @@ private:
 		}
 
 		if (valid_path == "") {
-			error->set_text(TTR("Invalid project path, the path must exist!"));
+			set_message(TTR("The path does not exists."), MESSAGE_ERROR);
 			memdelete(d);
 			return "";
 		}
@@ -97,16 +133,35 @@ private:
 
 			if (valid_path != "" && !d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, project.godot must exist."));
+				set_message(TTR("Please choose a 'project.godot' file."), MESSAGE_ERROR);
 				memdelete(d);
 				return "";
+			}
+
+		} else if (mode == MODE_NEW) {
+
+			// check if the specified folder is empty, even though this is not an error, it is good to check here
+			d->list_dir_begin();
+			bool is_empty = true;
+			String n = d->get_next();
+			while (n != String()) {
+				if (!n.begins_with(".")) { // i dont know if this is enough to guarantee an empty dir
+					is_empty = false;
+					break;
+				}
+				n = d->get_next();
+			}
+			d->list_dir_end();
+
+			if (!is_empty) {
+				set_message(TTR("Your project will be created in a non empty folder (you might want to create a new folder)."), MESSAGE_WARNING);
 			}
 
 		} else {
 
 			if (d->file_exists("project.godot")) {
 
-				error->set_text(TTR("Invalid project path, project.godot must not exist."));
+				set_message(TTR("Please choose a folder that does not contain a 'project.godot' file."), MESSAGE_ERROR);
 				memdelete(d);
 				return "";
 			}
@@ -122,16 +177,23 @@ private:
 		String sp = _test_path();
 		if (sp != "") {
 
-			sp = sp.replace("\\", "/");
-			int lidx = sp.find_last("/");
+			// set the project name to the select folder name
+			if (project_name->get_text() == "") {
+				sp = sp.replace("\\", "/");
+				int lidx = sp.find_last("/");
 
-			if (lidx != -1) {
-				sp = sp.substr(lidx + 1, sp.length());
+				if (lidx != -1) {
+					sp = sp.substr(lidx + 1, sp.length());
+				}
+				if (sp == "" && mode == MODE_IMPORT)
+					sp = TTR("Imported Project");
+
+				project_name->set_text(sp);
 			}
-			if (sp == "" && mode == MODE_IMPORT)
-				sp = TTR("Imported Project");
+		}
 
-			project_name->set_text(sp);
+		if (created_folder_path != "" && created_folder_path != p_path) {
+			_remove_created_folder();
 		}
 	}
 
@@ -140,13 +202,17 @@ private:
 		String p = p_path;
 		if (mode == MODE_IMPORT) {
 			if (p.ends_with("project.godot")) {
-
 				p = p.get_base_dir();
+				get_ok()->set_disabled(false);
+			} else {
+				set_message(TTR("Please choose a 'project.godot' file."), MESSAGE_ERROR);
+				get_ok()->set_disabled(true);
+				return;
 			}
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		_path_text_changed(sp);
+		set_message(TTR(" ")); // just so it does not disappear
 		get_ok()->call_deferred("grab_focus");
 	}
 
@@ -155,11 +221,12 @@ private:
 		String p = p_path;
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		_path_text_changed(sp);
 		get_ok()->call_deferred("grab_focus");
 	}
 
 	void _browse_path() {
+
+		fdialog->set_current_dir(project_path->get_text());
 
 		if (mode == MODE_IMPORT) {
 
@@ -172,34 +239,46 @@ private:
 		fdialog->popup_centered_ratio();
 	}
 
-	void _text_changed(const String &p_text) {
-		_test_path();
-		error->set_text("");
-		if (p_text == "") {
+	void _create_folder() {
 
-			error->set_text(TTR("Name cannot be empty"));
-			get_ok()->set_disabled(true);
+		if (project_name->get_text() == "" || created_folder_path != "") {
 			return;
 		}
-		get_ok()->set_disabled(false);
+
+		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (d->change_dir(project_path->get_text()) == OK) {
+			if (!d->dir_exists(project_name->get_text())) {
+				if (d->make_dir(project_name->get_text()) == OK) {
+					d->change_dir(project_name->get_text());
+					project_path->set_text(d->get_current_dir());
+					created_folder_path = d->get_current_dir();
+					create_dir->set_disabled(true);
+				}
+			}
+		}
+		memdelete(d);
 	}
 
-	void _name_changed(const String &p_text) {
+	void _text_changed(const String &p_text) {
+
+		if (mode != MODE_NEW)
+			return;
+
+		_test_path();
+
+		if (p_text == "")
+			set_message(TTR("It would be a good idea to name your project."), MESSAGE_WARNING);
 	}
 
 	void ok_pressed() {
 
-		String dir = _test_path();
-		if (dir == "") {
-			error->set_text(TTR("Invalid project path (changed anything?)."));
-			return;
-		}
+		String dir = project_path->get_text();
 
 		if (mode == MODE_RENAME) {
 
 			String dir = _test_path();
 			if (dir == "") {
-				error->set_text(TTR("Invalid project path (changed anything?)."));
+				set_message(TTR("Invalid project path (changed anything?)."), MESSAGE_ERROR);
 				return;
 			}
 
@@ -207,13 +286,13 @@ private:
 			current->add_singleton(ProjectSettings::Singleton("Current"));
 
 			if (current->setup(dir, "")) {
-				error->set_text(TTR("Couldn't get project.godot in project path."));
+				set_message(TTR("Couldn't get project.godot in project path."), MESSAGE_ERROR);
 			} else {
 				ProjectSettings::CustomMap edited_settings;
 				edited_settings["application/config/name"] = project_name->get_text();
 
 				if (current->save_custom(dir.plus_file("/project.godot"), edited_settings, Vector<String>(), true)) {
-					error->set_text(TTR("Couldn't edit project.godot in project path."));
+					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
 				}
 			}
 
@@ -232,13 +311,13 @@ private:
 					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("/project.godot"), initial_settings, Vector<String>(), false)) {
-						error->set_text(TTR("Couldn't create project.godot in project path."));
+						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
 
 						FileAccess *f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
 						if (!f) {
-							error->set_text(TTR("Couldn't create project.godot in project path."));
+							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
 							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
 							f->store_line("[sub_resource type=\"ProceduralSky\" id=1]");
@@ -356,14 +435,40 @@ private:
 		}
 	}
 
+	void _remove_created_folder() {
+
+		if (created_folder_path != "") {
+			DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			d->remove(created_folder_path);
+			memdelete(d);
+
+			create_dir->set_disabled(false);
+			created_folder_path = "";
+		}
+	}
+
+	void _toggle_message() {
+		msg->set_visible(!msg->is_visible());
+	}
+
+	void cancel_pressed() {
+
+		_remove_created_folder();
+
+		project_path->clear();
+		project_name->clear();
+	}
+
 protected:
 	static void _bind_methods() {
 
-		ClassDB::bind_method("_browse_path", &NewProjectDialog::_browse_path);
-		ClassDB::bind_method("_text_changed", &NewProjectDialog::_text_changed);
-		ClassDB::bind_method("_path_text_changed", &NewProjectDialog::_path_text_changed);
-		ClassDB::bind_method("_path_selected", &NewProjectDialog::_path_selected);
-		ClassDB::bind_method("_file_selected", &NewProjectDialog::_file_selected);
+		ClassDB::bind_method("_browse_path", &ProjectDialog::_browse_path);
+		ClassDB::bind_method("_create_folder", &ProjectDialog::_create_folder);
+		ClassDB::bind_method("_text_changed", &ProjectDialog::_text_changed);
+		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
+		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
+		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
+		ClassDB::bind_method("_toggle_message", &ProjectDialog::_toggle_message);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
@@ -390,129 +495,129 @@ public:
 		if (mode == MODE_RENAME) {
 
 			project_path->set_editable(false);
-			browse->set_disabled(true);
+			browse->hide();
 
 			set_title(TTR("Rename Project"));
 			get_ok()->set_text(TTR("Rename"));
-			pp->set_text(TTR("Project Path:"));
-			pn->set_text(TTR("Project Name:"));
-			pn->show();
-			project_name->show();
+			name_container->show();
 
-			String dir = _test_path();
-			if (dir == "") {
-				error->set_text(TTR("Invalid project path (changed anything?)."));
-				return;
-			}
 			ProjectSettings *current = memnew(ProjectSettings);
 			current->add_singleton(ProjectSettings::Singleton("Current"));
 
-			if (current->setup(dir, "")) {
-				error->set_text(TTR("Couldn't get project.godot in project path."));
-			} else {
-				if (current->has("application/config/name")) {
-					String appname = current->get("application/config/name");
-					project_name->set_text(appname);
-				}
+			if (current->setup(project_path->get_text(), "")) {
+				set_message(TTR("Couldn't get project.godot in the project path."), MESSAGE_ERROR);
+			} else if (current->has("application/config/name")) {
+				project_name->set_text(current->get("application/config/name"));
 			}
-
-			popup_centered(Size2(500, 125) * EDSCALE);
 			project_name->grab_focus();
+
+			create_dir->hide();
+			status_btn->hide();
 
 		} else {
 
-			project_path->clear();
-			project_name->clear();
+			fav_dir = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+			if (fav_dir != "") {
+				project_path->set_text(fav_dir);
+				fdialog->set_current_dir(fav_dir);
+			} else {
+				DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				project_path->set_text(d->get_current_dir());
+				fdialog->set_current_dir(d->get_current_dir());
+				memdelete(d);
+			}
+			project_name->set_text(TTR("New Game Project"));
+
 			project_path->set_editable(true);
 			browse->set_disabled(false);
+			browse->show();
+			create_dir->show();
+			status_btn->show();
 
 			if (mode == MODE_IMPORT) {
 				set_title(TTR("Import Existing Project"));
 				get_ok()->set_text(TTR("Import"));
-				pp->set_text(TTR("Project Path (Must Exist):"));
-				pn->set_text(TTR("Project Name:"));
-				pn->hide();
-				project_name->hide();
-
-				popup_centered(Size2(500, 125) * EDSCALE);
+				name_container->hide();
+				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
 
 				set_title(TTR("Create New Project"));
 				get_ok()->set_text(TTR("Create"));
-				pp->set_text(TTR("Project Path:"));
-				pn->set_text(TTR("Project Name:"));
-				pn->show();
-				project_name->show();
+				name_container->show();
+				project_name->grab_focus();
 
-				popup_centered(Size2(500, 145) * EDSCALE);
 			} else if (mode == MODE_INSTALL) {
 
 				set_title(TTR("Install Project:") + " " + zip_title);
 				get_ok()->set_text(TTR("Install"));
-				pp->set_text(TTR("Project Path:"));
-				pn->hide();
-				project_name->hide();
-
-				popup_centered(Size2(500, 125) * EDSCALE);
+				name_container->hide();
+				project_path->grab_focus();
 			}
-			project_path->grab_focus();
 
 			_test_path();
 		}
+
+		popup_centered(Size2(500, 125) * EDSCALE);
 	}
 
-	NewProjectDialog() {
+	ProjectDialog() {
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		add_child(vb);
-		//set_child_rect(vb);
+
+		name_container = memnew(VBoxContainer);
+		vb->add_child(name_container);
 
 		Label *l = memnew(Label);
-		l->set_text(TTR("Project Path:"));
-		vb->add_child(l);
-		pp = l;
-
-		project_path = memnew(LineEdit);
-		MarginContainer *mc = memnew(MarginContainer);
-		vb->add_child(mc);
-		HBoxContainer *pphb = memnew(HBoxContainer);
-		mc->add_child(pphb);
-		pphb->add_child(project_path);
-		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
-
-		browse = memnew(Button);
-		pphb->add_child(browse);
-		browse->set_text(TTR("Browse"));
-		browse->connect("pressed", this, "_browse_path");
-
-		l = memnew(Label);
 		l->set_text(TTR("Project Name:"));
-		l->set_position(Point2(5, 50));
-		vb->add_child(l);
-		pn = l;
+		name_container->add_child(l);
+
+		HBoxContainer *pnhb = memnew(HBoxContainer);
+		name_container->add_child(pnhb);
 
 		project_name = memnew(LineEdit);
-		mc = memnew(MarginContainer);
-		vb->add_child(mc);
-		mc->add_child(project_name);
-		project_name->set_text(TTR("New Game Project"));
+		project_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		pnhb->add_child(project_name);
+
+		create_dir = memnew(Button);
+		pnhb->add_child(create_dir);
+		create_dir->set_text(TTR("Create folder"));
+		create_dir->connect("pressed", this, "_create_folder");
+
+		path_container = memnew(VBoxContainer);
+		vb->add_child(path_container);
 
 		l = memnew(Label);
-		l->set_text(TTR("That's a BINGO!"));
-		vb->add_child(l);
-		error = l;
-		l->add_color_override("font_color", Color(1, 0.4, 0.3, 0.8));
-		l->set_align(Label::ALIGN_CENTER);
+		l->set_text(TTR("Project Path:"));
+		path_container->add_child(l);
 
-		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		project_path->set_text(d->get_current_dir());
-		memdelete(d);
+		HBoxContainer *pphb = memnew(HBoxContainer);
+		path_container->add_child(pphb);
+
+		project_path = memnew(LineEdit);
+		project_path->set_h_size_flags(SIZE_EXPAND_FILL);
+		pphb->add_child(project_path);
+
+		// status button
+		status_btn = memnew(ToolButton);
+		status_btn->connect("pressed", this, "_toggle_message");
+		pphb->add_child(status_btn);
+
+		browse = memnew(Button);
+		browse->set_text(TTR("Browse"));
+		browse->connect("pressed", this, "_browse_path");
+		pphb->add_child(browse);
+
+		msg = memnew(Label);
+		msg->set_text(TTR("That's a BINGO!"));
+		msg->set_align(Label::ALIGN_CENTER);
+		msg->hide();
+		vb->add_child(msg);
 
 		fdialog = memnew(FileDialog);
-		add_child(fdialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
-		fdialog->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
+		add_child(fdialog);
 		project_name->connect("text_changed", this, "_text_changed");
 		project_path->connect("text_changed", this, "_path_text_changed");
 		fdialog->connect("dir_selected", this, "_path_selected");
@@ -564,7 +669,7 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_color("guide_color", "Tree"));
 
 	if (selected_list.has(hb->get_meta("name"))) {
-		hb->draw_style_box(gui_base->get_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0)));
+		hb->draw_style_box(gui_base->get_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
 	}
 }
 
@@ -1168,13 +1273,13 @@ void ProjectManager::_scan_projects() {
 
 void ProjectManager::_new_project() {
 
-	npdialog->set_mode(NewProjectDialog::MODE_NEW);
+	npdialog->set_mode(ProjectDialog::MODE_NEW);
 	npdialog->show_dialog();
 }
 
 void ProjectManager::_import_project() {
 
-	npdialog->set_mode(NewProjectDialog::MODE_IMPORT);
+	npdialog->set_mode(ProjectDialog::MODE_IMPORT);
 	npdialog->show_dialog();
 }
 
@@ -1188,7 +1293,7 @@ void ProjectManager::_rename_project() {
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		npdialog->set_project_path(path);
-		npdialog->set_mode(NewProjectDialog::MODE_RENAME);
+		npdialog->set_mode(ProjectDialog::MODE_RENAME);
 		npdialog->show_dialog();
 	}
 }
@@ -1224,7 +1329,7 @@ void ProjectManager::_exit_dialog() {
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
 
-	npdialog->set_mode(NewProjectDialog::MODE_INSTALL);
+	npdialog->set_mode(ProjectDialog::MODE_INSTALL);
 	npdialog->set_zip_path(p_zip_path);
 	npdialog->set_zip_title(p_title);
 	npdialog->show_dialog();
@@ -1511,7 +1616,7 @@ ProjectManager::ProjectManager() {
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
-	npdialog = memnew(NewProjectDialog);
+	npdialog = memnew(ProjectDialog);
 	gui_base->add_child(npdialog);
 
 	npdialog->connect("project_renamed", this, "_on_project_renamed");
