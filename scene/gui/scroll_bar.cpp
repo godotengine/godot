@@ -343,7 +343,7 @@ void ScrollBar::_notification(int p_what) {
 				double dist = sqrt(target * target);
 				double vel = ((target / dist) * 500) * get_fixed_process_delta_time();
 
-				if (vel >= dist) {
+				if (Math::abs(vel) >= dist) {
 					set_value(target_scroll);
 				} else {
 					set_value(get_value() + vel);
