@@ -273,6 +273,8 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
+	virtual Error move_to_trash(const String &p_path);
+
 	OS_X11();
 };
 

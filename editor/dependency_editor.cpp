@@ -409,17 +409,22 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 
 void DependencyRemoveDialog::ok_pressed() {
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	bool changed = false;
+
 	for (Map<String, TreeItem *>::Element *E = files.front(); E; E = E->next()) {
 
 		if (ResourceCache::has(E->key())) {
 			Resource *res = ResourceCache::get(E->key());
 			res->set_path(""); //clear reference to path
 		}
-		da->remove(E->key());
-		EditorFileSystem::get_singleton()->update_file(E->key());
+		String fpath = OS::get_singleton()->get_resource_dir() + E->key().replace_first("res://", "/");
+		OS::get_singleton()->move_to_trash(fpath);
+		changed = true;
 	}
-	memdelete(da);
+
+	if (changed) {
+		EditorFileSystem::get_singleton()->scan_changes();
+	}
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {
