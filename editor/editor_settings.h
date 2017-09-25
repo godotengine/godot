@@ -65,6 +65,7 @@ private:
 	struct VariantContainer {
 		int order;
 		Variant variant;
+		Variant initial;
 		bool hide_from_editor;
 		bool save;
 		VariantContainer() {
@@ -87,6 +88,8 @@ private:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	void _initial_set(const StringName &p_name, const Variant &p_value);
 
 	static Ref<EditorSettings> singleton;
 
@@ -170,6 +173,11 @@ public:
 
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default);
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
+
+	bool property_can_revert(const String &p_name);
+	Variant property_get_revert(const String &p_name);
+
+	void set_initial_value(const StringName &p_name, const Variant &p_value);
 
 	EditorSettings();
 	~EditorSettings();

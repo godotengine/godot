@@ -334,6 +334,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->get_property_editor()->set_use_filter(true);
 	property_editor->register_search_box(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_editor->get_property_editor()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 	vbc->add_child(property_editor);
 	property_editor->get_property_editor()->connect("property_edited", this, "_settings_property_edited");
 
