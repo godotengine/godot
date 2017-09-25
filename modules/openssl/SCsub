@@ -6,7 +6,7 @@ Import('env_modules')
 env_openssl = env_modules.Clone()
 
 # Thirdparty source files
-if (env['builtin_openssl'] != 'no'):
+if env['builtin_openssl']:
     thirdparty_dir = "#thirdparty/openssl/"
 
     thirdparty_sources = [

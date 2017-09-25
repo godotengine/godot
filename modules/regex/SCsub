@@ -7,7 +7,7 @@ env_regex = env_modules.Clone()
 env_regex.Append(CPPFLAGS=["-DPCRE2_CODE_UNIT_WIDTH=0"])
 env_regex.add_source_files(env.modules_sources, "*.cpp")
 
-if (env['builtin_pcre2'] != 'no'):
+if env['builtin_pcre2']:
     jit_blacklist = ['javascript']
     thirdparty_dir = '#thirdparty/pcre2/src/'
     thirdparty_flags = ['-DPCRE2_STATIC', '-DHAVE_CONFIG_H']

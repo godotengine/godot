@@ -6,7 +6,7 @@ Import('env_modules')
 env_squish = env_modules.Clone()
 
 # Thirdparty source files
-if (env['builtin_squish'] != 'no'):
+if env['builtin_squish']:
     thirdparty_dir = "#thirdparty/squish/"
     thirdparty_sources = [
         "alpha.cpp",

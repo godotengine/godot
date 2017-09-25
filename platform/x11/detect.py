@@ -62,10 +62,10 @@ def get_opts():
 def get_flags():
 
     return [
-        ('builtin_freetype', 'no'),
-        ('builtin_libpng', 'no'),
-        ('builtin_openssl', 'no'),
-        ('builtin_zlib', 'no'),
+        ('builtin_freetype', False),
+        ('builtin_libpng', False),
+        ('builtin_openssl', False),
+        ('builtin_zlib', False),
     ]
 
 
@@ -137,64 +137,64 @@ def configure(env):
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
-    if (env['builtin_openssl'] == 'no'):
+    if not env['builtin_openssl']:
         env.ParseConfig('pkg-config openssl --cflags --libs')
 
-    if (env['builtin_libwebp'] == 'no'):
+    if not env['builtin_libwebp']:
         env.ParseConfig('pkg-config libwebp --cflags --libs')
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
-    if (env['builtin_freetype'] == 'yes' or env['builtin_libpng'] == 'yes' or env['builtin_zlib'] == 'yes'):
-        env['builtin_freetype'] = 'yes'
-        env['builtin_libpng'] = 'yes'
-        env['builtin_zlib'] = 'yes'
+    if env['builtin_freetype'] or env['builtin_libpng'] or env['builtin_zlib']:
+        env['builtin_freetype'] = True
+        env['builtin_libpng'] = True
+        env['builtin_zlib'] = True
 
-    if (env['builtin_freetype'] == 'no'):
+    if not env['builtin_freetype']:
         env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
-    if (env['builtin_libpng'] == 'no'):
+    if not env['builtin_libpng']:
         env.ParseConfig('pkg-config libpng --cflags --libs')
 
-    if (env['builtin_enet'] == 'no'):
+    if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if env['builtin_squish'] == 'no' and env['tools']:
+    if not env['builtin_squish'] and env['tools']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
-    if env['builtin_zstd'] == 'no':
+    if not env['builtin_zstd']:
         env.ParseConfig('pkg-config libzstd --cflags --libs')
 
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
 
-    if (env['builtin_libtheora'] == 'no'):
-        env['builtin_libogg'] = 'no'  # Needed to link against system libtheora
-        env['builtin_libvorbis'] = 'no'  # Needed to link against system libtheora
+    if not env['builtin_libtheora']:
+        env['builtin_libogg'] = False  # Needed to link against system libtheora
+        env['builtin_libvorbis'] = False  # Needed to link against system libtheora
         env.ParseConfig('pkg-config theora theoradec --cflags --libs')
 
-    if (env['builtin_libvpx'] == 'no'):
+    if not env['builtin_libvpx']:
         env.ParseConfig('pkg-config vpx --cflags --libs')
 
-    if (env['builtin_libvorbis'] == 'no'):
-        env['builtin_libogg'] = 'no'  # Needed to link against system libvorbis
+    if not env['builtin_libvorbis']:
+        env['builtin_libogg'] = False  # Needed to link against system libvorbis
         env.ParseConfig('pkg-config vorbis vorbisfile --cflags --libs')
 
-    if (env['builtin_opus'] == 'no'):
-        env['builtin_libogg'] = 'no'  # Needed to link against system opus
+    if not env['builtin_opus']:
+        env['builtin_libogg'] = False  # Needed to link against system opus
         env.ParseConfig('pkg-config opus opusfile --cflags --libs')
 
-    if (env['builtin_libogg'] == 'no'):
+    if not env['builtin_libogg']:
         env.ParseConfig('pkg-config ogg --cflags --libs')
 
-    if (env['builtin_libtheora'] != 'no'):
+    if env['builtin_libtheora']:
         list_of_x86 = ['x86_64', 'x86', 'i386', 'i586']
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimisations
-    if (env['builtin_pcre2'] == 'no'):
+    if not env['builtin_pcre2']:
         env.ParseConfig('pkg-config libpcre2-32 --cflags --libs')
 
     ## Flags
@@ -226,7 +226,7 @@ def configure(env):
                 print("libudev development libraries not found, disabling udev support")
 
     # Linkflags below this line should typically stay the last ones
-    if (env['builtin_zlib'] == 'no'):
+    if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Append(CPPPATH=['#platform/x11'])

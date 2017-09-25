@@ -4,7 +4,7 @@ Import('env')
 
 env.drivers_sources = []
 
-if ("builtin_zlib" in env and env["builtin_zlib"] == "yes"):
+if 'builtin_zlib' in env and env['builtin_zlib']:
     SConscript("zlib/SCsub")
 
 # OS drivers

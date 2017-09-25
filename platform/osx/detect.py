@@ -97,7 +97,7 @@ def configure(env):
 
     ## Dependencies
 
-    if (env['builtin_libtheora'] != 'no'):
+    if env['builtin_libtheora']:
         env["x86_libtheora_opt_gcc"] = True
 
     ## Flags

@@ -5,7 +5,7 @@ Import('env')
 env_png = env.Clone()
 
 # Thirdparty source files
-if (env['builtin_libpng'] != 'no'):
+if env['builtin_libpng']:
     thirdparty_dir = "#thirdparty/libpng/"
     thirdparty_sources = [
         "png.c",
