@@ -6,6 +6,16 @@ env.editor_sources = []
 import os
 from compat import encode_utf8, byte_to_str, open_utf8
 
+def escape_string(s, encoding='ascii'):
+    if isinstance(s, unicode):
+        s = s.encode(encoding)
+    result = ''
+    for c in s:
+        if not (32 <= ord(c) < 127) or c in ('\\', '"'):
+            result += '\\%03o' % ord(c)
+        else:
+            result += c
+    return result
 
 def make_certs_header(target, source, env):
 
@@ -162,7 +172,7 @@ def make_authors_header(target, source, env):
     for line in f:
         if reading:
             if line.startswith("    "):
-                g.write("\t\"" + line.strip() + "\",\n")
+                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
                 continue
         if line.startswith("## "):
             if reading:
@@ -170,7 +180,7 @@ def make_authors_header(target, source, env):
                 reading = False
             for i in range(len(sections)):
                 if line.strip().endswith(sections[i]):
-                    current_section = sections_id[i]
+                    current_section = escape_string(sections_id[i])
                     reading = True
                     g.write("static const char *" + current_section + "[] = {\n")
                     break
@@ -204,7 +214,7 @@ def make_donors_header(target, source, env):
     for line in f:
         if reading >= 0:
             if line.startswith("    "):
-                g.write("\t\"" + line.strip() + "\",\n")
+                g.write("\t\"" + escape_string(line.strip()) + "\",\n")
                 continue
         if line.startswith("## "):
             if reading:
@@ -212,7 +222,7 @@ def make_donors_header(target, source, env):
                 reading = False
             for i in range(len(sections)):
                 if line.strip().endswith(sections[i]):
-                    current_section = sections_id[i]
+                    current_section = escape_string(sections_id[i])
                     reading = True
                     g.write("static const char *" + current_section + "[] = {\n")
                     break
@@ -237,7 +247,8 @@ def make_license_header(target, source, env):
     g.write("static const char *about_license =")
 
     for line in f:
-        g.write("\n\t\"" + line.strip().replace("\"", "\\\"") + "\\n\"")
+        escaped_string = escape_string(line.strip().replace("\"", "\\\""))
+        g.write("\n\t\"" + escaped_string + "\\n\"")
 
     g.write(";\n")
 
@@ -322,11 +333,13 @@ def make_license_header(target, source, env):
             for k in j[0].split("\n"):
                 if file_body != "":
                     file_body += "\\n\"\n"
-                file_body += "\t\"" + k.strip().replace("\"", "\\\"")
+                escaped_string = escape_string(k.strip().replace("\"", "\\\""))
+                file_body += "\t\"" + escaped_string
             for k in j[1].split("\n"):
                 if copyright_body != "":
                     copyright_body += "\\n\"\n"
-                copyright_body += "\t\"" + k.strip().replace("\"", "\\\"")
+                escaped_string = escape_string(k.strip().replace("\"", "\\\""))
+                copyright_body += "\t\"" + escaped_string
 
             about_tp_file += "\t" + file_body + "\",\n"
             about_tp_copyright += "\t" + copyright_body + "\",\n"
@@ -340,7 +353,8 @@ def make_license_header(target, source, env):
         for j in i[1].split("\n"):
             if body != "":
                 body += "\\n\"\n"
-            body += "\t\"" + j.strip().replace("\"", "\\\"")
+            escaped_string = escape_string(j.strip().replace("\"", "\\\""))
+            body += "\t\"" + escaped_string
 
         about_license_name += "\t\"" + i[0] + "\",\n"
         about_license_body += "\t" + body + "\",\n"
