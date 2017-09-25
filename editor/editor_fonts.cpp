@@ -158,6 +158,16 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
+	Ref<DynamicFont> df_output_code;
+	df_output_code.instance();
+	df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+	df_output_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
+	df_output_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
+	df_output_code->set_font_data(dfmono);
+	MAKE_FALLBACKS(df_output_code);
+
+	p_theme->set_font("output_source", "EditorFonts", df_output_code);
+
 	//replace default theme
 	Ref<Texture> di;
 	Ref<StyleBox> ds;

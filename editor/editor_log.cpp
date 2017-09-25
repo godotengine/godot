@@ -31,6 +31,7 @@
 
 #include "editor_node.h"
 #include "scene/gui/center_container.h"
+#include "scene/resources/dynamic_font.h"
 #include "version.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
@@ -51,7 +52,6 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		self->emit_signal("show_request");
 	*/
 
-	err_str = " " + err_str;
 	self->add_message(err_str, true);
 }
 
@@ -60,6 +60,13 @@ void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		//button->set_icon(get_icon("Console","EditorIcons"));
+		log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
+		if (df_output_code.is_valid()) {
+			df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+			log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+		}
 	}
 
 	/*if (p_what==NOTIFICATION_DRAW) {
@@ -85,15 +92,13 @@ void EditorLog::clear() {
 
 void EditorLog::add_message(const String &p_msg, bool p_error) {
 
-	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
-	log->push_font(doc_code_font);
-
 	log->add_newline();
 
 	if (p_error) {
 		log->push_color(get_color("error_color", "Editor"));
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
 		log->add_image(icon);
+		log->add_text(" ");
 		//button->set_icon(icon);
 	} else {
 		//button->set_icon(Ref<Texture>());
@@ -104,8 +109,6 @@ void EditorLog::add_message(const String &p_msg, bool p_error) {
 
 	if (p_error)
 		log->pop();
-
-	log->pop(); // pop font;
 }
 
 /*
