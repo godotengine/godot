@@ -802,7 +802,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
 	style_tooltip->set_border_width_all(border_width);
 	style_tooltip->set_border_color_all(mono_color);
-	theme->set_color("font_color", "TooltipPanel", font_color);
+	theme->set_color("font_color", "TooltipLabel", font_color.inverted());
+	theme->set_color("font_color_shadow", "TooltipLabel", mono_color.inverted() * Color(1, 1, 1, 0.1));
 	theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 
 	// PopupPanel
