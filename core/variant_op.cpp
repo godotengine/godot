@@ -100,32 +100,32 @@
 }
 /* clang-format on */
 
-#define CASES(PREFIX) static void *switch_table_##PREFIX[25][27] = { \
-	TYPES(PREFIX, OP_EQUAL),                                         \
-	TYPES(PREFIX, OP_NOT_EQUAL),                                     \
-	TYPES(PREFIX, OP_LESS),                                          \
-	TYPES(PREFIX, OP_LESS_EQUAL),                                    \
-	TYPES(PREFIX, OP_GREATER),                                       \
-	TYPES(PREFIX, OP_GREATER_EQUAL),                                 \
-	TYPES(PREFIX, OP_ADD),                                           \
-	TYPES(PREFIX, OP_SUBTRACT),                                      \
-	TYPES(PREFIX, OP_MULTIPLY),                                      \
-	TYPES(PREFIX, OP_DIVIDE),                                        \
-	TYPES(PREFIX, OP_NEGATE),                                        \
-	TYPES(PREFIX, OP_POSITIVE),                                      \
-	TYPES(PREFIX, OP_MODULE),                                        \
-	TYPES(PREFIX, OP_STRING_CONCAT),                                 \
-	TYPES(PREFIX, OP_SHIFT_LEFT),                                    \
-	TYPES(PREFIX, OP_SHIFT_RIGHT),                                   \
-	TYPES(PREFIX, OP_BIT_AND),                                       \
-	TYPES(PREFIX, OP_BIT_OR),                                        \
-	TYPES(PREFIX, OP_BIT_XOR),                                       \
-	TYPES(PREFIX, OP_BIT_NEGATE),                                    \
-	TYPES(PREFIX, OP_AND),                                           \
-	TYPES(PREFIX, OP_OR),                                            \
-	TYPES(PREFIX, OP_XOR),                                           \
-	TYPES(PREFIX, OP_NOT),                                           \
-	TYPES(PREFIX, OP_IN),                                            \
+#define CASES(PREFIX) static const void *switch_table_##PREFIX[25][27] = { \
+	TYPES(PREFIX, OP_EQUAL),                                               \
+	TYPES(PREFIX, OP_NOT_EQUAL),                                           \
+	TYPES(PREFIX, OP_LESS),                                                \
+	TYPES(PREFIX, OP_LESS_EQUAL),                                          \
+	TYPES(PREFIX, OP_GREATER),                                             \
+	TYPES(PREFIX, OP_GREATER_EQUAL),                                       \
+	TYPES(PREFIX, OP_ADD),                                                 \
+	TYPES(PREFIX, OP_SUBTRACT),                                            \
+	TYPES(PREFIX, OP_MULTIPLY),                                            \
+	TYPES(PREFIX, OP_DIVIDE),                                              \
+	TYPES(PREFIX, OP_NEGATE),                                              \
+	TYPES(PREFIX, OP_POSITIVE),                                            \
+	TYPES(PREFIX, OP_MODULE),                                              \
+	TYPES(PREFIX, OP_STRING_CONCAT),                                       \
+	TYPES(PREFIX, OP_SHIFT_LEFT),                                          \
+	TYPES(PREFIX, OP_SHIFT_RIGHT),                                         \
+	TYPES(PREFIX, OP_BIT_AND),                                             \
+	TYPES(PREFIX, OP_BIT_OR),                                              \
+	TYPES(PREFIX, OP_BIT_XOR),                                             \
+	TYPES(PREFIX, OP_BIT_NEGATE),                                          \
+	TYPES(PREFIX, OP_AND),                                                 \
+	TYPES(PREFIX, OP_OR),                                                  \
+	TYPES(PREFIX, OP_XOR),                                                 \
+	TYPES(PREFIX, OP_NOT),                                                 \
+	TYPES(PREFIX, OP_IN),                                                  \
 }
 
 #define SWITCH(PREFIX, op, val) goto *switch_table_##PREFIX[op][val];
