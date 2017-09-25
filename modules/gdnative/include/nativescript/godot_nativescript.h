@@ -51,8 +51,8 @@ extern "C" {
 #elif defined(__APPLE__)
 #include "TargetConditionals.h"
 #if TARGET_OS_IPHONE
-#define GDCALLINGCONV
-#define GDAPI
+#define GDCALLINGCONV __attribute__((visibility("default")))
+#define GDAPI GDCALLINGCONV
 #elif TARGET_OS_MAC
 #define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV

@@ -11,7 +11,7 @@ gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 gdn_env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
-if "platform" in env and env["platform"] == "x11": # there has to be a better solution?
+if "platform" in env and env["platform"] in ["x11", "iphone"]:
     env.Append(LINKFLAGS=["-rdynamic"])
 
 env.use_ptrcall = True
