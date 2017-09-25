@@ -265,7 +265,7 @@ if env["platform"] == 'uwp':
 else:
     import platform
     is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and platform.machine().startswith('arm'))
-    is_ios_x86 = (env["platform"] == 'iphone' and env["ios_sim"] == "yes")
+    is_ios_x86 = (env["platform"] == 'iphone' and env["ios_sim"])
     is_android_x86 = (env["platform"] == 'android' and env["android_arch"] == 'x86')
     if is_android_x86:
         cpu_bits = '32'

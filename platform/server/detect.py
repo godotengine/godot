@@ -19,9 +19,9 @@ def can_build():
 
 
 def get_opts():
-
+    from SCons.Variables import BoolVariable
     return [
-        ('use_llvm', 'Use the LLVM compiler', 'no'),
+        BoolVariable('use_llvm', 'Use the LLVM compiler', False),
     ]
 
 
@@ -52,7 +52,7 @@ def configure(env):
 
     ## Compiler configuration
 
-    if (env["use_llvm"] == "yes"):
+    if env['use_llvm']:
         if ('clang++' not in env['CXX']):
             env["CC"] = "clang"
             env["CXX"] = "clang++"

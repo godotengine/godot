@@ -45,16 +45,16 @@ def can_build():
     return True
 
 def get_opts():
-    from SCons.Variables import EnumVariable
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
-        ('use_llvm', 'Use the LLVM compiler', 'no'),
-        ('use_static_cpp', 'Link stdc++ statically', 'no'),
-        ('use_sanitizer', 'Use LLVM compiler address sanitizer', 'no'),
-        ('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', 'no'),
-        ('use_lto', 'Use link time optimization', 'no'),
-        ('pulseaudio', 'Detect & use pulseaudio', 'yes'),
-        ('udev', 'Use udev for gamepad connection callbacks', 'no'),
+        BoolVariable('use_llvm', 'Use the LLVM compiler', False),
+        BoolVariable('use_static_cpp', 'Link stdc++ statically', False),
+        BoolVariable('use_sanitizer', 'Use LLVM compiler address sanitizer', False),
+        BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
+        BoolVariable('use_lto', 'Use link time optimization', False),
+        BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
+        BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
@@ -101,7 +101,7 @@ def configure(env):
 
     ## Compiler configuration
 
-    if (env["use_llvm"] == "yes"):
+    if env['use_llvm']:
         if ('clang++' not in env['CXX']):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
@@ -110,18 +110,18 @@ def configure(env):
         env.extra_suffix = ".llvm" + env.extra_suffix
 
     # leak sanitizer requires (address) sanitizer
-    if (env["use_sanitizer"] == "yes" or env["use_leak_sanitizer"] == "yes"):
+    if env['use_sanitizer'] or env['use_leak_sanitizer']:
         env.Append(CCFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
         env.Append(LINKFLAGS=['-fsanitize=address'])
         env.extra_suffix += "s"
-        if (env["use_leak_sanitizer"] == "yes"):
+        if env['use_leak_sanitizer']:
             env.Append(CCFLAGS=['-fsanitize=leak'])
             env.Append(LINKFLAGS=['-fsanitize=leak'])
 
-    if (env["use_lto"] == "yes"):
+    if env['use_lto']:
         env.Append(CCFLAGS=['-flto'])
         env.Append(LINKFLAGS=['-flto'])
-        if (env["use_llvm"] == "no"):
+        if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
 
@@ -206,7 +206,7 @@ def configure(env):
     else:
         print("ALSA libraries not found, disabling driver")
 
-    if (env["pulseaudio"] == "yes"):
+    if env['pulseaudio']:
         if (os.system("pkg-config --exists libpulse-simple") == 0): # 0 means found
             print("Enabling PulseAudio")
             env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
@@ -217,7 +217,7 @@ def configure(env):
     if (platform.system() == "Linux"):
         env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
 
-        if (env["udev"] == "yes"):
+        if env['udev']:
             if (os.system("pkg-config --exists libudev") == 0): # 0 means found
                 print("Enabling udev support")
                 env.Append(CPPFLAGS=["-DUDEV_ENABLED"])
@@ -245,5 +245,5 @@ def configure(env):
         env.Append(CPPFLAGS=['-m64'])
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
 
-    if (env["use_static_cpp"] == "yes"):
+    if env['use_static_cpp']:
         env.Append(LINKFLAGS=['-static-libstdc++'])

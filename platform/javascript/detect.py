@@ -17,10 +17,10 @@ def can_build():
 
 
 def get_opts():
-
+    from SCons.Variables import BoolVariable
     return [
-        ['wasm', 'Compile to WebAssembly', 'no'],
-        ['javascript_eval', 'Enable JavaScript eval interface', 'yes'],
+        BoolVariable('wasm', 'Compile to WebAssembly', False),
+        BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
     ]
 
 
@@ -95,7 +95,7 @@ def configure(env):
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
 
-    if env['javascript_eval'] == 'yes':
+    if env['javascript_eval']:
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
 
     ## Link flags
@@ -103,7 +103,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
-    if (env['wasm'] == 'yes'):
+    if env['wasm']:
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
         # In contrast to asm.js, enabling memory growth on WebAssembly has no
         # major performance impact, and causes only a negligible increase in
