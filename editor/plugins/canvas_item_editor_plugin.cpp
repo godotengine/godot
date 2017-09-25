@@ -3823,7 +3823,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	snap_config_menu = memnew(MenuButton);
 	hb->add_child(snap_config_menu);
-	snap_config_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
 	snap_config_menu->set_tooltip(TTR("Snapping options"));
 
@@ -3877,7 +3876,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	p = skeleton_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
-	p->connect("id_pressed", this, "_popup_callback");
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTR("Make Bones"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B), SKELETON_MAKE_BONES);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_bones", TTR("Clear Bones")), SKELETON_CLEAR_BONES);
 	p->add_separator();
