@@ -109,16 +109,13 @@ void Physics2DServerWrapMT::init() {
 	if (create_thread) {
 
 		step_sem = Semaphore::create();
-		print_line("CREATING PHYSICS 2D THREAD");
 		//OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
-			print_line("STARTING PHYISICS 2D THREAD");
 		}
 		while (!step_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
-		print_line("DONE PHYSICS 2D THREAD");
 	} else {
 
 		physics_2d_server->init();
