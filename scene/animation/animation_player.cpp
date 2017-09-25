@@ -253,7 +253,20 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 
 		if (a->track_get_path(i).get_property() && Object::cast_to<Skeleton>(child)) {
 
-			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(a->track_get_path(i).get_property());
+			String ps = a->track_get_path(i).get_property();
+			Skeleton *skel = Object::cast_to<Skeleton>(child);
+
+			if (ps.findn("bones/") >= 0) {
+
+				String idx_str = ps.get_slice("/", ps.get_slice_count("/") - 1);
+				if (idx_str.is_valid_integer()) {
+					bone_idx = idx_str.to_int();
+				}
+			} else {
+
+				bone_idx = skel->find_bone(ps);
+			}
+
 			if (bone_idx == -1) {
 
 				continue;
@@ -290,10 +303,19 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 				p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
 				if (p_anim->node_cache[i]->skeleton) {
 
-					StringName bone_name = a->track_get_path(i).get_property();
-					if (bone_name.operator String() != "") {
+					String bone_name = a->track_get_path(i).get_property();
+					if (bone_name != "") {
 
-						p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
+						if (bone_name.findn("bones/") >= 0) {
+
+							String idx_str = bone_name.get_slice("/", bone_name.get_slice_count("/") - 1);
+							if (idx_str.is_valid_integer()) {
+								p_anim->node_cache[i]->bone_idx = idx_str.to_int();
+							}
+						} else {
+							p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
+						}
+
 						if (p_anim->node_cache[i]->bone_idx < 0) {
 							// broken track (nonexistent bone)
 							p_anim->node_cache[i]->skeleton = NULL;
