@@ -151,7 +151,7 @@ def configure(env):
     env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 
     # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
         env.opus_fixed_point = "yes"
         if (env["arch"] == "arm"):
             env.Append(CFLAGS=["-DOPUS_ARM_OPT"])

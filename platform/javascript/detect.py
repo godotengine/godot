@@ -28,7 +28,7 @@ def get_flags():
 
     return [
         ('tools', False),
-        ('module_theora_enabled', 'no'),
+        ('module_theora_enabled', False),
     ]
 
 
@@ -116,5 +116,5 @@ def configure(env):
         env.Append(LINKFLAGS=['--memory-init-file', '1'])
 
     # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
         env.opus_fixed_point = "yes"

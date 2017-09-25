@@ -189,7 +189,7 @@ for k in platform_opts.keys():
         opts.Add(o)
 
 for x in module_list:
-    opts.Add('module_' + x + '_enabled', "Enable module '" + x + "' (yes/no)", "yes")
+    opts.Add(BoolVariable('module_' + x + '_enabled', "Enable module '%s'" % (x, ), True))
 
 opts.Update(env_base)  # update environment
 Help(opts.GenerateHelpText(env_base))  # generate help
@@ -359,7 +359,7 @@ if selected_platform in platform_list:
     env.doc_class_path={}
 
     for x in module_list:
-        if env['module_' + x + '_enabled'] != "yes":
+        if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
         sys.path.append(tmppath)
