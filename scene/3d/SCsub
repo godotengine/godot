@@ -3,7 +3,7 @@
 Import('env')
 
 
-if (env["disable_3d"] == "yes"):
+if env['disable_3d']:
 
     env.scene_sources.append("3d/spatial.cpp")
     env.scene_sources.append("3d/skeleton.cpp")

@@ -136,25 +136,25 @@ opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32
 opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
-opts.Add('tools', "Build the tools a.k.a. the Godot editor (yes/no)", 'yes')
+opts.Add(BoolVariable('tools', "Build the tools a.k.a. the Godot editor", True))
 
 # Components
-opts.Add('deprecated', "Enable deprecated features (yes/no)", 'yes')
-opts.Add('gdscript', "Build GDSCript support (yes/no)", 'yes')
-opts.Add('minizip', "Build minizip archive support (yes/no)", 'yes')
-opts.Add('xaudio2', "XAudio2 audio driver (yes/no)", 'no')
-opts.Add('xml', "XML format support for resources (yes/no)", 'yes')
+opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
+opts.Add(BoolVariable('gdscript', "Build GDSCript support", True))
+opts.Add(BoolVariable('minizip', "Build minizip archive support", True))
+opts.Add(BoolVariable('xaudio2', "XAudio2 audio driver", False))
+opts.Add(BoolVariable('xml', "XML format support for resources", True))
 
 # Advanced options
-opts.Add('disable_3d', "Disable 3D nodes for smaller executable (yes/no)", 'no')
-opts.Add('disable_advanced_gui', "Disable advance 3D gui nodes and behaviors (yes/no)", 'no')
+opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for smaller executable", False))
+opts.Add(BoolVariable('disable_advanced_gui', "Disable advance 3D gui nodes and behaviors", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
-opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'no')
-opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
+opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable('vsproj', "Generate Visual Studio Project.", False))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
-opts.Add('progress', "Show a progress indicator during build (yes/no)", 'yes')
-opts.Add('dev', "If yes, alias for verbose=yes warnings=all (yes/no)", 'no')
+opts.Add(BoolVariable('progress', "Show a progress indicator during build", True))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 
 # Thirdparty libraries
 opts.Add('builtin_enet', "Use the builtin enet library (yes/no)", 'yes')
@@ -213,7 +213,7 @@ if (env_base['target'] == 'debug'):
     env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
     env_base.Append(CPPFLAGS=['-DSCI_NAMESPACE'])
 
-if (env_base['deprecated'] == 'no'):
+if not env_base['deprecated']:
     env_base.Append(CPPFLAGS=['-DDISABLE_DEPRECATED'])
 
 env_base.platforms = {}
@@ -237,11 +237,11 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
     
-    if (env["dev"] == "yes"):
+    if env['dev']:
         env["warnings"] = "all"
-        env["verbose"] = "yes"
+        env['verbose'] = True
 
-    if env['vsproj'] == "yes":
+    if env['vsproj']:
         env.vs_incs = []
         env.vs_srcs = []
 
@@ -319,19 +319,19 @@ if selected_platform in platform_list:
     suffix = "." + selected_platform
 
     if (env["target"] == "release"):
-        if (env["tools"] == "yes"):
+        if env["tools"]:
             print("Tools can only be built with targets 'debug' and 'release_debug'.")
             sys.exit(255)
         suffix += ".opt"
         env.Append(CCFLAGS=['-DNDEBUG'])
 
     elif (env["target"] == "release_debug"):
-        if (env["tools"] == "yes"):
+        if env["tools"]:
             suffix += ".opt.tools"
         else:
             suffix += ".opt.debug"
     else:
-        if (env["tools"] == "yes"):
+        if env["tools"]:
             suffix += ".tools"
         else:
             suffix += ".debug"
@@ -386,22 +386,22 @@ if selected_platform in platform_list:
     # to test 64 bits compiltion
     # env.Append(CPPFLAGS=['-m64'])
 
-    if (env['tools'] == 'yes'):
+    if env['tools']:
         env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])
-    if (env['disable_3d'] == 'yes'):
+    if env['disable_3d']:
         env.Append(CPPFLAGS=['-D_3D_DISABLED'])
-    if (env['gdscript'] == 'yes'):
+    if env['gdscript']:
         env.Append(CPPFLAGS=['-DGDSCRIPT_ENABLED'])
-    if (env['disable_advanced_gui'] == 'yes'):
+    if env['disable_advanced_gui']:
         env.Append(CPPFLAGS=['-DADVANCED_GUI_DISABLED'])
 
-    if (env['minizip'] == 'yes'):
+    if env['minizip']:
         env.Append(CPPFLAGS=['-DMINIZIP_ENABLED'])
 
-    if (env['xml'] == 'yes'):
+    if env['xml']:
         env.Append(CPPFLAGS=['-DXML_ENABLED'])
 
-    if (env['verbose'] == 'no'):
+    if not env['verbose']:
         methods.no_verbose(sys, env)
 
     if (True): # FIXME: detect GLES3
@@ -423,7 +423,7 @@ if selected_platform in platform_list:
     SConscript("platform/" + selected_platform + "/SCsub")  # build selected platform
 
     # Microsoft Visual Studio Project Generation
-    if (env['vsproj']) == "yes":
+    if env['vsproj']:
         methods.generate_vs_project(env, GetOption("num_jobs"))
 
     # Check for the existence of headers
@@ -470,7 +470,7 @@ def progress_finish(target, source, env):
     with open(node_count_fname, 'w') as f:
         f.write('%d\n' % node_count)
 
-if ('env' in locals() and env["progress"] == "yes"):
+if 'env' in locals() and env['progress']:
     try:
         with open(node_count_fname) as f:
             node_count_max = int(f.readline())

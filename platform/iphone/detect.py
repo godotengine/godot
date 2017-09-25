@@ -37,7 +37,7 @@ def get_opts():
 def get_flags():
 
     return [
-        ('tools', 'no'),
+        ('tools', False),
     ]
 
 

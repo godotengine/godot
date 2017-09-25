@@ -6,6 +6,6 @@ def can_build(platform):
 def configure(env):
     # Tools only, disabled for non-tools
     # TODO: Find a cleaner way to achieve that
-    if (env["tools"] == "no"):
+    if not env['tools']:
         env["module_squish_enabled"] = "no"
         env.disabled_modules.append("squish")

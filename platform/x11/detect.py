@@ -159,7 +159,7 @@ def configure(env):
     if (env['builtin_enet'] == 'no'):
         env.ParseConfig('pkg-config libenet --cflags --libs')
 
-    if (env['builtin_squish'] == 'no' and env["tools"] == "yes"):
+    if env['builtin_squish'] == 'no' and env['tools']:
         env.ParseConfig('pkg-config libsquish --cflags --libs')
 
     if env['builtin_zstd'] == 'no':

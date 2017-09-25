@@ -33,8 +33,8 @@ def get_opts():
 def get_flags():
 
     return [
-        ('tools', 'no'),
-        ('xaudio2', 'yes'),
+        ('tools', False),
+        ('xaudio2', True),
     ]
 
 
