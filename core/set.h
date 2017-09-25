@@ -100,17 +100,15 @@ private:
 		Element *_nil;
 		int size_cache;
 
-		_Data() {
+		_FORCE_INLINE_ _Data() {
 #ifdef GLOBALNIL_DISABLED
 			_nil = memnew_allocator(Element, A);
 			_nil->parent = _nil->left = _nil->right = _nil;
 			_nil->color = BLACK;
 #else
-
 			_nil = (Element *)&_GlobalNilClass::_nil;
 #endif
 			_root = NULL;
-
 			size_cache = 0;
 		}
 
@@ -132,6 +130,7 @@ private:
 		~_Data() {
 
 			_free_root();
+
 #ifdef GLOBALNIL_DISABLED
 			memdelete_allocator<Element, A>(_nil);
 #endif
@@ -196,7 +195,7 @@ private:
 			}
 
 			if (node->parent == _data._root)
-				return NULL; // No successor, as p_node is the last node.
+				return NULL; // No successor, as p_node = last node
 			return node->parent;
 		}
 	}
@@ -218,7 +217,7 @@ private:
 			}
 
 			if (node == _data._root)
-				return NULL; // No predecessor, as p_node is the first node.
+				return NULL; // No predecessor, as p_node = first node.
 			return node->parent;
 		}
 	}
@@ -266,65 +265,13 @@ private:
 		return prev;
 	}
 
-	Element *_insert(const T &p_value, bool &r_exists) {
+	void _insert_rb_fix(Element *p_new_node) {
 
-		Element *new_parent = _data._root;
-		Element *node = _data._root->left;
-		C less;
-
-		while (node != _data._nil) {
-
-			new_parent = node;
-
-			if (less(p_value, node->value))
-				node = node->left;
-			else if (less(node->value, p_value))
-				node = node->right;
-			else {
-				r_exists = true;
-				return node;
-			}
-		}
-
-		r_exists = false;
-
-		Element *new_node = memnew_allocator(Element, A);
-		new_node->parent = new_parent;
-		new_node->right = _data._nil;
-		new_node->left = _data._nil;
-		new_node->value = p_value;
-		//new_node->data=_data;
-
-		if (new_parent == _data._root || less(p_value, new_parent->value)) {
-			new_parent->left = new_node;
-		} else {
-			new_parent->right = new_node;
-		}
-
-		new_node->_next = _successor(new_node);
-		new_node->_prev = _predecessor(new_node);
-		if (new_node->_next)
-			new_node->_next->_prev = new_node;
-		if (new_node->_prev)
-			new_node->_prev->_next = new_node;
-
-		return new_node;
-	}
-
-	Element *_insert_rb(const T &p_value) {
-
-		bool exists = false;
-		Element *new_node = _insert(p_value, exists);
-		if (exists)
-			return new_node;
-
-		_data.size_cache++;
-		Element *node = new_node;
+		Element *node = p_new_node;
 		Element *nparent = node->parent;
 		Element *ngrand_parent;
 
 		while (nparent->color == RED) {
-
 			ngrand_parent = nparent->parent;
 
 			if (nparent == ngrand_parent->left) {
@@ -365,11 +312,53 @@ private:
 		}
 
 		_set_color(_data._root->left, BLACK);
+	}
 
+	Element *_insert(const T &p_value) {
+
+		Element *new_parent = _data._root;
+		Element *node = _data._root->left;
+		C less;
+
+		while (node != _data._nil) {
+
+			new_parent = node;
+
+			if (less(p_value, node->value))
+				node = node->left;
+			else if (less(node->value, p_value))
+				node = node->right;
+			else {
+				return node; // Return existing node
+			}
+		}
+
+		Element *new_node = memnew_allocator(Element, A);
+		new_node->parent = new_parent;
+		new_node->right = _data._nil;
+		new_node->left = _data._nil;
+		new_node->value = p_value;
+		//new_node->data=_data;
+
+		if (new_parent == _data._root || less(p_value, new_parent->value)) {
+			new_parent->left = new_node;
+		} else {
+			new_parent->right = new_node;
+		}
+
+		new_node->_next = _successor(new_node);
+		new_node->_prev = _predecessor(new_node);
+		if (new_node->_next)
+			new_node->_next->_prev = new_node;
+		if (new_node->_prev)
+			new_node->_prev->_next = new_node;
+
+		_data.size_cache++;
+		_insert_rb_fix(new_node);
 		return new_node;
 	}
 
-	void _erase_fix(Element *p_node) {
+	void _erase_fix_rb(Element *p_node) {
 
 		Element *root = _data._root->left;
 		Element *node = _data._nil;
@@ -450,7 +439,7 @@ private:
 			node->parent = rp->parent;
 			_set_color(node, BLACK);
 		} else if (rp->color == BLACK && rp->parent != _data._root) {
-			_erase_fix(sibling);
+			_erase_fix_rb(sibling);
 		}
 
 		if (rp != p_node) {
@@ -485,11 +474,12 @@ private:
 
 	void _calculate_depth(Element *p_element, int &max_d, int d) const {
 
-		if (p_element == _data._nil) {
+		if (p_element == _data._nil)
 			return;
-		}
+
 		_calculate_depth(p_element->left, max_d, d + 1);
 		_calculate_depth(p_element->right, max_d, d + 1);
+
 		if (d > max_d)
 			max_d = d;
 	}
@@ -533,10 +523,13 @@ public:
 		return res;
 	}
 
+	Element *lower_bound(const T &p_value) const {
+
+		return _lower_bound(p_value);
+	}
+
 	bool has(const T &p_value) const {
 
-		if (!_data._root)
-			return false;
 		return find(p_value) != NULL;
 	}
 
@@ -544,7 +537,7 @@ public:
 
 		if (!_data._root)
 			_data._create_root();
-		return _insert_rb(p_value);
+		return _insert(p_value);
 	}
 
 	void erase(Element *p_element) {
@@ -600,11 +593,6 @@ public:
 			e = e->right;
 
 		return e;
-	}
-
-	Element *lower_bound(const T &p_value) const {
-
-		return _lower_bound(p_value);
 	}
 
 	inline int size() const { return _data.size_cache; }
