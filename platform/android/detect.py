@@ -18,11 +18,12 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import EnumVariable
 
     return [
         ('ANDROID_NDK_ROOT', 'Path to the Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
-        ('android_arch', 'Target architecture (armv7/armv6/arm64v8/x86)', "armv7"),
+        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86')),
         ('android_neon', 'Enable NEON support (armv7 only)', "yes"),
         ('android_stl', 'Enable Android STL support (for modules)', "no")
     ]

@@ -132,10 +132,10 @@ opts = Variables(customs, ARGUMENTS)
 
 # Target build options
 opts.Add('arch', "Platform-dependent architecture (arm/arm64/x86/x64/mips/etc)", '')
-opts.Add('bits', "Target platform bits (default/32/64/fat)", 'default')
+opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32', '64', 'fat')))
 opts.Add('p', "Platform (alias for 'platform')", '')
-opts.Add('platform', "Target platform: any in " + str(platform_list), '')
-opts.Add('target', "Compilation target (debug/release_debug/release)", 'debug')
+opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
+opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
 opts.Add('tools', "Build the tools a.k.a. the Godot editor (yes/no)", 'yes')
 
 # Components
@@ -152,7 +152,7 @@ opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all 
 opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
 opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'no')
 opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
-opts.Add('warnings', "Set the level of warnings emitted during compilation (extra/all/moderate/no)", 'no')
+opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
 opts.Add('progress', "Show a progress indicator during build (yes/no)", 'yes')
 opts.Add('dev', "If yes, alias for verbose=yes warnings=all (yes/no)", 'no')
 
@@ -186,7 +186,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker")
 for k in platform_opts.keys():
     opt_list = platform_opts[k]
     for o in opt_list:
-        opts.Add(o[0], o[1], o[2])
+        opts.Add(o)
 
 for x in module_list:
     opts.Add('module_' + x + '_enabled', "Enable module '" + x + "' (yes/no)", "yes")

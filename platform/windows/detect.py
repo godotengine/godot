@@ -49,6 +49,7 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import EnumVariable
 
     mingw32 = ""
     mingw64 = ""
@@ -65,7 +66,7 @@ def get_opts():
         ('mingw_prefix_32', 'MinGW prefix (Win32)', mingw32),
         ('mingw_prefix_64', 'MinGW prefix (Win64)', mingw64),
         ('use_lto', 'Use link time optimization (when using MingW)', 'no'),
-        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
+        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
 

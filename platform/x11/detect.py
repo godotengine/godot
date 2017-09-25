@@ -45,6 +45,7 @@ def can_build():
     return True
 
 def get_opts():
+    from SCons.Variables import EnumVariable
 
     return [
         ('use_llvm', 'Use the LLVM compiler', 'no'),
@@ -54,7 +55,7 @@ def get_opts():
         ('use_lto', 'Use link time optimization', 'no'),
         ('pulseaudio', 'Detect & use pulseaudio', 'yes'),
         ('udev', 'Use udev for gamepad connection callbacks', 'no'),
-        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
+        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
 
