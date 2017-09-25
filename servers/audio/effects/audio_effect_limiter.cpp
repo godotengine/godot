@@ -110,7 +110,7 @@ void AudioEffectLimiter::set_soft_clip_ratio(float p_soft_clip) {
 }
 float AudioEffectLimiter::get_soft_clip_ratio() const {
 
-	return soft_clip;
+	return soft_clip_ratio;
 }
 
 void AudioEffectLimiter::_bind_methods() {
