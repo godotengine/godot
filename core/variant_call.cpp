@@ -53,6 +53,7 @@ struct _VariantCall {
 		Vector<StringName> arg_names;
 		Variant::Type return_type;
 
+		bool _const;
 #ifdef DEBUG_ENABLED
 		bool returns;
 #endif
@@ -145,11 +146,12 @@ struct _VariantCall {
 #endif
 	}
 
-	static void addfunc(Variant::Type p_type, Variant::Type p_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
+	static void addfunc(bool p_const, Variant::Type p_type, Variant::Type p_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
 
 		FuncData funcdata;
 		funcdata.func = p_func;
 		funcdata.default_args = p_defaultarg;
+		funcdata._const = p_const;
 #ifdef DEBUG_ENABLED
 		funcdata.return_type = p_return;
 		funcdata.returns = p_return != Variant::NIL;
@@ -1201,6 +1203,17 @@ Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, c
 	return E->get().arg_types;
 }
 
+bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) {
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+
+	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	if (!E)
+		return false;
+
+	return E->get()._const;
+}
+
 Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, const StringName &p_method) {
 
 	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
@@ -1247,6 +1260,10 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 
 		MethodInfo mi;
 		mi.name = E->key();
+
+		if (fd._const) {
+			mi.flags |= METHOD_FLAG_CONST;
+		}
 
 		for (int i = 0; i < fd.arg_types.size(); i++) {
 
@@ -1360,15 +1377,26 @@ void register_variant_methods() {
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
 #define ADDFUNC0(m_vtype, m_ret, m_class, m_method, m_defarg) \
-	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
 #define ADDFUNC1(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
-	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
 #define ADDFUNC2(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
-	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
 #define ADDFUNC3(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
-	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
 #define ADDFUNC4(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
-	_VariantCall::addfunc(Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+
+#define ADDFUNC0NC(m_vtype, m_ret, m_class, m_method, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+#define ADDFUNC1NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+#define ADDFUNC2NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+#define ADDFUNC3NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+#define ADDFUNC4NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
 
 	/* STRING */
 	ADDFUNC1(STRING, INT, String, casecmp_to, STRING, "to", varray());
@@ -1545,7 +1573,7 @@ void register_variant_methods() {
 
 	ADDFUNC0(DICTIONARY, INT, Dictionary, size, varray());
 	ADDFUNC0(DICTIONARY, BOOL, Dictionary, empty, varray());
-	ADDFUNC0(DICTIONARY, NIL, Dictionary, clear, varray());
+	ADDFUNC0NC(DICTIONARY, NIL, Dictionary, clear, varray());
 	ADDFUNC1(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
 	ADDFUNC1(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
 	ADDFUNC1(DICTIONARY, NIL, Dictionary, erase, NIL, "key", varray());
@@ -1555,15 +1583,15 @@ void register_variant_methods() {
 
 	ADDFUNC0(ARRAY, INT, Array, size, varray());
 	ADDFUNC0(ARRAY, BOOL, Array, empty, varray());
-	ADDFUNC0(ARRAY, NIL, Array, clear, varray());
+	ADDFUNC0NC(ARRAY, NIL, Array, clear, varray());
 	ADDFUNC0(ARRAY, INT, Array, hash, varray());
-	ADDFUNC1(ARRAY, NIL, Array, push_back, NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, push_front, NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, append, NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, resize, INT, "size", varray());
-	ADDFUNC2(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
-	ADDFUNC1(ARRAY, NIL, Array, remove, INT, "position", varray());
-	ADDFUNC1(ARRAY, NIL, Array, erase, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, push_back, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, push_front, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, append, NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, resize, INT, "size", varray());
+	ADDFUNC2NC(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, remove, INT, "position", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, erase, NIL, "value", varray());
 	ADDFUNC0(ARRAY, NIL, Array, front, varray());
 	ADDFUNC0(ARRAY, NIL, Array, back, varray());
 	ADDFUNC2(ARRAY, INT, Array, find, NIL, "what", INT, "from", varray(0));
@@ -1571,12 +1599,12 @@ void register_variant_methods() {
 	ADDFUNC1(ARRAY, INT, Array, find_last, NIL, "value", varray());
 	ADDFUNC1(ARRAY, INT, Array, count, NIL, "value", varray());
 	ADDFUNC1(ARRAY, BOOL, Array, has, NIL, "value", varray());
-	ADDFUNC0(ARRAY, NIL, Array, pop_back, varray());
-	ADDFUNC0(ARRAY, NIL, Array, pop_front, varray());
-	ADDFUNC0(ARRAY, NIL, Array, sort, varray());
-	ADDFUNC2(ARRAY, NIL, Array, sort_custom, OBJECT, "obj", STRING, "func", varray());
-	ADDFUNC0(ARRAY, NIL, Array, invert, varray());
-	ADDFUNC0(ARRAY, ARRAY, Array, duplicate, varray());
+	ADDFUNC0NC(ARRAY, NIL, Array, pop_back, varray());
+	ADDFUNC0NC(ARRAY, NIL, Array, pop_front, varray());
+	ADDFUNC0NC(ARRAY, NIL, Array, sort, varray());
+	ADDFUNC2NC(ARRAY, NIL, Array, sort_custom, OBJECT, "obj", STRING, "func", varray());
+	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
+	ADDFUNC0NC(ARRAY, ARRAY, Array, duplicate, varray());
 
 	ADDFUNC0(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, NIL, PoolByteArray, set, INT, "idx", INT, "byte", varray());

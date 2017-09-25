@@ -42,7 +42,7 @@
 
 int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 
-	if (method_cache.flags & METHOD_FLAG_CONST || call_mode == CALL_MODE_BASIC_TYPE)
+	if (method_cache.flags & METHOD_FLAG_CONST || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)))
 		return 0;
 	else
 		return 1;
@@ -50,7 +50,7 @@ int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 
 bool VisualScriptFunctionCall::has_input_sequence_port() const {
 
-	if (method_cache.flags & METHOD_FLAG_CONST || call_mode == CALL_MODE_BASIC_TYPE)
+	if (method_cache.flags & METHOD_FLAG_CONST || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)))
 		return false;
 	else
 		return true;
