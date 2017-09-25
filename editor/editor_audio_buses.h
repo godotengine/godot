@@ -84,6 +84,8 @@ class EditorAudioBus : public PanelContainer {
 
 	bool updating_bus;
 
+	bool is_master;
+
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _bus_popup_pressed(int p_option);
 
@@ -120,7 +122,7 @@ public:
 	void update_bus();
 	void update_send();
 
-	EditorAudioBus(EditorAudioBuses *p_buses = NULL);
+	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
 };
 
 class EditorAudioBusDrop : public Panel {

@@ -64,6 +64,8 @@ void EditorAudioBus::_notification(int p_what) {
 
 		if (has_focus()) {
 			draw_style_box(get_stylebox("focus", "Button"), Rect2(Vector2(), get_size()));
+		} else if (is_master) {
+			draw_style_box(get_stylebox("disabled", "Button"), Rect2(Vector2(), get_size()));
 		}
 	}
 
@@ -123,7 +125,7 @@ void EditorAudioBus::_notification(int p_what) {
 void EditorAudioBus::update_send() {
 
 	send->clear();
-	if (get_index() == 0) {
+	if (is_master) {
 		send->set_disabled(true);
 		send->set_text(TTR("Speakers"));
 	} else {
@@ -154,7 +156,7 @@ void EditorAudioBus::update_bus() {
 
 	slider->set_value(AudioServer::get_singleton()->get_bus_volume_db(index));
 	track_name->set_text(AudioServer::get_singleton()->get_bus_name(index));
-	if (get_index() == 0)
+	if (is_master)
 		track_name->set_editable(false);
 
 	solo->set_pressed(AudioServer::get_singleton()->is_bus_solo(index));
@@ -237,6 +239,8 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	ur->commit_action();
 
 	updating_bus = false;
+
+	track_name->release_focus();
 }
 
 void EditorAudioBus::_volume_db_changed(float p_db) {
@@ -619,10 +623,11 @@ void EditorAudioBus::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
-EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
+EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	buses = p_buses;
 	updating_bus = false;
+	is_master = p_is_master;
 
 	set_tooltip(TTR("Audio Bus, Drag and Drop to rearrange."));
 
@@ -630,24 +635,15 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
+	set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 
-	HBoxContainer *head = memnew(HBoxContainer);
 	track_name = memnew(LineEdit);
-	head->add_child(track_name);
 	track_name->connect("text_entered", this, "_name_changed");
 	track_name->connect("focus_exited", this, "_name_focus_exit");
-	track_name->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	bus_options = memnew(MenuButton);
-	bus_options->set_h_size_flags(SIZE_SHRINK_END);
-	bus_options->set_tooltip(TTR("Bus options"));
-	head->add_child(bus_options);
-
-	vb->add_child(head);
+	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
-	hbc->add_spacer();
 	solo = memnew(ToolButton);
 	solo->set_toggle_mode(true);
 	solo->set_tooltip(TTR("Solo"));
@@ -667,6 +663,23 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	bypass->connect("pressed", this, "_bypass_toggled");
 	hbc->add_child(bypass);
 	hbc->add_spacer();
+
+	bus_options = memnew(MenuButton);
+	bus_options->set_h_size_flags(SIZE_SHRINK_END);
+	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
+	bus_options->set_tooltip(TTR("Bus options"));
+	hbc->add_child(bus_options);
+
+	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
+	for (int i = 0; i < hbc->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(hbc->get_child(i));
+		child->add_style_override("normal", sbempty);
+		child->add_style_override("hover", sbempty);
+		child->add_style_override("focus", sbempty);
+		child->add_style_override("pressed", sbempty);
+	}
+
+	vb->add_child(memnew(HSeparator));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
@@ -698,8 +711,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 
 	scale = memnew(TextureRect);
 	hb->add_child(scale);
-
-	//add_child(hb);
 
 	effects = memnew(Tree);
 	effects->set_hide_root(true);
@@ -744,7 +755,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_item(TTR("Duplicate"));
-	bus_popup->add_item(TTR("Delete"));
+	if (!is_master)
+		bus_popup->add_item(TTR("Delete"));
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
@@ -787,10 +799,8 @@ void EditorAudioBuses::_update_buses() {
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 
-		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this));
-		if (i == 0) {
-			audio_bus->set_self_modulate(Color(1, 0.9, 0.9));
-		}
+		bool is_master = i == 0 ? true : false;
+		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_master));
 		bus_hb->add_child(audio_bus);
 		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
