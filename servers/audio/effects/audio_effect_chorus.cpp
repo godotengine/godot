@@ -182,9 +182,8 @@ Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 
 void AudioEffectChorus::set_voice_count(int p_voices) {
 
-	ERR_FAIL_COND(p_voices < 1 || p_voices >= MAX_VOICES);
+	ERR_FAIL_COND(p_voices < 1 || p_voices > MAX_VOICES);
 	voice_count = p_voices;
-	_change_notify();
 }
 
 int AudioEffectChorus::get_voice_count() const {
