@@ -6,7 +6,7 @@ Import('env_modules')
 env_theora = env_modules.Clone()
 
 # Thirdparty source files
-if (env['builtin_libtheora'] != 'no'):
+if env['builtin_libtheora']:
     thirdparty_dir = "#thirdparty/libtheora/"
     thirdparty_sources = [
         #"analyze.c",
@@ -74,9 +74,9 @@ if (env['builtin_libtheora'] != 'no'):
     env_theora.Append(CPPPATH=[thirdparty_dir])
 
     # also requires libogg and libvorbis
-    if (env['builtin_libogg'] != 'no'):
+    if env['builtin_libogg']:
         env_theora.Append(CPPPATH=["#thirdparty/libogg"])
-    if (env['builtin_libvorbis'] != 'no'):
+    if env['builtin_libvorbis']:
         env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
 
 # Godot source files

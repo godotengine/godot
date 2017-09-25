@@ -83,7 +83,7 @@ thirdparty_minizip_sources = [
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
-if "builtin_zstd" in env and env["builtin_zstd"] == "yes":
+if 'builtin_zstd' in env and env['builtin_zstd']:
     SConscript("#thirdparty/zstd/SCsub")
 
 

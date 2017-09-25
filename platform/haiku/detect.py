@@ -19,9 +19,10 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import EnumVariable
 
     return [
-        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes')
+        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
 

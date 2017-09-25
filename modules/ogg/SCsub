@@ -6,7 +6,7 @@ Import('env_modules')
 env_ogg = env_modules.Clone()
 
 # Thirdparty source files
-if (env['builtin_libogg'] != 'no'):
+if env['builtin_libogg']:
     thirdparty_dir = "#thirdparty/libogg/"
     thirdparty_sources = [
         "bitwise.c",

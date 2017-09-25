@@ -29,7 +29,7 @@ zip_dir = target_dir.Dir('.javascript_zip')
 zip_files = env.InstallAs(zip_dir.File('godot.html'), '#misc/dist/html/default.html')
 
 implicit_targets = []
-if env['wasm'] == 'yes':
+if env['wasm']:
     wasm = target_dir.File(basename + '.wasm')
     implicit_targets.append(wasm)
     zip_files.append(InstallAs(zip_dir.File('godot.wasm'), wasm))

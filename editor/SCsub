@@ -395,8 +395,8 @@ def _make_doc_data_class_path(to_path):
       g.write("{NULL,NULL}\n")
       g.write("};\n")
 
-if (env["tools"] == "yes"):
 
+if env['tools']:
     # Register exporters
     reg_exporters_inc = '#include "register_exporters.h"\n'
     reg_exporters = 'void register_exporters() {\n'

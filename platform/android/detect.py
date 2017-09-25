@@ -18,20 +18,21 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import BoolVariable, EnumVariable
 
     return [
         ('ANDROID_NDK_ROOT', 'Path to the Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
-        ('android_arch', 'Target architecture (armv7/armv6/arm64v8/x86)', "armv7"),
-        ('android_neon', 'Enable NEON support (armv7 only)', "yes"),
-        ('android_stl', 'Enable Android STL support (for modules)', "no")
+        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86')),
+        BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
+        BoolVariable('android_stl', 'Enable Android STL support (for modules)', False),
     ]
 
 
 def get_flags():
 
     return [
-        ('tools', 'no'),
+        ('tools', False),
     ]
 
 
@@ -93,7 +94,7 @@ def configure(env):
         env['android_arch'] = 'armv7'
 
     neon_text = ""
-    if env["android_arch"] == "armv7" and env['android_neon'] == 'yes':
+    if env["android_arch"] == "armv7" and env['android_neon']:
         neon_text = " (with NEON)"
     print("Building for Android (" + env['android_arch'] + ")" + neon_text)
 
@@ -117,7 +118,7 @@ def configure(env):
         target_subpath = "arm-linux-androideabi-4.9"
         abi_subpath = "arm-linux-androideabi"
         arch_subpath = "armeabi-v7a"
-        if env['android_neon'] == 'yes':
+        if env['android_neon']:
             env.extra_suffix = ".armv7.neon" + env.extra_suffix
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
@@ -199,7 +200,7 @@ def configure(env):
     elif env["android_arch"] == "armv7":
         target_opts = ['-target', 'armv7-none-linux-androideabi']
         env.Append(CPPFLAGS='-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -march=armv7-a -mfloat-abi=softfp'.split())
-        if env['android_neon'] == 'yes':
+        if env['android_neon']:
             env['neon_enabled'] = True
             env.Append(CPPFLAGS=['-mfpu=neon', '-D__ARM_NEON__'])
         else:
@@ -213,7 +214,7 @@ def configure(env):
     env.Append(CPPFLAGS=target_opts)
     env.Append(CPPFLAGS=common_opts)
 
-    if (env['android_stl'] == 'yes'):
+    if env['android_stl']:
         env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/gnu-libstdc++/4.9/include"])
         env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/gnu-libstdc++/4.9/libs/" + arch_subpath + "/include"])
         env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/gnu-libstdc++/4.9/libs/" + arch_subpath])
@@ -243,7 +244,7 @@ def configure(env):
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
 
     # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
         if (env["android_arch"] == "armv6" or env["android_arch"] == "armv7"):
             env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
         env.opus_fixed_point = "yes"

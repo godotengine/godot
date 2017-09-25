@@ -20,24 +20,24 @@ def can_build():
 
 
 def get_opts():
-
+    from SCons.Variables import BoolVariable
     return [
         ('IPHONEPLATFORM', 'Name of the iPhone platform', 'iPhoneOS'),
         ('IPHONEPATH', 'Path to iPhone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
         ('IPHONESDK', 'Path to the iPhone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
-        ('game_center', 'Support for game center', 'yes'),
-        ('store_kit', 'Support for in-app store', 'yes'),
-        ('icloud', 'Support for iCloud', 'yes'),
-        ('ios_exceptions', 'Enable exceptions', 'no'),
+        BoolVariable('game_center', 'Support for game center', True),
+        BoolVariable('store_kit', 'Support for in-app store', True),
+        BoolVariable('icloud', 'Support for iCloud', True),
+        BoolVariable('ios_exceptions', 'Enable exceptions', False),
         ('ios_triple', 'Triple for ios toolchain', ''),
-        ('ios_sim', 'Build simulator binary', 'no'),
+        BoolVariable('ios_sim', 'Build simulator binary', False),
     ]
 
 
 def get_flags():
 
     return [
-        ('tools', 'no'),
+        ('tools', False),
     ]
 
 
@@ -58,7 +58,7 @@ def configure(env):
 
     ## Architecture
 
-    if (env["ios_sim"] == "yes" or env["arch"] == "x86"):  # i386, simulator
+    if env["ios_sim"] or env["arch"] == "x86":  # i386, simulator
         env["arch"] = "x86"
         env["bits"] = "32"
     elif (env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32"):  # arm
@@ -91,7 +91,7 @@ def configure(env):
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 
-    if env['ios_exceptions'] == 'yes':
+    if env['ios_exceptions']:
         env.Append(CPPFLAGS=['-fexceptions'])
     else:
         env.Append(CPPFLAGS=['-fno-exceptions'])
@@ -129,15 +129,15 @@ def configure(env):
                           ])
 
     # Feature options
-    if env['game_center'] == 'yes':
+    if env['game_center']:
         env.Append(CPPFLAGS=['-DGAME_CENTER_ENABLED'])
         env.Append(LINKFLAGS=['-framework', 'GameKit'])
 
-    if env['store_kit'] == 'yes':
+    if env['store_kit']:
         env.Append(CPPFLAGS=['-DSTOREKIT_ENABLED'])
         env.Append(LINKFLAGS=['-framework', 'StoreKit'])
 
-    if env['icloud'] == 'yes':
+    if env['icloud']:
         env.Append(CPPFLAGS=['-DICLOUD_ENABLED'])
 
     env.Append(CPPPATH=['$IPHONESDK/usr/include',
@@ -151,7 +151,7 @@ def configure(env):
     env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 
     # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
         env.opus_fixed_point = "yes"
         if (env["arch"] == "arm"):
             env.Append(CFLAGS=["-DOPUS_ARM_OPT"])

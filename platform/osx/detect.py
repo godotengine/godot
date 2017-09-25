@@ -19,10 +19,11 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import EnumVariable
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
-        ('debug_symbols', 'Add debug symbols to release version (yes/no/full)', 'yes'),
+        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
 
@@ -96,7 +97,7 @@ def configure(env):
 
     ## Dependencies
 
-    if (env['builtin_libtheora'] != 'no'):
+    if env['builtin_libtheora']:
         env["x86_libtheora_opt_gcc"] = True
 
     ## Flags

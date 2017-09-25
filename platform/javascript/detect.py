@@ -17,18 +17,18 @@ def can_build():
 
 
 def get_opts():
-
+    from SCons.Variables import BoolVariable
     return [
-        ['wasm', 'Compile to WebAssembly', 'no'],
-        ['javascript_eval', 'Enable JavaScript eval interface', 'yes'],
+        BoolVariable('wasm', 'Compile to WebAssembly', False),
+        BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
     ]
 
 
 def get_flags():
 
     return [
-        ('tools', 'no'),
-        ('module_theora_enabled', 'no'),
+        ('tools', False),
+        ('module_theora_enabled', False),
     ]
 
 
@@ -95,7 +95,7 @@ def configure(env):
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
 
-    if env['javascript_eval'] == 'yes':
+    if env['javascript_eval']:
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
 
     ## Link flags
@@ -103,7 +103,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
-    if (env['wasm'] == 'yes'):
+    if env['wasm']:
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
         # In contrast to asm.js, enabling memory growth on WebAssembly has no
         # major performance impact, and causes only a negligible increase in
@@ -116,5 +116,5 @@ def configure(env):
         env.Append(LINKFLAGS=['--memory-init-file', '1'])
 
     # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
         env.opus_fixed_point = "yes"

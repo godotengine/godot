@@ -19,14 +19,14 @@ env_webm.add_source_files(env.modules_sources, thirdparty_libsimplewebm_sources)
 env_webm.Append(CPPPATH=[thirdparty_libsimplewebm_dir, thirdparty_libsimplewebm_dir + "libwebm/"])
 
 # also requires libogg, libvorbis and libopus
-if (env['builtin_libogg'] != 'no'):
+if env['builtin_libogg']:
     env_webm.Append(CPPPATH=["#thirdparty/libogg"])
-if (env['builtin_libvorbis'] != 'no'):
+if env['builtin_libvorbis']:
     env_webm.Append(CPPPATH=["#thirdparty/libvorbis"])
-if (env['builtin_opus'] != 'no'):
+if env['builtin_opus']:
     env_webm.Append(CPPPATH=["#thirdparty/opus"])
 
-if (env['builtin_libvpx'] != 'no'):
+if env['builtin_libvpx']:
     Export('env_webm')
     SConscript("libvpx/SCsub")
 

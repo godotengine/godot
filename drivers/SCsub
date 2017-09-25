@@ -4,7 +4,7 @@ Import('env')
 
 env.drivers_sources = []
 
-if ("builtin_zlib" in env and env["builtin_zlib"] == "yes"):
+if 'builtin_zlib' in env and env['builtin_zlib']:
     SConscript("zlib/SCsub")
 
 # OS drivers
@@ -17,7 +17,7 @@ SConscript('pulseaudio/SCsub')
 if (env["platform"] == "windows"):
     SConscript("rtaudio/SCsub")
     SConscript("wasapi/SCsub")
-if (env["xaudio2"] == "yes"):
+if env['xaudio2']:
     SConscript("xaudio2/SCsub")
 
 # Graphics drivers
@@ -29,10 +29,10 @@ SConscript("png/SCsub")
 
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
-if (env["tools"] == "yes"):
+if env['tools']:
     SConscript("convex_decomp/SCsub")
 
-if env['vsproj'] == "yes":
+if env['vsproj']:
     env.AddToVSProject(env.drivers_sources)
 
 if env.split_drivers:
