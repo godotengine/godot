@@ -86,7 +86,7 @@ void FindReplaceBar::_notification(int p_what) {
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
 		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
 		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("CloseHover", "EditorIcons"));
+		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -97,7 +97,7 @@ void FindReplaceBar::_notification(int p_what) {
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
 		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
 		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("CloseHover", "EditorIcons"));
+		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
 		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
 	}
 }
