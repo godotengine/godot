@@ -150,97 +150,25 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(register T *pw, register V v
 }
 
 #elif defined(_MSC_VER)
+// For MSVC use a separate compilation unit to prevent windows.h from polluting
+// the global namespace.
+uint32_t atomic_conditional_increment(register uint32_t *pw);
+uint32_t atomic_decrement(register uint32_t *pw);
+uint32_t atomic_increment(register uint32_t *pw);
+uint32_t atomic_sub(register uint32_t *pw, register uint32_t val);
+uint32_t atomic_add(register uint32_t *pw, register uint32_t val);
+uint32_t atomic_exchange_if_greater(register uint32_t *pw, register uint32_t val);
 
-/* Implementation for MSVC-Windows */
-
-// don't pollute my namespace!
-#include <windows.h>
-
-#define ATOMIC_CONDITIONAL_INCREMENT_BODY(m_pw, m_win_type, m_win_cmpxchg, m_cpp_type) \
-	/* try to increment until it actually works */                                     \
-	/* taken from boost */                                                             \
-	while (true) {                                                                     \
-		m_cpp_type tmp = static_cast<m_cpp_type const volatile &>(*(m_pw));            \
-		if (tmp == 0)                                                                  \
-			return 0; /* if zero, can't add to it anymore */                           \
-		if (m_win_cmpxchg((m_win_type volatile *)(m_pw), tmp + 1, tmp) == tmp)         \
-			return tmp + 1;                                                            \
-	}
-
-#define ATOMIC_EXCHANGE_IF_GREATER_BODY(m_pw, m_val, m_win_type, m_win_cmpxchg, m_cpp_type) \
-	while (true) {                                                                          \
-		m_cpp_type tmp = static_cast<m_cpp_type const volatile &>(*(m_pw));                 \
-		if (tmp >= m_val)                                                                   \
-			return tmp; /* already greater, or equal */                                     \
-		if (m_win_cmpxchg((m_win_type volatile *)(m_pw), m_val, tmp) == tmp)                \
-			return m_val;                                                                   \
-	}
-
-static _ALWAYS_INLINE_ uint32_t atomic_conditional_increment(register uint32_t *pw) {
-
-	ATOMIC_CONDITIONAL_INCREMENT_BODY(pw, LONG, InterlockedCompareExchange, uint32_t)
-}
-
-static _ALWAYS_INLINE_ uint32_t atomic_decrement(register uint32_t *pw) {
-
-	return InterlockedDecrement((LONG volatile *)pw);
-}
-
-static _ALWAYS_INLINE_ uint32_t atomic_increment(register uint32_t *pw) {
-
-	return InterlockedIncrement((LONG volatile *)pw);
-}
-
-static _ALWAYS_INLINE_ uint32_t atomic_sub(register uint32_t *pw, register uint32_t val) {
-
-	return InterlockedExchangeAdd((LONG volatile *)pw, -(int32_t)val) - val;
-}
-
-static _ALWAYS_INLINE_ uint32_t atomic_add(register uint32_t *pw, register uint32_t val) {
-
-	return InterlockedAdd((LONG volatile *)pw, val);
-}
-
-static _ALWAYS_INLINE_ uint32_t atomic_exchange_if_greater(register uint32_t *pw, register uint32_t val) {
-
-	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONG, InterlockedCompareExchange, uint32_t)
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_conditional_increment(register uint64_t *pw) {
-
-	ATOMIC_CONDITIONAL_INCREMENT_BODY(pw, LONGLONG, InterlockedCompareExchange64, uint64_t)
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_decrement(register uint64_t *pw) {
-
-	return InterlockedDecrement64((LONGLONG volatile *)pw);
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_increment(register uint64_t *pw) {
-
-	return InterlockedIncrement64((LONGLONG volatile *)pw);
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_sub(register uint64_t *pw, register uint64_t val) {
-
-	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_add(register uint64_t *pw, register uint64_t val) {
-
-	return InterlockedAdd64((LONGLONG volatile *)pw, val);
-}
-
-static _ALWAYS_INLINE_ uint64_t atomic_exchange_if_greater(register uint64_t *pw, register uint64_t val) {
-
-	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONGLONG, InterlockedCompareExchange64, uint64_t)
-}
+uint64_t atomic_conditional_increment(register uint64_t *pw);
+uint64_t atomic_decrement(register uint64_t *pw);
+uint64_t atomic_increment(register uint64_t *pw);
+uint64_t atomic_sub(register uint64_t *pw, register uint64_t val);
+uint64_t atomic_add(register uint64_t *pw, register uint64_t val);
+uint64_t atomic_exchange_if_greater(register uint64_t *pw, register uint64_t val);
 
 #else
-
 //no threads supported?
 #error Must provide atomic functions for this platform or compiler!
-
 #endif
 
 struct SafeRefCount {
