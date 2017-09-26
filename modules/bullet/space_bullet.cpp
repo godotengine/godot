@@ -810,8 +810,6 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	} else {
 		dynamicsWorld->addRigidBody(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	}
-
-	//add_ghost(p_body); // not required to add ghost in world
 }
 
 void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
@@ -820,8 +818,6 @@ void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
 	} else {
 		dynamicsWorld->removeRigidBody(p_body->get_bt_rigid_body());
 	}
-
-	//remove_ghost(p_body); // not required to add ghost in world
 }
 
 void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
@@ -852,20 +848,6 @@ void SpaceBullet::reload_collision_filters(SoftBodyBullet *p_body) {
 	// This is necessary to change collision filter
 	remove_soft_body(p_body);
 	add_soft_body(p_body);
-}
-
-void SpaceBullet::add_ghost(RigidBodyBullet *p_ghost) {
-	// not required to add ghost in world
-	//if (p_ghost->get_kinematic_utilities()) {
-	//	dynamicsWorld->addCollisionObject(p_ghost->get_kinematic_utilities()->m_ghostObject, p_ghost->get_collision_layer(), p_ghost->get_collision_mask());
-	//}
-}
-
-void SpaceBullet::remove_ghost(RigidBodyBullet *p_ghost) {
-	// not required to add ghost in world
-	//if (p_ghost->get_kinematic_utilities()) {
-	//	dynamicsWorld->removeCollisionObject(p_ghost->get_kinematic_utilities()->m_ghostObject);
-	//}
 }
 
 void SpaceBullet::add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies) {

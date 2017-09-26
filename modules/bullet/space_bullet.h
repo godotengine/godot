@@ -150,9 +150,6 @@ public:
 	void remove_soft_body(SoftBodyBullet *p_body);
 	void reload_collision_filters(SoftBodyBullet *p_body);
 
-	void add_ghost(RigidBodyBullet *p_ghost);
-	void remove_ghost(RigidBodyBullet *p_ghost);
-
 	void add_constraint(ConstraintBullet *p_constraint, bool disableCollisionsBetweenLinkedBodies = false);
 	void remove_constraint(ConstraintBullet *p_constraint);
 

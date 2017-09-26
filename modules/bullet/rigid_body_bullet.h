@@ -283,6 +283,7 @@ public:
 	Vector3 get_angular_velocity() const;
 
 	void set_transform(const Transform &p_global_transform);
+	void set_transform(const btTransform &p_global_transform);
 	Transform get_transform() const;
 
 	virtual void on_shapes_changed();

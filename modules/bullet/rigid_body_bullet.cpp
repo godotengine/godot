@@ -288,16 +288,10 @@ RigidBodyBullet::~RigidBodyBullet() {
 
 void RigidBodyBullet::init_kinematic_utilities() {
 	kinematic_utilities = memnew(KinematicUtilities(this));
-	if (get_space()) {
-		get_space()->add_ghost(this);
-	}
 }
 
 void RigidBodyBullet::destroy_kinematic_utilities() {
 	if (kinematic_utilities) {
-		if (get_space()) {
-			get_space()->remove_ghost(this);
-		}
 		memdelete(kinematic_utilities);
 		kinematic_utilities = NULL;
 	}
@@ -443,9 +437,6 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 		case PhysicsServer::BODY_PARAM_MASS: {
 			ERR_FAIL_COND(p_value < 0);
 
-			if (space)
-				space->remove_rigid_body(this);
-
 			// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 			const bool isDynamic = p_value != 0.f;
 			m_isStatic = !isDynamic;
@@ -467,6 +458,7 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 			} else {
 				if (PhysicsServer::BODY_MODE_KINEMATIC == mode) {
 					btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
+					set_transform(btBody->getWorldTransform()); // Set current Transform using kinematic method
 				} else {
 					mode = PhysicsServer::BODY_MODE_STATIC;
 					btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
@@ -474,9 +466,7 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 				btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
 			}
 
-			if (space)
-				space->add_rigid_body(this);
-
+			reload_body();
 			break;
 		}
 		case PhysicsServer::BODY_PARAM_LINEAR_DAMP:
@@ -764,11 +754,15 @@ void RigidBodyBullet::set_transform(const Transform &p_global_transform) {
 	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
 	G_TO_B(decomposed_basis, btTrans.getBasis());
 
+	set_transform(btTrans);
+}
+
+void RigidBodyBullet::set_transform(const btTransform &p_global_transform) {
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 		// The kinematic use MotionState class
-		godotMotionState->moveBody(btTrans);
+		godotMotionState->moveBody(p_global_transform);
 	}
-	btBody->setWorldTransform(btTrans);
+	btBody->setWorldTransform(p_global_transform);
 }
 
 Transform RigidBodyBullet::get_transform() const {
@@ -782,9 +776,6 @@ Transform RigidBodyBullet::get_transform() const {
 void RigidBodyBullet::on_shapes_changed() {
 	RigidCollisionObjectBullet::on_shapes_changed();
 
-	if (space)
-		space->remove_rigid_body(this);
-
 	const btScalar invMass = btBody->getInvMass();
 	const btScalar mass = invMass == 0 ? 0 : 1 / invMass;
 
@@ -795,8 +786,7 @@ void RigidBodyBullet::on_shapes_changed() {
 
 	reload_kinematic_shapes();
 
-	if (space)
-		space->add_rigid_body(this);
+	reload_body();
 }
 
 void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
