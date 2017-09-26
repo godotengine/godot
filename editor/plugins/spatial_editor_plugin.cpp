@@ -3728,11 +3728,8 @@ void SpatialEditor::_init_indicators() {
 
 		indicator_mat.instance();
 		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		//indicator_mat->set_flag(SpatialMaterial::FLAG_ONTOP,true);
 		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-
-		indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		PoolVector<Color> grid_colors[3];
 		PoolVector<Vector3> grid_points[3];
@@ -3753,50 +3750,31 @@ void SpatialEditor::_init_indicators() {
 			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
 			origin_points.push_back(axis * 4096);
 			origin_points.push_back(axis * -4096);
-#define ORIGIN_GRID_SIZE 100
+#define ORIGIN_GRID_SIZE 50
 
 			for (int j = -ORIGIN_GRID_SIZE; j <= ORIGIN_GRID_SIZE; j++) {
 
-				for (int k = -ORIGIN_GRID_SIZE; k <= ORIGIN_GRID_SIZE; k++) {
+				Vector3 p1 = axis_n1 * j + axis_n2 * -ORIGIN_GRID_SIZE;
+				Vector3 p1_dest = p1 * (-axis_n2 + axis_n1);
+				Vector3 p2 = axis_n2 * j + axis_n1 * -ORIGIN_GRID_SIZE;
+				Vector3 p2_dest = p2 * (-axis_n1 + axis_n2);
 
-					Vector3 p = axis_n1 * j + axis_n2 * k;
-					float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / ORIGIN_GRID_SIZE)), 2);
-
-					Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
-					float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / ORIGIN_GRID_SIZE)), 2);
-
-					Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
-					float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / ORIGIN_GRID_SIZE)), 2);
-
-					Color trans_color = grid_color;
-					trans_color.a *= trans;
-
-					Color transk_color = grid_color;
-					transk_color.a *= transk;
-
-					Color transj_color = grid_color;
-					transj_color.a *= transj;
-
-					if (j % 10 == 0 || k % 10 == 0) {
-						trans_color.a *= 2;
-					}
-					if ((k + 1) % 10 == 0) {
-						transk_color.a *= 2;
-					}
-					if ((j + 1) % 10 == 0) {
-						transj_color.a *= 2;
-					}
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pk);
-					grid_colors[i].push_back(trans_color);
-					grid_colors[i].push_back(transk_color);
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pj);
-					grid_colors[i].push_back(trans_color);
-					grid_colors[i].push_back(transj_color);
+				Color line_color = grid_color;
+				if (j == 0) {
+					continue;
+				} else if (j % 10 == 0) {
+					line_color *= 1.5;
 				}
+
+				grid_points[i].push_back(p1);
+				grid_points[i].push_back(p1_dest);
+				grid_colors[i].push_back(line_color);
+				grid_colors[i].push_back(line_color);
+
+				grid_points[i].push_back(p2);
+				grid_points[i].push_back(p2_dest);
+				grid_colors[i].push_back(line_color);
+				grid_colors[i].push_back(line_color);
 			}
 
 			grid[i] = VisualServer::get_singleton()->mesh_create();
@@ -3837,32 +3815,6 @@ void SpatialEditor::_init_indicators() {
 		grid_visible[1] = true;
 		grid_enabled = true;
 		last_grid_snap = 1;
-	}
-
-	{
-		cursor_mesh = VisualServer::get_singleton()->mesh_create();
-		PoolVector<Vector3> cursor_points;
-		float cs = 0.25;
-		cursor_points.push_back(Vector3(+cs, 0, 0));
-		cursor_points.push_back(Vector3(-cs, 0, 0));
-		cursor_points.push_back(Vector3(0, +cs, 0));
-		cursor_points.push_back(Vector3(0, -cs, 0));
-		cursor_points.push_back(Vector3(0, 0, +cs));
-		cursor_points.push_back(Vector3(0, 0, -cs));
-		cursor_material.instance();
-		cursor_material->set_albedo(Color(0, 1, 1));
-		cursor_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-		Array d;
-		d.resize(VS::ARRAY_MAX);
-		d[VS::ARRAY_VERTEX] = cursor_points;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(cursor_mesh, VS::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh, 0, cursor_material->get_rid());
-
-		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh, get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_set_layer_mask(cursor_instance, 1 << SpatialEditorViewport::GIZMO_GRID_LAYER);
-
-		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, VS::SHADOW_CASTING_SETTING_OFF);
 	}
 
 	{
@@ -4058,9 +4010,6 @@ void SpatialEditor::_finish_indicators() {
 	//VisualServer::get_singleton()->free(poly);
 	//VisualServer::get_singleton()->free(indicators_instance);
 	//VisualServer::get_singleton()->free(indicators);
-
-	VisualServer::get_singleton()->free(cursor_instance);
-	VisualServer::get_singleton()->free(cursor_mesh);
 }
 
 bool SpatialEditor::is_any_freelook_active() const {

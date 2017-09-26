@@ -665,7 +665,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
-	_initial_set("editors/3d/grid_color", Color(1, 1, 1, 0.2));
+	_initial_set("editors/3d/grid_color", Color::html("808080"));
 	hints["editors/3d/grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
 	_initial_set("editors/3d/default_fov", 55.0);
