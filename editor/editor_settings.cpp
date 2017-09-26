@@ -54,7 +54,7 @@ EditorSettings *EditorSettings::get_singleton() {
 	return singleton.ptr();
 }
 
-bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
+bool EditorSettings::_set(const StringName &p_name, const Variant &p_value, bool p_emit_signal) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -90,7 +90,9 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
-	emit_signal("settings_changed");
+	if (p_emit_signal) {
+		emit_signal("settings_changed");
+	}
 	return true;
 }
 

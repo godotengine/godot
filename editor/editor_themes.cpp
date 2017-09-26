@@ -227,8 +227,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float default_contrast = 0.25;
 
 	//Theme settings
-	Color accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#000000"));
-	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#000000"));
+	Color accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
+	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
 	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
 
 	int preset = EDITOR_DEF("interface/theme/preset", 0);
@@ -240,33 +240,54 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
 
+	Color preset_accent_color;
+	Color preset_base_color;
+	float preset_contrast;
 	switch (preset) {
 		case 0: { // Default
-			accent_color = Color::html("#699ce8");
-			base_color = Color::html("#323b4f");
-			contrast = default_contrast;
+			preset_accent_color = Color::html("#699ce8");
+			preset_base_color = Color::html("#323b4f");
+			preset_contrast = default_contrast;
 		} break;
 		case 1: { // Grey
-			accent_color = Color::html("#3e3e3e");
-			base_color = Color::html("#3d3d3d");
-			contrast = 0.2;
+			preset_accent_color = Color::html("#3e3e3e");
+			preset_base_color = Color::html("#3d3d3d");
+			preset_contrast = 0.2;
 		} break;
 		case 2: { // Godot 2
-			accent_color = Color::html("#86ace2");
-			base_color = Color::html("#3C3A44");
-			contrast = 0.25;
+			preset_accent_color = Color::html("#86ace2");
+			preset_base_color = Color::html("#3C3A44");
+			preset_contrast = 0.25;
 		} break;
 		case 3: { // Arc
-			accent_color = Color::html("#5294e2");
-			base_color = Color::html("#383c4a");
-			contrast = 0.25;
+			preset_accent_color = Color::html("#5294e2");
+			preset_base_color = Color::html("#383c4a");
+			preset_contrast = 0.25;
 		} break;
 		case 4: { // Light
-			accent_color = Color::html("#2070ff");
-			base_color = Color::html("#ffffff");
-			contrast = 0.08;
+			preset_accent_color = Color::html("#2070ff");
+			preset_base_color = Color::html("#ffffff");
+			preset_contrast = 0.08;
 		} break;
+		default: { // Custom
+			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
+			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
+			contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+		}
 	}
+
+	if (preset != 5) {
+		accent_color = preset_accent_color;
+		base_color = preset_base_color;
+		contrast = preset_contrast;
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", accent_color);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", base_color);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", contrast);
+	}
+	EditorSettings::get_singleton()->set_manually("interface/theme/preset", preset);
+	EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", accent_color);
+	EditorSettings::get_singleton()->set_manually("interface/theme/base_color", base_color);
+	EditorSettings::get_singleton()->set_manually("interface/theme/contrast", contrast);
 
 	//Colors
 	int AUTO_COLOR = 0;
