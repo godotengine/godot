@@ -21,4 +21,4 @@ before_build:
   - cl.exe
 
 build_script:
-- scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS%
+- scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% progress=no

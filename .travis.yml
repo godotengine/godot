@@ -19,7 +19,7 @@ env:
   - GODOT_TARGET=osx
   - GODOT_TARGET=x11
   #- GODOT_TARGET=android
-  - GODOT_TARGET=windows
+  #- GODOT_TARGET=windows
 
 matrix:
   include:
@@ -66,13 +66,13 @@ addons:
       - libxrandr-dev
 
       # For cross-compiling to Windows.
-      - binutils-mingw-w64-i686
-      - binutils-mingw-w64-x86-64
-      - gcc-mingw-w64-i686
-      - gcc-mingw-w64-x86-64
-      - g++-mingw-w64-i686
-      - g++-mingw-w64-x86-64
-      - mingw-w64
+      #- binutils-mingw-w64-i686
+      #- binutils-mingw-w64-x86-64
+      #- gcc-mingw-w64-i686
+      #- gcc-mingw-w64-x86-64
+      #- g++-mingw-w64-i686
+      #- g++-mingw-w64-x86-64
+      #- mingw-w64
 
       # For style checks.
       - clang-format-3.9
@@ -92,5 +92,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX builtin_openssl=yes;
+      scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX;
     fi
