@@ -5083,9 +5083,6 @@ EditorNode::EditorNode() {
 	play_cc = memnew(CenterContainer);
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	menu_hb->add_child(play_cc);
-	play_cc->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	play_cc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 10);
-	play_cc->set_margin(MARGIN_TOP, 5);
 
 	play_button_panel = memnew(PanelContainer);
 	// play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));

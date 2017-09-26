@@ -3936,7 +3936,6 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	key_editor_tab->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 
 	key_editor = memnew(PropertyEditor);
-	key_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	key_editor->hide_top_label();
 	key_editor->set_name(TTR("Key"));
 	key_editor_tab->add_child(key_editor);
