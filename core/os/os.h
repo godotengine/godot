@@ -197,7 +197,7 @@ public:
 
 	virtual String get_installed_templates_path() const { return ""; }
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_ID() const;
 
@@ -333,6 +333,8 @@ public:
 	String get_safe_application_name() const;
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
+
+	virtual Error move_path_to_trash(String p_dir) { return FAILED; }
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,

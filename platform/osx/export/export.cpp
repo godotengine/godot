@@ -64,6 +64,8 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 	String version;
 	String signature;
 	String copyright;
+	String identity;
+	String entitlements;
 	BitsMode bits_mode;
 	bool high_resolution;
 
@@ -71,6 +73,17 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 
 	void _fix_plist(Vector<uint8_t> &plist, const String &p_binary);
 	void _make_icon(const Image &p_icon, Vector<uint8_t> &data);
+
+	Error _code_sign(const String &p_path);
+	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
+
+#ifdef OSX_ENABLED
+	bool use_codesign() const { return true; }
+	bool use_dmg() const { return true; }
+#else
+	bool use_codesign() const { return false; }
+	bool use_dmg() const { return false; }
+#endif
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -89,7 +102,7 @@ public:
 	virtual Error run(int p_device, int p_flags = 0);
 
 	virtual bool requires_password(bool p_debug) const { return false; }
-	virtual String get_binary_extension() const { return "zip"; }
+	virtual String get_binary_extension() const { return use_dmg() ? "dmg" : "zip"; }
 	virtual Error export_project(const String &p_path, bool p_debug, int p_flags = 0);
 
 	virtual bool can_export(String *r_error = NULL) const;
@@ -126,6 +139,10 @@ bool EditorExportPlatformOSX::_set(const StringName &p_name, const Variant &p_va
 		bits_mode = BitsMode(int(p_value));
 	else if (n == "display/high_res")
 		high_resolution = p_value;
+	else if (n == "codesign/identity")
+		identity = p_value;
+	else if (n == "codesign/entitlements")
+		entitlements = p_value;
 	else
 		return false;
 
@@ -160,6 +177,10 @@ bool EditorExportPlatformOSX::_get(const StringName &p_name, Variant &r_ret) con
 		r_ret = bits_mode;
 	else if (n == "display/high_res")
 		r_ret = high_resolution;
+	else if (n == "codesign/identity")
+		r_ret = identity;
+	else if (n == "codesign/entitlements")
+		r_ret = entitlements;
 	else
 		return false;
 
@@ -180,6 +201,9 @@ void EditorExportPlatformOSX::_get_property_list(List<PropertyInfo> *p_list) con
 	p_list->push_back(PropertyInfo(Variant::STRING, "application/copyright"));
 	p_list->push_back(PropertyInfo(Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "display/high_res"));
+
+	p_list->push_back(PropertyInfo(Variant::STRING, "codesign/identity"));
+	p_list->push_back(PropertyInfo(Variant::STRING, "codesign/entitlements"));
 }
 
 void EditorExportPlatformOSX::_make_icon(const Image &p_icon, Vector<uint8_t> &icon) {
@@ -267,19 +291,79 @@ void EditorExportPlatformOSX::_fix_plist(Vector<uint8_t> &plist, const String &p
 	}
 }
 
-Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug, int p_flags) {
+/**
+	If we're running the OSX version of the Godot editor we'll:
+	- export our application bundle to a temporary folder
+	- attempt to code sign it
+	- and then wrap it up in a DMG
+**/
 
-	String src_pkg;
+Error EditorExportPlatformOSX::_code_sign(const String &p_path) {
+	List<String> args;
+
+	if (entitlements != "") {
+		// this should point to our entitlements.plist file that sandboxes our application, I don't know if this should also be placed in our app bundle
+		args.push_back("-entitlements");
+		args.push_back(entitlements);
+	}
+	args.push_back("-s");
+	args.push_back(identity);
+	args.push_back("-v"); // provide some more feedback
+	args.push_back(p_path);
+
+	String str;
+	Error err = OS::get_singleton()->execute("/usr/bin/codesign", args, true, NULL, &str, NULL, true);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	print_line("codesign: " + str);
+	if (str.find("no identity found") != -1) {
+		EditorNode::add_io_error("codesign: no identity found");
+		return FAILED;
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name) {
+
+	OS::get_singleton()->move_path_to_trash(p_dmg_path);
+
+	List<String> args;
+
+	args.push_back("create");
+	args.push_back(p_dmg_path);
+	args.push_back("-volname");
+	args.push_back(p_pkg_name);
+	args.push_back("-fs");
+	args.push_back("HFS+");
+	args.push_back("-srcfolder");
+	args.push_back(p_app_path_name);
+
+	String str;
+	Error err = OS::get_singleton()->execute("/usr/bin/hdiutil", args, true, NULL, &str, NULL, true);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	print_line("hdiutil returned: " + str);
+	if (str.find("create failed") != -1) {
+		if (str.find("File exists") != -1) {
+			EditorNode::add_io_error("hdiutil: create failed - file exists");
+		} else {
+			EditorNode::add_io_error("hdiutil: create failed");
+		}
+		return FAILED;
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug, int p_flags) {
 
 	EditorProgress ep("export", "Exporting for OSX", 104);
 
-	if (p_debug)
-		src_pkg = custom_debug_package;
-	else
-		src_pkg = custom_release_package;
-
+	String src_pkg = p_debug ? custom_debug_package : custom_release_package;
 	if (src_pkg == "") {
 		String err;
+
 		src_pkg = find_export_template("osx.zip", &err);
 		if (src_pkg == "") {
 			EditorNode::add_io_error(err);
@@ -299,13 +383,20 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	ERR_FAIL_COND_V(!pkg, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(pkg);
 
 	zlib_filefunc_def io2 = io;
 	FileAccess *dst_f = NULL;
 	io2.opaque = &dst_f;
-	zipFile dpkg = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+	zipFile dpkg = NULL;
+
+	if (!use_dmg()) {
+		dpkg = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+		if (!dpkg) {
+			unzClose(pkg);
+			return ERR_CANT_OPEN;
+		}
+	}
 
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
 	binary_to_use += String(bits_mode == BITS_FAT ? "fat" : bits_mode == BITS_64 ? "64" : "32");
@@ -319,9 +410,33 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 	else
 		pkg_name = "Unnamed";
 
+	Error err = OK;
+	String tmp_app_path_name = "";
+	if (use_dmg()) {
+		// We're on OSX so we can export to DMG, but first we create our application bundle
+		tmp_app_path_name = EditorSettings::get_singleton()->get_settings_path() + "/tmp/" + pkg_name + ".app";
+		print_line("Exporting to " + tmp_app_path_name);
+		DirAccess *da_tmp_app = DirAccess::create_for_path(tmp_app_path_name);
+		if (!da_tmp_app) {
+			err = ERR_CANT_CREATE;
+		}
+
+		// Create our folder structure or rely on unzip?
+		if (err == OK) {
+			print_line("Creating " + tmp_app_path_name + "/Contents/MacOS");
+			err = da_tmp_app->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
+		}
+
+		if (err == OK) {
+			print_line("Creating " + tmp_app_path_name + "/Contents/Resources");
+			err = da_tmp_app->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
+		}
+	}
+
 	bool found_binary = false;
 
-	while (ret == UNZ_OK) {
+	while (ret == UNZ_OK && err == OK) {
+		bool is_execute = false;
 
 		//get filename
 		unz_file_info info;
@@ -340,9 +455,7 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 		unzCloseCurrentFile(pkg);
 
 		//write
-
 		file = file.replace_first("osx_template.app/", "");
-
 		if (file == "Contents/Info.plist") {
 			print_line("parse plist");
 			_fix_plist(data, pkg_name);
@@ -354,6 +467,7 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 				continue; //ignore!
 			}
 			found_binary = true;
+			is_execute = true;
 			file = "Contents/MacOS/" + pkg_name;
 		}
 
@@ -369,28 +483,130 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 					_make_icon(icon, data);
 				}
 			}
-			//bleh?
 		}
-
-		file = pkg_name + ".app/" + file;
 
 		if (data.size() > 0) {
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 
-			zip_fileinfo fi;
-			fi.tmz_date.tm_hour = info.tmu_date.tm_hour;
-			fi.tmz_date.tm_min = info.tmu_date.tm_min;
-			fi.tmz_date.tm_sec = info.tmu_date.tm_sec;
-			fi.tmz_date.tm_mon = info.tmu_date.tm_mon;
-			fi.tmz_date.tm_mday = info.tmu_date.tm_mday;
-			fi.tmz_date.tm_year = info.tmu_date.tm_year;
-			fi.dosDate = info.dosDate;
-			fi.internal_fa = info.internal_fa;
-			fi.external_fa = info.external_fa;
+			if (use_dmg()) {
+				// write it into our application bundle
+				file = tmp_app_path_name + "/" + file;
 
-			int err = zipOpenNewFileInZip(dpkg,
-					file.utf8().get_data(),
-					&fi,
+				// write the file
+				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
+				if (f) {
+					f->store_buffer(data.ptr(), data.size());
+					f->close();
+					if (is_execute) {
+						// Chmod with 0755 if the file is executable
+						err = f->_chmod(file, 0755);
+					}
+					memdelete(f);
+				} else {
+					err = ERR_CANT_CREATE;
+				}
+			} else {
+				zip_fileinfo fi;
+
+				file = pkg_name + ".app/" + file;
+
+				fi.tmz_date.tm_hour = info.tmu_date.tm_hour;
+				fi.tmz_date.tm_min = info.tmu_date.tm_min;
+				fi.tmz_date.tm_sec = info.tmu_date.tm_sec;
+				fi.tmz_date.tm_mon = info.tmu_date.tm_mon;
+				fi.tmz_date.tm_mday = info.tmu_date.tm_mday;
+				fi.tmz_date.tm_year = info.tmu_date.tm_year;
+				fi.dosDate = info.dosDate;
+				fi.internal_fa = info.internal_fa;
+				fi.external_fa = info.external_fa;
+
+				int zerr = zipOpenNewFileInZip(dpkg,
+						file.utf8().get_data(),
+						&fi,
+						NULL,
+						0,
+						NULL,
+						0,
+						NULL,
+						Z_DEFLATED,
+						Z_DEFAULT_COMPRESSION);
+
+				print_line("OPEN ERR: " + itos(zerr));
+				zerr = zipWriteInFileInZip(dpkg, data.ptr(), data.size());
+				print_line("WRITE ERR: " + itos(zerr));
+				zipCloseFileInZip(dpkg);
+			}
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	if (!found_binary) {
+		ERR_PRINTS("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
+		err = ERR_FILE_NOT_FOUND;
+	}
+
+	if (err == OK) {
+		ep.step("Making PKG", 1);
+
+		String pack_path;
+
+		if (use_dmg()) {
+			pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
+		} else {
+			pack_path = EditorSettings::get_singleton()->get_settings_path() + "/tmp/data.pck";
+		}
+
+		FileAccess *pfs = FileAccess::open(pack_path, FileAccess::WRITE);
+		if (pfs) {
+			err = save_pack(pfs);
+			memdelete(pfs);
+		} else {
+			err = ERR_CANT_OPEN;
+		}
+
+		if (use_dmg()) {
+			if (err == OK && use_codesign()) {
+				/* see if we can code sign our new package */
+				if (err == OK && identity != "") {
+					ep.step("Code signing bundle", 2);
+
+					/* the order in which we code sign is important, this is a bit of a shame or we could do this in our loop that extracts the files from our ZIP */
+
+					// start with our application
+					err = _code_sign(tmp_app_path_name + "/Contents/MacOS/" + pkg_name);
+				}
+
+				///@TODO we should check the contents of /Contents/Frameworks for frameworks to sign
+
+				if (err == OK && identity != "") {
+					// we should probably loop through all resources and sign them?
+					err = _code_sign(tmp_app_path_name + "/Contents/Resources/icon.icns");
+				}
+
+				if (err == OK && identity != "") {
+					err = _code_sign(pack_path);
+				}
+
+				if (err == OK && identity != "") {
+					err = _code_sign(tmp_app_path_name + "/Contents/Info.plist");
+				}
+			}
+
+			if (err == OK) {
+				// and finally create a DMG
+				ep.step("Making DMG", 3);
+				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
+			}
+
+			// Clean up temporary .app dir
+			OS::get_singleton()->move_path_to_trash(tmp_app_path_name);
+		} else if (err == OK) {
+			//write datapack
+
+			int zerr = zipOpenNewFileInZip(dpkg,
+					(pkg_name + ".app/Contents/Resources/data.pck").utf8().get_data(),
+					NULL,
 					NULL,
 					0,
 					NULL,
@@ -399,69 +615,34 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 					Z_DEFLATED,
 					Z_DEFAULT_COMPRESSION);
 
-			print_line("OPEN ERR: " + itos(err));
-			err = zipWriteInFileInZip(dpkg, data.ptr(), data.size());
-			print_line("WRITE ERR: " + itos(err));
-			zipCloseFileInZip(dpkg);
+			FileAccess *pf = FileAccess::open(pack_path, FileAccess::READ);
+			if (pf) {
+				const int BSIZE = 16384;
+				uint8_t buf[BSIZE];
+
+				while (true) {
+
+					int r = pf->get_buffer(buf, BSIZE);
+					if (r <= 0)
+						break;
+					zipWriteInFileInZip(dpkg, buf, r);
+				}
+
+				zipCloseFileInZip(dpkg);
+				memdelete(pf);
+			} else {
+				err = ERR_CANT_OPEN;
+			}
+
 		}
-
-		ret = unzGoToNextFile(pkg);
 	}
 
-	if (!found_binary) {
-		ERR_PRINTS("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
+	if (dpkg) {
 		zipClose(dpkg, NULL);
-		unzClose(pkg);
-		return ERR_FILE_NOT_FOUND;
 	}
-
-	ep.step("Making PKG", 1);
-
-	String pack_path = EditorSettings::get_singleton()->get_settings_path() + "/tmp/data.pck";
-	FileAccess *pfs = FileAccess::open(pack_path, FileAccess::WRITE);
-	Error err = save_pack(pfs);
-	memdelete(pfs);
-
-	if (err) {
-		zipClose(dpkg, NULL);
-		unzClose(pkg);
-		return err;
-	}
-
-	{
-		//write datapack
-
-		int err = zipOpenNewFileInZip(dpkg,
-				(pkg_name + ".app/Contents/Resources/data.pck").utf8().get_data(),
-				NULL,
-				NULL,
-				0,
-				NULL,
-				0,
-				NULL,
-				Z_DEFLATED,
-				Z_DEFAULT_COMPRESSION);
-
-		FileAccess *pf = FileAccess::open(pack_path, FileAccess::READ);
-		ERR_FAIL_COND_V(!pf, ERR_CANT_OPEN);
-		const int BSIZE = 16384;
-		uint8_t buf[BSIZE];
-
-		while (true) {
-
-			int r = pf->get_buffer(buf, BSIZE);
-			if (r <= 0)
-				break;
-			zipWriteInFileInZip(dpkg, buf, r);
-		}
-		zipCloseFileInZip(dpkg);
-		memdelete(pf);
-	}
-
-	zipClose(dpkg, NULL);
 	unzClose(pkg);
 
-	return OK;
+	return err;
 }
 
 Error EditorExportPlatformOSX::run(int p_device, int p_flags) {
@@ -482,6 +663,8 @@ EditorExportPlatformOSX::EditorExportPlatformOSX() {
 	version = "1.0";
 	bits_mode = BITS_FAT;
 	high_resolution = false;
+	identity = "";
+	entitlements = "";
 }
 
 bool EditorExportPlatformOSX::can_export(String *r_error) const {

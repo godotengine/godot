@@ -220,6 +220,8 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
+	virtual Error move_path_to_trash(String p_dir);
+
 	OS_OSX();
 };
 
