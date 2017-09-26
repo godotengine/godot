@@ -1434,7 +1434,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
 	error_label = memnew(Label);
-	error_label->add_color_override("color", Color(1, 0.4, 0.3));
+	error_label->add_color_override("color", get_color("error_color", "Editor"));
 	error_hb->add_child(error_label);
 
 	description = NULL;

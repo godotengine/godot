@@ -165,7 +165,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	TreeItem *item = search_options->create_item(parent);
 	item->set_text(0, p_type);
 	if (!ClassDB::can_instance(p_type)) {
-		item->set_custom_color(0, Color(0.5, 0.5, 0.5));
+		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else {
 

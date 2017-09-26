@@ -296,6 +296,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color highlight_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.2);
 
 	theme->set_color("accent_color", "Editor", accent_color);
+	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("base_color", "Editor", base_color);
 	theme->set_color("dark_color_1", "Editor", dark_color_1);
 	theme->set_color("dark_color_2", "Editor", dark_color_2);
@@ -304,17 +305,27 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
 
 	theme->set_color("font_color", "Editor", font_color);
+	theme->set_color("disabled_font_color", "Editor", font_color_disabled);
 
-	Color success_color = accent_color.linear_interpolate(Color(.6, 1, .6), 0.8);
-	Color warning_color = accent_color.linear_interpolate(Color(1, 1, .2), 0.8);
-	Color error_color = accent_color.linear_interpolate(Color(1, .2, .2), 0.8);
+	theme->set_color("mono_color", "Editor", mono_color);
+
+	Color success_color = accent_color.linear_interpolate(Color(0.2, 1, 0.2), 0.6) * 1.2;
+	Color warning_color = accent_color.linear_interpolate(Color(1, 1, 0), 0.7);
+	Color error_color = accent_color.linear_interpolate(Color(1, 0, 0), 0.8) * 1.7;
+	if (!dark_theme) {
+		// yellow on white themes is a P.I.T.A.
+		warning_color = accent_color.linear_interpolate(Color(1, 0.8, 0), 0.9);
+		warning_color = warning_color.linear_interpolate(mono_color, 0.2);
+		success_color = success_color.linear_interpolate(mono_color, 0.2);
+		error_color = error_color.linear_interpolate(mono_color, 0.2);
+	}
 	theme->set_color("success_color", "Editor", success_color);
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
 
 	// 2d grid color
-	const Color grid_minor_color = Color(font_color.r, font_color.g, font_color.b, 0.1);
-	const Color grid_major_color = Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.05);
+	const Color grid_minor_color = mono_color * Color(1.0, 1.0, 1.0, 0.07);
+	const Color grid_major_color = Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.15);
 	theme->set_color("grid_major_color", "Editor", grid_major_color);
 	theme->set_color("grid_minor_color", "Editor", grid_minor_color);
 
@@ -693,6 +704,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "TextEdit", style_widget_hover);
 	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "TextEdit", theme->get_icon("GuiTab", "EditorIcons"));
+	theme->set_color("font_color", "TextEdit", font_color);
+	theme->set_color("caret_color", "TextEdit", highlight_color);
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));

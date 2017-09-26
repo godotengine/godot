@@ -929,7 +929,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
-	export_error->add_color_override("font_color", Color(1, 0.5, 0.5));
+	export_error->add_color_override("font_color", get_color("error_color", "Editor"));
 
 	export_templates_error = memnew(HBoxContainer);
 	main_vb->add_child(export_templates_error);
@@ -937,7 +937,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	Label *export_error2 = memnew(Label);
 	export_templates_error->add_child(export_error2);
-	export_error2->add_color_override("font_color", Color(1, 0.5, 0.5));
+	export_error2->add_color_override("font_color", get_color("error_color", "Editor"));
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
 
 	LinkButton *download_templates = memnew(LinkButton);

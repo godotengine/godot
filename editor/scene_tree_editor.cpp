@@ -185,7 +185,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (part_of_subscene) {
 
 		//item->set_selectable(0,marked_selectable);
-		item->set_custom_color(0, get_color("error_color", "Editor").linear_interpolate(get_color("warning_color", "Editor"), 0.4));
+		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 
 	} else if (marked.has(p_node)) {
 
@@ -345,7 +345,7 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 		Color color(1, 1, 1, 1);
 		bool visible_on_screen = p_node->call("is_visible_in_tree");
 		if (!visible_on_screen) {
-			color = Color(0.6, 0.6, 0.6, 1);
+			color.a = 0.6;
 		}
 		int idx = p_item->get_button_by_id(0, BUTTON_VISIBILITY);
 		p_item->set_button_color(0, idx, color);

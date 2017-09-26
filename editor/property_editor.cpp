@@ -2433,7 +2433,7 @@ bool PropertyEditor::_is_drop_valid(const Dictionary &p_drag_data, const Diction
 void PropertyEditor::_mark_drop_fields(TreeItem *p_at) {
 
 	if (_is_drop_valid(get_viewport()->gui_get_drag_data(), p_at->get_metadata(0)))
-		p_at->set_custom_bg_color(1, Color(0.7, 0.5, 0.2), true);
+		p_at->set_custom_bg_color(1, get_color("accent_color", "Editor"), true);
 
 	if (p_at->get_children()) {
 		_mark_drop_fields(p_at->get_children());

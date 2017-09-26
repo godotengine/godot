@@ -73,7 +73,7 @@ void ExportTemplateManager::_update_template_list() {
 	current_hb->add_child(current);
 
 	if (templates.has(current_version)) {
-		current->add_color_override("font_color", Color(0.5, 1, 0.5));
+		current->add_color_override("font_color", get_color("success_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Re-Download"));
 		current_hb->add_child(redownload);
@@ -86,7 +86,7 @@ void ExportTemplateManager::_update_template_list() {
 		uninstall->connect("pressed", this, "_uninstall_template", varray(current_version));
 
 	} else {
-		current->add_color_override("font_color", Color(1.0, 0.5, 0.5));
+		current->add_color_override("font_color", get_color("error_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Download"));
 		redownload->connect("pressed", this, "_download_template", varray(current_version));
@@ -98,7 +98,7 @@ void ExportTemplateManager::_update_template_list() {
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		Label *version = memnew(Label);
-		version->set_modulate(Color(1, 1, 1, 0.7));
+		version->set_modulate(get_color("disabled_font_color", "Editor"));
 		String text = E->get();
 		if (text == current_version) {
 			text += " " + TTR("(Current)");
@@ -299,7 +299,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 void ExportTemplateManager::popup_manager() {
 
 	_update_template_list();
-	popup_centered_minsize(Size2(400, 600) * EDSCALE);
+	popup_centered_minsize(Size2(400, 400) * EDSCALE);
 }
 
 void ExportTemplateManager::ok_pressed() {

@@ -613,8 +613,8 @@ void CurveEditor::_draw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color0(0, 0, 0, 0.5);
-	const Color grid_color1(0, 0, 0, 0.15);
+	const Color grid_color0 = get_color("grid_major_color", "Editor");
+	const Color grid_color1 = get_color("grid_minor_color", "Editor");
 	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
 	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);
@@ -636,7 +636,7 @@ void CurveEditor::_draw() {
 
 	Ref<Font> font = get_font("font", "Label");
 	float font_height = font->get_height();
-	const Color text_color(1, 1, 1, 0.3);
+	const Color text_color = get_color("font_color", "Editor");
 
 	{
 		// X axis
@@ -664,7 +664,7 @@ void CurveEditor::_draw() {
 
 	if (_selected_point >= 0) {
 
-		const Color tangent_color(0.5, 0.5, 1, 1);
+		const Color tangent_color = get_color("accent_color", "Editor");
 
 		int i = _selected_point;
 		Vector2 pos = curve.get_point_position(i);
@@ -686,8 +686,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(_world_to_view);
 
-	const Color line_color(1, 1, 1, 0.85);
-	const Color edge_line_color(1, 1, 1, 0.4);
+	const Color line_color = get_color("highlight_color", "Editor");
+	const Color edge_line_color = get_color("font_color", "Editor");
 
 	CanvasItemPlotCurve plot_func(*this, line_color, edge_line_color);
 	plot_curve_accurate(curve, 4.f / view_size.x, plot_func);
@@ -714,8 +714,8 @@ void CurveEditor::_draw() {
 
 	draw_set_transform_matrix(Transform2D());
 
-	const Color point_color(1, 1, 1);
-	const Color selected_point_color(1, 0.5, 0.5);
+	const Color point_color = get_color("font_color", "Editor");
+	const Color selected_point_color = get_color("accent_color", "Editor");
 
 	for (int i = 0; i < curve.get_point_count(); ++i) {
 		Vector2 pos = curve.get_point_position(i);
