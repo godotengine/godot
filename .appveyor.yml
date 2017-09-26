@@ -21,5 +21,4 @@ before_build:
   - cl.exe
 
 build_script:
-  - cd godot
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS%
