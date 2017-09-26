@@ -127,10 +127,10 @@ void EditorPluginSettings::update_plugins() {
 			item->set_editable(3, true);
 
 			if (EditorNode::get_singleton()->is_addon_plugin_enabled(d)) {
-				item->set_custom_color(3, Color(0.2, 1, 0.2));
+				item->set_custom_color(3, get_color("success_color", "Editor"));
 				item->set_range(3, 1);
 			} else {
-				item->set_custom_color(3, Color(1, 0.2, 0.2));
+				item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
 				item->set_range(3, 0);
 			}
 		}
@@ -160,9 +160,9 @@ void EditorPluginSettings::_plugin_activity_changed() {
 	}
 
 	if (is_active)
-		ti->set_custom_color(3, Color(0.2, 1, 0.2));
+		ti->set_custom_color(3, get_color("success_color", "Editor"));
 	else
-		ti->set_custom_color(3, Color(1, 0.2, 0.2));
+		ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
 }
 
 void EditorPluginSettings::_bind_methods() {

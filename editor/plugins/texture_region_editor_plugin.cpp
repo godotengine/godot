@@ -39,7 +39,7 @@
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, Color(0.97, 0.2, 0.2), 2);
+		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"), 2);
 		from += line * 2;
 	}
 }
@@ -66,6 +66,7 @@ void TextureRegionEditor::_region_draw() {
 	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
 	if (snap_mode == SNAP_GRID) {
+		Color grid_color = get_color("grid_major_color", "Editor");
 		Size2 s = edit_draw->get_size();
 		int last_cell = 0;
 
@@ -76,7 +77,7 @@ void TextureRegionEditor::_region_draw() {
 					if (i == 0)
 						last_cell = cell;
 					if (last_cell != cell)
-						edit_draw->draw_line(Point2(i, 0), Point2(i, s.height), Color(0.3, 0.7, 1, 0.3));
+						edit_draw->draw_line(Point2(i, 0), Point2(i, s.height), grid_color);
 					last_cell = cell;
 				}
 			else
@@ -85,7 +86,7 @@ void TextureRegionEditor::_region_draw() {
 					if (i == 0)
 						last_cell = cell;
 					if (last_cell != cell)
-						edit_draw->draw_rect(Rect2(i - snap_separation.x * draw_zoom, 0, snap_separation.x * draw_zoom, s.height), Color(0.3, 0.7, 1, 0.3));
+						edit_draw->draw_rect(Rect2(i - snap_separation.x * draw_zoom, 0, snap_separation.x * draw_zoom, s.height), grid_color);
 					last_cell = cell;
 				}
 		}
@@ -97,7 +98,7 @@ void TextureRegionEditor::_region_draw() {
 					if (i == 0)
 						last_cell = cell;
 					if (last_cell != cell)
-						edit_draw->draw_line(Point2(0, i), Point2(s.width, i), Color(0.3, 0.7, 1, 0.3));
+						edit_draw->draw_line(Point2(0, i), Point2(s.width, i), grid_color);
 					last_cell = cell;
 				}
 			else
@@ -106,7 +107,7 @@ void TextureRegionEditor::_region_draw() {
 					if (i == 0)
 						last_cell = cell;
 					if (last_cell != cell)
-						edit_draw->draw_rect(Rect2(0, i - snap_separation.y * draw_zoom, s.width, snap_separation.y * draw_zoom), Color(0.3, 0.7, 1, 0.3));
+						edit_draw->draw_rect(Rect2(0, i - snap_separation.y * draw_zoom, s.width, snap_separation.y * draw_zoom), grid_color);
 					last_cell = cell;
 				}
 		}
@@ -137,7 +138,7 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(rect.position + rect.size),
 		mtx.basis_xform(rect.position + Vector2(0, rect.size.y))
 	};
-	Color color(0.9, 0.5, 0.5);
+	Color color = get_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 
 		int prev = (i + 3) % 4;
