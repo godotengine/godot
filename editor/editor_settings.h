@@ -85,7 +85,7 @@ private:
 	HashMap<String, VariantContainer> props;
 	String resource_path;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _set(const StringName &p_name, const Variant &p_value, bool p_emit_signal = true);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -126,6 +126,9 @@ public:
 		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
 	};
 
+	void set_manually(const StringName &p_name, const Variant &p_value, bool p_emit_signal = false) {
+		_set(p_name, p_value, p_emit_signal);
+	}
 	bool has(String p_var) const;
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
