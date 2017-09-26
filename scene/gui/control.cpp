@@ -1472,45 +1472,20 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin) {
 }
 
 void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
-	if (!is_inside_tree())
-		return;
-
-	Point2 new_pos;
+	// Calculate the size if the node is not resized
 	Size2 min_size = get_minimum_size();
 	Size2 new_size = get_size();
-	Size2 parent_size = get_parent_area_size();
-
-	// Width
-	switch (p_preset) {
-		case PRESET_TOP_WIDE:
-		case PRESET_BOTTOM_WIDE:
-		case PRESET_HCENTER_WIDE:
-		case PRESET_WIDE:
-			new_size.x = parent_size.x - 2 * p_margin;
-			break;
-		default:
-			if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
-				new_size.x = min_size.x;
-			}
-			break;
+	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
+		new_size.x = min_size.x;
+	}
+	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_WIDTH) {
+		new_size.y = min_size.y;
 	}
 
-	// Height
-	switch (p_preset) {
-		case PRESET_LEFT_WIDE:
-		case PRESET_RIGHT_WIDE:
-		case PRESET_VCENTER_WIDE:
-		case PRESET_WIDE:
-			new_size.y = parent_size.y - 2 * p_margin;
-			break;
-		default:
-			if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_WIDTH) {
-				new_size.y = min_size.y;
-			}
-			break;
-	}
+	float pw = _get_parent_range(0);
+	float ph = _get_parent_range(1);
 
-	// x pos
+	//Left
 	switch (p_preset) {
 		case PRESET_TOP_LEFT:
 		case PRESET_BOTTOM_LEFT:
@@ -1520,25 +1495,25 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_WIDE:
-			new_pos.x = p_margin;
+			data.margin[0] = pw * (0.0 - data.anchor[0]) + p_margin;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			new_pos.x = (parent_size.x - new_size.x) / 2.0;
+			data.margin[0] = pw * (0.5 - data.anchor[0]) - new_size.x / 2;
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			new_pos.x = parent_size.x - new_size.x - p_margin;
+			data.margin[0] = pw * (1.0 - data.anchor[0]) - new_size.x - p_margin;
 			break;
 	}
 
-	// y pos
+	// Top
 	switch (p_preset) {
 		case PRESET_TOP_LEFT:
 		case PRESET_TOP_RIGHT:
@@ -1548,26 +1523,81 @@ void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_WIDE:
-			new_pos.y = p_margin;
+			data.margin[1] = ph * (0.0 - data.anchor[1]) + p_margin;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			new_pos.y = (parent_size.y - new_size.y) / 2.0;
+			data.margin[1] = ph * (0.5 - data.anchor[1]) - new_size.y / 2;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_BOTTOM_WIDE:
-			new_pos.y = parent_size.y - new_size.y - p_margin;
+			data.margin[1] = ph * (1.0 - data.anchor[1]) - new_size.y - p_margin;
 			break;
 	}
 
-	set_position(new_pos);
-	set_size(new_size);
+	// Right
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_CENTER_LEFT:
+		case PRESET_LEFT_WIDE:
+			data.margin[2] = pw * (0.0 - data.anchor[2]) + new_size.x + p_margin;
+			break;
+
+		case PRESET_CENTER_TOP:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_CENTER:
+		case PRESET_VCENTER_WIDE:
+			data.margin[2] = pw * (0.5 - data.anchor[2]) + new_size.x / 2;
+			break;
+
+		case PRESET_TOP_RIGHT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_TOP_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_HCENTER_WIDE:
+		case PRESET_WIDE:
+			data.margin[2] = pw * (1.0 - data.anchor[2]) - p_margin;
+			break;
+	}
+
+	// Bottom
+	switch (p_preset) {
+		case PRESET_TOP_LEFT:
+		case PRESET_TOP_RIGHT:
+		case PRESET_CENTER_TOP:
+		case PRESET_TOP_WIDE:
+			data.margin[3] = ph * (0.0 - data.anchor[3]) + new_size.y + p_margin;
+			break;
+
+		case PRESET_CENTER_LEFT:
+		case PRESET_CENTER_RIGHT:
+		case PRESET_CENTER:
+		case PRESET_HCENTER_WIDE:
+			data.margin[3] = ph * (0.5 - data.anchor[3]) + new_size.y / 2;
+			break;
+
+		case PRESET_BOTTOM_LEFT:
+		case PRESET_BOTTOM_RIGHT:
+		case PRESET_CENTER_BOTTOM:
+		case PRESET_LEFT_WIDE:
+		case PRESET_RIGHT_WIDE:
+		case PRESET_BOTTOM_WIDE:
+		case PRESET_VCENTER_WIDE:
+		case PRESET_WIDE:
+			data.margin[3] = ph * (1.0 - data.anchor[3]) - p_margin;
+			break;
+	}
+
+	_size_changed();
 }
 
 void Control::set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
