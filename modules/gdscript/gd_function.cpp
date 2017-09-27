@@ -909,7 +909,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
 					if (E)
-						OPCODE_BREAK;
+						break;
 				}
 
 				Variant::CallError err;
