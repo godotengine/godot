@@ -837,7 +837,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color caret_color = mono_color;
 	const Color caret_background_color = mono_color.inverted();
 	const Color text_selected_color = dark_color_3;
-	const Color selection_color = alpha3;
+	const Color selection_color = alpha2;
 	const Color brace_mismatch_color = error_color;
 	const Color current_line_color = alpha1;
 	const Color line_length_guideline_color = warning_color;

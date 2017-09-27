@@ -1903,5 +1903,6 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text->set_area_as_parent_rect();
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
+	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }

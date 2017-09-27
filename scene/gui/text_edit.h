@@ -238,6 +238,7 @@ class TextEdit : public Control {
 	bool setting_row;
 	bool wrap;
 	bool draw_tabs;
+	bool override_selected_font_color;
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
 	bool undo_enabled;
@@ -482,6 +483,8 @@ public:
 	void set_indent_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+	void set_override_selected_font_color(bool p_override_selected_font_color);
+	bool is_overriding_selected_font_color() const;
 
 	void set_insert_mode(bool p_enabled);
 	bool is_insert_mode() const;
