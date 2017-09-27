@@ -2129,14 +2129,14 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		case VIEW_TOP: {
 
 			cursor.x_rot = Math_PI / 2.0;
-			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));;
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			name = TTR("Top");
 			_update_name();
 		} break;
 		case VIEW_BOTTOM: {
 
 			cursor.x_rot = -Math_PI / 2.0;
-			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));;
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			name = TTR("Bottom");
 			_update_name();
 
