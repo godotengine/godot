@@ -122,7 +122,6 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 
-	ERR_FAIL_COND(!p_stream.is_valid());
 	AudioServer::get_singleton()->lock();
 
 	mix_buffer.resize(AudioServer::get_singleton()->thread_get_mix_buffer_size());
@@ -134,12 +133,14 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 		setseek = -1;
 	}
 
-	stream = p_stream;
-	stream_playback = p_stream->instance_playback();
+	if (p_stream.is_valid()) {
+		stream = p_stream;
+		stream_playback = p_stream->instance_playback();
+	}
 
 	AudioServer::get_singleton()->unlock();
 
-	if (stream_playback.is_null()) {
+	if (p_stream.is_valid() && stream_playback.is_null()) {
 		stream.unref();
 		ERR_FAIL_COND(stream_playback.is_null());
 	}
