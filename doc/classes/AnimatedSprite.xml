@@ -4,7 +4,7 @@
 		Sprite node that can use multiple textures for animation.
 	</brief_description>
 	<description>
-		Sprite node that can use multiple textures for animation.
+		Sprite node that can use multiple textures for animation. Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -149,31 +149,39 @@
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation">
+			The current animation from the [code]frames[/code] resource. If this value is changed, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
+			If [code]true[/code] texture will be centered. Default value: [code]true[/code].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
+			If [code]true[/code] texture is flipped horizontally. Default value: [code]false[/code].
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
+			If [code]true[/code] texture is flipped vertically. Default value: [code]false[/code].
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+			The current frame index.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+			The [SpriteFrames] resource containing the animation(s).
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The texture's drawing offset.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
+			If [code]true[/code] the [code]animation[/code] is currently playing.
 		</member>
 	</members>
 	<signals>
 		<signal name="animation_finished">
 			<description>
-				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn, before looping.
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn.
 			</description>
 		</signal>
 		<signal name="frame_changed">
 			<description>
-				Emitted when frame is changed.
+				Emitted when [code]frame[/code] changes.
 			</description>
 		</signal>
 	</signals>
