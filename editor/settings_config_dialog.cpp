@@ -59,7 +59,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	if (full_name == "text_editor/theme/color_theme") {
 		property_editor->get_property_editor()->update_tree();
 	} else if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
-		EditorSettings::get_singleton()->set_manually("interface/theme/preset", 5); // set preset to Custom
+		EditorSettings::get_singleton()->set_manually("interface/theme/preset", 6); // set preset to Custom
 	}
 }
 

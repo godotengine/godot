@@ -524,11 +524,6 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			return;
-		} else {
-			Vector<int> sItems = get_selected_items();
-			for (int i = 0; i < sItems.size(); i++) {
-				unselect(sItems[i]);
-			}
 		}
 	}
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
@@ -750,8 +745,8 @@ void ItemList::_notification(int p_what) {
 		Ref<StyleBox> bg = get_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
-		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw + bg->get_margin(MARGIN_RIGHT));
-		scroll_bar->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -bg->get_margin(MARGIN_RIGHT));
+		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw);
+		scroll_bar->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 		scroll_bar->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, bg->get_margin(MARGIN_TOP));
 		scroll_bar->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -bg->get_margin(MARGIN_BOTTOM));
 
@@ -838,6 +833,10 @@ void ItemList::_notification(int p_what) {
 				if (fixed_column_width > 0)
 					minsize.x = fixed_column_width;
 				max_column_width = MAX(max_column_width, minsize.x);
+
+				// elements need to adapt to the selected size
+				minsize.y += vseparation;
+				minsize.x += hseparation;
 				items[i].rect_cache.size = minsize;
 				items[i].min_rect_cache.size = minsize;
 			}
@@ -851,7 +850,6 @@ void ItemList::_notification(int p_what) {
 
 			while (true) {
 				//repeat util all fits
-				//print_line("try with "+itos(current_columns));
 				bool all_fit = true;
 				Vector2 ofs;
 				int col = 0;
@@ -866,13 +864,11 @@ void ItemList::_notification(int p_what) {
 						break;
 					}
 
-					items[i].rect_cache = items[i].min_rect_cache;
 					if (same_column_width)
 						items[i].rect_cache.size.x = max_column_width;
 					items[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
-					//print_line("item "+itos(i)+" ofs "+rtos(items[i].rect_cache.size.x));
 					col++;
 					if (col == current_columns) {
 
@@ -901,7 +897,6 @@ void ItemList::_notification(int p_what) {
 						auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;
 					scroll_bar->set_max(max);
 					scroll_bar->set_page(page);
-					//print_line("max: "+rtos(max)+" page "+rtos(page));
 					if (max <= page) {
 						scroll_bar->set_value(0);
 						scroll_bar->hide();
@@ -950,23 +945,23 @@ void ItemList::_notification(int p_what) {
 			if (items[i].selected) {
 				Rect2 r = rcache;
 				r.position += base_ofs;
+				r.position.y -= vseparation / 2;
+				r.size.y += vseparation;
+				r.position.x -= hseparation / 2;
+				r.size.x += hseparation;
 
-				// Use stylebox to dimension potential bg color
-				r.position.x -= sbsel->get_margin(MARGIN_LEFT);
-				r.size.x += sbsel->get_margin(MARGIN_LEFT) + sbsel->get_margin(MARGIN_RIGHT);
-				r.position.y -= sbsel->get_margin(MARGIN_TOP);
-				r.size.y += sbsel->get_margin(MARGIN_TOP) + sbsel->get_margin(MARGIN_BOTTOM);
 				draw_style_box(sbsel, r);
 			}
-
 			if (items[i].custom_bg.a > 0.001) {
-
 				Rect2 r = rcache;
 				r.position += base_ofs;
 
 				// Size rect to make the align the temperature colors
 				r.position.y -= vseparation / 2;
 				r.size.y += vseparation;
+				r.position.x -= hseparation / 2;
+				r.size.x += hseparation;
+
 				draw_rect(r, items[i].custom_bg);
 			}
 
@@ -1103,12 +1098,16 @@ void ItemList::_notification(int p_what) {
 
 				Rect2 r = rcache;
 				r.position += base_ofs;
+				r.position.y -= vseparation / 2;
+				r.size.y += vseparation;
+				r.position.x -= hseparation / 2;
+				r.size.x += hseparation;
 				draw_style_box(cursor, r);
 			}
 		}
 
 		for (int i = 0; i < separators.size(); i++) {
-			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), Vector2(size.width - bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), guide_color);
+			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), Vector2(size.width - bg->get_margin(MARGIN_RIGHT), base_ofs.y + separators[i]), guide_color);
 		}
 	}
 }
