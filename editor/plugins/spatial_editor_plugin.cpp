@@ -1671,14 +1671,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event)) {
-			cursor.y_rot = 0;
+			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			cursor.x_rot = -Math_PI / 2.0;
 			set_message(TTR("Bottom View."), 2);
 			name = TTR("Bottom");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event)) {
-			cursor.y_rot = 0;
+			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			cursor.x_rot = Math_PI / 2.0;
 			set_message(TTR("Top View."), 2);
 			name = TTR("Top");
@@ -1686,28 +1686,28 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event)) {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
+			cursor.y_rot =  Math_PI + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			set_message(TTR("Rear View."), 2);
 			name = TTR("Rear");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event)) {
 			cursor.x_rot = 0;
-			cursor.y_rot = 0;
+			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			set_message(TTR("Front View."), 2);
 			name = TTR("Front");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/left_view", p_event)) {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI / 2.0;
+			cursor.y_rot = (Math_PI / 2.0) + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			set_message(TTR("Left View."), 2);
 			name = TTR("Left");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/right_view", p_event)) {
+			cursor.y_rot = -(Math_PI / 2.0) + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			cursor.x_rot = 0;
-			cursor.y_rot = -Math_PI / 2.0;
 			set_message(TTR("Right View."), 2);
 			name = TTR("Right");
 			_update_name();
@@ -2129,21 +2129,21 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		case VIEW_TOP: {
 
 			cursor.x_rot = Math_PI / 2.0;
-			cursor.y_rot = 0;
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));;
 			name = TTR("Top");
 			_update_name();
 		} break;
 		case VIEW_BOTTOM: {
 
 			cursor.x_rot = -Math_PI / 2.0;
-			cursor.y_rot = 0;
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));;
 			name = TTR("Bottom");
 			_update_name();
 
 		} break;
 		case VIEW_LEFT: {
 
-			cursor.y_rot = Math_PI / 2.0;
+			cursor.y_rot = Math_PI / 2.0 + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			cursor.x_rot = 0;
 			name = TTR("Left");
 			_update_name();
@@ -2151,7 +2151,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_RIGHT: {
 
-			cursor.y_rot = -Math_PI / 2.0;
+			cursor.y_rot = -Math_PI / 2.0 + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			cursor.x_rot = 0;
 			name = TTR("Right");
 			_update_name();
@@ -2159,7 +2159,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_FRONT: {
 
-			cursor.y_rot = 0;
+			cursor.y_rot = (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			cursor.x_rot = 0;
 			name = TTR("Front");
 			_update_name();
@@ -2167,7 +2167,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_REAR: {
 
-			cursor.y_rot = Math_PI;
+			cursor.y_rot = Math_PI + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			cursor.x_rot = 0;
 			name = TTR("Rear");
 			_update_name();
