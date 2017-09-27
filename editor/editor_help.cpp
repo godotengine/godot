@@ -1702,7 +1702,7 @@ void EditorHelp::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			class_desc->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
+			class_desc->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 
 		} break;
 
@@ -1792,7 +1792,7 @@ EditorHelp::EditorHelp() {
 		vbc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect();
 		class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-		class_desc->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
+		class_desc->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 		class_desc->connect("meta_clicked", this, "_class_desc_select");
 		class_desc->connect("gui_input", this, "_class_desc_input");
 	}
@@ -1883,7 +1883,7 @@ void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			rich_text->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
+			rich_text->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 		} break;
 
 		default: break;
@@ -1902,7 +1902,7 @@ EditorHelpBit::EditorHelpBit() {
 	add_child(rich_text);
 	rich_text->set_area_as_parent_rect();
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
-	rich_text->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
+	rich_text->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
