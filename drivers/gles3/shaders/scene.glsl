@@ -941,12 +941,12 @@ LIGHT_SHADER_CODE
 
 		vec3 H = normalize(V + L);
 		float NoL = max(0.0,dot(N, L));
-		float VoH = max(0.0,dot(L, H));
+		float LoH = max(0.0,dot(L, H));
 		float NoV = max(0.0,dot(N, V));
 
-		float FD90 = 0.5 + 2.0 * VoH * VoH * roughness;
-		float FdV = 1.0 + (FD90 - 1.0) * pow( 1.0 - NoV, 5.0 );
-		float FdL = 1.0 + (FD90 - 1.0) * pow( 1.0 - NoL, 5.0 );
+		float FD90 = 0.5 + 2.0 * LoH * LoH * roughness;
+		float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoV);
+		float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoL);
 		light_amount = ( (1.0 / M_PI) * FdV * FdL );
 /*
 		float energyBias = mix(roughness, 0.0, 0.5);
