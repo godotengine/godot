@@ -1790,7 +1790,6 @@ EditorHelp::EditorHelp() {
 	{
 		class_desc = memnew(RichTextLabel);
 		vbc->add_child(class_desc);
-		class_desc->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 		class_desc->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
 		class_desc->connect("meta_clicked", this, "_class_desc_select");

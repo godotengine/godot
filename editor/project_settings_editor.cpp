@@ -1504,7 +1504,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	Control *input_base = memnew(Control);
 	input_base->set_name(TTR("Input Map"));
-	input_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	tab_container->add_child(input_base);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
