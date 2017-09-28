@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import os
+import methods
+
+Import('env')
+Import('env_modules')
+
+env_mobile_vr = env_modules.Clone()
+
+env_mobile_vr.add_source_files(env.modules_sources, '*.cpp')
+
+SConscript("shaders/SCsub")
