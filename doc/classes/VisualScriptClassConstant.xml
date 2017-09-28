@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A Visual Script node representing a constant from a class.
 	</brief_description>
 	<description>
+		A Visual Script node representing a constant from the classes, such as [@GlobalScope.TYPE_INT].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,8 +42,10 @@
 	</methods>
 	<members>
 		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
+			The type to get the constant from.
 		</member>
 		<member name="constant" type="String" setter="set_class_constant" getter="get_class_constant">
+			The name of the constant to return.
 		</member>
 	</members>
 	<constants>

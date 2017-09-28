@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptBasicTypeConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A Visual Script node representing a constant from the base types.
 	</brief_description>
 	<description>
+		A Visual Script node representing a constant from base types, such as [Vector3.AXIS_X].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,8 +42,10 @@
 	</methods>
 	<members>
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type">
+			The type to get the constant from.
 		</member>
 		<member name="constant" type="String" setter="set_basic_type_constant" getter="get_basic_type_constant">
+			The name of the constant to return.
 		</member>
 	</members>
 	<constants>
