@@ -38,9 +38,10 @@ void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
-	for (Map<ConstraintSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
+	for (Map<uint64_t, BodySW::ConstraintMapVal>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
 
-		ConstraintSW *c = (ConstraintSW *)E->key();
+		BodySW::ConstraintMapVal cmv = E->get();
+		ConstraintSW *c = cmv.constraint;
 		if (c->get_island_step() == _step)
 			continue; //already processed
 		c->set_island_step(_step);
@@ -48,7 +49,7 @@ void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get())
+			if (i == cmv.index)
 				continue;
 			BodySW *b = c->get_body_ptr()[i];
 			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer::BODY_MODE_STATIC || b->get_mode() == PhysicsServer::BODY_MODE_KINEMATIC)
