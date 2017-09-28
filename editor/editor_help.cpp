@@ -650,8 +650,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 	// Colors
 	const Color title_color = get_color("accent_color", "Editor");
-	const Color text_color = get_color("font_color", "RichTextLabel");
-	const Color highlight_color = get_color("highlight_color", "RichTextLabel");
+	const Color text_color = get_color("default_color", "RichTextLabel");
+	const Color headline_color = get_color("headline_color", "EditorHelp");
 	const Color base_type_color = title_color.linear_interpolate(text_color, 0.5);
 	const Color comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
 	const Color symbol_color = comment_color;
@@ -669,7 +669,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
-	class_desc->push_color(highlight_color);
+	class_desc->push_color(headline_color);
 	_add_text(p_class);
 	class_desc->pop();
 	class_desc->pop();
@@ -812,7 +812,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			}
 
 			class_desc->push_font(doc_code_font);
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
 
 			if (describe) {
@@ -883,7 +883,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				method_descr = true;
 				class_desc->push_meta("@" + methods[i].name);
 			}
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(methods[i].name);
 			class_desc->pop();
 			if (methods[i].description != "")
@@ -969,7 +969,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
 			class_desc->pop();
@@ -1015,7 +1015,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->push_font(doc_code_font); // monofont
 			//_add_type("void");
 			//class_desc->add_text(" ");
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(cd.signals[i].name);
 			class_desc->pop();
 			class_desc->push_color(symbol_color);
@@ -1102,7 +1102,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 					e = e.get_slice(".", 1);
 				}
 
-				class_desc->push_color(highlight_color);
+				class_desc->push_color(headline_color);
 				class_desc->add_text(e);
 				class_desc->pop();
 				class_desc->pop();
@@ -1117,7 +1117,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				for (int i = 0; i < enum_list.size(); i++) {
 
 					class_desc->push_font(doc_code_font);
-					class_desc->push_color(highlight_color);
+					class_desc->push_color(headline_color);
 					_add_text(enum_list[i].name);
 					class_desc->pop();
 					class_desc->push_color(symbol_color);
@@ -1165,7 +1165,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 				constant_line[constants[i].name] = class_desc->get_line_count() - 2;
 				class_desc->push_font(doc_code_font);
-				class_desc->push_color(highlight_color);
+				class_desc->push_color(headline_color);
 				_add_text(constants[i].name);
 				class_desc->pop();
 				class_desc->push_color(symbol_color);
@@ -1235,7 +1235,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
 
 			class_desc->add_text(" ");
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
 			class_desc->pop(); //color
 
@@ -1324,7 +1324,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			_add_type(methods[i].return_type, methods[i].return_enum);
 
 			class_desc->add_text(" ");
-			class_desc->push_color(highlight_color);
+			class_desc->push_color(headline_color);
 			_add_text(methods[i].name);
 			class_desc->pop();
 			class_desc->push_color(symbol_color);
@@ -1456,7 +1456,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 	Ref<Font> doc_font = p_rt->get_font("doc", "EditorFonts");
 	Ref<Font> doc_code_font = p_rt->get_font("doc_source", "EditorFonts");
-	Color font_color_hl = p_rt->get_color("highlight_color", "RichTextLabel");
+	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
 	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
 
 	String bbcode = p_bbcode.replace("\t", " ").replace("\r", " ").strip_edges();
@@ -1694,9 +1694,6 @@ void EditorHelp::_notification(int p_what) {
 			//forward->set_icon(get_icon("Forward","EditorIcons"));
 			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
-
-			class_desc->add_style_override("normal", class_desc->get_stylebox("code_normal", "RichTextLabel"));
-			class_desc->add_style_override("focus", class_desc->get_stylebox("code_focus", "RichTextLabel"));
 
 		} break;
 
