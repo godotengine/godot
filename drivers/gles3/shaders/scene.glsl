@@ -894,6 +894,10 @@ void light_compute(vec3 N, vec3 L,vec3 V,vec3 B, vec3 T,vec3 light_color,vec3 at
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
 
+	vec3 normal = N;
+	vec3 albedo = diffuse_color;
+	vec3 light = L;
+	vec3 view = V;
 
 LIGHT_SHADER_CODE
 
