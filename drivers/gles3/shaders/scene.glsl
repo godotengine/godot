@@ -920,6 +920,7 @@ LIGHT_SHADER_CODE
 #elif defined(DIFFUSE_OREN_NAYAR)
 
 	{
+		// see http://mimosa-pudica.net/improved-oren-nayar.html
 		float LdotV = dot(L, V);
 		float NdotL = dot(L, N);
 		float NdotV = dot(N, V);
@@ -928,10 +929,10 @@ LIGHT_SHADER_CODE
 		float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
 
 		float sigma2 = roughness * roughness;
-		vec3 A = 1.0 + sigma2 * (diffuse_color / (sigma2 + 0.13) + 0.5 / (sigma2 + 0.33));
+		vec3 A = 1.0 + sigma2 * (- 0.5 / (sigma2 + 0.33) + 0.17*diffuse_color / (sigma2 + 0.13) );
 		float B = 0.45 * sigma2 / (sigma2 + 0.09);
 
-		light_amount = max(0.0, NdotL) * (A + vec3(B) * s / t) / M_PI;
+		light_amount = diffuse_color * dotNL * (A + vec3(B) * s / t) / M_PI;
 	}
 
 #elif defined(DIFFUSE_TOON)
