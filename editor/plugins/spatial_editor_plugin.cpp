@@ -1671,14 +1671,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/bottom_view", p_event)) {
-			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			cursor.x_rot = -Math_PI / 2.0;
 			set_message(TTR("Bottom View."), 2);
 			name = TTR("Bottom");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/top_view", p_event)) {
-			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			cursor.x_rot = Math_PI / 2.0;
 			set_message(TTR("Top View."), 2);
 			name = TTR("Top");
@@ -1686,14 +1686,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/rear_view", p_event)) {
 			cursor.x_rot = 0;
-			cursor.y_rot =  Math_PI + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
+			cursor.y_rot = Math_PI + (2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI)));
 			set_message(TTR("Rear View."), 2);
 			name = TTR("Rear");
 			_update_name();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/front_view", p_event)) {
 			cursor.x_rot = 0;
-			cursor.y_rot =  2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
+			cursor.y_rot = 2.0 * Math_PI * Math::round(cursor.y_rot / (2.0 * Math_PI));
 			set_message(TTR("Front View."), 2);
 			name = TTR("Front");
 			_update_name();
