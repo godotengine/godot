@@ -1557,11 +1557,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 static ScriptEditorBase *create_editor(const Ref<Script> &p_script) {
 
-	if (p_script->has_source_code()) {
-		return memnew(ScriptTextEditor);
-	}
-
-	return NULL;
+	return memnew(ScriptTextEditor);
 }
 
 void ScriptTextEditor::register_editor() {
