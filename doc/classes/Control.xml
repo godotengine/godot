@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Base node for all User Interface components.
+		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
 	</brief_description>
 	<description>
-		The base class Node for all User Interface components. Every UI node inherits from it. Any scene or portion of a scene tree composed of Control nodes is a User Interface.
-		Controls use anchors and margins to place themselves relative to their parent. They adapt automatically when their parent or the screen size changes. To build flexible UIs, use built-in [Container] nodes or create your own.
-		Anchors work by defining which margin do they follow, and a value relative to it. Allowed anchoring modes are ANCHOR_BEGIN, where the margin is relative to the top or left margins of the parent (in pixels), ANCHOR_END for the right and bottom margins of the parent and ANCHOR_RATIO, which is a ratio from 0 to 1 in the parent range.
-		Godot sends Input events to the root node first, via [method Node._input]. The method distributes it through the node tree and delivers the input events to the node under the mouse cursor or on focus with the keyboard. To do so, it calls [method MainLoop._input_event]. No need to enable [method Node.set_process_input] on Controls to receive input events. Call [method accept_event] to ensure no other node receives the event, not even [method Node._unhandled_input].
-		Only the one Control node in focus receives keyboard events. To do so, the Control must get the focus mode with [method set_focus_mode]. It loses focus when another Control gets it, or if the current Control in focus is hidden.
-		You'll sometimes want Controls to ignore mouse or touch events. For example, if you place an icon on top of a button. Call [method set_ignore_mouse] for that.
-		[Theme] resources change the Control's appearance. If you change the [Theme] on a parent Control node, it will propagate to all of its children. You can override parts of the theme on each Control with the add_*_override methods, like [method add_font_override]. You can also override the theme from the editor.
+		Base class for all User Interface or [i]UI[/i] related nodes. [code]Control[/code] features a bounding rectangle that defines its extents, an anchor position relative to its parent and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
+		For more information on Godot's UI system, anchors, margins, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [code]Control[/code] and [Container] nodes.
+		[b]User Interface nodes and input[/b]
+		Godot sends input events to the scene's root node first, by calling [method Node._input]. [method Node._input] forwards the event down the node tree to the nodes under the mouse cursor, or on keyboard focus. To do so, it calls [method MainLoop._input_event]. Call [method accept_event] so no other node receives the event. Once you accepted an input, it becomes handled so [method Node._unhandled_input] will not process it.
+		Only one [code]Control[/code] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the foucs, call [method set_focus_mode]. [code]Control[/code] nodes lose focus when another node grabs it, or if you hide the node in focus.
+		Call [method set_ignore_mouse] to tell a [code]Control[/code] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
+		[Theme] resources change the Control's appearance. If you change the [Theme] on a [code]Control[/code] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +21,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
+				Returns the minimum size this Control can shrink to. The node can never be smaller than this minimum size.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -30,13 +30,15 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				The node's parent forwards input events to this method. Use it to process and accept inputs on UI elements. See [method accept_event].
+				Replaces Godot 2's [code]_input_event[/code].
 			</description>
 		</method>
 		<method name="accept_event">
 			<return type="void">
 			</return>
 			<description>
-				Marks the input event as handled. No other Control will receive it, and the input event will not propagate. Not even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
+				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
 			</description>
 		</method>
 		<method name="add_color_override">
@@ -47,6 +49,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Overrides the color in the [theme] resource the node uses.
 			</description>
 		</method>
 		<method name="add_constant_override">
@@ -57,7 +60,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Override a single constant (integer) in the theme of this Control. If constant equals Theme.INVALID_CONSTANT, override is cleared.
+				Overrides an integer constant in the [theme] resource the node uses. If the [code]constant[code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -68,7 +71,7 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Override a single font (font) in the theme of this Control. If font is empty, override is cleared.
+				Overrides the [code]name[/code] font in the [theme] resource the node uses. If [code]font[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_icon_override">
@@ -79,7 +82,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Override a single icon ([Texture]) in the theme of this Control. If texture is empty, override is cleared.
+				Overrides the [code]name[/code] icon in the [theme] resource the node uses. If [code]icon[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_shader_override">
@@ -90,6 +93,7 @@
 			<argument index="1" name="shader" type="Shader">
 			</argument>
 			<description>
+				Overrides the [code]name[/code] shader in the [theme] resource the node uses. If [code]shader[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_style_override">
@@ -100,7 +104,7 @@
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
 			<description>
-				Override a single stylebox ([Stylebox]) in the theme of this Control. If stylebox is empty, override is cleared.
+				Overrides the [code]name[/code] [Stylebox] in the [theme] resource the node uses. If [code]stylebox[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">
@@ -180,7 +184,7 @@
 			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Return the cursor shape at a certain position in the control.
+				Returns the mouse cursor shape the control displays on mouse hover, one of the [code]CURSOR_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_custom_minimum_size" qualifiers="const">
@@ -193,7 +197,7 @@
 			<return type="int" enum="Control.CursorShape">
 			</return>
 			<description>
-				Return the default cursor shape for this control. See enum CURSOR_* for the list of shapes.
+				Returns the default cursor shape for this control. See enum [code]CURSOR_*[/code] for the list of shapes.
 			</description>
 		</method>
 		<method name="get_drag_data" qualifiers="virtual">
@@ -624,7 +628,7 @@
 			<argument index="0" name="shape" type="int" enum="Control.CursorShape">
 			</argument>
 			<description>
-				Set the default cursor shape for this control. See enum CURSOR_* for the list of shapes.
+				Sets the default cursor shape for this control. See [code]CURSOR_*[/code] for the list of available cursor shapes. Useful for Godot plugins and applications or games that use the system's mouse cursors.
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
@@ -785,7 +789,7 @@
 			<argument index="0" name="theme" type="Theme">
 			</argument>
 			<description>
-				Override whole the [Theme] for this Control and all its children controls.
+				Overrides the whole [Theme] for this node and all its [code]Control[/code] children.
 			</description>
 		</method>
 		<method name="set_tooltip">
@@ -794,7 +798,7 @@
 			<argument index="0" name="tooltip" type="String">
 			</argument>
 			<description>
-				Set a tooltip, which will appear when the cursor is resting over this control.
+				Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments.
 			</description>
 		</method>
 		<method name="set_v_grow_direction">
@@ -834,58 +838,83 @@
 	</methods>
 	<members>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor">
+			Anchors the bottom edge of the node to the origin, the center, or the end of its parent container. It changes how the bottom margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor">
+			Anchors the left edge of the node to the origin, the center or the end of its parent container. It changes how the left margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor">
+			Anchors the right edge of the node to the origin, the center or the end of its parent container. It changes how the right margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor">
+			Anchors the top edge of the node to the origin, the center or the end of its parent container. It changes how the top margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
+			Tells Godot which node it should give keyboard focus to if the user presses Tab, the down arrow on the keyboard, or down on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
+			If the user presses Tab, Godot will give focus to the closest node to the right first, then to the bottom. If the user presses Shift+Tab, Godot will look to the left of the node, then above it.
 		</member>
 		<member name="focus_neighbour_left" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
+			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab, the left arrow on the keyboard or left on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the left of this one.
 		</member>
 		<member name="focus_neighbour_right" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
+			Tells Godot which node it should give keyboard focus to if the user presses Tab, the right arrow on the keyboard or right on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 		</member>
 		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
+			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab, the top arrow on the keyboard or top on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection">
 		</member>
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection">
 		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip">
+			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments.
 		</member>
 		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin">
+			Distance between the node's bottom edge and its parent container, based on [member anchor_bottom].
+			Margins are often controlled by one or multiple parent [Container] nodes. Margins update automatically when you move or resize the node.
 		</member>
 		<member name="margin_left" type="float" setter="set_margin" getter="get_margin">
+			Distance between the node's left edge and its parent container, based on [member anchor_left].
 		</member>
 		<member name="margin_right" type="float" setter="set_margin" getter="get_margin">
+			Distance between the node's right edge and its parent container, based on [member anchor_right].
 		</member>
 		<member name="margin_top" type="float" setter="set_margin" getter="get_margin">
+			Distance between the node's top edge and its parent container, based on [member anchor_top].
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
 		</member>
 		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size">
+			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
 		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset">
+			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
 		</member>
 		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position">
+			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
 		<member name="rect_rotation" type="float" setter="set_rotation_deg" getter="get_rotation_deg">
+			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale">
+			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset].
 		</member>
 		<member name="rect_size" type="Vector2" setter="set_size" getter="get_size">
+			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags">
+			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [code]SIZE_*[/code] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio">
+			If the node and at least one of its neighbours uses the [code]SIZE_EXPAND[/code] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbour a ratio of 1, this node will take two thirds of the available space.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags">
+			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [code]SIZE_*[/code] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
+			Changing this property replaces the current [Theme] resource this node and all its [code]Control[/code] children use.
 		</member>
 	</members>
 	<signals>
@@ -903,6 +932,7 @@
 			<argument index="0" name="ev" type="Object">
 			</argument>
 			<description>
+				Emitted when the node receives an [InputEvent].
 			</description>
 		</signal>
 		<signal name="minimum_size_changed">
@@ -912,16 +942,17 @@
 		</signal>
 		<signal name="modal_closed">
 			<description>
+				Emitted when a modal [code]Control[/code] is closed. See [method show_modal].
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse enters the control's area.
+				Emitted when the mouse enters the control's [code]Rect[/code] area.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse leaves the control's area.
+				Emitted when the mouse leaves the control's [code]Rect[/code] area.
 			</description>
 		</signal>
 		<signal name="resized">
@@ -931,116 +962,154 @@
 		</signal>
 		<signal name="size_flags_changed">
 			<description>
-				Emitted when the size flags change.
+				Emitted when one of the size flags changes. See [member size_flags_horizontal] and [member size_flags_vertical].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="FOCUS_NONE" value="0">
-			Control can't acquire focus.
+			The node cannot grab focus. Use with [member set_focus_mode].
 		</constant>
 		<constant name="FOCUS_CLICK" value="1">
-			Control can acquire focus only if clicked.
+			The node can only grab focus on mouse clicks. Use with [member set_focus_mode].
 		</constant>
 		<constant name="FOCUS_ALL" value="2">
-			Control can acquire focus if clicked, or by pressing TAB/Directionals in the keyboard from another Control.
+			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member set_focus_mode].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40" enum="">
-			Control changed size (get_size() reports the new size).
+			Sent when the node changes size. Use [member rect_size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41" enum="">
-			Mouse pointer entered the area of the Control.
+			Sent when the mouse pointer enters the node's [code]Rect[/code] area.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42" enum="">
-			Mouse pointer exited the area of the Control.
+			Sent when the mouse pointer exits the node's [code]Rect[/code] area.
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43" enum="">
-			Control gained focus.
+			Sent when the node grabs focus.
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_EXIT" value="44" enum="">
-			Control lost focus.
+			Sent when the node loses focus.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45" enum="">
-			Theme changed. Redrawing is desired.
+			Sent when the node's [member theme] changes, right before Godot redraws the [code]Control[/code]. Happens when you call one of the [code]add_*_override[/code]
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46" enum="">
-			Modal control was closed.
+			Sent when an open modal dialog closes. See [member show_modal].
 		</constant>
 		<constant name="CURSOR_ARROW" value="0">
+			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
 		</constant>
 		<constant name="CURSOR_IBEAM" value="1">
+			Show the system's I-beam mouse cursor when the user hovers the node. The I-beam pointer has a shape similar to "I". It tells the user they can highlight or insert text.
 		</constant>
 		<constant name="CURSOR_POINTING_HAND" value="2">
+			Show the system's pointing hand mouse cursor when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_CROSS" value="3">
+			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4">
+			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5">
+			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6">
+			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
 		</constant>
 		<constant name="CURSOR_CAN_DROP" value="7">
+			Show the system's drop mouse cursor when the user hovers the node. It can be an open hand. It tells the user they can drop an item they're currently grabbing, like a node in the Scene dock.
 		</constant>
 		<constant name="CURSOR_FORBIDDEN" value="8">
+			Show the system's forbidden mouse cursor when the user hovers the node. Often a crossed circle.
 		</constant>
 		<constant name="CURSOR_VSIZE" value="9">
+			Show the system's vertical resize mouse cursor when the user hovers the node. A double headed vertical arrow. It tells the user they can resize the window or the panel vertically.
 		</constant>
 		<constant name="CURSOR_HSIZE" value="10">
+			Show the system's horizontal resize mouse cursor when the user hovers the node. A double headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
 		</constant>
 		<constant name="CURSOR_BDIAGSIZE" value="11">
+			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_FDIAGSIZE" value="12">
+			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
 		<constant name="CURSOR_MOVE" value="13">
+			Show the system's move mouse cursor when the user hovers the node. It shows 2 double-headed arrows at a 90 degree angle. It tells the user they can move a UI element freely.
 		</constant>
 		<constant name="CURSOR_VSPLIT" value="14">
+			Show the system's vertical split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
 		</constant>
 		<constant name="CURSOR_HSPLIT" value="15">
+			Show the system's horizontal split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
 		</constant>
 		<constant name="CURSOR_HELP" value="16">
+			Show the system's help mouse cursor when the user hovers the node, a question mark.
 		</constant>
 		<constant name="PRESET_TOP_LEFT" value="0">
+			Snap all 4 anchors to the top-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_RIGHT" value="1">
+			Snap all 4 anchors to the top-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_LEFT" value="2">
+			Snap all 4 anchors to the bottom-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_RIGHT" value="3">
+			Snap all 4 anchors to the bottom-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_LEFT" value="4">
+			Snap all 4 anchors to the center of the left edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_TOP" value="5">
+			Snap all 4 anchors to the center of the top edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_RIGHT" value="6">
+			Snap all 4 anchors to the center of the right edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_BOTTOM" value="7">
+			Snap all 4 anchors to the center of the bottom edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER" value="8">
+			Snap all 4 anchors to the center of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_LEFT_WIDE" value="9">
+			Snap all 4 anchors to the left edge of the parent container. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_WIDE" value="10">
+			Snap all 4 anchors to the top edge of the parent container. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_RIGHT_WIDE" value="11">
+			Snap all 4 anchors to the right edge of the parent container. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_WIDE" value="12">
+			Snap all 4 anchors to the bottom edge of the parent container. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_VCENTER_WIDE" value="13">
+			Snap all 4 anchors to a vertical line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_HCENTER_WIDE" value="14">
+			Snap all 4 anchors to a horizontal line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_WIDE" value="15">
+			Snap all 4 anchors to the respective corners of the parent container. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent container. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="SIZE_EXPAND" value="2">
+			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_FILL" value="1">
+			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_EXPAND_FILL" value="3">
+			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
 		</constant>
 		<constant name="SIZE_SHRINK_CENTER" value="4">
+			Tells the parent [Container] to center the node in itself. It centers the [code]Control[/code] based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_SHRINK_END" value="8">
+			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0">
 		</constant>
@@ -1053,10 +1122,10 @@
 		<constant name="GROW_DIRECTION_END" value="1">
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0">
-			X is relative to MARGIN_LEFT, Y is relative to MARGIN_TOP.
+			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 		<constant name="ANCHOR_END" value="1">
-			X is relative to -MARGIN_RIGHT, Y is relative to -MARGIN_BOTTOM.
+			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 	</constants>
 </class>
