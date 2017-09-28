@@ -733,10 +733,6 @@ void TextEdit::_notification(int p_what) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
 				}
 
-				if (line == cursor.line) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
-				}
-
 				if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
 #ifdef TOOLS_ENABLED
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
@@ -765,6 +761,7 @@ void TextEdit::_notification(int p_what) {
 
 					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
 				}
+				//loop through charcters in one line
 				for (int j = 0; j < str.length(); j++) {
 
 					//look for keyword
@@ -953,10 +950,22 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+					//current line highlighting
 					bool in_selection = (selection.active && line >= selection.from_line && line <= selection.to_line && (line > selection.from_line || j >= selection.from_column) && (line < selection.to_line || j < selection.to_column));
 
+					if (line == cursor.line) {
+						if (j == 0)
+							//first char
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, (char_ofs + char_margin), get_row_height()), cache.current_line_color);
+						else if (j == str.length() - 1)
+							//last char
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin + char_w, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
+
+						if (!in_selection)
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.current_line_color);
+					}
+
 					if (in_selection) {
-						//inside selection!
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.selection_color);
 					}
 
