@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import fnmatch
 import os
 import sys
 import re
@@ -353,8 +354,13 @@ for file in input_file_list:
 class_names.sort()
 
 if len(input_class_list) < 1:
-    input_class_list = class_names
+    input_class_list = ['*']
 
+filtered_classes = set()
+for pattern in input_class_list:
+    filtered_classes |= set(fnmatch.filter(class_names, pattern))
+filtered_classes = list(filtered_classes)
+filtered_classes.sort()
 
 ################################################################################
 #                               Make output table                              #
@@ -366,10 +372,7 @@ table_column_chars = '|'
 
 total_status = ClassStatus('Total')
 
-for cn in input_class_list:
-    if not cn in classes:
-        print('Cannot find class ' + cn + '!')
-        sys.exit(255)
+for cn in filtered_classes:
 
     c = classes[cn]
     validate_tag(c, 'class')
