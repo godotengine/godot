@@ -208,10 +208,12 @@ void Range::_ref_shared(Shared *p_shared) {
 
 void Range::_unref_shared() {
 
-	shared->owners.erase(this);
-	if (shared->owners.size() == 0) {
-		memdelete(shared);
-		shared = NULL;
+	if (shared) {
+		shared->owners.erase(this);
+		if (shared->owners.size() == 0) {
+			memdelete(shared);
+			shared = NULL;
+		}
 	}
 }
 
