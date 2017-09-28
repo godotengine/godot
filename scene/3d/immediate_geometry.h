@@ -38,7 +38,7 @@ class ImmediateGeometry : public GeometryInstance {
 	GDCLASS(ImmediateGeometry, GeometryInstance);
 
 	RID im;
-	//a list of texures drawn need to be kept, to avoid references
+	//a list of textures drawn need to be kept, to avoid references
 	// in VisualServer from becoming invalid if the texture is no longer used
 	List<Ref<Texture> > cached_textures;
 	bool empty;

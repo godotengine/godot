@@ -66,7 +66,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [ImageTexure].
+				Load an [ImageTexture].
 			</description>
 		</method>
 		<method name="set_data">

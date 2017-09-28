@@ -589,7 +589,7 @@ vec3 textureDualParaboloid(sampler2DArray p_tex, vec3 p_vec,float p_roughness) {
 	norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25);
 
 	// we need to lie the derivatives (normg) and assume that DP side is always the same
-	// to get proper texure filtering
+	// to get proper texture filtering
 	vec2 normg=norm.xy;
 	if (norm.z>0.0) {
 		norm.y=0.5-norm.y+0.5;
