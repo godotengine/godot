@@ -94,7 +94,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"raster/surface_changes",
 		"raster/draw_calls",
 		"video/video_mem",
-		"video/texure_mem",
+		"video/texture_mem",
 		"video/vertex_mem",
 		"video/video_mem_max",
 		"physics_2d/active_objects",

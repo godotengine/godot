@@ -1532,7 +1532,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 	font->set_ascent(ascent + top_space);
 	font->set_distance_field_hint(font_mode == _EditorFontImportOptions::FONT_DISTANCE_FIELD);
 
-	//register texures
+	//register textures
 	{
 		Ref<ImageTexture> t = memnew(ImageTexture);
 		int flags;
