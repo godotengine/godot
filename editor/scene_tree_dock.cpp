@@ -270,6 +270,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 	switch (p_tool) {
 
 		case TOOL_NEW: {
+
+			String preferred = "";
+			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
+
+			if (current_edited_scene_root) {
+
+				if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Node2D"))
+					preferred = "Node2D";
+				else if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Spatial"))
+					preferred = "Spatial";
+			}
+			create_dialog->set_preferred_search_result_type(preferred);
 			create_dialog->popup_create(true);
 		} break;
 		case TOOL_INSTANCE: {
