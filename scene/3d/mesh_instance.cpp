@@ -105,8 +105,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 
-	if (mesh == p_mesh)
-		return;
+	ERR_FAIL_COND(mesh == p_mesh);
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, this, SceneStringNames::get_singleton()->_mesh_changed);
