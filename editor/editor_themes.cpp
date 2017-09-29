@@ -809,21 +809,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
 
 	//RichTextLabel
-	Color rtl_combined_bg_color = dark_color_1.linear_interpolate(script_bg_color, script_bg_color.a);
-	Color rtl_mono_color = (rtl_combined_bg_color.r + rtl_combined_bg_color.g + rtl_combined_bg_color.b > 1.5) ? Color(0, 0, 0) : Color(1, 1, 1);
-	Color rtl_font_color = rtl_mono_color.linear_interpolate(rtl_combined_bg_color, 0.25);
-	theme->set_color("default_color", "RichTextLabel", rtl_font_color);
+	theme->set_color("default_color", "RichTextLabel", font_color);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
-	Ref<StyleBoxFlat> style_code = style_tree_bg->duplicate();
-	style_code->set_bg_color(rtl_combined_bg_color);
-	theme->set_stylebox("code_normal", "RichTextLabel", style_code);
-	Ref<StyleBoxFlat> style_code_focus = style_tree_focus->duplicate();
-	style_code_focus->set_bg_color(rtl_combined_bg_color);
-	theme->set_stylebox("code_focus", "RichTextLabel", style_code_focus);
 
-	theme->set_color("font_color", "RichTextLabel", rtl_font_color);
-	theme->set_color("highlight_color", "RichTextLabel", rtl_mono_color);
+	theme->set_color("headline_color", "EditorHelp", mono_color);
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
