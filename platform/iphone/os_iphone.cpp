@@ -35,7 +35,6 @@
 #include "servers/visual/visual_server_raster.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 
-#include "audio_driver_iphone.h"
 #include "main/main.h"
 
 #include "core/io/file_access_pack.h"
@@ -124,9 +123,8 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
 
-	audio_driver = memnew(AudioDriverIphone);
-	audio_driver->set_singleton();
-	audio_driver->init();
+	AudioDriverManager::add_driver(&audio_driver);
+	AudioDriverManager::initialize(p_audio_driver);
 
 	// init physics servers
 	physics_server = memnew(PhysicsServerSW);

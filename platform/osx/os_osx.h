@@ -31,13 +31,11 @@
 #define OS_OSX_H
 
 #include "crash_handler_osx.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
 #include "os/input.h"
-#include "platform/osx/audio_driver_osx.h"
 #include "power_osx.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
@@ -69,7 +67,7 @@ public:
 
 	IP_Unix *ip_unix;
 
-	AudioDriverOSX audio_driver_osx;
+	AudioDriverCoreAudio audio_driver;
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;

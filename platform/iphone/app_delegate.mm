@@ -29,8 +29,8 @@
 /*************************************************************************/
 #import "app_delegate.h"
 
-#include "audio_driver_iphone.h"
 #include "core/project_settings.h"
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "gl_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
@@ -736,8 +736,8 @@ static int frame_count = 0;
 	};
 
 	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
-	if (AudioDriverIphone::get_singleton() != NULL)
-		AudioDriverIphone::get_singleton()->start();
+	if (AudioDriverCoreAudio::get_singleton() != NULL)
+		AudioDriverCoreAudio::get_singleton()->start();
 }
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
