@@ -31,29 +31,49 @@
 
 void ARVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &ARVRInterface::get_name);
+	ClassDB::bind_method(D_METHOD("get_capabilities"), &ARVRInterface::get_capabilities);
 
 	ClassDB::bind_method(D_METHOD("is_primary"), &ARVRInterface::is_primary);
 	ClassDB::bind_method(D_METHOD("set_is_primary", "enable"), &ARVRInterface::set_is_primary);
 
-	ClassDB::bind_method(D_METHOD("is_installed"), &ARVRInterface::is_installed);
-	ClassDB::bind_method(D_METHOD("hmd_is_present"), &ARVRInterface::hmd_is_present);
-	ClassDB::bind_method(D_METHOD("supports_hmd"), &ARVRInterface::supports_hmd);
 	ClassDB::bind_method(D_METHOD("is_initialized"), &ARVRInterface::is_initialized);
+	ClassDB::bind_method(D_METHOD("set_is_initialized", "initialized"), &ARVRInterface::set_is_initialized);
 	ClassDB::bind_method(D_METHOD("initialize"), &ARVRInterface::initialize);
 	ClassDB::bind_method(D_METHOD("uninitialize"), &ARVRInterface::uninitialize);
 
+	ClassDB::bind_method(D_METHOD("get_tracking_status"), &ARVRInterface::get_tracking_status);
+
 	ClassDB::bind_method(D_METHOD("get_recommended_render_targetsize"), &ARVRInterface::get_recommended_render_targetsize);
+	ClassDB::bind_method(D_METHOD("is_stereo"), &ARVRInterface::is_stereo);
 
-	//	These are now purely used internally, we may expose them again if we expose CameraMatrix through Variant but reduz is not a fan for good reasons :)
-	//	ClassDB::bind_method(D_METHOD("get_transform_for_eye", "eye", "cam_transform"), &ARVRInterface::get_transform_for_eye);
-	//	ClassDB::bind_method(D_METHOD("get_projection_for_eye", "eye"), &ARVRInterface::get_projection_for_eye);
-	//	ClassDB::bind_method(D_METHOD("commit_for_eye", "node:viewport"), &ARVRInterface::commit_for_eye);
+	ADD_GROUP("Interface", "interface_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_initialized"), "set_is_initialized", "is_initialized");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "primary"), "set_is_primary", "is_primary");
+	// we don't have any properties specific to VR yet....
+
+	// but we do have properties specific to AR....
+	ClassDB::bind_method(D_METHOD("get_anchor_detection_is_enabled"), &ARVRInterface::get_anchor_detection_is_enabled);
+	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &ARVRInterface::set_anchor_detection_is_enabled);
+
+	ADD_GROUP("AR", "ar_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
+
+	BIND_ENUM_CONSTANT(ARVR_NONE);
+	BIND_ENUM_CONSTANT(ARVR_MONO);
+	BIND_ENUM_CONSTANT(ARVR_STEREO);
+	BIND_ENUM_CONSTANT(ARVR_AR);
+	BIND_ENUM_CONSTANT(ARVR_EXTERNAL);
 
 	BIND_ENUM_CONSTANT(EYE_MONO);
 	BIND_ENUM_CONSTANT(EYE_LEFT);
 	BIND_ENUM_CONSTANT(EYE_RIGHT);
+
+	BIND_ENUM_CONSTANT(ARVR_NORMAL_TRACKING);
+	BIND_ENUM_CONSTANT(ARVR_EXCESSIVE_MOTION);
+	BIND_ENUM_CONSTANT(ARVR_INSUFFICIENT_FEATURES);
+	BIND_ENUM_CONSTANT(ARVR_UNKNOWN_TRACKING);
+	BIND_ENUM_CONSTANT(ARVR_NOT_TRACKING);
 };
 
 StringName ARVRInterface::get_name() const {
@@ -73,10 +93,40 @@ void ARVRInterface::set_is_primary(bool p_is_primary) {
 
 	if (p_is_primary) {
 		ERR_FAIL_COND(!is_initialized());
-		ERR_FAIL_COND(!supports_hmd());
 
 		arvr_server->set_primary_interface(this);
 	} else {
 		arvr_server->clear_primary_interface_if(this);
 	};
+};
+
+void ARVRInterface::set_is_initialized(bool p_initialized) {
+	if (p_initialized) {
+		if (!is_initialized()) {
+			initialize();
+		};
+	} else {
+		if (is_initialized()) {
+			uninitialize();
+		};
+	};
+};
+
+ARVRInterface::Tracking_status ARVRInterface::get_tracking_status() const {
+	return tracking_state;
+};
+
+ARVRInterface::ARVRInterface() {
+	tracking_state = ARVR_UNKNOWN_TRACKING;
+};
+
+ARVRInterface::~ARVRInterface(){};
+
+/** these will only be implemented on AR interfaces, so we want dummies for VR **/
+bool ARVRInterface::get_anchor_detection_is_enabled() const {
+	return false;
+};
+
+void ARVRInterface::set_anchor_detection_is_enabled(bool p_enable){
+	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
 };

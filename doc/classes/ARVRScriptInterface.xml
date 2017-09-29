@@ -29,11 +29,32 @@
 				Outputs a finished render buffer to the AR/VR device for the given eye.
 			</description>
 		</method>
+		<method name="get_anchor_detection_is_enabled" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if achor detection is enabled (AR only).
+			</description>
+		</method>
+		<method name="get_capabilities" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+				Returns a combination of flags providing information about the capabilities of this interface.
+			</description>
+		</method>
 		<method name="get_recommended_render_targetsize" qualifiers="virtual">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns the size at which we should render our scene to get optimal quality on the output device.
+			</description>
+		</method>
+		<method name="get_tracking_status" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
 			</description>
 		</method>
 		<method name="get_transform_for_eye" qualifiers="virtual">
@@ -45,13 +66,6 @@
 			</argument>
 			<description>
 				Get the location and orientation transform used when rendering a specific eye.
-			</description>
-		</method>
-		<method name="hmd_is_present" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<description>
-				Return true is an HMD is available.
 			</description>
 		</method>
 		<method name="initialize" qualifiers="virtual">
@@ -68,13 +82,6 @@
 				Returns true if this interface has been initialized and is active.
 			</description>
 		</method>
-		<method name="is_installed" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the required middleware is installed.
-			</description>
-		</method>
 		<method name="is_stereo" qualifiers="virtual">
 			<return type="bool">
 			</return>
@@ -89,11 +96,13 @@
 				Gets called before rendering each frame so tracking data gets updated in time.
 			</description>
 		</method>
-		<method name="supports_hmd" qualifiers="virtual">
-			<return type="bool">
+		<method name="set_anchor_detection_is_enabled" qualifiers="virtual">
+			<return type="void">
 			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
 			<description>
-				Returns true if this interface supports HMDs.
+				Enables anchor detection, this is used on AR interfaces and enables the extra logic that will detect planes, features, objects, etc. and adds/modifies anchor points.
 			</description>
 		</method>
 		<method name="uninitialize" qualifiers="virtual">

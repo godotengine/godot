@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MobileVRInterface" inherits="ARVRInterface" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Generic mobile VR implementation
+	</brief_description>
+	<description>
+		This is a generic mobile VR implementation where you need to provide details about the phone and HMD used. It does not rely on any existing framework. This is the most basic interface we have. For the best effect you do need a mobile phone with a gyroscope and accelerometer.
+		Note that even though there is no positional tracking the camera will assume the headset is at a height of 1.85 meters.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_display_to_lens" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the distance between the display and the lens.
+			</description>
+		</method>
+		<method name="get_display_width" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the width of the LCD screen of the device.
+			</description>
+		</method>
+		<method name="get_iod" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the interocular distance.
+			</description>
+		</method>
+		<method name="get_k1" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the k1 lens constant.
+			</description>
+		</method>
+		<method name="get_k2" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Retuns the k2 lens constant
+			</description>
+		</method>
+		<method name="get_oversample" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the oversampling setting.
+			</description>
+		</method>
+		<method name="set_display_to_lens">
+			<return type="void">
+			</return>
+			<argument index="0" name="display_to_lens" type="float">
+			</argument>
+			<description>
+				Sets the distance between display and the lens.
+			</description>
+		</method>
+		<method name="set_display_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="display_width" type="float">
+			</argument>
+			<description>
+				Sets the width of the LCD screen of the device.
+			</description>
+		</method>
+		<method name="set_iod">
+			<return type="void">
+			</return>
+			<argument index="0" name="iod" type="float">
+			</argument>
+			<description>
+				Sets the interocular distance.
+			</description>
+		</method>
+		<method name="set_k1">
+			<return type="void">
+			</return>
+			<argument index="0" name="k" type="float">
+			</argument>
+			<description>
+				Sets the k1 lens constant.
+			</description>
+		</method>
+		<method name="set_k2">
+			<return type="void">
+			</return>
+			<argument index="0" name="k" type="float">
+			</argument>
+			<description>
+				Sets the k2 lens constant.
+			</description>
+		</method>
+		<method name="set_oversample">
+			<return type="void">
+			</return>
+			<argument index="0" name="oversample" type="float">
+			</argument>
+			<description>
+				Sets the oversampling setting.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="display_to_lens" type="float" setter="set_display_to_lens" getter="get_display_to_lens">
+			The distance between the display and the lenses inside of the device in centimeters.
+		</member>
+		<member name="display_width" type="float" setter="set_display_width" getter="get_display_width">
+			The width of the display in centimeters.
+		</member>
+		<member name="iod" type="float" setter="set_iod" getter="get_iod">
+			The interocular distance, also known as the interpupillary distance. The distance between the pupils of the left and right eye.
+		</member>
+		<member name="k1" type="float" setter="set_k1" getter="get_k1">
+			The k1 lens factor is one of the two constants that define the strength of the lens used and directly influences the lens distortion effect.
+		</member>
+		<member name="k2" type="float" setter="set_k2" getter="get_k2">
+			The k2 lens factor, see k1.
+		</member>
+		<member name="oversample" type="float" setter="set_oversample" getter="get_oversample">
+			The oversample setting. Because of the lens distortion we have to render our buffers at a higher resolution then the screen can natively handle. A value between 1.5 and 2.0 often provides good results but at the cost of performance.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

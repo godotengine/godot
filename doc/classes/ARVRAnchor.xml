@@ -34,6 +34,13 @@
 				Returns true if the anchor is being tracked and false if no anchor with this id is currently known.
 			</description>
 		</method>
+		<method name="get_plane" qualifiers="const">
+			<return type="Plane">
+			</return>
+			<description>
+				Returns a plane aligned with our anchor, handy for intersection testing
+			</description>
+		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector3">
 			</return>

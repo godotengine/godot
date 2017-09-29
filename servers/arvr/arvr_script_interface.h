@@ -16,19 +16,24 @@ protected:
 	static void _bind_methods();
 
 public:
+	/** general interface information **/
 	ARVRScriptInterface();
 	~ARVRScriptInterface();
 
 	virtual StringName get_name() const;
-
-	virtual bool is_installed();
-	virtual bool hmd_is_present();
-	virtual bool supports_hmd();
+	virtual int get_capabilities() const;
 
 	virtual bool is_initialized();
 	virtual bool initialize();
 	virtual void uninitialize();
 
+	ARVRInterface::Tracking_status get_tracking_status() const; /* get the status of our current tracking */
+
+	/** specific to AR **/
+	virtual bool get_anchor_detection_is_enabled() const;
+	virtual void set_anchor_detection_is_enabled(bool p_enable);
+
+	/** rendering and internal **/
 	virtual Size2 get_recommended_render_targetsize();
 	virtual bool is_stereo();
 	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform);

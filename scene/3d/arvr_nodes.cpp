@@ -67,6 +67,105 @@ String ARVRCamera::get_configuration_warning() const {
 	return String();
 };
 
+Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, Vector3());
+
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector3());
+
+	if (!is_inside_tree()) {
+		ERR_EXPLAIN("Camera is not inside scene.");
+		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
+	};
+
+	Size2 viewport_size = get_viewport()->get_camera_rect_size();
+	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
+	Vector3 ray;
+
+	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	float screen_w, screen_h;
+	cm.get_viewport_size(screen_w, screen_h);
+	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_w, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_h, -get_znear()).normalized();
+
+	return ray;
+};
+
+Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, Vector2());
+
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector2());
+
+	if (!is_inside_tree()) {
+		ERR_EXPLAIN("Camera is not inside scene.");
+		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
+	};
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+
+	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+
+	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
+
+	p = cm.xform4(p);
+	p.normal /= p.d;
+
+	Point2 res;
+	res.x = (p.normal.x * 0.5 + 0.5) * viewport_size.x;
+	res.y = (-p.normal.y * 0.5 + 0.5) * viewport_size.y;
+
+	return res;
+};
+
+Vector3 ARVRCamera::project_position(const Point2 &p_point) const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, Vector3());
+
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector3());
+
+	if (!is_inside_tree()) {
+		ERR_EXPLAIN("Camera is not inside scene.");
+		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
+	};
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+
+	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+
+	Size2 vp_size;
+	cm.get_viewport_size(vp_size.x, vp_size.y);
+
+	Vector2 point;
+	point.x = (p_point.x / viewport_size.x) * 2.0 - 1.0;
+	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
+	point *= vp_size;
+
+	Vector3 p(point.x, point.y, -get_znear());
+
+	return get_camera_transform().xform(p);
+};
+
+Vector<Plane> ARVRCamera::get_frustum() const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, Vector<Plane>());
+
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	ERR_FAIL_COND_V(arvr_interface.is_null(), Vector<Plane>());
+
+	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	CameraMatrix cm = arvr_interface->get_projection_for_eye(ARVRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
+	return cm.get_projection_planes(get_camera_transform());
+};
+
 ARVRCamera::ARVRCamera(){
 	// nothing to do here yet for now..
 };
@@ -297,6 +396,8 @@ void ARVRAnchor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &ARVRAnchor::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_size"), &ARVRAnchor::get_size);
+
+	ClassDB::bind_method(D_METHOD("get_plane"), &ARVRAnchor::get_plane);
 };
 
 void ARVRAnchor::set_anchor_id(int p_anchor_id) {
@@ -344,6 +445,15 @@ String ARVRAnchor::get_configuration_warning() const {
 	};
 
 	return String();
+};
+
+Plane ARVRAnchor::get_plane() const {
+	Vector3 location = get_translation();
+	Basis orientation = get_transform().basis;
+
+	Plane plane(location, orientation.get_axis(1).normalized());
+
+	return plane;
 };
 
 ARVRAnchor::ARVRAnchor() {
