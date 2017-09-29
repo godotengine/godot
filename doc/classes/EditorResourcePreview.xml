@@ -41,7 +41,7 @@
 			<argument index="3" name="userdata" type="Variant">
 			</argument>
 			<description>
-				Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+				Queue a resource being edited for preview (using an instance). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
 			</description>
 		</method>
 		<method name="queue_resource_preview">
@@ -56,7 +56,7 @@
 			<argument index="3" name="userdata" type="Variant">
 			</argument>
 			<description>
-				Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texure (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
+				Queue a resource file for preview (using a path). Once the preview is ready, your receiver.receiver_func will be called either containing the preview texture or an empty texture (if no preview was possible). Callback must have the format: (path,texture,userdata). Userdata can be anything.
 			</description>
 		</method>
 		<method name="remove_preview_generator">
