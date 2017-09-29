@@ -1952,7 +1952,6 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 		//make sure identifier exists...
 
 		const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1]);
-
 		if (op->arguments[0]->type == GDParser::Node::TYPE_SELF) {
 			//self, look up
 
@@ -2021,7 +2020,7 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 						base = script->get_native();
 				} else if (nc.is_valid()) {
 
-					if (context.function && !context.function->_static) {
+					if (!(context.function && context.function->_static)) {
 
 						GDCompletionIdentifier ci;
 						ci.type = Variant::OBJECT;
