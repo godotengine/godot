@@ -105,13 +105,16 @@ VERTEX_SHADER_GLOBALS
 
 void main() {
 
-	vec4 vertex_color = color_attrib;
+	vec4 color = color_attrib;
 
 #ifdef USE_INSTANCING
 	mat4 extra_matrix2 = extra_matrix * transpose(mat4(instance_xform0,instance_xform1,instance_xform2,vec4(0.0,0.0,0.0,1.0)));
-	vertex_color*=instance_color;
+	color*=instance_color;
+	vec4 instance_custom = instance_custom_data;
+
 #else
 	mat4 extra_matrix2 = extra_matrix;
+	vec4 instance_custom = vec4(0.0);
 #endif
 
 #ifdef USE_TEXTURE_RECT
@@ -135,7 +138,7 @@ void main() {
 
 	//compute h and v frames and adjust UV interp for animation
 	int total_frames = h_frames * v_frames;
-	int frame = min(int(float(total_frames) *instance_custom_data.z),total_frames-1);
+	int frame = min(int(float(total_frames) *instance_custom.z),total_frames-1);
 	float frame_w = 1.0/float(h_frames);
 	float frame_h = 1.0/float(v_frames);
 	uv_interp.x = uv_interp.x * frame_w + frame_w * float(frame % h_frames);
@@ -146,7 +149,6 @@ void main() {
 #define extra_matrix extra_matrix2
 
 {
-	vec2 src_vtx=outvec.xy;
 
 VERTEX_SHADER_CODE
 
@@ -165,7 +167,7 @@ VERTEX_SHADER_CODE
 
 #undef extra_matrix
 
-	color_interp = vertex_color;
+	color_interp = color;
 
 #ifdef USE_PIXEL_SNAP
 

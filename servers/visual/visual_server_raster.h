@@ -968,7 +968,7 @@ public:
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
 	BIND2(environment_set_sky, RID, RID)
-	BIND2(environment_set_sky_scale, RID, float)
+	BIND2(environment_set_sky_custom_fov, RID, float)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
