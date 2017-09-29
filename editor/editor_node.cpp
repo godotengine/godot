@@ -114,7 +114,7 @@ EditorNode *EditorNode::singleton = NULL;
 
 void EditorNode::_update_scene_tabs() {
 
-	bool show_rb = EditorSettings::get_singleton()->get("interface/show_script_in_scene_tabs");
+	bool show_rb = EditorSettings::get_singleton()->get("interface/editor/show_script_in_scene_tabs");
 
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
@@ -282,8 +282,8 @@ void EditorNode::_notification(int p_what) {
 	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
+		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/editor/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
 		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 
 		theme_base->set_theme(theme);
@@ -2240,10 +2240,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_PROJECT_MANAGER: {
 
 			if (!p_confirmed) {
-				bool save_each = EDITOR_DEF("interface/save_each_scene_on_quit", true);
+				bool save_each = EDITOR_DEF("interface/editor/save_each_scene_on_quit", true);
 				if (_next_unsaved_scene(!save_each) == -1) {
 
-					bool confirm = EDITOR_DEF("interface/quit_confirmation", true);
+					bool confirm = EDITOR_DEF("interface/editor/quit_confirmation", true);
 					if (confirm) {
 
 						confirmation->get_ok()->set_text(p_option == FILE_QUIT ? TTR("Quit") : TTR("Yes"));
@@ -2568,7 +2568,7 @@ void EditorNode::_editor_select(int p_which) {
 		editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
 	}
 
-	if (EditorSettings::get_singleton()->get("interface/separate_distraction_mode")) {
+	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
 		if (p_which == EDITOR_SCRIPT) {
 			set_distraction_free_mode(script_distraction);
 		} else {
@@ -4101,7 +4101,7 @@ bool EditorNode::get_docks_visible() const {
 
 void EditorNode::_toggle_distraction_free_mode() {
 
-	if (EditorSettings::get_singleton()->get("interface/separate_distraction_mode")) {
+	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
 		int screen = -1;
 		for (int i = 0; i < editor_table.size(); i++) {
 			if (editor_plugin_screen == editor_table[i]) {
@@ -4385,7 +4385,7 @@ void EditorNode::_open_imported() {
 
 void EditorNode::dim_editor(bool p_dimming) {
 	static int dim_count = 0;
-	bool dim_ui = EditorSettings::get_singleton()->get("interface/dim_editor_on_dialog_popup");
+	bool dim_ui = EditorSettings::get_singleton()->get("interface/editor/dim_editor_on_dialog_popup");
 	if (p_dimming) {
 		if (dim_ui) {
 			if (dim_count == 0) {
@@ -4412,9 +4412,9 @@ void EditorNode::_start_dimming(bool p_dimming) {
 void EditorNode::_dim_timeout() {
 
 	_dim_time += _dim_timer->get_wait_time();
-	float wait_time = EditorSettings::get_singleton()->get("interface/dim_transition_time");
+	float wait_time = EditorSettings::get_singleton()->get("interface/editor/dim_transition_time");
 
-	float c = 1.0f - (float)EditorSettings::get_singleton()->get("interface/dim_amount");
+	float c = 1.0f - (float)EditorSettings::get_singleton()->get("interface/editor/dim_amount");
 
 	Color base = _dimming ? Color(1, 1, 1) : Color(c, c, c);
 	Color final = _dimming ? Color(c, c, c) : Color(1, 1, 1);
@@ -4586,7 +4586,7 @@ EditorNode::EditorNode() {
 		EditorSettings::create();
 
 	{
-		int dpi_mode = EditorSettings::get_singleton()->get("interface/hidpi_mode");
+		int dpi_mode = EditorSettings::get_singleton()->get("interface/editor/hidpi_mode");
 		if (dpi_mode == 0) {
 			editor_set_scale(OS::get_singleton()->get_screen_dpi(0) >= 192 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x > 2000 ? 2.0 : 1.0);
 		} else if (dpi_mode == 1) {
@@ -4837,7 +4837,7 @@ EditorNode::EditorNode() {
 	scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
-	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/editor/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 	scene_tabs->set_min_width(int(EDITOR_DEF("interface/scene_tabs/minimum_width", 50)) * EDSCALE);
 	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
@@ -5291,7 +5291,7 @@ EditorNode::EditorNode() {
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	property_editor->set_use_doc_hints(true);
 	property_editor->set_hide_script(false);
-	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/capitalize_properties", true)));
+	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);

@@ -990,7 +990,7 @@ Ref<Theme> create_custom_theme() {
 		theme = ResourceLoader::load(custom_theme);
 	}
 
-	String global_font = EditorSettings::get_singleton()->get("interface/custom_font");
+	String global_font = EditorSettings::get_singleton()->get("interface/editor/custom_font");
 	if (global_font != "") {
 		Ref<Font> fnt = ResourceLoader::load(global_font);
 		if (fnt.is_valid()) {
