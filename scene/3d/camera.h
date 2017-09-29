@@ -127,16 +127,16 @@ public:
 	virtual Transform get_camera_transform() const;
 
 	Vector3 project_ray_normal(const Point2 &p_pos) const;
-	Vector3 project_ray_origin(const Point2 &p_pos) const;
+	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
 	Vector3 project_local_ray_normal(const Point2 &p_pos) const;
-	Point2 unproject_position(const Vector3 &p_pos) const;
+	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
-	Vector3 project_position(const Point2 &p_point) const;
+	virtual Vector3 project_position(const Point2 &p_point) const;
 
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
-	Vector<Plane> get_frustum() const;
+	virtual Vector<Plane> get_frustum() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
