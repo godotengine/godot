@@ -264,9 +264,9 @@ void TabContainer::_notification(int p_what) {
 			if (popup) {
 				x -= menu->get_width();
 				if (mouse_x_cache > x)
-					menu_hl->draw(get_canvas_item(), Size2(x, 0));
+					menu_hl->draw(get_canvas_item(), Size2(x, (header_height - menu_hl->get_height()) / 2));
 				else
-					menu->draw(get_canvas_item(), Size2(x, 0));
+					menu->draw(get_canvas_item(), Size2(x, (header_height - menu->get_height()) / 2));
 			}
 
 			// Draw the navigation buttons.
