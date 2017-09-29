@@ -112,8 +112,10 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		Rect3 rot_aabb = xform.xform(aabb);
 		print_line("rot_aabb: " + rot_aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-		if (m == 0)
+		if (m == 0) {
+			textures.push_back(Ref<Texture>());
 			continue;
+		}
 		m = 1.0 / m;
 		m *= 0.5;
 		print_line("scale: " + rtos(m));
