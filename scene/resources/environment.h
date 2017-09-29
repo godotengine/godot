@@ -76,7 +76,7 @@ private:
 
 	BGMode bg_mode;
 	Ref<Sky> bg_sky;
-	float bg_sky_scale;
+	float bg_sky_custom_fov;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
@@ -162,7 +162,7 @@ protected:
 public:
 	void set_background(BGMode p_bg);
 	void set_sky(const Ref<Sky> &p_sky);
-	void set_sky_scale(float p_scale);
+	void set_sky_custom_fov(float p_scale);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
@@ -172,7 +172,7 @@ public:
 
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
-	float get_sky_scale() const;
+	float get_sky_custom_fov() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;

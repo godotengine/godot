@@ -381,7 +381,7 @@ public:
 
 	FUNC2(environment_set_background, RID, EnvironmentBG)
 	FUNC2(environment_set_sky, RID, RID)
-	FUNC2(environment_set_sky_scale, RID, float)
+	FUNC2(environment_set_sky_custom_fov, RID, float)
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
