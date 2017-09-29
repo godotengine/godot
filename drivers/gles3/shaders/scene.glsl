@@ -1015,8 +1015,6 @@ LIGHT_SHADER_CODE
 
 #else
 		// shlick+ggx as default
-		float alpha = roughness * roughness;
-
 		vec3 H = normalize(V + L);
 
 		float dotNH = max(dot(N,H), 0.0 );
@@ -1036,6 +1034,7 @@ LIGHT_SHADER_CODE
 		float D = 1.0 / ( pi * ax*ay * denom*denom );
 
 #else
+		float alpha = roughness * roughness;
 		float alphaSqr = alpha * alpha;
 		float pi = M_PI;
 		float denom = dotNH * dotNH * (alphaSqr - 1.0) + 1.0;
@@ -1047,7 +1046,8 @@ LIGHT_SHADER_CODE
 		float F = F0 + (1.0 - F0) * (dotLH5);
 
 		// V
-		float k = alpha / 2.0f;
+		float alpha_g = (0.5 + roughness*0.5) * (0.5 + roughness*0.5);
+		float k = alpha_g * 0.5;
 		float vis = G1V(dotNL, k) * G1V(dotNV, k);
 
 		float speci = dotNL * D * F * vis;
