@@ -111,7 +111,7 @@ public:
 	FUNC3(space_set_param, RID, SpaceParameter, real_t);
 	FUNC2RC(real_t, space_get_param, RID, SpaceParameter);
 
-	// this function only works on fixed process, errors and returns null otherwise
+	// this function only works on physics process, errors and returns null otherwise
 	Physics2DDirectSpaceState *space_get_direct_state(RID p_space) {
 
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
@@ -251,6 +251,13 @@ public:
 
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result);
+	}
+
+	// this function only works on physics process, errors and returns null otherwise
+	Physics2DDirectBodyState *body_get_direct_state(RID p_body) {
+
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
+		return physics_2d_server->body_get_direct_state(p_body);
 	}
 
 	/* JOINT API */

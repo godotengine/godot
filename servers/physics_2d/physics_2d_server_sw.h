@@ -222,6 +222,9 @@ public:
 
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.001, MotionResult *r_result = NULL);
 
+	// this function only works on physics process, errors and returns null otherwise
+	virtual Physics2DDirectBodyState *body_get_direct_state(RID p_body);
+
 	/* JOINT API */
 
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);

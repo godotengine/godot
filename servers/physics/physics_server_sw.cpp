@@ -914,6 +914,21 @@ bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, cons
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
 }
 
+PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, NULL);
+
+	if (!doing_sync || body->get_space()->is_locked()) {
+
+		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
+		ERR_FAIL_V(NULL);
+	}
+
+	direct_state->body = body;
+	return direct_state;
+}
+
 /* JOINT API */
 
 RID PhysicsServerSW::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {

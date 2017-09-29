@@ -954,6 +954,21 @@ bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
 }
 
+Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, NULL);
+
+	if ((using_threads && !doing_sync) || body->get_space()->is_locked()) {
+
+		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
+		ERR_FAIL_V(NULL);
+	}
+
+	direct_state->body = body;
+	return direct_state;
+}
+
 /* JOINT API */
 
 void Physics2DServerSW::joint_set_param(RID p_joint, JointParam p_param, real_t p_value) {
