@@ -763,7 +763,7 @@ public:
 	NodePath node_path;
 	int input_args;
 	bool validate;
-	bool returns;
+	int returns;
 	VisualScriptFunctionCall::RPCCallMode rpc_mode;
 	StringName function;
 	StringName singleton;
@@ -856,7 +856,13 @@ public:
 					}
 				} else if (returns) {
 					if (call_mode == VisualScriptFunctionCall::CALL_MODE_INSTANCE) {
-						*p_outputs[1] = v.call(function, p_inputs + 1, input_args, r_error);
+						if (returns >= 2) {
+							*p_outputs[1] = v.call(function, p_inputs + 1, input_args, r_error);
+						} else {
+							r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+							r_error_str = "Invalid returns count for call_mode == CALL_MODE_INSTANCE";
+							return 0;
+						}
 					} else {
 						*p_outputs[0] = v.call(function, p_inputs + 1, input_args, r_error);
 					}
