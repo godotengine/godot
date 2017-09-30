@@ -1944,18 +1944,19 @@ FRAGMENT_SHADER_CODE
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
 #else
-		//brdf approximation (Lazarov 2013)
-		float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
-		vec3 dielectric = vec3(0.034) * specular * 2.0;
 		//energy conservation
-		vec3 f0 = mix(dielectric, albedo, metallic);
+		vec3 dielectric = vec3(0.034) * specular * 2.0;
+		vec3 specular_color = mix(dielectric, albedo, metallic);
+		// Environment brdf approximation (Lazarov 2013)
+		// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4( 1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
+		float ndotv = clamp(dot(normal,eye_vec),0.0,1.0);
 		float a004 = min( r.x * r.x, exp2( -9.28 * ndotv ) ) * r.x + r.y;
-		vec2 brdf = vec2( -1.04, 1.04 ) * a004 + r.zw;
+		vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
 
-		specular_light *= min(1.0,50.0 * f0.g) * brdf.y + brdf.x * f0;
+		specular_light *= AB.x * specular_color + AB.y;
 #endif
 
 	}
