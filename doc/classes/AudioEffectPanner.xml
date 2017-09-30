@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPanner" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a Panner audio effect to an Audio bus. Pans sound left or right.
 	</brief_description>
 	<description>
+		Determines how much of an audio signal is sent to the left and right buses.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +28,7 @@
 	</methods>
 	<members>
 		<member name="pan" type="float" setter="set_pan" getter="get_pan">
+			Pan position. Value can range from -1 (fully left) to 1 (fully right).
 		</member>
 	</members>
 	<constants>

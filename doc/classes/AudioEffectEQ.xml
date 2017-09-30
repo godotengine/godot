@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectEQ" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Base class for audio equalizers. Gives you control over frequencies.
+		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.
 	</brief_description>
 	<description>
+		AudioEffectEQ gives you control over frequencies. Use it to compensate for existing deficiencies in audio. AudioEffectEQ are very useful on the Master Bus to completely master a mix and give it character. They are also very useful when a game is run on a mobile device, to adjust the mix to that kind of speakers (it can be added but disabled when headphones are plugged).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +16,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of bands of the equalizer.
 			</description>
 		</method>
 		<method name="get_band_gain_db" qualifiers="const">
@@ -21,6 +25,7 @@
 			<argument index="0" name="band_idx" type="int">
 			</argument>
 			<description>
+				Returns the band's gain at the specified index, in dB.
 			</description>
 		</method>
 		<method name="set_band_gain_db">
@@ -31,6 +36,7 @@
 			<argument index="1" name="volume_db" type="float">
 			</argument>
 			<description>
+				Sets band's gain at the specified index, in dB.
 			</description>
 		</method>
 	</methods>
