@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="JSON" inherits="Object" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Helper class for parsing JSON data.
 	</brief_description>
 	<description>
+		Helper class for parsing JSON data.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +17,7 @@
 			<argument index="0" name="json" type="String">
 			</argument>
 			<description>
+				Parses a JSON encoded string and returns a [JSONParseResult] containing the result.
 			</description>
 		</method>
 		<method name="print">
@@ -23,6 +26,7 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
+				Converts a Variant var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 			</description>
 		</method>
 	</methods>
