@@ -1010,7 +1010,7 @@ void CodeTextEditor::_reset_zoom() {
 	Ref<DynamicFont> font = text_editor->get_font("font"); // reset source font size to default
 
 	if (font.is_valid()) {
-		EditorSettings::get_singleton()->set("interface/source_font_size", 14);
+		EditorSettings::get_singleton()->set("interface/editor/source_font_size", 14);
 		font->set_size(14);
 	}
 }
@@ -1066,7 +1066,7 @@ void CodeTextEditor::_font_resize_timeout() {
 	if (font.is_valid()) {
 		int new_size = CLAMP(font->get_size() + font_resize_val, 8 * EDSCALE, 96 * EDSCALE);
 		if (new_size != font->get_size()) {
-			EditorSettings::get_singleton()->set("interface/source_font_size", new_size / EDSCALE);
+			EditorSettings::get_singleton()->set("interface/editor/source_font_size", new_size / EDSCALE);
 			font->set_size(new_size);
 		}
 

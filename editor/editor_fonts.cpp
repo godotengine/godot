@@ -122,7 +122,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	MAKE_DEFAULT_FONT(df, int(EditorSettings::get_singleton()->get("interface/font_size")) * EDSCALE);
+	MAKE_DEFAULT_FONT(df, int(EditorSettings::get_singleton()->get("interface/editor/font_size")) * EDSCALE);
 
 	p_theme->set_default_theme_font(df);
 
@@ -142,7 +142,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFont> df_code;
 	df_code.instance();
-	df_code->set_size(int(EditorSettings::get_singleton()->get("interface/source_font_size")) * EDSCALE);
+	df_code->set_size(int(EditorSettings::get_singleton()->get("interface/editor/source_font_size")) * EDSCALE);
 	df_code->set_font_data(dfmono);
 	MAKE_FALLBACKS(df_code);
 
