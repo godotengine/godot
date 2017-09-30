@@ -51,7 +51,7 @@ inline void change_nsvg_paint_color(NSVGpaint *p_paint, const uint32_t p_old, co
 
 	if (p_paint->type == NSVG_PAINT_COLOR) {
 		if (p_paint->color << 8 == p_old << 8) {
-			p_paint->color = p_new;
+			p_paint->color = (p_paint->color & 0xFF000000) | (p_new & 0x00FFFFFF);
 		}
 	}
 
