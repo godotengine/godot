@@ -501,8 +501,7 @@ void TextEdit::_notification(int p_what) {
 
 				if (cache.background_color.a > 0.01) {
 
-					Point2i ofs = Point2i(cache.style_normal->get_offset()) / 2.0;
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs, get_size() - cache.style_normal->get_minimum_size() + ofs), cache.background_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 				}
 				//compute actual region to start (may be inside say, a comment).
 				//slow in very large documments :( but ok for source!
