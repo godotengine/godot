@@ -4181,7 +4181,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	editor_data->get_undo_redo().add_do_property(child, property, texture);
 
 	// make visible for certain node type
-	if (default_type == "Patch9Rect") {
+	if (default_type == "NinePatchRect") {
 		editor_data->get_undo_redo().add_do_property(child, "rect/size", texture_size);
 	} else if (default_type == "Polygon2D") {
 		PoolVector<Vector2> list;
@@ -4199,7 +4199,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	}
 	Transform2D trans = canvas->get_canvas_transform();
 	Point2 target_position = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
-	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "Patch9Rect") {
+	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "NinePatchRect") {
 		target_position -= texture_size / 2;
 	}
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
@@ -4275,7 +4275,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				child = memnew(TouchScreenButton);
 			else if (default_type == "TextureRect")
 				child = memnew(TextureRect);
-			else if (default_type == "Patch9Rect")
+			else if (default_type == "NinePatchRect")
 				child = memnew(NinePatchRect);
 			else
 				child = memnew(Sprite); // default
@@ -4437,7 +4437,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	types.push_back("TouchScreenButton");
 	// Control
 	types.push_back("TextureRect");
-	types.push_back("Patch9Rect");
+	types.push_back("NinePatchRect");
 
 	target_node = NULL;
 	editor = p_node;
