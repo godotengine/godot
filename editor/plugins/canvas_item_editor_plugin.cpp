@@ -2668,13 +2668,13 @@ void CanvasItemEditor::_draw_viewport() {
 		all_group = false;
 	} else {
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			if (Object::cast_to<Control>(E->get()) && !Object::cast_to<Control>(E->get())->has_meta("_edit_lock_")) {
+			if (Object::cast_to<CanvasItem>(E->get()) && !Object::cast_to<CanvasItem>(E->get())->has_meta("_edit_lock_")) {
 				all_locked = false;
 				break;
 			}
 		}
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			if (Object::cast_to<Control>(E->get()) && !Object::cast_to<Control>(E->get())->has_meta("_edit_group_")) {
+			if (Object::cast_to<CanvasItem>(E->get()) && !Object::cast_to<CanvasItem>(E->get())->has_meta("_edit_group_")) {
 				all_group = false;
 				break;
 			}
