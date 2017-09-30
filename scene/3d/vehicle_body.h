@@ -131,6 +131,8 @@ public:
 	void set_roll_influence(float p_value);
 	float get_roll_influence() const;
 
+	float get_skidinfo() const;
+
 	String get_configuration_warning() const;
 
 	VehicleWheel();
