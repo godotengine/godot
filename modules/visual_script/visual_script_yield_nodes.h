@@ -39,7 +39,7 @@ public:
 	enum YieldMode {
 		YIELD_RETURN,
 		YIELD_FRAME,
-		YIELD_FIXED_FRAME,
+		YIELD_PHYSICS_FRAME,
 		YIELD_WAIT
 
 	};

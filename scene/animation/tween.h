@@ -38,7 +38,7 @@ class Tween : public Node {
 
 public:
 	enum TweenProcessMode {
-		TWEEN_PROCESS_FIXED,
+		TWEEN_PROCESS_PHYSICS,
 		TWEEN_PROCESS_IDLE,
 	};
 

@@ -46,7 +46,7 @@ void NavigationPolygonEditor::_notification(int p_what) {
 			create_nav->connect("confirmed", this, "_create_nav");
 
 		} break;
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_PHYSICS_PROCESS: {
 
 		} break;
 	}

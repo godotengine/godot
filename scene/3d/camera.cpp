@@ -507,7 +507,7 @@ void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
 
 	doppler_tracking = p_tracking;
 	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
-		velocity_tracker->set_track_fixed_step(doppler_tracking == DOPPLER_TRACKING_FIXED_STEP);
+		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
 		velocity_tracker->reset(get_global_transform().origin);
 	}
 }
@@ -557,7 +557,7 @@ void Camera::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP)
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_FIXED_STEP)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP)
 }
 
 float Camera::get_fov() const {

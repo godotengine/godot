@@ -67,7 +67,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 };
 
 void ScrollContainer::_cancel_drag() {
-	set_fixed_process(false);
+	set_physics_process(false);
 	drag_touching_deaccel = false;
 	drag_touching = false;
 	drag_speed = Vector2();
@@ -121,7 +121,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (mb->is_pressed()) {
 
 			if (drag_touching) {
-				set_fixed_process(false);
+				set_physics_process(false);
 				drag_touching_deaccel = false;
 				drag_touching = false;
 				drag_speed = Vector2();
@@ -139,7 +139,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				drag_touching_deaccel = false;
 				time_since_motion = 0;
 				if (drag_touching) {
-					set_fixed_process(true);
+					set_physics_process(true);
 					time_since_motion = 0;
 				}
 			}
@@ -150,7 +150,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (drag_speed == Vector2()) {
 					drag_touching_deaccel = false;
 					drag_touching = false;
-					set_fixed_process(false);
+					set_physics_process(false);
 				} else {
 
 					drag_touching_deaccel = true;
@@ -257,14 +257,14 @@ void ScrollContainer::_notification(int p_what) {
 		update_scrollbars();
 	}
 
-	if (p_what == NOTIFICATION_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 
 		if (drag_touching) {
 
 			if (drag_touching_deaccel) {
 
 				Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
-				pos += drag_speed * get_fixed_process_delta_time();
+				pos += drag_speed * get_physics_process_delta_time();
 
 				bool turnoff_h = false;
 				bool turnoff_v = false;
@@ -294,7 +294,7 @@ void ScrollContainer::_notification(int p_what) {
 
 				float sgn_x = drag_speed.x < 0 ? -1 : 1;
 				float val_x = Math::abs(drag_speed.x);
-				val_x -= 1000 * get_fixed_process_delta_time();
+				val_x -= 1000 * get_physics_process_delta_time();
 
 				if (val_x < 0) {
 					turnoff_h = true;
@@ -302,7 +302,7 @@ void ScrollContainer::_notification(int p_what) {
 
 				float sgn_y = drag_speed.y < 0 ? -1 : 1;
 				float val_y = Math::abs(drag_speed.y);
-				val_y -= 1000 * get_fixed_process_delta_time();
+				val_y -= 1000 * get_physics_process_delta_time();
 
 				if (val_y < 0) {
 					turnoff_v = true;
@@ -311,7 +311,7 @@ void ScrollContainer::_notification(int p_what) {
 				drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
 
 				if (turnoff_h && turnoff_v) {
-					set_fixed_process(false);
+					set_physics_process(false);
 					drag_touching = false;
 					drag_touching_deaccel = false;
 				}
@@ -322,10 +322,10 @@ void ScrollContainer::_notification(int p_what) {
 
 					Vector2 diff = drag_accum - last_drag_accum;
 					last_drag_accum = drag_accum;
-					drag_speed = diff / get_fixed_process_delta_time();
+					drag_speed = diff / get_physics_process_delta_time();
 				}
 
-				time_since_motion += get_fixed_process_delta_time();
+				time_since_motion += get_physics_process_delta_time();
 			}
 		}
 	}

@@ -56,7 +56,7 @@ void AnimationTreePlayer::_set_process(bool p_process, bool p_force) {
 
 	switch (animation_process_mode) {
 
-		case ANIMATION_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 
@@ -405,7 +405,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_fixed_process_internal(false);
+				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
 		} break;
@@ -416,19 +416,19 @@ void AnimationTreePlayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (animation_process_mode == ANIMATION_PROCESS_FIXED)
+			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
 				break;
 
 			if (processing)
 				_process_animation(get_process_delta_time());
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (animation_process_mode == ANIMATION_PROCESS_IDLE)
 				break;
 
 			if (processing)
-				_process_animation(get_fixed_process_delta_time());
+				_process_animation(get_physics_process_delta_time());
 		} break;
 	}
 }
@@ -1809,7 +1809,7 @@ void AnimationTreePlayer::_bind_methods() {
 	BIND_ENUM_CONSTANT(NODE_TIMESEEK);
 	BIND_ENUM_CONSTANT(NODE_TRANSITION);
 
-	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_FIXED);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 }
 

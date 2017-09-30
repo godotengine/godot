@@ -49,10 +49,10 @@ class Engine {
 	int _target_fps;
 	float _time_scale;
 	bool _pixel_snap;
-	uint64_t _fixed_frames;
+	uint64_t _physics_frames;
 
 	uint64_t _idle_frames;
-	bool _in_fixed;
+	bool _in_physics;
 
 	bool editor_hint;
 
@@ -71,9 +71,9 @@ public:
 
 	uint64_t get_frames_drawn();
 
-	uint64_t get_fixed_frames() const { return _fixed_frames; }
+	uint64_t get_physics_frames() const { return _physics_frames; }
 	uint64_t get_idle_frames() const { return _idle_frames; }
-	bool is_in_fixed_frame() const { return _in_fixed; }
+	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
 	float get_idle_frame_step() const { return _frame_step; }
 

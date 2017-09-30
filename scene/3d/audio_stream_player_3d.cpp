@@ -214,7 +214,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		}
 	}
 
-	if (p_what == NOTIFICATION_INTERNAL_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 
 		//update anything related to position first, if possible of course
 
@@ -512,7 +512,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 		//stop playing if no longer active
 		if (!active) {
-			set_fixed_process_internal(false);
+			set_physics_process_internal(false);
 			//do not update, this makes it easier to animate (will shut off otherise)
 			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
@@ -582,7 +582,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		setplay = p_from_pos;
 		output_ready = false;
-		set_fixed_process_internal(true);
+		set_physics_process_internal(true);
 	}
 }
 
@@ -597,7 +597,7 @@ void AudioStreamPlayer3D::stop() {
 
 	if (stream_playback.is_valid()) {
 		active = false;
-		set_fixed_process_internal(false);
+		set_physics_process_internal(false);
 		setplay = -1;
 	}
 }
@@ -776,7 +776,7 @@ void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 		set_notify_transform(true);
-		velocity_tracker->set_track_fixed_step(doppler_tracking == DOPPLER_TRACKING_FIXED_STEP);
+		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
 		velocity_tracker->reset(get_global_transform().origin);
 	} else {
 		set_notify_transform(false);
@@ -880,7 +880,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_FIXED_STEP);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 }

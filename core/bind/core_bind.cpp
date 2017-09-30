@@ -2557,8 +2557,8 @@ Dictionary _Engine::get_version_info() const {
 	return Engine::get_singleton()->get_version_info();
 }
 
-bool _Engine::is_in_fixed_frame() const {
-	return Engine::get_singleton()->is_in_fixed_frame();
+bool _Engine::is_in_physics_frame() const {
+	return Engine::get_singleton()->is_in_physics_frame();
 }
 
 void _Engine::set_editor_hint(bool p_enabled) {
@@ -2588,7 +2588,7 @@ void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
 
-	ClassDB::bind_method(D_METHOD("is_in_fixed_frame"), &_Engine::is_in_fixed_frame);
+	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &_Engine::is_in_physics_frame);
 
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);

@@ -39,7 +39,7 @@ void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -535,7 +535,7 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	} else {
 
 		hide();
-		//set_fixed_process(false);
+		//set_physics_process(false);
 	}
 }
 

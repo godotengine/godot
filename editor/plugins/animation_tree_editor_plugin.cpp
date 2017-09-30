@@ -1419,13 +1419,13 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(anim_tree_editor);
-		anim_tree_editor->set_fixed_process(true);
+		anim_tree_editor->set_physics_process(true);
 	} else {
 
 		if (anim_tree_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
-		anim_tree_editor->set_fixed_process(false);
+		anim_tree_editor->set_physics_process(false);
 	}
 }
 

@@ -51,7 +51,7 @@ class InputDefault : public Input {
 	MainLoop *main_loop;
 
 	struct Action {
-		uint64_t fixed_frame;
+		uint64_t physics_frame;
 		uint64_t idle_frame;
 		bool pressed;
 	};
