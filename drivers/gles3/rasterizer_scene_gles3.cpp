@@ -2369,11 +2369,11 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 
 	if (p_custom_fov) {
 
-		float near = p_projection.get_z_near();
-		float far = p_projection.get_z_far();
+		float near_plane = p_projection.get_z_near();
+		float far_plane = p_projection.get_z_far();
 		float aspect = p_projection.get_aspect();
 
-		camera.set_perspective(p_custom_fov, aspect, near, far);
+		camera.set_perspective(p_custom_fov, aspect, near_plane, far_plane);
 
 	} else {
 		camera = p_projection;
