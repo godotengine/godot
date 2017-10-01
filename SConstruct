@@ -189,7 +189,17 @@ for k in platform_opts.keys():
         opts.Add(o)
 
 for x in module_list:
-    opts.Add(BoolVariable('module_' + x + '_enabled', "Enable module '%s'" % (x, ), True))
+    module_enabled = True
+    tmppath = "./modules/" + x
+    sys.path.append(tmppath)
+    try:
+	import config
+	if (not config.is_enabled()):
+	    module_enabled = False
+    except:
+	pass
+    sys.path.remove(tmppath)
+    opts.Add(BoolVariable('module_' + x + '_enabled', "Enable module '%s'" % (x, ), module_enabled))
 
 opts.Update(env_base)  # update environment
 Help(opts.GenerateHelpText(env_base))  # generate help
