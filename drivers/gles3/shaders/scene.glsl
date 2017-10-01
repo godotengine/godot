@@ -952,7 +952,7 @@ LIGHT_SHADER_CODE
 		float FD90 = 0.5 + 2.0 * LoH * LoH * roughness;
 		float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoV);
 		float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoL);
-		light_amount = ( (1.0 / M_PI) * FdV * FdL );
+		light_amount = ( (1.0 / M_PI) * FdV * FdL ) * NoL;
 /*
 		float energyBias = mix(roughness, 0.0, 0.5);
 		float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
