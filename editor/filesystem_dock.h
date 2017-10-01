@@ -72,6 +72,7 @@ private:
 		FILE_REMOVE,
 		FILE_REIMPORT,
 		FILE_INFO,
+		FILE_NEW_FOLDER,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH
 	};
@@ -82,6 +83,7 @@ private:
 		FOLDER_MOVE,
 		FOLDER_RENAME,
 		FOLDER_REMOVE,
+		FOLDER_NEW_FOLDER,
 		FOLDER_SHOW_IN_EXPLORER,
 		FOLDER_COPY_PATH
 	};
@@ -118,6 +120,8 @@ private:
 	EditorDirDialog *move_dialog;
 	ConfirmationDialog *rename_dialog;
 	LineEdit *rename_dialog_text;
+	ConfirmationDialog *make_dir_dialog;
+	LineEdit *make_dir_dialog_text;
 
 	class FileOrFolder {
 	public:
@@ -158,6 +162,7 @@ private:
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 
+	void _make_dir_confirm();
 	void _rename_operation_confirm();
 	void _move_operation_confirm(const String &p_to_path);
 

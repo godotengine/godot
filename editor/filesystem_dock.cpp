@@ -808,6 +808,33 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 	}
 }
 
+void FileSystemDock::_make_dir_confirm() {
+	String dir_name = make_dir_dialog_text->get_text().strip_edges();
+
+	if (dir_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
+		return;
+	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1) {
+		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters"));
+		return;
+	}
+
+	print_line("Making folder " + dir_name + " in " + path);
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Error err = da->change_dir(path);
+	if (err == OK) {
+		err = da->make_dir(dir_name);
+	}
+	memdelete(da);
+
+	if (err == OK) {
+		print_line("call rescan!");
+		_rescan();
+	} else {
+		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
+	}
+}
+
 void FileSystemDock::_rename_operation_confirm() {
 
 	String new_name = rename_dialog_text->get_text().strip_edges();
@@ -993,6 +1020,12 @@ void FileSystemDock::_file_option(int p_option) {
 			}
 			*/
 		} break;
+		case FILE_NEW_FOLDER: {
+			make_dir_dialog_text->set_text("new folder");
+			make_dir_dialog_text->select_all();
+			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_dir_dialog_text->grab_focus();
+		} break;
 		case FILE_COPY_PATH: {
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
@@ -1052,6 +1085,12 @@ void FileSystemDock::_folder_option(int p_option) {
 				remove_dialog->show(remove_folders, remove_files);
 			}
 		} break;
+		case FOLDER_NEW_FOLDER: {
+			make_dir_dialog_text->set_text("new folder");
+			make_dir_dialog_text->select_all();
+			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_dir_dialog_text->grab_focus();
+		} break;
 		case FOLDER_COPY_PATH: {
 			String path = item->get_metadata(tree->get_selected_column());
 			OS::get_singleton()->set_clipboard(path);
@@ -1110,6 +1149,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
 		}
 		folder_options->add_separator();
+		folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
 		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
 	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
@@ -1496,6 +1536,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		file_options->add_separator();
 	}
 
+	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
@@ -1582,6 +1623,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_dir_selected"), &FileSystemDock::_dir_selected);
 	ClassDB::bind_method(D_METHOD("_file_option"), &FileSystemDock::_file_option);
 	ClassDB::bind_method(D_METHOD("_folder_option"), &FileSystemDock::_folder_option);
+	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
 
@@ -1751,6 +1793,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", this, "_rename_operation_confirm");
+
+	make_dir_dialog = memnew(ConfirmationDialog);
+	make_dir_dialog->set_title(TTR("Create Folder"));
+	VBoxContainer *make_folder_dialog_vb = memnew(VBoxContainer);
+	make_dir_dialog->add_child(make_folder_dialog_vb);
+
+	make_dir_dialog_text = memnew(LineEdit);
+	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
+	add_child(make_dir_dialog);
+	make_dir_dialog->register_text_enter(make_dir_dialog_text);
+	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
 
 	updating_tree = false;
 	initialized = false;
