@@ -84,14 +84,33 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 
 	Label *text;
 	Tree *owners;
-	bool exist;
-	Map<String, TreeItem *> files;
-	void _fill_owners(EditorFileSystemDirectory *efsd);
+
+	Map<String, String> all_remove_files;
+	Vector<String> to_delete;
+
+	struct RemovedDependency {
+		String file;
+		String file_type;
+		String dependency;
+		String dependency_folder;
+
+		bool operator<(const RemovedDependency &p_other) const {
+			if (dependency_folder.empty() != p_other.dependency_folder.empty()) {
+				return p_other.dependency_folder.empty();
+			} else {
+				return dependency < p_other.dependency;
+			}
+		}
+	};
+
+	void _find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder);
+	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
+	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 
 	void ok_pressed();
 
 public:
-	void show(const Vector<String> &to_erase);
+	void show(const Vector<String> &p_folders, const Vector<String> &p_files);
 	DependencyRemoveDialog();
 };
 

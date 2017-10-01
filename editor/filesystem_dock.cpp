@@ -937,26 +937,25 @@ void FileSystemDock::_file_option(int p_option) {
 			rename_dialog_text->grab_focus();
 		} break;
 		case FILE_REMOVE: {
-
-			Vector<String> torem;
+			Vector<String> remove_files;
+			Vector<String> remove_folders;
 
 			for (int i = 0; i < files->get_item_count(); i++) {
-
 				String path = files->get_item_metadata(i);
-				if (!files->is_selected(i))
-					continue;
-				torem.push_back(path);
+				if (files->is_selected(i) && path != "res://") {
+					if (path.ends_with("/")) {
+						remove_folders.push_back(path);
+					} else {
+						remove_files.push_back(path);
+					}
+				}
 			}
 
-			if (torem.empty()) {
-				EditorNode::get_singleton()->show_warning(TTR("No files selected!"));
-				break;
+			if (remove_files.size() + remove_folders.size() > 0) {
+				remove_dialog->show(remove_folders, remove_files);
+				//1) find if used
+				//2) warn
 			}
-
-			remove_dialog->show(torem);
-			//1) find if used
-			//2) warn
-
 		} break;
 		case FILE_INFO: {
 
@@ -1044,6 +1043,15 @@ void FileSystemDock::_folder_option(int p_option) {
 				rename_dialog_text->grab_focus();
 			}
 		} break;
+		case FOLDER_REMOVE: {
+			Vector<String> remove_folders;
+			Vector<String> remove_files;
+			String path = item->get_metadata(tree->get_selected_column());
+			if (path != "res://") {
+				remove_folders.push_back(path);
+				remove_dialog->show(remove_folders, remove_files);
+			}
+		} break;
 		case FOLDER_COPY_PATH: {
 			String path = item->get_metadata(tree->get_selected_column());
 			OS::get_singleton()->set_clipboard(path);
@@ -1099,6 +1107,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 		if (fpath != "res://") {
 			folder_options->add_item(TTR("Rename.."), FOLDER_RENAME);
 			folder_options->add_item(TTR("Move To.."), FOLDER_MOVE);
+			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
 		}
 		folder_options->add_separator();
 		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
