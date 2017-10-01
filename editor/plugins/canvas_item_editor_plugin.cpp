@@ -2704,6 +2704,7 @@ void CanvasItemEditor::_draw_viewport() {
 		over_plugin_list->forward_draw_over_canvas(transform, viewport);
 	}
 	_draw_focus();
+	_draw_bones();
 }
 
 void CanvasItemEditor::_notification(int p_what) {
