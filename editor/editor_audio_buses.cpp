@@ -405,7 +405,6 @@ void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
 		bus_popup->set_position(get_global_position() + pos);
-		bus_popup->set_item_disabled(1, get_index() == 0);
 		bus_popup->popup();
 	}
 }
@@ -755,8 +754,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_item(TTR("Duplicate"));
-	if (!is_master)
-		bus_popup->add_item(TTR("Delete"));
+	bus_popup->add_item(TTR("Delete"));
+	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
