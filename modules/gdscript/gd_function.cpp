@@ -469,7 +469,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 							if (cmp == scr_B) {
 								//inherits from script, all ok
 								extends_ok = true;
-								OPCODE_BREAK;
+								break;
 							}
 
 							cmp = cmp->_base;
