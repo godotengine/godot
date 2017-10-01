@@ -434,6 +434,7 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if env['vsproj']:
+        env['CPPPATH'] = [Dir(path) for path in env['CPPPATH']]
         methods.generate_vs_project(env, GetOption("num_jobs"))
 
     # Check for the existence of headers
