@@ -932,7 +932,8 @@ LIGHT_SHADER_CODE
 		vec3 A = 1.0 + sigma2 * (- 0.5 / (sigma2 + 0.33) + 0.17*diffuse_color / (sigma2 + 0.13) );
 		float B = 0.45 * sigma2 / (sigma2 + 0.09);
 
-		light_amount = dotNL * (A + vec3(B) * s / t) / M_PI;
+//		light_amount = dotNL * (A + vec3(B) * s / t) / M_PI;
+		light_amount = dotNL * (A + vec3(B) * s / t);
 	}
 
 #elif defined(DIFFUSE_TOON)
@@ -952,7 +953,8 @@ LIGHT_SHADER_CODE
 		float FD90 = 0.5 + 2.0 * LoH * LoH * roughness;
 		float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoV);
 		float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(NoL);
-		light_amount = ( (1.0 / M_PI) * FdV * FdL ) * NoL;
+		//light_amount = ( (1.0 / M_PI) * FdV * FdL ) * NoL;
+		light_amount = ( FdV * FdL ) * NoL;
 /*
 		float energyBias = mix(roughness, 0.0, 0.5);
 		float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
@@ -965,7 +967,8 @@ LIGHT_SHADER_CODE
 	}
 #else
 	//lambert
-	light_amount = dotNL / M_PI;
+//	light_amount = dotNL / M_PI;
+	light_amount = dotNL;
 #endif
 
 #if defined(TRANSMISSION_USED)
