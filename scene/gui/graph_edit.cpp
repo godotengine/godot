@@ -941,17 +941,17 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			//too difficult to get right
 			//set_zoom(zoom/ZOOM_SCALE);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_UP) {
-			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b->get_factor() / 8);
+		if (b->get_button_index() == BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * b->get_factor() / 8);
-		}
-		if (b->get_button_index() == BUTTON_WHEEL_RIGHT) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_LEFT) {
-			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
+		if (b->get_button_index() == BUTTON_WHEEL_RIGHT || (b->get_button_index() == BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
+			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * b->get_factor() / 8);
+		}
+		if (b->get_button_index() == BUTTON_WHEEL_LEFT || (b->get_button_index() == BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
+			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b->get_factor() / 8);
 		}
 	}
 
