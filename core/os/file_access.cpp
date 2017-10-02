@@ -55,7 +55,7 @@ FileAccess *FileAccess::create(AccessType p_access) {
 
 bool FileAccess::exists(const String &p_name) {
 
-	if (PackedData::get_singleton()->has_path(p_name))
+	if (PackedData::get_singleton() && PackedData::get_singleton()->has_path(p_name))
 		return true;
 
 	FileAccess *f = open(p_name, READ);

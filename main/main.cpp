@@ -231,7 +231,6 @@ void Main::print_help(const char *p_binary) {
 }
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
-
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
@@ -253,6 +252,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	input_map = memnew(InputMap);
 
 	register_core_settings(); //here globals is present
+
+	OS::get_singleton()->initialize_logger();
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);

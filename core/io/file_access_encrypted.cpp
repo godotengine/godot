@@ -268,6 +268,12 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 	}
 }
 
+void FileAccessEncrypted::flush() {
+	ERR_FAIL_COND(!writing);
+
+	// encrypted files keep data in memory till close()
+}
+
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!writing);

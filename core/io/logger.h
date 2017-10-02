@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  file_access_zip.h                                                    */
+/*  logger.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,97 +27,81 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef MINIZIP_ENABLED
 
-#ifndef FILE_ACCESS_Zip_H
-#define FILE_ACCESS_Zip_H
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#include "core/io/file_access_pack.h"
-#include "map.h"
+#include "os/file_access.h"
+#include "ustring.h"
+#include "vector.h"
+#include <stdarg.h>
 
-#include "thirdparty/minizip/unzip.h"
-
-#include <stdlib.h>
-
-class ZipArchive : public PackSource {
+class Logger {
+protected:
+	bool should_log(bool p_err);
 
 public:
-	struct File {
-
-		int package;
-		unz_file_pos file_pos;
-		File() {
-
-			package = -1;
-		};
+	enum ErrorType {
+		ERR_ERROR,
+		ERR_WARNING,
+		ERR_SCRIPT,
+		ERR_SHADER
 	};
 
-private:
-	struct Package {
-		String filename;
-		unzFile zfile;
-	};
-	Vector<Package> packages;
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) = 0;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
-	Map<String, File> files;
+	void logf(const char *p_format, ...);
+	void logf_error(const char *p_format, ...);
 
-	static ZipArchive *instance;
-
-	FileAccess::CreateFunc fa_create_func;
-
-public:
-	void close_handle(unzFile p_file) const;
-	unzFile get_file_handle(String p_file) const;
-
-	Error add_package(String p_name);
-
-	bool file_exists(String p_name) const;
-
-	virtual bool try_open_pack(const String &p_path);
-	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
-
-	static ZipArchive *get_singleton();
-
-	ZipArchive();
-	~ZipArchive();
+	virtual ~Logger();
 };
 
-class FileAccessZip : public FileAccess {
-
-	unzFile zfile;
-	unz_file_info64 file_info;
-
-	mutable bool at_eof;
-
-	ZipArchive *archive;
+/**
+ * Writes messages to stdout/stderr.
+ */
+class StdLogger : public Logger {
 
 public:
-	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
-	virtual bool is_open() const; ///< true when file is open
-
-	virtual void seek(size_t p_position); ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
-
-	virtual bool eof_reached() const; ///< reading passed EOF
-
-	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
-
-	virtual Error get_error() const; ///< get last error
-
-	virtual void flush();
-	virtual void store_8(uint8_t p_dest); ///< store a byte
-	virtual bool file_exists(const String &p_name); ///< return true if a file exists
-
-	virtual uint64_t _get_modified_time(const String &p_file) { return 0; } // todo
-
-	FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file);
-	~FileAccessZip();
+	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual ~StdLogger();
 };
 
-#endif // FILE_ACCESS_ZIP_H
+/**
+ * Writes messages to the specified file. If the file already exists, creates a copy (backup)
+ * of it with timestamp appended to the file name. Maximum number of backups is configurable.
+ * When maximum is reached, the oldest backups are erased. With the maximum being equal to 1,
+ * it acts as a simple file logger.
+ */
+class RotatedFileLogger : public Logger {
+	String base_path;
+	int max_files;
+
+	FileAccess *file;
+
+	void rotate_file_without_closing();
+	void close_file();
+	void clear_old_backups();
+	void rotate_file();
+
+public:
+	RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
+
+	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+
+	virtual ~RotatedFileLogger();
+};
+
+class CompositeLogger : public Logger {
+	Vector<Logger *> loggers;
+
+public:
+	CompositeLogger(Vector<Logger *> p_loggers);
+
+	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
+
+	virtual ~CompositeLogger();
+};
 
 #endif

@@ -161,6 +161,7 @@ public:
 
 	virtual Error get_error() const;
 
+	virtual void flush();
 	virtual void store_8(uint8_t p_dest);
 
 	virtual void store_buffer(const uint8_t *p_src, int p_length);

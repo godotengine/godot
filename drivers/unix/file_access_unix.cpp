@@ -223,6 +223,12 @@ Error FileAccessUnix::get_error() const {
 	return last_error;
 }
 
+void FileAccessUnix::flush() {
+
+	ERR_FAIL_COND(!f);
+	fflush(f);
+}
+
 void FileAccessUnix::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);

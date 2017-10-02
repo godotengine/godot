@@ -92,6 +92,7 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -103,11 +104,6 @@ public:
 	typedef int64_t ProcessID;
 
 	//static OS* get_singleton();
-
-	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
-		OS::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
-	}
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 

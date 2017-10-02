@@ -90,6 +90,7 @@ private:
 
 	virtual VideoMode get_default_video_mode() const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 

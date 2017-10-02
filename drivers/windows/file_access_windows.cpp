@@ -207,6 +207,12 @@ Error FileAccessWindows::get_error() const {
 	return last_error;
 }
 
+void FileAccessWindows::flush() {
+
+	ERR_FAIL_COND(!f);
+	fflush(f);
+}
+
 void FileAccessWindows::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);

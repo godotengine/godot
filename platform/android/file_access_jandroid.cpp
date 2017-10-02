@@ -157,6 +157,9 @@ Error FileAccessJAndroid::get_error() const {
 	return OK;
 }
 
+void FileAccessJAndroid::flush() {
+}
+
 void FileAccessJAndroid::store_8(uint8_t p_dest) {
 }
 

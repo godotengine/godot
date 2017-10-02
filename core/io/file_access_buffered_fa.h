@@ -76,6 +76,11 @@ protected:
 	};
 
 public:
+	void flush() {
+
+		f.flush();
+	};
+
 	void store_8(uint8_t p_dest) {
 
 		f.store_8(p_dest);

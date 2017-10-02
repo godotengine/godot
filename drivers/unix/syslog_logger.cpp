@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  error_macros.cpp                                                     */
+/*  syslog_logger.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,73 +27,45 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "error_macros.h"
 
-#include "io/logger.h"
-#include "os/os.h"
+#ifdef UNIX_ENABLED
 
-bool _err_error_exists = false;
+#include "syslog_logger.h"
+#include "print_string.h"
+#include <syslog.h>
 
-static ErrorHandlerList *error_handler_list = NULL;
-
-void _err_set_last_error(const char *p_err) {
-
-	OS::get_singleton()->set_last_error(p_err);
-}
-
-void _err_clear_last_error() {
-
-	OS::get_singleton()->clear_last_error();
-}
-
-void add_error_handler(ErrorHandlerList *p_handler) {
-
-	_global_lock();
-	p_handler->next = error_handler_list;
-	error_handler_list = p_handler;
-	_global_unlock();
-}
-
-void remove_error_handler(ErrorHandlerList *p_handler) {
-
-	_global_lock();
-
-	ErrorHandlerList *prev = NULL;
-	ErrorHandlerList *l = error_handler_list;
-
-	while (l) {
-
-		if (l == p_handler) {
-
-			if (prev)
-				prev->next = l->next;
-			else
-				error_handler_list = l->next;
-			break;
-		}
-		prev = l;
-		l = l->next;
+void SyslogLogger::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
 	}
 
-	_global_unlock();
+	vsyslog(p_err ? LOG_ERR : LOG_INFO, p_format, p_list);
 }
 
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, ErrorHandlerType p_type) {
-
-	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", (Logger::ErrorType)p_type);
-
-	_global_lock();
-	ErrorHandlerList *l = error_handler_list;
-	while (l) {
-
-		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", p_type);
-		l = l->next;
+void SyslogLogger::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
+	if (!should_log(true)) {
+		return;
 	}
 
-	_global_unlock();
-
-	if (_err_error_exists) {
-		OS::get_singleton()->clear_last_error();
-		_err_error_exists = false;
+	const char *err_type = "**ERROR**";
+	switch (p_type) {
+		case ERR_ERROR: err_type = "**ERROR**"; break;
+		case ERR_WARNING: err_type = "**WARNING**"; break;
+		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
+		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
+		default: ERR_PRINT("Unknown error type"); break;
 	}
+
+	const char *err_details;
+	if (p_rationale && *p_rationale)
+		err_details = p_rationale;
+	else
+		err_details = p_code;
+
+	syslog(p_type == ERR_WARNING ? LOG_WARNING : LOG_ERR, "%s: %s\n   At: %s:%i:%s() - %s", err_type, err_details, p_file, p_line, p_function, p_code);
 }
+
+SyslogLogger::~SyslogLogger() {
+}
+
+#endif

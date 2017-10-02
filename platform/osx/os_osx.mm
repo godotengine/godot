@@ -1145,43 +1145,67 @@ String OS_OSX::get_name() {
 	return "OSX";
 }
 
-void OS_OSX::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
-	if (!_print_error_enabled)
-		return;
+class OSXTerminalLogger : public StdLogger {
+public:
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR) {
+		if (!should_log(true)) {
+			return;
+		}
 
-	const char *err_details;
-	if (p_rationale && p_rationale[0])
-		err_details = p_rationale;
-	else
-		err_details = p_code;
+		const char *err_details;
+		if (p_rationale && p_rationale[0])
+			err_details = p_rationale;
+		else
+			err_details = p_code;
 
-	switch (p_type) {
-		case ERR_ERROR:
-			os_log_error(OS_LOG_DEFAULT, "ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
-			print("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			print("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
-			break;
-		case ERR_WARNING:
-			os_log_info(OS_LOG_DEFAULT, "WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
-			print("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			print("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
-			break;
-		case ERR_SCRIPT:
-			os_log_error(OS_LOG_DEFAULT, "SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
-			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			print("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
-			break;
-		case ERR_SHADER:
-			os_log_error(OS_LOG_DEFAULT, "SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.", p_function, err_details, p_file, p_line);
-			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			print("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
-			break;
+		switch (p_type) {
+			case ERR_WARNING:
+				os_log_info(OS_LOG_DEFAULT,
+						"WARNING: %{public}s: %{public}s\nAt: %{public}s:%i.",
+						p_function, err_details, p_file, p_line);
+				logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function,
+						err_details);
+				logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+				break;
+			case ERR_SCRIPT:
+				os_log_error(OS_LOG_DEFAULT,
+						"SCRIPT ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+						p_function, err_details, p_file, p_line);
+				logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function,
+						err_details);
+				logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+				break;
+			case ERR_SHADER:
+				os_log_error(OS_LOG_DEFAULT,
+						"SHADER ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+						p_function, err_details, p_file, p_line);
+				logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function,
+						err_details);
+				logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+				break;
+			case ERR_ERROR:
+			default:
+				os_log_error(OS_LOG_DEFAULT,
+						"ERROR: %{public}s: %{public}s\nAt: %{public}s:%i.",
+						p_function, err_details, p_file, p_line);
+				logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
+				logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+				break;
+		}
 	}
+};
+
 #else
-	OS_Unix::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+
+typedef UnixTerminalLogger OSXTerminalLogger;
 #endif
+
+void OS_OSX::initialize_logger() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(OSXTerminalLogger));
+	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 void OS_OSX::alert(const String &p_alert, const String &p_title) {
@@ -2016,6 +2040,8 @@ OS_OSX::OS_OSX() {
 	window_size = Vector2(1024, 600);
 	zoomed = false;
 	display_scale = 1.0;
+
+	_set_logger(memnew(OSXTerminalLogger));
 }
 
 bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
