@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="JSONParseResult" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Data class wrapper for decoded JSON.
 	</brief_description>
 	<description>
+		Returned by [method JSON.parse], [JSONParseResult] contains decoded JSON or error information if JSON source not successfully parsed. You can check if JSON source was successfully parsed with [code]if json_result.error == 0[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -68,12 +70,24 @@
 	</methods>
 	<members>
 		<member name="error" type="int" setter="set_error" getter="get_error" enum="Error">
+			The error type if JSON source was not successfully parsed. See [@Global Scope]ERR_* constants.
 		</member>
 		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line">
+			The line number where the error occurred if JSON source was not successfully parsed.
 		</member>
 		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string">
+			The error message if JSON source was not successfully parsed. See [@Global Scope]ERR_* constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">
+			A [Variant] containing the parsed JSON. Use typeof() to check if it is what you expect. For exemple, if JSON source starts with braces [code]{}[/code] a [Dictionary] will be returned, if JSON source starts with array braces [code][][/code] an [Array] will be returned.
+			[i]Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert all numerical values to float types.[/i]
+			[codeblock]
+			p = JSON.parse('["hello", "world", "!"]')
+			if typeof(p) == TYPE_ARRAY:
+				print(p[0]) # prints 'hello'
+			else:
+				print("unexpected results")
+			[/codeblock]
 		</member>
 	</members>
 	<constants>
