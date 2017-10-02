@@ -453,6 +453,11 @@ int _OS::get_power_percent_left() {
 	return OS::get_singleton()->get_power_percent_left();
 }
 
+bool _OS::has_feature(const String &p_feature) const {
+
+	return OS::get_singleton()->has_feature(p_feature);
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -1104,6 +1109,8 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &_OS::set_use_vsync);
 	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &_OS::is_vsync_enabled);
+
+	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
 	ClassDB::bind_method(D_METHOD("get_power_state"), &_OS::get_power_state);
 	ClassDB::bind_method(D_METHOD("get_power_seconds_left"), &_OS::get_power_seconds_left);

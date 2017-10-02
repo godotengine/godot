@@ -494,7 +494,7 @@ int OS::get_power_percent_left() {
 	return -1;
 }
 
-bool OS::check_feature_support(const String &p_feature) {
+bool OS::has_feature(const String &p_feature) {
 
 	if (p_feature == get_name())
 		return true;
@@ -505,6 +505,13 @@ bool OS::check_feature_support(const String &p_feature) {
 	if (p_feature == "release")
 		return true;
 #endif
+
+	if (sizeof(void *) == 8 && p_feature == "64") {
+		return true;
+	}
+	if (sizeof(void *) == 4 && p_feature == "32") {
+		return true;
+	}
 
 	if (_check_internal_feature_support(p_feature))
 		return true;

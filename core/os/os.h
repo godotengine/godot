@@ -427,7 +427,7 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	bool check_feature_support(const String &p_feature);
+	bool has_feature(const String &p_feature);
 
 	/**
 	 * Returns the stack bottom of the main thread of the application.

@@ -152,7 +152,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				bool override_valid = false;
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
-					if (OS::get_singleton()->check_feature_support(feature) || custom_features.has(feature)) {
+					if (OS::get_singleton()->has_feature(feature) || custom_features.has(feature)) {
 						override_valid = true;
 						break;
 					}

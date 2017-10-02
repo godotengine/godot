@@ -1141,6 +1141,12 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
 	}
+
+	if (p_preset->get("binary_format/64_bits")) {
+		r_features->push_back("64");
+	} else {
+		r_features->push_back("32");
+	}
 }
 
 void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {

@@ -907,6 +907,8 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	presets.insert("pvrtc");
 	presets.insert("debug");
 	presets.insert("release");
+	presets.insert("32");
+	presets.insert("64");
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
 		List<String> p;

@@ -317,6 +317,8 @@ public:
 	int get_power_seconds_left();
 	int get_power_percent_left();
 
+	bool has_feature(const String &p_feature) const;
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

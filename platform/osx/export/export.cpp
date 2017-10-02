@@ -97,6 +97,16 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 	if (p_preset->get("texture_format/etc2")) {
 		r_features->push_back("etc2");
 	}
+
+	int bits = p_preset->get("application/bits_mode");
+
+	if (bits == 0 || bits == 1) {
+		r_features->push_back("64");
+	}
+
+	if (bits == 0 || bits == 2) {
+		r_features->push_back("32");
+	}
 }
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
