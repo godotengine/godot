@@ -266,6 +266,8 @@ public:
 
 	bool can_draw() const;
 
+	bool is_userfs_persistent() const;
+
 	bool is_stdout_verbose() const;
 
 	int get_processor_count() const;

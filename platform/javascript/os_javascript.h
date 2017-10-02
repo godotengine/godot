@@ -49,6 +49,7 @@ typedef String (*GetDataDirFunc)();
 
 class OS_JavaScript : public OS_Unix {
 
+	bool idbfs_available;
 	int64_t time_to_save_sync;
 	int64_t last_sync_time;
 
@@ -140,6 +141,8 @@ public:
 
 	virtual bool can_draw() const;
 
+	virtual bool is_userfs_persistent() const;
+
 	virtual void set_cursor_shape(CursorShape p_shape);
 
 	void main_loop_begin();
@@ -170,6 +173,8 @@ public:
 	virtual int get_power_percent_left();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void set_idbfs_available(bool p_idbfs_available);
 
 	OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();

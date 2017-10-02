@@ -821,7 +821,7 @@ bool OS_JavaScript::main_loop_iterate() {
 	if (!main_loop)
 		return false;
 
-	if (time_to_save_sync >= 0) {
+	if (idbfs_available && time_to_save_sync >= 0) {
 		int64_t newtime = get_ticks_msec();
 		int64_t elapsed = newtime - last_sync_time;
 		last_sync_time = newtime;
@@ -911,10 +911,10 @@ String OS_JavaScript::get_executable_path() const {
 
 void OS_JavaScript::_close_notification_funcs(const String &p_file, int p_flags) {
 
-	print_line("close " + p_file + " flags " + itos(p_flags));
-	if (p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
-		static_cast<OS_JavaScript *>(get_singleton())->last_sync_time = OS::get_singleton()->get_ticks_msec();
-		static_cast<OS_JavaScript *>(get_singleton())->time_to_save_sync = 5000; //five seconds since last save
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(get_singleton());
+	if (os->idbfs_available && p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
+		os->last_sync_time = OS::get_singleton()->get_ticks_msec();
+		os->time_to_save_sync = 5000; //five seconds since last save
 	}
 }
 
@@ -989,6 +989,16 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "web" || p_feature == "s3tc"; // TODO check for these features really being available
 }
 
+void OS_JavaScript::set_idbfs_available(bool p_idbfs_available) {
+
+	idbfs_available = p_idbfs_available;
+}
+
+bool OS_JavaScript::is_userfs_persistent() const {
+
+	return idbfs_available;
+}
+
 OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;
@@ -1000,6 +1010,7 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_d
 	get_data_dir_func = p_get_data_dir_func;
 	FileAccessUnix::close_notification_func = _close_notification_funcs;
 
+	idbfs_available = false;
 	time_to_save_sync = -1;
 }
 

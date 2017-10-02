@@ -39,8 +39,13 @@ static void main_loop() {
 	os->main_loop_iterate();
 }
 
-extern "C" void main_after_fs_sync() {
+extern "C" void main_after_fs_sync(char *p_idbfs_err) {
 
+	String idbfs_err = String::utf8(p_idbfs_err);
+	if (!idbfs_err.empty()) {
+		print_line("IndexedDB not available: " + idbfs_err);
+	}
+	os->set_idbfs_available(idbfs_err.empty());
 	// Ease up compatibility
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
@@ -60,14 +65,7 @@ int main(int argc, char *argv[]) {
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {
-			if (err) {
-				Module.setStatus('Failed to load persistent data\nPlease allow (third-party) cookies');
-				Module.printErr('Failed to populate IDB file system: ' + err.message);
-				Module.noExitRuntime = false;
-			} else {
-				Module.print('Successfully populated IDB file system');
-				ccall('main_after_fs_sync', null);
-			}
+			Module['ccall']('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
 		});
 	);
 	/* clang-format on */

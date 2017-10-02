@@ -755,6 +755,11 @@ bool _OS::can_draw() const {
 	return OS::get_singleton()->can_draw();
 }
 
+bool _OS::is_userfs_persistent() const {
+
+	return OS::get_singleton()->is_userfs_persistent();
+}
+
 int _OS::get_processor_count() const {
 
 	return OS::get_singleton()->get_processor_count();
@@ -1051,6 +1056,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
+	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_OS::is_stdout_verbose);
 
 	ClassDB::bind_method(D_METHOD("can_use_threads"), &_OS::can_use_threads);

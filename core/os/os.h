@@ -284,6 +284,8 @@ public:
 
 	virtual bool can_draw() const = 0;
 
+	virtual bool is_userfs_persistent() const { return true; }
+
 	bool is_stdout_verbose() const;
 
 	virtual void disable_crash_handler() {}
