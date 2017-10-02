@@ -48,6 +48,23 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
+#ifdef OSX_ENABLED
+	struct Device {
+
+		String id;
+		String name;
+		String description;
+	};
+
+	Vector<Device> devices;
+	bool devices_changed;
+	Mutex *device_lock;
+	Thread *device_thread;
+	volatile bool quit_request;
+
+	static void _device_poll_thread(void *ud);
+#endif
+
 	int version_code;
 
 	Ref<ImageTexture> logo;
@@ -73,6 +90,14 @@ public:
 	virtual String get_binary_extension() const { return "ipa"; }
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
+#ifdef OSX_ENABLED
+	virtual bool poll_devices();
+	virtual int get_device_count() const;
+	virtual String get_device_name(int p_device) const;
+	virtual String get_device_info(int p_device) const;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags);
+#endif
+
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
@@ -84,6 +109,171 @@ public:
 	EditorExportPlatformIOS();
 	~EditorExportPlatformIOS();
 };
+
+#ifdef OSX_ENABLED
+void EditorExportPlatformIOS::_device_poll_thread(void *ud) {
+	EditorExportPlatformIOS *eep = (EditorExportPlatformIOS *)ud;
+
+	while (!eep->quit_request) {
+
+		String ios_deploy = EditorSettings::get_singleton()->get("export/ios/ios_deploy");
+		if (FileAccess::exists(ios_deploy)) {
+
+			String output;
+			List<String> args;
+			int ec;
+
+			args.push_back("-t");
+			args.push_back("1");
+			args.push_back("-c");
+
+			OS::get_singleton()->execute(ios_deploy, args, true, NULL, &output, &ec);
+
+			Vector<String> ds = output.split("\n");
+			Vector<String> ldevices;
+			for (int i = 1; i < ds.size(); i++) {
+
+				String d = ds[i];
+				int dpos = d.find("Found");
+				if (dpos == -1)
+					continue;
+				d = d.substr(dpos + 6, d.length()).strip_edges();
+				ldevices.push_back(d);
+			}
+
+			eep->device_lock->lock();
+
+			bool different = false;
+
+			if (eep->devices.size() != ldevices.size()) {
+
+				different = true;
+			} else {
+
+				for (int i = 0; i < eep->devices.size(); i++) {
+
+					if (eep->devices[i].id != ldevices[i].substr(0, ldevices[i].find(" "))) {
+						different = true;
+						break;
+					}
+				}
+			}
+
+			if (different) {
+
+				Vector<Device> ndevices;
+
+				for (int i = 0; i < ldevices.size(); i++) {
+
+					Device d;
+
+					// First string is the ID
+					d.id = ldevices[i].substr(0, ldevices[i].find(" "));
+
+					// Find the name insides the ''
+					String tmp = ldevices[i].substr(ldevices[i].find("\'") + 1, ldevices[i].length());
+					d.name = tmp.substr(0, tmp.find("\'"));
+
+					// Find the description inside the ()
+					tmp = ldevices[i].substr(ldevices[i].find("(") + 1, ldevices[i].length());
+					d.description = tmp.substr(0, tmp.find("a.k.a.") - 2);
+
+					ndevices.push_back(d);
+				}
+
+				eep->devices = ndevices;
+				eep->devices_changed = true;
+			}
+
+			eep->device_lock->unlock();
+		}
+
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+			OS::get_singleton()->delay_usec(1000);
+			if (eep->quit_request)
+				break;
+		}
+	}
+}
+
+bool EditorExportPlatformIOS::poll_devices() {
+
+	bool dc = devices_changed;
+	devices_changed = false;
+	return dc;
+}
+
+int EditorExportPlatformIOS::get_device_count() const {
+
+	device_lock->lock();
+	int dc = devices.size();
+	device_lock->unlock();
+
+	return dc;
+}
+
+String EditorExportPlatformIOS::get_device_name(int p_device) const {
+
+	ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+	device_lock->lock();
+	String s = devices[p_device].name;
+	device_lock->unlock();
+	return s;
+}
+
+String EditorExportPlatformIOS::get_device_info(int p_device) const {
+
+	ERR_FAIL_INDEX_V(p_device, devices.size(), "");
+	device_lock->lock();
+	String s = devices[p_device].description;
+	device_lock->unlock();
+	return s;
+}
+
+Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+
+	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
+
+	String ios_deploy = EditorSettings::get_singleton()->get("export/ios/ios_deploy");
+	if (ios_deploy == "") {
+		EditorNode::add_io_error("ios-deploy executable not configured in settings, can't run.");
+		return ERR_UNCONFIGURED;
+	}
+
+	String id = devices[p_device].name;
+	EditorProgress ep("run", "Running on " + id, 3);
+
+	ep.step("Exporting IPA", 0);
+	String export_to = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmpexport.ipa";
+	Error err = export_project(p_preset, true, export_to, p_debug_flags);
+	if (err) {
+		return err;
+	}
+
+	device_lock->lock();
+
+	List<String> args;
+	int rv;
+
+	if (p_preset->get("one_click_deploy/clear_previous_install")) {
+		args.push_back("--uninstall");
+	}
+	args.push_back("--id");
+	args.push_back(id);
+	args.push_back("--bundle");
+	args.push_back(export_to);
+	err = OS::get_singleton()->execute(ios_deploy, args, true, NULL, NULL, &rv);
+	if (err || rv != 0) {
+		EditorNode::add_io_error("Could not execute on device.");
+	}
+
+	device_lock->unlock();
+
+	return rv != 0 ? ERR_CANT_CREATE : err;
+}
+#endif
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
@@ -669,15 +859,32 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	Ref<Image> img = memnew(Image(_osx_logo));
 	logo.instance();
 	logo->create_from_image(img);
+
+#ifdef OSX_ENABLED
+	device_lock = Mutex::create();
+	device_thread = Thread::create(_device_poll_thread, this);
+	devices_changed = true;
+	quit_request = false;
+#endif
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
+#ifdef OSX_ENABLED
+	quit_request = true;
+	Thread::wait_to_finish(device_thread);
+	memdelete(device_lock);
+	memdelete(device_thread);
+#endif
 }
 
 void register_iphone_exporter() {
 
 	Ref<EditorExportPlatformIOS> platform;
 	platform.instance();
+
+#ifdef OSX_ENABLED
+	EDITOR_DEF("export/ios/ios_deploy", "");
+#endif
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 }
