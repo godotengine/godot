@@ -1025,8 +1025,9 @@ void CodeTextEditor::_text_changed() {
 
 	if (text_editor->is_insert_text_operation()) {
 		code_complete_timer->start();
-		idle->start();
 	}
+
+	idle->start();
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
