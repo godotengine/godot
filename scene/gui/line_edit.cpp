@@ -601,7 +601,10 @@ void LineEdit::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs = int(size.width - (cached_width)) / 2;
+					if (window_pos != 0)
+						x_ofs = style->get_offset().x;
+					else
+						x_ofs = int(size.width - (cached_width)) / 2;
 				} break;
 				case ALIGN_RIGHT: {
 
@@ -846,7 +849,10 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		} break;
 		case ALIGN_CENTER: {
 
-			pixel_ofs = int(size.width - (cached_width)) / 2;
+			if (window_pos != 0)
+				pixel_ofs = int(style->get_offset().x);
+			else
+				pixel_ofs = int(size.width - (cached_width)) / 2;
 		} break;
 		case ALIGN_RIGHT: {
 
