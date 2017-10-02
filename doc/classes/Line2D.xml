@@ -17,7 +17,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Add a point at the x/y position in the supplied [Vector2]. The point will be added at the end of the line.
+				Add a point at the [code]position[/code]. Appends the point at the end of the line.
 			</description>
 		</method>
 		<method name="get_begin_cap_mode" qualifiers="const">
@@ -54,7 +54,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of points in the Line2D.
+				Returns the Line2D's amount of points.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -63,7 +63,7 @@
 			<argument index="0" name="i" type="int">
 			</argument>
 			<description>
-				Return the x/y position of point 'i'.
+				Returns point [code]i[code]'s position.
 			</description>
 		</method>
 		<method name="get_points" qualifiers="const">
@@ -108,7 +108,7 @@
 			<argument index="0" name="i" type="int">
 			</argument>
 			<description>
-				Remove the point at index 'i' from the line.
+				Remove the point at index [code]i[/code] from the line.
 			</description>
 		</method>
 		<method name="set_begin_cap_mode">
@@ -159,7 +159,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Overrites the x/y position in point 'i' with the supplied [Vector2].
+				Overwites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>
 		</method>
 		<method name="set_points">
@@ -213,13 +213,13 @@
 	</methods>
 	<members>
 		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode">
-			The style used for the shape in the first point of the line.
+			Controls the style of the line's first point. Use [code]LINE_CAP_*[/code] constants. Default value: [code]LINE_CAP_NONE[/code].
 		</member>
 		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color">
-      The color of the Line2D. Will not be used if a gradient is set.
+			The color of the Line2D. Will not be used if a gradient is set.
 		</member>
 		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode">
-			The style used for the shape in the last point of the line.
+			Controls the style of the line's last point. Use [code]LINE_CAP_*[/code] constants. Default value: [code]LINE_CAP_NONE[/code].
 		</member>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The gradient is drawn through the whole line from start to finish. The default color will not be used if a gradient is set.
@@ -228,19 +228,19 @@
 			The style for the points inbetween the start and the end.
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
-			The points that form the lines. Each line in Line2D is used by
+			The points that form the lines. The line is drawn between every point set in this array.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision">
-			Sets the precision This is only used if  a cap or joint is set as round.
+			The smoothness of the rounded joints and caps This is only used if a cap or joint is set as round.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit">
-			This sets the direction difference in radians between vector points. This value is only used if Joint Mode is set to LINE_JOINT_SHARP
+			The direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [code]LINE_JOINT_SHARP[/code]
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-			The texture used for the line.
+			The texture used for The line's texture. Uses [code]texture_mode[/code] for drawing style.
 		</member>
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode">
-			The style to render the texture on the line.
+			The style to render the [code]texture[/code] on the line. Use [code]LINE_TEXTURE_*[/code] constants. Default value: [code]LINE_TEXTURE_NONE[/code].
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width">
 			The width of the line.
@@ -248,7 +248,7 @@
 	</members>
 	<constants>
 		<constant name="LINE_JOINT_SHARP" value="0">
-			The joints of the line will be pointy. If the Sharp Limit is greater than the rotation of the joint it becomes a bevel joint instead.
+			The joints of the line will be pointy. If Sharp Limit is greater than the rotation of a joint it becomes a bevel joint instead.
 		</constant>
 		<constant name="LINE_JOINT_BEVEL" value="1">
 			The joints of the line
