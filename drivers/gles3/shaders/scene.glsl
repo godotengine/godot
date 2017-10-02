@@ -1,5 +1,6 @@
 [vertex]
 
+#define M_PI 3.14159265359
 
 /*
 from VisualServer:
@@ -166,7 +167,7 @@ out vec4 specular_light_interp;
 void light_compute(vec3 N, vec3 L,vec3 V, vec3 light_color,float roughness,inout vec3 diffuse, inout vec3 specular) {
 
 	float dotNL = max(dot(N,L), 0.0 );
-	diffuse += dotNL * light_color;
+	diffuse += dotNL * light_color / M_PI;
 
 	if (roughness > 0.0) {
 
