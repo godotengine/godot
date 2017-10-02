@@ -387,6 +387,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_full_rect();
 
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _zoom_minus();
 	void _zoom_reset();
 	void _zoom_plus();

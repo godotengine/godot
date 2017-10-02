@@ -1219,50 +1219,26 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN) {
 			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-
 				v_scroll->set_value(v_scroll->get_value() + int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
-
+				_update_scroll(0);
+				viewport->update();
 			} else {
-
-				if (zoom < MIN_ZOOM)
-					return;
-
-				float prev_zoom = zoom;
-				zoom = zoom * (1 - (0.05 * b->get_factor()));
-				{
-					Point2 ofs = viewport_scrollable->get_transform().affine_inverse().xform(b->get_position());
-					ofs = ofs / prev_zoom - ofs / zoom;
-					h_scroll->set_value(h_scroll->get_value() + ofs.x);
-					v_scroll->set_value(v_scroll->get_value() + ofs.y);
-				}
+				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()));
 			}
 
-			_update_scroll(0);
-			viewport->update();
 			return;
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP) {
 			// Scroll or pan up
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
-
 				v_scroll->set_value(v_scroll->get_value() - int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor());
-
+				_update_scroll(0);
+				viewport->update();
 			} else {
-				if (zoom > MAX_ZOOM) return;
-
-				float prev_zoom = zoom;
-				zoom = zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95);
-				{
-					Point2 ofs = viewport_scrollable->get_transform().affine_inverse().xform(b->get_position());
-					ofs = ofs / prev_zoom - ofs / zoom;
-					h_scroll->set_value(h_scroll->get_value() + ofs.x);
-					v_scroll->set_value(v_scroll->get_value() + ofs.y);
-				}
+				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()));
 			}
 
-			_update_scroll(0);
-			viewport->update();
 			return;
 		}
 
@@ -3069,31 +3045,32 @@ void CanvasItemEditor::_set_full_rect() {
 	undo_redo->commit_action();
 }
 
-void CanvasItemEditor::_zoom_minus() {
-	if (zoom < MIN_ZOOM)
+void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
+	if (p_zoom < MIN_ZOOM || p_zoom > MAX_ZOOM)
 		return;
-	zoom /= 2.0;
+
+	float prev_zoom = zoom;
+	zoom = p_zoom;
+	Point2 ofs = p_position;
+	ofs = ofs / prev_zoom - ofs / zoom;
+	h_scroll->set_value(h_scroll->get_value() + ofs.x);
+	v_scroll->set_value(v_scroll->get_value() + ofs.y);
 
 	_update_scroll(0);
 	viewport->update();
 	viewport_base->update();
+}
+
+void CanvasItemEditor::_zoom_minus() {
+	_zoom_on_position(zoom / 2.0, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_zoom_reset() {
-	zoom = 1;
-	_update_scroll(0);
-	viewport->update();
-	viewport_base->update();
+	_zoom_on_position(1.0, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_zoom_plus() {
-	if (zoom > MAX_ZOOM)
-		return;
-
-	zoom *= 2.0;
-	_update_scroll(0);
-	viewport->update();
-	viewport_base->update();
+	_zoom_on_position(zoom * 2.0, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_toggle_snap(bool p_status) {
