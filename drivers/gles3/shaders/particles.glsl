@@ -1,7 +1,5 @@
 [vertex]
 
-
-
 layout(location=0) in highp vec4 color;
 layout(location=1) in highp vec4 velocity_active;
 layout(location=2) in highp vec4 custom;
@@ -74,8 +72,8 @@ void main() {
 
 #ifdef PARTICLES_COPY
 
-	out_color=color;
-	out_velocity_active=velocity_active;
+	out_color = color;
+	out_velocity_active = velocity_active;
 	out_custom = custom;
 	out_xform_1 = xform_1;
 	out_xform_2 = xform_2;
@@ -83,47 +81,45 @@ void main() {
 
 #else
 
-	bool apply_forces=true;
-	bool apply_velocity=true;
-	float local_delta=delta;
+	bool apply_forces = true;
+	bool apply_velocity = true;
+	float local_delta = delta;
 
 	float mass = 1.0;
 
-	float restart_phase = float(gl_VertexID)/float(total_particles);
+	float restart_phase = float(gl_VertexID) / float(total_particles);
 
-	if (randomness>0.0) {
+	if (randomness > 0.0) {
 		uint seed = cycle;
 		if (restart_phase >= system_phase) {
-			seed-=uint(1);
+			seed -= uint(1);
 		}
-		seed*=uint(total_particles);
-		seed+=uint(gl_VertexID);
+		seed *= uint(total_particles);
+		seed += uint(gl_VertexID);
 		float random = float(hash(seed) % uint(65536)) / 65536.0;
-		restart_phase+=randomness * random * 1.0 / float(total_particles);
+		restart_phase += randomness * random * 1.0 / float(total_particles);
 	}
 
-	restart_phase*= (1.0-explosiveness);
-	bool restart=false;
+	restart_phase *= explosiveness;
+	bool restart = false;
 	bool shader_active = velocity_active.a > 0.5;
 
 	if (system_phase > prev_system_phase) {
 		// restart_phase >= prev_system_phase is used so particles emit in the first frame they are processed
-
 		if (restart_phase >= prev_system_phase && restart_phase < system_phase ) {
-			restart=true;
+			restart = true;
 #ifdef USE_FRACTIONAL_DELTA
 			local_delta = (system_phase - restart_phase) * lifetime;
 #endif
 		}
-
 	} else {
 		if (restart_phase >= prev_system_phase) {
-			restart=true;
+			restart = true;
 #ifdef USE_FRACTIONAL_DELTA
 			local_delta = (1.0 - restart_phase + system_phase) * lifetime;
 #endif
 		} else if (restart_phase < system_phase ) {
-			restart=true;
+			restart = true;
 #ifdef USE_FRACTIONAL_DELTA
 			local_delta = (system_phase - restart_phase) * lifetime;
 #endif
@@ -133,14 +129,14 @@ void main() {
 	uint current_cycle = cycle;
 
 	if (system_phase < restart_phase) {
-		current_cycle-=uint(1);
+		current_cycle -= uint(1);
 	}
 
 	uint particle_number = current_cycle * uint(total_particles) + uint(gl_VertexID);
 	int index = int(gl_VertexID);
 
 	if (restart) {
-		shader_active=emitting;
+		shader_active = emitting;
 	}
 
 	mat4 xform;
@@ -150,11 +146,11 @@ void main() {
 #else
 	if (clear || restart) {
 #endif
-		out_color=vec4(1.0);
-		out_velocity_active=vec4(0.0);
-		out_custom=vec4(0.0);
+		out_color = vec4(1.0);
+		out_velocity_active = vec4(0.0);
+		out_custom = vec4(0.0);
 		if (!restart)
-			shader_active=false;
+			shader_active = false;
 
 		xform = mat4(
 				vec4(1.0,0.0,0.0,0.0),
@@ -163,9 +159,9 @@ void main() {
 				vec4(0.0,0.0,0.0,1.0)
 			);
 	} else {
-		out_color=color;
-		out_velocity_active=velocity_active;
-		out_custom=custom;
+		out_color = color;
+		out_velocity_active = velocity_active;
+		out_custom = custom;
 		xform = transpose(mat4(xform_1,xform_2,xform_3,vec4(vec3(0.0),1.0)));
 	}
 
@@ -181,25 +177,25 @@ VERTEX_SHADER_CODE
 		if (false) {
 
 			vec3 force = vec3(0.0);
-			for(int i=0;i<attractor_count;i++) {
+			for(int i = 0; i<attractor_count; i++) {
 
 				vec3 rel_vec = xform[3].xyz - attractors[i].pos;
 				float dist = length(rel_vec);
 				if (attractors[i].radius < dist)
 					continue;
-				if (attractors[i].eat_radius>0.0 &&  attractors[i].eat_radius > dist) {
-					out_velocity_active.a=0.0;
+				if (attractors[i].eat_radius > 0.0 &&  attractors[i].eat_radius > dist) {
+					out_velocity_active.a = 0.0;
 				}
 
 				rel_vec = normalize(rel_vec);
 
 				float attenuation = pow(dist / attractors[i].radius,attractors[i].attenuation);
 
-				if (attractors[i].dir==vec3(0.0)) {
+				if (attractors[i].dir == vec3(0.0)) {
 					//towards center
-					force+=attractors[i].strength * rel_vec * attenuation * mass;
+					force += attractors[i].strength * rel_vec * attenuation * mass;
 				} else {
-					force+=attractors[i].strength * attractors[i].dir * attenuation *mass;
+					force += attractors[i].strength * attractors[i].dir * attenuation * mass;
 
 				}
 			}
@@ -211,12 +207,11 @@ VERTEX_SHADER_CODE
 #if !defined(DISABLE_VELOCITY)
 
 		if (true) {
-
 			xform[3].xyz += out_velocity_active.xyz * local_delta;
 		}
 #endif
 	} else {
-		xform=mat4(0.0);
+		xform = mat4(0.0);
 	}
 
 	xform = transpose(xform);
