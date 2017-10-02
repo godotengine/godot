@@ -1014,7 +1014,7 @@ LIGHT_SHADER_CODE
 #elif defined(SPECULAR_DISABLED)
 		//none..
 
-#else
+#elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 		float alpha = roughness * roughness;
 
@@ -1057,6 +1057,12 @@ LIGHT_SHADER_CODE
 #endif
 
 #if defined(LIGHT_USE_CLEARCOAT)
+# if !defined(SPECULAR_SCHLICK_GGX)
+ 		vec3 H = normalize(V + L);
+ 		float dotLH5 = SchlickFresnel( dotLH );
+ 		float dotNH = max(dot(N,H), 0.0 );
+# endif
+
 		float Dr = GTR1(dotNH, mix(.1,.001,clearcoat_gloss));
 		float Fr = mix(.04, 1.0, dotLH5);
 		float Gr = G1V(dotNL, .25) * G1V(dotNV, .25);
