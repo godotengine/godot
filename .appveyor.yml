@@ -1,0 +1,24 @@
+os: Visual Studio 2015
+
+environment:
+  PYTHON: C:\Python27
+  matrix:
+    - VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      GD_PLATFORM: windows
+      TOOLS: yes
+      TARGET: release_debug
+      ARCH: amd64
+
+install:
+  - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - pip install --egg scons  # it will fail on AppVeyor without --egg flag
+  - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
+
+before_build:
+  - echo %GD_PLATFORM%
+  - python --version
+  - scons --version
+  - cl.exe
+
+build_script:
+- scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% progress=no
