@@ -38,7 +38,7 @@ void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
 
 void TextureEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 	}
 
 	if (p_what == NOTIFICATION_READY) {

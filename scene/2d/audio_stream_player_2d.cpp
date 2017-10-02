@@ -113,7 +113,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
 	}
 
-	if (p_what == NOTIFICATION_INTERNAL_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 
 		//update anything related to position first, if possible of course
 
@@ -203,7 +203,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 		//stop playing if no longer active
 		if (!active) {
-			set_fixed_process_internal(false);
+			set_physics_process_internal(false);
 			//do not update, this makes it easier to animate (will shut off otherise)
 			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
@@ -255,7 +255,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		setplay = p_from_pos;
 		output_ready = false;
-		set_fixed_process_internal(true);
+		set_physics_process_internal(true);
 	}
 }
 
@@ -270,7 +270,7 @@ void AudioStreamPlayer2D::stop() {
 
 	if (stream_playback.is_valid()) {
 		active = false;
-		set_fixed_process_internal(false);
+		set_physics_process_internal(false);
 		setplay = -1;
 	}
 }

@@ -47,7 +47,7 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_FIXED || !is_processing_internal())
+			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal())
 				return;
 			time_left -= get_process_delta_time();
 
@@ -61,10 +61,10 @@ void Timer::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_fixed_processing_internal())
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal())
 				return;
-			time_left -= get_fixed_process_delta_time();
+			time_left -= get_physics_process_delta_time();
 
 			if (time_left < 0) {
 				if (!one_shot)
@@ -144,16 +144,16 @@ void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
 		return;
 
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_FIXED:
-			if (is_fixed_processing_internal()) {
-				set_fixed_process_internal(false);
+		case TIMER_PROCESS_PHYSICS:
+			if (is_physics_processing_internal()) {
+				set_physics_process_internal(false);
 				set_process_internal(true);
 			}
 			break;
 		case TIMER_PROCESS_IDLE:
 			if (is_processing_internal()) {
 				set_process_internal(false);
-				set_fixed_process_internal(true);
+				set_physics_process_internal(true);
 			}
 			break;
 	}
@@ -167,7 +167,7 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const {
 
 void Timer::_set_process(bool p_process, bool p_force) {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_FIXED: set_fixed_process_internal(p_process && !paused); break;
+		case TIMER_PROCESS_PHYSICS: set_physics_process_internal(p_process && !paused); break;
 		case TIMER_PROCESS_IDLE: set_process_internal(p_process && !paused); break;
 	}
 	processing = p_process;
@@ -204,7 +204,7 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "is_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 
-	BIND_ENUM_CONSTANT(TIMER_PROCESS_FIXED);
+	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
 }
 

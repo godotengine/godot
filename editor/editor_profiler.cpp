@@ -89,7 +89,7 @@ void EditorProfiler::clear() {
 	variables->clear();
 	//activate->set_pressed(false);
 	plot_sigs.clear();
-	plot_sigs.insert("fixed_frame_time");
+	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
 
 	updating_frame = true;
@@ -120,9 +120,9 @@ String EditorProfiler::_get_time_as_text(Metric &m, float p_time, int p_calls) {
 			return rtos(p_time / p_calls);
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return _get_percent_txt(p_time, m.frame_time);
-	} else if (dmode == DISPLAY_FIXED_FRAME_PERCENT) {
+	} else if (dmode == DISPLAY_PHYSICS_FRAME_PERCENT) {
 
-		return _get_percent_txt(p_time, m.fixed_frame_time);
+		return _get_percent_txt(p_time, m.physics_frame_time);
 	}
 
 	return "err";
@@ -714,7 +714,7 @@ EditorProfiler::EditorProfiler() {
 	add_child(plot_delay);
 	plot_delay->connect("timeout", this, "_update_plot");
 
-	plot_sigs.insert("fixed_frame_time");
+	plot_sigs.insert("physics_frame_time");
 	plot_sigs.insert("category_frame_time");
 
 	seeking = false;

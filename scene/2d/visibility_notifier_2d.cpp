@@ -154,8 +154,8 @@ void VisibilityEnabler2D::_screen_enter() {
 		_change_node_state(E->key(), true);
 	}
 
-	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-		get_parent()->set_fixed_process(true);
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+		get_parent()->set_physics_process(true);
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 		get_parent()->set_process(true);
 
@@ -169,8 +169,8 @@ void VisibilityEnabler2D::_screen_exit() {
 		_change_node_state(E->key(), false);
 	}
 
-	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-		get_parent()->set_fixed_process(false);
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+		get_parent()->set_physics_process(false);
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 		get_parent()->set_process(false);
 
@@ -246,8 +246,8 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		_find_nodes(from);
 
-		if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-			get_parent()->set_fixed_process(false);
+		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+			get_parent()->set_physics_process(false);
 		if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 			get_parent()->set_process(false);
 	}
@@ -339,14 +339,14 @@ void VisibilityEnabler2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "pause_particles"), "set_enabler", "is_enabler_enabled", ENABLER_PAUSE_PARTICLES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "pause_animated_sprites"), "set_enabler", "is_enabler_enabled", ENABLER_PAUSE_ANIMATED_SPRITES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PROCESS);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_FIXED_PROCESS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "physics_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PHYSICS_PROCESS);
 
 	BIND_ENUM_CONSTANT(ENABLER_FREEZE_BODIES);
 	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
 	BIND_ENUM_CONSTANT(ENABLER_PAUSE_PARTICLES);
 	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
 	BIND_ENUM_CONSTANT(ENABLER_PARENT_PROCESS);
-	BIND_ENUM_CONSTANT(ENABLER_PARENT_FIXED_PROCESS);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_PHYSICS_PROCESS);
 	BIND_ENUM_CONSTANT(ENABLER_MAX);
 }
 
@@ -366,7 +366,7 @@ VisibilityEnabler2D::VisibilityEnabler2D() {
 	for (int i = 0; i < ENABLER_MAX; i++)
 		enabler[i] = true;
 	enabler[ENABLER_PARENT_PROCESS] = false;
-	enabler[ENABLER_PARENT_FIXED_PROCESS] = false;
+	enabler[ENABLER_PARENT_PHYSICS_PROCESS] = false;
 
 	visible = false;
 }

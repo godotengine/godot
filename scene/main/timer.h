@@ -50,7 +50,7 @@ protected:
 
 public:
 	enum TimerProcessMode {
-		TIMER_PROCESS_FIXED,
+		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
 	};
 

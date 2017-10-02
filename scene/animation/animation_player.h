@@ -44,7 +44,7 @@ class AnimationPlayer : public Node {
 
 public:
 	enum AnimationProcessMode {
-		ANIMATION_PROCESS_FIXED,
+		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 	};
 

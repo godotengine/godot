@@ -45,7 +45,7 @@ void CollisionPolygon2DEditor::_notification(int p_what) {
 			get_tree()->connect("node_removed", this, "_node_removed");
 
 		} break;
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_PHYSICS_PROCESS: {
 
 		} break;
 	}

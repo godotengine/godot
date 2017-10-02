@@ -661,7 +661,7 @@ public:
 
 	Dictionary get_version_info() const;
 
-	bool is_in_fixed_frame() const;
+	bool is_in_physics_frame() const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;

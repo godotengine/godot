@@ -37,7 +37,7 @@ void InterpolatedCamera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (Engine::get_singleton()->is_editor_hint() && enabled)
-				set_fixed_process(false);
+				set_physics_process(false);
 
 		} break;
 		case NOTIFICATION_PROCESS: {

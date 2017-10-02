@@ -44,7 +44,7 @@ void MaterialEditor::_gui_input(InputEvent p_event) {
 
 void MaterialEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_FIXED_PROCESS) {
+	if (p_what==NOTIFICATION_PHYSICS_PROCESS) {
 
 	}
 

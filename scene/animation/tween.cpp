@@ -152,7 +152,7 @@ void Tween::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_fixed_process_internal(false);
+				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
 		} break;
@@ -160,19 +160,19 @@ void Tween::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (tween_process_mode == TWEEN_PROCESS_FIXED)
+			if (tween_process_mode == TWEEN_PROCESS_PHYSICS)
 				break;
 
 			if (processing)
 				_tween_process(get_process_delta_time());
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (tween_process_mode == TWEEN_PROCESS_IDLE)
 				break;
 
 			if (processing)
-				_tween_process(get_fixed_process_delta_time());
+				_tween_process(get_physics_process_delta_time());
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -224,7 +224,7 @@ void Tween::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_tween_process_mode", "get_tween_process_mode");
 
-	BIND_ENUM_CONSTANT(TWEEN_PROCESS_FIXED);
+	BIND_ENUM_CONSTANT(TWEEN_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TWEEN_PROCESS_IDLE);
 
 	BIND_ENUM_CONSTANT(TRANS_LINEAR);
@@ -642,7 +642,7 @@ void Tween::_set_process(bool p_process, bool p_force) {
 
 	switch (tween_process_mode) {
 
-		case TWEEN_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case TWEEN_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 

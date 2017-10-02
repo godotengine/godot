@@ -1850,7 +1850,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 				last_message = message;
 			}
 
-			message_time -= get_fixed_process_delta_time();
+			message_time -= get_physics_process_delta_time();
 			if (message_time < 0)
 				surface->update();
 		}

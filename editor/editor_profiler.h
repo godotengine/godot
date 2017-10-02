@@ -51,8 +51,8 @@ public:
 		int frame_number;
 		float frame_time;
 		float idle_time;
-		float fixed_time;
-		float fixed_frame_time;
+		float physics_time;
+		float physics_frame_time;
 
 		struct Category {
 
@@ -89,7 +89,7 @@ public:
 		DISPLAY_FRAME_TIME,
 		DISPLAY_AVERAGE_TIME,
 		DISPLAY_FRAME_PERCENT,
-		DISPLAY_FIXED_FRAME_PERCENT,
+		DISPLAY_PHYSICS_FRAME_PERCENT,
 	};
 
 	enum DisplayTime {

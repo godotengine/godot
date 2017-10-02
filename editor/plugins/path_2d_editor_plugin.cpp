@@ -46,7 +46,7 @@ void Path2DEditor::_notification(int p_what) {
 			//button_edit->set_pressed(true);
 
 		} break;
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_PHYSICS_PROCESS: {
 
 		} break;
 	}

@@ -82,7 +82,7 @@ String VisualScriptYield::get_text() const {
 	switch (yield_mode) {
 		case YIELD_RETURN: return ""; break;
 		case YIELD_FRAME: return "Next Frame"; break;
-		case YIELD_FIXED_FRAME: return "Next Fixed Frame"; break;
+		case YIELD_PHYSICS_FRAME: return "Next Fixed Frame"; break;
 		case YIELD_WAIT: return rtos(wait_time) + " sec(s)"; break;
 	}
 
@@ -122,7 +122,7 @@ public:
 					ret = STEP_EXIT_FUNCTION_BIT;
 					break; //return the yield
 				case VisualScriptYield::YIELD_FRAME: state->connect_to_signal(tree, "idle_frame", Array()); break;
-				case VisualScriptYield::YIELD_FIXED_FRAME: state->connect_to_signal(tree, "fixed_frame", Array()); break;
+				case VisualScriptYield::YIELD_PHYSICS_FRAME: state->connect_to_signal(tree, "physics_frame", Array()); break;
 				case VisualScriptYield::YIELD_WAIT: state->connect_to_signal(tree->create_timer(wait_time).ptr(), "timeout", Array()); break;
 			}
 
@@ -190,7 +190,7 @@ void VisualScriptYield::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time"), "set_wait_time", "get_wait_time");
 
 	BIND_ENUM_CONSTANT(YIELD_FRAME);
-	BIND_ENUM_CONSTANT(YIELD_FIXED_FRAME);
+	BIND_ENUM_CONSTANT(YIELD_PHYSICS_FRAME);
 	BIND_ENUM_CONSTANT(YIELD_WAIT);
 }
 
@@ -597,7 +597,7 @@ static Ref<VisualScriptNode> create_yield_signal_node(const String &p_name) {
 void register_visual_script_yield_nodes() {
 
 	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_frame", create_yield_node<VisualScriptYield::YIELD_FRAME>);
-	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_fixed_frame", create_yield_node<VisualScriptYield::YIELD_FIXED_FRAME>);
+	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_physics_frame", create_yield_node<VisualScriptYield::YIELD_PHYSICS_FRAME>);
 	VisualScriptLanguage::singleton->add_register_func("functions/wait/wait_time", create_yield_node<VisualScriptYield::YIELD_WAIT>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/yield", create_yield_node<VisualScriptYield::YIELD_RETURN>);

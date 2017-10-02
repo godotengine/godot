@@ -95,7 +95,7 @@ void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
-		set_fixed_process(p_enabled);
+		set_physics_process(p_enabled);
 	if (!p_enabled)
 		collided = false;
 }
@@ -135,9 +135,9 @@ void RayCast2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (enabled && !Engine::get_singleton()->is_editor_hint())
-				set_fixed_process(true);
+				set_physics_process(true);
 			else
-				set_fixed_process(false);
+				set_physics_process(false);
 
 			if (Object::cast_to<PhysicsBody2D>(get_parent())) {
 				if (exclude_parent_body)
@@ -149,7 +149,7 @@ void RayCast2D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			if (enabled)
-				set_fixed_process(false);
+				set_physics_process(false);
 
 		} break;
 
@@ -177,7 +177,7 @@ void RayCast2D::_notification(int p_what) {
 
 		} break;
 
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_PHYSICS_PROCESS: {
 
 			if (!enabled)
 				break;

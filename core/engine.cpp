@@ -116,9 +116,9 @@ Engine::Engine() {
 	_target_fps = 0;
 	_time_scale = 1.0;
 	_pixel_snap = false;
-	_fixed_frames = 0;
+	_physics_frames = 0;
 	_idle_frames = 0;
-	_in_fixed = false;
+	_in_physics = false;
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;

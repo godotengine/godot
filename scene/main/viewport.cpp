@@ -456,10 +456,10 @@ void Viewport::_notification(int p_what) {
 			VS::get_singleton()->viewport_set_active(viewport, false);
 
 		} break;
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_PHYSICS_PROCESS: {
 
 			if (gui.tooltip_timer >= 0) {
-				gui.tooltip_timer -= get_fixed_process_delta_time();
+				gui.tooltip_timer -= get_physics_process_delta_time();
 				if (gui.tooltip_timer < 0) {
 					_gui_show_tooltip();
 				}
@@ -2453,7 +2453,7 @@ Rect2 Viewport::get_attach_to_screen_rect() const {
 void Viewport::set_physics_object_picking(bool p_enable) {
 
 	physics_object_picking = p_enable;
-	set_fixed_process(physics_object_picking);
+	set_physics_process(physics_object_picking);
 	if (!physics_object_picking)
 		physics_picking_events.clear();
 }

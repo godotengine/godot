@@ -2008,8 +2008,8 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 		Node *node = Object::cast_to<Node>(p_owner);
 		if (p_script->functions.has("_process"))
 			node->set_process(true);
-		if (p_script->functions.has("_fixed_process"))
-			node->set_fixed_process(true);
+		if (p_script->functions.has("_physics_process"))
+			node->set_physics_process(true);
 		if (p_script->functions.has("_input"))
 			node->set_process_input(true);
 		if (p_script->functions.has("_unhandled_input"))
