@@ -34,6 +34,8 @@
 #include "print_string.h"
 #include "script_language.h"
 
+#include <limits>
+
 template <class T>
 T *GDParser::alloc_node() {
 
@@ -3516,6 +3518,31 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										sign = -1;
 										tokenizer->advance();
 									}
+
+									if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "NEG") {
+
+										if (type == Variant::INT)
+											current_export.hint_string += itos(std::numeric_limits<int>::min());
+										else
+											current_export.hint_string += rtos(std::numeric_limits<float>::min());
+
+										current_export.hint_string += ",0";
+										tokenizer->advance();
+
+										break;
+									}
+									if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "POS") {
+
+										current_export.hint_string += "0,";
+										if (type == Variant::INT)
+											current_export.hint_string += itos(std::numeric_limits<int>::max());
+										else
+											current_export.hint_string += rtos(std::numeric_limits<float>::max());
+										tokenizer->advance();
+
+										break;
+									}
+
 									if (tokenizer->get_token() != GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export = PropertyInfo();
