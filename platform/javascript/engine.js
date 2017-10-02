@@ -84,10 +84,10 @@
 				rtenvOpts.print = stdout;
 			if (typeof stderr === 'function')
 				rtenvOpts.printErr = stderr;
-			if (typeof WebAssembly === 'object' && initializer instanceof WebAssembly.Module) {
+			if (typeof WebAssembly === 'object' && initializer instanceof ArrayBuffer) {
 				rtenvOpts.instantiateWasm = function(imports, onSuccess) {
 					WebAssembly.instantiate(initializer, imports).then(function(result) {
-						onSuccess(result);
+						onSuccess(result.instance);
 					});
 					return {};
 				};
@@ -241,7 +241,7 @@
 					return Promise.reject(new Error("Browser doesn't support WebAssembly"));
 				// TODO cache/retrieve module to/from idb
 				engineLoadPromise = loadPromise(basePath + '.wasm').then(function(xhr) {
-					return WebAssembly.compile(xhr.response);
+					return xhr.response;
 				});
 			} else {
 				var asmjsPromise = loadPromise(basePath + '.asm.js').then(function(xhr) {
