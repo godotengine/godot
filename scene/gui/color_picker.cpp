@@ -177,29 +177,14 @@ void ColorPicker::_update_color() {
 
 void ColorPicker::_update_presets() {
 	Size2 size = bt_add_preset->get_size();
-	preset->set_custom_minimum_size(Size2(size.width * presets.size(), size.height));
+	Size2 preset_size = Size2(size.width * presets.size(), size.height);
+	preset->set_custom_minimum_size(preset_size);
 
-	PoolVector<uint8_t> img;
-	img.resize(size.x * presets.size() * size.y * 3);
+	preset->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), Rect2(Point2(), preset_size), true);
 
-	{
-		PoolVector<uint8_t>::Write w = img.write();
-		for (int y = 0; y < size.y; y++) {
-			for (int x = 0; x < size.x * presets.size(); x++) {
-				int ofs = (y * (size.x * presets.size()) + x) * 3;
-				w[ofs + 0] = uint8_t(CLAMP(presets[(int)x / size.x].r * 255.0, 0, 255));
-				w[ofs + 1] = uint8_t(CLAMP(presets[(int)x / size.x].g * 255.0, 0, 255));
-				w[ofs + 2] = uint8_t(CLAMP(presets[(int)x / size.x].b * 255.0, 0, 255));
-			}
-		}
+	for (int i = 0; i < presets.size(); i++) {
+		preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
 	}
-
-	Ref<Image> i = memnew(Image(size.x * presets.size(), size.y, false, Image::FORMAT_RGB8, img));
-
-	Ref<ImageTexture> t;
-	t.instance();
-	t->create_from_image(i);
-	preset->set_texture(t);
 }
 
 void ColorPicker::_text_type_toggled() {
@@ -227,7 +212,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 	} else {
 		presets.push_back(p_color);
 	}
-	_update_presets();
+	preset->update();
 	if (presets.size() == 10)
 		bt_add_preset->hide();
 }
@@ -266,7 +251,11 @@ void ColorPicker::_update_text_value() {
 }
 
 void ColorPicker::_sample_draw() {
-	sample->draw_rect(Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95)), color);
+	Rect2 r = Rect2(Point2(), Size2(uv_edit->get_size().width, sample->get_size().height * 0.95));
+	if (color.a < 1.0) {
+		sample->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), r, true);
+	}
+	sample->draw_rect(r, color);
 }
 
 void ColorPicker::_hsv_draw(int p_which, Control *c) {
@@ -399,7 +388,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
 			presets.erase(presets[index]);
-			_update_presets();
+			preset->update();
 			bt_add_preset->show();
 		}
 		_update_color();
@@ -484,6 +473,7 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_preset_pressed"), &ColorPicker::_add_preset_pressed);
 	ClassDB::bind_method(D_METHOD("_screen_pick_pressed"), &ColorPicker::_screen_pick_pressed);
 	ClassDB::bind_method(D_METHOD("_sample_draw"), &ColorPicker::_sample_draw);
+	ClassDB::bind_method(D_METHOD("_update_presets"), &ColorPicker::_update_presets);
 	ClassDB::bind_method(D_METHOD("_hsv_draw"), &ColorPicker::_hsv_draw);
 	ClassDB::bind_method(D_METHOD("_uv_input"), &ColorPicker::_uv_input);
 	ClassDB::bind_method(D_METHOD("_w_input"), &ColorPicker::_w_input);
@@ -608,6 +598,7 @@ ColorPicker::ColorPicker()
 	bbc->add_child(preset);
 	//preset->set_ignore_mouse(false);
 	preset->connect("gui_input", this, "_preset_input");
+	preset->connect("draw", this, "_update_presets");
 
 	bt_add_preset = memnew(Button);
 	bt_add_preset->set_icon(get_icon("add_preset"));
@@ -636,7 +627,9 @@ void ColorPickerButton::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 
 		Ref<StyleBox> normal = get_stylebox("normal");
-		draw_rect(Rect2(normal->get_offset(), get_size() - normal->get_minimum_size()), picker->get_pick_color());
+		Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
+		draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
+		draw_rect(r, picker->get_pick_color());
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {

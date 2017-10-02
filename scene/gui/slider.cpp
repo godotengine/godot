@@ -181,7 +181,7 @@ void Slider::_notification(int p_what) {
 					for (int i = 0; i < ticks; i++) {
 						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) continue;
 						int ofs = i * tickarea / (ticks - 1);
-						tick->draw(ci, Point2(0, ofs));
+						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - get_as_ratio() * areasize - grabber->get_size().height));
@@ -202,7 +202,7 @@ void Slider::_notification(int p_what) {
 					for (int i = 0; i < ticks; i++) {
 						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) continue;
 						int ofs = i * tickarea / (ticks - 1);
-						tick->draw(ci, Point2(ofs, 0));
+						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
 				grabber->draw(ci, Point2i(get_as_ratio() * areasize, size.height / 2 - grabber->get_size().height / 2));

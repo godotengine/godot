@@ -418,6 +418,7 @@ private:
 		Ref<Texture> arrow_collapsed;
 		Ref<Texture> arrow;
 		Ref<Texture> select_arrow;
+		Ref<Texture> select_option;
 		Ref<Texture> updown;
 
 		Color font_color;

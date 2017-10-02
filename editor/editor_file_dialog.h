@@ -36,6 +36,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 /**
@@ -92,7 +93,7 @@ private:
 	ItemList *item_list;
 	TextureRect *preview;
 	VBoxContainer *preview_vb;
-	HBoxContainer *list_hb;
+	HSplitContainer *list_hb;
 	LineEdit *file;
 	AcceptDialog *mkdirerr;
 	AcceptDialog *exterr;

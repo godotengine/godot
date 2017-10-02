@@ -3538,14 +3538,14 @@ void PropertyEditor::_draw_transparency(Object *t, const Rect2 &p_rect) {
 		return;
 
 	Color color = obj->get(ti->get_metadata(1));
-	Ref<Texture> arrow = tree->get_icon("select_arrow");
+	Ref<Texture> arrow = tree->get_icon("select_option");
 
 	// make a little space between consecutive color fields
 	Rect2 area = p_rect;
 	area.position.y += 1;
 	area.size.height -= 2;
 	area.size.width -= arrow->get_size().width + 5;
-	tree->draw_texture_rect(get_icon("Transparent", "EditorIcons"), area, true);
+	tree->draw_texture_rect(get_icon("GuiMiniCheckerboard", "EditorIcons"), area, true);
 	tree->draw_rect(area, color);
 }
 
