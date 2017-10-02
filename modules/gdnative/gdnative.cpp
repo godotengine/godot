@@ -110,6 +110,7 @@ GDNativeLibrary::~GDNativeLibrary() {
 void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library_path", "platform", "path"), &GDNativeLibrary::set_library_path);
 	ClassDB::bind_method(D_METHOD("get_library_path", "platform"), &GDNativeLibrary::get_library_path);
+	ClassDB::bind_method(D_METHOD("get_active_library_path"), &GDNativeLibrary::get_active_library_path);
 
 	ClassDB::bind_method(D_METHOD("is_singleton_gdnative"), &GDNativeLibrary::is_singleton_gdnative);
 	ClassDB::bind_method(D_METHOD("set_singleton_gdnative", "singleton"), &GDNativeLibrary::set_singleton_gdnative);
@@ -268,6 +269,7 @@ bool GDNative::initialize() {
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
 	options.gd_native_library = (godot_object *)(get_library().ptr());
+	options.active_library_path = (godot_string *)&path;
 
 	library_init_fpointer(&options);
 
