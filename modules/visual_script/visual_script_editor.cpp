@@ -710,7 +710,7 @@ void VisualScriptEditor::_update_members() {
 	functions->set_text(0, TTR("Functions:"));
 	functions->add_button(0, Control::get_icon("Override", "EditorIcons"), 1);
 	functions->add_button(0, Control::get_icon("Add", "EditorIcons"), 0);
-	functions->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	functions->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> func_names;
 	script->get_function_list(&func_names);
@@ -719,13 +719,7 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0,Control::get_icon("Edit","EditorIcons"),0); function arguments are in the node now
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
-		if (E->get() == edited_func) {
-			ti->set_custom_bg_color(0, get_color("prop_category", "Editor"));
-			ti->set_custom_color(0, Color(1, 1, 1, 1));
-		}
 		if (selected == E->get())
 			ti->select(0);
 	}
@@ -734,7 +728,7 @@ void VisualScriptEditor::_update_members() {
 	variables->set_selectable(0, false);
 	variables->set_text(0, TTR("Variables:"));
 	variables->add_button(0, Control::get_icon("Add", "EditorIcons"));
-	variables->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	variables->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("MiniVariant", "EditorIcons"),
@@ -778,8 +772,6 @@ void VisualScriptEditor::_update_members() {
 
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);
@@ -789,7 +781,7 @@ void VisualScriptEditor::_update_members() {
 	_signals->set_selectable(0, false);
 	_signals->set_text(0, TTR("Signals:"));
 	_signals->add_button(0, Control::get_icon("Add", "EditorIcons"));
-	_signals->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	_signals->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> signal_names;
 	script->get_custom_signal_list(&signal_names);
@@ -798,8 +790,6 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);

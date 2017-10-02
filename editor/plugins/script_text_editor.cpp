@@ -168,14 +168,34 @@ void ScriptTextEditor::_load_theme_settings() {
 
 	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 4));
 
+	colors_cache.symbol_color = symbol_color;
+	colors_cache.keyword_color = keyword_color;
+	colors_cache.basetype_color = basetype_color;
+	colors_cache.type_color = type_color;
+	colors_cache.comment_color = comment_color;
+	colors_cache.string_color = string_color;
+
+	theme_loaded = true;
+	if (!script.is_null())
+		_set_theme_for_script();
+}
+
+void ScriptTextEditor::_set_theme_for_script() {
+
+	if (!theme_loaded)
+		return;
+
+	TextEdit *text_edit = code_editor->get_text_edit();
+
 	List<String> keywords;
 	script->get_language()->get_reserved_words(&keywords);
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 
-		text_edit->add_keyword_color(E->get(), keyword_color);
+		text_edit->add_keyword_color(E->get(), colors_cache.keyword_color);
 	}
 
 	//colorize core types
+	const Color basetype_color = colors_cache.basetype_color;
 	text_edit->add_keyword_color("String", basetype_color);
 	text_edit->add_keyword_color("Vector2", basetype_color);
 	text_edit->add_keyword_color("Rect2", basetype_color);
@@ -210,7 +230,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		if (n.begins_with("_"))
 			n = n.substr(1, n.length());
 
-		text_edit->add_keyword_color(n, type_color);
+		text_edit->add_keyword_color(n, colors_cache.type_color);
 	}
 
 	//colorize comments
@@ -223,7 +243,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 
-		text_edit->add_color_region(beg, end, comment_color, end == "");
+		text_edit->add_color_region(beg, end, colors_cache.comment_color, end == "");
 	}
 
 	//colorize strings
@@ -235,7 +255,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		String string = E->get();
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		text_edit->add_color_region(beg, end, string_color, end == "");
+		text_edit->add_color_region(beg, end, colors_cache.string_color, end == "");
 	}
 }
 
@@ -263,10 +283,10 @@ void ScriptTextEditor::reload_text() {
 
 void ScriptTextEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
-
-		//emit_signal("name_changed");
-		_load_theme_settings();
+	switch (p_what) {
+		case NOTIFICATION_READY:
+			_load_theme_settings();
+			break;
 	}
 }
 
@@ -556,6 +576,8 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+
+	_set_theme_for_script();
 }
 
 void ScriptTextEditor::_validate_script() {
@@ -1451,6 +1473,8 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 }
 
 ScriptTextEditor::ScriptTextEditor() {
+
+	theme_loaded = false;
 
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
