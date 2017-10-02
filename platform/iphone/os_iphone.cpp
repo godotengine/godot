@@ -371,6 +371,14 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
+	spatial_sound_server->finish();
+	memdelete(spatial_sound_server);
+	spatial_sound_2d_server->finish();
+	memdelete(spatial_sound_2d_server);
+
+	audio_server->finish();
+	memdelete(audio_server);
+
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(rasterizer);
@@ -381,13 +389,7 @@ void OSIPhone::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-
 	memdelete(input);
-
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
