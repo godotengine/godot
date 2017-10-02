@@ -159,7 +159,11 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
+<<<<<<< HEAD
 				Overwites the position in point [code]i[/code] with the supplied [code]position[/code].
+=======
+				Overrites the x/y position in point 'i' with the supplied Vector2.
+>>>>>>> Line2Ddocs
 			</description>
 		</method>
 		<method name="set_points">
@@ -231,6 +235,7 @@
 			The points that form the lines. The line is drawn between every point set in this array.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision">
+<<<<<<< HEAD
 			The smoothness of the rounded joints and caps This is only used if a cap or joint is set as round.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit">
@@ -241,6 +246,18 @@
 		</member>
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode">
 			The style to render the [code]texture[/code] on the line. Use [code]LINE_TEXTURE_*[/code] constants. Default value: [code]LINE_TEXTURE_NONE[/code].
+=======
+			Sets how smooth the rounded joints and caps will be. This is only used if a cap or joint is set as round.
+		</member>
+		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit">
+			This sets the direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [code]LINE_JOINT_SHARP[/code]
+		</member>
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+			The texture used for the line. The way it's rendered on the line is set in [code]texture_mode[/code].
+		</member>
+		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode">
+			The style to render the [code]texture[/code] on the line.
+>>>>>>> Line2Ddocs
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width">
 			The width of the line.
