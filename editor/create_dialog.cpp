@@ -168,8 +168,11 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else {
+		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
+		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
+		bool current_item_is_preffered = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(to_select_type, preferred_search_result_type);
 
-		if ((!*to_select && (search_box->get_text().is_subsequence_ofi(p_type))) || search_box->get_text() == p_type) {
+		if (((!*to_select || current_item_is_preffered) && is_search_subsequence) || search_box->get_text() == p_type) {
 			*to_select = item;
 		}
 	}
@@ -361,6 +364,19 @@ void CreateDialog::set_base_type(const String &p_base) {
 	_update_search();
 }
 
+String CreateDialog::get_base_type() const {
+
+	return base_type;
+}
+
+void CreateDialog::set_preferred_search_result_type(const String &p_preferred_type) {
+	preferred_search_result_type = p_preferred_type;
+}
+
+String CreateDialog::get_preferred_search_result_type() {
+
+	return preferred_search_result_type;
+}
 String CreateDialog::get_selected_type() {
 
 	TreeItem *selected = search_options->get_selected();
@@ -409,11 +425,6 @@ Object *CreateDialog::instance_selected() {
 	}
 
 	return NULL;
-}
-
-String CreateDialog::get_base_type() const {
-
-	return base_type;
 }
 
 void CreateDialog::_item_selected() {
@@ -654,6 +665,7 @@ CreateDialog::CreateDialog() {
 	search_options->connect("cell_selected", this, "_item_selected");
 	//search_options->set_hide_root(true);
 	base_type = "Object";
+	preferred_search_result_type = "";
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
