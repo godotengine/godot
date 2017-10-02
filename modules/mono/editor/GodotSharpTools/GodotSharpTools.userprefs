@@ -1,0 +1,14 @@
+﻿<Properties StartupItem="GodotSharpTools.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Build/BuildSystem.cs">
+    <Files>
+      <File FileName="Build/ProjectExtensions.cs" Line="1" Column="1" />
+      <File FileName="Build/ProjectGenerator.cs" Line="1" Column="1" />
+      <File FileName="Build/BuildSystem.cs" Line="37" Column="14" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

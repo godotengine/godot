@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodotSharpTools", "GodotSharpTools.csproj", "{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8CDAD94-C6D4-4B19-A7E7-76C53CC92984}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
