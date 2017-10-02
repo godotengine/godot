@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_osx.cpp                                                 */
+/*  audio_driver_coreaudio.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,27 +27,33 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef OSX_ENABLED
+#ifdef COREAUDIO_ENABLED
 
-#include "audio_driver_osx.h"
+#include "audio_driver_coreaudio.h"
 #include "core/project_settings.h"
 #include "os/os.h"
 
 #define kOutputBus 0
 
+#ifdef OSX_ENABLED
 static OSStatus outputDeviceAddressCB(AudioObjectID inObjectID, UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses, void *__nullable inClientData) {
-	AudioDriverOSX *driver = (AudioDriverOSX *)inClientData;
+	AudioDriverCoreAudio *driver = (AudioDriverCoreAudio *)inClientData;
 
 	driver->reopen();
 
 	return noErr;
 }
+#endif
 
-Error AudioDriverOSX::initDevice() {
+Error AudioDriverCoreAudio::initDevice() {
 	AudioComponentDescription desc;
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
+#ifdef OSX_ENABLED
 	desc.componentSubType = kAudioUnitSubType_HALOutput;
+#else
+	desc.componentSubType = kAudioUnitSubType_RemoteIO;
+#endif
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(NULL, &desc);
@@ -96,8 +102,10 @@ Error AudioDriverOSX::initDevice() {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
+#ifdef OSX_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
 
 	buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
@@ -109,7 +117,7 @@ Error AudioDriverOSX::initDevice() {
 
 	AURenderCallbackStruct callback;
 	zeromem(&callback, sizeof(AURenderCallbackStruct));
-	callback.inputProc = &AudioDriverOSX::output_callback;
+	callback.inputProc = &AudioDriverCoreAudio::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -120,7 +128,7 @@ Error AudioDriverOSX::initDevice() {
 	return OK;
 }
 
-Error AudioDriverOSX::finishDevice() {
+Error AudioDriverCoreAudio::finishDevice() {
 	OSStatus result;
 
 	if (active) {
@@ -136,24 +144,26 @@ Error AudioDriverOSX::finishDevice() {
 	return OK;
 }
 
-Error AudioDriverOSX::init() {
+Error AudioDriverCoreAudio::init() {
 	OSStatus result;
 
 	mutex = Mutex::create();
 	active = false;
 	channels = 2;
 
+#ifdef OSX_ENABLED
 	outputDeviceAddress.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
 	outputDeviceAddress.mScope = kAudioObjectPropertyScopeGlobal;
 	outputDeviceAddress.mElement = kAudioObjectPropertyElementMaster;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &outputDeviceAddress, &outputDeviceAddressCB, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
 
 	return initDevice();
 };
 
-Error AudioDriverOSX::reopen() {
+Error AudioDriverCoreAudio::reopen() {
 	bool restart = false;
 
 	lock();
@@ -185,13 +195,13 @@ Error AudioDriverOSX::reopen() {
 	return OK;
 }
 
-OSStatus AudioDriverOSX::output_callback(void *inRefCon,
+OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
 		const AudioTimeStamp *inTimeStamp,
 		UInt32 inBusNumber, UInt32 inNumberFrames,
 		AudioBufferList *ioData) {
 
-	AudioDriverOSX *ad = (AudioDriverOSX *)inRefCon;
+	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
@@ -227,7 +237,7 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 	return 0;
 };
 
-void AudioDriverOSX::start() {
+void AudioDriverCoreAudio::start() {
 	if (!active) {
 		OSStatus result = AudioOutputUnitStart(audio_unit);
 		if (result != noErr) {
@@ -238,37 +248,41 @@ void AudioDriverOSX::start() {
 	}
 };
 
-int AudioDriverOSX::get_mix_rate() const {
+int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriver::SpeakerMode AudioDriverOSX::get_speaker_mode() const {
+AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 };
 
-void AudioDriverOSX::lock() {
+void AudioDriverCoreAudio::lock() {
 	if (mutex)
 		mutex->lock();
 };
 
-void AudioDriverOSX::unlock() {
+void AudioDriverCoreAudio::unlock() {
 	if (mutex)
 		mutex->unlock();
 };
 
-bool AudioDriverOSX::try_lock() {
+bool AudioDriverCoreAudio::try_lock() {
 	if (mutex)
 		return mutex->try_lock() == OK;
 	return true;
 }
 
-void AudioDriverOSX::finish() {
+void AudioDriverCoreAudio::finish() {
+	OSStatus result;
+
 	finishDevice();
 
-	OSStatus result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &outputDeviceAddress, &outputDeviceAddressCB, this);
+#ifdef OSX_ENABLED
+	result = AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &outputDeviceAddress, &outputDeviceAddressCB, this);
 	if (result != noErr) {
 		ERR_PRINT("AudioObjectRemovePropertyListener failed");
 	}
+#endif
 
 	AURenderCallbackStruct callback;
 	zeromem(&callback, sizeof(AURenderCallbackStruct));
@@ -283,7 +297,7 @@ void AudioDriverOSX::finish() {
 	}
 };
 
-AudioDriverOSX::AudioDriverOSX() {
+AudioDriverCoreAudio::AudioDriverCoreAudio() {
 	active = false;
 	mutex = NULL;
 
@@ -296,6 +310,6 @@ AudioDriverOSX::AudioDriverOSX() {
 	samples_in.clear();
 };
 
-AudioDriverOSX::~AudioDriverOSX(){};
+AudioDriverCoreAudio::~AudioDriverCoreAudio(){};
 
 #endif

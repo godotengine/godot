@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_iphone.h                                                */
+/*  audio_driver_coreaudio.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,20 +27,33 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef COREAUDIO_ENABLED
+
+#ifndef AUDIO_DRIVER_COREAUDIO_H
+#define AUDIO_DRIVER_COREAUDIO_H
 
 #include "servers/audio_server.h"
 
 #include <AudioUnit/AudioUnit.h>
+#ifdef OSX_ENABLED
+#include <CoreAudio/AudioHardware.h>
+#endif
 
-class AudioDriverIphone : public AudioDriver {
+class AudioDriverCoreAudio : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
+#ifdef OSX_ENABLED
+	AudioObjectPropertyAddress outputDeviceAddress;
+#endif
 	bool active;
 	Mutex *mutex;
 
-	int channels;
-	int32_t *samples_in;
-	int buffer_frames;
+	int mix_rate;
+	unsigned int channels;
+	unsigned int buffer_frames;
+	unsigned int buffer_size;
+
+	Vector<int32_t> samples_in;
 
 	static OSStatus output_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
@@ -48,9 +61,12 @@ class AudioDriverIphone : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
+	Error initDevice();
+	Error finishDevice();
+
 public:
 	const char *get_name() const {
-		return "IPhone";
+		return "CoreAudio";
 	};
 
 	virtual Error init();
@@ -61,6 +77,13 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	AudioDriverIphone();
-	~AudioDriverIphone();
+	bool try_lock();
+	Error reopen();
+
+	AudioDriverCoreAudio();
+	~AudioDriverCoreAudio();
 };
+
+#endif
+
+#endif

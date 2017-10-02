@@ -5,7 +5,6 @@ Import('env')
 iphone_lib = [
 
     'os_iphone.cpp',
-    'audio_driver_iphone.cpp',
     'sem_iphone.cpp',
     'gl_view.mm',
     'main.m',

@@ -1071,7 +1071,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	bool use_gl2 = p_video_driver != 1;
 
-	AudioDriverManager::add_driver(&audio_driver_osx);
+	AudioDriverManager::add_driver(&audio_driver);
 
 	// only opengl support here...
 	RasterizerGLES3::register_config();

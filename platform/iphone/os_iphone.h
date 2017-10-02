@@ -32,6 +32,7 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
+#include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "os/input.h"
 
@@ -45,8 +46,6 @@
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
-
-class AudioDriverIphone;
 
 class OSIPhone : public OS_Unix {
 
@@ -70,7 +69,7 @@ private:
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
-	AudioDriverIphone *audio_driver;
+	AudioDriverCoreAudio audio_driver;
 
 #ifdef GAME_CENTER_ENABLED
 	GameCenter *game_center;
