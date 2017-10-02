@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer_scene_gles3.h"
-
+#include "math_funcs.h"
 #include "os/os.h"
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
@@ -2535,9 +2535,9 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 	Color linear_col = li->light_ptr->color.to_linear();
 	//compensate normalized diffuse range by multiplying by PI
-	ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-	ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-	ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
+	ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+	ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+	ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 	ubo_data.light_color_energy[3] = 0;
 
 	//omni, keep at 0
@@ -2675,9 +2675,9 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				float sign = li->light_ptr->negative ? -1 : 1;
 
 				Color linear_col = li->light_ptr->color.to_linear();
-				ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-				ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-				ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
+				ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+				ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+				ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 				ubo_data.light_color_energy[3] = 0;
 
 				Vector3 pos = p_camera_inverse_transform.xform(li->transform.origin);
@@ -2761,9 +2761,9 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				float sign = li->light_ptr->negative ? -1 : 1;
 
 				Color linear_col = li->light_ptr->color.to_linear();
-				ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-				ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
-				ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * M_PI;
+				ubo_data.light_color_energy[0] = linear_col.r * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+				ubo_data.light_color_energy[1] = linear_col.g * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
+				ubo_data.light_color_energy[2] = linear_col.b * sign * li->light_ptr->param[VS::LIGHT_PARAM_ENERGY] * Math_PI;
 				ubo_data.light_color_energy[3] = 0;
 
 				Vector3 pos = p_camera_inverse_transform.xform(li->transform.origin);
