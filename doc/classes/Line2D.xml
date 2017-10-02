@@ -159,7 +159,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Overrites the x/y position in point 'i' with the supplied [Vector2].
+				Overrites the x/y position in point 'i' with the supplied Vector2.
 			</description>
 		</method>
 		<method name="set_points">
@@ -228,19 +228,19 @@
 			The style for the points inbetween the start and the end.
 		</member>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
-			The points that form the lines. Each line in Line2D is used by
+			The points that form the lines. The line is drawn between every point set in this array.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision">
-			Sets the precision This is only used if  a cap or joint is set as round.
+			Sets how smooth the rounded joints and caps will be. This is only used if a cap or joint is set as round.
 		</member>
 		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit">
-			This sets the direction difference in radians between vector points. This value is only used if Joint Mode is set to LINE_JOINT_SHARP
+			This sets the direction difference in radians between vector points. This value is only used if [code]joint mode[/code] is set to [code]LINE_JOINT_SHARP[/code]
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
-			The texture used for the line.
+			The texture used for the line. The way it's rendered on the line is set in [code]texture_mode[/code].
 		</member>
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode">
-			The style to render the texture on the line.
+			The style to render the [code]texture[/code] on the line.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width">
 			The width of the line.
@@ -248,7 +248,7 @@
 	</members>
 	<constants>
 		<constant name="LINE_JOINT_SHARP" value="0">
-			The joints of the line will be pointy. If the Sharp Limit is greater than the rotation of the joint it becomes a bevel joint instead.
+			The joints of the line will be pointy. If Sharp Limit is greater than the rotation of a joint it becomes a bevel joint instead.
 		</constant>
 		<constant name="LINE_JOINT_BEVEL" value="1">
 			The joints of the line
