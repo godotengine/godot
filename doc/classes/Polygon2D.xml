@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Polygon2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		2D polygon representation
+		A 2D polygon.
 	</brief_description>
 	<description>
-		A Polygon2D is defined by a set of n vertices connected together by line segments, meaning that the vertex 1 will be connected with vertex 2, vertex 2 with vertex 3 ..., vertex n-1 with vertex n and vertex n with vertex 1 in order to close the loop and define a polygon.
+		A Polygon2D is defined by a set of points. Each point is connected to the next, with the final point being connected to the first, resulting in a closed polygon. Polygon2Ds can be filled with color (solid or gradient) or filled with a given texture.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -204,28 +204,40 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased">
+			If [code]true[/code] polygon edges will be anti-aliased. Default value: [code]false[/code].
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
+			The polygon's fill color. If [code]texture[/code] is defined, it will be multiplied by this color. It will also be the default color for vertices not set in [code]vertex_colors[/code].
 		</member>
 		<member name="invert_border" type="float" setter="set_invert_border" getter="get_invert_border">
+			Added padding applied to the bounding box when using [code]invert[/code]. Setting this value too small may result in a "Bad Polygon" error. Default value: [code]100[/code].
 		</member>
 		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert">
+			If [code]true[/code] polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The offset applied to each vertex.
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
+			The polygon's list of vertices. The final point will be connected to the first.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
 		</member>
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset">
+			Amount to offset the polygon's [code]texture[/code]. If [code](0, 0)[/code] the texture's origin (its top-left corner) will be placed at the polygon's [code]position[/code].
 		</member>
 		<member name="texture_rotation" type="float" setter="_set_texture_rotationd" getter="_get_texture_rotationd">
+			The texture's rotation in degrees.
 		</member>
 		<member name="texture_scale" type="Vector2" setter="set_texture_scale" getter="get_texture_scale">
+			Amount to multiply the [code]uv[/code] coordinates when using a [code]texture[/code]. Larger values make the texture smaller, and vice versa.
 		</member>
 		<member name="uv" type="PoolVector2Array" setter="set_uv" getter="get_uv">
+			Texture coordinates for each vertex of the polygon. There should be one [code]uv[/code] per polygon vertex. If there are fewer, undefined vertices will use [code](0, 0)[/code].
 		</member>
 		<member name="vertex_colors" type="PoolColorArray" setter="set_vertex_colors" getter="get_vertex_colors">
+			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [code]color[/code].
 		</member>
 	</members>
 	<constants>
