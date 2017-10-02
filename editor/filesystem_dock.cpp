@@ -1002,7 +1002,7 @@ void FileSystemDock::_file_option(int p_option) {
 			for (int i = 0; i < files->get_item_count(); i++) {
 
 				String path = files->get_item_metadata(i);
-				if (path.ends_with("/") || !files->is_selected(i))
+				if (!files->is_selected(i))
 					continue;
 				torem.push_back(path);
 			}
@@ -1466,6 +1466,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	bool all_scenes = true;
 	bool all_can_reimport = true;
+	bool is_dir = false;
 	Set<String> types;
 
 	for (int i = 0; i < files->get_item_count(); i++) {
@@ -1481,8 +1482,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		}
 
 		if (path.ends_with("/")) {
-			//no operate on dirs
-			return;
+			is_dir = true;
 		}
 
 		int pos;
@@ -1513,17 +1513,19 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	file_options->add_separator();
 
-	if (filenames.size() == 1) {
+	if (filenames.size() == 1 && !is_dir) {
 		file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
 		file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
 		file_options->add_separator();
 	}
 
-	if (filenames.size() == 1) {
-		file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-		file_options->add_item(TTR("Rename or Move.."), FILE_MOVE);
-	} else {
-		file_options->add_item(TTR("Move To.."), FILE_MOVE);
+	if (!is_dir) {
+		if (filenames.size() == 1) {
+			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
+			file_options->add_item(TTR("Rename or Move.."), FILE_MOVE);
+		} else {
+			file_options->add_item(TTR("Move To.."), FILE_MOVE);
+		}
 	}
 
 	file_options->add_item(TTR("Delete"), FILE_REMOVE);

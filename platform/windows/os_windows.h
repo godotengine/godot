@@ -290,6 +290,8 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
+	virtual Error move_to_trash(const String &p_path);
+
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 };
