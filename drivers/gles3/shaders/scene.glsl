@@ -915,7 +915,7 @@ LIGHT_SHADER_CODE
 
 #if defined(DIFFUSE_LAMBERT_WRAP)
 	//energy conserving lambert wrap shader
-	light_amount = max(0.0,(dot(N,L) + roughness) / ((1.0 + roughness) * (1.0 + roughness) * M_PI));
+	light_amount = max(0.0,(dot(N,L) + roughness) / ((1.0 + roughness) * (1.0 + roughness)));
 
 #elif defined(DIFFUSE_OREN_NAYAR)
 
@@ -969,7 +969,7 @@ LIGHT_SHADER_CODE
 #endif
 
 #if defined(TRANSMISSION_USED)
-	diffuse += light_color * diffuse_color * mix(vec3(light_amount),vec3(1.0),transmission) * attenuation;
+	diffuse += light_color * diffuse_color * mix(vec3(light_amount),vec3(M_PI),transmission) * attenuation;
 #else
 	diffuse += light_color * diffuse_color * light_amount * attenuation;
 #endif
