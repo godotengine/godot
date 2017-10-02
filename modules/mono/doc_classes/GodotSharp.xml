@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GodotSharp" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="attach_thread">
+			<return type="void">
+			</return>
+			<description>
+				Attaches the current thread to the mono runtime.
+			</description>
+		</method>
+		<method name="detach_thread">
+			<return type="void">
+			</return>
+			<description>
+				Detaches the current thread from the mono runtime.
+			</description>
+		</method>
+		<method name="is_domain_loaded">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the scripts domain is loaded.
+			</description>
+		</method>
+		<method name="is_finalizing_domain">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the scripts domain is being finalized.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
