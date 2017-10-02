@@ -393,7 +393,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_default->set_draw_center(true);
 
 	// Button and widgets
-	const float extra_spacing = EDITOR_DEF("interface/theme/additional_spacing", 0.0);
+	const float extra_spacing = EDITOR_GET("interface/theme/additional_spacing");
 
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
 	style_widget->set_default_margin(MARGIN_LEFT, (extra_spacing + 6) * EDSCALE);
@@ -437,14 +437,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxEmpty> style_empty = make_empty_stylebox(default_margin_size, default_margin_size, default_margin_size, default_margin_size);
 
 	// Tabs
+
+	const int tab_default_margin_side = 10 * EDSCALE + extra_spacing * EDSCALE;
+	const int tab_default_margin_vertical = 5 * EDSCALE + extra_spacing * EDSCALE;
+
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 
 	style_tab_selected->set_border_width_all(border_width);
 	style_tab_selected->set_border_width(MARGIN_BOTTOM, 0);
 	style_tab_selected->set_border_color_all(dark_color_3);
 	style_tab_selected->set_expand_margin_size(MARGIN_BOTTOM, border_width);
-	style_tab_selected->set_default_margin(MARGIN_LEFT, 10 * EDSCALE);
-	style_tab_selected->set_default_margin(MARGIN_RIGHT, 10 * EDSCALE);
+	style_tab_selected->set_default_margin(MARGIN_LEFT, tab_default_margin_side);
+	style_tab_selected->set_default_margin(MARGIN_RIGHT, tab_default_margin_side);
+	style_tab_selected->set_default_margin(MARGIN_BOTTOM, tab_default_margin_vertical);
+	style_tab_selected->set_default_margin(MARGIN_TOP, tab_default_margin_vertical);
 	style_tab_selected->set_bg_color(tab_color);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
