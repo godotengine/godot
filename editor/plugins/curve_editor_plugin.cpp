@@ -53,12 +53,12 @@ CurveEditor::CurveEditor() {
 
 	_presets_menu = memnew(PopupMenu);
 	_presets_menu->set_name("_presets_menu");
-	_presets_menu->add_item("Flat0", PRESET_FLAT0);
-	_presets_menu->add_item("Flat1", PRESET_FLAT1);
-	_presets_menu->add_item("Linear", PRESET_LINEAR);
-	_presets_menu->add_item("Ease in", PRESET_EASE_IN);
-	_presets_menu->add_item("Ease out", PRESET_EASE_OUT);
-	_presets_menu->add_item("Smoothstep", PRESET_SMOOTHSTEP);
+	_presets_menu->add_item(TTR("Flat0"), PRESET_FLAT0);
+	_presets_menu->add_item(TTR("Flat1"), PRESET_FLAT1);
+	_presets_menu->add_item(TTR("Linear"), PRESET_LINEAR);
+	_presets_menu->add_item(TTR("Ease in"), PRESET_EASE_IN);
+	_presets_menu->add_item(TTR("Ease out"), PRESET_EASE_OUT);
+	_presets_menu->add_item(TTR("Smoothstep"), PRESET_SMOOTHSTEP);
 	_presets_menu->connect("id_pressed", this, "_on_preset_item_selected");
 	_context_menu->add_child(_presets_menu);
 }
@@ -344,19 +344,19 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 										 _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR :
 										 _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
 
-				_context_menu->set_item_checked(CONTEXT_LINEAR, is_linear);
+				_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LINEAR), is_linear);
 
 			} else {
 				_context_menu->add_separator();
 
 				if (_selected_point > 0) {
 					_context_menu->add_check_item(TTR("Left linear"), CONTEXT_LEFT_LINEAR);
-					_context_menu->set_item_checked(CONTEXT_LEFT_LINEAR,
+					_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LEFT_LINEAR),
 							_curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR);
 				}
 				if (_selected_point + 1 < _curve_ref->get_point_count()) {
 					_context_menu->add_check_item(TTR("Right linear"), CONTEXT_RIGHT_LINEAR);
-					_context_menu->set_item_checked(CONTEXT_RIGHT_LINEAR,
+					_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_RIGHT_LINEAR),
 							_curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR);
 				}
 			}
