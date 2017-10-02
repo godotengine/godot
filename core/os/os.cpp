@@ -548,6 +548,33 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
+#if defined(__x86_64) || defined(__x86_64__)
+	if (p_feature == "x86_64") {
+		return true;
+	}
+#elif (defined(__i386) || defined(__i386__))
+	if (p_feature == "x86") {
+		return true;
+	}
+#elif defined(__aarch64__)
+	if (p_feature == "arm64") {
+		return true;
+	}
+#elif defined(__arm__)
+#if defined(__ARM_ARCH_7A__)
+	if (p_feature == "armv7a" || p_feature == "armv7") {
+		return true;
+	}
+#endif
+#if defined(__ARM_ARCH_7S__)
+	if (p_feature == "armv7s" || p_feature == "armv7") {
+		return true;
+	}
+#endif
+	if (p_feature == "arm") {
+		return true;
+	}
+#endif
 
 	if (_check_internal_feature_support(p_feature))
 		return true;

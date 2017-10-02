@@ -1,5 +1,5 @@
 def can_build(platform):
-    return True
+    return platform != 'iphone'
 
 def configure(env):
     pass

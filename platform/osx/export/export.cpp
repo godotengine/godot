@@ -288,6 +288,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 }
 
 Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	String src_pkg_name;
 
