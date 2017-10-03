@@ -326,6 +326,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of static memory being used by the program in bytes.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
@@ -340,6 +341,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the epoch time of the operating system in seconds.
 			</description>
 		</method>
 		<method name="get_ticks_msec" qualifiers="const">
@@ -435,6 +437,9 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the build is a debug build.
+				Returns [code]true[/code] when running in the editor.
+				Returns [code]false[/code] if the build is a release build.
 			</description>
 		</method>
 		<method name="is_in_low_processor_usage_mode" qualifiers="const">
@@ -483,6 +488,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if synchronizing the framerate to the monitor's refresh rate is enabled.
 			</description>
 		</method>
 		<method name="is_window_fullscreen" qualifiers="const">
@@ -695,6 +701,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the framerate will synchronize to the monitor's refresh rate.
 			</description>
 		</method>
 		<method name="set_window_fullscreen">
