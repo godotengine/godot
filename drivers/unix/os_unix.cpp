@@ -285,7 +285,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
 
 	if (p_blocking && r_pipe) {
 
@@ -297,7 +297,11 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			argss += String(" \"") + p_arguments[i] + "\"";
 		}
 
-		argss += " 2>/dev/null"; //silence stderr
+		if (read_stderr) {
+			argss += " 2>&1"; // Read stderr too
+		} else {
+			argss += " 2>/dev/null"; //silence stderr
+		}
 		FILE *f = popen(argss.utf8().get_data(), "r");
 
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
