@@ -286,6 +286,16 @@ Transform Spatial::get_global_transform() const {
 	return data.global_transform;
 }
 
+#ifdef TOOLS_ENABLED
+Transform Spatial::get_global_gizmo_transform() const {
+	return get_global_transform();
+}
+
+Transform Spatial::get_local_gizmo_transform() const {
+	return get_transform();
+}
+#endif
+
 Spatial *Spatial::get_parent_spatial() const {
 
 	return data.parent;

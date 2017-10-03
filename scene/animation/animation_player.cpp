@@ -246,8 +246,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
 
-			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(a->track_get_path(i).get_subname(0));
-			if (bone_idx == -1) {
+			Skeleton *sk = Object::cast_to<Skeleton>(child);
+			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
+			if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
 
 				continue;
 			}
@@ -579,16 +580,14 @@ void AnimationPlayer::_animation_process2(float p_delta) {
 }
 
 void AnimationPlayer::_animation_update_transforms() {
+	{
+		Transform t;
+		for (int i = 0; i < cache_update_size; i++) {
 
-	for (int i = 0; i < cache_update_size; i++) {
+			TrackNodeCache *nc = cache_update[i];
 
-		TrackNodeCache *nc = cache_update[i];
+			ERR_CONTINUE(nc->accum_pass != accum_pass);
 
-		ERR_CONTINUE(nc->accum_pass != accum_pass);
-
-		if (nc->spatial) {
-
-			Transform t;
 			t.origin = nc->loc_accum;
 			t.basis.set_quat_scale(nc->rot_accum, nc->scale_accum);
 			if (nc->skeleton && nc->bone_idx >= 0) {

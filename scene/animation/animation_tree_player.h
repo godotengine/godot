@@ -107,6 +107,8 @@ private:
 		Vector3 scale;
 
 		Variant value;
+
+		bool skip;
 	};
 
 	typedef Map<TrackKey, Track> TrackMap;
