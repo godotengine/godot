@@ -57,6 +57,17 @@ class ScriptTextEditor : public ScriptEditorBase {
 	int color_line;
 	String color_args;
 
+	struct ColorsCache {
+		Color symbol_color;
+		Color keyword_color;
+		Color basetype_color;
+		Color type_color;
+		Color comment_color;
+		Color string_color;
+	} colors_cache;
+
+	bool theme_loaded;
+
 	enum {
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -101,6 +112,7 @@ protected:
 	void _validate_script();
 	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
+	void _set_theme_for_script();
 
 	void _notification(int p_what);
 	static void _bind_methods();

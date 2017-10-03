@@ -331,44 +331,83 @@ public:
 	VisualScriptEditorVariableEdit() { undo_redo = NULL; }
 };
 
-static Color _color_from_type(Variant::Type p_type) {
+static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 	Color color;
-	switch (p_type) {
-		case Variant::NIL: color = Color::html("69ecbd"); break;
+	if (dark_theme)
+		switch (p_type) {
+			case Variant::NIL: color = Color::html("#69ecbd"); break;
 
-		case Variant::BOOL: color = Color::html("8da6f0"); break;
-		case Variant::INT: color = Color::html("7dc6ef"); break;
-		case Variant::REAL: color = Color::html("61daf4"); break;
-		case Variant::STRING: color = Color::html("6ba7ec"); break;
+			case Variant::BOOL: color = Color::html("#8da6f0"); break;
+			case Variant::INT: color = Color::html("#7dc6ef"); break;
+			case Variant::REAL: color = Color::html("#61daf4"); break;
+			case Variant::STRING: color = Color::html("#6ba7ec"); break;
 
-		case Variant::VECTOR2: color = Color::html("bd91f1"); break;
-		case Variant::RECT2: color = Color::html("f191a5"); break;
-		case Variant::VECTOR3: color = Color::html("d67dee"); break;
-		case Variant::TRANSFORM2D: color = Color::html("c4ec69"); break;
-		case Variant::PLANE: color = Color::html("f77070"); break;
-		case Variant::QUAT: color = Color::html("ec69a3"); break;
-		case Variant::RECT3: color = Color::html("ee7991"); break;
-		case Variant::BASIS: color = Color::html("e3ec69"); break;
-		case Variant::TRANSFORM: color = Color::html("f6a86e"); break;
+			case Variant::VECTOR2: color = Color::html("#bd91f1"); break;
+			case Variant::RECT2: color = Color::html("#f191a5"); break;
+			case Variant::VECTOR3: color = Color::html("#d67dee"); break;
+			case Variant::TRANSFORM2D: color = Color::html("#c4ec69"); break;
+			case Variant::PLANE: color = Color::html("#f77070"); break;
+			case Variant::QUAT: color = Color::html("#ec69a3"); break;
+			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::BASIS: color = Color::html("#e3ec69"); break;
+			case Variant::TRANSFORM: color = Color::html("#f6a86e"); break;
 
-		case Variant::COLOR: color = Color::html("9dff70"); break;
-		case Variant::NODE_PATH: color = Color::html("6993ec"); break;
-		case Variant::_RID: color = Color::html("69ec9a"); break;
-		case Variant::OBJECT: color = Color::html("79f3e8"); break;
-		case Variant::DICTIONARY: color = Color::html("77edb1"); break;
+			case Variant::COLOR: color = Color::html("#9dff70"); break;
+			case Variant::NODE_PATH: color = Color::html("#6993ec"); break;
+			case Variant::_RID: color = Color::html("#69ec9a"); break;
+			case Variant::OBJECT: color = Color::html("#79f3e8"); break;
+			case Variant::DICTIONARY: color = Color::html("#77edb1"); break;
 
-		case Variant::ARRAY: color = Color::html("e0e0e0"); break;
-		case Variant::POOL_BYTE_ARRAY: color = Color::html("aaf4c8"); break;
-		case Variant::POOL_INT_ARRAY: color = Color::html("afdcf5"); break;
-		case Variant::POOL_REAL_ARRAY: color = Color::html("97e7f8"); break;
-		case Variant::POOL_STRING_ARRAY: color = Color::html("9dc4f2"); break;
-		case Variant::POOL_VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
-		case Variant::POOL_VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
-		case Variant::POOL_COLOR_ARRAY: color = Color::html("e9ff97"); break;
+			case Variant::ARRAY: color = Color::html("#e0e0e0"); break;
+			case Variant::POOL_BYTE_ARRAY: color = Color::html("#aaf4c8"); break;
+			case Variant::POOL_INT_ARRAY: color = Color::html("#afdcf5"); break;
+			case Variant::POOL_REAL_ARRAY: color = Color::html("#97e7f8"); break;
+			case Variant::POOL_STRING_ARRAY: color = Color::html("#9dc4f2"); break;
+			case Variant::POOL_VECTOR2_ARRAY: color = Color::html("#d1b3f5"); break;
+			case Variant::POOL_VECTOR3_ARRAY: color = Color::html("#df9bf2"); break;
+			case Variant::POOL_COLOR_ARRAY: color = Color::html("#e9ff97"); break;
 
-		default:
-			color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.7, 0.7);
-	}
+			default:
+				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.7, 0.7);
+		}
+	else
+		switch (p_type) {
+			case Variant::NIL: color = Color::html("#25e3a0"); break;
+
+			case Variant::BOOL: color = Color::html("#6d8eeb"); break;
+			case Variant::INT: color = Color::html("#4fb2e9"); break;
+			case Variant::REAL: color = Color::html("#27ccf0"); break;
+			case Variant::STRING: color = Color::html("#4690e7"); break;
+
+			case Variant::VECTOR2: color = Color::html("#ad76ee"); break;
+			case Variant::RECT2: color = Color::html("#ee758e"); break;
+			case Variant::VECTOR3: color = Color::html("#dc6aed"); break;
+			case Variant::TRANSFORM2D: color = Color::html("#96ce1a"); break;
+			case Variant::PLANE: color = Color::html("#f77070"); break;
+			case Variant::QUAT: color = Color::html("#ec69a3"); break;
+			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::BASIS: color = Color::html("#b2bb19"); break;
+			case Variant::TRANSFORM: color = Color::html("#f49047"); break;
+
+			case Variant::COLOR: color = Color::html("#3cbf00"); break;
+			case Variant::NODE_PATH: color = Color::html("#6993ec"); break;
+			case Variant::_RID: color = Color::html("#2ce573"); break;
+			case Variant::OBJECT: color = Color::html("#12d5c3"); break;
+			case Variant::DICTIONARY: color = Color::html("#57e99f"); break;
+
+			case Variant::ARRAY: color = Color::html("#737373"); break;
+			case Variant::POOL_BYTE_ARRAY: color = Color::html("#61ea98"); break;
+			case Variant::POOL_INT_ARRAY: color = Color::html("#61baeb"); break;
+			case Variant::POOL_REAL_ARRAY: color = Color::html("#40d3f2"); break;
+			case Variant::POOL_STRING_ARRAY: color = Color::html("#609fea"); break;
+			case Variant::POOL_VECTOR2_ARRAY: color = Color::html("#9d5dea"); break;
+			case Variant::POOL_VECTOR3_ARRAY: color = Color::html("#ca5aea"); break;
+			case Variant::POOL_COLOR_ARRAY: color = Color::html("#92ba00"); break;
+
+			default:
+				color.set_hsv(p_type / float(Variant::VARIANT_MAX), 0.3, 0.3);
+		}
+
 	return color;
 }
 
@@ -531,7 +570,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			Color c = sbf->get_border_color(MARGIN_TOP);
 			c.a = 1;
 			if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-				Color mono_color = ((c.r + c.g + c.b) / 3) < 0.5 ? Color(1.0, 1.0, 1.0) : Color(0, 0, 0);
+				Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 				mono_color.a = 0.85;
 				c = mono_color;
 			}
@@ -542,10 +581,12 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_style_override("frame", sbf);
 		}
 
+		const Color mono_color = get_color("mono_color", "Editor");
+
 		int slot_idx = 0;
 
 		bool single_seq_output = node->get_output_sequence_port_count() == 1 && node->get_output_sequence_port_text(0) == String();
-		gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, Color(1, 1, 1, 1), single_seq_output, TYPE_SEQUENCE, Color(1, 1, 1, 1), seq_port, seq_port);
+		gnode->set_slot(0, node->has_input_sequence_port(), TYPE_SEQUENCE, mono_color, single_seq_output, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 		gnode->set_offset(pos * EDSCALE);
 		slot_idx++;
 
@@ -562,7 +603,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					text2->set_text(node->get_output_sequence_port_text(i));
 					text2->set_align(Label::ALIGN_RIGHT);
 					gnode->add_child(text2);
-					gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, Color(1, 1, 1, 1), seq_port, seq_port);
+					gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 					slot_idx++;
 				}
 			}
@@ -677,10 +718,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 			gnode->add_child(hbc);
 
+			bool dark_theme = get_constant("dark_theme", "Editor");
 			if (i < mixed_seq_ports) {
-				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type), true, TYPE_SEQUENCE, Color(1, 1, 1, 1), Ref<Texture>(), seq_port);
+				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), true, TYPE_SEQUENCE, mono_color, Ref<Texture>(), seq_port);
 			} else {
-				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type), right_ok, right_type, _color_from_type(right_type));
+				gnode->set_slot(slot_idx, left_ok, left_type, _color_from_type(left_type, dark_theme), right_ok, right_type, _color_from_type(right_type, dark_theme));
 			}
 
 			slot_idx++;
@@ -710,7 +752,7 @@ void VisualScriptEditor::_update_members() {
 	functions->set_text(0, TTR("Functions:"));
 	functions->add_button(0, Control::get_icon("Override", "EditorIcons"), 1);
 	functions->add_button(0, Control::get_icon("Add", "EditorIcons"), 0);
-	functions->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	functions->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> func_names;
 	script->get_function_list(&func_names);
@@ -719,13 +761,7 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0,Control::get_icon("Edit","EditorIcons"),0); function arguments are in the node now
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
-		if (E->get() == edited_func) {
-			ti->set_custom_bg_color(0, get_color("prop_category", "Editor"));
-			ti->set_custom_color(0, Color(1, 1, 1, 1));
-		}
 		if (selected == E->get())
 			ti->select(0);
 	}
@@ -734,7 +770,7 @@ void VisualScriptEditor::_update_members() {
 	variables->set_selectable(0, false);
 	variables->set_text(0, TTR("Variables:"));
 	variables->add_button(0, Control::get_icon("Add", "EditorIcons"));
-	variables->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	variables->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("MiniVariant", "EditorIcons"),
@@ -778,8 +814,6 @@ void VisualScriptEditor::_update_members() {
 
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);
@@ -789,7 +823,7 @@ void VisualScriptEditor::_update_members() {
 	_signals->set_selectable(0, false);
 	_signals->set_text(0, TTR("Signals:"));
 	_signals->add_button(0, Control::get_icon("Add", "EditorIcons"));
-	_signals->set_custom_bg_color(0, Control::get_color("prop_section", "Editor"));
+	_signals->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> signal_names;
 	script->get_custom_signal_list(&signal_names);
@@ -798,8 +832,6 @@ void VisualScriptEditor::_update_members() {
 		ti->set_text(0, E->get());
 		ti->set_selectable(0, true);
 		ti->set_editable(0, true);
-		//ti->add_button(0, Control::get_icon("Edit", "EditorIcons"), 0);
-		//ti->add_button(0, Control::get_icon("Del", "EditorIcons"), 1);
 		ti->set_metadata(0, E->get());
 		if (selected == E->get())
 			ti->select(0);
@@ -2767,18 +2799,30 @@ void VisualScriptEditor::_notification(int p_what) {
 		variable_editor->connect("changed", this, "_update_members");
 		signal_editor->connect("changed", this, "_update_members");
 
+		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
+
+		bool dark_theme = tm->get_constant("dark_theme", "Editor");
+
 		List<Pair<String, Color> > colors;
-		colors.push_back(Pair<String, Color>("flow_control", Color::html("#f4f4f4")));
-		colors.push_back(Pair<String, Color>("functions", Color::html("#f58581")));
-		colors.push_back(Pair<String, Color>("data", Color::html("#80f6cf")));
-		colors.push_back(Pair<String, Color>("operators", Color::html("#ab97df")));
-		colors.push_back(Pair<String, Color>("custom", Color::html("#80bbf6")));
-		colors.push_back(Pair<String, Color>("constants", Color::html("#f680b0")));
+		if (dark_theme) {
+			colors.push_back(Pair<String, Color>("flow_control", Color::html("#f4f4f4")));
+			colors.push_back(Pair<String, Color>("functions", Color::html("#f58581")));
+			colors.push_back(Pair<String, Color>("data", Color::html("#80f6cf")));
+			colors.push_back(Pair<String, Color>("operators", Color::html("#ab97df")));
+			colors.push_back(Pair<String, Color>("custom", Color::html("#80bbf6")));
+			colors.push_back(Pair<String, Color>("constants", Color::html("#f680b0")));
+		} else {
+			colors.push_back(Pair<String, Color>("flow_control", Color::html("#424242")));
+			colors.push_back(Pair<String, Color>("functions", Color::html("#f26661")));
+			colors.push_back(Pair<String, Color>("data", Color::html("#13bb83")));
+			colors.push_back(Pair<String, Color>("operators", Color::html("#8265d0")));
+			colors.push_back(Pair<String, Color>("custom", Color::html("#4ea0f2")));
+			colors.push_back(Pair<String, Color>("constants", Color::html("#f02f7d")));
+		}
 
 		for (List<Pair<String, Color> >::Element *E = colors.front(); E; E = E->next()) {
-			print_line(E->get().first);
-			Ref<StyleBoxFlat> sb = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("frame", "GraphNode");
-			if (sb != NULL) {
+			Ref<StyleBoxFlat> sb = tm->get_stylebox("frame", "GraphNode");
+			if (!sb.is_null()) {
 				Ref<StyleBoxFlat> frame_style = sb->duplicate();
 				Color c = sb->get_border_color(MARGIN_TOP);
 				Color cn = E->get().second;

@@ -146,6 +146,25 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#84c2ff", "#5caeff"); // selection (blue)
 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea686c", "#e3383d"); // key xform (red)
+
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#69ecbd", "#25e3a0"); // VS variant
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#8da6f0", "#6d8eeb"); // VS bool
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#7dc6ef", "#4fb2e9"); // VS int
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#61daf4", "#27ccf0"); // VS float
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#6ba7ec", "#4690e7"); // VS string
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#bd91f1", "#ad76ee"); // VS vector2
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f191a5", "#ee758e"); // VS rect
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e286f0", "#dc6aed"); // VS vector3
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#c4ec69", "#96ce1a"); // VS transform2D
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f77070", "#f77070"); // VS plane
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ec69a3", "#ec69a3"); // VS quat
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ee7991", "#ee7991"); // VS aabb
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e3ec69", "#b2bb19"); // VS basis
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f6a86e", "#f49047"); // VS transform
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#6993ec", "#6993ec"); // VS path
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#69ec9a", "#2ce573"); // VS rid
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#79f3e8", "#12d5c3"); // VS object
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#77edb1", "#57e99f"); // VS dict
 	}
 
 	// these ones should be converted even if we are using a dark theme
@@ -474,7 +493,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("MenuPanel", "EditorStyles", style_menu);
 
 	// Script Editor
-	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(4, 0, 4, 4));
+	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
 	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
 
 	// Play button group
@@ -545,7 +564,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_disabled", "OptionButton", font_color_disabled);
 	theme->set_color("icon_color_hover", "OptionButton", font_color_hl);
 	theme->set_icon("arrow", "OptionButton", theme->get_icon("GuiOptionArrow", "EditorIcons"));
-	theme->set_constant("arrow_margin", "OptionButton", 4 * EDSCALE);
+	theme->set_constant("arrow_margin", "OptionButton", default_margin_size * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
 
 	// CheckButton
@@ -597,6 +616,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
 	theme->set_icon("arrow", "Tree", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
+	theme->set_icon("updown", "Tree", theme->get_icon("GuiTreeUpdown", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("GuiDropdown", "EditorIcons"));
 	theme->set_icon("select_option", "Tree", theme->get_icon("GuiTreeOption", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", style_focus);
@@ -672,8 +692,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_color_selected", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("vseparation", "ItemList", 2);
-	theme->set_constant("hseparation", "ItemList", 2);
+	theme->set_constant("vseparation", "ItemList", 2 * EDSCALE);
+	theme->set_constant("hseparation", "ItemList", 2 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", default_margin_size * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 2 * EDSCALE);
 
@@ -880,21 +900,23 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphNode
 
+	const float mv = dark_theme ? 0.0 : 1.0;
+	const float mv2 = 1.0 - mv;
 	const int gn_margin_side = 28;
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(Color(0, 0, 0, 0.3), gn_margin_side, 24, gn_margin_side, 5);
+	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(Color(mv, mv, mv, 0.7), gn_margin_side, 24, gn_margin_side, 5);
 	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color_all(Color(1, 1, 1, 0.9));
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(0, 0, 0, 0.6), gn_margin_side, 24, gn_margin_side, 5);
+	graphsb->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
+	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(mv, mv, mv, 0.9), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbselected->set_border_width_all(border_width);
 	graphsbselected->set_border_color_all(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
 	graphsbselected->set_shadow_size(8 * EDSCALE);
 	graphsbselected->set_shadow_color(shadow_color);
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(0, 0, 0, 0.3), gn_margin_side, 24, gn_margin_side, 5);
+	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(mv, mv, mv, 0.3), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color_all(Color(1, 1, 1, 0.9));
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(Color(0, 0, 0, 0.4), gn_margin_side, 24, gn_margin_side, 5);
+	graphsbcomment->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
+	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(Color(mv, mv, mv, 0.4), gn_margin_side, 24, gn_margin_side, 5);
 	graphsbcommentselected->set_border_width_all(border_width);
-	graphsbcommentselected->set_border_color_all(Color(1, 1, 1, 0.9));
+	graphsbcommentselected->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
 	Ref<StyleBoxFlat> graphsbbreakpoint = graphsbselected->duplicate();
 	graphsbbreakpoint->set_draw_center(false);
 	graphsbbreakpoint->set_border_color_all(warning_color);
