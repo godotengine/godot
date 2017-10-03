@@ -1551,7 +1551,7 @@ void PhysicalBone::ConeJointData::_get_property_list(List<PropertyInfo> *p_list)
 	JointData::_get_property_list(p_list);
 
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/swing_span", PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/twist_span", PROPERTY_HINT_RANGE, "-40000,40000,0.1"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/bias", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
@@ -1976,7 +1976,6 @@ void PhysicalBone::_notification(int p_what) {
 			parent_skeleton = find_skeleton_parent(get_parent());
 			update_bone_id();
 			reset_to_rest_position();
-			_reset_physics_simulation_state();
 			break;
 		case NOTIFICATION_EXIT_TREE:
 			if (parent_skeleton) {
@@ -2038,8 +2037,10 @@ void PhysicalBone::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_body_offset", "offset"), &PhysicalBone::set_body_offset);
 	ClassDB::bind_method(D_METHOD("get_body_offset"), &PhysicalBone::get_body_offset);
 
+	ClassDB::bind_method(D_METHOD("set_static_body", "simulate"), &PhysicalBone::set_static_body);
 	ClassDB::bind_method(D_METHOD("is_static_body"), &PhysicalBone::is_static_body);
 
+	ClassDB::bind_method(D_METHOD("set_simulate_physics", "simulate"), &PhysicalBone::set_simulate_physics);
 	ClassDB::bind_method(D_METHOD("get_simulate_physics"), &PhysicalBone::get_simulate_physics);
 
 	ClassDB::bind_method(D_METHOD("is_simulating_physics"), &PhysicalBone::is_simulating_physics);
@@ -2063,20 +2064,15 @@ void PhysicalBone::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "joint_offset"), "set_joint_offset", "get_joint_offset");
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simulate_physics"), "set_simulate_physics", "get_simulate_physics");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "body_offset"), "set_body_offset", "get_body_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "static_body"), "set_static_body", "is_static_body");
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_weight", "get_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_gravity_scale", "get_gravity_scale");
-
-	BIND_ENUM_CONSTANT(JOINT_TYPE_NONE);
-	BIND_ENUM_CONSTANT(JOINT_TYPE_PIN);
-	BIND_ENUM_CONSTANT(JOINT_TYPE_CONE);
-	BIND_ENUM_CONSTANT(JOINT_TYPE_HINGE);
-	BIND_ENUM_CONSTANT(JOINT_TYPE_SLIDER);
-	BIND_ENUM_CONSTANT(JOINT_TYPE_6DOF);
 }
 
 Skeleton *PhysicalBone::find_skeleton_parent(Node *p_parent) {
@@ -2379,7 +2375,6 @@ void PhysicalBone::set_bounce(real_t p_bounce) {
 	bounce = p_bounce;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, bounce);
 }
-
 real_t PhysicalBone::get_bounce() const {
 
 	return bounce;
@@ -2404,8 +2399,8 @@ PhysicalBone::PhysicalBone() :
 		joint_data(NULL),
 		static_body(false),
 		simulate_physics(false),
-		_internal_static_body(false),
-		_internal_simulate_physics(false),
+		_internal_static_body(!static_body),
+		_internal_simulate_physics(simulate_physics),
 		bone_id(-1),
 		parent_skeleton(NULL),
 		bone_name(""),

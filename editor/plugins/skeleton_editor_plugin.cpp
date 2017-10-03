@@ -68,16 +68,16 @@ void SkeletonEditor::create_physical_skeleton() {
 
 		if (parent < 0) {
 
-			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
+			bones_infos[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
 
 		} else {
 
-			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
+			bones_infos[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
 			/// create physical bone on parent
 			if (!bones_infos[parent].physical_bone) {
 
-				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
+				bones_infos[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
 				ur->create_action(TTR("Create physical bones"));
 				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
@@ -154,7 +154,10 @@ SkeletonEditor::SkeletonEditor() {
 	options->hide();
 }
 
-SkeletonEditor::~SkeletonEditor() {}
+SkeletonEditor::~SkeletonEditor() {
+	SpatialEditor::get_singleton()->remove_child(options);
+	memdelete(options);
+}
 
 void SkeletonEditorPlugin::edit(Object *p_object) {
 	skeleton_editor->edit(Object::cast_to<Skeleton>(p_object));
@@ -180,4 +183,7 @@ SkeletonEditorPlugin::SkeletonEditorPlugin(EditorNode *p_node) {
 	editor->get_viewport()->add_child(skeleton_editor);
 }
 
-SkeletonEditorPlugin::~SkeletonEditorPlugin() {}
+SkeletonEditorPlugin::~SkeletonEditorPlugin() {
+	editor->get_viewport()->remove_child(skeleton_editor);
+	memdelete(skeleton_editor);
+}
