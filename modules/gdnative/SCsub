@@ -29,7 +29,8 @@ def _build_gdnative_api_struct_header(api):
         'extern "C" {',
         '#endif',
         '',
-        'typedef struct godot_gdnative_api_struct {'
+        'typedef struct godot_gdnative_api_struct {',
+        '\tconst char *version;',
     ]
 
     for funcname, funcdef in api['api'].items():
@@ -54,7 +55,9 @@ def _build_gdnative_api_struct_source(api):
         '',
         '#include <gdnative_api_struct.gen.h>',
         '',
-        'extern const godot_gdnative_api_struct api_struct = {'
+        'const char *_gdnative_api_version = "%s";' % api['version'],
+        'extern const godot_gdnative_api_struct api_struct = {',
+        '\t_gdnative_api_version,',
     ]
 
     for funcname in api['api'].keys():
