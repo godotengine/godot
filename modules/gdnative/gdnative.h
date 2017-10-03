@@ -36,7 +36,7 @@
 #include "resource.h"
 
 #include "gdnative/gdnative.h"
-#include "gdnative_api_struct.h"
+#include "gdnative_api_struct.gen.h"
 
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource)

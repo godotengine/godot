@@ -4,12 +4,82 @@ Import('env')
 
 gdn_env = env.Clone()
 
-gdn_env.add_source_files(env.modules_sources, "*.cpp")
+gdn_env.add_source_files(env.modules_sources, "gd_native_library_editor.cpp")
+gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
+gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 
 gdn_env.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
+
+def _spaced(e):
+    return e if e[-1] == '*' else e + ' '
+
+def _build_gdnative_api_struct_header(api):
+    out = [
+        '/* THIS FILE IS GENERATED DO NOT EDIT */',
+        '#ifndef GODOT_GDNATIVE_API_STRUCT_H',
+        '#define GODOT_GDNATIVE_API_STRUCT_H',
+        '',
+        '#include <gdnative/gdnative.h>',
+        '#include <nativescript/godot_nativescript.h>',
+        '',
+        '#ifdef __cplusplus',
+        'extern "C" {',
+        '#endif',
+        '',
+        'typedef struct godot_gdnative_api_struct {'
+    ]
+
+    for funcname, funcdef in api['api'].items():
+        args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
+        out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcname, args))
+
+    out += [
+        '} godot_gdnative_api_struct;',
+        '',
+        '#ifdef __cplusplus',
+        '}',
+        '#endif',
+        '',
+        '#endif // GODOT_GDNATIVE_API_STRUCT_H',
+        ''
+    ]
+    return '\n'.join(out)
+
+def _build_gdnative_api_struct_source(api):
+    out = [
+        '/* THIS FILE IS GENERATED DO NOT EDIT */',
+        '',
+        '#include <gdnative_api_struct.gen.h>',
+        '',
+        'extern const godot_gdnative_api_struct api_struct = {'
+    ]
+
+    for funcname in api['api'].keys():
+        out.append('\t%s,' % funcname)
+    out.append('};\n')
+
+    return '\n'.join(out)
+
+def build_gdnative_api_struct(target, source, env):
+    import json
+    from collections import OrderedDict
+
+    with open(source[0].path, 'r') as fd:
+        # Keep the json ordered
+        api = json.load(fd, object_pairs_hook=OrderedDict)
+
+    header, source = target
+    with open(header.path, 'w') as fd:
+        fd.write(_build_gdnative_api_struct_header(api))
+    with open(source.path, 'w') as fd:
+        fd.write(_build_gdnative_api_struct_source(api))
+
+_, gensource = gdn_env.Command(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+                               'gdnative_api.json', build_gdnative_api_struct)
+gdn_env.add_source_files(env.modules_sources, [gensource])
 
 if "platform" in env and env["platform"] in ["x11", "iphone"]:
     env.Append(LINKFLAGS=["-rdynamic"])
