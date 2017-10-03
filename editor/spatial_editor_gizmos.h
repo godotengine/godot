@@ -214,6 +214,17 @@ public:
 	SkeletonSpatialGizmo(Skeleton *p_skel = NULL);
 };
 
+class PhysicalBoneSpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(PhysicalBoneSpatialGizmo, EditorSpatialGizmo);
+
+	PhysicalBone *physical_bone;
+
+public:
+	//virtual Transform get_global_gizmo_transform();
+	virtual void redraw();
+	PhysicalBoneSpatialGizmo(PhysicalBone *p_pb = NULL);
+};
+
 #if 0
 class PortalSpatialGizmo : public EditorSpatialGizmo {
 

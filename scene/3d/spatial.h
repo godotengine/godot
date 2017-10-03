@@ -145,6 +145,11 @@ public:
 	Transform get_transform() const;
 	Transform get_global_transform() const;
 
+#ifdef TOOLS_ENABLED
+	virtual Transform get_global_gizmo_transform() const;
+	virtual Transform get_local_gizmo_transform() const;
+#endif
+
 	void set_as_toplevel(bool p_enabled);
 	bool is_set_as_toplevel() const;
 

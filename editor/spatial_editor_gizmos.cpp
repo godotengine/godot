@@ -1534,6 +1534,120 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton *p_skel) {
 	set_spatial_node(p_skel);
 }
 
+PhysicalBoneSpatialGizmo::PhysicalBoneSpatialGizmo(PhysicalBone *p_pb) :
+		EditorSpatialGizmo(),
+		physical_bone(p_pb) {
+	set_spatial_node(p_pb);
+}
+
+void PhysicalBoneSpatialGizmo::redraw() {
+
+	clear();
+
+	if (!physical_bone)
+		return;
+
+	Skeleton *sk(physical_bone->find_skeleton_parent());
+	PhysicalBone *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
+	PhysicalBone *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
+
+	Vector<Vector3> points;
+
+	switch (physical_bone->get_joint_type()) {
+		case PhysicalBone::JOINT_TYPE_PIN: {
+
+			PinJointSpatialGizmo::CreateGizmo(physical_bone->get_joint_offset(), points);
+		} break;
+		case PhysicalBone::JOINT_TYPE_CONE: {
+
+			const PhysicalBone::ConeJointData *cjd(static_cast<const PhysicalBone::ConeJointData *>(physical_bone->get_joint_data()));
+			ConeTwistJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					cjd->swing_span,
+					cjd->twist_span,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_HINGE: {
+
+			const PhysicalBone::HingeJointData *hjd(static_cast<const PhysicalBone::HingeJointData *>(physical_bone->get_joint_data()));
+			HingeJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					hjd->angular_limit_lower,
+					hjd->angular_limit_upper,
+					hjd->angular_limit_enabled,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_SLIDER: {
+
+			const PhysicalBone::SliderJointData *sjd(static_cast<const PhysicalBone::SliderJointData *>(physical_bone->get_joint_data()));
+			SliderJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+					sjd->angular_limit_lower,
+					sjd->angular_limit_upper,
+					sjd->linear_limit_lower,
+					sjd->linear_limit_upper,
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		case PhysicalBone::JOINT_TYPE_6DOF: {
+
+			const PhysicalBone::SixDOFJointData *sdofjd(static_cast<const PhysicalBone::SixDOFJointData *>(physical_bone->get_joint_data()));
+			Generic6DOFJointSpatialGizmo::CreateGizmo(
+					physical_bone->get_joint_offset(),
+
+					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
+					pb ? pb->get_global_transform() : Transform(),
+					pbp ? pbp->get_global_transform() : Transform(),
+
+					sdofjd->axis_data[0].angular_limit_lower,
+					sdofjd->axis_data[0].angular_limit_upper,
+					sdofjd->axis_data[0].linear_limit_lower,
+					sdofjd->axis_data[0].linear_limit_upper,
+					sdofjd->axis_data[0].angular_limit_enabled,
+					sdofjd->axis_data[0].linear_limit_enabled,
+
+					sdofjd->axis_data[1].angular_limit_lower,
+					sdofjd->axis_data[1].angular_limit_upper,
+					sdofjd->axis_data[1].linear_limit_lower,
+					sdofjd->axis_data[1].linear_limit_upper,
+					sdofjd->axis_data[1].angular_limit_enabled,
+					sdofjd->axis_data[1].linear_limit_enabled,
+
+					sdofjd->axis_data[2].angular_limit_lower,
+					sdofjd->axis_data[2].angular_limit_upper,
+					sdofjd->axis_data[2].linear_limit_lower,
+					sdofjd->axis_data[2].linear_limit_upper,
+					sdofjd->axis_data[2].angular_limit_enabled,
+					sdofjd->axis_data[2].linear_limit_enabled,
+
+					points,
+					pb ? &points : NULL,
+					pbp ? &points : NULL);
+		} break;
+		default:
+			return;
+	}
+
+	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+
+	add_collision_segments(points);
+	add_lines(points, material);
+}
+
 // FIXME: Kept as reference for reimplementation in 3.1+
 #if 0
 void RoomSpatialGizmo::redraw() {
@@ -3733,6 +3847,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 
 		Ref<SkeletonSpatialGizmo> lsg = memnew(SkeletonSpatialGizmo(Object::cast_to<Skeleton>(p_spatial)));
 		return lsg;
+	}
+
+	if (Object::cast_to<PhysicalBone>(p_spatial)) {
+
+		Ref<PhysicalBoneSpatialGizmo> pbsg = memnew(PhysicalBoneSpatialGizmo(Object::cast_to<PhysicalBone>(p_spatial)));
+		return pbsg;
 	}
 
 	if (Object::cast_to<Position3D>(p_spatial)) {
