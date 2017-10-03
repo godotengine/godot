@@ -472,6 +472,13 @@
 				Return true if the engine was executed with -v (verbose stdout).
 			</description>
 		</method>
+		<method name="is_userfs_persistent" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
+			</description>
+		</method>
 		<method name="is_vsync_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
