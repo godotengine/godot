@@ -93,6 +93,7 @@ public:
 
 	String get_stream_name() const;
 	float get_stream_position() const;
+	void set_stream_position(float p_position);
 
 	void set_autoplay(bool p_enable);
 	bool has_autoplay() const;

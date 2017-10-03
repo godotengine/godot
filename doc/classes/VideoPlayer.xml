@@ -156,6 +156,15 @@
 				Set the video stream for this player.
 			</description>
 		</method>
+		<method name="set_stream_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="float">
+			</argument>
+			<description>
+				Set the current position of the stream, in seconds.
+			</description>
+		</method>
 		<method name="set_volume">
 			<return type="void">
 			</return>
