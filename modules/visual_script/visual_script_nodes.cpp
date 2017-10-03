@@ -1598,7 +1598,7 @@ VisualScriptNodeInstance *VisualScriptClassConstant::instance(VisualScriptInstan
 
 void VisualScriptClassConstant::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "constant/constant") {
+	if (property.name == "constant") {
 
 		List<String> constants;
 		ClassDB::get_integer_constant_list(base_type, &constants, true);
@@ -1727,7 +1727,7 @@ VisualScriptNodeInstance *VisualScriptBasicTypeConstant::instance(VisualScriptIn
 
 void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "constant/constant") {
+	if (property.name == "constant") {
 
 		List<StringName> constants;
 		Variant::get_numeric_constants_for_type(type, &constants);
@@ -2689,7 +2689,7 @@ VisualScriptNodeInstance *VisualScriptCustomNode::instance(VisualScriptInstance 
 }
 
 void VisualScriptCustomNode::_script_changed() {
-	ports_changed_notify();
+	call_deferred("ports_changed_notify");
 }
 
 void VisualScriptCustomNode::_bind_methods() {

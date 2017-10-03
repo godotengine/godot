@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptDeconstruct" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A Visual Script node which deconstructs a base type instance into its parts.
 	</brief_description>
 	<description>
+		A Visual Script node which deconstructs a base type instance into its parts.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -28,6 +30,7 @@
 		<member name="elem_cache" type="Array" setter="_set_elem_cache" getter="_get_elem_cache">
 		</member>
 		<member name="type" type="int" setter="set_deconstruct_type" getter="get_deconstruct_type" enum="Variant.Type">
+			The type to deconstruct.
 		</member>
 	</members>
 	<constants>

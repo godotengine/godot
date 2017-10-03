@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="@VisualScript" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Built-in visual script functions.
 	</brief_description>
 	<description>
+		A list of built-in visual script functions, see [VisualScriptBuiltinFunc] and [VisualScript].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptNode" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A node which is part of a [VisualScript].
 	</brief_description>
 	<description>
+		A node which is part of a [VisualScript]. Not to be confused with [Node], which is a part of a [SceneTree].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,12 +17,21 @@
 			<argument index="0" name="port_idx" type="int">
 			</argument>
 			<description>
+				Returns the default value of a given port. The default value is used when nothing is connected to the port.
 			</description>
 		</method>
 		<method name="get_visual_script" qualifiers="const">
 			<return type="VisualScript">
 			</return>
 			<description>
+				Returns the [VisualScript] instance the node is bound to.
+			</description>
+		</method>
+		<method name="ports_changed_notify">
+			<return type="void">
+			</return>
+			<description>
+				Notify that the node's ports have changed. Usually used in conjunction with [VisualScriptCustomNode] .
 			</description>
 		</method>
 		<method name="set_default_input_value">
@@ -31,6 +42,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Change the default value of a given port.
 			</description>
 		</method>
 	</methods>
@@ -41,6 +53,7 @@
 	<signals>
 		<signal name="ports_changed">
 			<description>
+				Emitted when the available input/output ports are changed.
 			</description>
 		</signal>
 	</signals>

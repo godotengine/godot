@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptCondition" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A Visual Script node which branches the flow.
 	</brief_description>
 	<description>
+		A Visual Script node which switches the flow based on a boolean. It acts similar to if/else in typical programming languages.
 	</description>
 	<tutorials>
 	</tutorials>
