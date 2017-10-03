@@ -35,8 +35,6 @@ void Navigation::_navmesh_link(int p_id) {
 	NavMesh &nm = navmesh_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	print_line("LINK");
-
 	PoolVector<Vector3> vertices = nm.navmesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0)
@@ -143,8 +141,6 @@ void Navigation::_navmesh_unlink(int p_id) {
 	ERR_FAIL_COND(!navmesh_map.has(p_id));
 	NavMesh &nm = navmesh_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
-
-	print_line("UNLINK");
 
 	for (List<Polygon>::Element *E = nm.polygons.front(); E; E = E->next()) {
 
