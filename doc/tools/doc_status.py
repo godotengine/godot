@@ -23,6 +23,7 @@ flags = {
     'o': True,
     'i': False,
     'a': True,
+    'e': False,
 }
 flag_descriptions = {
     'c': 'Toggle colors when outputting.',
@@ -35,6 +36,7 @@ flag_descriptions = {
     'o': 'Toggle overall column.',
     'i': 'Toggle collapse of class items columns.',
     'a': 'Toggle showing all items.',
+    'e': 'Toggle hiding empty items.',
 }
 long_flags = {
     'colors': 'c',
@@ -64,6 +66,8 @@ long_flags = {
     'collapse': 'i',
 
     'all': 'a',
+
+    'empty': 'e',
 }
 table_columns = ['name', 'brief_description', 'description', 'methods', 'constants', 'members', 'signals']
 table_column_names = ['Name', 'Brief Desc.', 'Desc.', 'Methods', 'Constants', 'Members', 'Signals']
@@ -191,6 +195,14 @@ class ClassStatus:
         for k in self.progresses:
             ok = ok and self.progresses[k].is_ok()
         return ok
+
+    def is_empty(self):
+        sum = 0
+        for k in self.progresses:
+            if self.progresses[k].is_ok():
+                continue
+            sum += self.progresses[k].total
+        return sum < 1
 
     def make_output(self):
         output = {}
@@ -394,6 +406,9 @@ for cn in filtered_classes:
     total_status = total_status + status
 
     if (flags['b'] and status.is_ok()) or (flags['g'] and not status.is_ok()) or (not flags['a']):
+        continue
+
+    if flags['e'] and status.is_empty():
         continue
 
     out = status.make_output()
