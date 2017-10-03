@@ -3334,7 +3334,7 @@
       "arguments": [
         ["godot_variant *", "p_self"],
         ["const godot_string *", "p_method"],
-        ["const godot_variant *", "*p_args"],
+        ["const godot_variant **", "p_args"],
         ["const godot_int", "p_argcount"],
         ["godot_variant_call_error *", "r_error"]
       ]
@@ -3889,7 +3889,7 @@
       "return_type": "double",
       "arguments": [
         ["const wchar_t *", "p_str"],
-        ["const wchar_t *", "*r_end"]
+        ["const wchar_t **", "r_end"]
       ]
     },
     "godot_string_get_slice_count": {
@@ -4390,7 +4390,7 @@
       "arguments": [
         ["godot_method_bind *", "p_method_bind"],
         ["godot_object *", "p_instance"],
-        ["const void *", "*p_args"],
+        ["const void **", "p_args"],
         ["void *", "p_ret"]
       ]
     },
@@ -4399,7 +4399,7 @@
       "arguments": [
         ["godot_method_bind *", "p_method_bind"],
         ["godot_object *", "p_instance"],
-        ["const godot_variant *", "*p_args"],
+        ["const godot_variant **", "p_args"],
         ["const int", "p_arg_count"],
         ["godot_variant_call_error *", "p_call_error"]
       ]

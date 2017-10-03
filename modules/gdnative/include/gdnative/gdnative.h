@@ -34,18 +34,9 @@
 extern "C" {
 #endif
 
-#ifdef GDAPI_BUILT_IN
-#define GDAPI_EXPORT
-#endif
-
 #ifdef _WIN32
-#if defined(GDAPI_EXPORT)
 #define GDCALLINGCONV
-#define GDAPI __declspec(dllexport) GDCALLINGCONV
-#else
-#define GDCALLINGCONV
-#define GDAPI __declspec(dllimport) GDCALLINGCONV
-#endif
+#define GDAPI GDCALLINGCONV
 #elif defined(__APPLE__)
 #include "TargetConditionals.h"
 #if TARGET_OS_IPHONE
