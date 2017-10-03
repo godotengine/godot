@@ -36,42 +36,6 @@
 extern "C" {
 #endif
 
-#ifdef GDAPI_BUILT_IN
-#define GDAPI_EXPORT
-#endif
-
-#ifdef _WIN32
-#if defined(GDAPI_EXPORT)
-#define GDCALLINGCONV
-#define GDAPI __declspec(dllexport) GDCALLINGCONV
-#else
-#define GDCALLINGCONV
-#define GDAPI __declspec(dllimport) GDCALLINGCONV
-#endif
-#elif defined(__APPLE__)
-#include "TargetConditionals.h"
-#if TARGET_OS_IPHONE
-#define GDCALLINGCONV __attribute__((visibility("default")))
-#define GDAPI GDCALLINGCONV
-#elif TARGET_OS_MAC
-#define GDCALLINGCONV __attribute__((sysv_abi))
-#define GDAPI GDCALLINGCONV
-#endif
-#else
-#define GDCALLINGCONV __attribute__((sysv_abi, visibility("default")))
-#define GDAPI GDCALLINGCONV
-#endif
-
-// This is for libraries *using* the header, NOT GODOT EXPOSING STUFF!!
-#ifdef _WIN32
-#define GDN_EXPORT __declspec(dllexport)
-#else
-#define GDN_EXPORT
-#endif
-
-#include <stdbool.h>
-#include <stdint.h>
-
 typedef enum {
 	GODOT_METHOD_RPC_MODE_DISABLED,
 	GODOT_METHOD_RPC_MODE_REMOTE,
