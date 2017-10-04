@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Class for finding text patterns in a string using regular expressions. It can not perform replacements. Regular expressions are a way to define patterns of text to be searched. Details on writing patterns are too long to explain here but the Internet is full of tutorials and detailed explanations.
-		Once created, the RegEx object needs to be compiled with the pattern before it can be used. The pattern must be escaped first for gdscript before it is escaped for the expression. For example:
+		Once created, the RegEx object needs to be compiled with the search pattern before it can be used. The search pattern must be escaped first for gdscript before it is escaped for the expression. For example:
 		[code]var exp = RegEx.new()[/code]
 		[code]exp.compile("\\d+")[/code]
 		would be read by RegEx as [code]\d+[/code]
@@ -47,7 +47,7 @@
 			<argument index="0" name="pattern" type="String">
 			</argument>
 			<description>
-				Compiles and assign the regular expression pattern to use.
+				Compiles and assign the search pattern to use.
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">
@@ -68,14 +68,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the expression used to compile the code.
+				Returns the search pattern used to compile the code.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether this object has a valid regular expression assigned.
+				Returns whether this object has a valid search pattern assigned.
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
@@ -88,7 +88,7 @@
 			<argument index="2" name="end" type="int" default="-1">
 			</argument>
 			<description>
-				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching reult if found, otherwise null. The region to search within can be specified without modifying where the start and end anchor would be.
+				Searches the text for the compiled pattern. Returns a [RegExMatch] container of the first matching result if found, otherwise null. The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
 		<method name="sub" qualifiers="const">
