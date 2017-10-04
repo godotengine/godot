@@ -865,11 +865,57 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
 #endif
 
-// GGX Specular
-// Source: http://www.filmicworlds.com/images/ggx-opt/optimized-ggx.hlsl
-float G1V(float dotNV, float k)
-{
-    return 1.0 / (dotNV * (1.0 - k) + k);
+
+// This returns the G_GGX function divided by 2 cos_theta_m, where in practice cos_theta_m is either N.L or N.V.
+// We're dividing this factor off because the overall term we'll end up looks like
+// (see, for example, the first unnumbered equation in B. Burley, "Physically Based Shading at Disney", SIGGRAPH 2012):
+//
+//   F(L.V) D(N.H) G(N.L) G(N.V) / (4 N.L N.V)
+//
+// We're basically regouping this as
+//
+//   F(L.V) D(N.H) [G(N.L)/(2 N.L)] [G(N.V) / (2 N.V)]
+//
+// and thus, this function implements the [G(N.m)/(2 N.m)] part with m = L or V.
+//
+// The contents of the D and G (G1) functions (GGX) are taken from
+// E. Heitz, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs", J. Comp. Graph. Tech. 3 (2) (2014).
+// Eqns 71-72 and 85-86 (see also Eqns 43 and 80).
+
+float G_GGX_2cos(float cos_theta_m, float alpha) {
+	// Schlick's approximation
+	// C. Schlick, "An Inexpensive BRDF Model for Physically-based Rendering", Computer Graphics Forum. 13 (3): 233 (1994)
+	// Eq. (19), although see Heitz (2014) the about the problems with his derivation.
+	// It nevertheless approximates GGX well with k = alpha/2.
+	float k = 0.5*alpha;
+	return 0.5 / (cos_theta_m * (1.0 - k) + k);
+
+	// float cos2 = cos_theta_m*cos_theta_m;
+	// float sin2 = (1.0-cos2);
+	// return 1.0 /( cos_theta_m + sqrt(cos2 + alpha*alpha*sin2) );
+}
+
+float D_GXX(float cos_theta_m, float alpha) {
+	float alpha2 = alpha*alpha;
+	float d = 1.0 + (alpha2-1.0)*cos_theta_m*cos_theta_m;
+	return alpha2/(M_PI * d * d);
+}
+
+float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
+	float cos2 = cos_theta_m * cos_theta_m;
+	float sin2 = (1.0-cos2);
+	float s_x = alpha_x * cos_phi;
+	float s_y = alpha_y * sin_phi;
+	return 1.0  / (cos_theta_m + sqrt(cos2 + (s_x*s_x + s_y*s_y)*sin2 ));
+}
+
+float D_GXX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
+	float cos2 = cos_theta_m * cos_theta_m;
+	float sin2 = (1.0-cos2);
+	float r_x = cos_phi/alpha_x;
+	float r_y = sin_phi/alpha_y;
+	float d = cos2 + sin2*(r_x * r_x + r_y * r_y);
+	return 1.0 / (M_PI * alpha_x * alpha_y * d * d );
 }
 
 
@@ -1019,7 +1065,6 @@ LIGHT_SHADER_CODE
 
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
-		float alpha = roughness * roughness;
 
 		vec3 H = normalize(V + L);
 
@@ -1035,26 +1080,22 @@ LIGHT_SHADER_CODE
 		float ay = ry*ry;
 		float XdotH = dot( T, H );
 		float YdotH = dot( B, H );
-		float denom = XdotH*XdotH / (ax*ax) + YdotH*YdotH / (ay*ay) + cNdotH*cNdotH;
-		float D = 1.0 / ( M_PI * ax*ay * denom*denom );
+		float D = D_GXX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
+		float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
 
 #else
-		float alphaSqr = alpha * alpha;
-		float denom = cNdotH * cNdotH * (alphaSqr - 1.0) + 1.0;
-		float D = alphaSqr / (M_PI * denom * denom);
+		float alpha = roughness * roughness;
+		float D = D_GGX(cNdotH, alpha);
+		float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
 #endif
 		// F
 		float F0 = 1.0; // FIXME
 		float cLdotH5 = SchlickFresnel(cLdotH);
 		float F = mix(cLdotH5, 1.0, F0);
 
-		// V
-		float k = alpha / 2.0f;
-		float vis = G1V(cNdotL, k) * G1V(cNdotV, k);
+		float specular_brdf_NL = cNdotL * D * F * G;
 
-		float speci = cNdotL * D * F * vis;
-
-		specular_light += speci * light_color * specular_blob_intensity * attenuation;
+		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif
 
 #if defined(LIGHT_USE_CLEARCOAT)
@@ -1069,7 +1110,7 @@ LIGHT_SHADER_CODE
 #endif
 		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
 		float Fr = mix(.04, 1.0, cLdotH5);
-		float Gr = G1V(cNdotL, .25) * G1V(cNdotV, .25);
+		float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 
 
 		specular_light += .25*clearcoat*Gr*Fr*Dr;
