@@ -16,7 +16,7 @@
 			<return type="PoolVector2Array">
 			</return>
 			<description>
-				Return a list of points in either clockwise or counter clockwise order, forming a convex polygon.
+				Returns a list of points in either clockwise or counter clockwise order, forming a convex polygon.
 			</description>
 		</method>
 		<method name="set_point_cloud">
@@ -34,12 +34,13 @@
 			<argument index="0" name="points" type="PoolVector2Array">
 			</argument>
 			<description>
-				Set a list of points in either clockwise or counter clockwise order, forming a convex polygon.
+				Sets a list of points in either clockwise or counter clockwise order, forming a convex polygon.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points">
+			The polygon's list of vertices. Can be in either clockwise or counterclockwise order.
 		</member>
 	</members>
 	<constants>

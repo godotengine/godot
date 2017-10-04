@@ -92,8 +92,10 @@
 	</methods>
 	<members>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok">
+			If [code]true[/code] the dialog is hidden when accepted. Default value: [code]true[/code].
 		</member>
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text">
+			The text displayed by this dialog.
 		</member>
 	</members>
 	<signals>
