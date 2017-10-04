@@ -2348,7 +2348,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if (!probe_data->dynamic.light_cache_changes.has(rid) || !(probe_data->dynamic.light_cache_changes[rid] == lc)) {
+		if ((!probe_data->dynamic.light_cache_changes.has(rid) || !(probe_data->dynamic.light_cache_changes[rid] == lc)) && lc.visible) {
 			//erase light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, -1);
@@ -2361,7 +2361,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if (!probe_data->dynamic.light_cache.has(rid) || !(probe_data->dynamic.light_cache[rid] == lc)) {
+		if ((!probe_data->dynamic.light_cache.has(rid) || !(probe_data->dynamic.light_cache[rid] == lc)) && lc.visible) {
 			//add light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, 1);
@@ -2568,6 +2568,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.spot_angle = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ANGLE);
 		lc.spot_attenuation = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ATTENUATION);
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
+		lc.visible = E->get()->visible;
 
 		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
 			all_equal = false;
@@ -2587,6 +2588,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.spot_angle = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ANGLE);
 		lc.spot_attenuation = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ATTENUATION);
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
+		lc.visible = E->get()->visible;
 
 		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
 			all_equal = false;
