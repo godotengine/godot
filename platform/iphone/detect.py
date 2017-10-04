@@ -99,7 +99,7 @@ def configure(env):
     ## Link flags
 
     if (env["arch"] == "x86"):
-        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=4.3',
+        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=9.0',
                               '-isysroot', '$IPHONESDK',
                               '-Xlinker',
                               '-objc_abi_version',
