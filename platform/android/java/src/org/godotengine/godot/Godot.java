@@ -277,6 +277,21 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
+		final Godot godot = this;
+		mView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+				@Override
+				public void onGlobalLayout() {
+					Point fullSize = new Point();
+					godot.getWindowManager().getDefaultDisplay().getSize(fullSize);
+					Rect gameSize = new Rect();
+					godot.mView.getWindowVisibleDisplayFrame(gameSize);
+
+					final int keyboardHeight = fullSize.y - gameSize.bottom;
+					Log.d("GODOT", "setVirtualKeyboardHeight: " + keyboardHeight);
+					GodotLib.setVirtualKeyboardHeight(keyboardHeight);
+				}
+		});
+
 		// Ad layout
 		adLayout = new RelativeLayout(this);
 		adLayout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));

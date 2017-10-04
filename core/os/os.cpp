@@ -193,6 +193,10 @@ void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_scr
 void OS::hide_virtual_keyboard() {
 }
 
+int OS::get_virtual_keyboard_height() const {
+	return 0;
+}
+
 void OS::print_all_resources(String p_to_file) {
 
 	ERR_FAIL_COND(p_to_file != "" && _OSPRF);

@@ -204,6 +204,7 @@ public:
 	bool has_virtual_keyboard() const;
 	void show_virtual_keyboard(const String &p_existing_text = "");
 	void hide_virtual_keyboard();
+	int get_virtual_keyboard_height();
 
 	void print_resources_in_use(bool p_short = false);
 	void print_all_resources(const String &p_to_file);

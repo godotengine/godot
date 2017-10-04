@@ -313,6 +313,9 @@ public:
 	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
 	virtual void hide_virtual_keyboard();
 
+	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
+	virtual int get_virtual_keyboard_height() const;
+
 	virtual void set_cursor_shape(CursorShape p_shape) = 0;
 
 	virtual bool get_swap_ok_cancel() { return false; }
