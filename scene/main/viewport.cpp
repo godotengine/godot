@@ -349,6 +349,8 @@ void Viewport::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_READY: {
+
+			set_fixed_process(true);
 #ifndef _3D_DISABLED
 			if (listeners.size() && !listener) {
 				Listener *first = NULL;
@@ -2347,7 +2349,6 @@ Rect2 Viewport::get_render_target_to_screen_rect() const {
 void Viewport::set_physics_object_picking(bool p_enable) {
 
 	physics_object_picking = p_enable;
-	set_fixed_process(physics_object_picking);
 	if (!physics_object_picking)
 		physics_picking_events.clear();
 }
