@@ -50,6 +50,21 @@
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->string_names.m_var)
 
+static bool _create_project_solution_if_needed() {
+
+	String sln_path = GodotSharpDirs::get_project_sln_path();
+	String csproj_path = GodotSharpDirs::get_project_csproj_path();
+
+	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
+		// A solution does not yet exist, create a new one
+
+		CRASH_COND(GodotSharpEditor::get_singleton() == NULL);
+		return GodotSharpEditor::get_singleton()->call("_create_project_solution");
+	}
+
+	return true;
+}
+
 CSharpLanguage *CSharpLanguage::singleton = NULL;
 
 String CSharpLanguage::get_name() const {
@@ -1359,7 +1374,18 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class) {
 
 bool CSharpScript::can_instance() const {
 
-	// TODO does the second condition even make sense?
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (_create_project_solution_if_needed()) {
+			CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
+					"Compile",
+					ProjectSettings::get_singleton()->globalize_path(get_path()));
+		} else {
+			ERR_PRINTS("Cannot add " + get_path() + " to the C# project because it could not be created.");
+		}
+	}
+#endif
+
 	return valid || (!tool && !ScriptServer::is_scripting_enabled());
 }
 
@@ -1545,6 +1571,18 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	if (project_assembly) {
 		script_class = project_assembly->get_object_derived_class(name);
+
+		if (!script_class) {
+			ERR_PRINTS("Cannot find class " + name + " for script " + get_path());
+		}
+#ifdef DEBUG_ENABLED
+		else if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
+											  script_class->get_name() + " for script " + get_path() + "\n")
+											   .utf8());
+		}
+#endif
+
 		valid = script_class != NULL;
 
 		if (script_class) {
@@ -1791,21 +1829,12 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 	if (!FileAccess::exists(p_path)) {
 		// The file does not yet exists, let's assume the user just created this script
 
-		String sln_path = GodotSharpDirs::get_project_sln_path();
-		String csproj_path = GodotSharpDirs::get_project_csproj_path();
-
-		if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
-			// A solution does not yet exist, create a new one
-
-			CRASH_COND(GodotSharpEditor::get_singleton() == NULL);
-			GodotSharpEditor::get_singleton()->call("_create_project_solution");
-		}
-
-		// Add the file to the C# project
-		if (FileAccess::exists(csproj_path)) {
-			CSharpProject::add_item(csproj_path, "Compile", ProjectSettings::get_singleton()->globalize_path(p_path));
+		if (_create_project_solution_if_needed()) {
+			CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
+					"Compile",
+					ProjectSettings::get_singleton()->globalize_path(p_path));
 		} else {
-			ERR_PRINT("C# project not found!");
+			ERR_PRINTS("Cannot add " + p_path + " to the C# project because it could not be created.");
 		}
 	}
 #endif
