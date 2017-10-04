@@ -285,6 +285,12 @@ float VideoPlayer::get_stream_position() const {
 	return playback->get_playback_position();
 };
 
+void VideoPlayer::set_stream_position(float p_position) {
+
+	if (playback.is_valid())
+		playback->seek(p_position);
+}
+
 Ref<Texture> VideoPlayer::get_video_texture() {
 
 	if (playback.is_valid())
@@ -327,6 +333,7 @@ void VideoPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoPlayer::get_stream_name);
 
+	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoPlayer::set_stream_position);
 	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoPlayer::get_stream_position);
 
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enabled"), &VideoPlayer::set_autoplay);
