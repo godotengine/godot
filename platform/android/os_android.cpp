@@ -519,6 +519,15 @@ bool OS_Android::has_virtual_keyboard() const {
 	return true;
 }
 
+int OS_Android::get_virtual_keyboard_height() const {
+	if (get_virtual_keyboard_height_func) {
+		return get_virtual_keyboard_height_func();
+	}
+
+	ERR_PRINT("Cannot obtain virtual keyboard height.");
+	return 0;
+}
+
 void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 
 	if (show_virtual_keyboard_func) {
@@ -704,7 +713,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2"; //TODO support etc2 only if GLES3 driver is selected
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -734,6 +743,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 
 	show_virtual_keyboard_func = p_show_vk;
 	hide_virtual_keyboard_func = p_hide_vk;
+	get_virtual_keyboard_height_func = p_vk_height_func;
 
 	set_screen_orientation_func = p_screen_orient;
 	set_keep_screen_on_func = p_set_keep_screen_on_func;

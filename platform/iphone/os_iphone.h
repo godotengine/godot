@@ -124,6 +124,8 @@ private:
 
 	InputDefault *input;
 
+	int virtual_keyboard_height;
+
 public:
 	bool iterate();
 
@@ -133,6 +135,7 @@ public:
 	void mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, bool p_use_as_mouse);
 	void touches_cancelled();
 	void key(uint32_t p_key, bool p_pressed);
+	void set_virtual_keyboard_height(int p_height);
 
 	int set_base_framebuffer(int p_fb);
 
@@ -168,6 +171,7 @@ public:
 	virtual bool has_virtual_keyboard() const;
 	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
 	virtual void hide_virtual_keyboard();
+	virtual int get_virtual_keyboard_height() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 
