@@ -30,6 +30,7 @@ def _build_gdnative_api_struct_header(api):
         '#endif',
         '',
         'typedef struct godot_gdnative_api_struct {',
+        '\tvoid *next;',
         '\tconst char *version;',
     ]
 
@@ -57,6 +58,7 @@ def _build_gdnative_api_struct_source(api):
         '',
         'const char *_gdnative_api_version = "%s";' % api['version'],
         'extern const godot_gdnative_api_struct api_struct = {',
+        '\tNULL,',
         '\t_gdnative_api_version,',
     ]
 
