@@ -89,7 +89,7 @@ Error GameCenter::connect() {
 			ret["type"] = "authentication";
 			if (player.isAuthenticated) {
 				ret["result"] = "ok";
-				ret["player_id"] = player.playerID;
+				ret["player_id"] = [player.playerID UTF8String];
 				GameCenter::get_singleton()->connected = true;
 			} else {
 				ret["result"] = "error";
