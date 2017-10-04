@@ -285,40 +285,58 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount">
+		  		The number of particles that will be spawned on each emission.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder">
+		  		The particle list's drawing order. 
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
+		  		If [code]true[/code] the emitter is currently emitting.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
+		  		The length of intervals between particle emissions, which can range from 0 to 1.
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
+		  		The particle system's targeted FPS.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
+		  		If [code]true[/code] the fractional delta (time between each frame) will be enabled.
 		</member>
 		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames">
+		  		The number of horizontal frames.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
-		</member>
+		  		The length of time that each particle will be visible.
+		</member>		
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
+		  		If [code]true[/code] local coordinates are enabled.
 		</member>
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
+		  		2D normal map.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
+		  		If [code]true[/code], the system will stop after timeout, if false it will automatically restart.
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
+		  		The length of time particles are processed before they are shown for the first time.
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
+		  		A material which will be validated and processed.
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
+		  		The particle system's randomness ratio.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
+	  			The particles' speed scale.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		  		The emitted particles' texture.
 		</member>
 		<member name="v_frames" type="int" setter="set_v_frames" getter="get_v_frames">
+		  		The number of vertical frames.		 
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
+		  		The particle system's visibility [Rect2].
 		</member>
 	</members>
 	<constants>
@@ -327,4 +345,6 @@
 		<constant name="DRAW_ORDER_LIFETIME" value="1">
 		</constant>
 	</constants>
-</class>
+      </class>
+
+
