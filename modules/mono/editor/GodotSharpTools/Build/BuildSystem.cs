@@ -19,7 +19,15 @@ namespace GodotSharpTools.Build
 
         private static string MSBuildPath
         {
-            get { return godot_icall_BuildInstance_get_MSBuildPath(); }
+            get
+            {
+                string ret = godot_icall_BuildInstance_get_MSBuildPath();
+
+                if (ret == null)
+                    throw new FileNotFoundException("Cannot find the MSBuild executable.");
+
+                return ret;
+            }
         }
 
         private string solution;
