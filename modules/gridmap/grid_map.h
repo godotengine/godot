@@ -223,6 +223,8 @@ public:
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;
 
+	Array get_used_cells() const;
+
 	Array get_meshes();
 
 	void clear();
