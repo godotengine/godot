@@ -769,6 +769,8 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
+	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
+
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
@@ -805,6 +807,19 @@ void GridMap::set_cell_scale(float p_scale) {
 float GridMap::get_cell_scale() const {
 
 	return cell_scale;
+}
+
+Array GridMap::get_used_cells() const {
+
+	Array a;
+	a.resize(cell_map.size());
+	int i = 0;
+	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
+		Vector3 p(E->key().x, E->key().y, E->key().z);
+		a[i++] = p;
+	}
+
+	return a;
 }
 
 Array GridMap::get_meshes() {
