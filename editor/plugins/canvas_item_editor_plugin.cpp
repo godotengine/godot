@@ -992,7 +992,7 @@ void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 		se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
 	}
 
-	if (selection.size() == 1 && Object::cast_to<Node2D>(selection[0])) {
+	if (selection.size() == 1 && Object::cast_to<Node2D>(selection[0]) && bone_ik_list.size() == 0) {
 		drag = DRAG_NODE_2D;
 		drag_point_from = Object::cast_to<Node2D>(selection[0])->get_global_position();
 	} else {
