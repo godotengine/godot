@@ -31,6 +31,7 @@
 
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
+#include <mono/metadata/mono-gc.h>
 
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -272,7 +273,7 @@ bool GDMono::_load_assembly(const String &p_name, GDMonoAssembly **r_assembly) {
 	if (OS::get_singleton()->is_stdout_verbose())
 		OS::get_singleton()->print((String() + "Mono: Loading assembly " + p_name + "...\n").utf8());
 
-	MonoImageOpenStatus status;
+	MonoImageOpenStatus status = MONO_IMAGE_OK;
 	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
 	MonoAssembly *assembly = mono_assembly_load_full(aname, NULL, &status, false);
 	mono_assembly_name_free(aname);
@@ -438,9 +439,13 @@ Error GDMono::_unload_scripts_domain() {
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
+	mono_gc_collect(mono_gc_max_generation());
+
 	finalizing_scripts_domain = true;
 	mono_domain_finalize(scripts_domain, 2000);
 	finalizing_scripts_domain = false;
+
+	mono_gc_collect(mono_gc_max_generation());
 
 	_domain_assemblies_cleanup(mono_domain_get_id(scripts_domain));
 
