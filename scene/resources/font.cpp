@@ -33,6 +33,34 @@
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "method_bind_ext.gen.inc"
+#include "text_layout.h"
+
+Size2 Font::get_hex_box_size(uint32_t p_charcode) const {
+
+	return Size2(18, 20);
+};
+
+void Font::draw_hex_box(RID p_canvas_item, const Point2 &p_pos, uint32_t p_charcode, const Color &p_modulate, const Rect2 &p_clip) const {
+
+	uint8_t a = p_charcode & 0x0F;
+	uint8_t b = (p_charcode >> 4) & 0x0F;
+	uint8_t c = (p_charcode >> 8) & 0x0F;
+	uint8_t d = (p_charcode >> 12) & 0x0F;
+
+	VisualServer::get_singleton()->canvas_item_add_rect(p_canvas_item, (p_clip == Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(1, 0), Size2(1, 20)) : Rect2(p_pos + Point2(1, 0), Size2(1, 20)).clip(p_clip), p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_rect(p_canvas_item, (p_clip == Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(17, 0), Size2(1, 20)) : Rect2(p_pos + Point2(17, 0), Size2(1, 20)).clip(p_clip), p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_rect(p_canvas_item, (p_clip == Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(1, 0), Size2(17, 1)) : Rect2(p_pos + Point2(1, 0), Size2(17, 1)).clip(p_clip), p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_rect(p_canvas_item, (p_clip == Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(1, 20), Size2(17, 1)) : Rect2(p_pos + Point2(1, 20), Size2(17, 1)).clip(p_clip), p_modulate);
+
+	Rect2i dest = (p_clip != Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(4, 3), Size2(5, 7)).clip(p_clip) : Rect2(p_pos + Point2(4, 3), Size2(5, 7));
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dest, hex_tex, Rect2(dest.position - p_pos + Point2(d * 5 - 4, -3), dest.size), p_modulate, false, RID(), false);
+	dest = (p_clip != Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(10, 3), Size2(5, 7)).clip(p_clip) : Rect2(p_pos + Point2(10, 3), Size2(5, 7));
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dest, hex_tex, Rect2(dest.position - p_pos + Point2(c * 5 - 10, -3), dest.size), p_modulate, false, RID(), false);
+	dest = (p_clip != Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(4, 11), Size2(5, 7)).clip(p_clip) : Rect2(p_pos + Point2(4, 11), Size2(5, 7));
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dest, hex_tex, Rect2(dest.position - p_pos + Point2(b * 5 - 4, -11), dest.size), p_modulate, false, RID(), false);
+	dest = (p_clip != Rect2(0, 0, -1, -1)) ? Rect2(p_pos + Point2(10, 11), Size2(5, 7)).clip(p_clip) : Rect2(p_pos + Point2(10, 11), Size2(5, 7));
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dest, hex_tex, Rect2(dest.position - p_pos + Point2(a * 5 - 10, -11), dest.size), p_modulate, false, RID(), false);
+};
 
 void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate, const Color &p_outline_modulate) const {
 	float length = get_string_size(p_text).width;
@@ -94,6 +122,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ascent"), &Font::get_ascent);
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
+	ClassDB::bind_method(D_METHOD("get_leading"), &Font::get_leading);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
 	ClassDB::bind_method(D_METHOD("has_outline"), &Font::has_outline);
@@ -103,8 +132,71 @@ void Font::_bind_methods() {
 
 Font::Font() {
 }
+RID Font::hex_tex = RID();
+
+void Font::initialize_hex_font() {
+
+	//load hex box font
+	Ref<Image> image = memnew(Image(_hex_box_img_data));
+	hex_tex = VisualServer::get_singleton()->texture_create_from_image(image);
+};
+
+void Font::finish_hex_font() {
+
+	VisualServer::get_singleton()->free(hex_tex);
+};
 
 /////////////////////////////////////////////////////////////////
+int BitmapFont::get_fallback_count() const {
+
+	int i = 0;
+	Ref<BitmapFont> fb = fallback;
+	while (fb.is_valid()) {
+		i++;
+		fb = fb->fallback;
+	}
+	return i;
+}
+
+bool BitmapFont::has_glyph(uint32_t p_glyph, int p_fallback_index) const {
+
+	if (p_fallback_index >= 0) {
+		if (fallback.is_valid())
+			return fallback->has_glyph(p_glyph, p_fallback_index - 1);
+		return false;
+	}
+
+	const Character *c = char_map.getptr(p_glyph);
+
+	return c;
+}
+
+void BitmapFont::draw_raw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_glyph, int p_fallback_index, const Color &p_modulate, const Rect2 &p_clip) const {
+
+	if (p_fallback_index >= 0) {
+		if (fallback.is_valid())
+			fallback->draw_raw_glyph(p_canvas_item, p_pos, p_glyph, p_fallback_index - 1, p_modulate, p_clip);
+		return;
+	}
+
+	const Character *c = char_map.getptr(p_glyph);
+
+	if (!c) return;
+
+	Point2 cpos = p_pos;
+	cpos.x += c->h_align;
+	cpos.y += c->v_align;
+	ERR_FAIL_COND(c->texture_idx < -1 || c->texture_idx >= textures.size());
+	if (c->texture_idx != -1) {
+		Rect2i dest = (p_clip != Rect2(0, 0, -1, -1)) ? Rect2(cpos, c->rect.size).clip(p_clip) : Rect2(cpos, c->rect.size);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dest, textures[c->texture_idx]->get_rid(), Rect2(dest.position - cpos + c->rect.position, dest.size), p_modulate, false, RID(), false);
+	}
+}
+
+const Pair<uint32_t, int> BitmapFont::char_to_glyph(CharType p_char) const {
+
+	return Pair<uint32_t, int>(p_char, -1);
+}
 
 void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 
@@ -338,7 +430,13 @@ void BitmapFont::set_height(float p_height) {
 
 	height = p_height;
 }
+
 float BitmapFont::get_height() const {
+
+	return height;
+}
+
+float BitmapFont::get_leading() const {
 
 	return height;
 }

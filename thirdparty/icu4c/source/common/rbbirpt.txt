@@ -1,0 +1,337 @@
+
+#*****************************************************************************
+#
+#   Copyright (C) 2016 and later: Unicode, Inc. and others.
+#   License & terms of use: http://www.unicode.org/copyright.html#License
+#
+#*****************************************************************************
+#*****************************************************************************
+#
+#   Copyright (C) 2002-2016, International Business Machines Corporation and others.
+#   All Rights Reserved.
+#
+#*****************************************************************************
+#
+#  file:  rbbirpt.txt
+#  ICU Break Iterator Rule Parser State Table
+#
+#     This state table is used when reading and parsing a set of RBBI rules
+#     The rule parser uses a state machine; the data in this file define the
+#     state transitions that occur for each input character.
+#
+#     *** This file defines the RBBI rule grammar.   This is it.
+#     *** The determination of what is accepted is here.
+#
+#     This file is processed by a perl script "rbbicst.pl" to produce initialized C arrays
+#     that are then built with the rule parser.
+#
+#    perl rbbicst.pl    < rbbirpt.txt > rbbirpt.h
+
+#
+# Here is the syntax of the state definitions in this file:
+#
+#
+#StateName:
+#   input-char           n next-state           ^push-state     action    
+#   input-char           n next-state           ^push-state     action    
+#       |                |   |                      |             |
+#       |                |   |                      |             |--- action to be performed by state machine
+#       |                |   |                      |                  See function RBBIRuleScanner::doParseActions()
+#       |                |   |                      |
+#       |                |   |                      |--- Push this named state onto the state stack.
+#       |                |   |                           Later, when next state is specified as "pop",
+#       |                |   |                           the pushed state will become the current state.
+#       |                |   |
+#       |                |   |--- Transition to this state if the current input character matches the input
+#       |                |        character or char class in the left hand column.  "pop" causes the next
+#       |                |        state to be popped from the state stack.
+#       |                |
+#       |                |--- When making the state transition specified on this line, advance to the next
+#       |                     character from the input only if 'n' appears here.
+#       |
+#       |--- Character or named character classes to test for.  If the current character being scanned
+#            matches, peform the actions and go to the state specified on this line.
+#            The input character is tested sequentally, in the order written.  The characters and
+#            character classes tested for do not need to be mutually exclusive.  The first match wins.
+#            
+
+
+
+
+#
+#  start state, scan position is at the beginning of the rules file, or in between two rules.
+#
+start:
+    escaped                term                  ^break-rule-end    doExprStart                       
+    white_space          n start                     
+    '^'                  n start-after-caret     ^break-rule-end    doNoChain
+    '$'                    scan-var-name         ^assign-or-rule    doExprStart
+    '!'                  n rev-option                             
+    ';'                  n start                                                  # ignore empty rules.
+    eof                    exit              
+    default                term                  ^break-rule-end    doExprStart
+    
+#
+#  break-rule-end:  Returned from doing a break-rule expression.
+#
+break-rule-end:
+    ';'	                 n start                                    doEndOfRule
+    white_space          n break-rule-end
+    default                errorDeath                               doRuleError
+     
+#
+# start of a rule, after having seen a '^' (inhibits rule chain in).
+#     Similar to the main 'start' state in most respects, except
+#          - empty rule is an error.
+#          - A second '^' is an error.
+#
+start-after-caret:
+    escaped                term                                     doExprStart
+    white_space          n start-after-caret
+    '^'                    errorDeath                               doRuleError    # two '^'s
+    '$'                    scan-var-name         ^term-var-ref      doExprStart
+    ';'                    errorDeath                               doRuleError    # ^ ;
+    eof                    errorDeath                               doRuleError
+    default                term                                     doExprStart
+ 
+#
+#   !               We've just scanned a '!', indicating either a !!key word flag or a
+#                   !Reverse rule.
+#
+rev-option:
+    '!'                  n option-scan1   
+    default                reverse-rule           ^break-rule-end   doReverseDir
+    
+option-scan1:
+    name_start_char      n option-scan2                             doOptionStart
+    default                errorDeath                               doRuleError
+    
+option-scan2:
+    name_char            n option-scan2
+    default                option-scan3                             doOptionEnd
+    
+option-scan3:
+    ';'                  n start 
+    white_space          n option-scan3 
+    default                errorDeath                               doRuleError 
+    
+
+reverse-rule:
+    default                term                   ^break-rule-end   doExprStart
+    
+    
+#
+#  term.  Eat through a single rule character, or a composite thing, which
+#         could be a parenthesized expression, a variable name, or a Unicode Set.
+#
+term:
+    escaped              n expr-mod                                 doRuleChar
+    white_space          n term
+    rule_char            n expr-mod                                 doRuleChar
+    '['                    scan-unicode-set      ^expr-mod
+    '('                  n term                  ^expr-mod          doLParen
+    '$'                    scan-var-name         ^term-var-ref
+    '.'                  n expr-mod                                 doDotAny
+    default                errorDeath                               doRuleError
+    
+    
+
+#
+#  term-var-ref   We've just finished scanning a reference to a $variable.
+#                 Check that the variable was defined.
+#                 The variable name scanning is in common with assignment statements,
+#                 so the check can't be done there.
+term-var-ref:
+    default                expr-mod                                 doCheckVarDef
+    
+    
+#
+#   expr-mod      We've just finished scanning a term, now look for the optional
+#                 trailing '*', '?', '+'
+#
+expr-mod:
+    white_space          n  expr-mod
+    '*'                  n  expr-cont                               doUnaryOpStar
+    '+'                  n  expr-cont                               doUnaryOpPlus
+    '?'                  n  expr-cont                               doUnaryOpQuestion
+    default                 expr-cont 
+    
+    
+#
+#  expr-cont      Expression, continuation.  At a point where additional terms are
+#                                            allowed, but not required.
+#
+expr-cont:
+    escaped                 term                                    doExprCatOperator
+    white_space          n  expr-cont
+    rule_char               term                                    doExprCatOperator
+    '['                     term                                    doExprCatOperator
+    '('                     term                                    doExprCatOperator
+    '$'                     term                                    doExprCatOperator
+    '.'                     term                                    doExprCatOperator
+    '/'                     look-ahead                              doExprCatOperator
+    '{'                  n  tag-open                                doExprCatOperator
+    '|'                  n  term                                    doExprOrOperator
+    ')'                  n  pop                                     doExprRParen
+    default                 pop                                     doExprFinished
+    
+
+#
+#   look-ahead    Scanning a '/', which identifies a break point, assuming that the
+#                 remainder of the expression matches.
+#
+#                 Generate a parse tree as if this was a special kind of input symbol
+#                 appearing in an otherwise normal concatenation expression.
+#
+look-ahead:
+    '/'                   n expr-cont-no-slash                      doSlash
+    default                 errorDeath
+
+
+#
+#  expr-cont-no-slash    Expression, continuation.  At a point where additional terms are
+#                                            allowed, but not required.  Just like
+#                                            expr-cont, above, except that no '/'
+#                                            look-ahead symbol is permitted.
+#
+expr-cont-no-slash:
+    escaped                 term                                    doExprCatOperator
+    white_space          n  expr-cont
+    rule_char               term                                    doExprCatOperator
+    '['                     term                                    doExprCatOperator
+    '('                     term                                    doExprCatOperator
+    '$'                     term                                    doExprCatOperator
+    '.'                     term                                    doExprCatOperator
+    '|'                  n  term                                    doExprOrOperator
+    ')'                  n  pop                                     doExprRParen
+    default                 pop                                     doExprFinished
+
+
+#
+#   tags             scanning a '{', the opening delimiter for a tag that identifies
+#                    the kind of match.  Scan the whole {dddd} tag, where d=digit
+#
+tag-open:
+    white_space          n  tag-open
+    digit_char              tag-value                               doStartTagValue
+    default                 errorDeath                              doTagExpectedError
+    
+tag-value:
+    white_space          n  tag-close
+    '}'                     tag-close
+    digit_char           n  tag-value                               doTagDigit
+    default                 errorDeath                              doTagExpectedError
+    
+tag-close:
+    white_space          n  tag-close
+    '}'                  n  expr-cont-no-tag                        doTagValue
+    default                 errorDeath                              doTagExpectedError
+    
+    
+    
+#
+#  expr-cont-no-tag    Expression, continuation.  At a point where additional terms are
+#                                            allowed, but not required.  Just like
+#                                            expr-cont, above, except that no "{ddd}"
+#                                            tagging is permitted.
+#
+expr-cont-no-tag:
+    escaped                 term                                    doExprCatOperator
+    white_space          n  expr-cont-no-tag
+    rule_char               term                                    doExprCatOperator
+    '['                     term                                    doExprCatOperator
+    '('                     term                                    doExprCatOperator
+    '$'                     term                                    doExprCatOperator
+    '.'                     term                                    doExprCatOperator
+    '/'                     look-ahead                              doExprCatOperator
+    '|'                  n  term                                    doExprOrOperator
+    ')'                  n  pop                                     doExprRParen
+    default                 pop                                     doExprFinished
+    
+    
+
+
+#
+#   Variable Name Scanning.
+#
+#                    The state that branched to here must have pushed a return state
+#                    to go to after completion of the variable name scanning.
+#
+#                    The current input character must be the $ that introduces the name.
+#                    The $ is consummed here rather than in the state that first detected it
+#                    so that the doStartVariableName action only needs to happen in one
+#                    place (here), and the other states don't need to worry about it.
+#
+scan-var-name:
+   '$'                  n scan-var-start                            doStartVariableName
+   default                errorDeath
+
+
+scan-var-start:
+    name_start_char      n scan-var-body
+    default                errorDeath                               doVariableNameExpectedErr
+    
+scan-var-body:
+    name_char            n scan-var-body
+    default                pop                                      doEndVariableName
+    
+    
+    
+#
+#  scan-unicode-set   Unicode Sets are parsed by the the UnicodeSet class.
+#                     Within the RBBI parser, after finding the first character
+#                     of a Unicode Set, we just hand the rule input at that
+#                     point of to the Unicode Set constructor, then pick
+#                     up parsing after the close of the set.
+#
+#                     The action for this state invokes the UnicodeSet parser.
+#
+scan-unicode-set:
+    '['                   n pop                                      doScanUnicodeSet
+    'p'                   n pop                                      doScanUnicodeSet
+    'P'                   n pop                                      doScanUnicodeSet
+    default		    errorDeath 
+    
+    
+
+
+
+
+
+#
+#  assign-or-rule.   A $variable was encountered at the start of something, could be
+#                    either an assignment statement or a rule, depending on whether an '='
+#                    follows the variable name.  We get to this state when the variable name
+#                    scanning does a return.
+#
+assign-or-rule:
+    white_space          n assign-or-rule
+    '='                  n term                  ^assign-end        doStartAssign   # variable was target of assignment
+    default                term-var-ref          ^break-rule-end                    # variable was a term in a rule
+
+
+
+#
+#  assign-end        This state is entered when the end of the expression on the
+#                    right hand side of an assignment is found.  We get here via
+#                    a pop; this state is pushed when the '=' in an assignment is found.
+#
+#                    The only thing allowed at this point is a ';'.  The RHS of an
+#                    assignment must look like a rule expression, and we come here
+#                    when what is being scanned no longer looks like an expression.
+#
+assign-end:
+    ';'                  n start                                    doEndAssign
+    default                errorDeath                               doRuleErrorAssignExpr
+    
+    
+    
+#
+# errorDeath.   This state is specified as the next state whenever a syntax error
+#               in the source rules is detected.  Barring bugs, the state machine will never
+#               actually get here, but will stop because of the action associated with the error.
+#               But, just in case, this state asks the state machine to exit.
+errorDeath:
+    default              n errorDeath                               doExit
+
+

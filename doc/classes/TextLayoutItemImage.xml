@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLayoutItemImage" inherits="TextLayoutItem" category="Core" version="3.0-alpha">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_image">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_modulate">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_image">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="modulate" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="image" type="Texture" setter="set_image" getter="get_image">
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -173,6 +173,26 @@ Comment: The FreeType Project
 Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
+Files: ./thirdparty/harfbuzz/
+Comment: HarfBuzz
+Copyright: 2010, 2011, 2012, Google, Inc.
+ 2012, Mozilla Foundation
+ 2011, Codethink Limited
+ 2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
+ 2009, Keith Stribley
+ 2009, Martin Hosken and SIL International
+ 2007, Chris Wilson
+ 2006, Behdad Esfahbod
+ 2005, David Turner
+ 2004, 2007, 2008, 2009, 2010, Red Hat, Inc.
+ 1998-2004, David Turner and Werner Lemberg
+License: MIT
+
+Files: ./thirdparty/icu4c/
+Comment: International Components for Unicode
+Copyright: 1991-2017 Unicode, Inc.
+License: Unicode
+
 Files: ./thirdparty/glad/
 Comment: glad
 Copyright: 2013, David Herberth
@@ -387,6 +407,41 @@ Copyright: 2016-2018, Facebook, Inc.
 License: BSD-3-clause
 
 
+
+License: Unicode
+ COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)
+ .
+ Copyright (C) 1991-2017 Unicode, Inc. All rights reserved.
+ Distributed under the Terms of Use in http://www.unicode.org/copyright.html
+ .
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of the Unicode data files and any associated documentation
+ (the "Data Files") or Unicode software and any associated documentation
+ (the "Software") to deal in the Data Files or Software
+ without restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, and/or sell copies of
+ the Data Files or Software, and to permit persons to whom the Data Files
+ or Software are furnished to do so, provided that either
+ (a) this copyright and permission notice appear with all copies
+ of the Data Files or Software, or
+ (b) this copyright and permission notice appear in associated
+ Documentation.
+ .
+ THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+ IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+ NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+ DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+ .
+ Except as contained in this notice, the name of a copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in these Data Files or Software without prior
+ written authorization of the copyright holder.
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

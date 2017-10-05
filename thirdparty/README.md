@@ -124,6 +124,30 @@ Files extracted from upstream source:
 - the include/ folder
 - `docs/{FTL.TXT,LICENSE.TXT}`
 
+## ICU4C
+
+- Upstream: http://site.icu-project.org/
+- Version: 60.2 (2017-12-03)
+- License: Unicode, Inc. License
+
+Files extracted from upstream source (`icu4c-60_2-src`):
+
+- the `source/common/` folder, stripped of makefiles
+- `LICENSE`
+
+Files generated from upstream source (`icu4c-60_2-data`):
+- `source/data/icudt60l.dat` ICU data file (`Base Data` and `Break Iterator` only), `source/data/icudata.cpp` (Emebdded data) and `source/data/icudata_stub.cpp` (External data) files has been added to provide ICU data static linking
+
+## HarfBuzz
+
+- Upstream: https://github.com/behdad/harfbuzz
+- Version: 1.7.5 (2018-01-30)
+- License: MIT-like License
+
+Files extracted from upstream source:
+
+- the `src/` folder, stripped of makefiles, non-relevant backend files and UCDN files
+- `AUTHORS, COPYING, NEWS, README, THANKS`
 
 ## glad
 

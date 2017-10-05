@@ -70,6 +70,13 @@
 				Return the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
+		<method name="get_leading" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return distance between the baselines of successive lines in pixels.
+			</description>
+		</method>
 		<method name="get_string_size" qualifiers="const">
 			<return type="Vector2">
 			</return>

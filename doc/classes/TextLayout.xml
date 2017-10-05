@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLayout" inherits="Resource" category="Core" version="3.0-alpha">
+	<brief_description>
+		Class for formatting entire paragraphs of text at once.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="TextLayoutItem">
+			</argument>
+			<description>
+				Adds text, image, span or table at the end of layout.
+			</description>
+		</method>
+		<method name="caret_shapes_char">
+			<return type="Array">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns up to two [Rect2] corresponding to the strong and weak caret, at the specified position.
+			</description>
+		</method>
+		<method name="caret_shapes_hit">
+			<return type="Array">
+			</return>
+			<argument index="0" name="hit" type="TextHitInfo">
+			</argument>
+			<description>
+				Returns up to two [Rect2] corresponding to the strong and weak caret, at the specified hit.
+			</description>
+		</method>
+		<method name="draw">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Draws paragraph.
+			</description>
+		</method>
+		<method name="get_align" qualifiers="const">
+			<return type="int" enum="TextHAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_align_last" qualifiers="const">
+			<return type="int" enum="TextHAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_autowrap" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_back_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_base_direction" qualifiers="const">
+			<return type="int" enum="TextDirection">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_bottom_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_bottom_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_left_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_left_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_right_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_right_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_top_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_border_top_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds">
+			<return type="Rect2">
+			</return>
+			<description>
+				Returns bounding box of the paragraph.
+			</description>
+		</method>
+		<method name="get_clip_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_bidi" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_fallback" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_fallback_line_break" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_intercluster_justification" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_interword_justification" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_kasida_justification" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_enable_shaping" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hard_breaks" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_invisible_characters">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_item" qualifiers="const">
+			<return type="TextLayoutItem">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_kasida_to_space_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_bounds">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_count">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_end">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_start">
+			<return type="int">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_area" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_min_area" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_padding" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_parent_halign" qualifiers="const">
+			<return type="int" enum="TextHAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_parent_valign" qualifiers="const">
+			<return type="int" enum="TextVAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_show_control_characters" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_show_invisible_characters" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_stops" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_valign" qualifiers="const">
+			<return type="int" enum="TextVAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="layout" type="TextLayout">
+			</argument>
+			<description>
+				Returns [code]true[/code] if specified layout is embedded to this.
+			</description>
+		</method>
+		<method name="highlight_shapes_char">
+			<return type="Array">
+			</return>
+			<argument index="0" name="start" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<description>
+				Returns a list of [Rect2] enclosing the selection in the specified range.
+			</description>
+		</method>
+		<method name="highlight_shapes_hit">
+			<return type="Array">
+			</return>
+			<argument index="0" name="first_hit" type="TextHitInfo">
+			</argument>
+			<argument index="1" name="second_hit" type="TextHitInfo">
+			</argument>
+			<argument index="2" name="selection" type="bool" default="false">
+			</argument>
+			<description>
+				Returns a list of [Rect2] enclosing the selection in the specified range.
+			</description>
+		</method>
+		<method name="hit_test">
+			<return type="TextHitInfo">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Returns a [TextHitInfo] corresponding to the specified point.
+			</description>
+		</method>
+		<method name="hit_test_layout">
+			<return type="TextLayout">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Returns a [TextLayout] (this or embedded) corresponding to the specified point.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="TextHAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_align_last">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="TextHAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_autowrap">
+			<return type="void">
+			</return>
+			<argument index="0" name="autowrap" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_back_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="back_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_direction">
+			<return type="void">
+			</return>
+			<argument index="0" name="direction" type="int" enum="TextDirection">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_bottom_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_bottom_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_bottom_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_bottom_width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_left_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_left_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_left_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_left_width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_right_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_right_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_right_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_right_width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_top_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_top_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_top_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="border_top_width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clip_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="clip_rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_bidi">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_fallback">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_fallback_line_break">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_intercluster_justification">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_interword_justification">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_kasida_justification">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enable_shaping">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_hard_breaks">
+			<return type="void">
+			</return>
+			<argument index="0" name="hard_breaks" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_invisible_characters">
+			<return type="void">
+			</return>
+			<argument index="0" name="placeholders" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="data" type="TextLayoutItem">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_kasida_to_space_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="spacing" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_area">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_min_area">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_padding">
+			<return type="void">
+			</return>
+			<argument index="0" name="padding" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_parent_halign">
+			<return type="void">
+			</return>
+			<argument index="0" name="parent_halign" type="int" enum="TextHAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_parent_valign">
+			<return type="void">
+			</return>
+			<argument index="0" name="parent_valign" type="int" enum="TextVAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_show_control_characters">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_show_invisible_characters">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_stops">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_stops" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_valign">
+			<return type="void">
+			</return>
+			<argument index="0" name="valign" type="int" enum="TextVAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="TextHAlign">
+			Horizontal alignment of content (any of the [code]H_ALIGN_*[/code] values). Ignored if [code]max_area.x = -1[/code]. 
+			If line contains active tab stops justification is only applied to the part of the line after last tab stop.
+
+			Default value: [code]H_ALIGN_START[/code]
+		</member>
+		<member name="align_last" type="int" setter="set_align_last" getter="get_align_last" enum="TextHAlign">
+			Last line horizontal alignment (any of the [code]H_ALIGN_*[/code] values). Ignored if [code]max_area.x = -1[/code] or [code]align != H_ALIGN_FILL[/code].
+
+			Default value: [code]H_ALIGN_START[/code]
+		</member>
+		<member name="autowrap" type="bool" setter="set_autowrap" getter="get_autowrap">
+			Autowrap. Ignored if [code]max_area.x = -1[/code].
+
+			Default value: [code]false[/code]
+		</member>
+		<member name="back_color" type="Color" setter="set_back_color" getter="get_back_color">
+			Backfround color.
+
+			Default value: [code]Color(0, 0, 0, 0)[/code]
+		</member>
+		<member name="base_direction" type="int" setter="set_base_direction" getter="get_base_direction" enum="TextDirection">
+			Paragraph base reading direction (any of the [code]DIR_*[/code] values).
+
+			Default value: [code]DIR_AUTO[/code].
+		</member>
+		<member name="border_bottom_color" type="Color" setter="set_border_bottom_color" getter="get_border_bottom_color">
+			Bottom border color.
+
+			Default value: [code]Color(0, 0, 0, 0)[/code].
+		</member>
+		<member name="border_bottom_width" type="int" setter="set_border_bottom_width" getter="get_border_bottom_width">
+			Bottom border width.
+
+			Default value: [code]0[/code].
+		</member>
+		<member name="border_left_color" type="Color" setter="set_border_left_color" getter="get_border_left_color">
+			Left border color.
+
+			Default value: [code]Color(0, 0, 0, 0)[/code].
+		</member>
+		<member name="border_left_width" type="int" setter="set_border_left_width" getter="get_border_left_width">
+			Left border width.
+
+			Default value: [code]0[/code].
+		</member>
+		<member name="border_right_color" type="Color" setter="set_border_right_color" getter="get_border_right_color">
+			Right border color.
+
+			Default value: [code]Color(0, 0, 0, 0)[/code].
+		</member>
+		<member name="border_right_width" type="int" setter="set_border_right_width" getter="get_border_right_width">
+			Right border width.
+
+			Default value: [code]0[/code].
+		</member>
+		<member name="border_top_color" type="Color" setter="set_border_top_color" getter="get_border_top_color">
+			Top border color.
+
+			Default value: [code]Color(0, 0, 0, 0)[/code].
+		</member>
+		<member name="border_top_width" type="int" setter="set_border_top_width" getter="get_border_top_width">
+			Top border width.
+
+			Default value: [code]0[/code].
+		</member>
+		<member name="clip_rect" type="Rect2" setter="set_clip_rect" getter="get_clip_rect">
+			Paragtaph's clipping rectangle.
+
+			Default value: [code]Rect2(0, 0, -1, -1)[/code]
+		</member>
+		<member name="enable_bidi" type="bool" setter="set_enable_bidi" getter="get_enable_bidi">
+			If [code]true[/code] BiFi reordering is enabled.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="enable_fallback" type="bool" setter="set_enable_fallback" getter="get_enable_fallback">
+			If [code]true[/code] fallback fonts will be substituted where the current font is missing glyphs.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="enable_fallback_line_break" type="bool" setter="set_enable_fallback_line_break" getter="get_enable_fallback_line_break">
+			If [code]true[/code] line can be broken anywhere if no valid break opportunity found.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="enable_intercluster_justification" type="bool" setter="set_enable_intercluster_justification" getter="get_enable_intercluster_justification">
+			If [code]true[/code] inter-cluster justification is enabled.
+
+			Default value: [code]false[/code]
+		</member>
+		<member name="enable_interword_justification" type="bool" setter="set_enable_interword_justification" getter="get_enable_interword_justification">
+			If [code]true[/code] inter-word justification is enabled.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="enable_kasida_justification" type="bool" setter="set_enable_kasida_justification" getter="get_enable_kasida_justification">
+			If [code]true[/code] kasida justification is enabled.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="enable_shaping" type="bool" setter="set_enable_shaping" getter="get_enable_shaping">
+			If [code]true[/code] contextual shaping is enabled.
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="hard_breaks" type="bool" setter="set_hard_breaks" getter="get_hard_breaks">
+			Respect mandatory line breaks. Ignored if [code]Autowrap = true[/code].
+
+			Default value: [code]true[/code]
+		</member>
+		<member name="invisible_characters" type="String" setter="set_invisible_characters" getter="get_invisible_characters">
+			Placeholdes for invisible and control characters (space, tab, newline, control).
+			Must be exactly 4 characters long.
+
+			Default value: [code]{"·»¬¤"}[/code]
+		</member>
+		<member name="kasida_to_space_ratio" type="float" setter="set_kasida_to_space_ratio" getter="get_kasida_to_space_ratio">
+			Amount of justification given to kashidas in ratio to spaces (in [code]0.0 .. 1.0[/code] range).
+
+			Default value: [code]1.0[/code]
+		</member>
+		<member name="line_spacing" type="int" setter="set_line_spacing" getter="get_line_spacing">
+			Addtional line spacing in px.
+
+			Default value: [code]0[/code]
+		</member>
+		<member name="max_area" type="Vector2" setter="set_max_area" getter="get_max_area">
+			Layout's largest possible rectangular area.
+
+			Default value: [code]Vector2(-1, -1)[/code].
+		</member>
+		<member name="min_area" type="Vector2" setter="set_min_area" getter="get_min_area">
+			Layout's smallest possible rectangular area.
+
+			Default value: [code]Vector2(0, 0)[/code].
+		</member>
+		<member name="padding" type="Rect2" setter="set_padding" getter="get_padding">
+			Space around an layouts's content, inside of any defined borders.
+
+			Default value: [code]Rect2(0, 0, 0, 0)[/code].
+		</member>
+		<member name="parent_halign" type="int" setter="set_parent_halign" getter="get_parent_halign" enum="TextHAlign">
+			Horizontal alignment of layout (any of the [code]H_ALIGN_LEFT, H_ALIGN_CENTER, H_ALIGN_RIGHT[/code] values).
+
+			Default value: [code]H_ALIGN_CENTER[/code]
+		</member>
+		<member name="parent_valign" type="int" setter="set_parent_valign" getter="get_parent_valign" enum="TextVAlign">
+			Vertical alignment of layout (any of the [code]V_ALIGN_TOP, V_ALIGN_CENTER, V_ALIGN_BOTTOM[/code] values).
+
+			Default value: [code]V_ALIGN_TOP[/code]
+		</member>
+		<member name="show_control_characters" type="bool" setter="set_show_control_characters" getter="get_show_control_characters">
+			If [code]true[/code] Unicode control characters are rendered as placeholder specified by [member invisible_characters].
+
+			Default value: [code]false[/code]
+		</member>
+		<member name="show_invisible_characters" type="bool" setter="set_show_invisible_characters" getter="get_show_invisible_characters">
+			If [code]true[/code] invisible characters are rednered as placeholder specified by [member invisible_characters].
+
+			Default value: [code]false[/code]
+		</member>
+		<member name="tab_stops" type="PoolIntArray" setter="set_tab_stops" getter="get_tab_stops">
+			Repeated pattern of tab stops, in em units.
+
+			Default value: [code]{4}[/code]
+		</member>
+		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="TextVAlign">
+			Vertical alignment of content (any of the [code]V_ALIGN_*[/code] values). Ignored if [code]max_area.y = -1[/code].
+
+			Default value: [code]V_ALIGN_TOP[/code]
+		</member>
+	</members>
+	<constants>
+		<constant name="H_ALIGN_LEFT" value="0">
+			Align to the left edge.
+		</constant>
+		<constant name="H_ALIGN_CENTER" value="1">
+			Align to the center.
+		</constant>
+		<constant name="H_ALIGN_RIGHT" value="2">
+			Align to the right edge.
+		</constant>
+		<constant name="H_ALIGN_START" value="3">
+			The same as [H_ALIGN_LEFT] if text direction is left-to-right and [H_ALIGN_RIGHT] if text direction is right-to-left.
+		</constant>
+		<constant name="H_ALIGN_END" value="4">
+			The same as [H_ALIGN_RIGHT] if text direction is left-to-right and [H_ALIGN_LEFT] if text direction is right-to-left.
+		</constant>
+		<constant name="H_ALIGN_FILL" value="5">
+			Expand lines to fit the width.
+		</constant>
+		<constant name="V_ALIGN_TOP" value="0">
+			Align to the top edge.
+		</constant>
+		<constant name="V_ALIGN_CENTER" value="1">
+			Align to the center.
+		</constant>
+		<constant name="V_ALIGN_BOTTOM" value="2">
+			Align to the bottom edge.
+		</constant>
+		<constant name="V_ALIGN_PERCENTAGE" value="3">
+			Align to the percentage of the height.
+		</constant>
+		<constant name="DIR_LTR" value="0">
+			Left-to-right text direction.
+		</constant>
+		<constant name="DIR_RTL" value="1">
+			Right-to-left text direction.
+		</constant>
+		<constant name="DIR_AUTO" value="2">
+			Text direction is derived from the first character in the string with bidirectional character type [code]L[/code], [code]R[/code], or [code]AL[/code].
+		</constant>
+	</constants>
+</class>
