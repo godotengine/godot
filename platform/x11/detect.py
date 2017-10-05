@@ -203,6 +203,12 @@ def configure(env):
             sys.exit(255)
         env.ParseConfig('pkg-config bullet --cflags --libs')
 
+    if not env['builtin_harfbuzz']:
+        env.ParseConfig('pkg-config harfbuzz --cflags --libs')
+
+    if not env['builtin_icu']:
+        env.ParseConfig('pkg-config icu-uc --cflags --libs')
+
     if not env['builtin_enet']:
         env.ParseConfig('pkg-config libenet --cflags --libs')
 

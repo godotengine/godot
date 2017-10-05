@@ -826,6 +826,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("clear_button_color", "LineEdit", font_color);
 	theme->set_color("clear_button_color_pressed", "LineEdit", accent_color);
 
+	// LineEditLegacy
+	theme->set_stylebox("normal", "LineEditLegacy", style_widget);
+	theme->set_stylebox("focus", "LineEditLegacy", style_widget_focus);
+	theme->set_stylebox("read_only", "LineEditLegacy", style_widget_disabled);
+	theme->set_color("read_only", "LineEditLegacy", font_color_disabled);
+	theme->set_color("font_color", "LineEditLegacy", font_color);
+	theme->set_color("cursor_color", "LineEditLegacy", font_color);
+	theme->set_color("selection_color", "LineEditLegacy", font_color_selection);
+	theme->set_color("clear_button_color", "LineEditLegacy", font_color);
+	theme->set_color("clear_button_color_pressed", "LineEditLegacy", accent_color);
+
 	// TextEdit
 	theme->set_stylebox("normal", "TextEdit", style_widget);
 	theme->set_stylebox("focus", "TextEdit", style_widget_hover);
@@ -939,6 +950,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
 	theme->set_constant("shadow_as_outline", "Label", 0 * EDSCALE);
 	theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
+
+	// LabelLegacy
+	theme->set_stylebox("normal", "LabelLegacy", style_empty);
+	theme->set_color("font_color", "LabelLegacy", font_color);
+	theme->set_color("font_color_shadow", "LabelLegacy", Color(0, 0, 0, 0));
+	theme->set_constant("shadow_offset_x", "LabelLegacy", 1 * EDSCALE);
+	theme->set_constant("shadow_offset_y", "LabelLegacy", 1 * EDSCALE);
+	theme->set_constant("shadow_as_outline", "LabelLegacy", 0 * EDSCALE);
+	theme->set_constant("line_spacing", "LabelLegacy", 3 * EDSCALE);
 
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);

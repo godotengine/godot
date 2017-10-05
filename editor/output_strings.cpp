@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "output_strings.h"
+#include "scene/resources/shaped_string.h"
 
 void OutputStrings::update_scrollbars() {
 
@@ -108,20 +109,25 @@ void OutputStrings::_notification(int p_what) {
 					default: {}
 				}
 
-				line_ofs.y += font->get_ascent();
+				ShapedString line;
+				line.set_base_direction(TEXT_DIRECTION_AUTO);
+				line.set_base_font(font);
+				line.set_text(str);
+
+				line_ofs.y += line.get_ascent();
 				line_ofs.x += icon_error->get_width() + 4;
 
-				for (int i = 0; i < str.length(); i++) {
+				for (int i = 0; i < line.clusters(); i++) {
 					if (line_ofs.x - h_ofs < 0) {
-						line_ofs.x += font->get_char_size(str[i], str[i + 1]).width;
+						line_ofs.x += line.get_cluster_width(i);
 					} else if (line_ofs.x - h_ofs > size.width - margin.width) {
 						break;
 					} else {
-						line_ofs.x += font->draw_char(ci, Point2(line_ofs.x - h_ofs, line_ofs.y), str[i], str[i + 1], color);
+						line_ofs += line.draw_cluster(ci, Point2(line_ofs.x - h_ofs, line_ofs.y), i, color, false);
 					}
 				}
+				ofs.y += line.get_height();
 
-				ofs.y += font_height;
 				E = E->next();
 			}
 

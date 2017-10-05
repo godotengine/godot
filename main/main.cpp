@@ -1189,6 +1189,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon", PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp"));
 
+	GLOBAL_DEF("application/config/icudata", String());
+	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icudata", PropertyInfo(Variant::STRING, "application/config/icudata", PROPERTY_HINT_FILE, "*.icudt"));
+
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 	if (id) {
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {

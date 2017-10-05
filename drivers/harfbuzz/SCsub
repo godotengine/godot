@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+Import('env')
+from compat import isbasestring
+
+env_hb = env.Clone()
+
+if env['builtin_harfbuzz']:
+    # Thirdparty source files
+    thirdparty_dir = "#thirdparty/harfbuzz/"
+
+    thirdparty_sources = [
+        "src/hb-blob.cc",
+        "src/hb-buffer-serialize.cc",
+        "src/hb-buffer.cc",
+        "src/hb-common.cc",
+        "src/hb-face.cc",
+        "src/hb-font.cc",
+        "src/hb-ot-tag.cc",
+        "src/hb-ot-font.cc",
+        "src/hb-ot-layout.cc",
+        "src/hb-ot-map.cc",
+        "src/hb-ot-color.cc",
+        "src/hb-ot-math.cc",
+        "src/hb-ot-shape.cc",
+        "src/hb-aat-layout.cc",
+        "src/hb-ot-shape-complex-arabic.cc",
+        "src/hb-ot-shape-complex-default.cc",
+        "src/hb-ot-shape-complex-hangul.cc",
+        "src/hb-ot-shape-complex-hebrew.cc",
+        "src/hb-ot-shape-complex-indic.cc",
+        "src/hb-ot-shape-complex-indic-table.cc",
+        "src/hb-ot-shape-complex-myanmar.cc",
+        "src/hb-ot-shape-complex-khmer.cc",
+        "src/hb-ot-shape-complex-thai.cc",
+        "src/hb-ot-shape-complex-tibetan.cc",
+        "src/hb-ot-shape-complex-use.cc",
+        "src/hb-ot-shape-complex-use-table.cc",
+        "src/hb-ot-shape-normalize.cc",
+        "src/hb-ot-shape-fallback.cc",
+        "src/hb-ot-var.cc",
+        "src/hb-set.cc",
+        "src/hb-map.cc",
+        "src/hb-static.cc",
+        "src/hb-shape.cc",
+        "src/hb-shape-plan.cc",
+        "src/hb-shaper.cc",
+        "src/hb-subset-glyf.cc",
+        "src/hb-subset-input.cc",
+        "src/hb-subset-plan.cc",
+        "src/hb-subset.cc",
+        "src/hb-unicode.cc",
+        "src/hb-warning.cc",
+        "src/hb-ft.cc",
+        "src/hb-icu.cc",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    thirdparty_sources.append("src/hb-bitmap.cc") #custom hb interface for Godot bitmap font
+
+    thirdparty_include_paths = [
+        "src/",
+        "src/hb-ucdn/",
+    ]
+
+    env_hb.Append(CPPPATH=["#thirdparty/freetype/include"])
+    env_hb.Append(CPPPATH=["#thirdparty/icu4c/source/common/"])
+    env_hb.Append(CPPFLAGS=['-DHAVE_OT', '-DHAVE_ICU_BUILTIN', '-DHAVE_ICU', '-DHAVE_FREETYPE', '-DHAVE_FT_FACE_GETCHARVARIANTINDEX', '-DHAVE_INTEL_ATOMIC_PRIMITIVES'])
+    env_hb.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    env_hb.disable_warnings()
+
+    #uses c++11
+    if (not env_hb.msvc):
+        env_hb.Append(CXXFLAGS=["-std=c++11"])
+
+    env.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+
+    lib = env_hb.Library("harfbuzz_builtin", thirdparty_sources)
+    # Needs to be appended to arrive after libscene in the linker call,
+    # but we don't want it to arrive *after* system libs, so manual hack
+    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
+    # and then plain strings for system library. We insert between the two.
+    inserted = False
+    for idx, linklib in enumerate(env["LIBS"]):
+        if isbasestring(linklib): # first system lib such as "X11", otherwise SCons lib object
+            env["LIBS"].insert(idx, lib)
+            inserted = True
+            break
+
+    if not inserted:
+        env.Append(LIBS=[lib])
+else:
+    env.drivers_sources.append("src/hb-bitmap.cc") #custom hb interface for Godot bitmap font
+
+Export('env')

@@ -165,6 +165,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			switch (code) {
 
+				case (KEY_D): { // Swap curent input direction (primary cursor)
+
+					last_input_direction = (last_input_direction == TEXT_DIRECTION_LTR) ? TEXT_DIRECTION_RTL : TEXT_DIRECTION_LTR;
+					update();
+
+				} break;
+
 				case (KEY_X): { // CUT
 
 					if (editable) {
@@ -207,13 +214,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 						Ref<Font> font = get_font("font");
 
-						cached_width = 0;
-						if (font != NULL) {
-							for (int i = 0; i < text.length(); i++)
-								cached_width += font->get_char_size(text[i]).width;
-						}
-
 						set_cursor_position(0);
+						_text_reshape();
 						_text_changed();
 					}
 
@@ -233,6 +235,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 						deselect();
 						text = text.substr(0, cursor_pos);
+						_text_reshape();
 						_text_changed();
 					}
 
@@ -527,6 +530,49 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 	}
 }
 
+void LineEdit::set_text_direction(TextDirection p_text_direction) {
+
+	ERR_FAIL_INDEX((int)p_text_direction, 4);
+	if (base_direction != p_text_direction) {
+		base_direction = p_text_direction;
+		_text_reshape();
+		update();
+	}
+}
+
+TextDirection LineEdit::get_text_direction() const {
+
+	return base_direction;
+}
+
+void LineEdit::set_ot_features(const String &p_features) {
+
+	if (ot_features != p_features) {
+		ot_features = p_features;
+		_text_reshape();
+		update();
+	}
+}
+
+String LineEdit::get_ot_features() const {
+
+	return ot_features;
+}
+
+void LineEdit::set_language(const String &p_language) {
+
+	if (language != p_language) {
+		language = p_language;
+		_text_reshape();
+		update();
+	}
+}
+
+String LineEdit::get_language() const {
+
+	return language;
+}
+
 void LineEdit::set_align(Align p_align) {
 
 	ERR_FAIL_INDEX((int)p_align, 4);
@@ -551,10 +597,12 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 
 	return Variant();
 }
+
 bool LineEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
 
 	return p_data.get_type() == Variant::STRING;
 }
+
 void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 	if (p_data.get_type() == Variant::STRING) {
@@ -562,10 +610,6 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		int selected = selection.end - selection.begin;
 
 		Ref<Font> font = get_font("font");
-		if (font != NULL) {
-			for (int i = selection.begin; i < selection.end; i++)
-				cached_width -= font->get_char_size(text[i]).width;
-		}
 
 		text.erase(selection.begin, selected);
 
@@ -660,7 +704,6 @@ void LineEdit::_notification(int p_what) {
 
 			int x_ofs = 0;
 			bool using_placeholder = text.empty();
-			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -674,28 +717,24 @@ void LineEdit::_notification(int p_what) {
 					if (window_pos != 0)
 						x_ofs = style->get_offset().x;
 					else
-						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - (cached_text_width)) / 2);
+						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - line->get_width()) / 2);
 				} break;
 				case ALIGN_RIGHT: {
 
-					x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_text_width)));
+					x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - style->get_margin(MARGIN_RIGHT) - line->get_width()));
 				} break;
 			}
 
 			int ofs_max = width - style->get_margin(MARGIN_RIGHT);
-			int char_ofs = window_pos;
 
 			int y_area = height - style->get_minimum_size().height;
-			int y_ofs = style->get_offset().y + (y_area - font->get_height()) / 2;
-
-			int font_ascent = font->get_ascent();
+			int y_ofs = style->get_offset().y + (y_area - MAX(font->get_height(), line->get_height())) / 2;
 
 			Color selection_color = get_color("selection_color");
 			Color font_color = get_color("font_color");
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
-			const String &t = using_placeholder ? placeholder : text;
 			// draw placeholder color
 			if (using_placeholder)
 				font_color.a *= placeholder_alpha;
@@ -716,116 +755,94 @@ void LineEdit::_notification(int p_what) {
 
 				if (align == ALIGN_CENTER) {
 					if (window_pos == 0) {
-						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT) * 2) / 2);
+						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - line->get_width() - r_icon->get_width() - style->get_margin(MARGIN_RIGHT) * 2) / 2);
 					}
 				} else {
 					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - r_icon->get_width() - style->get_margin(MARGIN_RIGHT));
 				}
+				ofs_max -= r_icon->get_width();
 			}
 
-			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
-			FontDrawer drawer(font, Color(1, 1, 1));
-			while (true) {
+			int caret_height = MAX(font->get_height(), line->get_height()) > y_area ? y_area : MAX(font->get_height(), line->get_height());
 
-				//end of string, break!
-				if (char_ofs >= t.length())
-					break;
-
-				if (char_ofs == cursor_pos) {
-					if (ime_text.length() > 0) {
-						int ofs = 0;
-						while (true) {
-							if (ofs >= ime_text.length())
-								break;
-
-							CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
-							CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
-							int im_char_width = font->get_char_size(cchar, next).width;
-
-							if ((x_ofs + im_char_width) > ofs_max)
-								break;
-
-							bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
-							if (selected) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
-							} else {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
-							}
-
-							drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
-
-							x_ofs += im_char_width;
-							ofs++;
-						}
-					}
-				}
-
-				CharType cchar = (pass && !text.empty()) ? secret_character[0] : t[char_ofs];
-				CharType next = (pass && !text.empty()) ? secret_character[0] : t[char_ofs + 1];
-				int char_width = font->get_char_size(cchar, next).width;
-
-				// end of widget, break!
-				if ((x_ofs + char_width) > ofs_max)
-					break;
-
-				bool selected = selection.enabled && char_ofs >= selection.begin && char_ofs < selection.end;
-
-				if (selected)
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, caret_height)), selection_color);
-
-				int yofs = y_ofs + (caret_height - font->get_height()) / 2;
-				drawer.draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
-
-				if (char_ofs == cursor_pos && draw_caret) {
-					if (ime_text.length() == 0) {
-#ifdef TOOLS_ENABLED
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
-#else
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
-#endif
-					}
-				}
-
-				x_ofs += char_width;
-				char_ofs++;
-			}
-
-			if (char_ofs == cursor_pos) {
-				if (ime_text.length() > 0) {
-					int ofs = 0;
-					while (true) {
-						if (ofs >= ime_text.length())
-							break;
-
-						CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
-						CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
-						int im_char_width = font->get_char_size(cchar, next).width;
-
-						if ((x_ofs + im_char_width) > ofs_max)
-							break;
-
-						bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
-						if (selected) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
-						} else {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
-						}
-
-						drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
-
-						x_ofs += im_char_width;
-						ofs++;
-					}
-				}
-			}
-
-			if (char_ofs == cursor_pos && draw_caret) { //may be at the end
-				if (ime_text.length() == 0) {
-#ifdef TOOLS_ENABLED
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
-#else
+			if (line->length() == 0) {
+				//Draw solid caret at the start of empty line
+				if ((cursor_pos == 0) && draw_caret) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
+				}
+			} else {
+				//Skip offscreen
+				Vector2 wpos_ofs;
+				for (int i = 0; i < window_pos; i++) {
+					wpos_ofs.x += line->get_cluster_width(i);
+				}
+
+#ifdef DEBUG_DISPLAY_METRICS
+				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(0, -line->get_ascent()), Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(line->get_width(), -line->get_ascent()), Color(1, 0, 0, 0.5), 1);
+				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(0, 0), Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(line->get_width(), 0), Color(1, 1, 0, 0.5), 1);
+				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(0, line->get_descent()), Point2(x_ofs, y_ofs + line->get_ascent()) - wpos_ofs + Point2(line->get_width(), line->get_descent()), Color(0, 0, 1, 0.5), 1);
 #endif
+
+				//Draw selection rects
+				if (selection.enabled) {
+					Vector<Rect2> sranges = line->get_highlight_shapes(selection.begin, selection.end);
+					for (int i = 0; i < sranges.size(); i++) {
+						float s_st = x_ofs + sranges[i].position.x - wpos_ofs.x >= 0 ? x_ofs + sranges[i].position.x - wpos_ofs.x : x_ofs;
+						if (s_st < ofs_max) {
+							float s_wdt = s_st + sranges[i].size.x <= ofs_max ? sranges[i].size.x : ofs_max - s_st;
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(s_st, y_ofs), Size2(s_wdt, caret_height)), selection_color);
+						}
+					}
+				}
+
+				//Draw clusters
+				Vector2 ofs;
+				for (int i = 0; i < line->clusters(); i++) {
+					if ((ofs.x - wpos_ofs.x + line->get_cluster_width(i) <= ofs_max) && (ofs.x - wpos_ofs.x >= 0)) {
+						bool selected = selection.enabled && line->get_cluster_start(i) >= selection.begin && line->get_cluster_end(i) < selection.end;
+						Vector2 char_ofs = line->draw_cluster(ci, Point2(x_ofs, y_ofs + line->get_ascent()) + ofs - wpos_ofs, i, selected ? font_color_selected : font_color, font->has_outline());
+						if (font->has_outline()) {
+							line->draw_cluster(ci, Point2(x_ofs, y_ofs + line->get_ascent()) + ofs - wpos_ofs, i, selected ? font_color_selected : font_color, false);
+						}
+						ofs += char_ofs;
+					} else {
+						ofs.x += line->get_cluster_width(i);
+					}
+				}
+
+				//Draw caret
+				if (draw_caret) {
+					Vector<float> carets = line->get_cursor_positions(cursor_pos, last_input_direction);
+					if (carets.size() == 1) {
+						//Draw solid caret (leading or midcluster)
+#ifdef TOOLS_ENABLED
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[0], y_ofs) - wpos_ofs, Size2(Math::round(EDSCALE), caret_height)), cursor_color);
+#else
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[0], y_ofs) - wpos_ofs, Size2(1, caret_height)), cursor_color);
+#endif
+					} else if (carets.size() == 2) {
+						//Draw split caret (leading and trailing)
+						float inv_caret_circle_size = 3.0;
+#ifdef TOOLS_ENABLED
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[0], y_ofs) - wpos_ofs, Size2(Math::round(EDSCALE), caret_height / 2)), cursor_color);
+						if (x_ofs + carets[1] - wpos_ofs.x < 0) {
+							VisualServer::get_singleton()->canvas_item_add_circle(ci, Point2(style->get_margin(MARGIN_LEFT), style->get_offset().y), inv_caret_circle_size, cursor_color);
+						} else if (x_ofs + carets[1] - wpos_ofs.x > ofs_max) {
+							VisualServer::get_singleton()->canvas_item_add_circle(ci, Point2(ofs_max, style->get_offset().y), inv_caret_circle_size, cursor_color);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[1], y_ofs + caret_height / 2) - wpos_ofs, Size2(Math::round(EDSCALE), caret_height / 2)), cursor_color);
+						}
+#else
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[0], y_ofs) - wpos_ofs, Size2(1, caret_height / 2)), cursor_color);
+						if (x_ofs + carets[1] - wpos_ofs.x < 0) {
+							VisualServer::get_singleton()->canvas_item_add_circle(ci, Point2(style->get_margin(MARGIN_LEFT), style->get_offset().y), inv_caret_circle_size, cursor_color);
+						} else if (x_ofs + carets[1] - wpos_ofs.x > ofs_max) {
+							VisualServer::get_singleton()->canvas_item_add_circle(ci, Point2(ofs_max, style->get_offset().y), inv_caret_circle_size, cursor_color);
+						} else {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs + carets[1], y_ofs + caret_height / 2) - wpos_ofs, Size2(1, caret_height / 2)), cursor_color);
+						}
+#endif
+					}
 				}
 			}
 
@@ -856,6 +873,8 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 
+			_text_reshape();
+
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
 
@@ -865,8 +884,15 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 				ime_text = OS::get_singleton()->get_ime_text();
 				ime_selection = OS::get_singleton()->get_ime_selection();
+
+				_text_reshape();
 				update();
 			}
+
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+
+			_text_reshape();
 		} break;
 	}
 }
@@ -916,6 +942,8 @@ void LineEdit::undo() {
 	undo_stack_pos = undo_stack_pos->prev();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
+	_text_reshape();
+
 	set_cursor_position(op.cursor_pos);
 	_emit_text_change();
 }
@@ -930,6 +958,8 @@ void LineEdit::redo() {
 	undo_stack_pos = undo_stack_pos->next();
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
+	_text_reshape();
+
 	set_cursor_position(op.cursor_pos);
 	_emit_text_change();
 }
@@ -952,47 +982,37 @@ void LineEdit::shift_selection_check_post(bool p_shift) {
 void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 	Ref<Font> font = get_font("font");
-	int ofs = window_pos;
 	Ref<StyleBox> style = get_stylebox("normal");
-	int pixel_ofs = 0;
 	Size2 size = get_size();
 
+	//Calc offscreen offset
+	float wpos_ofs = 0.0;
+	for (int i = 0; i < window_pos; i++) {
+		wpos_ofs += line->get_cluster_width(i);
+	}
+
+	float x_ofs = 0.0;
 	switch (align) {
 
 		case ALIGN_FILL:
 		case ALIGN_LEFT: {
 
-			pixel_ofs = int(style->get_offset().x);
+			x_ofs = style->get_offset().x;
 		} break;
 		case ALIGN_CENTER: {
 
 			if (window_pos != 0)
-				pixel_ofs = int(style->get_offset().x);
+				x_ofs = style->get_offset().x;
 			else
-				pixel_ofs = int(size.width - (cached_width)) / 2;
+				x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - line->get_width()) / 2);
 		} break;
 		case ALIGN_RIGHT: {
 
-			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
+			x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - style->get_margin(MARGIN_RIGHT) - line->get_width()));
 		} break;
 	}
 
-	while (ofs < text.length()) {
-
-		int char_w = 0;
-		if (font != NULL) {
-			char_w = font->get_char_size(text[ofs]).width;
-		}
-		pixel_ofs += char_w;
-
-		if (pixel_ofs > p_x) { //found what we look for
-			break;
-		}
-
-		ofs++;
-	}
-
-	set_cursor_position(ofs);
+	set_cursor_position(line->hit_test(p_x - x_ofs - wpos_ofs));
 }
 
 bool LineEdit::cursor_get_blink_enabled() const {
@@ -1039,11 +1059,10 @@ void LineEdit::delete_char() {
 	if ((text.length() <= 0) || (cursor_pos == 0)) return;
 
 	Ref<Font> font = get_font("font");
-	if (font != NULL) {
-		cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
-	}
 
 	text.erase(cursor_pos - 1, 1);
+
+	_text_reshape();
 
 	set_cursor_position(get_cursor_position() - 1);
 
@@ -1052,26 +1071,15 @@ void LineEdit::delete_char() {
 
 void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
-	if (text.size() > 0) {
-		Ref<Font> font = get_font("font");
-		if (font != NULL) {
-			for (int i = p_from_column; i < p_to_column; i++)
-				cached_width -= font->get_char_size(text[i]).width;
-		}
-	} else {
-		cached_width = 0;
-	}
-
 	text.erase(p_from_column, p_to_column - p_from_column);
+
+	_text_reshape();
+
 	cursor_pos -= CLAMP(cursor_pos - p_from_column, 0, p_to_column - p_from_column);
 
 	if (cursor_pos >= text.length()) {
 
 		cursor_pos = text.length();
-	}
-	if (window_pos > cursor_pos) {
-
-		window_pos = cursor_pos;
 	}
 
 	if (!text_changed_dirty) {
@@ -1105,15 +1113,9 @@ String LineEdit::get_text() const {
 void LineEdit::set_placeholder(String p_text) {
 
 	placeholder = tr(p_text);
-	if ((max_length <= 0) || (placeholder.length() <= max_length)) {
-		Ref<Font> font = get_font("font");
-		cached_placeholder_width = 0;
-		if (font != NULL) {
-			for (int i = 0; i < placeholder.length(); i++) {
-				cached_placeholder_width += font->get_char_size(placeholder[i]).width;
-			}
-		}
-	}
+
+	_text_reshape();
+
 	update();
 }
 
@@ -1135,59 +1137,59 @@ float LineEdit::get_placeholder_alpha() const {
 
 void LineEdit::set_cursor_position(int p_pos) {
 
+	Ref<StyleBox> style = get_stylebox("normal");
+	Ref<Font> font = get_font("font");
+	float window_width = get_size().width - style->get_minimum_size().width;
+
 	if (p_pos > (int)text.length())
 		p_pos = text.length();
 
 	if (p_pos < 0)
 		p_pos = 0;
 
+	//Save last direction
+	last_input_direction = line->get_char_direction(cursor_pos);
+
+	//Set new cursor position
 	cursor_pos = p_pos;
 
 	if (!is_inside_tree()) {
 
-		window_pos = cursor_pos;
+		window_pos = 0;
 		return;
 	}
 
-	Ref<StyleBox> style = get_stylebox("normal");
-	Ref<Font> font = get_font("font");
-
-	if (cursor_pos <= window_pos) {
-		/* Adjust window if cursor goes too much to the left */
-		set_window_pos(MAX(0, cursor_pos - 1));
-	} else if (cursor_pos > window_pos) {
-		/* Adjust window if cursor goes too much to the right */
-		int window_width = get_size().width - style->get_minimum_size().width;
-		if (right_icon.is_valid()) {
-			window_width -= right_icon->get_width();
-		}
-
-		if (window_width < 0)
-			return;
-		int wp = window_pos;
-
-		if (font.is_valid()) {
-
-			int accum_width = 0;
-
-			for (int i = cursor_pos; i >= window_pos; i--) {
-
-				if (i >= text.length()) {
-					//do not do this, because if the cursor is at the end, its just fine that it takes no space
-					//accum_width = font->get_char_size(' ').width; //anything should do
-				} else {
-					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; //anything should do
-				}
-				if (accum_width > window_width)
-					break;
-
-				wp = i;
-			}
-		}
-
-		if (wp != window_pos)
-			set_window_pos(wp);
+	bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
+	if (right_icon.is_valid() || display_clear_icon) {
+		Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+		window_width -= r_icon->get_width();
 	}
+
+	//Calc window_pos offsets in pixels
+	float wpos_ofs = 0.0f;
+	for (int i = 0; i < window_pos; i++) {
+		wpos_ofs += line->get_cluster_width(i);
+	}
+
+	Vector<float> carets = line->get_cursor_positions(cursor_pos, last_input_direction);
+	if (carets.size() > 0) {
+		int wp = window_pos;
+		// Adjust window if cursor goes too much to the left
+		while ((carets[0] - wpos_ofs < 0) && (wp > 0) && (wp <= line->clusters())) {
+			wp--;
+			wpos_ofs -= line->get_cluster_width(wp);
+		}
+		// Adjust window if cursor goes too much to the right
+		while ((carets[0] - wpos_ofs > window_width) && (wp >= 0) && (wp < line->clusters())) {
+			wpos_ofs += line->get_cluster_width(wp);
+			wp++;
+		}
+		//Set window pos
+		if ((wp != window_pos) && (wp >= 0) && (wp < line->clusters())) {
+			set_window_pos(wp);
+		}
+	}
+
 	update();
 }
 
@@ -1200,23 +1202,18 @@ void LineEdit::set_window_pos(int p_pos) {
 
 	window_pos = p_pos;
 	if (window_pos < 0) window_pos = 0;
+	if (window_pos >= line->clusters()) window_pos = line->clusters() - 1;
 }
 
 void LineEdit::append_at_cursor(String p_text) {
 
 	if ((max_length <= 0) || (text.length() + p_text.length() <= max_length)) {
 
-		Ref<Font> font = get_font("font");
-		if (font != NULL) {
-			for (int i = 0; i < p_text.length(); i++)
-				cached_width += font->get_char_size(p_text[i]).width;
-		} else {
-			cached_width = 0;
-		}
-
 		String pre = text.substr(0, cursor_pos);
 		String post = text.substr(cursor_pos, text.length() - cursor_pos);
 		text = pre + p_text + post;
+		_text_reshape();
+
 		set_cursor_position(cursor_pos + p_text.length());
 	}
 }
@@ -1224,11 +1221,13 @@ void LineEdit::append_at_cursor(String p_text) {
 void LineEdit::clear_internal() {
 
 	_clear_undo_stack();
-	cached_width = 0;
+
 	cursor_pos = 0;
 	window_pos = 0;
 	undo_text = "";
 	text = "";
+	_text_reshape();
+
 	update();
 }
 
@@ -1238,14 +1237,14 @@ Size2 LineEdit::get_minimum_size() const {
 	Ref<Font> font = get_font("font");
 
 	Size2 min = style->get_minimum_size();
-	min.height += font->get_height();
+	min.height += MAX(font->get_height(), line->get_ascent() + line->get_descent());
 
 	//minimum size of text
 	int space_size = font->get_char_size(' ').x;
 	int mstext = get_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {
-		mstext = MAX(mstext, font->get_string_size(text).x + space_size); //add a spce because some fonts are too exact, and because cursor needs a bit more when at the end
+		mstext = line->get_width();
 	}
 
 	min.width += mstext;
@@ -1325,6 +1324,8 @@ bool LineEdit::is_editable() const {
 void LineEdit::set_secret(bool p_secret) {
 
 	pass = p_secret;
+
+	_text_reshape();
 	update();
 }
 
@@ -1341,6 +1342,8 @@ void LineEdit::set_secret_character(const String &p_string) {
 	ERR_FAIL_COND(p_string.length() != 1);
 
 	secret_character = p_string;
+
+	_text_reshape();
 	update();
 }
 
@@ -1464,6 +1467,38 @@ void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 	update();
 }
 
+void LineEdit::_text_reshape() {
+
+	Ref<StyleBox> style = get_stylebox("normal");
+	Ref<Font> font = get_font("font");
+
+	String text_to_draw;
+	if (ime_text.length() > 0) {
+		text_to_draw = text.substr(0, cursor_pos) + ime_text + text.substr(cursor_pos, text.length());
+	} else {
+		text_to_draw = text.empty() ? placeholder : text;
+	}
+	if (pass && !text_to_draw.empty()) {
+		int count = text_to_draw.length();
+		text_to_draw = String();
+		for (int i = 0; i < count; i++) {
+			text_to_draw += secret_character[0];
+		}
+	}
+
+	line->set_base_direction(base_direction);
+	line->set_text(text_to_draw);
+	line->set_base_font(font);
+	line->set_language(language);
+	line->set_features(ot_features);
+
+	if (line->clusters() > 0) {
+		if (window_pos >= line->clusters()) window_pos = line->clusters() - 1;
+	} else {
+		window_pos = 0;
+	}
+}
+
 void LineEdit::_text_changed() {
 
 	if (expand_to_text_length)
@@ -1516,6 +1551,12 @@ void LineEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &LineEdit::set_align);
 	ClassDB::bind_method(D_METHOD("get_align"), &LineEdit::get_align);
+	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LineEdit::set_text_direction);
+	ClassDB::bind_method(D_METHOD("get_text_direction"), &LineEdit::get_text_direction);
+	ClassDB::bind_method(D_METHOD("set_ot_features", "features"), &LineEdit::set_ot_features);
+	ClassDB::bind_method(D_METHOD("get_ot_features"), &LineEdit::get_ot_features);
+	ClassDB::bind_method(D_METHOD("set_language", "language"), &LineEdit::set_language);
+	ClassDB::bind_method(D_METHOD("get_language"), &LineEdit::get_language);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &LineEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("clear"), &LineEdit::clear);
@@ -1571,11 +1612,17 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "LTR,RTL,Locale,Auto"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ot_features"), "set_ot_features", "get_ot_features");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length", "get_expand_to_text_length");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");
@@ -1590,11 +1637,17 @@ void LineEdit::_bind_methods() {
 
 LineEdit::LineEdit() {
 
+	line.instance();
+
+	base_direction = TEXT_DIRECTION_AUTO;
+	last_input_direction = TEXT_DIRECTION_AUTO;
+	ot_features = "";
+	language = "";
+
 	undo_stack_pos = NULL;
 	_create_undo_state();
 	align = ALIGN_LEFT;
-	cached_width = 0;
-	cached_placeholder_width = 0;
+
 	cursor_pos = 0;
 	window_pos = 0;
 	window_has_focus = true;

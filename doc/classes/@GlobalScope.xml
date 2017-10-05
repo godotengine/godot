@@ -105,6 +105,42 @@
 		<constant name="HORIZONTAL" value="0" enum="Orientation">
 			General horizontal alignment, used usually for [Separator], [ScrollBar], [Slider], etc.
 		</constant>
+		<constant name="TEXT_DIRECTION_LTR" value="0" enum="TextDirection">
+			Left-to-right text writing direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_RTL" value="1" enum="TextDirection">
+			Right-to-left text writing direction.
+		</constant>
+		<constant name="TEXT_DIRECTION_LOCALE" value="2" enum="TextDirection">
+			Text writing direction is derived from the locale's script according to the CLDR metadata.
+		</constant>
+		<constant name="TEXT_DIRECTION_AUTO" value="3" enum="TextDirection">
+			Text writing direction is derived from the first character in the string with BiDi class L, R, or AL or locale's script if text is not strongly directional.
+		</constant>
+		<constant name="TEXT_JUSTIFICATION_NONE" value="0" enum="TextJustification">
+			No text justification.
+		</constant>
+		<constant name="TEXT_JUSTIFICATION_KASHIDA_AND_WHITESPACE" value="1" enum="TextJustification">
+			Use kashida and whitespace elongation to justify text.
+		</constant>
+		<constant name="TEXT_JUSTIFICATION_KASHIDA_ONLY" value="2" enum="TextJustification">
+			Use kashida elongation to justify text.
+		</constant>
+		<constant name="TEXT_JUSTIFICATION_WHITESPACE_ONLY" value="3" enum="TextJustification">
+			Use whitespace elongation to justify text.
+		</constant>
+		<constant name="TEXT_BREAK_NONE" value="0" enum="TextBreak">
+			No line breaking.
+		</constant>
+		<constant name="TEXT_BREAK_MANDATORY" value="1" enum="TextBreak">
+			Break lines only at mandatory break points.
+		</constant>
+		<constant name="TEXT_BREAK_MANDATORY_AND_WORD_BOUND" value="2" enum="TextBreak">
+			Break lines at mandatory break points and word boundaries.
+		</constant>
+		<constant name="TEXT_BREAK_MANDATORY_AND_ANYWHERE" value="3" enum="TextBreak">
+			Break lines at mandatory break points and grapheme cluster boundaries.
+		</constant>
 		<constant name="HALIGN_LEFT" value="0" enum="HAlign">
 			Horizontal left alignment, usually for text-derived classes.
 		</constant>

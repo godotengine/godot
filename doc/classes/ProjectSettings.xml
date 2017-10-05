@@ -182,6 +182,9 @@
 		<member name="application/config/icon" type="String" setter="" getter="">
 			Icon used for the project, set when project loads. Exporters will use this icon when possible to.
 		</member>
+		<member name="application/config/icudata" type="String" setter="" getter="">
+			Path to ICU break iterator data file.
+		</member>
 		<member name="application/config/name" type="String" setter="" getter="">
 			Name of the project. It is used from both project manager and by the exporters. Overriding this as name.locale allows setting it in multiple languages.
 		</member>

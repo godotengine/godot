@@ -34,13 +34,25 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "scene/resources/texture.h"
+
+#ifdef USE_TEXT_SHAPING
+#include <hb.h>
+#endif
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+//http://font.gohu.org/ (WTFPL) based 5x7 hex number font for char code box drawing
+static const unsigned char _hex_box_img_data[167] = {
+	0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00, 0x07, 0x01, 0x03, 0x00, 0x00, 0x00, 0xA5, 0x54, 0x58, 0xA1, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4C, 0x54, 0x45, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xA5, 0xD9, 0x9F, 0xDD, 0x00, 0x00, 0x00, 0x01, 0x74, 0x52, 0x4E, 0x53, 0x00, 0x40, 0xE6, 0xD8, 0x66, 0x00, 0x00, 0x00, 0x4F, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0x28, 0x94, 0x79, 0x58, 0x7B, 0xBF, 0x78, 0xEE, 0xF3, 0xEA, 0xFF, 0x0C, 0xDD, 0xCA, 0xC2, 0x4E, 0x8C, 0x3D, 0xC9, 0x12, 0xC7, 0x04, 0x18, 0xE6, 0x32, 0x89, 0x56, 0x1F, 0x02, 0x32, 0xDD, 0x04, 0x18, 0x56, 0xB2, 0x64, 0xB2, 0x29, 0x15, 0xFF, 0x7F, 0xE1, 0x7E, 0x8F, 0xE1, 0x24, 0x87, 0x7C, 0x9B, 0x4A, 0x07, 0x58, 0xB4, 0x53, 0x50, 0xD0, 0x0D, 0xC4, 0x04, 0xAA, 0x2D, 0xB4, 0x7B, 0x68, 0x79, 0xA4, 0x78, 0xF1, 0xF3, 0xEA, 0x0F, 0x00, 0x5F, 0x2A, 0x1C, 0xFE, 0x51, 0xD4, 0xC9, 0xA3, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+};
+
 class Font : public Resource {
 
 	GDCLASS(Font, Resource);
+
+	static RID hex_tex;
 
 protected:
 	static void _bind_methods();
@@ -52,18 +64,30 @@ public:
 	virtual float get_descent() const = 0;
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
+
 	Size2 get_string_size(const String &p_string) const;
+	static void draw_hex_box(RID p_canvas_item, const Point2 &p_pos, uint32_t p_charcode, const Color &p_modulate);
 
 	virtual bool is_distance_field_hint() const = 0;
 
+	virtual int get_fallback_count() const = 0;
+
+#ifdef USE_TEXT_SHAPING
+	virtual hb_font_t *get_hb_font(int p_fallback_index = -1) const = 0;
+#endif
 	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1)) const;
 	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
+	void draw_paragraph(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1), TextBreak p_bflags = TEXT_BREAK_MANDATORY_AND_WORD_BOUND, TextJustification p_jflags = TEXT_JUSTIFICATION_KASHIDA_AND_WHITESPACE) const;
 
 	virtual bool has_outline() const { return false; }
 	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	virtual void draw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_codepoint, const Point2 &p_offset, float p_ascent, const Color &p_modulate, bool p_outline, int p_fallback_index) const = 0;
+
+	static void initialize_hex_font();
+	static void finish_hex_font();
 
 	void update_changes();
-	Font();
+	Font(){};
 };
 
 // Helper class to that draws outlines immediately and draws characters in its destructor.
@@ -109,6 +133,10 @@ class BitmapFont : public Font {
 
 	GDCLASS(BitmapFont, Font);
 	RES_BASE_EXTENSION("font");
+
+#ifdef USE_TEXT_SHAPING
+	hb_font_t *h_font;
+#endif
 
 	Vector<Ref<Texture> > textures;
 
@@ -177,6 +205,8 @@ public:
 	Vector<CharType> get_char_keys() const;
 	Character get_character(CharType p_char) const;
 
+	bool has_character(CharType p_char) const;
+
 	int get_texture_count() const;
 	Ref<Texture> get_texture(int p_idx) const;
 
@@ -195,6 +225,12 @@ public:
 	bool is_distance_field_hint() const;
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	void draw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_codepoint, const Point2 &p_offset, float p_ascent, const Color &p_modulate, bool p_outline, int p_fallback_index) const;
+
+	virtual int get_fallback_count() const;
+#ifdef USE_TEXT_SHAPING
+	virtual hb_font_t *get_hb_font(int p_fallback_index) const;
+#endif
 
 	BitmapFont();
 	~BitmapFont();

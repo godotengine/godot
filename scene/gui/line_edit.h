@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/resources/shaped_string.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -84,8 +85,10 @@ private:
 	int window_pos;
 	int max_length; // 0 for no maximum
 
-	int cached_width;
-	int cached_placeholder_width;
+	TextDirection last_input_direction;
+	TextDirection base_direction;
+	String ot_features;
+	String language;
 
 	bool clear_button_enabled;
 
@@ -122,6 +125,8 @@ private:
 
 	Timer *caret_blink_timer;
 
+	Ref<ShapedString> line;
+	void _text_reshape();
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;
@@ -155,6 +160,15 @@ protected:
 public:
 	void set_align(Align p_align);
 	Align get_align() const;
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_ot_features(const String &p_features);
+	String get_ot_features() const;
+
+	void set_language(const String &p_language);
+	String get_language() const;
 
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;

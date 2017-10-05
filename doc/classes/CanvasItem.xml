@@ -144,6 +144,27 @@
 			<description>
 			</description>
 		</method>
+		<method name="draw_paragraph">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="clip_w" type="int" default="-1">
+			</argument>
+			<argument index="5" name="break_flags" type="int" enum="TextBreak" default="2">
+			</argument>
+			<argument index="6" name="just_flags" type="int" enum="TextJustification" default="1">
+			</argument>
+			<description>
+				Draws a paragraph of text using a custom font.
+			</description>
+		</method>
 		<method name="draw_polygon">
 			<return type="void">
 			</return>

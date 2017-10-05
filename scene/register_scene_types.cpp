@@ -89,6 +89,9 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
+#include "scene/gui/legacy/label_legacy.h"
+#include "scene/gui/legacy/legacy.h"
+#include "scene/gui/legacy/line_edit_legacy.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
@@ -139,6 +142,7 @@
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
 #include "scene/resources/gradient.h"
+#include "scene/resources/icu_data.h"
 #include "scene/resources/line_shape_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -154,6 +158,8 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/shaped_attributed_string.h"
+#include "scene/resources/shaped_string.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
@@ -218,6 +224,8 @@ static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
 static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
 
+static Ref<ResourceFormatLoaderICUData> resource_loader_icudt;
+
 static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
 
 static Ref<ResourceFormatSaverShader> resource_saver_shader;
@@ -254,6 +262,9 @@ void register_scene_types() {
 
 	resource_loader_bmfont.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_bmfont, true);
+
+	resource_loader_icudt.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_icudt, true);
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -352,6 +363,14 @@ void register_scene_types() {
 	ClassDB::register_class<VSplitContainer>();
 	ClassDB::register_class<GraphNode>();
 	ClassDB::register_class<GraphEdit>();
+
+	//Legacy Controls
+	ClassDB::register_virtual_class<LegacyControl>();
+	ClassDB::register_class<LabelLegacy>();
+	ClassDB::register_class<LineEditLegacy>();
+	//ClassDB::register_class<RichTextLabelLegacy>();
+	//ClassDB::register_class<TextEditLegacy>();
+	//Legacy Controls
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -633,6 +652,13 @@ void register_scene_types() {
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
+	ClassDB::register_class<ICUData>();
+
+	ClassDB::register_class<ShapedString>();
+	ClassDB::register_class<ShapedAttributedString>();
+
+	ICUData::init();
+	Font::initialize_hex_font();
 	DynamicFont::initialize_dynamic_fonts();
 
 	ClassDB::register_virtual_class<StyleBox>();
@@ -743,6 +769,8 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();
 
+	ICUData::finish();
+	Font::finish_hex_font();
 	DynamicFont::finish_dynamic_fonts();
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
@@ -759,6 +787,9 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
 	resource_loader_bmfont.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_icudt);
+	resource_loader_icudt.unref();
 
 	SpatialMaterial::finish_shaders();
 	ParticlesMaterial::finish_shaders();

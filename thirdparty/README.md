@@ -136,6 +136,30 @@ See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
 
 
+## HarfBuzz
+
+- Upstream: https://github.com/behdad/harfbuzz
+- Version: 1.8.8 (2018-08-14)
+- License: MIT-like License
+
+Files extracted from upstream source:
+
+- the `src/` folder, stripped of makefiles, non-relevant backend files and UCDN files
+- `AUTHORS, COPYING, NEWS, README, THANKS`
+
+
+## ICU4C
+
+- Upstream: http://site.icu-project.org/
+- Version: 62.1 (2018-06-20)
+- License: Unicode, Inc. License
+
+Files extracted from upstream source (`icu4c-62_1-src`):
+
+- the `source/common/` folder, stripped of makefiles, `source/data/icudata_stub.cpp` minimal data stub.
+- `LICENSE`
+
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor

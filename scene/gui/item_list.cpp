@@ -1128,45 +1128,14 @@ void ItemList::_notification(int p_what) {
 
 				if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 
-					int ss = items[i].text.length();
-					float ofs = 0;
-					int line = 0;
-					for (int j = 0; j <= ss; j++) {
-
-						int cs = j < ss ? font->get_char_size(items[i].text[j], items[i].text[j + 1]).x : 0;
-						if (ofs + cs > max_len || j == ss) {
-							line_limit_cache.write[line] = j;
-							line_size_cache.write[line] = ofs;
-							line++;
-							ofs = 0;
-							if (line >= max_text_lines)
-								break;
-						} else {
-							ofs += cs;
-						}
-					}
-
-					line = 0;
-					ofs = 0;
-
+					//special multiline mode
 					text_ofs.y += font->get_ascent();
 					text_ofs = text_ofs.floor();
 					text_ofs += base_ofs;
 					text_ofs += items[i].rect_cache.position;
 
-					FontDrawer drawer(font, Color(1, 1, 1));
-					for (int j = 0; j < ss; j++) {
+					draw_paragraph(font, text_ofs, items[i].text, modulate, max_len + 1, TEXT_BREAK_MANDATORY_AND_ANYWHERE, TEXT_JUSTIFICATION_NONE);
 
-						if (j == line_limit_cache[line]) {
-							line++;
-							ofs = 0;
-							if (line >= max_text_lines)
-								break;
-						}
-						ofs += drawer.draw_char(get_canvas_item(), text_ofs + Vector2(ofs + (max_len - line_size_cache[line]) / 2, line * (font_height + line_separation)).floor(), items[i].text[j], items[i].text[j + 1], modulate);
-					}
-
-					//special multiline mode
 				} else {
 
 					if (fixed_column_width > 0)

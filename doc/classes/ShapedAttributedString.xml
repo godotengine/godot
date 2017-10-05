@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShapedAttributedString" inherits="ShapedString" category="Core" version="3.1">
+	<brief_description>
+		Holds shaped text and related attribute information.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_attribute">
+			<return type="void">
+			</return>
+			<argument index="0" name="attribute_key" type="int" enum="TextAttribute">
+			</argument>
+			<argument index="1" name="attribute_value" type="Variant">
+			</argument>
+			<argument index="2" name="start" type="int">
+			</argument>
+			<argument index="3" name="end" type="int">
+			</argument>
+			<description>
+				Sets [code]attribute_key[/code] attribute to [code]attribute_value[/code] for specified text range.
+			</description>
+		</method>
+		<method name="clear_attributes">
+			<return type="void">
+			</return>
+			<description>
+				Removes all attributes.
+			</description>
+		</method>
+		<method name="get_attribute" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="attribute_key" type="int" enum="TextAttribute">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+				Returns [code]attribute_key[/code] attribute for specified text position.
+			</description>
+		</method>
+		<method name="remove_attribute">
+			<return type="void">
+			</return>
+			<argument index="0" name="attribute_key" type="int" enum="TextAttribute">
+			</argument>
+			<argument index="1" name="start" type="int">
+			</argument>
+			<argument index="2" name="end" type="int">
+			</argument>
+			<description>
+				Remove [code]attribute_key[/code] attribute for specified text range.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TEXT_ATTRIBUTE_FONT" value="0" enum="TextAttribute">
+			Attribute type: "Font"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_FONT_FEATURES" value="1" enum="TextAttribute">
+			Attribute type: "String"]"
+
+			Comma separated list of OpenType feature tags.
+			More information can be found at https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_LANGUAGE" value="2" enum="TextAttribute">
+			Attribute type: "String"
+
+			Language code for line-breaking and text shaping algorithms.
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_COLOR" value="3" enum="TextAttribute">
+			Attribute type: "Color"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_OUTLINE_COLOR" value="4" enum="TextAttribute">
+			Attribute type: "Color"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_UNDERLINE_COLOR" value="5" enum="TextAttribute">
+			Attribute type: "Color"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_UNDERLINE_WIDTH" value="6" enum="TextAttribute">
+			Attribute type: "float"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_STRIKETHROUGH_COLOR" value="7" enum="TextAttribute">
+			Attribute type: "Color"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_STRIKETHROUGH_WIDTH" value="8" enum="TextAttribute">
+			Attribute type: "float"
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_REPLACEMENT_IMAGE" value="9" enum="TextAttribute">
+			Attribute type: "Texture"
+
+			Embedded image.
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_REPLACEMENT_RECT" value="10" enum="TextAttribute">
+			Attribute type: "Size2"
+
+			Reserved space for custom embedded object.
+		</constant>
+		<constant name="TEXT_ATTRIBUTE_REPLACEMENT_VALIGN" value="11" enum="TextAttribute">
+			Attribute type: "VAlign"
+
+			Embedded image/object inline alignment.
+		</constant>
+	</constants>
+</class>

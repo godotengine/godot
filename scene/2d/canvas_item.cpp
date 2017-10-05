@@ -918,6 +918,17 @@ void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const
 	p_font->draw(canvas_item, p_pos, p_text, p_modulate, p_clip_w);
 }
 
+void CanvasItem::draw_paragraph(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w, TextBreak p_bflags, TextJustification p_jflags) {
+
+	if (!drawing) {
+		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+		ERR_FAIL();
+	}
+
+	ERR_FAIL_COND(p_font.is_null());
+	p_font->draw_paragraph(canvas_item, p_pos, p_text, p_modulate, p_clip_w, p_modulate, p_bflags, p_jflags);
+}
+
 float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, const Color &p_modulate) {
 
 	if (!drawing) {
@@ -1167,6 +1178,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw_paragraph", "font", "position", "text", "modulate", "clip_w", "break_flags", "just_flags"), &CanvasItem::draw_paragraph, DEFVAL(Color(1, 1, 1)), DEFVAL(-1), DEFVAL(TEXT_BREAK_MANDATORY_AND_WORD_BOUND), DEFVAL(TEXT_JUSTIFICATION_KASHIDA_AND_WHITESPACE));
 	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture", "normal_map"), &CanvasItem::draw_multimesh, DEFVAL(Ref<Texture>()));

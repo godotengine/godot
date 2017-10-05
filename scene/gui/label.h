@@ -32,6 +32,8 @@
 #define LABEL_H
 
 #include "scene/gui/control.h"
+#include "scene/resources/shaped_string.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -64,38 +66,20 @@ private:
 	bool autowrap;
 	bool clip;
 	Size2 minsize;
-	int line_count;
 	bool uppercase;
 
-	int get_longest_line_width() const;
+	TextDirection base_direction;
+	String ot_features;
+	String language;
 
-	struct WordCache {
+	Ref<ShapedString> s_paragraph;
+	Vector<Ref<ShapedString> > s_lines;
 
-		enum {
-			CHAR_NEWLINE = -1,
-			CHAR_WRAPLINE = -2
-		};
-		int char_pos; // if -1, then newline
-		int word_len;
-		int pixel_width;
-		int space_count;
-		WordCache *next;
-		WordCache() {
-			char_pos = 0;
-			word_len = 0;
-			pixel_width = 0;
-			next = 0;
-			space_count = 0;
-		}
-	};
-
-	bool word_cache_dirty;
-	void regenerate_word_cache();
+	void _reshape_lines();
+	bool _lines_dirty;
 
 	float percent_visible;
 
-	WordCache *word_cache;
-	int total_char_cache;
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
@@ -113,6 +97,15 @@ public:
 
 	void set_valign(VAlign p_align);
 	VAlign get_valign() const;
+
+	void set_text_direction(TextDirection p_text_direction);
+	TextDirection get_text_direction() const;
+
+	void set_ot_features(const String &p_features);
+	String get_ot_features() const;
+
+	void set_language(const String &p_language);
+	String get_language() const;
 
 	void set_text(const String &p_string);
 	String get_text() const;
@@ -144,7 +137,6 @@ public:
 	int get_visible_line_count() const;
 
 	Label(const String &p_text = String());
-	~Label();
 };
 
 VARIANT_ENUM_CAST(Label::Align);

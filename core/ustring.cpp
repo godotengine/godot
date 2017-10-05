@@ -1391,19 +1391,28 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				uint8_t c = *ptrtmp;
 
 				/* Determine the number of characters in sequence */
-				if ((c & 0x80) == 0)
+				if ((c & 0x80) == 0) {
 					skip = 0;
-				else if ((c & 0xE0) == 0xC0)
+				} else if ((c & 0xE0) == 0xC0) {
 					skip = 1;
-				else if ((c & 0xF0) == 0xE0)
+				} else if ((c & 0xF0) == 0xE0) {
 					skip = 2;
-				else if ((c & 0xF8) == 0xF0)
+				} else if ((c & 0xF8) == 0xF0) {
 					skip = 3;
-				else if ((c & 0xFC) == 0xF8)
+					if (sizeof(wchar_t) == 2) {
+						str_size++; //charcode > 0xFFFF, surrogate pair on windows
+					}
+				} else if ((c & 0xFC) == 0xF8) {
 					skip = 4;
-				else if ((c & 0xFE) == 0xFC)
+					if (sizeof(wchar_t) == 2) {
+						str_size++; //charcode > 0xFFFF, surrogate pair on windows
+					}
+				} else if ((c & 0xFE) == 0xFC) {
 					skip = 5;
-				else {
+					if (sizeof(wchar_t) == 2) {
+						str_size++; //charcode > 0xFFFF, surrogate pair on windows
+					}
+				} else {
 					_UNICERROR("invalid skip");
 					return true; //invalid utf8
 				}
@@ -1500,10 +1509,13 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
-			unichar = ' '; //too long for windows
+			//too long for windows - encode as surrogate pairs
+			*(dst++) = ((unichar - 0x10000) >> 10) + 0xD800;
+			*(dst++) = ((unichar - 0x10000) & 0x3FFUL) + 0xDC00;
+		} else {
+			*(dst++) = unichar;
 		}
 
-		*(dst++) = unichar;
 		cstr_size -= len;
 		p_utf8 += len;
 	}

@@ -372,6 +372,20 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
 	theme->set_constant("check_vadjust", "CheckButton", 0 * scale);
 
+	// LabelLegacy
+
+	theme->set_stylebox("normal", "LabelLegacy", memnew(StyleBoxEmpty));
+	theme->set_font("font", "LabelLegacy", default_font);
+
+	theme->set_color("font_color", "LabelLegacy", Color(1, 1, 1));
+	theme->set_color("font_color_shadow", "LabelLegacy", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_modulate", "LabelLegacy", Color(1, 1, 1));
+
+	theme->set_constant("shadow_offset_x", "LabelLegacy", 1 * scale);
+	theme->set_constant("shadow_offset_y", "LabelLegacy", 1 * scale);
+	theme->set_constant("shadow_as_outline", "LabelLegacy", 0 * scale);
+	theme->set_constant("line_spacing", "LabelLegacy", 3 * scale);
+
 	// Label
 
 	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
@@ -385,6 +399,25 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
 	theme->set_constant("shadow_as_outline", "Label", 0 * scale);
 	theme->set_constant("line_spacing", "Label", 3 * scale);
+
+	// LineEditLegacy
+
+	theme->set_stylebox("normal", "LineEditLegacy", make_stylebox(line_edit_png, 5, 5, 5, 5));
+	theme->set_stylebox("focus", "LineEditLegacy", focus);
+	theme->set_stylebox("read_only", "LineEditLegacy", make_stylebox(line_edit_disabled_png, 6, 6, 6, 6));
+
+	theme->set_font("font", "LineEditLegacy", default_font);
+
+	theme->set_color("font_color", "LineEditLegacy", control_font_color);
+	theme->set_color("font_color_selected", "LineEditLegacy", Color(0, 0, 0));
+	theme->set_color("cursor_color", "LineEditLegacy", control_font_color_hover);
+	theme->set_color("selection_color", "LineEditLegacy", font_color_selection);
+	theme->set_color("clear_button_color", "LineEditLegacy", control_font_color);
+	theme->set_color("clear_button_color_pressed", "LineEditLegacy", control_font_color_pressed);
+
+	theme->set_constant("minimum_spaces", "LineEditLegacy", 12 * scale);
+
+	theme->set_icon("clear", "LineEditLegacy", make_icon(line_edit_clear_png));
 
 	// LineEdit
 

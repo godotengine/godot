@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShapedString" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		Holds shaped text.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Adds raw text to the string.
+			</description>
+		</method>
+		<method name="break_lines" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="width" type="float">
+			</argument>
+			<argument index="1" name="flags" type="int" enum="TextBreak">
+			</argument>
+			<description>
+				Break string to sub-strings to fit specified width.
+			</description>
+		</method>
+		<method name="clusters" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns number of grapheme clusters.
+			</description>
+		</method>
+		<method name="collapse_to_width">
+			<return type="float">
+			</return>
+			<argument index="0" name="width" type="float">
+			</argument>
+			<argument index="1" name="flags" type="int" enum="TextJustification">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="3" name="outline" type="bool" default="false">
+			</argument>
+			<description>
+				Draws string.
+			</description>
+		</method>
+		<method name="draw_cluster" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="index" type="int">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="outline" type="bool" default="false">
+			</argument>
+			<description>
+				Draws single grapheme aluster and returns advance.
+			</description>
+		</method>
+		<method name="empty" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the string is empty.
+			</description>
+		</method>
+		<method name="extend_to_width">
+			<return type="float">
+			</return>
+			<argument index="0" name="width" type="float">
+			</argument>
+			<argument index="1" name="flags" type="int" enum="TextJustification">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_ascent" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return string ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_char_direction" qualifiers="const">
+			<return type="int" enum="TextDirection">
+			</return>
+			<argument index="0" name="position" type="int">
+			</argument>
+			<description>
+				Return writing direction of a character.
+			</description>
+		</method>
+		<method name="get_cluster_ascent" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_cluster_descent" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_cluster_end" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return index of the last character in grapheme cluster.
+			</description>
+		</method>
+		<method name="get_cluster_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster height in pixels.
+			</description>
+		</method>
+		<method name="get_cluster_leading_edge" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster leading edge offset in pixels.
+			</description>
+		</method>
+		<method name="get_cluster_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cluster_start" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return index of the first character in grapheme cluster.
+			</description>
+		</method>
+		<method name="get_cluster_trailing_edge" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster trailing edge offset in pixels.
+			</description>
+		</method>
+		<method name="get_cluster_width" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Return grapheme cluster width in pixels.
+			</description>
+		</method>
+		<method name="get_cursor_positions" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="position" type="int">
+			</argument>
+			<argument index="1" name="flags" type="int" enum="TextDirection">
+			</argument>
+			<description>
+				Returns up to two offsets corresponding to the strong and weak cursor, at the specified position.
+			</description>
+		</method>
+		<method name="get_descent" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return string descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return string height in pixels.
+			</description>
+		</method>
+		<method name="get_highlight_shapes" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="start" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<description>
+				Returns an array of [Rect2] enclosing the selection in the specified range.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns string width in pixels.
+			</description>
+		</method>
+		<method name="hit_test" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="position" type="float">
+			</argument>
+			<description>
+				Returns a character index corresponding to the specified point.
+			</description>
+		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the string is shaped successfuly.
+			</description>
+		</method>
+		<method name="length" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns number of characters in the string.
+			</description>
+		</method>
+		<method name="substr" qualifiers="const">
+			<return type="ShapedString">
+			</return>
+			<argument index="0" name="start" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_direction" type="int" setter="set_base_direction" getter="get_base_direction" enum="TextDirection">
+			Base text writing direction.
+		</member>
+		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
+			Base text font.
+		</member>
+		<member name="features" type="String" setter="set_features" getter="get_features">
+			Comma separated list of OpenType feature tags.
+			More information can be found at https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags
+		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language">
+			Language code for line-breaking and text shaping algorithms.
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+			Text string.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

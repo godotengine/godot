@@ -33,14 +33,15 @@
 
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/shader.h"
+#include "scene/resources/shaped_string.h"
 #include "scene/resources/texture.h"
 
 class CanvasLayer;
 class Viewport;
-class Font;
 
 class StyleBox;
 
@@ -321,6 +322,8 @@ public:
 	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map);
 
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
+	void draw_paragraph(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, TextBreak p_bflags = TEXT_BREAK_MANDATORY_AND_WORD_BOUND, TextJustification p_jflags = TEXT_JUSTIFICATION_KASHIDA_AND_WHITESPACE);
+
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
 
 	void draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale);

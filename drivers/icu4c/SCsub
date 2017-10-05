@@ -1,0 +1,271 @@
+#!/usr/bin/env python
+
+Import('env')
+from compat import isbasestring
+
+env_icu = env.Clone()
+
+def make_icu_data(target, source, env):
+    import os
+    from compat import encode_utf8, byte_to_str, open_utf8
+
+    dst = target[0].srcnode().abspath
+
+    g = open_utf8(dst, "w")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+    g.write("/* License & terms of use: http://www.unicode.org/copyright.html */\n")
+    g.write("#ifndef _ICU_DATA_H\n")
+    g.write("#define _ICU_DATA_H\n")
+    g.write("#include \"unicode/utypes.h\"\n")
+    g.write("#include \"unicode/udata.h\"\n")
+    g.write("#include \"unicode/uversion.h\"\n")
+
+    f = open(source[0].srcnode().abspath, "rb")
+    buf = f.read()
+    import os.path
+
+    g.write("extern \"C\" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n")
+    for i in range(len(buf)):
+        g.write(byte_to_str(buf[i]) + ",\n")
+
+    g.write("};\n")
+    g.write("#endif")
+
+if env['builtin_icu']:
+    # Thirdparty source files
+    thirdparty_dir = "#thirdparty/icu4c/"
+
+    thirdparty_sources = [
+        "source/common/appendable.cpp",
+        "source/common/bmpset.cpp",
+        "source/common/brkeng.cpp",
+        "source/common/brkiter.cpp",
+        "source/common/bytesinkutil.cpp",
+        "source/common/bytestream.cpp",
+        "source/common/bytestrie.cpp",
+        "source/common/bytestriebuilder.cpp",
+        "source/common/bytestrieiterator.cpp",
+        "source/common/caniter.cpp",
+        "source/common/chariter.cpp",
+        "source/common/charstr.cpp",
+        "source/common/cmemory.cpp",
+        #"source/common/cstr.cpp",
+        "source/common/cstring.cpp",
+        #"source/common/cwchar.cpp",
+        "source/common/dictbe.cpp",
+        "source/common/dictionarydata.cpp",
+        #"source/common/dtintrv.cpp",
+        "source/common/edits.cpp",
+        "source/common/errorcode.cpp",
+        "source/common/filteredbrk.cpp",
+        "source/common/filterednormalizer2.cpp",
+        #"source/common/icudataver.cpp",
+        #"source/common/icuplug.cpp",
+        "source/common/listformatter.cpp",
+        "source/common/loadednormalizer2impl.cpp",
+        "source/common/locavailable.cpp",
+        "source/common/locbased.cpp",
+        "source/common/locdispnames.cpp",
+        "source/common/locdspnm.cpp",
+        "source/common/locid.cpp",
+        "source/common/loclikely.cpp",
+        "source/common/locmap.cpp",
+        "source/common/locresdata.cpp",
+        "source/common/locutil.cpp",
+        #"source/common/messagepattern.cpp",
+        "source/common/normalizer2.cpp",
+        "source/common/normalizer2impl.cpp",
+        #"source/common/normlzr.cpp",
+        "source/common/parsepos.cpp",
+        "source/common/patternprops.cpp",
+        #"source/common/pluralmap.cpp",
+        "source/common/propname.cpp",
+        "source/common/propsvec.cpp",
+        #"source/common/punycode.cpp",
+        "source/common/putil.cpp",
+        "source/common/rbbi.cpp",
+        "source/common/rbbi_cache.cpp",
+        "source/common/rbbidata.cpp",
+        "source/common/rbbinode.cpp",
+        "source/common/rbbirb.cpp",
+        "source/common/rbbiscan.cpp",
+        "source/common/rbbisetb.cpp",
+        "source/common/rbbistbl.cpp",
+        "source/common/rbbitblb.cpp",
+        "source/common/resbund.cpp",
+        #"source/common/resbund_cnv.cpp",
+        "source/common/resource.cpp",
+        "source/common/ruleiter.cpp",
+        "source/common/schriter.cpp",
+        "source/common/serv.cpp",
+        "source/common/servlk.cpp",
+        "source/common/servlkf.cpp",
+        "source/common/servls.cpp",
+        "source/common/servnotf.cpp",
+        "source/common/servrbf.cpp",
+        "source/common/servslkf.cpp",
+        #"source/common/sharedobject.cpp",
+        #"source/common/simpleformatter.cpp",
+        "source/common/stringpiece.cpp",
+        "source/common/stringtriebuilder.cpp",
+        "source/common/uarrsort.cpp",
+        "source/common/ubidi.cpp",
+        "source/common/ubidi_props.cpp",
+        "source/common/ubidiln.cpp",
+        "source/common/ubiditransform.cpp",
+        "source/common/ubidiwrt.cpp",
+        "source/common/ubrk.cpp",
+        "source/common/ucase.cpp",
+        #"source/common/ucasemap.cpp",
+        #"source/common/ucasemap_titlecase_brkiter.cpp",
+        #"source/common/ucat.cpp",
+        "source/common/uchar.cpp",
+        "source/common/ucharstrie.cpp",
+        "source/common/ucharstriebuilder.cpp",
+        "source/common/ucharstrieiterator.cpp",
+        "source/common/uchriter.cpp",
+        "source/common/ucln_cmn.cpp",
+        "source/common/ucmndata.cpp",
+        #"source/common/ucnv.cpp",
+        #"source/common/ucnv2022.cpp",
+        #"source/common/ucnv_bld.cpp",
+        #"source/common/ucnv_cb.cpp",
+        #"source/common/ucnv_cnv.cpp",
+        #"source/common/ucnv_ct.cpp",
+        #"source/common/ucnv_err.cpp",
+        #"source/common/ucnv_ext.cpp",
+        "source/common/ucnv_io.cpp",
+        #"source/common/ucnv_lmb.cpp",
+        #"source/common/ucnv_set.cpp",
+        #"source/common/ucnv_u16.cpp",
+        #"source/common/ucnv_u32.cpp",
+        #"source/common/ucnv_u7.cpp",
+        #"source/common/ucnv_u8.cpp",
+        #"source/common/ucnvbocu.cpp",
+        #"source/common/ucnvdisp.cpp",
+        #"source/common/ucnvhz.cpp",
+        #"source/common/ucnvisci.cpp",
+        #"source/common/ucnvlat1.cpp",
+        #"source/common/ucnvmbcs.cpp",
+        #"source/common/ucnvscsu.cpp",
+        #"source/common/ucnvsel.cpp",
+        "source/common/ucol_swp.cpp",
+        "source/common/udata.cpp",
+        "source/common/udatamem.cpp",
+        "source/common/udataswp.cpp",
+        "source/common/uenum.cpp",
+        "source/common/uhash.cpp",
+        "source/common/uhash_us.cpp",
+        "source/common/uidna.cpp",
+        "source/common/uinit.cpp",
+        "source/common/uinvchar.cpp",
+        "source/common/uiter.cpp",
+        #"source/common/ulist.cpp",
+        #"source/common/ulistformatter.cpp",
+        "source/common/uloc.cpp",
+        "source/common/uloc_keytype.cpp",
+        "source/common/uloc_tag.cpp",
+        "source/common/umapfile.cpp",
+        "source/common/umath.cpp",
+        "source/common/umutex.cpp",
+        "source/common/unames.cpp",
+        #"source/common/unifiedcache.cpp",
+        "source/common/unifilt.cpp",
+        "source/common/unifunct.cpp",
+        "source/common/uniset.cpp",
+        "source/common/uniset_closure.cpp",
+        "source/common/uniset_props.cpp",
+        "source/common/unisetspan.cpp",
+        "source/common/unistr.cpp",
+        "source/common/unistr_case.cpp",
+        #"source/common/unistr_case_locale.cpp",
+        #"source/common/unistr_cnv.cpp",
+        "source/common/unistr_props.cpp",
+        #"source/common/unistr_titlecase_brkiter.cpp",
+        "source/common/unorm.cpp",
+        "source/common/unormcmp.cpp",
+        "source/common/uobject.cpp",
+        "source/common/uprops.cpp",
+        #"source/common/ures_cnv.cpp",
+        "source/common/uresbund.cpp",
+        "source/common/uresdata.cpp",
+        #"source/common/usc_impl.cpp",
+        "source/common/uscript.cpp",
+        "source/common/uscript_props.cpp",
+        #"source/common/uset.cpp",
+        #"source/common/uset_props.cpp",
+        #"source/common/usetiter.cpp",
+        #"source/common/ushape.cpp",
+        #"source/common/usprep.cpp",
+        "source/common/ustack.cpp",
+        "source/common/ustr_cnv.cpp",
+        "source/common/ustr_titlecase_brkiter.cpp",
+        "source/common/ustr_wcs.cpp",
+        "source/common/ustrcase.cpp",
+        "source/common/ustrcase_locale.cpp",
+        "source/common/ustrenum.cpp",
+        "source/common/ustrfmt.cpp",
+        "source/common/ustring.cpp",
+        "source/common/ustrtrns.cpp",
+        "source/common/utext.cpp",
+        "source/common/utf_impl.cpp",
+        "source/common/util.cpp",
+        "source/common/util_props.cpp",
+        "source/common/utrace.cpp",
+        "source/common/utrie.cpp",
+        "source/common/utrie2.cpp",
+        "source/common/utrie2_builder.cpp",
+        #"source/common/uts46.cpp",
+        "source/common/utypes.cpp",
+        "source/common/uvector.cpp",
+        "source/common/uvectr32.cpp",
+        "source/common/uvectr64.cpp",
+        "source/common/wintz.cpp",
+    ]
+
+    if env['use_staitc_icu_data']:
+        env.Depends('#thirdparty/icu4c/source/data/icudata.gen.h', '#thirdparty/icu4c/source/data/icudt60l.dat')
+        env.Command('#thirdparty/icu4c/source/data/icudata.gen.h', '#thirdparty/icu4c/source/data/icudt60l.dat', make_icu_data)
+
+        thirdparty_sources.append("source/data/icudata_static.cpp")
+    else:
+        thirdparty_sources.append("source/data/icudata_stub.cpp")
+
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    thirdparty_include_paths = [
+        "source/common/",
+    ]
+    env_icu.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    env_icu.Append(CXXFLAGS=['-DU_STATIC_IMPLEMENTATION', '-DU_COMMON_IMPLEMENTATION', '-DPKGDATA_MODE=static', '-DU_HAVE_ATOMIC=1'])
+    env_icu.disable_warnings()
+
+    #uses c++11
+    if (not env_icu.msvc):
+        env_icu.Append(CXXFLAGS=['-std=c++11'])
+
+    #!!! remove '-DU_SHOW_CPLUSPLUS_API=0' and '-DUCHAR_TYPE=uint16_t' after moving to C++11
+    env.Append(CXXFLAGS=['-DU_SHOW_CPLUSPLUS_API=0', '-DU_HIDE_DEPRECATED_API', '-DU_HIDE_OBSOLETE_API', '-DU_HIDE_INTERNAL_API', '-DUCHAR_TYPE=uint16_t'])
+    #!!! remove '-DU_SHOW_CPLUSPLUS_API=0' and '-DUCHAR_TYPE=uint16_t' after moving to C++11
+
+    env.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+
+    lib = env_icu.Library("icu_builtin", thirdparty_sources)
+    # Needs to be appended to arrive after libscene in the linker call,
+    # but we don't want it to arrive *after* system libs, so manual hack
+    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
+    # and then plain strings for system library. We insert between the two.
+    inserted = False
+    for idx, linklib in enumerate(env["LIBS"]):
+        if isbasestring(linklib): # first system lib such as "X11", otherwise SCons lib object
+            env["LIBS"].insert(idx, lib)
+            inserted = True
+            break
+
+    if not inserted:
+        env.Append(LIBS=[lib])
+
+Export('env')

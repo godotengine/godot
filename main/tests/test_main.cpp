@@ -43,6 +43,7 @@
 #include "test_physics_2d.h"
 #include "test_render.h"
 #include "test_shader_lang.h"
+#include "test_shaping.h"
 #include "test_string.h"
 
 const char **tests_get_names() {
@@ -62,6 +63,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
+		"shaping",
 		NULL
 	};
 
@@ -142,7 +144,13 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestAStar::test();
 	}
 
+	if (p_test == "shaping") {
+
+		return TestShaping::test();
+	}
+
 	print_line("Unknown test: " + p_test);
+
 	return NULL;
 }
 

@@ -168,6 +168,8 @@ opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True)
 opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
+opts.Add(BoolVariable('builtin_harfbuzz', "Use the built-in HarfBuzz library", True))
+opts.Add(BoolVariable('builtin_icu', "Use the built-in ICU library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))
 opts.Add(BoolVariable('builtin_libpng', "Use the built-in libpng library", True))
 opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library", True))
@@ -185,6 +187,10 @@ opts.Add(BoolVariable('builtin_thekla_atlas', "Use the built-in thekla_altas lib
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
+
+# ICU/HarfBuzz options
+opts.Add(BoolVariable('use_text_shaping', "Use ICU and HarfBuzz for BiDi and text shaping", True))
+opts.Add(BoolVariable('use_staitc_icu_data', "Use statically-linked ICU break iterator data", False))
 
 # Compilation environment setup
 opts.Add("CXX", "C++ compiler")

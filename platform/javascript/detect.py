@@ -110,11 +110,8 @@ def configure(env):
     # No multi-threading (SharedArrayBuffer) available yet,
     # once feasible also consider memory buffer size issues.
     env.Append(CPPDEFINES=['NO_THREADS'])
-
-    # These flags help keep the file size down.
-    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
-    # Don't use dynamic_cast, necessary with no-rtti.
-    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
+    # These flags help keep the file size down
+    env.Append(CPPFLAGS=["-fno-exceptions"]) #, '-fno-rtti' - dynamic_cast required by ICU
 
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])

@@ -33,6 +33,12 @@ else:
 # Core dependencies
 SConscript("png/SCsub")
 
+# HarfBuzz and ICU
+if env['use_text_shaping']:
+    env.Append(CXXFLAGS=['-DUSE_TEXT_SHAPING'])
+    SConscript("harfbuzz/SCsub")
+    SConscript("icu4c/SCsub")
+
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
 if env['tools']:
