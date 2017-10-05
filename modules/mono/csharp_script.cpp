@@ -1201,8 +1201,6 @@ bool CSharpScript::_update_exports() {
 		exported_members_cache.clear();
 		exported_members_defval_cache.clear();
 
-		const Vector<GDMonoField *> &fields = script_class->get_all_fields();
-
 		// We are creating a temporary new instance of the class here to get the default value
 		// TODO Workaround. Should be replaced with IL opcodes analysis
 
@@ -1226,36 +1224,47 @@ bool CSharpScript::_update_exports() {
 			return false;
 		}
 
-		for (int i = 0; i < fields.size(); i++) {
-			GDMonoField *field = fields[i];
+		GDMonoClass *top = script_class;
 
-			if (field->is_static() || field->get_visibility() != GDMono::PUBLIC)
-				continue;
+		while (top && top != native) {
+			const Vector<GDMonoField *> &fields = top->get_all_fields();
 
-			String name = field->get_name();
-			StringName cname = name;
+			for (int i = 0; i < fields.size(); i++) {
+				GDMonoField *field = fields[i];
 
-			Variant::Type type = GDMonoMarshal::managed_to_variant_type(field->get_type());
+				if (field->is_static() || field->get_visibility() != GDMono::PUBLIC)
+					continue;
 
-			if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
-				MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
+				String name = field->get_name();
+				StringName cname = name;
 
-				// Field has Export attribute
-				int hint = CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr);
-				String hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
-				int usage = CACHED_FIELD(ExportAttribute, usage)->get_int_value(attr);
+				if (member_info.has(cname))
+					continue;
 
-				PropertyInfo prop_info = PropertyInfo(type, name, PropertyHint(hint), hint_string, PropertyUsageFlags(usage));
+				Variant::Type type = GDMonoMarshal::managed_to_variant_type(field->get_type());
 
-				member_info[cname] = prop_info;
-				exported_members_cache.push_back(prop_info);
+				if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
+					MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
 
-				if (tmp_object) {
-					exported_members_defval_cache[cname] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					// Field has Export attribute
+					int hint = CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr);
+					String hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
+					int usage = CACHED_FIELD(ExportAttribute, usage)->get_int_value(attr);
+
+					PropertyInfo prop_info = PropertyInfo(type, name, PropertyHint(hint), hint_string, PropertyUsageFlags(usage));
+
+					member_info[cname] = prop_info;
+					exported_members_cache.push_back(prop_info);
+
+					if (tmp_object) {
+						exported_members_defval_cache[cname] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					}
+				} else {
+					member_info[cname] = PropertyInfo(type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 				}
-			} else {
-				member_info[cname] = PropertyInfo(type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 			}
+
+			top = top->get_parent_class();
 		}
 	}
 
