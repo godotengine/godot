@@ -853,7 +853,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 static void _initialize_java_modules() {
 
-	if (!ProjectSettings::get_singleton()->has("android/modules")) {
+	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
 		print_line("ANDROID MODULES: Nothing to load, aborting");
 		return;
 	}

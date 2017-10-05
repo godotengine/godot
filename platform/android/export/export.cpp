@@ -871,7 +871,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 					String lang = str.substr(str.find_last("-") + 1, str.length()).replace("-", "_");
 					String prop = "application/config/name_" + lang;
-					if (ProjectSettings::get_singleton()->has(prop)) {
+					if (ProjectSettings::get_singleton()->has_setting(prop)) {
 						str = ProjectSettings::get_singleton()->get(prop);
 					} else {
 						str = get_project_name(package_name);

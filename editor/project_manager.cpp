@@ -506,7 +506,7 @@ public:
 
 			if (current->setup(project_path->get_text(), "")) {
 				set_message(TTR("Couldn't get project.godot in the project path."), MESSAGE_ERROR);
-			} else if (current->has("application/config/name")) {
+			} else if (current->has_setting("application/config/name")) {
 				project_name->set_text(current->get("application/config/name"));
 			}
 			project_name->grab_focus();

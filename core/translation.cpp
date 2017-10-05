@@ -1052,7 +1052,7 @@ TranslationServer *TranslationServer::singleton = NULL;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 
-	if (ProjectSettings::get_singleton()->has(p_from)) {
+	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
 		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
 		int tcount = translations.size();

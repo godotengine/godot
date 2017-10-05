@@ -492,7 +492,7 @@ void ResourceLoader::reload_translation_remaps() {
 
 void ResourceLoader::load_translation_remaps() {
 
-	if (!ProjectSettings::get_singleton()->has("locale/translation_remaps"))
+	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"))
 		return;
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");

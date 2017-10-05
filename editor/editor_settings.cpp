@@ -195,7 +195,17 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR)); //do not edit
 }
 
-bool EditorSettings::has(String p_var) const {
+void EditorSettings::set_setting(const String &p_setting, const Variant &p_value) {
+	_THREAD_SAFE_METHOD_
+	set(p_setting, p_value);
+}
+
+Variant EditorSettings::get_setting(const String &p_setting) const {
+	_THREAD_SAFE_METHOD_
+	return get(p_setting);
+}
+
+bool EditorSettings::has_setting(String p_var) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -218,7 +228,7 @@ void EditorSettings::raise_order(const String &p_name) {
 
 Variant _EDITOR_DEF(const String &p_var, const Variant &p_default) {
 
-	if (EditorSettings::get_singleton()->has(p_var))
+	if (EditorSettings::get_singleton()->has_setting(p_var))
 		return EditorSettings::get_singleton()->get(p_var);
 	EditorSettings::get_singleton()->set(p_var, p_default);
 	EditorSettings::get_singleton()->set_initial_value(p_var, p_default);
@@ -228,7 +238,7 @@ Variant _EDITOR_DEF(const String &p_var, const Variant &p_default) {
 
 Variant _EDITOR_GET(const String &p_var) {
 
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has(p_var), Variant())
+	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_var), Variant())
 	return EditorSettings::get_singleton()->get(p_var);
 }
 
@@ -471,8 +481,8 @@ void EditorSettings::setup_network() {
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String lip = "127.0.0.1";
 	String hint;
-	String current = has("network/debug/remote_host") ? get("network/debug/remote_host") : "";
-	int port = has("network/debug/remote_port") ? (int)get("network/debug/remote_port") : 6007;
+	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
+	int port = has_setting("network/debug/remote_port") ? (int)get("network/debug/remote_port") : 6007;
 
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
 
@@ -989,7 +999,7 @@ void EditorSettings::load_text_editor_theme() {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
-		if (has("text_editor/highlighting/" + key)) {
+		if (has_setting("text_editor/highlighting/" + key)) {
 
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
@@ -1194,6 +1204,10 @@ void EditorSettings::set_initial_value(const StringName &p_name, const Variant &
 
 void EditorSettings::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
+	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
+	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
+
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("get_settings_path"), &EditorSettings::get_settings_path);
 	ClassDB::bind_method(D_METHOD("get_project_settings_path"), &EditorSettings::get_project_settings_path);
@@ -1210,6 +1224,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &EditorSettings::set_initial_value);
+
+	ClassDB::bind_method(D_METHOD("set_favorite_dirs", "dirs"), &EditorSettings::set_favorite_dirs);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
