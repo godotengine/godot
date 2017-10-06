@@ -1581,7 +1581,7 @@ void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"), &Object::is_queued_for_deletion);
 
-	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
+	ClassDB::add_virtual_method("Object", MethodInfo("_free"), false);
 
 	ADD_SIGNAL(MethodInfo("script_changed"));
 
