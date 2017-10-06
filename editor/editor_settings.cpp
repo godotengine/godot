@@ -1225,8 +1225,6 @@ void EditorSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &EditorSettings::set_initial_value);
 
-	ClassDB::bind_method(D_METHOD("set_favorite_dirs", "dirs"), &EditorSettings::set_favorite_dirs);
-
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 
