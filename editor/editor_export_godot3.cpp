@@ -36,7 +36,11 @@
 
 static const char *globals_renames[][2] = {
 	/* [application] */
-	// no change
+	{ "application/main_scene", "application/run/main_scene" },
+	{ "application/main_loop_type", "application/run/main_loop_type" },
+	{ "application/disable_stdout", "application/run/disable_stdout" },
+	{ "application/disable_stderr", "application/run/disable_stderr" },
+	{ "application/frame_delay_msec", "application/run/frame_delay_msec" },
 
 	/* [debug] */
 	{ "debug/profiler_max_functions", "debug/profiler/max_functions" },
