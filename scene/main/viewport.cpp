@@ -619,28 +619,31 @@ void Viewport::_notification(int p_what) {
 							Vector3 from = camera->project_ray_origin(pos);
 							Vector3 dir = camera->project_ray_normal(pos);
 
-							PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
-							if (space) {
+							if (camera->get_raycast_layers() > 0) {
 
-								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, 0xFFFFFFFF, true);
-								ObjectID new_collider = 0;
-								if (col) {
+								PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
+								if (space) {
 
-									CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
-									if (co) {
+									bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), camera->get_raycast_layers(), 0xFFFFFFFF, true);
+									ObjectID new_collider = 0;
+									if (col) {
 
-										co->_input_event(camera, ev, result.position, result.normal, result.shape);
-										last_object = co;
-										last_id = result.collider_id;
-										new_collider = last_id;
-										if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
-											physics_object_capture = last_id;
+										CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
+										if (co) {
+
+											co->_input_event(camera, ev, result.position, result.normal, result.shape);
+											last_object = co;
+											last_id = result.collider_id;
+											new_collider = last_id;
+											if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
+												physics_object_capture = last_id;
+											}
 										}
 									}
-								}
 
-								if (mm.is_valid()) {
-									_test_new_mouseover(new_collider);
+									if (mm.is_valid()) {
+										_test_new_mouseover(new_collider);
+									}
 								}
 							}
 
@@ -655,19 +658,21 @@ void Viewport::_notification(int p_what) {
 					Vector3 from = camera->project_ray_origin(physics_last_mousepos);
 					Vector3 dir = camera->project_ray_normal(physics_last_mousepos);
 
-					PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
-					if (space) {
+					if (camera->get_raycast_layers() > 0) {
+						PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
+						if (space) {
 
-						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, 0xFFFFFFFF, true);
-						ObjectID new_collider = 0;
-						if (col) {
-							CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
-							if (co) {
-								new_collider = result.collider_id;
+							bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), camera->get_raycast_layers(), 0xFFFFFFFF, true);
+							ObjectID new_collider = 0;
+							if (col) {
+								CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
+								if (co) {
+									new_collider = result.collider_id;
+								}
 							}
-						}
 
-						_test_new_mouseover(new_collider);
+							_test_new_mouseover(new_collider);
+						}
 					}
 #endif
 				}
