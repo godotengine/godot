@@ -106,7 +106,7 @@ namespace GodotSharpTools.Build
 
         private string BuildArguments(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties)
         {
-            string arguments = string.Format("{0} /v:normal /t:Build /p:{1} /l:{2},{3};{4}",
+            string arguments = string.Format(@"""{0}"" /v:normal /t:Build ""/p:{1}"" ""/l:{2},{3};{4}""",
                 solution,
                 "Configuration=" + config,
                 typeof(GodotBuildLogger).FullName,
