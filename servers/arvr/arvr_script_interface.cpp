@@ -23,20 +23,26 @@ StringName ARVRScriptInterface::get_name() const {
 	}
 }
 
-bool ARVRScriptInterface::is_installed() {
-	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("is_installed")), false);
-	return get_script_instance()->call("is_installed");
+int ARVRScriptInterface::get_capabilities() const {
+	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("get_capabilities")), ARVRInterface::ARVR_NONE);
+	return get_script_instance()->call("get_capabilities");
+};
+
+ARVRInterface::Tracking_status ARVRScriptInterface::get_tracking_status() const {
+	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("get_tracking_status")), ARVRInterface::ARVR_NOT_TRACKING);
+	int status = get_script_instance()->call("get_tracking_status");
+	return (ARVRInterface::Tracking_status)status;
 }
 
-bool ARVRScriptInterface::hmd_is_present() {
-	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("hmd_is_present")), false);
-	return get_script_instance()->call("hmd_is_present");
-}
+bool ARVRScriptInterface::get_anchor_detection_is_enabled() const {
+	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("get_anchor_detection_is_enabled")), false);
+	return get_script_instance()->call("get_anchor_detection_is_enabled");
+};
 
-bool ARVRScriptInterface::supports_hmd() {
-	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("supports_hmd")), false);
-	return get_script_instance()->call("supports_hmd");
-}
+void ARVRScriptInterface::set_anchor_detection_is_enabled(bool p_enable) {
+	ERR_FAIL_COND(!(get_script_instance() && get_script_instance()->has_method("set_anchor_detection_is_enabled")));
+	get_script_instance()->call("set_anchor_detection_is_enabled");
+};
 
 bool ARVRScriptInterface::is_stereo() {
 	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("is_stereo")), false);
@@ -110,13 +116,16 @@ void ARVRScriptInterface::process() {
 }
 
 void ARVRScriptInterface::_bind_methods() {
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "is_installed"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "hmd_is_present"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "supports_hmd"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_capabilities"));
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "is_initialized"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "initialize"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("uninitialize"));
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_tracking_status"));
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "get_anchor_detection_is_enabled"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_anchor_detection_is_enabled", PropertyInfo(Variant::BOOL, "enabled")));
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "is_stereo"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::VECTOR2, "get_recommended_render_targetsize"));

@@ -1,0 +1,42 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.bat text
+*.txt text
+*.c text
+*.h text
+*.H text
+*.cc text
+*.cpp text
+*.awk text
+*.pl text
+*.py text
+*.xcconfig text
+*.vcd text
+*.vbsp text
+*.proto text
+*.inc text
+*.fxc text
+*.vsh text
+*.lst text
+*.mm text
+*.cfg text
+*.res text
+*.rc text
+*.def text
+*.vmt text
+*.inl text
+*.asm text
+
+.gitignore text
+README text
+CONTRIBUTING text
+LICENSE text
+
+# Declare files that will always have LF line endings on checkout.
+*.sh eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+*.exe binary
