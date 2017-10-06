@@ -1,6 +1,7 @@
 buildscript {
 	repositories {
 		jcenter()
+		$$GRADLE_REPOSITORY_URLS$$
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.3.3'
@@ -54,11 +55,11 @@ android {
 			]
 			res.srcDirs = [
 				'res'
-				$$GRADLE_RES_DIRS$$  
+				$$GRADLE_RES_DIRS$$
 			]
 			aidl.srcDirs = [
 				'aidl'
-				$$GRADLE_AIDL_DIRS$$   
+				$$GRADLE_AIDL_DIRS$$
 			]
 			assets.srcDirs = [
 				'assets'
