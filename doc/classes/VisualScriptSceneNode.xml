@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptSceneNode" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Node reference.
 	</brief_description>
 	<description>
+		A direct reference to a node.
+		[b]Input Ports:[/b]
+		none
+		[b]Output Ports:[/b]
+		- Data: [code]node[/code] (obj)
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +32,7 @@
 	</methods>
 	<members>
 		<member name="node_path" type="NodePath" setter="set_node_path" getter="get_node_path">
+			The node's path in the scene tree.
 		</member>
 	</members>
 	<constants>
