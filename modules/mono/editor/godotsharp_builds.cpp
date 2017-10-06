@@ -461,6 +461,10 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	if (p_blocking) {
 		exited = true;
 		exit_code = klass->get_field("exitCode")->get_int_value(mono_object);
+
+		if (exit_code != 0 && OS::get_singleton()->is_stdout_verbose())
+			OS::get_singleton()->print(String("MSBuild finished with exit code " + itos(exit_code) + "\n").utf8());
+
 		build_tab->on_build_exit(exit_code == 0 ? MonoBuildTab::RESULT_SUCCESS : MonoBuildTab::RESULT_ERROR);
 	} else {
 		build_instance = MonoGCHandle::create_strong(mono_object);
