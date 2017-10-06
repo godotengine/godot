@@ -352,8 +352,8 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
-	if (!ed_settings->has("mono/builds/build_tool")) {
-		ed_settings->set("mono/builds/build_tool", MSBUILD);
+	if (!ed_settings->has_setting("mono/builds/build_tool")) {
+		ed_settings->set_setting("mono/builds/build_tool", MSBUILD);
 	}
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM, "MSBuild (System),MSBuild (Mono),xbuild"));
 }
