@@ -1947,6 +1947,11 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 		}
 	}
 
+	String str = "{\n\"flags/filter\": " + String(GLOBAL_DEF("image_loader/filter", true) ? "true" : "false");
+	str += ",\n\"flags/mipmaps\": " + String(GLOBAL_DEF("image_loader/gen_mipmaps", true) ? "true" : "false");
+	str += "\n}";
+	new_cfg.set_value("importer_defaults", "texture", str);
+
 	// Write the collected ConfigFile manually - we need to use _get_property_as_text()
 	// above, so we can't rely on ConfigFile.save() to properly store the raw strings.
 	FileAccessRef f = FileAccess::open(p_path.plus_file("project.godot"), FileAccess::WRITE);
