@@ -861,7 +861,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			names.push_back(TTR("Assign"));
 			names.push_back(TTR("Clear"));
 
-			if (owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && Object::cast_to<Node>(owner)->has_node(v))
+			if (owner && owner->is_class("Node") && (v.get_type() == Variant::NODE_PATH) && Object::cast_to<Node>(owner)->has_node(v))
 				names.push_back(TTR("Select Node"));
 
 			config_action_buttons(names);
