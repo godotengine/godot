@@ -373,6 +373,9 @@ void EditorNode::_fs_changed() {
 				String err = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
 				ERR_PRINT(err.utf8().get_data());
 			} else {
+				// ensures export_project does not loop infinitely, because notifications may
+				// come during the export
+				export_defer.preset = "";
 				platform->export_project(preset, export_defer.debug, export_defer.path, /*p_flags*/ 0);
 			}
 		}
