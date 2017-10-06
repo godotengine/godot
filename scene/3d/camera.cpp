@@ -84,19 +84,25 @@ bool Camera::_set(const StringName &p_name, const Variant &p_value) {
 		h_offset = p_value;
 	else if (p_name == "v_offset")
 		v_offset = p_value;
+	else if (p_name == "room_cull_enabled")
+		set_room_cull_enabled(bool(p_value));
 	else if (p_name == "current") {
-		if (p_value.operator bool()) {
+		if (p_value.operator bool() == true) {
 			make_current();
 		} else {
 			clear_current();
 		}
-	} else if (p_name == "cull_mask") {
+	} else if (p_name == "cull_mask")
 		set_cull_mask(p_value);
-	} else if (p_name == "environment") {
+	else if (p_name == "raycast_layers")
+		set_raycast_layers(p_value);
+	else if (p_name == "depth")
+		set_depth(p_value);
+	else if (p_name == "environment")
 		set_environment(p_value);
-	} else if (p_name == "doppler/tracking") {
+	else if (p_name == "doppler/tracking")
 		set_doppler_tracking(DopplerTracking(int(p_value)));
-	} else
+	else
 		return false;
 
 	_update_camera_mode();
@@ -104,6 +110,7 @@ bool Camera::_set(const StringName &p_name, const Variant &p_value) {
 		_change_notify();
 	return true;
 }
+
 bool Camera::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "projection") {
@@ -127,6 +134,10 @@ bool Camera::_get(const StringName &p_name, Variant &r_ret) const {
 		}
 	} else if (p_name == "cull_mask") {
 		r_ret = get_cull_mask();
+	} else if (p_name == "raycast_layers") {
+		r_ret = get_raycast_layers();
+	} else if (p_name == "depth") {
+		r_ret = get_depth();
 	} else if (p_name == "h_offset") {
 		r_ret = get_h_offset();
 	} else if (p_name == "v_offset") {
@@ -172,10 +183,13 @@ void Camera::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "current"));
 	p_list->push_back(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER));
+	p_list->push_back(PropertyInfo(Variant::INT, "raycast_layers", PROPERTY_HINT_LAYERS_3D_PHYSICS));
+	p_list->push_back(PropertyInfo(Variant::INT, "depth"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
 	p_list->push_back(PropertyInfo(Variant::INT, "doppler/tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Fixed"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "room_cull_enabled"));
 }
 
 void Camera::_update_camera() {
@@ -206,8 +220,8 @@ void Camera::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			bool first_camera = get_viewport()->_camera_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
+			get_viewport()->_camera_add(this);
+			if (!get_tree()->is_node_being_edited(this) && (current))
 				make_current();
 
 		} break;
@@ -304,17 +318,18 @@ void Camera::clear_current() {
 	if (!is_inside_tree())
 		return;
 
-	if (get_viewport()->get_camera() == this) {
-		get_viewport()->_camera_set(NULL);
-		get_viewport()->_camera_make_next_current(this);
-	}
+	get_viewport()->_camera_unset(this);
 }
 
 bool Camera::is_current() const {
 
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
-
-		return get_viewport()->get_camera() == this;
+		if (get_viewport()) {
+			if (get_viewport()->get_active_cameras().has(this))
+				return true;
+			else
+				return false;
+		}
 	} else
 		return current;
 
@@ -456,23 +471,6 @@ Vector3 Camera::project_position(const Point2 &p_point) const {
 	return get_camera_transform().xform(p);
 }
 
-/*
-void Camera::_camera_make_current(Node *p_camera) {
-
-
-	if (p_camera==this) {
-		VisualServer::get_singleton()->viewport_attach_camera(viewport_id,camera);
-		active=true;
-	} else {
-		if (active && p_camera==NULL) {
-			//detech camera because no one else will claim it
-			VisualServer::get_singleton()->viewport_attach_camera(viewport_id,RID());
-		}
-		active=false;
-	}
-}
-*/
-
 void Camera::set_environment(const Ref<Environment> &p_environment) {
 
 	environment = p_environment;
@@ -541,12 +539,16 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_raycast_layers", "mask"), &Camera::set_raycast_layers);
+	ClassDB::bind_method(D_METHOD("get_raycast_layers"), &Camera::get_raycast_layers);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("set_room_cull_enabled", "room_cull_enabled"), &Camera::set_room_cull_enabled);
+	ClassDB::bind_method(D_METHOD("is_room_cull_enabled"), &Camera::is_room_cull_enabled);
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
@@ -587,13 +589,38 @@ Camera::Projection Camera::get_projection() const {
 
 void Camera::set_cull_mask(uint32_t p_layers) {
 
-	layers = p_layers;
-	VisualServer::get_singleton()->camera_set_cull_mask(camera, layers);
+	visible_layers = p_layers;
+	VisualServer::get_singleton()->camera_set_cull_mask(camera, visible_layers);
 }
 
 uint32_t Camera::get_cull_mask() const {
 
-	return layers;
+	return visible_layers;
+}
+
+void Camera::set_raycast_layers(uint32_t p_layers) {
+
+	raycast_layers = p_layers;
+}
+
+uint32_t Camera::get_raycast_layers() const {
+
+	return raycast_layers;
+}
+
+void Camera::set_depth(int32_t p_depth) {
+	if (depth != p_depth) {
+		depth = p_depth;
+		VisualServer::get_singleton()->camera_set_depth(camera, depth);
+		if (current == true && get_viewport() != NULL) {
+			get_viewport()->_camera_unset(this);
+			get_viewport()->_camera_set(this);
+		}
+	}
+}
+
+int8_t Camera::get_depth() const {
+	return depth;
 }
 
 Vector<Plane> Camera::get_frustum() const {
@@ -639,22 +666,38 @@ Vector3 Camera::get_doppler_tracked_velocity() const {
 		return Vector3();
 	}
 }
+
+void Camera::set_room_cull_enabled(bool p_room_cull_enabled) {
+	room_cull_enabled = p_room_cull_enabled;
+	VisualServer::get_singleton()->camera_set_room_cull_enabled(camera, room_cull_enabled);
+}
+
+bool Camera::is_room_cull_enabled() const {
+	return room_cull_enabled;
+}
+
 Camera::Camera() {
 
 	camera = VisualServer::get_singleton()->camera_create();
+	physics_object_capture = 0;
+	physics_object_over = 0;
 	size = 1;
 	fov = 0;
 	near = 0;
 	far = 0;
-	current = false;
+	current = true;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(65.0, 0.1, 100.0);
 	keep_aspect = KEEP_HEIGHT;
-	layers = 0xfffff;
+	visible_layers = 0xfffff;
+	raycast_layers = 0xfffff;
+	depth = -1;
 	v_offset = 0;
 	h_offset = 0;
-	VisualServer::get_singleton()->camera_set_cull_mask(camera, layers);
+	VisualServer::get_singleton()->camera_set_room_cull_enabled(camera, true);
+	VisualServer::get_singleton()->camera_set_cull_mask(camera, visible_layers);
+	VisualServer::get_singleton()->camera_set_depth(camera, depth);
 	//active=false;
 	velocity_tracker.instance();
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;

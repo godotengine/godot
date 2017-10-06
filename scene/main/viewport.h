@@ -158,7 +158,7 @@ private:
 
 	bool arvr;
 
-	Camera *camera;
+	Set<Camera *> active_cameras;
 	Set<Camera *> cameras;
 
 	RID viewport;
@@ -198,10 +198,8 @@ private:
 
 	bool physics_object_picking;
 	List<Ref<InputEvent> > physics_picking_events;
-	ObjectID physics_object_capture;
-	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
-	void _test_new_mouseover(ObjectID new_collider);
+	void _test_new_mouseover(Camera *p_camera, ObjectID new_collider);
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
 	void _update_rect();
@@ -349,9 +347,9 @@ private:
 	friend class Camera;
 	void _camera_transform_changed_notify();
 	void _camera_set(Camera *p_camera);
-	bool _camera_add(Camera *p_camera); //true if first
+	void _camera_unset(Camera *p_camera);
+	void _camera_add(Camera *p_camera);
 	void _camera_remove(Camera *p_camera);
-	void _camera_make_next_current(Camera *p_exclude);
 
 protected:
 	void _notification(int p_what);
@@ -359,7 +357,7 @@ protected:
 
 public:
 	Listener *get_listener() const;
-	Camera *get_camera() const;
+	Array get_active_cameras() const;
 
 	void set_use_arvr(bool p_use_arvr);
 	bool use_arvr();

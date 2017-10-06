@@ -112,7 +112,9 @@ public:
 		float znear, zfar;
 		float size;
 		uint32_t visible_layers;
+		int32_t depth;
 		bool vaspect;
+		bool room_cull_enabled;
 		RID env;
 
 		Transform transform;
@@ -120,12 +122,14 @@ public:
 		Camera() {
 
 			visible_layers = 0xFFFFFFFF;
+			depth = -1;
 			fov = 65;
 			type = PERSPECTIVE;
 			znear = 0.1;
 			zfar = 100;
 			size = 1.0;
 			vaspect = false;
+			room_cull_enabled = true;
 		}
 	};
 
@@ -136,8 +140,10 @@ public:
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
+	virtual void camera_set_depth(RID p_camera, int32_t p_depth);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
+	virtual void camera_set_room_cull_enabled(RID p_camera, bool p_enabled);
 
 	/* SCENARIO API */
 
