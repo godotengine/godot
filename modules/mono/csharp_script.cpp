@@ -1795,6 +1795,31 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 #endif
 
 	script->set_path(p_original_path);
+
+#ifndef TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	// User is responsible for thread attach/detach
+	ERR_EXPLAIN("Thread is not attached");
+	CRASH_COND(mono_domain_get() == NULL);
+#endif
+
+#else
+	if (Engine::get_singleton()->is_editor_hint() && mono_domain_get() == NULL) {
+
+		CRASH_COND(Thread::get_caller_id() == Thread::get_main_id());
+
+		// Thread is not attached, but we will make an exception in this case
+		// because this may be called by one of the editor's worker threads.
+		// Attach this thread temporarily to reload the script.
+
+		MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
+		CRASH_COND(mono_thread == NULL);
+		script->reload();
+		mono_thread_detach(mono_thread);
+
+	} else // just reload it normally
+#endif
 	script->reload();
 
 	if (r_error)
