@@ -52,8 +52,7 @@ class VisualServerWrapMT : public VisualServer {
 	volatile bool draw_thread_up;
 	bool create_thread;
 
-	Mutex *draw_mutex;
-	int draw_pending;
+	uint64_t draw_pending;
 	void thread_draw();
 	void thread_flush();
 
