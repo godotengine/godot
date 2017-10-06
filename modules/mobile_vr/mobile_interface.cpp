@@ -37,6 +37,10 @@ StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
 };
 
+int MobileVRInterface::get_capabilities() const {
+	return ARVRInterface::ARVR_STEREO;
+};
+
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
 	// Well it may on Mac OS X because we're getting a calibrated value in the current implementation but Android we're getting raw data.
@@ -166,6 +170,8 @@ void MobileVRInterface::set_position_from_sensors() {
 		rotate.rotate(orientation.get_axis(1), gyro.y * delta_time);
 		rotate.rotate(orientation.get_axis(2), gyro.z * delta_time);
 		orientation = rotate * orientation;
+
+		tracking_state = ARVRInterface::ARVR_NORMAL_TRACKING;
 	};
 
 	///@TODO improve this, the magnetometer is very fidgity sometimes flipping the axis for no apparent reason (probably a bug on my part)
@@ -176,6 +182,8 @@ void MobileVRInterface::set_position_from_sensors() {
 		Quat acc_mag_quat(combine_acc_mag(grav, magneto));
 		transform_quat = transform_quat.slerp(acc_mag_quat, 0.1);
 		orientation = Basis(transform_quat);
+
+		tracking_state = ARVRInterface::ARVR_NORMAL_TRACKING;
 	} else if (has_grav) {
 		// use gravity vector to make sure down is down...
 		// transform gravity into our world space
@@ -271,21 +279,6 @@ void MobileVRInterface::set_k2(const real_t p_k2) {
 
 real_t MobileVRInterface::get_k2() const {
 	return k2;
-};
-
-bool MobileVRInterface::is_installed() {
-	// we don't have any middle ware here, if we have our interface, we can use it
-	return true;
-};
-
-bool MobileVRInterface::hmd_is_present() {
-	// our device is our HMD
-	return true;
-};
-
-bool MobileVRInterface::supports_hmd() {
-	// our device is our HMD
-	return true;
 };
 
 bool MobileVRInterface::is_stereo() {
@@ -461,11 +454,11 @@ MobileVRInterface::MobileVRInterface() {
 	// Just set some defaults for these. At some point we need to look at adding a lookup table for common device + headset combos and/or support reading cardboard QR codes
 	eye_height = 1.85;
 	intraocular_dist = 6.0;
-	display_width = 13.0;
+	display_width = 14.5;
 	display_to_lens = 4.0;
 	oversample = 1.5;
-	k1 = 0.22;
-	k2 = 0.23;
+	k1 = 0.215;
+	k2 = 0.215;
 	last_ticks = 0;
 
 	// create our shader stuff

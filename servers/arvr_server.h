@@ -117,14 +117,17 @@ public:
 	void set_world_origin(const Transform p_world_origin);
 
 	/*
-		Requesting a reference frame results in a matrix being calculated that ensures the HMD is positioned to 0,0,0 facing 0,0,-1 (need to verify this direction)
+		center_on_hmd calculates a new reference frame. This ensures the HMD is positioned to 0,0,0 facing 0,0,-1 (need to verify this direction)
 		in the virtual world.
+
+		You can ignore the tilt of the device ensuring you're looking straight forward even if the player is looking down or sideways.
+		You can chose to keep the height the tracking provides which is important for room scale capable tracking.
 
 		Note: this should not be used in AR and should be ignored by an AR based interface as it would throw what you're looking at in the real world
 		and in the virtual world out of sync
 	*/
 	Transform get_reference_frame() const;
-	void request_reference_frame(bool p_ignore_tilt, bool p_keep_height);
+	void center_on_hmd(bool p_ignore_tilt, bool p_keep_height);
 
 	/*
 		Interfaces are objects that 'glue' Godot to an AR or VR SDK such as the Oculus SDK, OpenVR, OpenHMD, etc.

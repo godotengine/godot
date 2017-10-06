@@ -131,10 +131,7 @@ public:
 	real_t get_k2() const;
 
 	virtual StringName get_name() const;
-
-	virtual bool is_installed();
-	virtual bool hmd_is_present();
-	virtual bool supports_hmd();
+	virtual int get_capabilities() const;
 
 	virtual bool is_initialized();
 	virtual bool initialize();

@@ -43,7 +43,7 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &ARVRServer::get_world_scale);
 	ClassDB::bind_method(D_METHOD("set_world_scale"), &ARVRServer::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &ARVRServer::get_reference_frame);
-	ClassDB::bind_method(D_METHOD("request_reference_frame", "ignore_tilt", "keep_height"), &ARVRServer::request_reference_frame);
+	ClassDB::bind_method(D_METHOD("center_on_hmd", "ignore_tilt", "keep_height"), &ARVRServer::center_on_hmd);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
 
@@ -98,7 +98,7 @@ Transform ARVRServer::get_reference_frame() const {
 	return reference_frame;
 };
 
-void ARVRServer::request_reference_frame(bool p_ignore_tilt, bool p_keep_height) {
+void ARVRServer::center_on_hmd(bool p_ignore_tilt, bool p_keep_height) {
 	if (primary_interface != NULL) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();

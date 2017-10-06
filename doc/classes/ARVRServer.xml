@@ -20,6 +20,22 @@
 				Mostly exposed for GDNative based interfaces, this is called to register an available interface with the AR/VR server.
 			</description>
 		</method>
+		<method name="center_on_hmd">
+			<return type="void">
+			</return>
+			<argument index="0" name="ignore_tilt" type="bool">
+			</argument>
+			<argument index="1" name="keep_height" type="bool">
+			</argument>
+			<description>
+				This is a really important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
+				For platforms that do not offer spatial tracking our origin point (0,0,0) is the location of our HMD but you have little control over the direction the player is facing in the real world.
+				For platforms that do offer spatial tracking our origin point depends very much on the system. For OpenVR our origin point is usually the center of the tracking space, on the ground. For other platforms its often the location of the tracking camera.
+				This method allows you to center our tracker on the location of the HMD, it will take the current location of the HMD and use that to adjust all our tracking data in essence realigning the real world to your players current position in your game world.
+				For this method to produce usable results tracking information should be available and this often takes a few frames after starting your game.
+				You should call this method after a few seconds have passed, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, and when implementing a teleport mechanism.
+			</description>
+		</method>
 		<method name="find_interface" qualifiers="const">
 			<return type="ARVRInterface">
 			</return>
@@ -82,22 +98,6 @@
 			</argument>
 			<description>
 				Removes a registered interface, again exposed mostly for GDNative based interfaces.
-			</description>
-		</method>
-		<method name="request_reference_frame">
-			<return type="void">
-			</return>
-			<argument index="0" name="ignore_tilt" type="bool">
-			</argument>
-			<argument index="1" name="keep_height" type="bool">
-			</argument>
-			<description>
-				This is a really important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
-				For platforms that do not offer spatial tracking our origin point (0,0,0) is the location of our HMD but you have little control over the direction the player is facing in the real world.
-				For platforms that do offer spatial tracking our origin point depends very much on the system. For OpenVR our origin point is usually the center of the tracking space, on the ground. For other platforms its often the location of the tracking camera.
-				This method allows you to create a reference frame, it will take the current location of the HMD and use that to adjust all our tracking data in essence realigning the real world to your players current position in your game world.
-				For this method to produce usable results tracking information should be available and this often takes a few frames after starting your game.
-				You should call this method after a few seconds have passed, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, and when implementing a teleport mechanism.
 			</description>
 		</method>
 		<method name="set_primary_interface">
