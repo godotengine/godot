@@ -990,6 +990,7 @@ void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 			se->undo_pivot = Object::cast_to<Control>(canvas_item)->get_pivot_offset();
 
 		se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
+		se->pre_drag_rect = canvas_item->get_item_rect();
 	}
 
 	if (selection.size() == 1 && Object::cast_to<Node2D>(selection[0])) {
@@ -1517,6 +1518,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 				if (Object::cast_to<Control>(canvas_item))
 					se->undo_pivot = Object::cast_to<Control>(canvas_item)->get_pivot_offset();
 				se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
+				se->pre_drag_rect = canvas_item->get_item_rect();
 				return;
 			}
 
@@ -1539,6 +1541,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 					if (Object::cast_to<Control>(canvas_item))
 						se->undo_pivot = Object::cast_to<Control>(canvas_item)->get_pivot_offset();
 					se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
+					se->pre_drag_rect = canvas_item->get_item_rect();
 					return;
 				}
 
@@ -1550,6 +1553,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 						drag_from = transform.affine_inverse().xform(click);
 						se->undo_state = canvas_item->edit_get_state();
 						se->pre_drag_xform = canvas_item->get_global_transform_with_canvas();
+						se->pre_drag_rect = canvas_item->get_item_rect();
 						return;
 					}
 				}
@@ -2206,16 +2210,16 @@ void CanvasItemEditor::_draw_selection() {
 
 		Rect2 rect = canvas_item->get_item_rect();
 
-		if (drag != DRAG_NONE && drag != DRAG_PIVOT) {
+		if (show_helpers && drag != DRAG_NONE && drag != DRAG_PIVOT) {
 			const Transform2D pre_drag_xform = transform * se->pre_drag_xform;
 			const Color pre_drag_color = Color(0.4, 0.6, 1, 0.7);
 
 			Vector2 pre_drag_endpoints[4] = {
 
-				pre_drag_xform.xform(rect.position),
-				pre_drag_xform.xform(rect.position + Vector2(rect.size.x, 0)),
-				pre_drag_xform.xform(rect.position + rect.size),
-				pre_drag_xform.xform(rect.position + Vector2(0, rect.size.y))
+				pre_drag_xform.xform(se->pre_drag_rect.position),
+				pre_drag_xform.xform(se->pre_drag_rect.position + Vector2(se->pre_drag_rect.size.x, 0)),
+				pre_drag_xform.xform(se->pre_drag_rect.position + se->pre_drag_rect.size),
+				pre_drag_xform.xform(se->pre_drag_rect.position + Vector2(0, se->pre_drag_rect.size.y))
 			};
 
 			for (int i = 0; i < 4; i++) {

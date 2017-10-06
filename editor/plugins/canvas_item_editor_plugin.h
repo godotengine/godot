@@ -59,6 +59,7 @@ public:
 	float prev_anchors[4];
 
 	Transform2D pre_drag_xform;
+	Rect2 pre_drag_rect;
 
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
