@@ -237,8 +237,8 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	// External editor settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
-	if (!ed_settings->has("mono/editor/external_editor")) {
-		ed_settings->set("mono/editor/external_editor", EDITOR_NONE);
+	if (!ed_settings->has_setting("mono/editor/external_editor")) {
+		ed_settings->set_setting("mono/editor/external_editor", EDITOR_NONE);
 	}
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio,Visual Studio Code"));
 }
