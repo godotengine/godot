@@ -4,8 +4,8 @@
 		Control to show a tree of items.
 	</brief_description>
 	<description>
-		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structural displaying and interactions.
-		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple root can be simulated if a dummy hidden root is added.
+		This shows a tree of items that can be selected, expanded and collapsed. The tree can have multiple columns with custom controls like text editing, buttons and popups. It can be useful for structured displays and interactions.
+		Trees are built via code, using [TreeItem] objects to create the structure. They have a single root but multiple roots can be simulated if a dummy hidden root is added.
 		[codeblock]
 		func _ready():
 		    var tree = Tree.new()
@@ -26,14 +26,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Get whether the column titles are being shown.
+				Returns [code]true[/code] if the column titles are being shown.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clear the tree. This erases all of the items.
+				Clears the tree. This removes all items.
 			</description>
 		</method>
 		<method name="create_item">
@@ -42,27 +42,28 @@
 			<argument index="0" name="parent" type="Object" default="null">
 			</argument>
 			<description>
-				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the last child of the root, or it'll the be the root itself if the tree is empty.
+				Create an item in the tree and add it as the last child of [code]parent[/code]. If parent is not given, it will be added as the root's last child, or it'll the be the root itself if the tree is empty.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">
 			<return type="void">
 			</return>
 			<description>
-				Make the current selected item visible. This will scroll the tree to make sure the selected item is in sight.
+				Makes the currently selected item visible. This will scroll the tree to make sure the selected item is visible.
 			</description>
 		</method>
 		<method name="get_allow_reselect" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if a cell that is currently already selected may be selected again.
 			</description>
 		</method>
 		<method name="get_allow_rmb_select" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Get whether a right click can select items.
+				Returns [code]true[/code] if a right click can select items.
 			</description>
 		</method>
 		<method name="get_column_at_position" qualifiers="const">
@@ -71,7 +72,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Get the column index under the given point.
+				Returns the column index under the given point.
 			</description>
 		</method>
 		<method name="get_column_title" qualifiers="const">
@@ -80,7 +81,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Get the title of the given column.
+				Returns the column's title.
 			</description>
 		</method>
 		<method name="get_column_width" qualifiers="const">
@@ -89,28 +90,28 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Get the width of the given column in pixels.
+				Returns the column's width in pixels.
 			</description>
 		</method>
 		<method name="get_columns" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the amount of columns.
+				Returns the amount of columns.
 			</description>
 		</method>
 		<method name="get_custom_popup_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-				Get the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
+				Returns the rectangle for custom popups. Helper to create custom cell controls that display a popup. See [method TreeItem.set_cell_mode].
 			</description>
 		</method>
 		<method name="get_drop_mode_flags" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the flags of the current drop mode.
+				Returns the current drop mode's flags.
 			</description>
 		</method>
 		<method name="get_drop_section_at_position" qualifiers="const">
@@ -125,14 +126,14 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Get the current edited item. This is only available for custom cell mode.
+				Returns the currently edited item. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the column of the cell for the current edited icon. This is only available for custom cell mode.
+				Returns the column for the currently edited item. This is only available for custom cell mode.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
@@ -143,7 +144,7 @@
 			<argument index="1" name="column" type="int" default="-1">
 			</argument>
 			<description>
-				Get the rectangle area of the the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
+				Returns the rectangle area for the specified item. If column is specified, only get the position and size of that column, otherwise get the rectangle containing all columns.
 			</description>
 		</method>
 		<method name="get_item_at_position" qualifiers="const">
@@ -152,7 +153,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Get the tree item at the specified position (relative to the tree origin position).
+				Returns the tree item at the specified position (relative to the tree origin position).
 			</description>
 		</method>
 		<method name="get_next_selected">
@@ -161,49 +162,49 @@
 			<argument index="0" name="from" type="Object">
 			</argument>
 			<description>
-				Get the next selected item after the given one.
+				Returns the next selected item after the given one.
 			</description>
 		</method>
 		<method name="get_pressed_button" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the index of the last pressed button.
+				Returns the last pressed button's index.
 			</description>
 		</method>
 		<method name="get_root">
 			<return type="TreeItem">
 			</return>
 			<description>
-				Get the root item of the tree.
+				Returns the tree's root item.
 			</description>
 		</method>
 		<method name="get_scroll" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Get the current scrolling position.
+				Returns the current scrolling position.
 			</description>
 		</method>
 		<method name="get_selected" qualifiers="const">
 			<return type="TreeItem">
 			</return>
 			<description>
-				Get the currently selected item.
+				Returns the currently selected item.
 			</description>
 		</method>
 		<method name="get_selected_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the column number of the current selection.
+				Returns the current selection's column.
 			</description>
 		</method>
 		<method name="is_folding_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Get whether the folding arrow is hidden.
+				Returns [code]true[/code] if the folding arrow is hidden.
 			</description>
 		</method>
 		<method name="set_allow_reselect">
@@ -212,6 +213,7 @@
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the currently selected cell may be selected again.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
@@ -220,7 +222,7 @@
 			<argument index="0" name="allow" type="bool">
 			</argument>
 			<description>
-				Set whether or not a right mouse button click can select items.
+				If [code]true[/code] a right mouse button click can select items.
 			</description>
 		</method>
 		<method name="set_column_expand">
@@ -231,7 +233,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
-				Set whether a column will have the "Expand" flag of [Control].
+				If [code]true[/code] the column will have the "Expand" flag of [Control].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -262,7 +264,7 @@
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
-				Set whether the column titles visibility.
+				If [code]true[/code] column titles are visible.
 			</description>
 		</method>
 		<method name="set_columns">
@@ -289,7 +291,7 @@
 			<argument index="0" name="hide" type="bool">
 			</argument>
 			<description>
-				Set whether the folding arrow should be hidden.
+				If [code]true[/code] the folding arrow is hidden.
 			</description>
 		</method>
 		<method name="set_hide_root">
@@ -298,7 +300,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the root of the tree should be hidden.
+				If [code]true[/code] the tree's root is hidden.
 			</description>
 		</method>
 		<method name="set_select_mode">
@@ -307,7 +309,7 @@
 			<argument index="0" name="mode" type="int" enum="Tree.SelectMode">
 			</argument>
 			<description>
-				Set the selection mode. Use one of the [code]SELECT_*[/code] constants.
+				Allow single or multiple selection. See the [code]SELECT_*[/code] constants.
 			</description>
 		</method>
 	</methods>
@@ -332,6 +334,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Emitted when a column's title is pressed.
 			</description>
 		</signal>
 		<signal name="custom_popup_edited">
@@ -366,15 +369,17 @@
 		</signal>
 		<signal name="item_double_clicked">
 			<description>
+				Emitted when an item is double clicked.
 			</description>
 		</signal>
 		<signal name="item_edited">
 			<description>
-				Emitted when an item is editted.
+				Emitted when an item is edited.
 			</description>
 		</signal>
 		<signal name="item_rmb_edited">
 			<description>
+				Emitted when an item is edited using the right mouse button.
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -397,15 +402,18 @@
 			<argument index="2" name="selected" type="bool">
 			</argument>
 			<description>
+				Emitted instead of [code]item_selected[/code] when [code]select_mode[/code] is [code]SELECT_MULTI[/code].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="SELECT_SINGLE" value="0">
+			Allow selection of a single item at a time.
 		</constant>
 		<constant name="SELECT_ROW" value="1">
 		</constant>
 		<constant name="SELECT_MULTI" value="2">
+			Allow selection of multiple items at the same time.
 		</constant>
 		<constant name="DROP_MODE_DISABLED" value="0">
 		</constant>

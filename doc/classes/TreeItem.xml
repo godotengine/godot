@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TreeItem" inherits="Object" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Control for a single item inside a [Tree].
 	</brief_description>
 	<description>
+		Control for a single item inside a [Tree]. May have child [TreeItem]\ s and be styled as well as contain buttons.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,6 +25,7 @@
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [code]get_buton_count()[/code] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code]. 
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
@@ -31,6 +34,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Resets the background color for the given column to default.
 			</description>
 		</method>
 		<method name="clear_custom_color">
@@ -39,6 +43,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Resets the color for the given column to default.
 			</description>
 		</method>
 		<method name="deselect">
@@ -47,6 +52,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Deselects the given column.
 			</description>
 		</method>
 		<method name="erase_button">
@@ -57,6 +63,7 @@
 			<argument index="1" name="button_idx" type="int">
 			</argument>
 			<description>
+				Removes the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
@@ -67,6 +74,7 @@
 			<argument index="1" name="button_idx" type="int">
 			</argument>
 			<description>
+				Returns the [Texture] of the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -75,6 +83,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
@@ -83,12 +92,14 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the column's cell mode. See [code]CELL_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_children">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the TreeItem's child items.
 			</description>
 		</method>
 		<method name="get_custom_bg_color" qualifiers="const">
@@ -97,12 +108,14 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the custom background color of column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_custom_minimum_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the custom minimum height.
 			</description>
 		</method>
 		<method name="get_expand_right" qualifiers="const">
@@ -111,6 +124,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if [code]expand_right[/code] is set.
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -119,6 +133,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's icon [Texture]. Error if no icon is set.
 			</description>
 		</method>
 		<method name="get_icon_max_width" qualifiers="const">
@@ -127,6 +142,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the column's icon's maximum width.
 			</description>
 		</method>
 		<method name="get_icon_region" qualifiers="const">
@@ -135,6 +151,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the icon [Texture] region as [Rect2].
 			</description>
 		</method>
 		<method name="get_metadata" qualifiers="const">
@@ -149,30 +166,35 @@
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the next TreeItem in the tree.
 			</description>
 		</method>
 		<method name="get_next_visible">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the next visible TreeItem in the tree.
 			</description>
 		</method>
 		<method name="get_parent">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the parent TreeItem.
 			</description>
 		</method>
 		<method name="get_prev">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the previous TreeItem in the tree.
 			</description>
 		</method>
 		<method name="get_prev_visible">
 			<return type="TreeItem">
 			</return>
 			<description>
+				Returns the previous visible TreeItem in the tree.
 			</description>
 		</method>
 		<method name="get_range" qualifiers="const">
@@ -197,6 +219,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's text.
 			</description>
 		</method>
 		<method name="get_text_align" qualifiers="const">
@@ -205,6 +228,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's text alignment.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
@@ -213,6 +237,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's tooltip.
 			</description>
 		</method>
 		<method name="is_button_disabled" qualifiers="const">
@@ -223,6 +248,7 @@
 			<argument index="1" name="button_idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the button at index [code]button_idx[/code] for the given column is disabled.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
@@ -231,12 +257,14 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given column is checked.
 			</description>
 		</method>
 		<method name="is_collapsed">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this TreeItem is collapsed.
 			</description>
 		</method>
 		<method name="is_custom_set_as_button" qualifiers="const">
@@ -253,12 +281,14 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if column [code]column[/code] is editable.
 			</description>
 		</method>
 		<method name="is_folding_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if folding is disabled for this TreeItem.
 			</description>
 		</method>
 		<method name="is_selectable" qualifiers="const">
@@ -267,6 +297,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if column [code]column[/code] is selectable.
 			</description>
 		</method>
 		<method name="is_selected">
@@ -275,18 +306,21 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if column [code]column[/code] is selected.
 			</description>
 		</method>
 		<method name="move_to_bottom">
 			<return type="void">
 			</return>
 			<description>
+				Moves this TreeItem to the bottom in the [Tree] hierarchy.
 			</description>
 		</method>
 		<method name="move_to_top">
 			<return type="void">
 			</return>
 			<description>
+				Moves this TreeItem to the top in the [Tree] hierarchy.
 			</description>
 		</method>
 		<method name="remove_child">
@@ -295,6 +329,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
+				Removes the child TreeItem at index [code]index[/code].
 			</description>
 		</method>
 		<method name="select">
@@ -303,6 +338,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Selects the column [code]column[/code].
 			</description>
 		</method>
 		<method name="set_button">
@@ -315,6 +351,7 @@
 			<argument index="2" name="button" type="Texture">
 			</argument>
 			<description>
+				Sets the given column's button [Texture] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
 		<method name="set_cell_mode">
@@ -325,6 +362,7 @@
 			<argument index="1" name="mode" type="int" enum="TreeItem.TreeCellMode">
 			</argument>
 			<description>
+				Sets the given column's cell mode to [code]mode[/code]. See [code]CELL_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -335,6 +373,7 @@
 			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the column [code]column[/code] is checked.
 			</description>
 		</method>
 		<method name="set_collapsed">
@@ -343,6 +382,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the TreeItem is collapsed.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -365,6 +405,7 @@
 			<argument index="2" name="just_outline" type="bool" default="false">
 			</argument>
 			<description>
+				Sets the given column's custom background color and whether to just use it as an outline.
 			</description>
 		</method>
 		<method name="set_custom_color">
@@ -375,6 +416,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the given column's custom color.
 			</description>
 		</method>
 		<method name="set_custom_draw">
@@ -387,6 +429,7 @@
 			<argument index="2" name="callback" type="String">
 			</argument>
 			<description>
+				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
 			</description>
 		</method>
 		<method name="set_custom_minimum_height">
@@ -395,6 +438,7 @@
 			<argument index="0" name="height" type="int">
 			</argument>
 			<description>
+				Sets the custom minimum height of this TreeItem.
 			</description>
 		</method>
 		<method name="set_disable_folding">
@@ -403,6 +447,7 @@
 			<argument index="0" name="disable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] folding is disabled for this TreeItem.
 			</description>
 		</method>
 		<method name="set_editable">
@@ -413,6 +458,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] column [code]column[/code] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
@@ -423,6 +469,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] column [code]column[/code] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -433,6 +480,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
+				Sets the given column's icon [Texture].
 			</description>
 		</method>
 		<method name="set_icon_max_width">
@@ -443,6 +491,7 @@
 			<argument index="1" name="width" type="int">
 			</argument>
 			<description>
+				Sets the given column's icon's maximum width.
 			</description>
 		</method>
 		<method name="set_icon_region">
@@ -453,6 +502,7 @@
 			<argument index="1" name="region" type="Rect2">
 			</argument>
 			<description>
+				Sets the given column's icon's texture region.
 			</description>
 		</method>
 		<method name="set_metadata">
@@ -499,6 +549,7 @@
 			<argument index="1" name="selectable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the given column is selectable.
 			</description>
 		</method>
 		<method name="set_text">
@@ -519,6 +570,7 @@
 			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign">
 			</argument>
 			<description>
+				Sets the given column's text alignment. See [code]ALIGN_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_tooltip">
@@ -529,27 +581,36 @@
 			<argument index="1" name="tooltip" type="String">
 			</argument>
 			<description>
+				Sets the given column's tooltip text.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="CELL_MODE_STRING" value="0">
+			Cell contains a string.
 		</constant>
 		<constant name="CELL_MODE_CHECK" value="1">
+			Cell can be checked.
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2">
+			Cell contains a range.
 		</constant>
 		<constant name="CELL_MODE_RANGE_EXPRESSION" value="3">
+			Cell contains a range expression.
 		</constant>
 		<constant name="CELL_MODE_ICON" value="4">
+			Cell contains an icon.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="5">
 		</constant>
 		<constant name="ALIGN_LEFT" value="0">
+			Align text to the left. See [code]set_text_align()[/code].
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
+			Center text. See [code]set_text_align()[/code].
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
+			Align text to the right. See [code]set_text_align()[/code].
 		</constant>
 	</constants>
 </class>
