@@ -379,6 +379,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 			sh->owner = p_light_intance;
 			sh->alloc_tick = tick;
 			sh->version = p_light_version;
+			li->shadow_atlases.insert(p_atlas);
 
 			//make new key
 			key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
@@ -414,6 +415,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 		sh->owner = p_light_intance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
+		li->shadow_atlases.insert(p_atlas);
 
 		//make new key
 		uint32_t key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
