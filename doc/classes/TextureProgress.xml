@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextureProgress" inherits="Range" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Textured progress bar.
+		Texture-based progress bar. Useful for loading screens and life or stamina bars.
 	</brief_description>
 	<description>
-		A [ProgressBar] that uses textures to display fill percentage. Can be set to linear or radial mode.
+		TextureProgress works like [ProgressBar] but it uses up to 3 textures instead of Godot's [Theme] resource. Works horizontally, vertically, and radially.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -151,51 +151,59 @@
 			The fill direction. Uses FILL_* constants.
 		</member>
 		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch">
-			If [code]true[/code] textures will be stretched as [NinePatchRect]. Uses [code]stretch_margin[/code] properties (see below). Default value: [code]false[/code]
+			If [code]true[/code] Godot treats the bar's textures like [NinePatchRect]. Use [code]stretch_margin_*[/code], like [member stretch_margin_bottom], to set up the nine patch's 3x3 grid. Default value: [code]false[/code].
 		</member>
 		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset">
-			The offset amount for radial mode.
+			Offsets [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code].
 		</member>
 		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees">
-			The amount of the texture to use for radial mode.
+			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
+			See [member Range.value], [member Range.max_value].
 		</member>
 		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle">
-			Start angle for radial mode.
+			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
 		</member>
 		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
-			Nine-patch texture offset for bottom margin.
+			The height of the 9-patch's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
 		</member>
 		<member name="stretch_margin_left" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
-			Nine-patch texture offset for left margin.
+			The width of the 9-patch's left column.
 		</member>
 		<member name="stretch_margin_right" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
-			Nine-patch texture offset for right margin.
+			The width of the 9-patch's right column.
 		</member>
 		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin">
-			Nine-patch texture offset for top margin.
+			The height of the 9-patch's top row.
 		</member>
 		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture">
-			The [Texture] that will be drawn over the progress bar.
+			[Texture] that draws over the progress bar. Use it to add highlights or an upper-frame that hides part of [member texture_progress].
 		</member>
 		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
-			The [Texture] used to display [code]value[/code].
+			[Texture] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
+			The [code]value[/code] property comes from [Range]. See [member Range.value], [member Range.min_value], [member Range.max_value].
 		</member>
 		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
-			The [Texture] that will be drawn under the progress bar.
+			[Texture] that draws under the progress bar. The bar's background.
 		</member>
 	</members>
 	<constants>
 		<constant name="FILL_LEFT_TO_RIGHT" value="0">
+			The [member texture_progress] fills from left to right.
 		</constant>
 		<constant name="FILL_RIGHT_TO_LEFT" value="1">
+			The [member texture_progress] fills from right to left.
 		</constant>
 		<constant name="FILL_TOP_TO_BOTTOM" value="2">
+			The [member texture_progress] fills from top to bototm.
 		</constant>
 		<constant name="FILL_BOTTOM_TO_TOP" value="3">
+			The [member texture_progress] fills from bottom to top.
 		</constant>
 		<constant name="FILL_CLOCKWISE" value="4">
+			Turns the node into a radial bar. The [member texture_progress] fills clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to refine its behavior.
 		</constant>
 		<constant name="FILL_COUNTER_CLOCKWISE" value="5">
+			Turns the node into a radial bar. The [member texture_progress] fills counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to refine its behavior.
 		</constant>
 	</constants>
 </class>
