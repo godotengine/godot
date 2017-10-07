@@ -47,17 +47,16 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 	(void)user_data; // UNUSED
 
 	String name = mono_assembly_name_get_name(aname);
+	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 
 	if (no_search)
 		return NULL;
 
 	no_search = true; // Avoid the recursion madness
 
-	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(name.get_basename());
+	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
 	if (loaded_asm)
 		return (*loaded_asm)->get_assembly();
-
-	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 
 	String path;
 	MonoAssembly *res = NULL;

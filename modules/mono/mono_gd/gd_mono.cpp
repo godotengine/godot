@@ -285,8 +285,7 @@ bool GDMono::_load_assembly(const String &p_name, GDMonoAssembly **r_assembly) {
 	MonoAssembly *assembly = mono_assembly_load_full(aname, NULL, &status, false);
 	mono_assembly_name_free(aname);
 
-	if (!assembly)
-		return false;
+	ERR_FAIL_NULL_V(assembly, false);
 
 	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
 
