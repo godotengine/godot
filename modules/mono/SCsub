@@ -2,9 +2,10 @@
 
 Import('env')
 
+from compat import byte_to_str
 
 def make_cs_files_header(src, dst):
-    with open(dst, 'wb') as header:
+    with open(dst, 'w') as header:
         header.write('/* This is an automatically generated file; DO NOT EDIT! OK THX */\n')
         header.write('#ifndef _CS_FILES_DATA_H\n')
         header.write('#define _CS_FILES_DATA_H\n\n')
@@ -26,7 +27,7 @@ def make_cs_files_header(src, dst):
                     for i, buf_idx in enumerate(range(len(buf))):
                         if i > 0:
                             header.write(', ')
-                        header.write(str(ord(buf[buf_idx])))
+                        header.write(byte_to_str(buf[buf_idx]))
                     inserted_files += '\tr_files.insert(\"' + file + '\", ' \
                                         'CompressedFile(_cs_' + name + '_compressed_size, ' \
                                         '_cs_' + name + '_uncompressed_size, ' \
