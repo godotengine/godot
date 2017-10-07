@@ -15,7 +15,7 @@
 			<return type="int" enum="BackBufferCopy.CopyMode">
 			</return>
 			<description>
-				Return the copy mode currently applied to the BackBufferCopy (refer to constants section).
+				Return the copy mode currently applied to the BackBufferCopy. See [code]COPY_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -31,7 +31,7 @@
 			<argument index="0" name="copy_mode" type="int" enum="BackBufferCopy.CopyMode">
 			</argument>
 			<description>
-				Set the copy mode of the BackBufferCopy (refer to constants section).
+				Set the copy mode of the BackBufferCopy. See [code]COPY_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_rect">
@@ -46,8 +46,10 @@
 	</methods>
 	<members>
 		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" enum="BackBufferCopy.CopyMode">
+			Buffer mode. See [code]COPY_MODE_*[/code] constants.
 		</member>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect">
+			The area covered by the BackBufferCopy. Only used if [code]copy_mode[/code] is [code]COPY_MODE_RECT[/code].
 		</member>
 	</members>
 	<constants>
@@ -55,10 +57,10 @@
 			Disables the buffering mode. This means the BackBufferCopy node will directly use the portion of screen it covers.
 		</constant>
 		<constant name="COPY_MODE_RECT" value="1">
-			Sets the copy mode to a region.
+			BackBufferCopy buffers a rectangular region.
 		</constant>
 		<constant name="COPY_MODE_VIEWPORT" value="2">
-			Sets the copy mode to the entire screen.
+			BackBufferCopy buffers the entire screen.
 		</constant>
 	</constants>
 </class>
