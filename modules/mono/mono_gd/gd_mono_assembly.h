@@ -86,6 +86,14 @@ class GDMonoAssembly {
 	Vector<uint8_t> pdb_data;
 #endif
 
+	static bool no_search;
+	static Vector<String> search_dirs;
+
+	static MonoAssembly *_search_hook(MonoAssemblyName *aname, void *user_data);
+	static MonoAssembly *_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data);
+
+	static MonoAssembly *_load_assembly_from(const String &p_name, const String &p_path);
+
 	friend class GDMono;
 	static void initialize();
 
