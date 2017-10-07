@@ -17,7 +17,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the velocity of the floor. If the floor is not a KinematicBody2D, this will always be [code]Vector2(0, 0)[/code]. Only updates when calling [method move_and_slide].
+				Returns the velocity of the floor. Only updates when calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="get_safe_margin" qualifiers="const">
