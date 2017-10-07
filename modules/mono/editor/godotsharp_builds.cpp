@@ -59,7 +59,7 @@ String _find_build_engine_on_unix(const String &p_name) {
 		"/opt/novell/mono/bin/"
 	};
 
-	for (int i = 0; i < sizeof(locations) / sizeof(char); i++) {
+	for (int i = 0; i < sizeof(locations) / sizeof(const char *); i++) {
 		String location = locations[i];
 
 		if (FileAccess::exists(location + p_name)) {
