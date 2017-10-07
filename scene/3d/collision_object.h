@@ -51,6 +51,8 @@ class CollisionObject : public Spatial {
 
 		Vector<ShapeBase> shapes;
 		bool disabled;
+		real_t custom_bias;
+		int custom_priority;
 
 		ShapeData() {
 			disabled = false;
@@ -89,6 +91,12 @@ public:
 
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
+
+	void shape_owner_set_custom_bias(uint32_t p_owner, real_t p_bias);
+	real_t shape_owner_get_custom_bias(uint32_t p_owner) const;
+
+	void shape_owner_set_custom_priority(uint32_t p_owner, int p_priority);
+	int shape_owner_get_custom_priority(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;

@@ -63,6 +63,13 @@
 				Return the current body bounciness.
 			</description>
 		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the body center of mass offset with respect to the body origin in global coordinates.
+			</description>
+		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -82,6 +89,21 @@
 			</return>
 			<description>
 				Return the current body gravity scale.
+			</description>
+		</method>
+		<method name="get_inertia" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the vector of inertia for the principal axes of inertia. It is the diagonal of the
+				inertia tensor in the principal axes of inertia frame of reference.
+			</description>
+		</method>
+		<method name="get_inv_inertia_tensor" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the inverse inertia tensor in global coordinates.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
@@ -119,11 +141,20 @@
 				Return the current body mode, see [method set_mode].
 			</description>
 		</method>
+		<method name="get_principal_inertia_axes" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the principal axes of inertia in global coordinates as columns of a Basis.
+				The returned basis can be used as transform from coordinates in the principal axes frame
+				of reference to the global frame of reference.
+			</description>
+		</method>
 		<method name="get_weight" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the current body weight, given standard earth-weight (gravity 9.8).
+				Return the current body weight.
 			</description>
 		</method>
 		<method name="is_able_to_sleep" qualifiers="const">

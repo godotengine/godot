@@ -253,19 +253,23 @@ bool BodyPairSW::setup(real_t p_step) {
 		return false;
 	}
 
+	// Update priority
+	int space_priority = space->get_constraint_priority();
+	int shape_priority_a = A->get_shape_custom_priority(shape_A);
+	int shape_priority_b = B->get_shape_custom_priority(shape_B);
+	int priority_a = shape_priority_a > 0 ? shape_priority_a : space_priority;
+	int priority_b = shape_priority_b > 0 ? shape_priority_b : space_priority;
+	set_priority(MAX(priority_a, priority_b));
+
+	// Compute bias
+	real_t space_bias = space->get_constraint_bias();
+	real_t shape_bias_a = A->get_shape_custom_bias(shape_A);
+	real_t shape_bias_b = B->get_shape_custom_bias(shape_B);
+	real_t bias_a = shape_bias_a > 0 ? shape_bias_a : space_bias;
+	real_t bias_b = shape_bias_b > 0 ? shape_bias_b : space_bias;
+	real_t bias = MAX(bias_a, bias_b);
+
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
-
-	real_t bias = (real_t)0.3;
-
-	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
-
-		if (shape_A_ptr->get_custom_bias() == 0)
-			bias = shape_B_ptr->get_custom_bias();
-		else if (shape_B_ptr->get_custom_bias() == 0)
-			bias = shape_A_ptr->get_custom_bias();
-		else
-			bias = (shape_B_ptr->get_custom_bias() + shape_A_ptr->get_custom_bias()) * 0.5;
-	}
 
 	real_t inv_dt = 1.0 / p_step;
 

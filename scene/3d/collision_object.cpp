@@ -137,6 +137,10 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject::shape_owner_get_owner);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject::is_shape_owner_disabled);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_custom_bias", "owner_id", "custom_bias"), &CollisionObject::shape_owner_set_custom_bias);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_custom_bias", "owner_id"), &CollisionObject::shape_owner_get_custom_bias);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_custom_priority", "owner_id", "custom_priority"), &CollisionObject::shape_owner_set_custom_priority);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_custom_priority", "owner_id"), &CollisionObject::shape_owner_get_custom_priority);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject::shape_owner_get_shape);
@@ -201,6 +205,48 @@ bool CollisionObject::is_shape_owner_disabled(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
 
 	return shapes[p_owner].disabled;
+}
+
+void CollisionObject::shape_owner_set_custom_bias(uint32_t p_owner, real_t p_bias) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
+	if (area) {
+		return;
+	}
+
+	ShapeData &sd = shapes[p_owner];
+	sd.custom_bias = p_bias;
+
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		PhysicsServer::get_singleton()->body_set_shape_custom_solver_bias(rid, sd.shapes[i].index, p_bias);
+	}
+}
+
+real_t CollisionObject::shape_owner_get_custom_bias(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
+
+	return shapes[p_owner].custom_bias;
+}
+
+void CollisionObject::shape_owner_set_custom_priority(uint32_t p_owner, int p_priority) {
+	ERR_FAIL_COND(!shapes.has(p_owner));
+	if (area) {
+		return;
+	}
+
+	ShapeData &sd = shapes[p_owner];
+	sd.custom_priority = p_priority;
+
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		PhysicsServer::get_singleton()->body_set_shape_custom_solver_priority(rid, sd.shapes[i].index, p_priority);
+	}
+}
+
+int CollisionObject::shape_owner_get_custom_priority(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), false);
+
+	return shapes[p_owner].custom_priority;
 }
 
 void CollisionObject::get_shape_owners(List<uint32_t> *r_owners) {

@@ -249,11 +249,9 @@ public:
 
 	virtual RID shape_create(ShapeType p_shape) = 0;
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
-	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;
 
 	virtual ShapeType shape_get_type(RID p_shape) const = 0;
 	virtual Variant shape_get_data(RID p_shape) const = 0;
-	virtual real_t shape_get_custom_solver_bias(RID p_shape) const = 0;
 
 	/* SPACE API */
 
@@ -275,6 +273,9 @@ public:
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const = 0;
+
+	virtual void space_set_constraint_priority(RID p_space, int p_priority) = 0;
+	virtual int space_get_constraint_priority(RID p_space) const = 0;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectSpaceState *space_get_direct_state(RID p_space) = 0;
@@ -381,6 +382,16 @@ public:
 	virtual void body_clear_shapes(RID p_body) = 0;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
+	virtual void body_set_shape_custom_solver_bias(RID p_body, int p_shape_idx, real_t p_bias) = 0;
+	virtual void body_set_shape_custom_solver_priority(RID p_body, int p_shape_idx, int p_priority) = 0;
+
+	virtual Vector3 body_get_center_of_mass(RID p_body) const = 0;
+
+	virtual Basis body_get_principal_inertia_axes(RID p_body) const = 0;
+
+	virtual Vector3 body_get_inv_inertia(RID p_body) const = 0;
+
+	virtual Basis body_get_inv_inertia_tensor(RID p_body) const = 0;
 
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
 	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;

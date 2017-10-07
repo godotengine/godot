@@ -204,6 +204,14 @@ public:
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
 
+	Vector3 get_center_of_mass() const;
+
+	Basis get_principal_inertia_axes() const;
+
+	Vector3 get_inertia() const;
+
+	Basis get_inv_inertia_tensor() const;
+
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 

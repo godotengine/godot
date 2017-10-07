@@ -96,13 +96,6 @@ void PhysicsServerSW::shape_set_data(RID p_shape, const Variant &p_data) {
 	shape->set_data(p_data);
 };
 
-void PhysicsServerSW::shape_set_custom_solver_bias(RID p_shape, real_t p_bias) {
-
-	ShapeSW *shape = shape_owner.get(p_shape);
-	ERR_FAIL_COND(!shape);
-	shape->set_custom_bias(p_bias);
-}
-
 PhysicsServer::ShapeType PhysicsServerSW::shape_get_type(RID p_shape) const {
 
 	const ShapeSW *shape = shape_owner.get(p_shape);
@@ -117,13 +110,6 @@ Variant PhysicsServerSW::shape_get_data(RID p_shape) const {
 	ERR_FAIL_COND_V(!shape->is_configured(), Variant());
 	return shape->get_data();
 };
-
-real_t PhysicsServerSW::shape_get_custom_solver_bias(RID p_shape) const {
-
-	const ShapeSW *shape = shape_owner.get(p_shape);
-	ERR_FAIL_COND_V(!shape, 0);
-	return shape->get_custom_bias();
-}
 
 RID PhysicsServerSW::space_create() {
 
@@ -175,6 +161,21 @@ real_t PhysicsServerSW::space_get_param(RID p_space, SpaceParameter p_param) con
 	const SpaceSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, 0);
 	return space->get_param(p_param);
+}
+
+void PhysicsServerSW::space_set_constraint_priority(RID p_space, int p_priority) {
+
+	SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND(!space);
+
+	space->set_constraint_priority(p_priority);
+}
+
+int PhysicsServerSW::space_get_constraint_priority(RID p_space) const {
+
+	const SpaceSW *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space, 0);
+	return space->get_constraint_priority();
 }
 
 PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
@@ -586,6 +587,50 @@ void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool 
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
+}
+
+void PhysicsServerSW::body_set_shape_custom_solver_bias(RID p_body, int p_shape_idx, real_t p_bias) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	body->set_shape_custom_bias(p_shape_idx, p_bias);
+}
+
+void PhysicsServerSW::body_set_shape_custom_solver_priority(RID p_body, int p_shape_idx, int p_priority) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	body->set_shape_custom_priority(p_shape_idx, p_priority);
+}
+
+Vector3 PhysicsServerSW::PhysicsServerSW::body_get_center_of_mass(RID p_body) const {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+	return body->get_center_of_mass();
+}
+
+Basis PhysicsServerSW::body_get_principal_inertia_axes(RID p_body) const {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Basis());
+	return body->get_principal_inertia_axes();
+}
+
+Vector3 PhysicsServerSW::body_get_inv_inertia(RID p_body) const {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+	return body->get_inv_inertia();
+}
+
+Basis PhysicsServerSW::body_get_inv_inertia_tensor(RID p_body) const {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Basis());
+	return body->get_inv_inertia_tensor();
 }
 
 Transform PhysicsServerSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {

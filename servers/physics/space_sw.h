@@ -95,6 +95,7 @@ private:
 	real_t contact_max_separation;
 	real_t contact_max_allowed_penetration;
 	real_t constraint_bias;
+	int constraint_priority;
 
 	enum {
 
@@ -156,6 +157,7 @@ public:
 	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
 	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
 	_FORCE_INLINE_ real_t get_constraint_bias() const { return constraint_bias; }
+	_FORCE_INLINE_ int get_constraint_priority() const { return constraint_priority; }
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_threshold() const { return body_linear_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_threshold() const { return body_angular_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
@@ -171,6 +173,8 @@ public:
 
 	void set_param(PhysicsServer::SpaceParameter p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SpaceParameter p_param) const;
+
+	void set_constraint_priority(int p_priority) { constraint_priority = p_priority; }
 
 	void set_island_count(int p_island_count) { island_count = p_island_count; }
 	int get_island_count() const { return island_count; }
