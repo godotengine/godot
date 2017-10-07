@@ -12,6 +12,8 @@ gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
+SConscript("nativearvr/SCsub")
+
 def _spaced(e):
     return e if e[-1] == '*' else e + ' '
 
@@ -22,6 +24,7 @@ def _build_gdnative_api_struct_header(api):
         '#define GODOT_GDNATIVE_API_STRUCT_H',
         '',
         '#include <gdnative/gdnative.h>',
+        '#include <nativearvr/godot_nativearvr.h>',
         '#include <nativescript/godot_nativescript.h>',
         '',
         '#define GDNATIVE_API_INIT(options) do { extern const godot_gdnative_api_struct *_gdnative_wrapper_api_struct; _gdnative_wrapper_api_struct = options->api_struct; } while (0)',

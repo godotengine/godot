@@ -45,6 +45,7 @@
 #include "input_map.h"
 #include "io/resource_loader.h"
 #include "scene/main/scene_tree.h"
+#include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 
 #include "io/resource_loader.h"
@@ -82,6 +83,7 @@ static InputMap *input_map = NULL;
 static bool _start_success = false;
 static ScriptDebugger *script_debugger = NULL;
 AudioServer *audio_server = NULL;
+ARVRServer *arvr_server = NULL;
 
 static MessageQueue *message_queue = NULL;
 static Performance *performance = NULL;
@@ -939,10 +941,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
 
-	//right moment to create and initialize the audio server
+	// right moment to create and initialize the audio server
 
 	audio_server = memnew(AudioServer);
 	audio_server->init();
+
+	// also init our arvr_server from here
+	arvr_server = memnew(ARVRServer);
 
 	OS::get_singleton()->set_use_vsync(use_vsync);
 
@@ -1773,6 +1778,11 @@ void Main::cleanup() {
 	if (audio_server) {
 		audio_server->finish();
 		memdelete(audio_server);
+	}
+
+	if (arvr_server) {
+		// cleanup now before we pull the rug from underneath...
+		memdelete(arvr_server);
 	}
 
 	unregister_driver_types();
