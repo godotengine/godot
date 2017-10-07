@@ -1,7 +1,11 @@
 import os
 
 if os.name == 'nt':
-    import _winreg as winreg
+    import sys
+    if sys.version_info < (3,):
+        import _winreg as winreg
+    else:
+        import winreg
 
 
 def _reg_open_key(key, subkey):

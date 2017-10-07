@@ -4,18 +4,8 @@ Import('env')
 env.editor_sources = []
 
 import os
-from compat import encode_utf8, byte_to_str, open_utf8
+from compat import encode_utf8, byte_to_str, open_utf8, escape_string
 
-def escape_string(s, encoding='ascii'):
-    if isinstance(s, unicode):
-        s = s.encode(encoding)
-    result = ''
-    for c in s:
-        if not (32 <= ord(c) < 127) or c in ('\\', '"'):
-            result += '\\%03o' % ord(c)
-        else:
-            result += c
-    return result
 
 def make_certs_header(target, source, env):
 
