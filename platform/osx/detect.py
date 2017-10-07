@@ -62,7 +62,7 @@ def configure(env):
 
     ## Compiler configuration
 
-    if (not os.environ.has_key("OSXCROSS_ROOT")): # regular native build
+    if "OSXCROSS_ROOT" not in os.environ: # regular native build
         if (env["bits"] == "fat"):
             env.Append(CCFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
             env.Append(LINKFLAGS=['-arch', 'i386', '-arch', 'x86_64'])
