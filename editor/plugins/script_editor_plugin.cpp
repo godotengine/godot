@@ -717,6 +717,8 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
 	_update_script_colors();
+	_update_members_overview();
+	_update_members_overview_visibility();
 }
 
 void ScriptEditor::_close_tab(int p_idx) {
@@ -766,6 +768,7 @@ void ScriptEditor::_close_tab(int p_idx) {
 	_update_history_arrows();
 
 	_update_script_names();
+	_update_members_overview_visibility();
 	_save_layout();
 }
 
@@ -1593,6 +1596,7 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("script_add_function_request", this, "_add_callback");
 		editor->connect("resource_saved", this, "_res_saved_callback");
 		script_list->connect("item_selected", this, "_script_selected");
+		members_overview->connect("item_selected", this, "_members_overview_selected");
 		script_split->connect("dragged", this, "_script_split_dragged");
 		autosave_timer->connect("timeout", this, "_autosave_scripts");
 		{
@@ -1828,6 +1832,19 @@ void ScriptEditor::ensure_focus_current() {
 	ste->get_text_edit()->grab_focus();
 }
 
+void ScriptEditor::_members_overview_selected(int p_idx) {
+	int line = members_overview->get_item_metadata(p_idx);
+
+	_goto_script_line2(line);
+
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptTextEditor *ste = current->cast_to<ScriptTextEditor>();
+	if (ste) {
+		ste->get_text_edit()->set_v_scroll(line);
+	}
+	ensure_focus_current();
+}
+
 void ScriptEditor::_script_selected(int p_idx) {
 
 	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
@@ -1895,6 +1912,30 @@ struct _ScriptEditorItemData {
 		return category == id.category ? sort_key < id.sort_key : category < id.category;
 	}
 };
+
+void ScriptEditor::_update_members_overview_visibility() {
+	if (members_overview_enabled) {
+		members_overview->set_hidden(false);
+	} else {
+		members_overview->set_hidden(true);
+	}
+}
+
+void ScriptEditor::_update_members_overview() {
+	members_overview->clear();
+
+	Node *current = tab_container->get_child(tab_container->get_current_tab());
+	ScriptTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ScriptTextEditor>();
+	if (!ste) {
+		return;
+	}
+
+	Vector<String> functions = ste->get_functions();
+	for (int i = 0; i < functions.size(); i++) {
+		members_overview->add_item(functions[i].get_slice(":", 0));
+		members_overview->set_item_metadata(i, functions[i].get_slice(":", 1).to_int() - 1);
+	}
+}
 
 void ScriptEditor::_update_script_colors() {
 
@@ -2039,6 +2080,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
+	_update_members_overview();
 	_update_script_colors();
 }
 
@@ -2226,6 +2268,10 @@ void ScriptEditor::_save_layout() {
 void ScriptEditor::_editor_settings_changed() {
 
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/trim_trailing_whitespace_on_save");
+
+	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/show_members_overview");
+	_update_members_overview_visibility();
+
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
 	if (autosave_time > 0) {
 		autosave_timer->set_wait_time(autosave_time);
@@ -2560,6 +2606,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ObjectTypeDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ObjectTypeDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
+	ObjectTypeDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
 	ObjectTypeDB::bind_method("_script_selected", &ScriptEditor::_script_selected);
 	ObjectTypeDB::bind_method("_script_created", &ScriptEditor::_script_created);
 	ObjectTypeDB::bind_method("_script_split_dragged", &ScriptEditor::_script_split_dragged);
@@ -2581,6 +2628,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	waiting_update_names = false;
 	pending_auto_reload = false;
 	auto_reload_running_scripts = false;
+	members_overview_enabled = true;
 	editor = p_editor;
 
 	menu_hb = memnew(HBoxContainer);
@@ -2590,10 +2638,19 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	add_child(script_split);
 	script_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	list_split = memnew(VSplitContainer);
+	script_split->add_child(list_split);
+	list_split->set_v_size_flags(SIZE_EXPAND_FILL);
+
 	script_list = memnew(ItemList);
-	script_split->add_child(script_list);
+	list_split->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(0, 0));
 	script_split->set_split_offset(140);
+	list_split->set_split_offset(500);
+
+	members_overview = memnew(ItemList);
+	list_split->add_child(members_overview);
+	members_overview->set_custom_minimum_size(Size2(0, 0));
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tabs_visible(false);
