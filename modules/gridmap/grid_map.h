@@ -184,6 +184,8 @@ class GridMap : public Spatial {
 
 	void _clear_internal();
 
+	Vector3 _get_offset() const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -217,6 +219,9 @@ public:
 	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
 	int get_cell_item(int p_x, int p_y, int p_z) const;
 	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
+
+	Vector3 world_to_map(const Vector3 &p_pos) const;
+	Vector3 map_to_world(int p_x, int p_y, int p_z) const;
 
 	void set_clip(bool p_enabled, bool p_clip_above = true, int p_floor = 0, Vector3::Axis p_axis = Vector3::AXIS_X);
 
