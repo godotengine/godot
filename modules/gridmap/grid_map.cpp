@@ -333,6 +333,23 @@ int GridMap::get_cell_item_orientation(int p_x, int p_y, int p_z) const {
 	return cell_map[key].rot;
 }
 
+Vector3 GridMap::world_to_map(const Vector3 &p_world_pos) const {
+	Vector3 map_pos = p_world_pos / cell_size;
+	map_pos.x = floor(map_pos.x);
+	map_pos.y = floor(map_pos.y);
+	map_pos.z = floor(map_pos.z);
+	return map_pos;
+}
+
+Vector3 GridMap::map_to_world(int p_x, int p_y, int p_z) const {
+	Vector3 offset = _get_offset();
+	Vector3 world_pos(
+			p_x * cell_size.x + offset.x,
+			p_y * cell_size.y + offset.y,
+			p_z * cell_size.z + offset.z);
+	return world_pos;
+}
+
 void GridMap::_octant_transform(const OctantKey &p_key) {
 
 	ERR_FAIL_COND(!octant_map.has(p_key));
@@ -407,7 +424,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
 
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
-		Vector3 ofs(cell_size.x * 0.5 * int(center_x), cell_size.y * 0.5 * int(center_y), cell_size.z * 0.5 * int(center_z));
+		Vector3 ofs = _get_offset();
 
 		Transform xform;
 
@@ -754,6 +771,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_item", "x", "y", "z"), &GridMap::get_cell_item);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "x", "y", "z"), &GridMap::get_cell_item_orientation);
 
+	ClassDB::bind_method(D_METHOD("world_to_map", "pos"), &GridMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_world", "x", "y", "z"), &GridMap::map_to_world);
+
 	//ClassDB::bind_method(D_METHOD("_recreate_octants"),&GridMap::_recreate_octants);
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
@@ -801,7 +821,7 @@ void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::
 void GridMap::set_cell_scale(float p_scale) {
 
 	cell_scale = p_scale;
-	_queue_octants_dirty();
+	_recreate_octant_data();
 }
 
 float GridMap::get_cell_scale() const {
@@ -827,7 +847,7 @@ Array GridMap::get_meshes() {
 	if (theme.is_null())
 		return Array();
 
-	Vector3 ofs(cell_size.x * 0.5 * int(center_x), cell_size.y * 0.5 * int(center_y), cell_size.z * 0.5 * int(center_z));
+	Vector3 ofs = _get_offset();
 	Array meshes;
 
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
@@ -855,6 +875,13 @@ Array GridMap::get_meshes() {
 	}
 
 	return meshes;
+}
+
+Vector3 GridMap::_get_offset() const {
+	return Vector3(
+			cell_size.x * 0.5 * int(center_x),
+			cell_size.y * 0.5 * int(center_y),
+			cell_size.z * 0.5 * int(center_z));
 }
 
 GridMap::GridMap() {
