@@ -111,13 +111,13 @@
 			<argument index="1" name="rel_vec" type="Vector2">
 			</argument>
 			<description>
-				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]rel_vec[/code]. Returns true if a collision would occur.
+				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
-			If the body is at the least this close to another body, then this body will consider them to be colliding.
+			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 	</members>
 	<constants>
