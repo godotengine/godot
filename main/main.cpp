@@ -27,7 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include<iostream.h>
 #include "main.h"
+
 
 #include "app_icon.gen.h"
 #include "core/register_core_types.h"
@@ -1469,7 +1471,8 @@ bool Main::start() {
 
 				//second pass, load into global constants
 				List<Node *> to_add;
-				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next())
+				{
 
 					String s = E->get().name;
 					if (!s.begins_with("autoload/"))
@@ -1477,7 +1480,8 @@ bool Main::start() {
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
-					if (path.begins_with("*")) {
+					if (path.begins_with("*")) 
+					{
 						global_var = true;
 						path = path.substr(1, path.length() - 1);
 					}
@@ -1486,7 +1490,8 @@ bool Main::start() {
 					ERR_EXPLAIN("Can't autoload: " + path);
 					ERR_CONTINUE(res.is_null());
 					Node *n = NULL;
-					if (res->is_class("PackedScene")) {
+					if (res->is_class("PackedScene")) 
+					{
 						Ref<PackedScene> ps = res;
 						n = ps->instance();
 					} else if (res->is_class("Script")) {
