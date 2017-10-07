@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimatedSprite3D" inherits="SpriteBase3D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		2D sprite node in 3D world, that can use multiple 2D textures for animation.
 	</brief_description>
 	<description>
+		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -83,18 +85,22 @@
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation">
+			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+			The displayed animation frame's index.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
+			The [SpriteFrames] resource containing the animation(s).
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
+			If [code]true[/code] the [member animation] is currently playing.
 		</member>
 	</members>
 	<signals>
 		<signal name="frame_changed">
 			<description>
-				Emitted when frame is changed.
+				Emitted when [member frame] changed.
 			</description>
 		</signal>
 	</signals>
