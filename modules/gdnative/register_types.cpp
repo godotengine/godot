@@ -247,6 +247,7 @@ void unregister_gdnative_types() {
 
 		singleton_gdnatives[i]->terminate();
 	}
+	singleton_gdnatives.clear();
 
 	unregister_nativescript_types();
 
