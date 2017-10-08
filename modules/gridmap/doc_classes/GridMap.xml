@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GridMap" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Node for 3D tile-based maps.
 	</brief_description>
 	<description>
+		GridMap lets you place meshes on a grid interactively. It works both from the editor and can help you create in-game level editors.
+		GridMaps use a [MeshLibrary] which contain a list of tiles: meshes with materials plus optional collisions and extra elements.
+		A GridMap contains a collection of cells. Each grid cell refers to a [MeshLibrary] item. All cells in the map have the same dimensions.
+		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +18,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Clear all cells.
 			</description>
 		</method>
 		<method name="get_cell_item" qualifiers="const">
@@ -25,6 +31,7 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
+				The [MeshLibrary] item index located at the grid-based X, Y and Z coordinates. If the cell is empty, [INVALID_CELL_ITEM] will be returned.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
@@ -37,54 +44,63 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
+				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is retuned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_cell_size" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				The dimensions of the grid's cells.
 			</description>
 		</method>
 		<method name="get_center_x" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether or not grid items are centered on the X axis.
 			</description>
 		</method>
 		<method name="get_center_y" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether or not grid items are centered on the Y axis.
 			</description>
 		</method>
 		<method name="get_center_z" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether or not grid items are centered on the Z axis.
 			</description>
 		</method>
 		<method name="get_meshes">
 			<return type="Array">
 			</return>
 			<description>
+				Array of [Transform] and [Mesh] references corresponding to the non empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
 		<method name="get_octant_size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				The size of each octant measured in number of cells. This applies to all three axis.
 			</description>
 		</method>
 		<method name="get_theme" qualifiers="const">
 			<return type="MeshLibrary">
 			</return>
 			<description>
+				The assigned [MeshLibrary].
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Array of [Vector3] with the non empty cell coordinates in the grid map.
 			</description>
 		</method>
 		<method name="resource_changed">
@@ -109,6 +125,9 @@
 			<argument index="4" name="orientation" type="int" default="0">
 			</argument>
 			<description>
+				Set the mesh index for the cell referenced by its grid-based X, Y and Z coordinates.
+				A negative item index will clear the cell.
+				Optionally, the item's orientation can be passed.
 			</description>
 		</method>
 		<method name="set_cell_size">
@@ -117,6 +136,7 @@
 			<argument index="0" name="size" type="Vector3">
 			</argument>
 			<description>
+				Sets the height, width and depth of the grid's cells.
 			</description>
 		</method>
 		<method name="set_center_x">
@@ -125,6 +145,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set grid items to be centered on the X axis. By default it is enabled.
 			</description>
 		</method>
 		<method name="set_center_y">
@@ -133,6 +154,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set grid items to be centered on the Y axis. By default it is enabled.
 			</description>
 		</method>
 		<method name="set_center_z">
@@ -141,6 +163,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set grid items to be centered on the Z axis. By default it is enabled.
 			</description>
 		</method>
 		<method name="set_clip">
@@ -163,6 +186,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
+				Sets the size for each octant measured in number of cells. This applies to all three axis.
 			</description>
 		</method>
 		<method name="set_theme">
@@ -171,11 +195,13 @@
 			<argument index="0" name="theme" type="MeshLibrary">
 			</argument>
 			<description>
+				Sets the collection of meshes for the map.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="INVALID_CELL_ITEM" value="-1" enum="">
+			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
 		</constant>
 	</constants>
 </class>
