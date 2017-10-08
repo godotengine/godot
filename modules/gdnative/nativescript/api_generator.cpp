@@ -31,7 +31,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "class_db.h"
+#include "core/class_db.h"
 #include "core/global_constants.h"
 #include "core/pair.h"
 #include "core/project_settings.h"
