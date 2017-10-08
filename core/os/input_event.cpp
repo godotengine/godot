@@ -270,16 +270,16 @@ String InputEventKey::as_text() const {
 		return kc;
 
 	if (get_metakey()) {
-		kc = "Meta+" + kc;
+		kc = find_keycode_name(KEY_META) + ("+" + kc);
 	}
 	if (get_alt()) {
-		kc = "Alt+" + kc;
+		kc = find_keycode_name(KEY_ALT) + ("+" + kc);
 	}
 	if (get_shift()) {
-		kc = "Shift+" + kc;
+		kc = find_keycode_name(KEY_SHIFT) + ("+" + kc);
 	}
 	if (get_control()) {
-		kc = "Ctrl+" + kc;
+		kc = find_keycode_name(KEY_CONTROL) + ("+" + kc);
 	}
 	return kc;
 }
