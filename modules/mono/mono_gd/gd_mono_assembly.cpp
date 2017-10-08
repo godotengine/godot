@@ -52,11 +52,11 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 	if (no_search)
 		return NULL;
 
-	no_search = true; // Avoid the recursion madness
-
 	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
 	if (loaded_asm)
 		return (*loaded_asm)->get_assembly();
+
+	no_search = true; // Avoid the recursion madness
 
 	String path;
 	MonoAssembly *res = NULL;

@@ -782,7 +782,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		if (method) {
 			MonoObject *ret = method->invoke(mono_object, args);
 
-			if (ret && UNBOX_BOOLEAN(ret))
+			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret) == true)
 				return true;
 		}
 
