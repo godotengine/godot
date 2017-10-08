@@ -131,7 +131,7 @@ private:
 	float gizmo_scale;
 
 	bool freelook_active;
-	Vector3 freelook_target_position;
+	real_t freelook_speed;
 
 	PanelContainer *info;
 	Label *info_label;
@@ -231,6 +231,7 @@ private:
 
 		Vector3 pos;
 		float x_rot, y_rot, distance;
+		Vector3 eye_pos; // Used in freelook mode
 		bool region_select;
 		Point2 region_begin, region_end;
 
@@ -239,9 +240,16 @@ private:
 			distance = 4;
 			region_select = false;
 		}
-	} cursor, camera_cursor;
+	};
+	// Viewport camera supports movement smoothing,
+	// so one cursor is the real cursor, while the other can be an interpolated version.
+	Cursor cursor; // Immediate cursor
+	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
 
 	void scale_cursor_distance(real_t scale);
+
+	void set_freelook_active(bool active_now);
+	void scale_freelook_speed(real_t scale);
 
 	real_t zoom_indicator_delay;
 
