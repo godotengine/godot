@@ -36,21 +36,10 @@
 
 namespace GDMonoMarshal {
 
-#define UNBOX_CHAR_PTR(x) (char *)mono_object_unbox(x)
-#define UNBOX_FLOAT_PTR(x) (float *)mono_object_unbox(x)
-
-#define UNBOX_DOUBLE(x) *(double *)mono_object_unbox(x)
-#define UNBOX_FLOAT(x) *(float *)mono_object_unbox(x)
-#define UNBOX_INT64(x) *(int64_t *)mono_object_unbox(x)
-#define UNBOX_INT32(x) *(int32_t *)mono_object_unbox(x)
-#define UNBOX_INT16(x) *(int16_t *)mono_object_unbox(x)
-#define UNBOX_INT8(x) *(int8_t *)mono_object_unbox(x)
-#define UNBOX_UINT64(x) *(uint64_t *)mono_object_unbox(x)
-#define UNBOX_UINT32(x) *(uint32_t *)mono_object_unbox(x)
-#define UNBOX_UINT16(x) *(uint16_t *)mono_object_unbox(x)
-#define UNBOX_UINT8(x) *(uint8_t *)mono_object_unbox(x)
-#define UNBOX_BOOLEAN(x) *(MonoBoolean *)mono_object_unbox(x)
-#define UNBOX_PTR(x) mono_object_unbox(x)
+template <typename T>
+T unbox(MonoObject *p_obj) {
+	return *(T *)mono_object_unbox(p_obj);
+}
 
 #define BOX_DOUBLE(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(double), &x)
 #define BOX_FLOAT(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(float), &x)
