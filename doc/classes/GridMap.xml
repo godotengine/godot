@@ -4,13 +4,10 @@
 		Node for 3D tile-based maps.
 	</brief_description>
 	<description>
-		Node for 3D tile-based maps.
-		
-		GridMaps use a [MeshLibrary] which contain a list of tiles (meshes with materials plus optional collisions and extra elements) which can be used to create grid-based maps in 3D.
-
-		A GridMap contains a collection of Cells. Each grid Cell refers to a [MeshLibrary] item. All Cells in the map have the same dimensions.
-
-		A GridMap is split into a sparse collection of Octants for efficient rendering and physics processing. Every Octant has the same dimensions and can contain several Cells.
+		[GridMap] lets you place meshes on a grid interactively. It works both from the editor and can help you create in-game level editors.
+		GridMaps use a [MeshLibrary] which contain a list of tiles: meshes with materials plus optional collisions and extra elements.
+		A GridMap contains a collection of cells. Each grid cell refers to a [MeshLibrary] item. All cells in the map have the same dimensions.
+		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
 	</tutorials>
