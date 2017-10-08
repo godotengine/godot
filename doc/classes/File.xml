@@ -37,7 +37,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the file cursor reached the end of the file.
+				Returns [code]true[/code] if the file cursor reached the end of the file.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -46,7 +46,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Get whether or not the file in the specified path exists.
+				Returns [code]true[/code] if the file in the specified path exists.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
@@ -113,7 +113,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Get whether endian swap is enabled for this file.
+				Returns [code]true[/code] if endian swap is enabled for this file.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
@@ -134,7 +134,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the size of the file in bytes.
+				Returns the size of the file in bytes.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -150,7 +150,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Return a md5 String representing the file at the given path or an empty [String] on failure.
+				Returns a MD5 String representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_modified_time" qualifiers="const">
@@ -159,6 +159,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Returns the modified time in unix timestamp of the [code]file[/code] or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
 			</description>
 		</method>
 		<method name="get_pascal_string">
@@ -172,7 +173,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the file cursor position.
+				Returns the file cursor position.
 			</description>
 		</method>
 		<method name="get_real" qualifiers="const">
@@ -188,7 +189,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Return a sha256 String representing the file at the given path or an empty [String] on failure.
+				Returns a SHA-256 String representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const">
@@ -202,7 +203,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the file is currently opened.
+				Returns [code]true[/code] if the file is currently opened.
 			</description>
 		</method>
 		<method name="open">
@@ -279,7 +280,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether to swap the endianness of the file. Enable this if you're dealing with files written in big endian machines.
+				If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
 				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
 			</description>
 		</method>
@@ -394,16 +395,16 @@
 	</methods>
 	<constants>
 		<constant name="READ" value="1">
-			Open the file for reading.
+			Open the file for read operations.
 		</constant>
 		<constant name="WRITE" value="2">
-			Open the file for writing. Create it if the file not exists and truncate if it exists.
+			Open the file for write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="READ_WRITE" value="3">
-			Open the file for reading and writing, without truncating the file.
+			Open the file for read and write operations. Does not truncate the file.
 		</constant>
 		<constant name="WRITE_READ" value="7">
-			Open the file for reading and writing. Create it if the file not exists and truncate if it exists.
+			Open the file for read and write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0">
 			Use the FastLZ compression method.
@@ -415,6 +416,7 @@
 			Use the Zstd compression method.
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3">
+			Use the GZip compression method.
 		</constant>
 	</constants>
 </class>
