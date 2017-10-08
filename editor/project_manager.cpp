@@ -855,6 +855,7 @@ void ProjectManager::_load_recent_projects() {
 
 		TextureFrame *tf = memnew(TextureFrame);
 		tf->set_texture(icon);
+		tf->set_v_size_flags(SIZE_EXPAND);
 		hb->add_child(tf);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
