@@ -5011,6 +5011,66 @@
       ]
     },
     {
+      "name": "godot_string_name_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "r_dest"],
+        ["const godot_string *", "p_name"]
+      ]
+    },
+    {
+      "name": "godot_string_name_new_data",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "r_dest"],
+        ["const char *", "p_name"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_name",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_hash",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_data_unique_pointer",
+      "return_type": "const void *",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string_name *", "p_self"],
+        ["const godot_string_name *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_string_name_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string_name *", "p_self"],
+        ["const godot_string_name *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_string_name_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "p_self"]
+      ]
+    },
+    {
       "name": "godot_object_destroy",
       "return_type": "void",
       "arguments": [
