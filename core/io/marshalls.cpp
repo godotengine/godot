@@ -1140,8 +1140,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					if (buf) {
 						encode_uint32(0, buf);
 						buf += 4;
-						r_len += 4;
 					}
+					r_len += 4;
+
 				} else {
 					_encode_string(obj->get_class(), buf, r_len);
 
