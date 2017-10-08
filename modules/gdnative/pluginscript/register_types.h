@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  api_generator.h                                                      */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,12 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef API_GENERATOR_H
-#define API_GENERATOR_H
-
-#include "core/typedefs.h"
-#include "core/ustring.h"
-
-Error generate_c_api(const String &p_path);
-
-#endif // API_GENERATOR_H
+void register_pluginscript_types();
+void unregister_pluginscript_types();

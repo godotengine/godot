@@ -29,9 +29,9 @@
 /*************************************************************************/
 #include "gdnative/string.h"
 
+#include "core/string_db.h"
+#include "core/ustring.h"
 #include "core/variant.h"
-#include "string_db.h"
-#include "ustring.h"
 
 #include <string.h>
 
