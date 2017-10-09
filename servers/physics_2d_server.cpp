@@ -579,6 +579,8 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "margin", "result"), &Physics2DServer::_body_test_motion, DEFVAL(0.08), DEFVAL(Variant()));
 
+	ClassDB::bind_method(D_METHOD("body_get_direct_state", "body"), &Physics2DServer::body_get_direct_state);
+
 	/* JOINT API */
 
 	ClassDB::bind_method(D_METHOD("joint_set_param", "joint", "param", "value"), &Physics2DServer::joint_set_param);

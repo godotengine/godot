@@ -253,6 +253,13 @@ public:
 		return physics_2d_server->body_test_motion(p_body, p_from, p_motion, p_margin, r_result);
 	}
 
+	// this function only works on physics process, errors and returns null otherwise
+	Physics2DDirectBodyState *body_get_direct_state(RID p_body) {
+
+		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), NULL);
+		return physics_2d_server->body_get_direct_state(p_body);
+	}
+
 	/* JOINT API */
 
 	FUNC3(joint_set_param, RID, JointParam, real_t);

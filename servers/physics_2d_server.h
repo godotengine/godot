@@ -468,6 +468,9 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) = 0;
 
+	// this function only works on physics process, errors and returns null otherwise
+	virtual Physics2DDirectBodyState *body_get_direct_state(RID p_body) = 0;
+
 	struct MotionResult {
 
 		Vector2 motion;
