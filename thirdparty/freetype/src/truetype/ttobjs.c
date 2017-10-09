@@ -576,9 +576,11 @@
     /* We must also be able to accept Mac/GX fonts, as well as OT ones. */
     /* The 0x00020000 tag is completely undocumented; some fonts from   */
     /* Arphic made for Chinese Windows 3.1 have this.                   */
-    if ( face->format_tag != 0x00010000L &&    /* MS fonts  */
-         face->format_tag != 0x00020000L &&    /* CJK fonts for Win 3.1 */
-         face->format_tag != TTAG_true   )     /* Mac fonts */
+    if ( face->format_tag != 0x00010000L  && /* MS fonts                             */
+         face->format_tag != 0x00020000L  && /* CJK fonts for Win 3.1                */
+         face->format_tag != TTAG_true    && /* Mac fonts                            */
+         face->format_tag != TTAG_0xA5kbd && /* `Keyboard.dfont' (legacy Mac OS X)   */
+         face->format_tag != TTAG_0xA5lst )  /* `LastResort.dfont' (legacy Mac OS X) */
     {
       FT_TRACE2(( "  not a TTF font\n" ));
       goto Bad_Format;
@@ -1230,7 +1232,9 @@
   /* <Input>                                                               */
   /*    size        :: A handle to the target size object.                 */
   /*                                                                       */
-  /*    only_height :: Only recompute ascender, descender, and height.     */
+  /*    only_height :: Only recompute ascender, descender, and height;     */
+  /*                   this flag is used for variation fonts where         */
+  /*                   `tt_size_reset' is used as an iterator function.    */
   /*                                                                       */
   FT_LOCAL_DEF( FT_Error )
   tt_size_reset( TT_Size  size,
@@ -1277,7 +1281,11 @@
     size->ttmetrics.valid = TRUE;
 
     if ( only_height )
+    {
+      /* we must not recompute the scaling values here since       */
+      /* `tt_size_reset' was already called (with only_height = 0) */
       return FT_Err_Ok;
+    }
 
     if ( face->header.Flags & 8 )
     {

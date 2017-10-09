@@ -68,14 +68,15 @@
 #define FT_COMPONENT  trace_calc
 
 
-  /* transfer sign leaving a positive number */
-#define FT_MOVE_SIGN( x, s ) \
-  FT_BEGIN_STMNT             \
-    if ( x < 0 )             \
-    {                        \
-      x = -x;                \
-      s = -s;                \
-    }                        \
+  /* transfer sign, leaving a positive number;                        */
+  /* we need an unsigned value to safely negate INT_MIN (or LONG_MIN) */
+#define FT_MOVE_SIGN( x, x_unsigned, s ) \
+  FT_BEGIN_STMNT                         \
+    if ( x < 0 )                         \
+    {                                    \
+      x_unsigned = 0U - (x_unsigned);    \
+      s          = -s;                   \
+    }                                    \
   FT_END_STMNT
 
   /* The following three functions are available regardless of whether */
@@ -86,7 +87,7 @@
   FT_EXPORT_DEF( FT_Fixed )
   FT_RoundFix( FT_Fixed  a )
   {
-    return ( a + 0x8000L - ( a < 0 ) ) & ~0xFFFFL;
+    return ( ADD_LONG( a, 0x8000L - ( a < 0 ) ) ) & ~0xFFFFL;
   }
 
 
@@ -95,7 +96,7 @@
   FT_EXPORT_DEF( FT_Fixed )
   FT_CeilFix( FT_Fixed  a )
   {
-    return ( a + 0xFFFFL ) & ~0xFFFFL;
+    return ( ADD_LONG( a, 0xFFFFL ) ) & ~0xFFFFL;
   }
 
 
@@ -179,20 +180,20 @@
     FT_Long    d_;
 
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-    FT_MOVE_SIGN( c_, s );
-
     a = (FT_UInt64)a_;
     b = (FT_UInt64)b_;
     c = (FT_UInt64)c_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
+    FT_MOVE_SIGN( c_, c, s );
 
     d = c > 0 ? ( a * b + ( c >> 1 ) ) / c
               : 0x7FFFFFFFUL;
 
     d_ = (FT_Long)d;
 
-    return s < 0 ? -d_ : d_;
+    return s < 0 ? NEG_LONG( d_ ) : d_;
   }
 
 
@@ -208,20 +209,20 @@
     FT_Long    d_;
 
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-    FT_MOVE_SIGN( c_, s );
-
     a = (FT_UInt64)a_;
     b = (FT_UInt64)b_;
     c = (FT_UInt64)c_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
+    FT_MOVE_SIGN( c_, c, s );
 
     d = c > 0 ? a * b / c
               : 0x7FFFFFFFUL;
 
     d_ = (FT_Long)d;
 
-    return s < 0 ? -d_ : d_;
+    return s < 0 ? NEG_LONG( d_ ) : d_;
   }
 
 
@@ -257,18 +258,18 @@
     FT_Long    q_;
 
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-
     a = (FT_UInt64)a_;
     b = (FT_UInt64)b_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
 
     q = b > 0 ? ( ( a << 16 ) + ( b >> 1 ) ) / b
               : 0x7FFFFFFFUL;
 
     q_ = (FT_Long)q;
 
-    return s < 0 ? -q_ : q_;
+    return s < 0 ? NEG_LONG( q_ ) : q_;
   }
 
 
@@ -422,13 +423,13 @@
 
     /* XXX: this function does not allow 64-bit arguments */
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-    FT_MOVE_SIGN( c_, s );
-
     a = (FT_UInt32)a_;
     b = (FT_UInt32)b_;
     c = (FT_UInt32)c_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
+    FT_MOVE_SIGN( c_, c, s );
 
     if ( c == 0 )
       a = 0x7FFFFFFFUL;
@@ -455,7 +456,7 @@
 
     a_ = (FT_Long)a;
 
-    return s < 0 ? -a_ : a_;
+    return s < 0 ? NEG_LONG( a_ ) : a_;
   }
 
 
@@ -470,13 +471,13 @@
 
     /* XXX: this function does not allow 64-bit arguments */
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-    FT_MOVE_SIGN( c_, s );
-
     a = (FT_UInt32)a_;
     b = (FT_UInt32)b_;
     c = (FT_UInt32)c_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
+    FT_MOVE_SIGN( c_, c, s );
 
     if ( c == 0 )
       a = 0x7FFFFFFFUL;
@@ -498,7 +499,7 @@
 
     a_ = (FT_Long)a;
 
-    return s < 0 ? -a_ : a_;
+    return s < 0 ? NEG_LONG( a_ ) : a_;
   }
 
 
@@ -575,11 +576,11 @@
 
     /* XXX: this function does not allow 64-bit arguments */
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-
     a = (FT_UInt32)a_;
     b = (FT_UInt32)b_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
 
     if ( a + ( b >> 8 ) <= 8190UL )
       a = ( a * b + 0x8000UL ) >> 16;
@@ -594,7 +595,7 @@
 
     a_ = (FT_Long)a;
 
-    return s < 0 ? -a_ : a_;
+    return s < 0 ? NEG_LONG( a_ ) : a_;
 
 #endif /* 0 */
 
@@ -614,11 +615,11 @@
 
     /* XXX: this function does not allow 64-bit arguments */
 
-    FT_MOVE_SIGN( a_, s );
-    FT_MOVE_SIGN( b_, s );
-
     a = (FT_UInt32)a_;
     b = (FT_UInt32)b_;
+
+    FT_MOVE_SIGN( a_, a, s );
+    FT_MOVE_SIGN( b_, b, s );
 
     if ( b == 0 )
     {
@@ -647,7 +648,7 @@
 
     q_ = (FT_Long)q;
 
-    return s < 0 ? -q_ : q_;
+    return s < 0 ? NEG_LONG( q_ ) : q_;
   }
 
 
@@ -666,13 +667,19 @@
     if ( !a || !b )
       return;
 
-    xx = FT_MulFix( a->xx, b->xx ) + FT_MulFix( a->xy, b->yx );
-    xy = FT_MulFix( a->xx, b->xy ) + FT_MulFix( a->xy, b->yy );
-    yx = FT_MulFix( a->yx, b->xx ) + FT_MulFix( a->yy, b->yx );
-    yy = FT_MulFix( a->yx, b->xy ) + FT_MulFix( a->yy, b->yy );
+    xx = ADD_LONG( FT_MulFix( a->xx, b->xx ),
+                   FT_MulFix( a->xy, b->yx ) );
+    xy = ADD_LONG( FT_MulFix( a->xx, b->xy ),
+                   FT_MulFix( a->xy, b->yy ) );
+    yx = ADD_LONG( FT_MulFix( a->yx, b->xx ),
+                   FT_MulFix( a->yy, b->yx ) );
+    yy = ADD_LONG( FT_MulFix( a->yx, b->xy ),
+                   FT_MulFix( a->yy, b->yy ) );
 
-    b->xx = xx;  b->xy = xy;
-    b->yx = yx;  b->yy = yy;
+    b->xx = xx;
+    b->xy = xy;
+    b->yx = yx;
+    b->yy = yy;
   }
 
 
@@ -722,13 +729,19 @@
     if ( !a || !b )
       return;
 
-    xx = FT_MulDiv( a->xx, b->xx, val ) + FT_MulDiv( a->xy, b->yx, val );
-    xy = FT_MulDiv( a->xx, b->xy, val ) + FT_MulDiv( a->xy, b->yy, val );
-    yx = FT_MulDiv( a->yx, b->xx, val ) + FT_MulDiv( a->yy, b->yx, val );
-    yy = FT_MulDiv( a->yx, b->xy, val ) + FT_MulDiv( a->yy, b->yy, val );
+    xx = ADD_LONG( FT_MulDiv( a->xx, b->xx, val ),
+                   FT_MulDiv( a->xy, b->yx, val ) );
+    xy = ADD_LONG( FT_MulDiv( a->xx, b->xy, val ),
+                   FT_MulDiv( a->xy, b->yy, val ) );
+    yx = ADD_LONG( FT_MulDiv( a->yx, b->xx, val ),
+                   FT_MulDiv( a->yy, b->yx, val ) );
+    yy = ADD_LONG( FT_MulDiv( a->yx, b->xy, val ),
+                   FT_MulDiv( a->yy, b->yy, val ) );
 
-    b->xx = xx;  b->xy = xy;
-    b->yx = yx;  b->yy = yy;
+    b->xx = xx;
+    b->xy = xy;
+    b->yx = yx;
+    b->yy = yy;
   }
 
 
@@ -747,11 +760,10 @@
     if ( !vector || !matrix )
       return;
 
-    xz = FT_MulDiv( vector->x, matrix->xx, val ) +
-         FT_MulDiv( vector->y, matrix->xy, val );
-
-    yz = FT_MulDiv( vector->x, matrix->yx, val ) +
-         FT_MulDiv( vector->y, matrix->yy, val );
+    xz = ADD_LONG( FT_MulDiv( vector->x, matrix->xx, val ),
+                   FT_MulDiv( vector->y, matrix->xy, val ) );
+    yz = ADD_LONG( FT_MulDiv( vector->x, matrix->yx, val ),
+                   FT_MulDiv( vector->y, matrix->yy, val ) );
 
     vector->x = xz;
     vector->y = yz;
@@ -770,11 +782,11 @@
     FT_Int     sx = 1, sy = 1, shift;
 
 
-    FT_MOVE_SIGN( x_, sx );
-    FT_MOVE_SIGN( y_, sy );
-
     x = (FT_UInt32)x_;
     y = (FT_UInt32)y_;
+
+    FT_MOVE_SIGN( x_, x, sx );
+    FT_MOVE_SIGN( y_, y, sy );
 
     /* trivial cases */
     if ( x == 0 )
@@ -913,11 +925,13 @@
     FT_Int  result;
 
 
-    if ( (FT_ULong)FT_ABS( in_x ) + (FT_ULong)FT_ABS( out_y ) <= 131071UL &&
-         (FT_ULong)FT_ABS( in_y ) + (FT_ULong)FT_ABS( out_x ) <= 131071UL )
+    /* we silently ignore overflow errors, since such large values */
+    /* lead to even more (harmless) rendering errors later on      */
+    if ( ADD_LONG( FT_ABS( in_x ), FT_ABS( out_y ) ) <= 131071L &&
+         ADD_LONG( FT_ABS( in_y ), FT_ABS( out_x ) ) <= 131071L )
     {
-      FT_Long  z1 = in_x * out_y;
-      FT_Long  z2 = in_y * out_x;
+      FT_Long  z1 = MUL_LONG( in_x, out_y );
+      FT_Long  z2 = MUL_LONG( in_y, out_x );
 
 
       if ( z1 > z2 )

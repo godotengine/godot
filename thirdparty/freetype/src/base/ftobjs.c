@@ -579,34 +579,42 @@
     if ( vertical )
     {
       metrics->horiBearingX = FT_PIX_FLOOR( metrics->horiBearingX );
-      metrics->horiBearingY = FT_PIX_CEIL ( metrics->horiBearingY );
+      metrics->horiBearingY = FT_PIX_CEIL_LONG( metrics->horiBearingY );
 
-      right  = FT_PIX_CEIL( metrics->vertBearingX + metrics->width );
-      bottom = FT_PIX_CEIL( metrics->vertBearingY + metrics->height );
+      right  = FT_PIX_CEIL_LONG( ADD_LONG( metrics->vertBearingX,
+                                           metrics->width ) );
+      bottom = FT_PIX_CEIL_LONG( ADD_LONG( metrics->vertBearingY,
+                                           metrics->height ) );
 
       metrics->vertBearingX = FT_PIX_FLOOR( metrics->vertBearingX );
       metrics->vertBearingY = FT_PIX_FLOOR( metrics->vertBearingY );
 
-      metrics->width  = right - metrics->vertBearingX;
-      metrics->height = bottom - metrics->vertBearingY;
+      metrics->width  = SUB_LONG( right,
+                                  metrics->vertBearingX );
+      metrics->height = SUB_LONG( bottom,
+                                  metrics->vertBearingY );
     }
     else
     {
       metrics->vertBearingX = FT_PIX_FLOOR( metrics->vertBearingX );
       metrics->vertBearingY = FT_PIX_FLOOR( metrics->vertBearingY );
 
-      right  = FT_PIX_CEIL ( metrics->horiBearingX + metrics->width );
-      bottom = FT_PIX_FLOOR( metrics->horiBearingY - metrics->height );
+      right  = FT_PIX_CEIL_LONG( ADD_LONG( metrics->horiBearingX,
+                                           metrics->width ) );
+      bottom = FT_PIX_FLOOR( SUB_LONG( metrics->horiBearingY,
+                                       metrics->height ) );
 
       metrics->horiBearingX = FT_PIX_FLOOR( metrics->horiBearingX );
-      metrics->horiBearingY = FT_PIX_CEIL ( metrics->horiBearingY );
+      metrics->horiBearingY = FT_PIX_CEIL_LONG( metrics->horiBearingY );
 
-      metrics->width  = right - metrics->horiBearingX;
-      metrics->height = metrics->horiBearingY - bottom;
+      metrics->width  = SUB_LONG( right,
+                                  metrics->horiBearingX );
+      metrics->height = SUB_LONG( metrics->horiBearingY,
+                                  bottom );
     }
 
-    metrics->horiAdvance = FT_PIX_ROUND( metrics->horiAdvance );
-    metrics->vertAdvance = FT_PIX_ROUND( metrics->vertAdvance );
+    metrics->horiAdvance = FT_PIX_ROUND_LONG( metrics->horiAdvance );
+    metrics->vertAdvance = FT_PIX_ROUND_LONG( metrics->vertAdvance );
   }
 #endif /* GRID_FIT_METRICS */
 
@@ -4549,7 +4557,7 @@
     if ( !clazz )
       return FT_THROW( Invalid_Argument );
 
-    /* check freetype version */
+    /* check FreeType version */
     if ( clazz->module_requires > FREETYPE_VER_FIXED )
       return FT_THROW( Invalid_Version );
 
@@ -4972,10 +4980,6 @@
     if ( error )
       goto Fail;
 #endif
-
-    /* we don't use raster_pool anymore. */
-    library->raster_pool_size = 0;
-    library->raster_pool      = NULL;
 
     library->version_major = FREETYPE_MAJOR;
     library->version_minor = FREETYPE_MINOR;

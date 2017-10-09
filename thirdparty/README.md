@@ -73,7 +73,7 @@ Use UI font if exists, because it has tight vertial metrix and good for UI.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.8
+- Version: 2.8.1
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:

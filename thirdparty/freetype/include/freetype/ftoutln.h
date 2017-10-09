@@ -385,6 +385,9 @@ FT_BEGIN_HEADER
   /*    @FT_Outline_Embolden, which uses the same strength in both         */
   /*    directions.                                                        */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.4.10                                                             */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Outline_EmboldenXY( FT_Outline*  outline,
                          FT_Pos       xstrength,

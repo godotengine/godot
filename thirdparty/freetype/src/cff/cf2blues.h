@@ -111,7 +111,7 @@ FT_BEGIN_HEADER
    * Constant used for hint adjustment and for synthetic em box hint
    * placement.
    */
-#define CF2_MIN_COUNTER  cf2_floatToFixed( 0.5 )
+#define CF2_MIN_COUNTER  cf2_doubleToFixed( 0.5 )
 
 
   /* shared typedef is in cf2glue.h */
