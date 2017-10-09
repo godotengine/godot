@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ParticlesMaterial" inherits="Material" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Particle properties for [Particles] and [Particles2D] nodes.
 	</brief_description>
 	<description>
+		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [Particles] and [Particles2D] emitter nodes.
+		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -294,152 +297,217 @@
 	</methods>
 	<members>
 		<member name="angle" type="float" setter="set_param" getter="get_param">
+			Initial rotation applied to each particle.
 		</member>
 		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's rotation will be animated along this [CurveTexture].
 		</member>
 		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Rotation randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="angular_velocity" type="float" setter="set_param" getter="get_param">
+			Initial angular velocity applied to each particle.
 		</member>
 		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's angular velocity will vary along this [CurveTexture].
 		</member>
 		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Angular velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code] animation will loop. Default value: [code]false[/code].
 		</member>
 		<member name="anim_offset" type="float" setter="set_param" getter="get_param">
+			Particle animation offset.
 		</member>
 		<member name="anim_offset_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's animation offset will vary along this [CurveTexture].
 		</member>
 		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Animation offset randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="anim_speed" type="float" setter="set_param" getter="get_param">
+			Particle animation speed.
 		</member>
 		<member name="anim_speed_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's animation speed will vary along this [CurveTexture].
 		</member>
 		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Animation speed randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
+			Each particle's initial color. If the [Particle2D]'s [code]texture[/code] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp">
+			Each particle's color will vary along this [GradientTexture].
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param">
+			The rate at which particles lose velocity.
 		</member>
 		<member name="damping_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Damping will vary along this [CurveTexture].
 		</member>
 		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Damping randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
+			The box's extents if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_BOX[/code].
 		</member>
 		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture">
 		</member>
 		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
 		</member>
 		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count">
+			The number of emission points if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_POINTS[/code] or [code]EMISSION_SHAPE_DIRECTED_POINTS[/code].
 		</member>
 		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture">
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticlesMaterial.EmissionShape">
+			Particles will be emitted inside this region. Use [code]EMISSION_SHAPE_*[/code] constants for values. Default value: [code]EMISSION_SHAPE_POINT[/code].
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
+			The sphere's radius if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_SPHERE[/code].
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code] particles will not move on the z axis. Default value: [code]true[/code] for [Particles2D], [code]false[/code] for [Particles].
 		</member>
 		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
 		</member>
 		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity">
+			Gravity applied to every particle. Default value: [code](0, 98, 0)[/code].
 		</member>
 		<member name="hue_variation" type="float" setter="set_param" getter="get_param">
+			Initial hue variation applied to each particle.
 		</member>
 		<member name="hue_variation_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's hue will vary along this [CurveTexture].
 		</member>
 		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Hue variation randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="initial_velocity" type="float" setter="set_param" getter="get_param">
+			Initial velocity for each particle.
 		</member>
 		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Initial velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="linear_accel" type="float" setter="set_param" getter="get_param">
+			Linear acceleration applied to each particle.
 		</member>
 		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's linear acceleration will vary along this [CurveTexture].
 		</member>
 		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Linear acceleration randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
+			Orbital velocity applied to each particle.
 		</member>
 		<member name="orbit_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's orbital velocity will vary along this [CurveTexture].
 		</member>
 		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Orbital velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
+			Linear acceleration applied to each particle.
 		</member>
 		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's radial acceleration will vary along this [CurveTexture].
 		</member>
 		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Radial acceleration randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="scale" type="float" setter="set_param" getter="get_param">
+			Initial scale applied to each particle.
 		</member>
 		<member name="scale_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's scale will vary along this [CurveTexture].
 		</member>
 		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Scale randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread">
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Default value: [code]45[/code].
 		</member>
 		<member name="tangential_accel" type="float" setter="set_param" getter="get_param">
+			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity.
 		</member>
 		<member name="tangential_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
+			Each particle's tangential acceleration will vary along this [CurveTexture].
 		</member>
 		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+			Tangential acceleration randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier">
+			Trail particles' color will vary along this [GradientTexture].
 		</member>
 		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor">
+			Emitter will emit [code]amount[/code] divided by [code]trail_divisor[/code] particles. The remaining particles will be used as trail(s).
 		</member>
 		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier">
+			Trail particles' size will vary along this [CurveTexture].
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set initial velocity properties.
 		</constant>
 		<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angular velocity properties.
 		</constant>
 		<constant name="PARAM_ORBIT_VELOCITY" value="2">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set orbital_velocity properties.
 		</constant>
 		<constant name="PARAM_LINEAR_ACCEL" value="3">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set linear acceleration properties.
 		</constant>
 		<constant name="PARAM_RADIAL_ACCEL" value="4">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set radial acceleration properties.
 		</constant>
 		<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set tangential acceleration properties.
 		</constant>
 		<constant name="PARAM_DAMPING" value="6">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set damping properties.
 		</constant>
 		<constant name="PARAM_ANGLE" value="7">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angle properties.
 		</constant>
 		<constant name="PARAM_SCALE" value="8">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set scale properties.
 		</constant>
 		<constant name="PARAM_HUE_VARIATION" value="9">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set hue_variation properties.
 		</constant>
 		<constant name="PARAM_ANIM_SPEED" value="10">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation speed properties.
 		</constant>
 		<constant name="PARAM_ANIM_OFFSET" value="11">
+			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation offset properties.
 		</constant>
 		<constant name="PARAM_MAX" value="12">
 		</constant>
 		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+			Use with [method set_flag] to set [member flag_align_y].
 		</constant>
 		<constant name="FLAG_ROTATE_Y" value="1">
+			Use with [method set_flag] to set [member flag_rotate_y]
 		</constant>
 		<constant name="FLAG_MAX" value="4">
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0">
+			All particles will be emitted from a single point.
 		</constant>
 		<constant name="EMISSION_SHAPE_SPHERE" value="1">
+			Particles will be emitted in the volume of a sphere.
 		</constant>
 		<constant name="EMISSION_SHAPE_BOX" value="2">
+			Particles will be emitted in the volume of a box.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINTS" value="3">
 		</constant>

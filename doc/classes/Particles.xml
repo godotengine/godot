@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Particles" inherits="GeometryInstance" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		3D particle emitter.
 	</brief_description>
 	<description>
+		3D particle node used to create a variety of particle systems and effects. [code]Particles[/code] features an emitter that generates some number of particles at a given rate.
+		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -252,8 +255,10 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount">
+			Number of particles to emit.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles.DrawOrder">
+			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [code]DRAW_ORDER_INDEX[/code].
 		</member>
 		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 		</member>
@@ -266,36 +271,47 @@
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes">
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
+			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
+			Time ratio between each emission. If [code]0[/code] particles are emitted continuously. If [code]1[/code] all particles are emitted simultaneously. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
+			Amount of time each particle will exist. Default value: [code]1[/code].
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
+			If [code]true[/code] particles use the parent node's coordinate space. If [code]false[/code] they use global coordinates. Default value: [code]true[/code].
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
+			If [code]true[/code] only [code]amount[/code] particles will be emitted. Default value: [code]false[/code].
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
+			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
+			Emission randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
+			Speed scaling ratio. Default value: [code]1[/code].
 		</member>
 		<member name="visibility_aabb" type="Rect3" setter="set_visibility_aabb" getter="get_visibility_aabb">
 		</member>
 	</members>
 	<constants>
 		<constant name="DRAW_ORDER_INDEX" value="0">
+			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1">
+			Particles are drawn in order of remaining lifetime.
 		</constant>
 		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2">
+			Particles are drawn in order of depth.
 		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4" enum="">
 		</constant>
