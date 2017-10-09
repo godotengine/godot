@@ -46,8 +46,18 @@ gradle_baseout = open_utf8(abspath + "/java/build.gradle", "w")
 
 gradle_text = gradle_basein.read()
 
+gradle_maven_flat_text = ""
+if len(env.android_flat_dirs) > 0:
+    gradle_maven_flat_text += "flatDir {\n"
+    gradle_maven_flat_text += "\tdirs "
+    for x in env.android_flat_dirs:
+        gradle_maven_flat_text += "'" + x + "',"
 
+    gradle_maven_flat_text = gradle_maven_flat_text[:-1]
+    gradle_maven_flat_text += "\n\t}\n"
+ 
 gradle_maven_repos_text = ""
+gradle_maven_repos_text += gradle_maven_flat_text
 
 if len(env.android_maven_repos) > 0:
     gradle_maven_repos_text += ""

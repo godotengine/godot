@@ -1360,6 +1360,10 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
+def android_add_flat_dir(self, dir):
+    if (dir not in self.android_flat_dirs):
+        self.android_flat_dirs.append(dir)
+
 def android_add_maven_repository(self, url):
     if (url not in self.android_maven_repos):
         self.android_maven_repos.append(url)
