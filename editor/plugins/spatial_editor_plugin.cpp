@@ -1442,6 +1442,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					case TRANSFORM_ROTATE: {
 
 						Plane plane;
+						Vector3 axis;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
@@ -1449,12 +1450,15 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								break;
 							case TRANSFORM_X_AXIS:
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
+								axis = Vector3(1, 0, 0);
 								break;
 							case TRANSFORM_Y_AXIS:
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
+								axis = Vector3(0, 1, 0);
 								break;
 							case TRANSFORM_Z_AXIS:
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
+								axis = Vector3(0, 0, 1);
 								break;
 						}
 
@@ -1470,6 +1474,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						Vector3 x_axis = plane.normal.cross(y_axis).normalized();
 
 						float angle = Math::atan2(x_axis.dot(intersection - _edit.center), y_axis.dot(intersection - _edit.center));
+
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
 							float snap = spatial_editor->get_rotate_snap();
@@ -1486,10 +1491,9 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							set_message(vformat(TTR("Rotating %s degrees."), rtos(Math::rad2deg(angle))));
 						}
 
-						Transform r;
-						r.basis.rotate(plane.normal, angle);
-
 						List<Node *> &selection = editor_selection->get_selected_node_list();
+
+						bool local_coords = spatial_editor->are_local_coords_enabled();
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -1501,27 +1505,33 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							if (!se)
 								continue;
 
-							Transform original = se->original;
+							Transform t;
 
-							Transform base = Transform(Basis(), _edit.center);
-							Transform t = base * r * base.inverse() * original;
+							if (local_coords) {
 
-							sp->set_global_transform(t);
+								Transform original_local = se->original_local;
+								Basis rot = Basis(axis, angle);
+
+								t.basis = original_local.get_basis() * rot;
+								t.origin = original_local.origin;
+
+								sp->set_transform(t);
+
+							} else {
+
+								Transform original = se->original;
+								Transform r;
+								Transform base = Transform(Basis(), _edit.center);
+
+								r.basis.rotate(plane.normal, angle);
+								t = base * r * base.inverse() * original;
+
+								sp->set_global_transform(t);
+							}
 						}
 
 						surface->update();
-						/*
-						VisualServer::get_singleton()->poly_clear(indicators);
 
-						Vector<Vector3> points;
-						Vector<Vector3> empty;
-						Vector<Color> colors;
-						points.push_back(intersection);
-						points.push_back(_edit.original.origin);
-						colors.push_back( Color(255,155,100) );
-						colors.push_back( Color(255,155,100) );
-						VisualServer::get_singleton()->poly_add_primitive(indicators,points,empty,colors,empty);
-						*/
 					} break;
 					default: {}
 				}
