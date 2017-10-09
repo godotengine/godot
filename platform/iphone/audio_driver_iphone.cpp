@@ -175,8 +175,17 @@ void AudioDriverIphone::unlock() {
 };
 
 void AudioDriverIphone::finish() {
+	AURenderCallbackStruct callback;
+	zeromem(&callback, sizeof(AURenderCallbackStruct));
+	OSStatus result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitSetProperty failed");
+	}
 
-	memdelete_arr(samples_in);
+	if (samples_in) {
+		memdelete_arr(samples_in);
+		samples_in = NULL;
+	}
 };
 
 AudioDriverIphone::AudioDriverIphone() {

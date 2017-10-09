@@ -726,7 +726,8 @@ void AudioServerSW::_thread_func(void *self) {
 
 	while (!as->exit_update_thread) {
 		as->_update_streams(true);
-		OS::get_singleton()->delay_usec(5000);
+		if (OS::get_singleton())
+			OS::get_singleton()->delay_usec(5000);
 	}
 }
 
