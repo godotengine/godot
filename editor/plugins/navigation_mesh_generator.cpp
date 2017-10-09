@@ -38,9 +38,11 @@ void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &
 }
 
 void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
-	int current_vertex_count = p_verticies.size() / 3;
+	int current_vertex_count = 0;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+		current_vertex_count = p_verticies.size() / 3;
+
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
 			continue;
 
