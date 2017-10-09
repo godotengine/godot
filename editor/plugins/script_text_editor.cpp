@@ -529,9 +529,9 @@ void ScriptTextEditor::ensure_focus() {
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 
 	Dictionary state = p_state;
-	code_editor->get_text_edit()->set_v_scroll(state["scroll_position"]);
 	code_editor->get_text_edit()->cursor_set_column(state["column"]);
 	code_editor->get_text_edit()->cursor_set_line(state["row"]);
+	code_editor->get_text_edit()->set_v_scroll(state["scroll_position"]);
 	code_editor->get_text_edit()->grab_focus();
 
 	//int scroll_pos;

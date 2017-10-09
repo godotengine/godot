@@ -1278,7 +1278,11 @@ void ScriptEditor::_members_overview_selected(int p_idx) {
 	if (!se) {
 		return;
 	}
-	se->goto_line(members_overview->get_item_metadata(p_idx));
+	Dictionary state;
+	state["scroll_position"] = members_overview->get_item_metadata(p_idx);
+	state["column"] = 0;
+	state["row"] = members_overview->get_item_metadata(p_idx);
+	se->set_edit_state(state);
 	se->ensure_focus();
 }
 
