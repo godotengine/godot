@@ -399,15 +399,41 @@ FT_BEGIN_HEADER
 #endif /* 0 */
 
 
-#define INT_TO_F26DOT6( x )    ( (FT_Long)(x) << 6  )
-#define INT_TO_F2DOT14( x )    ( (FT_Long)(x) << 14 )
-#define INT_TO_FIXED( x )      ( (FT_Long)(x) << 16 )
-#define F2DOT14_TO_FIXED( x )  ( (FT_Long)(x) << 2  )
-#define FLOAT_TO_FIXED( x )    ( (FT_Long)( x * 65536.0 ) )
+#define INT_TO_F26DOT6( x )    ( (FT_Long)(x) * 64  )    /* << 6  */
+#define INT_TO_F2DOT14( x )    ( (FT_Long)(x) * 16384 )  /* << 14 */
+#define INT_TO_FIXED( x )      ( (FT_Long)(x) * 65536 )  /* << 16 */
+#define F2DOT14_TO_FIXED( x )  ( (FT_Long)(x) * 4 )      /* << 2  */
 #define FIXED_TO_INT( x )      ( FT_RoundFix( x ) >> 16 )
 
 #define ROUND_F26DOT6( x )     ( x >= 0 ? (    ( (x) + 32 ) & -64 )     \
                                         : ( -( ( 32 - (x) ) & -64 ) ) )
+
+  /*
+   *  The following macros have two purposes.
+   *
+   *  . Tag places where overflow is expected and harmless.
+   *
+   *  . Avoid run-time sanitizer errors.
+   *
+   *  Use with care!
+   */
+#define ADD_LONG( a, b )                             \
+          (FT_Long)( (FT_ULong)(a) + (FT_ULong)(b) )
+#define SUB_LONG( a, b )                             \
+          (FT_Long)( (FT_ULong)(a) - (FT_ULong)(b) )
+#define MUL_LONG( a, b )                             \
+          (FT_Long)( (FT_ULong)(a) * (FT_ULong)(b) )
+#define NEG_LONG( a )                                \
+          (FT_Long)( (FT_ULong)0 - (FT_ULong)(a) )
+
+#define ADD_INT32( a, b )                               \
+          (FT_Int32)( (FT_UInt32)(a) + (FT_UInt32)(b) )
+#define SUB_INT32( a, b )                               \
+          (FT_Int32)( (FT_UInt32)(a) - (FT_UInt32)(b) )
+#define MUL_INT32( a, b )                               \
+          (FT_Int32)( (FT_UInt32)(a) * (FT_UInt32)(b) )
+#define NEG_INT32( a )                                  \
+          (FT_Int32)( (FT_UInt32)0 - (FT_UInt32)(a) )
 
 
 FT_END_HEADER

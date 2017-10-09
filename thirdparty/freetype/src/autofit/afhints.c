@@ -507,15 +507,15 @@
       return FT_THROW( Invalid_Argument );
 
     seg      = &axis->segments[idx];
-    *offset  = ( dim == AF_DIMENSION_HORZ ) ? seg->first->ox
-                                            : seg->first->oy;
+    *offset  = ( dim == AF_DIMENSION_HORZ ) ? seg->first->fx
+                                            : seg->first->fy;
     if ( seg->edge )
       *is_blue = (FT_Bool)( seg->edge->blue_edge != 0 );
     else
       *is_blue = FALSE;
 
     if ( *is_blue )
-      *blue_offset = seg->edge->blue_edge->cur;
+      *blue_offset = seg->edge->blue_edge->org;
     else
       *blue_offset = 0;
 

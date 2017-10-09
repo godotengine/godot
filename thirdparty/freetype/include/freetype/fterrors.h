@@ -38,15 +38,15 @@
   /*   The configuration macro FT_CONFIG_OPTION_USE_MODULE_ERRORS can be   */
   /*   defined in `ftoption.h' in order to make the higher byte indicate   */
   /*   the module where the error has happened (this is not compatible     */
-  /*   with standard builds of FreeType&nbsp;2, however).  See the file    */
+  /*   with standard builds of FreeType~2, however).  See the file         */
   /*   `ftmoderr.h' for more details.                                      */
   /*                                                                       */
   /*   *Error* *Message* *Strings*                                         */
   /*                                                                       */
   /*   Error definitions are set up with special macros that allow client  */
   /*   applications to build a table of error message strings.  The        */
-  /*   strings are not included in a normal build of FreeType&nbsp;2 to    */
-  /*   save space (most client applications do not use them).              */
+  /*   strings are not included in a normal build of FreeType~2 to save    */
+  /*   space (most client applications do not use them).                   */
   /*                                                                       */
   /*   To do so, you have to define the following macros before including  */
   /*   this file.                                                          */

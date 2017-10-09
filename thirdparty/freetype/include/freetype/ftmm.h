@@ -178,7 +178,8 @@ FT_BEGIN_HEADER
   /*    strid  :: The entry in `name' table identifying this instance.     */
   /*                                                                       */
   /*    psid   :: The entry in `name' table identifying a PostScript name  */
-  /*              for this instance.                                       */
+  /*              for this instance.  Value 0xFFFF indicates a missing     */
+  /*              entry.                                                   */
   /*                                                                       */
   typedef struct  FT_Var_Named_Style_
   {
@@ -195,7 +196,7 @@ FT_BEGIN_HEADER
   /*    FT_MM_Var                                                          */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    A structure to model the axes and space of a Adobe MM, TrueType    */
+  /*    A structure to model the axes and space of an Adobe MM, TrueType   */
   /*    GX, or OpenType variation font.                                    */
   /*                                                                       */
   /*    Some fields are specific to one format and not to the others.      */
@@ -321,6 +322,11 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    To reset all axes to the default values, call the function with    */
+  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
+  /*    FreeType version 2.8.1).                                           */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Design_Coordinates( FT_Face   face,
                                 FT_UInt   num_coords,
@@ -350,6 +356,11 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  /* <Note>                                                                */
+  /*    To reset all axes to the default values, call the function with    */
+  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
+  /*    FreeType version 2.8.1).                                           */
   /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_Var_Design_Coordinates( FT_Face    face,
@@ -415,6 +426,11 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    To reset all axes to the default values, call the function with    */
+  /*    `num_coords' set to zero and `coords' set to NULL (new feature in  */
+  /*    FreeType version 2.8.1).                                           */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Blend_Coordinates( FT_Face    face,
                                FT_UInt    num_coords,
@@ -478,6 +494,50 @@ FT_BEGIN_HEADER
   FT_Get_Var_Blend_Coordinates( FT_Face    face,
                                 FT_UInt    num_coords,
                                 FT_Fixed*  coords );
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Enum>                                                                */
+  /*    FT_VAR_AXIS_FLAG_XXX                                               */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    A list of bit flags used in the return value of                    */
+  /*    @FT_Get_Var_Axis_Flags.                                            */
+  /*                                                                       */
+  /* <Values>                                                              */
+  /*    FT_VAR_AXIS_FLAG_HIDDEN ::                                         */
+  /*      The variation axis should not be exposed to user interfaces.     */
+  /*                                                                       */
+#define FT_VAR_AXIS_FLAG_HIDDEN  1
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    FT_Get_Var_Axis_Flags                                              */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    Get the `flags' field of an OpenType Variation Axis Record.        */
+  /*                                                                       */
+  /*    Not meaningful for Adobe MM fonts (`*flags' is always zero).       */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    master     :: The variation descriptor.                            */
+  /*                                                                       */
+  /*    axis_index :: The index of the requested variation axis.           */
+  /*                                                                       */
+  /* <Output>                                                              */
+  /*    flags      :: The `flags' field.  See @FT_VAR_AXIS_FLAG_XXX for    */
+  /*                  possible values.                                     */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    FreeType error code.  0~means success.                             */
+  /*                                                                       */
+  FT_EXPORT( FT_Error )
+  FT_Get_Var_Axis_Flags( FT_MM_Var*  master,
+                         FT_UInt     axis_index,
+                         FT_UInt*    flags );
 
   /* */
 

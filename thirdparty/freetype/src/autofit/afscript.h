@@ -187,12 +187,6 @@
           HINTING_BOTTOM_TO_TOP,
           "\xEA\xA4\x8D \xEA\xA4\x80" ) /* ꤍ ꤀ */
 
-  SCRIPT( knda, KNDA,
-          "Kannada",
-          HB_SCRIPT_KANNADA,
-          HINTING_BOTTOM_TO_TOP,
-          "\xE0\xB3\xA6 \xE0\xB2\xAC" ) /* ೦ ಬ */
-
   /* only digit zero has a simple shape in the Khmer script */
   SCRIPT( khmr, KHMR,
           "Khmer",
@@ -205,6 +199,12 @@
           HB_SCRIPT_INVALID,
           HINTING_BOTTOM_TO_TOP,
           "\xE1\xA7\xA1 \xE1\xA7\xAA" ) /* ᧡ ᧪ */
+
+  SCRIPT( knda, KNDA,
+          "Kannada",
+          HB_SCRIPT_KANNADA,
+          HINTING_BOTTOM_TO_TOP,
+          "\xE0\xB3\xA6 \xE0\xB2\xAC" ) /* ೦ ಬ */
 
   /* only digit zero has a simple shape in the Lao script */
   SCRIPT( lao, LAO,
@@ -330,17 +330,17 @@
           HINTING_BOTTOM_TO_TOP,
           "\xE0\xB1\xA6 \xE0\xB1\xA7" ) /* ౦ ౧ */
 
-  SCRIPT( thai, THAI,
-          "Thai",
-          HB_SCRIPT_THAI,
-          HINTING_BOTTOM_TO_TOP,
-          "\xE0\xB8\xB2 \xE0\xB9\x85 \xE0\xB9\x90" ) /* า ๅ ๐ */
-
   SCRIPT( tfng, TFNG,
           "Tifinagh",
           HB_SCRIPT_TIFINAGH,
           HINTING_BOTTOM_TO_TOP,
           "\xE2\xB5\x94" ) /* ⵔ */
+
+  SCRIPT( thai, THAI,
+          "Thai",
+          HB_SCRIPT_THAI,
+          HINTING_BOTTOM_TO_TOP,
+          "\xE0\xB8\xB2 \xE0\xB9\x85 \xE0\xB9\x90" ) /* า ๅ ๐ */
 
   SCRIPT( vaii, VAII,
           "Vai",

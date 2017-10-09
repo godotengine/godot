@@ -231,6 +231,12 @@ FT_BEGIN_HEADER
   /* <Return>                                                              */
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    Because `*aglyph->advance.x' and '*aglyph->advance.y' are 16.16    */
+  /*    fixed-point numbers, `slot->advance.x' and `slot->advance.y'       */
+  /*    (which are in 26.6 fixed-point format) must be in the range        */
+  /*    ]-32768;32768[.                                                    */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_Glyph( FT_GlyphSlot  slot,
                 FT_Glyph     *aglyph );
@@ -565,6 +571,9 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Note>                                                                */
   /*    The result is undefined if either `a' or `b' is zero.              */
+  /*                                                                       */
+  /*    Since the function uses wrap-around arithmetic, results become     */
+  /*    meaningless if the arguments are very large.                       */
   /*                                                                       */
   FT_EXPORT( void )
   FT_Matrix_Multiply( const FT_Matrix*  a,

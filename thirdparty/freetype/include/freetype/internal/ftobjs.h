@@ -36,6 +36,7 @@
 #include FT_INTERNAL_AUTOHINT_H
 #include FT_INTERNAL_SERVICE_H
 #include FT_INTERNAL_PIC_H
+#include FT_INTERNAL_CALC_H
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
 #include FT_INCREMENTAL_H
@@ -85,12 +86,28 @@ FT_BEGIN_HEADER
 
   /* we use FT_TYPEOF to suppress signedness compilation warnings */
 #define FT_PAD_FLOOR( x, n )  ( (x) & ~FT_TYPEOF( x )( (n)-1 ) )
-#define FT_PAD_ROUND( x, n )  FT_PAD_FLOOR( (x) + ((n)/2), n )
-#define FT_PAD_CEIL( x, n )   FT_PAD_FLOOR( (x) + ((n)-1), n )
+#define FT_PAD_ROUND( x, n )  FT_PAD_FLOOR( (x) + (n)/2, n )
+#define FT_PAD_CEIL( x, n )   FT_PAD_FLOOR( (x) + (n)-1, n )
 
 #define FT_PIX_FLOOR( x )     ( (x) & ~FT_TYPEOF( x )63 )
 #define FT_PIX_ROUND( x )     FT_PIX_FLOOR( (x) + 32 )
 #define FT_PIX_CEIL( x )      FT_PIX_FLOOR( (x) + 63 )
+
+  /* specialized versions (for signed values)                   */
+  /* that don't produce run-time errors due to integer overflow */
+#define FT_PAD_ROUND_LONG( x, n )  FT_PAD_FLOOR( ADD_LONG( (x), (n) / 2 ), \
+                                                 n )
+#define FT_PAD_CEIL_LONG( x, n )   FT_PAD_FLOOR( ADD_LONG( (x), (n) - 1 ), \
+                                                 n )
+#define FT_PIX_ROUND_LONG( x )     FT_PIX_FLOOR( ADD_LONG( (x), 32 ) )
+#define FT_PIX_CEIL_LONG( x )      FT_PIX_FLOOR( ADD_LONG( (x), 63 ) )
+
+#define FT_PAD_ROUND_INT32( x, n )  FT_PAD_FLOOR( ADD_INT32( (x), (n) / 2 ), \
+                                                  n )
+#define FT_PAD_CEIL_INT32( x, n )   FT_PAD_FLOOR( ADD_INT32( (x), (n) - 1 ), \
+                                                  n )
+#define FT_PIX_ROUND_INT32( x )     FT_PIX_FLOOR( ADD_INT32( (x), 32 ) )
+#define FT_PIX_CEIL_INT32( x )      FT_PIX_FLOOR( ADD_INT32( (x), 63 ) )
 
 
   /*
@@ -856,11 +873,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    auto_hinter      :: The auto-hinter module interface.              */
   /*                                                                       */
-  /*    raster_pool      :: The raster object's render pool.  This can     */
-  /*                        ideally be changed dynamically at run-time.    */
-  /*                                                                       */
-  /*    raster_pool_size :: The size of the render pool in bytes.          */
-  /*                                                                       */
   /*    debug_hooks      :: An array of four function pointers that allow  */
   /*                        debuggers to hook into a font format's         */
   /*                        interpreter.  Currently, only the TrueType     */
@@ -868,9 +880,6 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    lcd_filter       :: If subpixel rendering is activated, the        */
   /*                        selected LCD filter mode.                      */
-  /*                                                                       */
-  /*    lcd_extra        :: If subpixel rendering is activated, the number */
-  /*                        of extra pixels needed for the LCD filter.     */
   /*                                                                       */
   /*    lcd_weights      :: If subpixel rendering is activated, the LCD    */
   /*                        filter weights, if any.                        */
@@ -903,15 +912,10 @@ FT_BEGIN_HEADER
     FT_Renderer        cur_renderer;     /* current outline renderer */
     FT_Module          auto_hinter;
 
-    FT_Byte*           raster_pool;      /* scan-line conversion */
-                                         /* render pool          */
-    FT_ULong           raster_pool_size; /* size of render pool in bytes */
-
     FT_DebugHook_Func  debug_hooks[4];
 
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
     FT_LcdFilter             lcd_filter;
-    FT_Int                   lcd_extra;        /* number of extra pixels */
     FT_LcdFiveTapFilter      lcd_weights;      /* filter weights, if any */
     FT_Bitmap_LcdFilterFunc  lcd_filter_func;  /* filtering callback     */
 #endif

@@ -404,12 +404,12 @@ FT_BEGIN_HEADER
    *   activate the warp hinting code in the auto-hinter, this property
    *   switches warping on and off.
    *
-   *   Warping only works in `light' auto-hinting mode.  The idea of the
-   *   code is to slightly scale and shift a glyph along the non-hinted
-   *   dimension (which is usually the horizontal axis) so that as much of
-   *   its segments are aligned (more or less) to the grid.  To find out a
-   *   glyph's optimal scaling and shifting value, various parameter
-   *   combinations are tried and scored.
+   *   Warping only works in `normal' auto-hinting mode replacing it.
+   *   The idea of the code is to slightly scale and shift a glyph along
+   *   the non-hinted dimension (which is usually the horizontal axis) so
+   *   that as much of its segments are aligned (more or less) to the grid.
+   *   To find out a glyph's optimal scaling and shifting value, various
+   *   parameter combinations are tried and scored.
    *
    *   By default, warping is off.  The example below shows how to switch on
    *   warping (omitting the error handling).
@@ -437,7 +437,7 @@ FT_BEGIN_HEADER
    *
    *   Since warping is a global property of the auto-hinter it is best to
    *   change its value before rendering any face.  Otherwise, you should
-   *   reload all faces that get auto-hinted in `light' hinting mode.
+   *   reload all faces that get auto-hinted in `normal' hinting mode.
    *
    */
 

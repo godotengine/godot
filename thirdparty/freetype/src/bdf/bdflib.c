@@ -704,7 +704,15 @@
       return 0;
 
     for ( v = 0; sbitset( ddigits, *s ); s++ )
-      v = v * 10 + a2i[(int)*s];
+    {
+      if ( v < ( ULONG_MAX - 9 ) / 10 )
+        v = v * 10 + a2i[(int)*s];
+      else
+      {
+        v = ULONG_MAX;
+        break;
+      }
+    }
 
     return v;
   }
@@ -729,7 +737,15 @@
     }
 
     for ( v = 0; sbitset( ddigits, *s ); s++ )
-      v = v * 10 + a2i[(int)*s];
+    {
+      if ( v < ( LONG_MAX - 9 ) / 10 )
+        v = v * 10 + a2i[(int)*s];
+      else
+      {
+        v = LONG_MAX;
+        break;
+      }
+    }
 
     return ( !neg ) ? v : -v;
   }
@@ -746,7 +762,15 @@
       return 0;
 
     for ( v = 0; sbitset( ddigits, *s ); s++ )
-      v = (unsigned short)( v * 10 + a2i[(int)*s] );
+    {
+      if ( v < ( USHRT_MAX - 9 ) / 10 )
+        v = (unsigned short)( v * 10 + a2i[(int)*s] );
+      else
+      {
+        v = USHRT_MAX;
+        break;
+      }
+    }
 
     return v;
   }
@@ -771,7 +795,15 @@
     }
 
     for ( v = 0; sbitset( ddigits, *s ); s++ )
-      v = (short)( v * 10 + a2i[(int)*s] );
+    {
+      if ( v < ( SHRT_MAX - 9 ) / 10 )
+        v = (short)( v * 10 + a2i[(int)*s] );
+      else
+      {
+        v = SHRT_MAX;
+        break;
+      }
+    }
 
     return (short)( ( !neg ) ? v : -v );
   }

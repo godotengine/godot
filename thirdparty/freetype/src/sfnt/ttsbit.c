@@ -448,6 +448,15 @@
         metrics->max_advance =
           FT_MulDiv( hori->advance_Width_Max, ppem_ * 64, upem );
 
+        /* set the scale values (in 16.16 units) so advances */
+        /* from the hmtx and vmtx table are scaled correctly */
+        metrics->x_scale = FT_MulDiv( metrics->x_ppem,
+                                      64 * 0x10000,
+                                      face->header.Units_Per_EM );
+        metrics->y_scale = FT_MulDiv( metrics->y_ppem,
+                                      64 * 0x10000,
+                                      face->header.Units_Per_EM );
+
         return error;
       }
 
@@ -1439,10 +1448,17 @@
     return FT_THROW( Invalid_Table );
 
   NoBitmap:
+    if ( recurse_count )
+    {
+      FT_TRACE4(( "tt_sbit_decoder_load_image:"
+                  " missing subglyph sbit with glyph index %d\n",
+                  glyph_index ));
+      return FT_THROW( Invalid_Composite );
+    }
+
     FT_TRACE4(( "tt_sbit_decoder_load_image:"
                 " no sbit found for glyph index %d\n", glyph_index ));
-
-    return FT_THROW( Invalid_Argument );
+    return FT_THROW( Missing_Bitmap );
   }
 
 
