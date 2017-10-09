@@ -719,7 +719,7 @@ PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
 	int length = mono_array_length(p_array);
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = mono_array_get(p_array, real_t *, i);
+		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 4, i);
 		MARSHALLED_IN(Color, raw_elem, elem);
 		ret.push_back(elem);
 	}
@@ -749,7 +749,7 @@ PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
 	int length = mono_array_length(p_array);
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = mono_array_get(p_array, real_t *, i);
+		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 2, i);
 		MARSHALLED_IN(Vector2, raw_elem, elem);
 		ret.push_back(elem);
 	}
@@ -780,7 +780,7 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 	int length = mono_array_length(p_array);
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = mono_array_get(p_array, real_t *, i);
+		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 3, i);
 		MARSHALLED_IN(Vector3, raw_elem, elem);
 		ret.push_back(elem);
 	}
