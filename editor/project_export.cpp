@@ -71,7 +71,7 @@ void ProjectExportDialog::popup_export() {
 	_update_presets();
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has("interface/dialogs/export_bounds")) {
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/export_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/export_bounds"));
 	} else {
 		popup_centered_ratio();

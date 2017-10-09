@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Performance" inherits="Object" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Exposes performance related data.
 	</brief_description>
 	<description>
+		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [i]Monitor[/i] tab in the editor's [i]Debugger[/i] panel. By using the [method get_monitor] method of this class, you can access this data from your code. Note that a few of these monitors are only available in debug mode and will always return 0 when used in a release build.
+		Many of these monitors are not updated in real-time, so there may be a short delay between changes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,63 +18,93 @@
 			<argument index="0" name="monitor" type="int" enum="Performance.Monitor">
 			</argument>
 			<description>
+				Returns the value of one of the available monitors. You should provide one of this class's constants as the argument, like this:
+				[codeblock]
+				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="TIME_FPS" value="0">
+			Frames per second.
 		</constant>
 		<constant name="TIME_PROCESS" value="1">
+			Time it took to complete one frame.
 		</constant>
-		<constant name="TIME_FIXED_PROCESS" value="2">
+		<constant name="TIME_PHYSICS_PROCESS" value="2">
+			Time it took to complete one physics frame.
 		</constant>
 		<constant name="MEMORY_STATIC" value="3">
+			Static memory currently used, in bytes. Not available in release builds.
 		</constant>
 		<constant name="MEMORY_DYNAMIC" value="4">
+			Dynamic memory currently used, in bytes. Not available in release builds.
 		</constant>
 		<constant name="MEMORY_STATIC_MAX" value="5">
+			Available static memory. Not available in release builds.
 		</constant>
 		<constant name="MEMORY_DYNAMIC_MAX" value="6">
+			Available dynamic memory. Not available in release builds.
 		</constant>
 		<constant name="MEMORY_MESSAGE_BUFFER_MAX" value="7">
+			Largest amount of memory the message queue buffer has used, in bytes. The message queue is used for deferred functions calls and notifications.
 		</constant>
 		<constant name="OBJECT_COUNT" value="8">
+			Number of objects currently instanced (including nodes).
 		</constant>
 		<constant name="OBJECT_RESOURCE_COUNT" value="9">
+			Number of resources currently used.
 		</constant>
 		<constant name="OBJECT_NODE_COUNT" value="10">
+			Number of nodes currently instanced. This also includes the root node, as well as any nodes not in the scene tree.
 		</constant>
 		<constant name="RENDER_OBJECTS_IN_FRAME" value="11">
+			3D objects drawn per frame.
 		</constant>
 		<constant name="RENDER_VERTICES_IN_FRAME" value="12">
+			Vertices drawn per frame. 3D only.
 		</constant>
 		<constant name="RENDER_MATERIAL_CHANGES_IN_FRAME" value="13">
+			Material changes per frame. 3D only
 		</constant>
 		<constant name="RENDER_SHADER_CHANGES_IN_FRAME" value="14">
+			Shader changes per frame. 3D only.
 		</constant>
 		<constant name="RENDER_SURFACE_CHANGES_IN_FRAME" value="15">
+			Render surface changes per frame. 3D only.
 		</constant>
 		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="16">
+			Draw calls per frame. 3D only.
+		</constant>
+		<constant name="RENDER_VIDEO_MEM_USED" value="17">
+			Video memory used. Includes both texture and vertex memory.
+		</constant>
+		<constant name="RENDER_TEXTURE_MEM_USED" value="18">
+			Texture memory used.
+		</constant>
+		<constant name="RENDER_VERTEX_MEM_USED" value="19">
+			Vertex memory used.
 		</constant>
 		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="20">
 		</constant>
-		<constant name="RENDER_VIDEO_MEM_USED" value="17">
-		</constant>
-		<constant name="RENDER_TEXTURE_MEM_USED" value="18">
-		</constant>
-		<constant name="RENDER_VERTEX_MEM_USED" value="19">
-		</constant>
 		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="21">
+			Number of active [RigidBody2D] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="22">
+			Number of collision pairs in the 2D physics engine.
 		</constant>
 		<constant name="PHYSICS_2D_ISLAND_COUNT" value="23">
+			Number of islands in the 2D physics engine.
 		</constant>
 		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="24">
+			Number of active [RigidBody] and [VehicleBody] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="25">
+			Number of collision pairs in the 3D physics engine.
 		</constant>
 		<constant name="PHYSICS_3D_ISLAND_COUNT" value="26">
+			Number of islands in the 3D physics engine.
 		</constant>
 		<constant name="MONITOR_MAX" value="27">
 		</constant>

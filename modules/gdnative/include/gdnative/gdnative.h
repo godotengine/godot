@@ -141,6 +141,10 @@ typedef void godot_object;
 
 #include <gdnative/string.h>
 
+/////// String name
+
+#include <gdnative/string_name.h>
+
 ////// Vector2
 
 #include <gdnative/vector2.h>

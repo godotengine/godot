@@ -31,6 +31,7 @@
 
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
+#include <mono/metadata/mono-gc.h>
 
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -265,6 +266,13 @@ void GDMono::add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly) {
 	assemblies[p_domain_id][p_assembly->get_name()] = p_assembly;
 }
 
+GDMonoAssembly **GDMono::get_loaded_assembly(const String &p_name) {
+
+	MonoDomain *domain = mono_domain_get();
+	uint32_t domain_id = domain ? mono_domain_get_id(domain) : 0;
+	return assemblies[domain_id].getptr(p_name);
+}
+
 bool GDMono::_load_assembly(const String &p_name, GDMonoAssembly **r_assembly) {
 
 	CRASH_COND(!r_assembly);
@@ -272,39 +280,22 @@ bool GDMono::_load_assembly(const String &p_name, GDMonoAssembly **r_assembly) {
 	if (OS::get_singleton()->is_stdout_verbose())
 		OS::get_singleton()->print((String() + "Mono: Loading assembly " + p_name + "...\n").utf8());
 
-	MonoImageOpenStatus status;
+	MonoImageOpenStatus status = MONO_IMAGE_OK;
 	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
 	MonoAssembly *assembly = mono_assembly_load_full(aname, NULL, &status, false);
 	mono_assembly_name_free(aname);
 
-	if (!assembly)
-		return false;
+	ERR_FAIL_NULL_V(assembly, false);
 
 	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
 
 	GDMonoAssembly **stored_assembly = assemblies[domain_id].getptr(p_name);
 
-	if (stored_assembly) {
-		// Loaded by our preload hook (status is not initialized when returning from a preload hook)
-		ERR_FAIL_COND_V((*stored_assembly)->get_assembly() != assembly, false);
-		*r_assembly = *stored_assembly;
-	} else {
-		ERR_FAIL_COND_V(status != MONO_IMAGE_OK, false);
+	ERR_FAIL_COND_V(status != MONO_IMAGE_OK, false);
+	ERR_FAIL_COND_V(stored_assembly == NULL, false);
 
-		MonoImage *assembly_image = mono_assembly_get_image(assembly);
-		ERR_FAIL_NULL_V(assembly_image, false);
-
-		const char *path = mono_image_get_filename(assembly_image);
-
-		*r_assembly = memnew(GDMonoAssembly(p_name, path));
-		Error error = (*r_assembly)->wrapper_for_image(assembly_image);
-
-		if (error != OK) {
-			memdelete(*r_assembly);
-			*r_assembly = NULL;
-			ERR_FAIL_V(false);
-		}
-	}
+	ERR_FAIL_COND_V((*stored_assembly)->get_assembly() != assembly, false);
+	*r_assembly = *stored_assembly;
 
 	if (OS::get_singleton()->is_stdout_verbose())
 		OS::get_singleton()->print(String("Mono: Assembly " + p_name + " loaded from path: " + (*r_assembly)->get_path() + "\n").utf8());
@@ -438,9 +429,13 @@ Error GDMono::_unload_scripts_domain() {
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
+	mono_gc_collect(mono_gc_max_generation());
+
 	finalizing_scripts_domain = true;
 	mono_domain_finalize(scripts_domain, 2000);
 	finalizing_scripts_domain = false;
+
+	mono_gc_collect(mono_gc_max_generation());
 
 	_domain_assemblies_cleanup(mono_domain_get_id(scripts_domain));
 

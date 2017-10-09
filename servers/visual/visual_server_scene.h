@@ -359,6 +359,7 @@ public:
 			float attenuation;
 			float spot_angle;
 			float spot_attenuation;
+			bool visible;
 
 			bool operator==(const LightCache &p_cache) {
 
@@ -369,7 +370,8 @@ public:
 						radius == p_cache.radius &&
 						attenuation == p_cache.attenuation &&
 						spot_angle == p_cache.spot_angle &&
-						spot_attenuation == p_cache.spot_attenuation);
+						spot_attenuation == p_cache.spot_attenuation &&
+						visible == p_cache.visible);
 			}
 
 			LightCache() {
@@ -380,6 +382,7 @@ public:
 				attenuation = 1.0;
 				spot_angle = 1.0;
 				spot_attenuation = 1.0;
+				visible = true;
 			}
 		};
 

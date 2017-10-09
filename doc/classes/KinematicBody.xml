@@ -6,7 +6,7 @@
 	<description>
 		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all (to other types of bodies, such a character or a rigid body, these are the same as a static body). They have however, two main uses:
 		Simulated Motion: When these bodies are moved manually, either from code or from an AnimationPlayer (with process mode set to fixed), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
-		Kinematic Characters: KinematicBody also has an api for moving objects (the [method move] method) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+		Kinematic Characters: KinematicBody also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,6 +17,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
+				Returns the velocity of the floor. Only updates when calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="get_safe_margin" qualifiers="const">
@@ -31,30 +32,35 @@
 			<argument index="0" name="slide_idx" type="int">
 			</argument>
 			<description>
+				Returns a [KinematicCollision], which contains information about a collision that occured during the last [method move_and_slide] call. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count]()-1).
 			</description>
 		</method>
 		<method name="get_slide_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the body is on the ceiling. Only updates when calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the body is on the floor. Only updates when calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide].
 			</description>
 		</method>
 		<method name="move_and_collide">
@@ -63,6 +69,7 @@
 			<argument index="0" name="rel_vec" type="Vector3">
 			</argument>
 			<description>
+				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision], which contains information about the collision.
 			</description>
 		</method>
 		<method name="move_and_slide">
@@ -79,6 +86,13 @@
 			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
+				[code]linear_velocity[/code] is a value in pixels per second. Unlike in for example [method move_and_collide], you should [i]not[/i] multiply it with [code]delta[/code] — this is done by the method.
+				[code]floor_normal[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
+				If the body is standing on a slope and the horizontal speed (relative to the floor's speed) goes below [code]slope_stop_min_velocity[/code], the body will stop completely. This prevents the body from sliding down slopes when you include gravity in [code]linear_velocity[/code]. When set to lower values, the body will not be able to stand still on steep slopes.
+				If the body collides, it will change direction a maximum of [code]max_bounces[/code] times before it stops.
+				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
+				Returns the movement that remained when the body stopped. To get more detailed information about collisions that occured, use [method get_slide_collision].
 			</description>
 		</method>
 		<method name="set_safe_margin">
@@ -97,11 +111,13 @@
 			<argument index="1" name="rel_vec" type="Vector3">
 			</argument>
 			<description>
+				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
+			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 	</members>
 	<constants>

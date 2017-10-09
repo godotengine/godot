@@ -83,7 +83,7 @@ void CreateDialog::popup_create(bool p_dontclear) {
 	_update_favorite_list();
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has("interface/dialogs/create_new_node_bounds")) {
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/create_new_node_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_bounds"));
 	} else {
 		popup_centered_ratio();

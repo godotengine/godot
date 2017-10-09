@@ -146,7 +146,7 @@ void ProjectSettingsEditor::_action_edited() {
 
 	String action_prop = "input/" + new_name;
 
-	if (ProjectSettings::get_singleton()->has(action_prop)) {
+	if (ProjectSettings::get_singleton()->has_setting(action_prop)) {
 
 		ti->set_text(0, old_name);
 		add_at = "input/" + old_name;
@@ -707,7 +707,7 @@ void ProjectSettingsEditor::_update_actions() {
 void ProjectSettingsEditor::popup_project_settings() {
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has("interface/dialogs/project_settings_bounds")) {
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
 	} else {
 		popup_centered_ratio();
@@ -753,7 +753,7 @@ void ProjectSettingsEditor::_item_add() {
 
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, value);
 
-	if (ProjectSettings::get_singleton()->has(name)) {
+	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
 	} else {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
@@ -782,7 +782,7 @@ void ProjectSettingsEditor::_item_del() {
 
 	String property = globals_editor->get_current_section().plus_file(path);
 
-	if (!ProjectSettings::get_singleton()->has(property)) {
+	if (!ProjectSettings::get_singleton()->has_setting(property)) {
 		EditorNode::get_singleton()->show_warning(TTR("No property '" + property + "' exists."));
 		return;
 	}
@@ -823,7 +823,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 			action_add->set_disabled(true);
 			return;
 		}
-		if (ProjectSettings::get_singleton()->has("input/" + p_action)) {
+		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
 			action_add->set_text(TTR("Already existing"));
 			action_add->set_disabled(true);
 			return;
@@ -965,7 +965,7 @@ void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 	String new_path = property + "." + feature;
 
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_path, value);
-	if (ProjectSettings::get_singleton()->has(new_path)) {
+	if (ProjectSettings::get_singleton()->has_setting(new_path)) {
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", new_path, ProjectSettings::get_singleton()->get(new_path));
 	}
 
@@ -1042,7 +1042,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 	Variant prev;
 	Dictionary remaps;
 
-	if (ProjectSettings::get_singleton()->has("locale/translation_remaps")) {
+	if (ProjectSettings::get_singleton()->has_setting("locale/translation_remaps")) {
 		remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
 		prev = remaps;
 	}
@@ -1068,7 +1068,7 @@ void ProjectSettingsEditor::_translation_res_option_file_open() {
 }
 void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
 
-	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has("locale/translation_remaps"));
+	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"));
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
 
@@ -1105,7 +1105,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	if (updating_translations)
 		return;
 
-	if (!ProjectSettings::get_singleton()->has("locale/translation_remaps"))
+	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"))
 		return;
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
@@ -1147,7 +1147,7 @@ void ProjectSettingsEditor::_translation_res_delete(Object *p_item, int p_column
 	if (updating_translations)
 		return;
 
-	if (!ProjectSettings::get_singleton()->has("locale/translation_remaps"))
+	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"))
 		return;
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
@@ -1174,7 +1174,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 	if (updating_translations)
 		return;
 
-	if (!ProjectSettings::get_singleton()->has("locale/translation_remaps"))
+	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"))
 		return;
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
@@ -1215,7 +1215,7 @@ void ProjectSettingsEditor::_update_translations() {
 	translation_list->clear();
 	TreeItem *root = translation_list->create_item(NULL);
 	translation_list->set_hide_root(true);
-	if (ProjectSettings::get_singleton()->has("locale/translations")) {
+	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 
 		PoolStringArray translations = ProjectSettings::get_singleton()->get("locale/translations");
 		for (int i = 0; i < translations.size(); i++) {
@@ -1253,7 +1253,7 @@ void ProjectSettingsEditor::_update_translations() {
 		langnames += names[i];
 	}
 
-	if (ProjectSettings::get_singleton()->has("locale/translation_remaps")) {
+	if (ProjectSettings::get_singleton()->has_setting("locale/translation_remaps")) {
 
 		Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
 		List<Variant> rk;

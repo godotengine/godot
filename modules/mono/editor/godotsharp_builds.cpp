@@ -29,13 +29,14 @@
 /*************************************************************************/
 #include "godotsharp_builds.h"
 
+#include "main/main.h"
+
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
 #include "bindings_generator.h"
 #include "godotsharp_editor.h"
-#include "main/main.h"
 
 void godot_icall_BuildInstance_ExitCallback(MonoString *p_solution, MonoString *p_config, int p_exit_code) {
 
@@ -44,11 +45,37 @@ void godot_icall_BuildInstance_ExitCallback(MonoString *p_solution, MonoString *
 	GodotSharpBuilds::get_singleton()->build_exit_callback(MonoBuildInfo(solution, config), p_exit_code);
 }
 
+#ifdef UNIX_ENABLED
+String _find_build_engine_on_unix(const String &p_name) {
+	String ret = path_which(p_name);
+
+	if (ret.length())
+		return ret;
+
+	const char *locations[] = {
+#ifdef OSX_ENABLED
+		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
+#endif
+		"/opt/novell/mono/bin/"
+	};
+
+	for (int i = 0; i < sizeof(locations) / sizeof(const char *); i++) {
+		String location = locations[i];
+
+		if (FileAccess::exists(location + p_name)) {
+			return location;
+		}
+	}
+
+	return String();
+}
+#endif
+
 MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 
 	GodotSharpBuilds::BuildTool build_tool = GodotSharpBuilds::BuildTool(int(EditorSettings::get_singleton()->get("mono/builds/build_tool")));
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 	switch (build_tool) {
 		case GodotSharpBuilds::MSBUILD: {
 			static String msbuild_tools_path = MonoRegUtils::find_msbuild_tools_path();
@@ -84,14 +111,25 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 			ERR_EXPLAIN("You don't deserve to live");
 			CRASH_NOW();
 	}
-#else
-	static bool msbuild_found = path_which("msbuild").length();
+#elif defined(UNIX_ENABLED)
+	static String msbuild_path = _find_build_engine_on_unix("msbuild");
+	static String xbuild_path = _find_build_engine_on_unix("xbuild");
 
-	if (build_tool != GodotSharpBuilds::XBUILD && !msbuild_found) {
-		WARN_PRINT("Cannot find msbuild ('mono/builds/build_tool').");
+	if (build_tool != GodotSharpBuilds::XBUILD) {
+		if (msbuild_path.empty()) {
+			WARN_PRINT("Cannot find msbuild ('mono/builds/build_tool').");
+			return NULL;
+		}
+	} else {
+		if (xbuild_path.empty()) {
+			WARN_PRINT("Cannot find xbuild ('mono/builds/build_tool').");
+			return NULL;
+		}
 	}
 
-	return GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? "msbuild" : "xbuild");
+	return GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+#else
+	return NULL;
 #endif
 }
 
@@ -314,8 +352,8 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
-	if (!ed_settings->has("mono/builds/build_tool")) {
-		ed_settings->set("mono/builds/build_tool", MSBUILD);
+	if (!ed_settings->has_setting("mono/builds/build_tool")) {
+		ed_settings->set_setting("mono/builds/build_tool", MSBUILD);
 	}
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM, "MSBuild (System),MSBuild (Mono),xbuild"));
 }
@@ -423,6 +461,10 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	if (p_blocking) {
 		exited = true;
 		exit_code = klass->get_field("exitCode")->get_int_value(mono_object);
+
+		if (exit_code != 0 && OS::get_singleton()->is_stdout_verbose())
+			OS::get_singleton()->print(String("MSBuild finished with exit code " + itos(exit_code) + "\n").utf8());
+
 		build_tab->on_build_exit(exit_code == 0 ? MonoBuildTab::RESULT_SUCCESS : MonoBuildTab::RESULT_ERROR);
 	} else {
 		build_instance = MonoGCHandle::create_strong(mono_object);

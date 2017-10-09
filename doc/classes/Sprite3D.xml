@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Sprite3D" inherits="SpriteBase3D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		2D Sprite node in 3D world.
 	</brief_description>
 	<description>
+		A node that displays a 2D texture in a 3D environment. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -96,21 +98,28 @@
 	</methods>
 	<members>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes">
+			The number of columns in the sprite sheet.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
+			If [code]true[/code] texture will be cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
+			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+			[Texture] object to draw.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes">
+			The number of rows in the sprite sheet.
 		</member>
 	</members>
 	<signals>
 		<signal name="frame_changed">
 			<description>
+				Emitted when the [member frame] changes.
 			</description>
 		</signal>
 	</signals>

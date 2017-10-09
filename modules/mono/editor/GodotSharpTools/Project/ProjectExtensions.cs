@@ -27,12 +27,15 @@ namespace GodotSharpTools.Project
             return false;
         }
 
-        public static void AddItemChecked(this ProjectRootElement root, string itemType, string include)
+        public static bool AddItemChecked(this ProjectRootElement root, string itemType, string include)
         {
             if (!root.HasItem(itemType, include))
             {
                 root.AddItem(itemType, include);
+                return true;
             }
+
+            return false;
         }
 
         public static Guid GetGuid(this ProjectRootElement root)

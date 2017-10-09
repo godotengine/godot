@@ -463,6 +463,14 @@ void OSIPhone::hide_virtual_keyboard() {
 	_hide_keyboard();
 };
 
+void OSIPhone::set_virtual_keyboard_height(int p_height) {
+	virtual_keyboard_height = p_height;
+}
+
+int OSIPhone::get_virtual_keyboard_height() const {
+	return virtual_keyboard_height;
+}
+
 Error OSIPhone::shell_open(String p_uri) {
 	return _shell_open(p_uri);
 };
@@ -576,6 +584,7 @@ OSIPhone::OSIPhone(int width, int height) {
 	vm.resizable = false;
 	set_video_mode(vm);
 	event_count = 0;
+	virtual_keyboard_height = 0;
 
 	_set_logger(memnew(SyslogLogger));
 };

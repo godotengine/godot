@@ -159,7 +159,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Returns the last time the file was modified in unix timestamp format. See [method OS.get_datetime_from_unix_time] to convert unix timestamp.
+				Returns the last time the [code]file[/code] was modified in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
 			</description>
 		</method>
 		<method name="get_pascal_string">
@@ -203,7 +203,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file is currently open.
+				Returns [code]true[/code] if the file is currently opened.
 			</description>
 		</method>
 		<method name="open">
@@ -280,7 +280,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Sets whether to swap the endianness of the file. Enable this if you're dealing with files written in big endian machines.
+				If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
 				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
 			</description>
 		</method>
@@ -395,16 +395,16 @@
 	</methods>
 	<constants>
 		<constant name="READ" value="1">
-			Opens the file for reading.
+			Opens the file for read operations.
 		</constant>
 		<constant name="WRITE" value="2">
-			Opens the file for writing. Creates it if the file doesn't exist and truncates if it exists.
+			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="READ_WRITE" value="3">
-			Opens the file for reading and writing without truncating the file.
+			Opens the file for read and write operations. Does not truncate the file.
 		</constant>
 		<constant name="WRITE_READ" value="7">
-			Opens the file for reading and writing. Creates it if the file doesn't exist and truncates if it exists.
+			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0">
 			Uses the FastLZ compression method.

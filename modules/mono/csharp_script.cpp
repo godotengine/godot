@@ -50,6 +50,21 @@
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->string_names.m_var)
 
+static bool _create_project_solution_if_needed() {
+
+	String sln_path = GodotSharpDirs::get_project_sln_path();
+	String csproj_path = GodotSharpDirs::get_project_csproj_path();
+
+	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
+		// A solution does not yet exist, create a new one
+
+		CRASH_COND(GodotSharpEditor::get_singleton() == NULL);
+		return GodotSharpEditor::get_singleton()->call("_create_project_solution");
+	}
+
+	return true;
+}
+
 CSharpLanguage *CSharpLanguage::singleton = NULL;
 
 String CSharpLanguage::get_name() const {
@@ -767,7 +782,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 		if (method) {
 			MonoObject *ret = method->invoke(mono_object, args);
 
-			if (ret && UNBOX_BOOLEAN(ret))
+			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret) == true)
 				return true;
 		}
 
@@ -1186,8 +1201,6 @@ bool CSharpScript::_update_exports() {
 		exported_members_cache.clear();
 		exported_members_defval_cache.clear();
 
-		const Vector<GDMonoField *> &fields = script_class->get_all_fields();
-
 		// We are creating a temporary new instance of the class here to get the default value
 		// TODO Workaround. Should be replaced with IL opcodes analysis
 
@@ -1211,36 +1224,47 @@ bool CSharpScript::_update_exports() {
 			return false;
 		}
 
-		for (int i = 0; i < fields.size(); i++) {
-			GDMonoField *field = fields[i];
+		GDMonoClass *top = script_class;
 
-			if (field->is_static() || field->get_visibility() != GDMono::PUBLIC)
-				continue;
+		while (top && top != native) {
+			const Vector<GDMonoField *> &fields = top->get_all_fields();
 
-			String name = field->get_name();
-			StringName cname = name;
+			for (int i = 0; i < fields.size(); i++) {
+				GDMonoField *field = fields[i];
 
-			Variant::Type type = GDMonoMarshal::managed_to_variant_type(field->get_type());
+				if (field->is_static() || field->get_visibility() != GDMono::PUBLIC)
+					continue;
 
-			if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
-				MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
+				String name = field->get_name();
+				StringName cname = name;
 
-				// Field has Export attribute
-				int hint = CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr);
-				String hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
-				int usage = CACHED_FIELD(ExportAttribute, usage)->get_int_value(attr);
+				if (member_info.has(cname))
+					continue;
 
-				PropertyInfo prop_info = PropertyInfo(type, name, PropertyHint(hint), hint_string, PropertyUsageFlags(usage));
+				Variant::Type type = GDMonoMarshal::managed_to_variant_type(field->get_type());
 
-				member_info[cname] = prop_info;
-				exported_members_cache.push_back(prop_info);
+				if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
+					MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
 
-				if (tmp_object) {
-					exported_members_defval_cache[cname] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					// Field has Export attribute
+					int hint = CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr);
+					String hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
+					int usage = CACHED_FIELD(ExportAttribute, usage)->get_int_value(attr);
+
+					PropertyInfo prop_info = PropertyInfo(type, name, PropertyHint(hint), hint_string, PropertyUsageFlags(usage));
+
+					member_info[cname] = prop_info;
+					exported_members_cache.push_back(prop_info);
+
+					if (tmp_object) {
+						exported_members_defval_cache[cname] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					}
+				} else {
+					member_info[cname] = PropertyInfo(type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 				}
-			} else {
-				member_info[cname] = PropertyInfo(type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 			}
+
+			top = top->get_parent_class();
 		}
 	}
 
@@ -1359,7 +1383,18 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class) {
 
 bool CSharpScript::can_instance() const {
 
-	// TODO does the second condition even make sense?
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (_create_project_solution_if_needed()) {
+			CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
+					"Compile",
+					ProjectSettings::get_singleton()->globalize_path(get_path()));
+		} else {
+			ERR_PRINTS("Cannot add " + get_path() + " to the C# project because it could not be created.");
+		}
+	}
+#endif
+
 	return valid || (!tool && !ScriptServer::is_scripting_enabled());
 }
 
@@ -1545,6 +1580,18 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	if (project_assembly) {
 		script_class = project_assembly->get_object_derived_class(name);
+
+		if (!script_class) {
+			ERR_PRINTS("Cannot find class " + name + " for script " + get_path());
+		}
+#ifdef DEBUG_ENABLED
+		else if (OS::get_singleton()->is_stdout_verbose()) {
+			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
+											  script_class->get_name() + " for script " + get_path() + "\n")
+											   .utf8());
+		}
+#endif
+
 		valid = script_class != NULL;
 
 		if (script_class) {
@@ -1757,6 +1804,31 @@ RES ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p
 #endif
 
 	script->set_path(p_original_path);
+
+#ifndef TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	// User is responsible for thread attach/detach
+	ERR_EXPLAIN("Thread is not attached");
+	CRASH_COND(mono_domain_get() == NULL);
+#endif
+
+#else
+	if (Engine::get_singleton()->is_editor_hint() && mono_domain_get() == NULL) {
+
+		CRASH_COND(Thread::get_caller_id() == Thread::get_main_id());
+
+		// Thread is not attached, but we will make an exception in this case
+		// because this may be called by one of the editor's worker threads.
+		// Attach this thread temporarily to reload the script.
+
+		MonoThread *mono_thread = mono_thread_attach(SCRIPTS_DOMAIN);
+		CRASH_COND(mono_thread == NULL);
+		script->reload();
+		mono_thread_detach(mono_thread);
+
+	} else // just reload it normally
+#endif
 	script->reload();
 
 	if (r_error)
@@ -1791,21 +1863,12 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 	if (!FileAccess::exists(p_path)) {
 		// The file does not yet exists, let's assume the user just created this script
 
-		String sln_path = GodotSharpDirs::get_project_sln_path();
-		String csproj_path = GodotSharpDirs::get_project_csproj_path();
-
-		if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
-			// A solution does not yet exist, create a new one
-
-			CRASH_COND(GodotSharpEditor::get_singleton() == NULL);
-			GodotSharpEditor::get_singleton()->call("_create_project_solution");
-		}
-
-		// Add the file to the C# project
-		if (FileAccess::exists(csproj_path)) {
-			CSharpProject::add_item(csproj_path, "Compile", ProjectSettings::get_singleton()->globalize_path(p_path));
+		if (_create_project_solution_if_needed()) {
+			CSharpProject::add_item(GodotSharpDirs::get_project_csproj_path(),
+					"Compile",
+					ProjectSettings::get_singleton()->globalize_path(p_path));
 		} else {
-			ERR_PRINT("C# project not found!");
+			ERR_PRINTS("Cannot add " + p_path + " to the C# project because it could not be created.");
 		}
 	}
 #endif

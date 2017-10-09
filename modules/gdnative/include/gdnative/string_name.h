@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  video_player.h                                                       */
+/*  string_name.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,85 +27,42 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VIDEO_PLAYER_H
-#define VIDEO_PLAYER_H
+#ifndef GODOT_STRING_NAME_H
+#define GODOT_STRING_NAME_H
 
-#include "scene/gui/control.h"
-#include "scene/resources/video_stream.h"
-#include "servers/audio/audio_rb_resampler.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class VideoPlayer : public Control {
+#include <stdint.h>
+#include <wchar.h>
 
-	GDCLASS(VideoPlayer, Control);
+#define GODOT_STRING_NAME_SIZE sizeof(void *)
 
-	Ref<VideoStreamPlayback> playback;
-	Ref<VideoStream> stream;
+#ifndef GODOT_CORE_API_GODOT_STRING_NAME_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_STRING_NAME_TYPE_DEFINED
+typedef struct {
+	uint8_t _dont_touch_that[GODOT_STRING_NAME_SIZE];
+} godot_string_name;
+#endif
 
-	int sp_get_channel_count() const;
-	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer, int p_frames);
+#include <gdnative/gdnative.h>
 
-	RID stream_rid;
+void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name);
+void GDAPI godot_string_name_new_data(godot_string_name *r_dest, const char *p_name);
 
-	Ref<ImageTexture> texture;
-	Ref<Image> last_frame;
+godot_string GDAPI godot_string_name_get_name(const godot_string_name *p_self);
 
-	AudioRBResampler resampler;
+uint32_t GDAPI godot_string_name_get_hash(const godot_string_name *p_self);
+const void GDAPI *godot_string_name_get_data_unique_pointer(const godot_string_name *p_self);
 
-	bool paused;
-	bool autoplay;
-	float volume;
-	double last_audio_time;
-	bool expand;
-	bool loops;
-	int buffering_ms;
-	int server_mix_rate;
-	int audio_track;
+godot_bool GDAPI godot_string_name_operator_equal(const godot_string_name *p_self, const godot_string_name *p_other);
+godot_bool GDAPI godot_string_name_operator_less(const godot_string_name *p_self, const godot_string_name *p_other);
 
-	static int _audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames);
+void GDAPI godot_string_name_destroy(godot_string_name *p_self);
 
-protected:
-	static void _bind_methods();
-	void _notification(int p_notification);
+#ifdef __cplusplus
+}
+#endif
 
-public:
-	Size2 get_minimum_size() const;
-	void set_expand(bool p_expand);
-	bool has_expand() const;
-
-	Ref<Texture> get_video_texture();
-
-	void set_stream(const Ref<VideoStream> &p_stream);
-	Ref<VideoStream> get_stream() const;
-
-	void play();
-	void stop();
-	bool is_playing() const;
-
-	void set_paused(bool p_paused);
-	bool is_paused() const;
-
-	void set_volume(float p_vol);
-	float get_volume() const;
-
-	void set_volume_db(float p_db);
-	float get_volume_db() const;
-
-	String get_stream_name() const;
-	float get_stream_position() const;
-	void set_stream_position(float p_position);
-
-	void set_autoplay(bool p_enable);
-	bool has_autoplay() const;
-
-	void set_audio_track(int p_track);
-	int get_audio_track() const;
-
-	void set_buffering_msec(int p_msec);
-	int get_buffering_msec() const;
-
-	VideoPlayer();
-	~VideoPlayer();
-};
-
-#endif // VIDEO_PLAYER_H
+#endif // GODOT_STRING_NAME_H

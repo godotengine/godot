@@ -129,7 +129,11 @@ public:
 	void set_manually(const StringName &p_name, const Variant &p_value, bool p_emit_signal = false) {
 		_set(p_name, p_value, p_emit_signal);
 	}
-	bool has(String p_var) const;
+
+	void set_setting(const String &p_setting, const Variant &p_value);
+	Variant get_setting(const String &p_setting) const;
+
+	bool has_setting(String p_var) const;
 	static EditorSettings *get_singleton();
 	void erase(String p_var);
 	String get_settings_path() const;

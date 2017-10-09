@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
-		This node is intended to be a simple helper get get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
+		This node is intended to be a simple helper to get things going quickly and it may happen often that more functionality is desired to change how the camera works. To make your own custom camera node, simply inherit from [Node2D] and change the transform of the canvas by calling get_viewport().set_canvas_transform(m) in [Viewport].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -324,18 +324,24 @@
 	</methods>
 	<members>
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode">
+			The Camera2D's anchor point. See [code]ANCHOR_MODE_*[/code] constants.
 		</member>
 		<member name="current" type="bool" setter="_set_current" getter="is_current">
+			If [code]true[/code] this camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin">
+			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled">
 		</member>
 		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin">
+			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_right" type="float" setter="set_drag_margin" getter="get_drag_margin">
+			Right margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin">
+			Top margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled">
 		</member>
@@ -346,16 +352,21 @@
 		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled">
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit">
+			Bottom scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="limit_left" type="int" setter="set_limit" getter="get_limit">
+			Left scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="limit_right" type="int" setter="set_limit" getter="get_limit">
+			Right scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled">
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit">
+			Top scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
+			The camera's offset, useful for looking around or camera shake animations.
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
 		</member>
@@ -364,6 +375,7 @@
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
+			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2x zoom in, and [code]Vector2(4, 4)[/code] for a 4x zoom out.
 		</member>
 	</members>
 	<constants>

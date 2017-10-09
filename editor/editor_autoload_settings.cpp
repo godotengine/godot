@@ -117,7 +117,7 @@ void EditorAutoloadSettings::_autoload_add() {
 	undo_redo->create_action(TTR("Add AutoLoad"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
 
-	if (ProjectSettings::get_singleton()->has(name)) {
+	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
 	} else {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
@@ -169,7 +169,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 			return;
 		}
 
-		if (ProjectSettings::get_singleton()->has("autoload/" + name)) {
+		if (ProjectSettings::get_singleton()->has_setting("autoload/" + name)) {
 			ti->set_text(0, old_name);
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Autoload '%s' already exists!"), name));
 			return;

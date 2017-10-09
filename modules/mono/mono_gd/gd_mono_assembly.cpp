@@ -39,28 +39,60 @@
 #include "../godotsharp_dirs.h"
 #include "gd_mono_class.h"
 
-MonoAssembly *gdmono_load_assembly_from(const String &p_name, const String &p_path) {
+bool GDMonoAssembly::no_search = false;
+Vector<String> GDMonoAssembly::search_dirs;
 
-	MonoDomain *domain = mono_domain_get();
-
-	GDMonoAssembly *assembly = memnew(GDMonoAssembly(p_name, p_path));
-	Error err = assembly->load(domain);
-	ERR_FAIL_COND_V(err != OK, NULL);
-
-	GDMono::get_singleton()->add_assembly(mono_domain_get_id(domain), assembly);
-
-	return assembly->get_assembly();
-}
-
-MonoAssembly *gdmono_MonoAssemblyPreLoad(MonoAssemblyName *aname, char **assemblies_path, void *user_data) {
+MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_data) {
 
 	(void)user_data; // UNUSED
 
-	MonoAssembly *assembly_loaded = mono_assembly_loaded(aname);
-	if (assembly_loaded) // Already loaded
-		return assembly_loaded;
+	String name = mono_assembly_name_get_name(aname);
+	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 
-	static Vector<String> search_dirs;
+	if (no_search)
+		return NULL;
+
+	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
+	if (loaded_asm)
+		return (*loaded_asm)->get_assembly();
+
+	no_search = true; // Avoid the recursion madness
+
+	String path;
+	MonoAssembly *res = NULL;
+
+	for (int i = 0; i < search_dirs.size(); i++) {
+		const String &search_dir = search_dirs[i];
+
+		if (has_extension) {
+			path = search_dir.plus_file(name);
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(name.get_basename(), path);
+				break;
+			}
+		} else {
+			path = search_dir.plus_file(name + ".dll");
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(name, path);
+				break;
+			}
+
+			path = search_dir.plus_file(name + ".exe");
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(name, path);
+				break;
+			}
+		}
+	}
+
+	no_search = false;
+
+	return res;
+}
+
+MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data) {
+
+	(void)user_data; // UNUSED
 
 	if (search_dirs.empty()) {
 		search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
@@ -80,35 +112,32 @@ MonoAssembly *gdmono_MonoAssemblyPreLoad(MonoAssemblyName *aname, char **assembl
 		}
 	}
 
-	String name = mono_assembly_name_get_name(aname);
-	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
+	return NULL;
+}
 
-	String path;
+MonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const String &p_path) {
 
-	for (int i = 0; i < search_dirs.size(); i++) {
-		const String &search_dir = search_dirs[i];
+	GDMonoAssembly *assembly = memnew(GDMonoAssembly(p_name, p_path));
 
-		if (has_extension) {
-			path = search_dir.plus_file(name);
-			if (FileAccess::exists(path))
-				return gdmono_load_assembly_from(name.get_basename(), path);
-		} else {
-			path = search_dir.plus_file(name + ".dll");
-			if (FileAccess::exists(path))
-				return gdmono_load_assembly_from(name, path);
+	MonoDomain *domain = mono_domain_get();
 
-			path = search_dir.plus_file(name + ".exe");
-			if (FileAccess::exists(path))
-				return gdmono_load_assembly_from(name, path);
-		}
+	Error err = assembly->load(domain);
+
+	if (err != OK) {
+		memdelete(assembly);
+		ERR_FAIL_V(NULL);
 	}
 
-	return NULL;
+	GDMono::get_singleton()->add_assembly(domain ? mono_domain_get_id(domain) : 0, assembly);
+
+	return assembly->get_assembly();
 }
 
 void GDMonoAssembly::initialize() {
 
-	mono_install_assembly_preload_hook(&gdmono_MonoAssemblyPreLoad, NULL);
+	// TODO refonly as well?
+	mono_install_assembly_preload_hook(&GDMonoAssembly::_preload_hook, NULL);
+	mono_install_assembly_search_hook(&GDMonoAssembly::_search_hook, NULL);
 }
 
 Error GDMonoAssembly::load(MonoDomain *p_domain) {
@@ -153,7 +182,7 @@ no_pdb:
 
 	ERR_FAIL_COND_V(status != MONO_IMAGE_OK || assembly == NULL, ERR_FILE_CANT_OPEN);
 
-	if (mono_image_get_entry_point(image)) {
+	if (p_domain && mono_image_get_entry_point(image)) {
 		// TODO should this be removed? do we want to call main? what other effects does this have?
 		mono_jit_exec(p_domain, assembly, 0, NULL);
 	}

@@ -279,11 +279,11 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 }
 
 bool GDMonoField::get_bool_value(MonoObject *p_object) {
-	return UNBOX_BOOLEAN(get_value(p_object));
+	return (bool)GDMonoMarshal::unbox<MonoBoolean>(get_value(p_object));
 }
 
 int GDMonoField::get_int_value(MonoObject *p_object) {
-	return UNBOX_INT32(get_value(p_object));
+	return GDMonoMarshal::unbox<int32_t>(get_value(p_object));
 }
 
 String GDMonoField::get_string_value(MonoObject *p_object) {

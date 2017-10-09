@@ -19,7 +19,15 @@ namespace GodotSharpTools.Build
 
         private static string MSBuildPath
         {
-            get { return godot_icall_BuildInstance_get_MSBuildPath(); }
+            get
+            {
+                string ret = godot_icall_BuildInstance_get_MSBuildPath();
+
+                if (ret == null)
+                    throw new FileNotFoundException("Cannot find the MSBuild executable.");
+
+                return ret;
+            }
         }
 
         private string solution;
@@ -98,7 +106,7 @@ namespace GodotSharpTools.Build
 
         private string BuildArguments(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties)
         {
-            string arguments = string.Format("{0} /v:normal /t:Build /p:{1} /l:{2},{3};{4}",
+            string arguments = string.Format(@"""{0}"" /v:normal /t:Build ""/p:{1}"" ""/l:{2},{3};{4}""",
                 solution,
                 "Configuration=" + config,
                 typeof(GodotBuildLogger).FullName,

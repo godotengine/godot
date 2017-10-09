@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  video_player.h                                                       */
+/*  string_name.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,85 +27,65 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef VIDEO_PLAYER_H
-#define VIDEO_PLAYER_H
+#include "gdnative/string_name.h"
 
-#include "scene/gui/control.h"
-#include "scene/resources/video_stream.h"
-#include "servers/audio/audio_rb_resampler.h"
+#include "core/string_db.h"
+#include "core/ustring.h"
 
-class VideoPlayer : public Control {
+#include <string.h>
 
-	GDCLASS(VideoPlayer, Control);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	Ref<VideoStreamPlayback> playback;
-	Ref<VideoStream> stream;
+void _string_name_api_anchor() {
+}
 
-	int sp_get_channel_count() const;
-	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer, int p_frames);
+void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name) {
+	StringName *dest = (StringName *)r_dest;
+	const String *name = (const String *)p_name;
+	memnew_placement(dest, StringName(*name));
+}
 
-	RID stream_rid;
+void GDAPI godot_string_name_new_data(godot_string_name *r_dest, const char *p_name) {
+	StringName *dest = (StringName *)r_dest;
+	memnew_placement(dest, StringName(p_name));
+}
 
-	Ref<ImageTexture> texture;
-	Ref<Image> last_frame;
+godot_string GDAPI godot_string_name_get_name(const godot_string_name *p_self) {
+	godot_string ret;
+	const StringName *self = (const StringName *)p_self;
+	memnew_placement(&ret, String(*self));
+	return ret;
+}
 
-	AudioRBResampler resampler;
+uint32_t GDAPI godot_string_name_get_hash(const godot_string_name *p_self) {
+	const StringName *self = (const StringName *)p_self;
+	return self->hash();
+}
 
-	bool paused;
-	bool autoplay;
-	float volume;
-	double last_audio_time;
-	bool expand;
-	bool loops;
-	int buffering_ms;
-	int server_mix_rate;
-	int audio_track;
+const void GDAPI *godot_string_name_get_data_unique_pointer(const godot_string_name *p_self) {
+	const StringName *self = (const StringName *)p_self;
+	return self->data_unique_pointer();
+}
 
-	static int _audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames);
+godot_bool GDAPI godot_string_name_operator_equal(const godot_string_name *p_self, const godot_string_name *p_other) {
+	const StringName *self = (const StringName *)p_self;
+	const StringName *other = (const StringName *)p_other;
+	return self == other;
+}
 
-protected:
-	static void _bind_methods();
-	void _notification(int p_notification);
+godot_bool GDAPI godot_string_name_operator_less(const godot_string_name *p_self, const godot_string_name *p_other) {
+	const StringName *self = (const StringName *)p_self;
+	const StringName *other = (const StringName *)p_other;
+	return self < other;
+}
 
-public:
-	Size2 get_minimum_size() const;
-	void set_expand(bool p_expand);
-	bool has_expand() const;
+void GDAPI godot_string_name_destroy(godot_string_name *p_self) {
+	StringName *self = (StringName *)p_self;
+	self->~StringName();
+}
 
-	Ref<Texture> get_video_texture();
-
-	void set_stream(const Ref<VideoStream> &p_stream);
-	Ref<VideoStream> get_stream() const;
-
-	void play();
-	void stop();
-	bool is_playing() const;
-
-	void set_paused(bool p_paused);
-	bool is_paused() const;
-
-	void set_volume(float p_vol);
-	float get_volume() const;
-
-	void set_volume_db(float p_db);
-	float get_volume_db() const;
-
-	String get_stream_name() const;
-	float get_stream_position() const;
-	void set_stream_position(float p_position);
-
-	void set_autoplay(bool p_enable);
-	bool has_autoplay() const;
-
-	void set_audio_track(int p_track);
-	int get_audio_track() const;
-
-	void set_buffering_msec(int p_msec);
-	int get_buffering_msec() const;
-
-	VideoPlayer();
-	~VideoPlayer();
-};
-
-#endif // VIDEO_PLAYER_H
+#ifdef __cplusplus
+}
+#endif

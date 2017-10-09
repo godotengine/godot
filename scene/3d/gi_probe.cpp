@@ -1486,8 +1486,8 @@ GIProbe::GIProbe() {
 	subdiv = SUBDIV_128;
 	dynamic_range = 4;
 	energy = 1.0;
-	bias = 0.0;
-	normal_bias = 0.8;
+	bias = 1.5;
+	normal_bias = 0.0;
 	propagation = 1.0;
 	extents = Vector3(10, 10, 10);
 	color_scan_cell_width = 4;

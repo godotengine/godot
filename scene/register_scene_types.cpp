@@ -222,13 +222,18 @@ void register_scene_types() {
 	String font_path = GLOBAL_DEF("gui/theme/custom_font", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.font", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
+	bool has_theme = false;
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
 			Theme::set_default(theme);
+			has_theme = true;
+		} else {
+			ERR_PRINTS("Error loading custom theme '" + theme_path + "'");
 		}
-	} else {
+	}
 
+	if (!has_theme) {
 		Ref<Font> font;
 		if (font_path != String()) {
 			font = ResourceLoader::load(font_path);

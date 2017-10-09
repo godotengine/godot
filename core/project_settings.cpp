@@ -420,7 +420,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack) {
 	return OK;
 }
 
-bool ProjectSettings::has(String p_var) const {
+bool ProjectSettings::has_setting(String p_var) const {
 
 	_THREAD_SAFE_METHOD_
 
@@ -800,7 +800,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	Variant ret;
-	if (ProjectSettings::get_singleton()->has(p_var)) {
+	if (ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ret = ProjectSettings::get_singleton()->get(p_var);
 	} else {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -907,9 +907,19 @@ Variant ProjectSettings::property_get_revert(const String &p_name) {
 	return props[p_name].initial;
 }
 
+void ProjectSettings::set_setting(const String &p_setting, const Variant &p_value) {
+	set(p_setting, p_value);
+}
+
+Variant ProjectSettings::get_setting(const String &p_setting) const {
+	return get(p_setting);
+}
+
 void ProjectSettings::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("has", "name"), &ProjectSettings::has);
+	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
+	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
+	ClassDB::bind_method(D_METHOD("get_setting", "name"), &ProjectSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);

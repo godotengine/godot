@@ -93,7 +93,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_update_shortcuts();
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has("interface/dialogs/editor_settings_bounds")) {
+	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/editor_settings_bounds")) {
 		popup(EditorSettings::get_singleton()->get("interface/dialogs/editor_settings_bounds"));
 	} else {
 		popup_centered_ratio(0.7);

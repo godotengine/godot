@@ -113,6 +113,9 @@ public:
 		else
 			return 0;
 	}
+	_FORCE_INLINE_ const void *data_unique_pointer() const {
+		return (void *)_data;
+	}
 	bool operator!=(const StringName &p_name) const;
 
 	_FORCE_INLINE_ operator String() const {

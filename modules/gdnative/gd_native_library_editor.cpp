@@ -72,7 +72,7 @@ void GDNativeLibraryEditor::_update_libraries() {
 	libraries->create_item(); //rppt
 
 	Vector<String> enabled_paths;
-	if (ProjectSettings::get_singleton()->has("gdnative/singletons")) {
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
 		enabled_paths = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	}
 	Set<String> enabled_list;
@@ -100,7 +100,7 @@ void GDNativeLibraryEditor::_item_edited() {
 	String path = item->get_metadata(0);
 
 	Vector<String> enabled_paths;
-	if (ProjectSettings::get_singleton()->has("gdnative/singletons")) {
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
 		enabled_paths = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	}
 

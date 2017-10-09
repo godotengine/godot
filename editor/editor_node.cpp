@@ -5613,7 +5613,7 @@ EditorNode::EditorNode() {
 	{
 		_initializing_addons = true;
 		Vector<String> addons;
-		if (ProjectSettings::get_singleton()->has("editor_plugins/enabled")) {
+		if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
 			addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
 		}
 
