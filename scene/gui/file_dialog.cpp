@@ -115,7 +115,9 @@ Vector<String> FileDialog::get_selected_files() const {
 void FileDialog::update_dir() {
 
 	dir->set_text(dir_access->get_current_dir());
-	drives->select(dir_access->get_current_drive());
+	if (drives->is_visible()) {
+		drives->select(dir_access->get_current_drive());
+	}
 }
 
 void FileDialog::_dir_entered(String p_dir) {
@@ -667,7 +669,6 @@ void FileDialog::_update_drives() {
 		drives->show();
 
 		for (int i = 0; i < dir_access->get_drive_count(); i++) {
-			String d = dir_access->get_drive(i);
 			drives->add_item(dir_access->get_drive(i));
 		}
 
