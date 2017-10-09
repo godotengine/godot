@@ -77,6 +77,9 @@
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+			Returns a [Dictionary] with two keys :
+			[code]data[/code] : [PoolByteArray] with [code]true[/code]/[code]false[/code] [code]BitMap[/code] data.
+			[code]size[/code] : The [code]Bitmap[/code]'s size.
 		</member>
 	</members>
 	<constants>

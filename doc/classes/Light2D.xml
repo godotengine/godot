@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Light2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Node that casts light in a 2D environment.
+		Casts light in a 2D environment.
 	</brief_description>
 	<description>
-		Node that casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
+		Casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -385,7 +385,7 @@
 			If [code]true[/code] the Light2D will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
-			Shadow filter type. May be one of [code][None, PCF5, PCF9, PCF13][/code]. Default value: [code]None[/code].
+			Shadow filter type. Use SHADOW_FILTER_* constants to set [code]shadow_filter[/code]. Default value: [code]None[/code].
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
 			Smoothing value for shadows.
@@ -408,7 +408,7 @@
 			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
-			Subtract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+			Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
 			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
@@ -417,16 +417,22 @@
 			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 		<constant name="SHADOW_FILTER_NONE" value="0">
+			No filter applies to the shadow map. See [method shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF3" value="1">
+			Percentage closer filtering (3 samples) applies to the shadow map. See [method shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF5" value="2">
+			Percentage closer filtering (5 samples) applies to the shadow map. See [method shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF7" value="3">
+			Percentage closer filtering (7 samples) applies to the shadow map. See [method shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF9" value="4">
+			Percentage closer filtering (9 samples) applies to the shadow map. See [method shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF13" value="5">
+			Percentage closer filtering (13 samples) applies to the shadow map. See [method shadow_filter].
 		</constant>
 	</constants>
 </class>

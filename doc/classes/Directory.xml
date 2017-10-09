@@ -85,6 +85,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the currently opened directory's drive index. See [method get_drive] to convert returned index to the name of the drive.
 			</description>
 		</method>
 		<method name="get_drive">

@@ -30,6 +30,7 @@
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">
+			The number of columns in the [code]GridContainer[/code]. If modified, [code]GridContainer[/code] reorders its children to accommodate the new layout.
 		</member>
 	</members>
 	<constants>

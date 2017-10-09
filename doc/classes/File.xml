@@ -30,14 +30,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Close the currently opened file.
+				Closes the currently opened file.
 			</description>
 		</method>
 		<method name="eof_reached" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file cursor reached the end of the file.
+				Returns [code]true[/code] if the file cursor has reached the end of the file.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -46,42 +46,42 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the file in the specified path exists.
+				Returns [code]true[/code] if the file exists in the given path.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the next 16 bits from the file as an integer.
+				Returns the next 16 bits from the file as an integer.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the next 32 bits from the file as an integer.
+				Returns the next 32 bits from the file as an integer.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the next 64 bits from the file as an integer.
+				Returns the next 64 bits from the file as an integer.
 			</description>
 		</method>
 		<method name="get_8" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Get the next 8 bits from the file as an integer.
+				Returns the next 8 bits from the file as an integer.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Get the whole file as a [String].
+				Returns the whole file as a [String].
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
@@ -90,7 +90,7 @@
 			<argument index="0" name="len" type="int">
 			</argument>
 			<description>
-				Get next len bytes of the file as a [PoolByteArray].
+				Returns next [code]len[/code] bytes of the file as a [PoolByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
@@ -99,14 +99,14 @@
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Get the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma).
+				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma).
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Get the next 64 bits from the file as a floating point number.
+				Returns the next 64 bits from the file as a floating point number.
 			</description>
 		</method>
 		<method name="get_endian_swap">
@@ -120,14 +120,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Get the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@Global Scope].
+				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@Global Scope].
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Get the next 32 bits from the file as a floating point number.
+				Returns the next 32 bits from the file as a floating point number.
 			</description>
 		</method>
 		<method name="get_len" qualifiers="const">
@@ -141,7 +141,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the next line of the file as a [String].
+				Returns the next line of the file as a [String].
 			</description>
 		</method>
 		<method name="get_md5" qualifiers="const">
@@ -150,7 +150,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns a MD5 String representing the file at the given path or an empty [String] on failure.
+				Returns an MD5 String representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_modified_time" qualifiers="const">
@@ -159,28 +159,28 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Returns the modified time in unix timestamp of the [code]file[/code] or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
+				Returns the last time the [code]file[/code] was modified in unix timestamp format or returns a [String] "ERROR IN [code]file[/code]". This unix timestamp can be converted to datetime by using [method OS.get_datetime_from_unix_time].
 			</description>
 		</method>
 		<method name="get_pascal_string">
 			<return type="String">
 			</return>
 			<description>
-				Get a [String] saved in Pascal format from the file.
+				Returns a [String] saved in Pascal format from the file.
 			</description>
 		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the file cursor position.
+				Returns the file cursor's position.
 			</description>
 		</method>
 		<method name="get_real" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Get the next bits from the file as a floating point number.
+				Returns the next bits from the file as a floating point number.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="const">
@@ -189,14 +189,14 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns a SHA-256 String representing the file at the given path or an empty [String] on failure.
+				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
-				Get the next Variant value from the file.
+				Returns the next [Variant] value from the file.
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
@@ -214,7 +214,7 @@
 			<argument index="1" name="flags" type="int">
 			</argument>
 			<description>
-				Open the file for writing or reading, depending on the flags.
+				Opens the file for writing or reading, depending on the flags.
 			</description>
 		</method>
 		<method name="open_compressed">
@@ -227,7 +227,7 @@
 			<argument index="2" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Open a compressed file for reading or writing. The compression_mode can be set as one of the COMPRESSION_* constants.
+				Opens a compressed file for reading or writing. Use COMPRESSION_* constants to set [code]compression_mode[/code].
 			</description>
 		</method>
 		<method name="open_encrypted">
@@ -240,7 +240,7 @@
 			<argument index="2" name="key" type="PoolByteArray">
 			</argument>
 			<description>
-				Open an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
+				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass">
@@ -253,7 +253,7 @@
 			<argument index="2" name="pass" type="String">
 			</argument>
 			<description>
-				Open an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
+				Opens an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
 			</description>
 		</method>
 		<method name="seek">
@@ -271,7 +271,7 @@
 			<argument index="0" name="position" type="int" default="0">
 			</argument>
 			<description>
-				Change the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
 		<method name="set_endian_swap">
@@ -290,7 +290,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Store an integer as 16 bits in the file.
+				Stores an integer as 16 bits in the file.
 			</description>
 		</method>
 		<method name="store_32">
@@ -299,7 +299,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Store an integer as 32 bits in the file.
+				Stores an integer as 32 bits in the file.
 			</description>
 		</method>
 		<method name="store_64">
@@ -308,7 +308,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Store an integer as 64 bits in the file.
+				Stores an integer as 64 bits in the file.
 			</description>
 		</method>
 		<method name="store_8">
@@ -317,7 +317,7 @@
 			<argument index="0" name="value" type="int">
 			</argument>
 			<description>
-				Store an integer as 8 bits in the file.
+				Stores an integer as 8 bits in the file.
 			</description>
 		</method>
 		<method name="store_buffer">
@@ -326,7 +326,7 @@
 			<argument index="0" name="buffer" type="PoolByteArray">
 			</argument>
 			<description>
-				Store the given array of bytes in the file.
+				Stores the given array of bytes in the file.
 			</description>
 		</method>
 		<method name="store_double">
@@ -335,7 +335,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Store a floating point number as 64 bits in the file.
+				Stores a floating point number as 64 bits in the file.
 			</description>
 		</method>
 		<method name="store_float">
@@ -344,7 +344,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Store a floating point number as 32 bits in the file.
+				Stores a floating point number as 32 bits in the file.
 			</description>
 		</method>
 		<method name="store_line">
@@ -353,7 +353,7 @@
 			<argument index="0" name="line" type="String">
 			</argument>
 			<description>
-				Store the given [String] as a line in the file.
+				Stores the given [String] as a line in the file.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -362,7 +362,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Store the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
+				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
 			</description>
 		</method>
 		<method name="store_real">
@@ -371,7 +371,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Store a floating point number in the file.
+				Stores a floating point number in the file.
 			</description>
 		</method>
 		<method name="store_string">
@@ -380,7 +380,7 @@
 			<argument index="0" name="string" type="String">
 			</argument>
 			<description>
-				Store the given [String] in the file.
+				Stores the given [String] in the file.
 			</description>
 		</method>
 		<method name="store_var">
@@ -389,34 +389,34 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Store any Variant value in the file.
+				Stores any Variant value in the file.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="READ" value="1">
-			Open the file for read operations.
+			Opens the file for read operations.
 		</constant>
 		<constant name="WRITE" value="2">
-			Open the file for write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="READ_WRITE" value="3">
-			Open the file for read and write operations. Does not truncate the file.
+			Opens the file for read and write operations. Does not truncate the file.
 		</constant>
 		<constant name="WRITE_READ" value="7">
-			Open the file for read and write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0">
-			Use the FastLZ compression method.
+			Uses the FastLZ compression method.
 		</constant>
 		<constant name="COMPRESSION_DEFLATE" value="1">
-			Use the Deflate compression method.
+			Uses the Deflate compression method.
 		</constant>
 		<constant name="COMPRESSION_ZSTD" value="2">
-			Use the Zstd compression method.
+			Uses the Zstd compression method.
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3">
-			Use the GZip compression method.
+			Uses the gzip compression method.
 		</constant>
 	</constants>
 </class>

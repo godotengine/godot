@@ -15,7 +15,7 @@
 			<return type="int" enum="Label.Align">
 			</return>
 			<description>
-				Return the alignment mode (any of the ALIGN_* enumeration values).
+				Returns the alignment mode (any of the ALIGN_* enumeration values).
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -36,76 +36,77 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the the number of lines to skipped before displaying.
+				Returns the the number of lines to skip before displaying.
 			</description>
 		</method>
 		<method name="get_max_lines_visible" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the restricted number of lines to display. Returns -1 if unrestricted.
+				Returns the maximum number of lines to display. Returns -1 if unrestricted.
 			</description>
 		</method>
 		<method name="get_percent_visible" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the restricted number of characters to display (as a percentage of the total text).
+				Returns the maximum number of characters to display as a percentage of the total text.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the label text. Text can contain newlines.
+				Returns the label text. Text can contain newlines.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the total length of the text.
+				Returns the total length of the text.
 			</description>
 		</method>
 		<method name="get_valign" qualifiers="const">
 			<return type="int" enum="Label.VAlign">
 			</return>
 			<description>
-				Return the vertical alignment mode (any of the VALIGN_* enumeration values).
+				Returns the vertical alignment mode (any of the VALIGN_* enumeration values).
 			</description>
 		</method>
 		<method name="get_visible_characters" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the restricted number of characters to display. Returns -1 if unrestricted.
+				Returns the restricted number of characters to display. Returns -1 if unrestricted.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of lines shown. Useful if the [code]Label[/code] 's height cannot currently display all lines.
 			</description>
 		</method>
 		<method name="has_autowrap" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return the state of the [i]autowrap[/i] mode (see [method set_autowrap]).
+				Returns [code]true[/code] if [i]autowrap[/i] mode (see [method set_autowrap]).
 			</description>
 		</method>
 		<method name="is_clipping_text" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if text would be cut off if it is too wide.
+				Returns [code]true[/code] if text would be cut off if it is too wide.
 			</description>
 		</method>
 		<method name="is_uppercase" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return [code]true[/code] if text is displayed in all capitals.
+				Returns [code]true[/code] if text is displayed in all capitals.
 			</description>
 		</method>
 		<method name="set_align">

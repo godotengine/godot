@@ -16,6 +16,7 @@
 			<return type="Variant">
 			</return>
 			<description>
+				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref].
 			</description>
 		</method>
 		<method name="set_function">
@@ -24,7 +25,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Set the name of the function to call on the object, without parentheses or any parameters.
+				The name of the referenced function to call on the object, without parentheses or any parameters.
 			</description>
 		</method>
 		<method name="set_instance">
@@ -33,7 +34,7 @@
 			<argument index="0" name="instance" type="Object">
 			</argument>
 			<description>
-				Set the object on which to call the referenced function. This object must be of a type actually inheriting from [Object], not a built-in type such as [int], [Vector2] or [Dictionary].
+				The object containing the referenced function. This object must be of a type actually inheriting from [Object], not a built-in type such as [int], [Vector2] or [Dictionary].
 			</description>
 		</method>
 	</methods>

@@ -104,6 +104,7 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns a copy of this [code]Array[/code].
 			</description>
 		</method>
 		<method name="empty">

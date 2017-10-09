@@ -4,7 +4,7 @@
 		A [Texture] based on an [Image].
 	</brief_description>
 	<description>
-		A [Texture] based on an [Image]. Can be created from an [Image].
+		A [Texture] based on an [Image]. Can be created from an [Image] with [method create_from_image].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -93,6 +93,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
+				Resizes the [code]ImageTexture[/code] to the specified dimensions.
 			</description>
 		</method>
 		<method name="set_storage">

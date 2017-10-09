@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ImmediateGeometry" inherits="GeometryInstance" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Node to draw simple geometry from code, ala OpenGL 1.x
+		Draws simple geometry from code.
 	</brief_description>
 	<description>
+		Draws simple geometry from code. Uses a drawing mode similar to OpenGL 1.x.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -31,7 +32,7 @@
 			<argument index="0" name="position" type="Vector3">
 			</argument>
 			<description>
-				Add a vertex with the currently set color/uv/etc.
+				Adds a vertex with the currently set color/uv/etc.
 			</description>
 		</method>
 		<method name="begin">
@@ -50,14 +51,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear everything that was drawn using begin/end.
+				Clears everything that was drawn using begin/end.
 			</description>
 		</method>
 		<method name="end">
 			<return type="void">
 			</return>
 			<description>
-				Call this when done adding a batch of geometry, otherwise it can't be displayed.
+				Ends a drawing context and displays the results.
 			</description>
 		</method>
 		<method name="set_color">
@@ -66,7 +67,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Set the color that the next vertex will use to be drawn.
+				The current drawing color.
 			</description>
 		</method>
 		<method name="set_normal">
@@ -75,7 +76,7 @@
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<description>
-				Set the normal that the next vertex will use to be drawn.
+				The next vertex's normal.
 			</description>
 		</method>
 		<method name="set_tangent">
@@ -84,7 +85,7 @@
 			<argument index="0" name="tangent" type="Plane">
 			</argument>
 			<description>
-				Set the tangent (and binormal facing) that the next vertex will use to be drawn.
+				The next vertex's tangent (and binormal facing).
 			</description>
 		</method>
 		<method name="set_uv">
@@ -93,7 +94,7 @@
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
-				Set the UV that the next vertex will use to be drawn.
+				The next vertex's UV.
 			</description>
 		</method>
 		<method name="set_uv2">
@@ -102,7 +103,7 @@
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
-				Set the second layer of UV that the next vertex will use to be drawn.
+				The next vertex's second layer UV.
 			</description>
 		</method>
 	</methods>
