@@ -80,6 +80,7 @@ struct PropertyAPI {
 	String getter;
 	String setter;
 	String type;
+	int index;
 };
 
 struct ConstantAPI {
@@ -259,6 +260,8 @@ List<ClassAPI> generate_c_api_classes() {
 					property_api.type = get_type_name(p->get());
 				}
 
+				property_api.index = ClassDB::get_property_index(class_name, p->get().name);
+
 				if (!property_api.setter.empty() || !property_api.getter.empty()) {
 					class_api.properties.push_back(property_api);
 				}
@@ -395,7 +398,8 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 			source.push_back("\t\t\t\t\"name\": \"" + e->get().name + "\",\n");
 			source.push_back("\t\t\t\t\"type\": \"" + e->get().type + "\",\n");
 			source.push_back("\t\t\t\t\"getter\": \"" + e->get().getter + "\",\n");
-			source.push_back("\t\t\t\t\"setter\": \"" + e->get().setter + "\"\n");
+			source.push_back("\t\t\t\t\"setter\": \"" + e->get().setter + "\",\n");
+			source.push_back(String("\t\t\t\t\"index\": ") + itos(e->get().index) + "\n");
 			source.push_back(String("\t\t\t}") + (e->next() ? "," : "") + "\n");
 		}
 		source.push_back("\t\t],\n");
