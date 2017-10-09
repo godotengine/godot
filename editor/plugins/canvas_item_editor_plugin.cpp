@@ -2748,9 +2748,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		}
 
 		if (all_control && has_control)
-			anchor_menu->show();
+			presets_menu->show();
 		else
-			anchor_menu->hide();
+			presets_menu->hide();
 
 		for (Map<ObjectID, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
 
@@ -2782,6 +2782,15 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_default_margin(Margin(i), 4);
 		}
 
+		AnimationPlayerEditor::singleton->get_key_editor()->connect("visibility_changed", this, "_keying_changed");
+		_keying_changed();
+
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		select_sb->set_texture(get_icon("EditorRect2D", "EditorIcons"));
+	}
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		select_button->set_icon(get_icon("ToolSelect", "EditorIcons"));
 		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
 		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
@@ -2803,77 +2812,52 @@ void CanvasItemEditor::_notification(int p_what) {
 		zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
 
-		anchor_menu->set_icon(get_icon("Anchor", "EditorIcons"));
-		PopupMenu *p = anchor_menu->get_popup();
+		PopupMenu *p = presets_menu->get_popup();
 
-		p->add_icon_item(get_icon("ControlAlignTopLeft", "EditorIcons"), "Top Left", ANCHOR_ALIGN_TOP_LEFT);
-		p->add_icon_item(get_icon("ControlAlignTopRight", "EditorIcons"), "Top Right", ANCHOR_ALIGN_TOP_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomRight", "EditorIcons"), "Bottom Right", ANCHOR_ALIGN_BOTTOM_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomLeft", "EditorIcons"), "Bottom Left", ANCHOR_ALIGN_BOTTOM_LEFT);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignLeftCenter", "EditorIcons"), "Center Left", ANCHOR_ALIGN_CENTER_LEFT);
-		p->add_icon_item(get_icon("ControlAlignTopCenter", "EditorIcons"), "Center Top", ANCHOR_ALIGN_CENTER_TOP);
-		p->add_icon_item(get_icon("ControlAlignRightCenter", "EditorIcons"), "Center Right", ANCHOR_ALIGN_CENTER_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomCenter", "EditorIcons"), "Center Bottom", ANCHOR_ALIGN_CENTER_BOTTOM);
-		p->add_icon_item(get_icon("ControlAlignCenter", "EditorIcons"), "Center", ANCHOR_ALIGN_CENTER);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignLeftWide", "EditorIcons"), "Left Wide", ANCHOR_ALIGN_LEFT_WIDE);
-		p->add_icon_item(get_icon("ControlAlignTopWide", "EditorIcons"), "Top Wide", ANCHOR_ALIGN_TOP_WIDE);
-		p->add_icon_item(get_icon("ControlAlignRightWide", "EditorIcons"), "Right Wide", ANCHOR_ALIGN_RIGHT_WIDE);
-		p->add_icon_item(get_icon("ControlAlignBottomWide", "EditorIcons"), "Bottom Wide", ANCHOR_ALIGN_BOTTOM_WIDE);
-		p->add_icon_item(get_icon("ControlVcenterWide", "EditorIcons"), "VCenter Wide ", ANCHOR_ALIGN_VCENTER_WIDE);
-		p->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHOR_ALIGN_HCENTER_WIDE);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHOR_ALIGN_WIDE);
-		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect and Fit Parent", ANCHOR_ALIGN_WIDE_FIT);
-
-		AnimationPlayerEditor::singleton->get_key_editor()->connect("visibility_changed", this, "_keying_changed");
-		_keying_changed();
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-
-		select_sb->set_texture(get_icon("EditorRect2D", "EditorIcons"));
-
-		select_button->set_icon(get_icon("ToolSelect", "EditorIcons"));
-		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
-		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
-		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
-		snap_button->set_icon(get_icon("Snap", "EditorIcons"));
-		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
-		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
-		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
-		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
-		select_handle = get_icon("EditorHandle", "EditorIcons");
-		anchor_handle = get_icon("EditorControlAnchor", "EditorIcons");
-		lock_button->set_icon(get_icon("Lock", "EditorIcons"));
-		unlock_button->set_icon(get_icon("Unlock", "EditorIcons"));
-		group_button->set_icon(get_icon("Group", "EditorIcons"));
-		ungroup_button->set_icon(get_icon("Ungroup", "EditorIcons"));
-		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
-
-		anchor_menu->set_icon(get_icon("Anchor", "EditorIcons"));
-		PopupMenu *p = anchor_menu->get_popup();
 		p->clear();
+		p->add_icon_item(get_icon("ControlAlignTopLeft", "EditorIcons"), "Top Left", ANCHORS_AND_MARGINS_PRESET_TOP_LEFT);
+		p->add_icon_item(get_icon("ControlAlignTopRight", "EditorIcons"), "Top Right", ANCHORS_AND_MARGINS_PRESET_TOP_RIGHT);
+		p->add_icon_item(get_icon("ControlAlignBottomRight", "EditorIcons"), "Bottom Right", ANCHORS_AND_MARGINS_PRESET_BOTTOM_RIGHT);
+		p->add_icon_item(get_icon("ControlAlignBottomLeft", "EditorIcons"), "Bottom Left", ANCHORS_AND_MARGINS_PRESET_BOTTOM_LEFT);
+		p->add_separator();
+		p->add_icon_item(get_icon("ControlAlignLeftCenter", "EditorIcons"), "Center Left", ANCHORS_AND_MARGINS_PRESET_CENTER_LEFT);
+		p->add_icon_item(get_icon("ControlAlignTopCenter", "EditorIcons"), "Center Top", ANCHORS_AND_MARGINS_PRESET_CENTER_TOP);
+		p->add_icon_item(get_icon("ControlAlignRightCenter", "EditorIcons"), "Center Right", ANCHORS_AND_MARGINS_PRESET_CENTER_RIGHT);
+		p->add_icon_item(get_icon("ControlAlignBottomCenter", "EditorIcons"), "Center Bottom", ANCHORS_AND_MARGINS_PRESET_CENTER_BOTTOM);
+		p->add_icon_item(get_icon("ControlAlignCenter", "EditorIcons"), "Center", ANCHORS_AND_MARGINS_PRESET_CENTER);
+		p->add_separator();
+		p->add_icon_item(get_icon("ControlAlignLeftWide", "EditorIcons"), "Left Wide", ANCHORS_AND_MARGINS_PRESET_LEFT_WIDE);
+		p->add_icon_item(get_icon("ControlAlignTopWide", "EditorIcons"), "Top Wide", ANCHORS_AND_MARGINS_PRESET_TOP_WIDE);
+		p->add_icon_item(get_icon("ControlAlignRightWide", "EditorIcons"), "Right Wide", ANCHORS_AND_MARGINS_PRESET_RIGHT_WIDE);
+		p->add_icon_item(get_icon("ControlAlignBottomWide", "EditorIcons"), "Bottom Wide", ANCHORS_AND_MARGINS_PRESET_BOTTOM_WIDE);
+		p->add_icon_item(get_icon("ControlVcenterWide", "EditorIcons"), "VCenter Wide ", ANCHORS_AND_MARGINS_PRESET_VCENTER_WIDE);
+		p->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE);
+		p->add_separator();
+		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_AND_MARGINS_PRESET_WIDE);
+		p->add_separator();
+		p->add_submenu_item(TTR("Anchors only"), "Anchors");
+		p->set_item_icon(20, get_icon("Anchor", "EditorIcons"));
 
-		p->add_icon_item(get_icon("ControlAlignTopLeft", "EditorIcons"), "Top Left", ANCHOR_ALIGN_TOP_LEFT);
-		p->add_icon_item(get_icon("ControlAlignTopRight", "EditorIcons"), "Top Right", ANCHOR_ALIGN_TOP_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomRight", "EditorIcons"), "Bottom Right", ANCHOR_ALIGN_BOTTOM_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomLeft", "EditorIcons"), "Bottom Left", ANCHOR_ALIGN_BOTTOM_LEFT);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignLeftCenter", "EditorIcons"), "Center Left", ANCHOR_ALIGN_CENTER_LEFT);
-		p->add_icon_item(get_icon("ControlAlignTopCenter", "EditorIcons"), "Center Top", ANCHOR_ALIGN_CENTER_TOP);
-		p->add_icon_item(get_icon("ControlAlignRightCenter", "EditorIcons"), "Center Right", ANCHOR_ALIGN_CENTER_RIGHT);
-		p->add_icon_item(get_icon("ControlAlignBottomCenter", "EditorIcons"), "Center Bottom", ANCHOR_ALIGN_CENTER_BOTTOM);
-		p->add_icon_item(get_icon("ControlAlignCenter", "EditorIcons"), "Center", ANCHOR_ALIGN_CENTER);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignLeftWide", "EditorIcons"), "Left Wide", ANCHOR_ALIGN_LEFT_WIDE);
-		p->add_icon_item(get_icon("ControlAlignTopWide", "EditorIcons"), "Top Wide", ANCHOR_ALIGN_TOP_WIDE);
-		p->add_icon_item(get_icon("ControlAlignRightWide", "EditorIcons"), "Right Wide", ANCHOR_ALIGN_RIGHT_WIDE);
-		p->add_icon_item(get_icon("ControlAlignBottomWide", "EditorIcons"), "Bottom Wide", ANCHOR_ALIGN_BOTTOM_WIDE);
-		p->add_icon_item(get_icon("ControlVcenterWide", "EditorIcons"), "VCenter Wide ", ANCHOR_ALIGN_VCENTER_WIDE);
-		p->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHOR_ALIGN_HCENTER_WIDE);
-		p->add_separator();
-		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHOR_ALIGN_WIDE);
-		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect and Fit Parent", ANCHOR_ALIGN_WIDE_FIT);
+		anchors_popup->clear();
+		anchors_popup->add_icon_item(get_icon("ControlAlignTopLeft", "EditorIcons"), "Top Left", ANCHORS_PRESET_TOP_LEFT);
+		anchors_popup->add_icon_item(get_icon("ControlAlignTopRight", "EditorIcons"), "Top Right", ANCHORS_PRESET_TOP_RIGHT);
+		anchors_popup->add_icon_item(get_icon("ControlAlignBottomRight", "EditorIcons"), "Bottom Right", ANCHORS_PRESET_BOTTOM_RIGHT);
+		anchors_popup->add_icon_item(get_icon("ControlAlignBottomLeft", "EditorIcons"), "Bottom Left", ANCHORS_PRESET_BOTTOM_LEFT);
+		anchors_popup->add_separator();
+		anchors_popup->add_icon_item(get_icon("ControlAlignLeftCenter", "EditorIcons"), "Center Left", ANCHORS_PRESET_CENTER_LEFT);
+		anchors_popup->add_icon_item(get_icon("ControlAlignTopCenter", "EditorIcons"), "Center Top", ANCHORS_PRESET_CENTER_TOP);
+		anchors_popup->add_icon_item(get_icon("ControlAlignRightCenter", "EditorIcons"), "Center Right", ANCHORS_PRESET_CENTER_RIGHT);
+		anchors_popup->add_icon_item(get_icon("ControlAlignBottomCenter", "EditorIcons"), "Center Bottom", ANCHORS_PRESET_CENTER_BOTTOM);
+		anchors_popup->add_icon_item(get_icon("ControlAlignCenter", "EditorIcons"), "Center", ANCHORS_PRESET_CENTER);
+		anchors_popup->add_separator();
+		anchors_popup->add_icon_item(get_icon("ControlAlignLeftWide", "EditorIcons"), "Left Wide", ANCHORS_PRESET_LEFT_WIDE);
+		anchors_popup->add_icon_item(get_icon("ControlAlignTopWide", "EditorIcons"), "Top Wide", ANCHORS_PRESET_TOP_WIDE);
+		anchors_popup->add_icon_item(get_icon("ControlAlignRightWide", "EditorIcons"), "Right Wide", ANCHORS_PRESET_RIGHT_WIDE);
+		anchors_popup->add_icon_item(get_icon("ControlAlignBottomWide", "EditorIcons"), "Bottom Wide", ANCHORS_PRESET_BOTTOM_WIDE);
+		anchors_popup->add_icon_item(get_icon("ControlVcenterWide", "EditorIcons"), "VCenter Wide ", ANCHORS_PRESET_VCENTER_WIDE);
+		anchors_popup->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHORS_PRESET_HCENTER_WIDE);
+		anchors_popup->add_separator();
+		anchors_popup->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_PRESET_WIDE);
 	}
 }
 
@@ -3005,6 +2989,50 @@ void CanvasItemEditor::_update_scroll(float) {
 	viewport_base->update();
 }
 
+void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_preset) {
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+
+	undo_redo->create_action(TTR("Change Anchors and Margins"));
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+		Control *c = Object::cast_to<Control>(E->get());
+
+		undo_redo->add_do_method(c, "set_anchors_preset", p_preset);
+		switch (p_preset) {
+			case PRESET_TOP_LEFT:
+			case PRESET_TOP_RIGHT:
+			case PRESET_BOTTOM_LEFT:
+			case PRESET_BOTTOM_RIGHT:
+			case PRESET_CENTER_LEFT:
+			case PRESET_CENTER_TOP:
+			case PRESET_CENTER_RIGHT:
+			case PRESET_CENTER_BOTTOM:
+			case PRESET_CENTER:
+				undo_redo->add_do_method(c, "set_margins_preset", p_preset, Control::PRESET_MODE_KEEP_SIZE);
+				break;
+			case PRESET_LEFT_WIDE:
+			case PRESET_TOP_WIDE:
+			case PRESET_RIGHT_WIDE:
+			case PRESET_BOTTOM_WIDE:
+			case PRESET_VCENTER_WIDE:
+			case PRESET_HCENTER_WIDE:
+			case PRESET_WIDE:
+				undo_redo->add_do_method(c, "set_margins_preset", p_preset, Control::PRESET_MODE_MINSIZE);
+				break;
+		}
+		undo_redo->add_undo_method(c, "set_anchor", MARGIN_LEFT, c->get_anchor(MARGIN_LEFT));
+		undo_redo->add_undo_method(c, "set_anchor", MARGIN_TOP, c->get_anchor(MARGIN_TOP));
+		undo_redo->add_undo_method(c, "set_anchor", MARGIN_RIGHT, c->get_anchor(MARGIN_RIGHT));
+		undo_redo->add_undo_method(c, "set_anchor", MARGIN_BOTTOM, c->get_anchor(MARGIN_BOTTOM));
+		undo_redo->add_undo_method(c, "set_margin", MARGIN_LEFT, c->get_margin(MARGIN_LEFT));
+		undo_redo->add_undo_method(c, "set_margin", MARGIN_TOP, c->get_margin(MARGIN_TOP));
+		undo_redo->add_undo_method(c, "set_margin", MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT));
+		undo_redo->add_undo_method(c, "set_margin", MARGIN_BOTTOM, c->get_margin(MARGIN_BOTTOM));
+	}
+
+	undo_redo->commit_action();
+}
+
 void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -3018,32 +3046,6 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_TOP, c->get_anchor(MARGIN_TOP));
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_RIGHT, c->get_anchor(MARGIN_RIGHT));
 		undo_redo->add_undo_method(c, "set_anchor", MARGIN_BOTTOM, c->get_anchor(MARGIN_BOTTOM));
-	}
-
-	undo_redo->commit_action();
-}
-
-void CanvasItemEditor::_set_full_rect() {
-	List<Node *> &selection = editor_selection->get_selected_node_list();
-
-	undo_redo->create_action(TTR("Change Anchors"));
-	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
-		Control *c = Object::cast_to<Control>(E->get());
-
-		undo_redo->add_do_method(c, "set_anchors_preset", Control::PRESET_WIDE);
-		undo_redo->add_do_method(c, "set_margin", MARGIN_LEFT, 0);
-		undo_redo->add_do_method(c, "set_margin", MARGIN_TOP, 0);
-		undo_redo->add_do_method(c, "set_margin", MARGIN_RIGHT, 0);
-		undo_redo->add_do_method(c, "set_margin", MARGIN_BOTTOM, 0);
-		undo_redo->add_undo_method(c, "set_anchor", MARGIN_LEFT, c->get_anchor(MARGIN_LEFT));
-		undo_redo->add_undo_method(c, "set_anchor", MARGIN_TOP, c->get_anchor(MARGIN_TOP));
-		undo_redo->add_undo_method(c, "set_anchor", MARGIN_RIGHT, c->get_anchor(MARGIN_RIGHT));
-		undo_redo->add_undo_method(c, "set_anchor", MARGIN_BOTTOM, c->get_anchor(MARGIN_BOTTOM));
-		undo_redo->add_undo_method(c, "set_margin", MARGIN_LEFT, c->get_margin(MARGIN_LEFT));
-		undo_redo->add_undo_method(c, "set_margin", MARGIN_TOP, c->get_margin(MARGIN_TOP));
-		undo_redo->add_undo_method(c, "set_margin", MARGIN_RIGHT, c->get_margin(MARGIN_RIGHT));
-		undo_redo->add_undo_method(c, "set_margin", MARGIN_BOTTOM, c->get_margin(MARGIN_BOTTOM));
 	}
 
 	undo_redo->commit_action();
@@ -3237,56 +3239,103 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			viewport->update();
 
 		} break;
-		case ANCHOR_ALIGN_TOP_LEFT: {
+
+		case ANCHORS_AND_MARGINS_PRESET_TOP_LEFT: {
+			_set_anchors_and_margins_preset(PRESET_TOP_LEFT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_TOP_RIGHT: {
+			_set_anchors_and_margins_preset(PRESET_TOP_RIGHT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_BOTTOM_LEFT: {
+			_set_anchors_and_margins_preset(PRESET_BOTTOM_LEFT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_BOTTOM_RIGHT: {
+			_set_anchors_and_margins_preset(PRESET_BOTTOM_RIGHT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_CENTER_LEFT: {
+			_set_anchors_and_margins_preset(PRESET_CENTER_LEFT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_CENTER_RIGHT: {
+			_set_anchors_and_margins_preset(PRESET_CENTER_RIGHT);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_CENTER_TOP: {
+			_set_anchors_and_margins_preset(PRESET_CENTER_TOP);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_CENTER_BOTTOM: {
+			_set_anchors_and_margins_preset(PRESET_CENTER_BOTTOM);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_CENTER: {
+			_set_anchors_and_margins_preset(PRESET_CENTER);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_TOP_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_TOP_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_LEFT_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_LEFT_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_RIGHT_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_BOTTOM_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_VCENTER_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_VCENTER_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE: {
+			_set_anchors_and_margins_preset(PRESET_HCENTER_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_WIDE: {
+			_set_anchors_and_margins_preset(Control::PRESET_WIDE);
+		} break;
+
+		case ANCHORS_PRESET_TOP_LEFT: {
 			_set_anchors_preset(PRESET_TOP_LEFT);
 		} break;
-		case ANCHOR_ALIGN_TOP_RIGHT: {
+		case ANCHORS_PRESET_TOP_RIGHT: {
 			_set_anchors_preset(PRESET_TOP_RIGHT);
 		} break;
-		case ANCHOR_ALIGN_BOTTOM_LEFT: {
+		case ANCHORS_PRESET_BOTTOM_LEFT: {
 			_set_anchors_preset(PRESET_BOTTOM_LEFT);
 		} break;
-		case ANCHOR_ALIGN_BOTTOM_RIGHT: {
+		case ANCHORS_PRESET_BOTTOM_RIGHT: {
 			_set_anchors_preset(PRESET_BOTTOM_RIGHT);
 		} break;
-		case ANCHOR_ALIGN_CENTER_LEFT: {
+		case ANCHORS_PRESET_CENTER_LEFT: {
 			_set_anchors_preset(PRESET_CENTER_LEFT);
 		} break;
-		case ANCHOR_ALIGN_CENTER_RIGHT: {
+		case ANCHORS_PRESET_CENTER_RIGHT: {
 			_set_anchors_preset(PRESET_CENTER_RIGHT);
 		} break;
-		case ANCHOR_ALIGN_CENTER_TOP: {
+		case ANCHORS_PRESET_CENTER_TOP: {
 			_set_anchors_preset(PRESET_CENTER_TOP);
 		} break;
-		case ANCHOR_ALIGN_CENTER_BOTTOM: {
+		case ANCHORS_PRESET_CENTER_BOTTOM: {
 			_set_anchors_preset(PRESET_CENTER_BOTTOM);
 		} break;
-		case ANCHOR_ALIGN_CENTER: {
+		case ANCHORS_PRESET_CENTER: {
 			_set_anchors_preset(PRESET_CENTER);
 		} break;
-		case ANCHOR_ALIGN_TOP_WIDE: {
+		case ANCHORS_PRESET_TOP_WIDE: {
 			_set_anchors_preset(PRESET_TOP_WIDE);
 		} break;
-		case ANCHOR_ALIGN_LEFT_WIDE: {
+		case ANCHORS_PRESET_LEFT_WIDE: {
 			_set_anchors_preset(PRESET_LEFT_WIDE);
 		} break;
-		case ANCHOR_ALIGN_RIGHT_WIDE: {
+		case ANCHORS_PRESET_RIGHT_WIDE: {
 			_set_anchors_preset(PRESET_RIGHT_WIDE);
 		} break;
-		case ANCHOR_ALIGN_BOTTOM_WIDE: {
+		case ANCHORS_PRESET_BOTTOM_WIDE: {
 			_set_anchors_preset(PRESET_BOTTOM_WIDE);
 		} break;
-		case ANCHOR_ALIGN_VCENTER_WIDE: {
+		case ANCHORS_PRESET_VCENTER_WIDE: {
 			_set_anchors_preset(PRESET_VCENTER_WIDE);
 		} break;
-		case ANCHOR_ALIGN_HCENTER_WIDE: {
+		case ANCHORS_PRESET_HCENTER_WIDE: {
 			_set_anchors_preset(PRESET_HCENTER_WIDE);
 		} break;
-		case ANCHOR_ALIGN_WIDE: {
+		case ANCHORS_PRESET_WIDE: {
 			_set_anchors_preset(Control::PRESET_WIDE);
-		} break;
-		case ANCHOR_ALIGN_WIDE_FIT: {
-			_set_full_rect();
 		} break;
 
 		case ANIM_INSERT_KEY:
@@ -3865,7 +3914,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
-	p->set_hide_on_checkable_item_selection(false);
 	p->connect("id_pressed", this, "_popup_callback");
 
 	hb->add_child(memnew(VSeparator));
@@ -3883,13 +3931,18 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
 
-	anchor_menu = memnew(MenuButton);
-	anchor_menu->set_text(TTR("Anchor"));
-	hb->add_child(anchor_menu);
-	anchor_menu->get_popup()->connect("id_pressed", this, "_popup_callback");
-	anchor_menu->hide();
+	presets_menu = memnew(MenuButton);
+	presets_menu->set_text(TTR("Layout"));
+	hb->add_child(presets_menu);
+	presets_menu->hide();
 
-	//p = anchor_menu->get_popup();
+	p = presets_menu->get_popup();
+	p->connect("id_pressed", this, "_popup_callback");
+
+	anchors_popup = memnew(PopupMenu);
+	p->add_child(anchors_popup);
+	anchors_popup->set_name("Anchors");
+	anchors_popup->connect("id_pressed", this, "_popup_callback");
 
 	animation_hb = memnew(HBoxContainer);
 	hb->add_child(animation_hb);
