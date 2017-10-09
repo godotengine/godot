@@ -2140,7 +2140,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		first = false;
 	}
 
-	glFrontFace(GL_CW);
 	glBindVertexArray(0);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, false);
@@ -5024,6 +5023,8 @@ void RasterizerSceneGLES3::initialize() {
 	}
 
 	state.debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+
+	glFrontFace(GL_CW);
 }
 
 void RasterizerSceneGLES3::iteration() {
