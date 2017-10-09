@@ -434,7 +434,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								pa->object->set(pa->prop, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
-									ERR_PRINTS("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid");
+									ERR_PRINTS("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -442,7 +442,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 								if (value.get_type() != Variant::VECTOR2) {
-									ERR_PRINTS("Position key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()");
+									ERR_PRINTS("Position key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2(). Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 								static_cast<Node2D *>(pa->object)->set_position(value);
@@ -450,7 +450,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
 								if (value.is_num()) {
-									ERR_PRINTS("Rotation key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not numerical");
+									ERR_PRINTS("Rotation key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not numerical. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -459,7 +459,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
 								if (value.get_type() != Variant::VECTOR2) {
-									ERR_PRINTS("Scale key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()");
+									ERR_PRINTS("Scale key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()." + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -615,7 +615,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				pa->object->set(pa->prop, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					ERR_PRINTS("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
+					ERR_PRINTS("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
 				}
 #endif
 
@@ -623,7 +623,7 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.get_type() != Variant::VECTOR2) {
-					ERR_PRINTS("Position key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
+					ERR_PRINTS("Position key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
 				}
 #endif
 				static_cast<Node2D *>(pa->object)->set_position(pa->value_accum);
@@ -631,7 +631,7 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.is_num()) {
-					ERR_PRINTS("Rotation key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not numerical");
+					ERR_PRINTS("Rotation key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not numerical");
 				}
 #endif
 
@@ -640,7 +640,7 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.get_type() != Variant::VECTOR2) {
-					ERR_PRINTS("Scale key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
+					ERR_PRINTS("Scale key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
 				}
 #endif
 
