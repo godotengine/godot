@@ -201,7 +201,7 @@ public:
 	virtual void native_video_stop();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
-	OSIPhone(int width, int height);
+	OSIPhone(int width, int height, String p_data_dir);
 	~OSIPhone();
 };
 

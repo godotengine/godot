@@ -81,7 +81,7 @@ void _set_keep_screen_on(bool p_enabled) {
 
 extern int gargc;
 extern char **gargv;
-extern int iphone_main(int, int, int, char **);
+extern int iphone_main(int, int, int, char **, String);
 extern void iphone_finish();
 
 CMMotionManager *motionManager;
@@ -393,15 +393,6 @@ static int frame_count = 0;
 			};
 			++frame_count;
 
-			NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-					NSUserDomainMask, YES);
-			NSString *documentsDirectory = [paths objectAtIndex:0];
-			// NSString *documentsDirectory = [[[NSFileManager defaultManager]
-			// URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask]
-			// lastObject];
-			OSIPhone::get_singleton()->set_data_dir(
-					String::utf8([documentsDirectory UTF8String]));
-
 			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
 			OSIPhone::get_singleton()->set_locale(
 					String::utf8([locale_code UTF8String]));
@@ -604,7 +595,11 @@ static int frame_count = 0;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-	int err = iphone_main(backingWidth, backingHeight, gargc, gargv);
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+			NSUserDomainMask, YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
+
+	int err = iphone_main(backingWidth, backingHeight, gargc, gargv, String::utf8([documentsDirectory UTF8String]));
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);
