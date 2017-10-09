@@ -4,6 +4,13 @@
 	</brief_description>
 	<description>
 	</description>
+	[b]Input Ports:[/b]
+	- Data (variant): [code]A[/code]
+	- Data (variant): [code]B[/code]
+	[b]Output Ports:[/b]
+	- Sequence: [code]true[/code]
+	- Sequence: [code]false[/code]
+	- Sequence: [code]done[/code]
 	<tutorials>
 	</tutorials>
 	<demos>
