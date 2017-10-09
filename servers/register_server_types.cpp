@@ -79,6 +79,12 @@ ARVRServer *arvr_server = NULL;
 void register_server_types() {
 	arvr_server = memnew(ARVRServer);
 
+	ClassDB::register_virtual_class<VisualServer>();
+	ClassDB::register_class<AudioServer>();
+	ClassDB::register_virtual_class<PhysicsServer>();
+	ClassDB::register_virtual_class<Physics2DServer>();
+	ClassDB::register_class<ARVRServer>();
+
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("VisualServer", VisualServer::get_singleton()));
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("AudioServer", AudioServer::get_singleton()));
 	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
@@ -95,6 +101,8 @@ void register_server_types() {
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
 	ClassDB::register_class<AudioStreamRandomPitch>();
 	ClassDB::register_virtual_class<AudioEffect>();
+	ClassDB::register_class<AudioEffectEQ>();
+	ClassDB::register_class<AudioEffectFilter>();
 	ClassDB::register_class<AudioBusLayout>();
 
 	{

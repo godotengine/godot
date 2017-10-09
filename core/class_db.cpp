@@ -205,6 +205,7 @@ ClassDB::ClassInfo::ClassInfo() {
 	creation_func = NULL;
 	inherits_ptr = NULL;
 	disabled = false;
+	exposed = false;
 }
 ClassDB::ClassInfo::~ClassInfo() {
 }
@@ -1282,6 +1283,15 @@ bool ClassDB::is_class_enabled(StringName p_class) {
 
 	ERR_FAIL_COND_V(!ti, false);
 	return !ti->disabled;
+}
+
+bool ClassDB::is_class_exposed(StringName p_class) {
+
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_COND_V(!ti, false);
+	return ti->exposed;
 }
 
 StringName ClassDB::get_category(const StringName &p_node) {
