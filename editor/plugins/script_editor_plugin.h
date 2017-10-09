@@ -189,6 +189,9 @@ class ScriptEditor : public VBoxContainer {
 
 	ItemList *script_list;
 	HSplitContainer *script_split;
+	ItemList *members_overview;
+	bool members_overview_enabled;
+	VSplitContainer *list_split;
 	TabContainer *tab_container;
 	EditorFileDialog *file_dialog;
 	GotoLineDialog *goto_line_dialog;
@@ -271,6 +274,10 @@ class ScriptEditor : public VBoxContainer {
 	void _save_layout();
 	void _editor_settings_changed();
 	void _autosave_scripts();
+
+	void _update_members_overview_visibility();
+	void _update_members_overview();
+	void _members_overview_selected(int p_idx);
 
 	void _update_script_names();
 

@@ -3941,6 +3941,11 @@ int TextEdit::get_v_scroll() const {
 }
 void TextEdit::set_v_scroll(int p_scroll) {
 
+	if (!scroll_past_end_of_file_enabled) {
+		if (p_scroll + get_visible_rows() > get_line_count()) {
+			p_scroll = get_line_count() - get_visible_rows();
+		}
+	}
 	v_scroll->set_val(p_scroll);
 	cursor.line_ofs = p_scroll;
 }
@@ -3950,7 +3955,6 @@ int TextEdit::get_h_scroll() const {
 	return h_scroll->get_val();
 }
 void TextEdit::set_h_scroll(int p_scroll) {
-
 	h_scroll->set_val(p_scroll);
 }
 
