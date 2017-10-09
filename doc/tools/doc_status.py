@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import fnmatch
 import os
@@ -297,17 +297,21 @@ input_class_list = []
 merged_file = ""
 
 for arg in sys.argv[1:]:
-    if arg.startswith('--'):
-        flags[long_flags[arg[2:]]] = not flags[long_flags[arg[2:]]]
-    elif arg.startswith('-'):
-        for f in arg[1:]:
-            flags[f] = not flags[f]
-    elif os.path.isdir(arg):
-        for f in os.listdir(arg):
-            if f.endswith('.xml'):
-                input_file_list.append(os.path.join(arg, f));
-    else:
-        input_class_list.append(arg)
+    try:
+        if arg.startswith('--'):
+            flags[long_flags[arg[2:]]] = not flags[long_flags[arg[2:]]]
+        elif arg.startswith('-'):
+            for f in arg[1:]:
+                flags[f] = not flags[f]
+        elif os.path.isdir(arg):
+            for f in os.listdir(arg):
+                if f.endswith('.xml'):
+                    input_file_list.append(os.path.join(arg, f));
+        else:
+            input_class_list.append(arg)
+    except KeyError:
+        print("Unknown command line flag: " + arg)
+        sys.exit(1)
 
 if flags['i']:
     for r in ['methods', 'constants', 'members', 'signals']:
