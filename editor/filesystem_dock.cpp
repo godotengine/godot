@@ -458,9 +458,9 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		if (path != "res://") {
 
 			if (use_thumbnails) {
-				files->add_item("..", folder_thumbnail, true);
+				files->add_item("..", folder_thumbnail, false);
 			} else {
-				files->add_item("..", get_icon("folder", "FileDialog"), true);
+				files->add_item("..", get_icon("folder", "FileDialog"), false);
 			}
 
 			String bd = path.get_base_dir();
@@ -567,9 +567,22 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 }
 
 void FileSystemDock::_select_file(int p_idx) {
-
-	files->select(p_idx, true);
-	_file_option(FILE_OPEN);
+	String path = files->get_item_metadata(p_idx);
+	if (path.ends_with("/")) {
+		if (path != "res://") {
+			path = path.substr(0, path.length() - 1);
+		}
+		this->path = path;
+		_update_files(false);
+		current_path->set_text(path);
+		_push_to_history();
+	} else {
+		if (ResourceLoader::get_resource_type(path) == "PackedScene") {
+			editor->open_request(path);
+		} else {
+			editor->load_resource(path);
+		}
+	}
 }
 
 void FileSystemDock::_go_to_tree() {
@@ -881,48 +894,16 @@ void FileSystemDock::_move_operation(const String &p_to_path) {
 }
 
 void FileSystemDock::_file_option(int p_option) {
-
 	switch (p_option) {
-
-		case FILE_SHOW_IN_EXPLORER:
+		case FILE_SHOW_IN_EXPLORER: {
+			String dir = ProjectSettings::get_singleton()->globalize_path(this->path);
+			OS::get_singleton()->shell_open(String("file://") + dir);
+		} break;
 		case FILE_OPEN: {
-			int idx = -1;
-			for (int i = 0; i < files->get_item_count(); i++) {
-				if (files->is_selected(i)) {
-					idx = i;
-					break;
-				}
-			}
-
-			if (idx < 0)
-				return;
-
-			String path = files->get_item_metadata(idx);
-			if (p_option == FILE_SHOW_IN_EXPLORER) {
-				String dir = ProjectSettings::get_singleton()->globalize_path(path);
-				dir = dir.substr(0, dir.find_last("/"));
-				OS::get_singleton()->shell_open(String("file://") + dir);
-				return;
-			}
-
-			if (path.ends_with("/")) {
-				if (path != "res://") {
-					path = path.substr(0, path.length() - 1);
-				}
-				this->path = path;
-				_update_files(false);
-				current_path->set_text(path);
-				_push_to_history();
-			} else {
-
-				if (ResourceLoader::get_resource_type(path) == "PackedScene") {
-
-					editor->open_request(path);
-				} else {
-
-					editor->load_resource(path);
-				}
-			}
+			int idx = files->get_current();
+			if (idx < 0 || idx >= files->get_item_count())
+				break;
+			_select_file(idx);
 		} break;
 		case FILE_INSTANCE: {
 
@@ -1052,15 +1033,14 @@ void FileSystemDock::_file_option(int p_option) {
 
 			}
 			*/
-
 		} break;
-		case FILE_COPY_PATH:
-
+		case FILE_COPY_PATH: {
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
 			String path = files->get_item_metadata(idx);
 			OS::get_singleton()->set_clipboard(path);
+		} break;
 	}
 }
 
@@ -1070,26 +1050,28 @@ void FileSystemDock::_folder_option(int p_option) {
 	TreeItem *child = item->get_children();
 
 	switch (p_option) {
-
-		case FOLDER_EXPAND_ALL:
+		case FOLDER_EXPAND_ALL: {
 			item->set_collapsed(false);
 			while (child) {
 				child->set_collapsed(false);
 				child = child->get_next();
 			}
-			break;
-
-		case FOLDER_COLLAPSE_ALL:
+		} break;
+		case FOLDER_COLLAPSE_ALL: {
 			while (child) {
 				child->set_collapsed(true);
 				child = child->get_next();
 			}
-			break;
-		case FOLDER_SHOW_IN_EXPLORER:
+		} break;
+		case FOLDER_COPY_PATH: {
+			String path = item->get_metadata(tree->get_selected_column());
+			OS::get_singleton()->set_clipboard(path);
+		} break;
+		case FOLDER_SHOW_IN_EXPLORER: {
 			String path = item->get_metadata(tree->get_selected_column());
 			String dir = ProjectSettings::get_singleton()->globalize_path(path);
 			OS::get_singleton()->shell_open(String("file://") + dir);
-			return;
+		} break;
 	}
 }
 
@@ -1128,9 +1110,14 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
 	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
 
-	folder_options->add_separator();
-	folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
-
+	TreeItem *item = tree->get_selected();
+	if (item) {
+		String fpath = item->get_metadata(tree->get_selected_column());
+		folder_options->add_separator();
+		folder_options->add_item(TTR("Copy Path"), FOLDER_COPY_PATH);
+		folder_options->add_separator();
+		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
 }
@@ -1462,99 +1449,67 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
-	Vector<String> filenames;
-
-	bool all_scenes = true;
-	bool all_can_reimport = true;
-	bool is_dir = false;
-	Set<String> types;
-
-	for (int i = 0; i < files->get_item_count(); i++) {
-
-		if (!files->is_selected(i))
-			continue;
-
-		String path = files->get_item_metadata(i);
-
-		if (files->get_item_text(i) == "..") {
-			// no operate on ..
-			return;
+	//Right clicking ".." should clear current selection
+	if (files->get_item_text(p_item) == "..") {
+		for (int i = 0; i < files->get_item_count(); i++) {
+			files->unselect(i);
 		}
-
-		if (path.ends_with("/")) {
-			is_dir = true;
-		}
-
-		int pos;
-
-		EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->find_file(path, &pos);
-
-		if (efsd) {
-
-		} else {
-			all_can_reimport = false;
-		}
-
-		filenames.push_back(path);
-		if (EditorFileSystem::get_singleton()->get_file_type(path) != "PackedScene")
-			all_scenes = false;
 	}
 
-	if (filenames.size() == 0)
-		return;
+	Vector<String> filenames;
+	Vector<String> foldernames;
+
+	bool all_files = true;
+	bool all_files_scenes = true;
+	bool all_folders = true;
+	for (int i = 0; i < files->get_item_count(); i++) {
+		if (!files->is_selected(i)) {
+			continue;
+		}
+
+		String path = files->get_item_metadata(i);
+		if (path.ends_with("/")) {
+			foldernames.push_back(path);
+			all_files = false;
+		} else {
+			filenames.push_back(path);
+			all_folders = false;
+			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(path) == "PackedScene");
+		}
+	}
 
 	file_options->clear();
 	file_options->set_size(Size2(1, 1));
+	if (all_files && filenames.size() > 0) {
+		file_options->add_item(TTR("Open"), FILE_OPEN);
+		if (all_files_scenes) {
+			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
+		}
+		file_options->add_separator();
 
-	file_options->add_item(TTR("Open"), FILE_OPEN);
-	if (all_scenes) {
-		file_options->add_item(TTR("Instance"), FILE_INSTANCE);
-	}
-
-	file_options->add_separator();
-
-	if (filenames.size() == 1 && !is_dir) {
-		file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
-		file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
+		if (filenames.size() == 1) {
+			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
+			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
+			file_options->add_separator();
+		}
+	} else if (all_folders && foldernames.size() > 0) {
+		file_options->add_item(TTR("Open"), FILE_OPEN);
 		file_options->add_separator();
 	}
 
-	if (!is_dir) {
-		if (filenames.size() == 1) {
+	int num_items = filenames.size() + foldernames.size();
+	if (num_items >= 1) {
+		if (num_items == 1) {
 			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
 			file_options->add_item(TTR("Rename or Move.."), FILE_MOVE);
 		} else {
 			file_options->add_item(TTR("Move To.."), FILE_MOVE);
 		}
+		file_options->add_item(TTR("Delete"), FILE_REMOVE);
+		file_options->add_separator();
 	}
 
-	file_options->add_item(TTR("Delete"), FILE_REMOVE);
-
-	//file_options->add_item(TTR("Info"),FILE_INFO);
-
-	file_options->add_separator();
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
-
-	if (all_can_reimport && types.size() == 1) { //all can reimport and are of the same type
-
-		/*
-		bool valid=true;
-		Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(types.front()->get());
-		if (rimp.is_valid()) {
-
-			if (filenames.size()>1 && !rimp->can_reimport_multiple_files())	{
-				valid=false;
-			}
-		} else {
-			valid=false;
-		}
-
-		if (valid) {
-			file_options->add_separator();
-			file_options->add_item(TTR("Re-Import.."),FILE_REIMPORT);
-		}
-		*/
-	}
 
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();

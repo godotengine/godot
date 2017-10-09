@@ -77,7 +77,8 @@ private:
 	enum FolderMenu {
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
-		FOLDER_SHOW_IN_EXPLORER
+		FOLDER_SHOW_IN_EXPLORER,
+		FOLDER_COPY_PATH
 	};
 
 	VBoxContainer *scanning_vb;
