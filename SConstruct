@@ -409,6 +409,7 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if (env['vsproj']) == "yes":
+        env['CPPPATH'] = [Dir(path) for path in env['CPPPATH']]
         methods.generate_vs_project(env, env['vsproj_jobs'])
 
 else:
