@@ -35,7 +35,7 @@ namespace Godot
 
         public Transform rotated(Vector3 axis, float phi)
         {
-            return this * new Transform(new Basis(axis, phi), new Vector3());
+            return new Transform(new Basis(axis, phi), new Vector3()) * this;
         }
 
         public Transform scaled(Vector3 scale)
@@ -101,6 +101,12 @@ namespace Godot
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
             this.basis = Basis.create_from_axes(xAxis, yAxis, zAxis);
+            this.origin = origin;
+        }
+
+        public Transform(Quat quat, Vector3 origin)
+        {
+            this.basis = new Basis(quat);
             this.origin = origin;
         }
 

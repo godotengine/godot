@@ -160,26 +160,29 @@ namespace Godot
             Basis m = this.orthonormalized();
 
             Vector3 euler;
+            euler.z = 0.0f;
 
-            euler.y = Mathf.asin(m.x[2]);
+            float mxy = m.y[2];
 
-            if (euler.y < Mathf.PI * 0.5f)
+
+            if (mxy < 1.0f)
             {
-                if (euler.y > -Mathf.PI * 0.5f)
+                if (mxy > -1.0f)
                 {
-                    euler.x = Mathf.atan2(-m.y[2], m.z[2]);
-                    euler.z = Mathf.atan2(-m.x[1], m.x[0]);
+                    euler.x = Mathf.asin(-mxy);
+                    euler.y = Mathf.atan2(m.x[2], m.z[2]);
+                    euler.z = Mathf.atan2(m.y[0], m.y[1]);
                 }
                 else
                 {
-                    euler.z = 0.0f;
-                    euler.x = euler.z - Mathf.atan2(m.y[0], m.y[1]);
+                    euler.x = Mathf.PI * 0.5f;
+                    euler.y = -Mathf.atan2(-m.x[1], m.x[0]);
                 }
             }
             else
             {
-                euler.z = 0f;
-                euler.x = Mathf.atan2(m.x[1], m.y[1]) - euler.z;
+                euler.x = -Mathf.PI * 0.5f;
+                euler.y = -Mathf.atan2(m.x[1], m.x[0]);
             }
 
             return euler;
@@ -273,7 +276,7 @@ namespace Godot
 
         public Basis rotated(Vector3 axis, float phi)
         {
-            return this * new Basis(axis, phi);
+            return new Basis(axis, phi) * this;
         }
 
         public Basis scaled(Vector3 scale)
@@ -281,13 +284,13 @@ namespace Godot
             Basis m = this;
 
             m[0, 0] *= scale.x;
-            m[1, 0] *= scale.x;
-            m[2, 0] *= scale.x;
-            m[0, 1] *= scale.y;
+            m[0, 1] *= scale.x;
+            m[0, 2] *= scale.x;
+            m[1, 0] *= scale.y;
             m[1, 1] *= scale.y;
-            m[2, 1] *= scale.y;
-            m[0, 2] *= scale.z;
-            m[1, 2] *= scale.z;
+            m[1, 2] *= scale.y;
+            m[2, 0] *= scale.z;
+            m[2, 1] *= scale.z;
             m[2, 2] *= scale.z;
 
             return m;
@@ -346,6 +349,48 @@ namespace Godot
                 (this[0, 2] * v.x) + (this[1, 2] * v.y) + (this[2, 2] * v.z)
             );
         }
+
+		public Quat Quat() {
+			float trace = x[0] + y[1] + z[2];
+
+			if (trace > 0.0f) {
+				float s = Mathf.sqrt(trace + 1.0f) * 2f;
+				float inv_s = 1f / s;
+				return new Quat(
+					(z[1] - y[2]) * inv_s,
+					(x[2] - z[0]) * inv_s,
+					(y[0] - x[1]) * inv_s,
+					s * 0.25f
+				);
+			} else if (x[0] > y[1] && x[0] > z[2]) {
+				float s = Mathf.sqrt(x[0] - y[1] - z[2] + 1.0f) * 2f;
+				float inv_s = 1f / s;
+				return new Quat(
+					s * 0.25f,
+					(x[1] + y[0]) * inv_s,
+					(x[2] + z[0]) * inv_s,
+					(z[1] - y[2]) * inv_s
+				);
+			} else if (y[1] > z[2]) {
+				float s = Mathf.sqrt(-x[0] + y[1] - z[2] + 1.0f) * 2f;
+				float inv_s = 1f / s;
+				return new Quat(
+					(x[1] + y[0]) * inv_s,
+					s * 0.25f,
+					(y[2] + z[1]) * inv_s,
+					(x[2] - z[0]) * inv_s
+				);
+			} else {
+				float s = Mathf.sqrt(-x[0] - y[1] + z[2] + 1.0f) * 2f;
+				float inv_s = 1f / s;
+				return new Quat(
+					(x[2] + z[0]) * inv_s,
+					(y[2] + z[1]) * inv_s,
+					s * 0.25f,
+					(y[0] - x[1]) * inv_s
+				);
+			}
+		}
 
         public Basis(Quat quat)
         {

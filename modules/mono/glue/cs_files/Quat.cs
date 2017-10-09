@@ -201,12 +201,12 @@ namespace Godot
             }
             else
             {
-                float s = Mathf.sin(-angle * 0.5f) / d;
+                float s = Mathf.sin(angle * 0.5f) / d;
 
                 x = axis.x * s;
                 y = axis.y * s;
                 z = axis.z * s;
-                w = Mathf.cos(-angle * 0.5f);
+                w = Mathf.cos(angle * 0.5f);
             }
         }
 
