@@ -237,7 +237,7 @@ def make_license_header(target, source, env):
     g.write("static const char *about_license =")
 
     for line in f:
-        escaped_string = escape_string(line.strip().replace("\"", "\\\""))
+        escaped_string = escape_string(line.strip())
         g.write("\n\t\"" + escaped_string + "\\n\"")
 
     g.write(";\n")
@@ -323,12 +323,12 @@ def make_license_header(target, source, env):
             for k in j[0].split("\n"):
                 if file_body != "":
                     file_body += "\\n\"\n"
-                escaped_string = escape_string(k.strip().replace("\"", "\\\""))
+                escaped_string = escape_string(k.strip())
                 file_body += "\t\"" + escaped_string
             for k in j[1].split("\n"):
                 if copyright_body != "":
                     copyright_body += "\\n\"\n"
-                escaped_string = escape_string(k.strip().replace("\"", "\\\""))
+                escaped_string = escape_string(k.strip())
                 copyright_body += "\t\"" + escaped_string
 
             about_tp_file += "\t" + file_body + "\",\n"
@@ -343,7 +343,7 @@ def make_license_header(target, source, env):
         for j in i[1].split("\n"):
             if body != "":
                 body += "\\n\"\n"
-            escaped_string = escape_string(j.strip().replace("\"", "\\\""))
+            escaped_string = escape_string(j.strip())
             body += "\t\"" + escaped_string
 
         about_license_name += "\t\"" + i[0] + "\",\n"
