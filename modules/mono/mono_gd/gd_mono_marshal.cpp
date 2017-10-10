@@ -705,9 +705,9 @@ MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
 		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 4, i);
 		const Color &elem = p_array[i];
 		raw[0] = elem.r;
-		raw[4] = elem.g;
-		raw[8] = elem.b;
-		raw[12] = elem.a;
+		raw[1] = elem.g;
+		raw[2] = elem.b;
+		raw[3] = elem.a;
 #endif
 	}
 
@@ -737,7 +737,7 @@ MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
 		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 2, i);
 		const Vector2 &elem = p_array[i];
 		raw[0] = elem.x;
-		raw[4] = elem.y;
+		raw[1] = elem.y;
 #endif
 	}
 
@@ -767,8 +767,8 @@ MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
 		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 3, i);
 		const Vector3 &elem = p_array[i];
 		raw[0] = elem.x;
-		raw[4] = elem.y;
-		raw[8] = elem.z;
+		raw[1] = elem.y;
+		raw[2] = elem.z;
 #endif
 	}
 
