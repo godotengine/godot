@@ -88,8 +88,11 @@ public:
 	Vector3 get_euler_yxz() const;
 	void set_euler_yxz(const Vector3 &p_euler);
 
-	Vector3 get_euler() const { return get_euler_yxz(); };
-	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
+	Quat get_quat() const;
+	void set_quat(const Quat &p_quat);
+
+	Vector3 get_euler() const { return get_euler_yxz(); }
+	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); }
 
 	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
 	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);
@@ -205,11 +208,11 @@ public:
 	bool is_symmetric() const;
 	Basis diagonalize();
 
-	operator Quat() const;
+	operator Quat() const { return get_quat(); }
 
-	Basis(const Quat &p_quat); // euler
-	Basis(const Vector3 &p_euler); // euler
-	Basis(const Vector3 &p_axis, real_t p_phi);
+	Basis(const Quat &p_quat) { set_quat(p_quat); };
+	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
+	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;
