@@ -44,21 +44,22 @@ FT_BEGIN_HEADER
    *   Reduce color fringes of subpixel-rendered bitmaps.
    *
    * @description:
-   *   Subpixel rendering exploits the color-striped structure of LCD
-   *   pixels, increasing the available resolution in the direction of the
-   *   stripe (usually horizontal RGB) by a factor of~3.  Since these
+   *   Should you #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING in your
+   *   `ftoption.h', which enables patented ClearType-style rendering,
+   *   the LCD-optimized glyph bitmaps should be filtered to reduce color
+   *   fringes inherent to this technology.  The default FreeType LCD
+   *   rendering uses different technology, and API described below,
+   *   although available, does nothing.
+   *
+   *   ClearType-style LCD rendering exploits the color-striped structure of
+   *   LCD pixels, increasing the available resolution in the direction of
+   *   the stripe (usually horizontal RGB) by a factor of~3.  Since these
    *   subpixels are color pixels, using them unfiltered creates severe
    *   color fringes.  Use the @FT_Library_SetLcdFilter API to specify a
    *   low-pass filter, which is then applied to subpixel-rendered bitmaps
    *   generated through @FT_Render_Glyph.  The filter sacrifices some of
    *   the higher resolution to reduce color fringes, making the glyph image
    *   slightly blurrier.  Positional improvements will remain.
-   *
-   *   Note that no filter is active by default, and that this function is
-   *   *not* implemented in default builds of the library.  You need to
-   *   #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING in your `ftoption.h' file
-   *   in order to activate it and explicitly call @FT_Library_SetLcdFilter
-   *   to enable it.
    *
    *   A filter should have two properties:
    *

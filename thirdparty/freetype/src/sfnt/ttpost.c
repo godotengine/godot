@@ -325,7 +325,6 @@
     FT_UNUSED( post_limit );
 
 
-    /* UNDOCUMENTED!  This value appears only in the Apple TT specs. */
     if ( FT_READ_USHORT( num_glyphs ) )
       goto Exit;
 
@@ -408,7 +407,7 @@
     /* now read postscript table */
     if ( format == 0x00020000L )
       error = load_format_20( face, stream, post_limit );
-    else if ( format == 0x00028000L )
+    else if ( format == 0x00025000L )
       error = load_format_25( face, stream, post_limit );
     else
       error = FT_THROW( Invalid_File_Format );
@@ -447,7 +446,7 @@
         FT_FREE( table->glyph_names );
         table->num_names = 0;
       }
-      else if ( format == 0x00028000L )
+      else if ( format == 0x00025000L )
       {
         TT_Post_25  table = &names->names.format_25;
 
@@ -543,7 +542,7 @@
           *PSname = (FT_String*)table->glyph_names[name_index - 258];
       }
     }
-    else if ( format == 0x00028000L )
+    else if ( format == 0x00025000L )
     {
       TT_Post_25  table = &names->names.format_25;
 

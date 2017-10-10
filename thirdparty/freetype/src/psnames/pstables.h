@@ -19,7 +19,7 @@
   /* This file has been generated automatically -- do not edit! */
 
 
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -27,7 +27,7 @@
 #endif
 #endif
   const char  ft_standard_glyph_names[3696]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
     '.','n','u','l','l', 0,
@@ -451,7 +451,7 @@
     'R','o','m','a','n', 0,
     'S','e','m','i','b','o','l','d', 0,
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
@@ -459,7 +459,7 @@
 
   /* Values are offsets into the `ft_standard_glyph_names' table */
 
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -467,7 +467,7 @@
 #endif
 #endif
   const short  ft_mac_names[FT_NUM_MAC_NAMES]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
      253,   0,   6, 261, 267, 274, 283, 294, 301, 309, 758, 330, 340, 351,
@@ -490,7 +490,7 @@
     1270,1313,1323,1171,1290,1332,1211,1235,1276, 169, 175, 182, 189, 200,
      209, 218, 225, 232, 239, 246
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
@@ -498,7 +498,7 @@
 
   /* Values are offsets into the `ft_standard_glyph_names' table */
 
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -506,7 +506,7 @@
 #endif
 #endif
   const short  ft_sid_names[FT_NUM_SID_NAMES]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
      253, 261, 267, 274, 283, 294, 301, 309, 319, 330, 340, 351, 360, 365,
@@ -538,12 +538,12 @@
     3418,3430,3442,3454,3471,3483,3498,3506,3518,3530,3542,3559,3574,3586,
     3597,3612,3620,3628,3636,3644,3650,3655,3660,3666,3673,3681,3687
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
   /* the following are indices into the SID name table */
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -551,7 +551,7 @@
 #endif
 #endif
   const unsigned short  t1_standard_encoding[256]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -571,12 +571,12 @@
       0,138,  0,139,  0,  0,  0,  0,140,141,142,143,  0,  0,  0,  0,
       0,144,  0,  0,  0,145,  0,  0,146,147,148,149,  0,  0,  0,  0
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
   /* the following are indices into the SID name table */
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -584,7 +584,7 @@
 #endif
 #endif
   const unsigned short  t1_expert_encoding[256]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -604,7 +604,7 @@
     347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,
     363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
@@ -619,7 +619,7 @@
 
 #ifdef FT_CONFIG_OPTION_ADOBE_GLYPH_LIST
 
-#ifndef  DEFINE_PS_TABLES
+#ifndef  DEFINE_PS_TABLES_DATA
 #ifdef  __cplusplus
   extern "C"
 #else
@@ -627,7 +627,7 @@
 #endif
 #endif
   const unsigned char  ft_adobe_glyph_list[55997L]
-#ifdef  DEFINE_PS_TABLES
+#ifdef  DEFINE_PS_TABLES_DATA
   =
   {
       0, 52,  0,106,  2,167,  3, 63,  4,220,  6,125,  9,143, 10, 23,
@@ -4131,7 +4131,7 @@
     182,117,  2,218,167,218,178,232,233,242,225,231,225,238, 97,128,
      48, 90,235,225,244,225,235,225,238, 97,128, 48,186
   }
-#endif /* DEFINE_PS_TABLES */
+#endif /* DEFINE_PS_TABLES_DATA */
   ;
 
 
