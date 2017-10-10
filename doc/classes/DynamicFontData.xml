@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DynamicFontData" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Used with [DynamicFont] to describe the location of a font file.
 	</brief_description>
 	<description>
+		Used with [DynamicFont] to describe the location of a vector font file for dynamic rendering at runtime.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +15,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the font path.
 			</description>
 		</method>
 		<method name="set_font_path">
@@ -21,11 +24,13 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Sets the font path.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path">
+			The path to the vector font file.
 		</member>
 	</members>
 	<constants>
