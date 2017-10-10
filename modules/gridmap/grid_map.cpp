@@ -822,7 +822,7 @@ void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::
 void GridMap::set_cell_scale(float p_scale) {
 
 	cell_scale = p_scale;
-	_queue_octants_dirty();
+	_recreate_octant_data();
 }
 
 float GridMap::get_cell_scale() const {
