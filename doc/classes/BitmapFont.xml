@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BitmapFont" inherits="Font" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Renders text using [code]*.fnt[/code] fonts.
 	</brief_description>
 	<description>
+		Renders text using [code]*.fnt[/code] fonts containing texture atlases. Supports distance fields. For using vector font files like TTF directly, see [DynamicFont].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,7 +25,7 @@
 			<argument index="4" name="advance" type="float" default="-1">
 			</argument>
 			<description>
-				Add a character to the font, where [i]character[/i] is the unicode value, [i]texture[/i] is the texture index, [i]rect[/i] is the region in the texture (in pixels!), [i]align[/i] is the (optional) alignment for the character and [i]advance[/i] is the (optional) advance.
+				Adds a character to the font, where [code]character[/code] is the unicode value, [code]texture[/code] is the texture index, [code]rect[/code] is the region in the texture (in pixels!), [code]align[/code] is the (optional) alignment for the character and [code]advance[/code] is the (optional) advance.
 			</description>
 		</method>
 		<method name="add_kerning_pair">
@@ -36,7 +38,7 @@
 			<argument index="2" name="kerning" type="int">
 			</argument>
 			<description>
-				Add a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+				Adds a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="add_texture">
@@ -45,14 +47,14 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Add a texture to the [BitmapFont].
+				Adds a texture to the [BitmapFont].
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clear all the font data.
+				Clears all the font data and settings.
 			</description>
 		</method>
 		<method name="create_from_fnt">
@@ -61,6 +63,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Creates a BitmapFont from the [code]*.fnt[/code] file at [code]path[/code].
 			</description>
 		</method>
 		<method name="get_char_size" qualifiers="const">
@@ -71,13 +74,14 @@
 			<argument index="1" name="next" type="int" default="0">
 			</argument>
 			<description>
-				Return the size of a character, optionally taking kerning into account if the next character is provided.
+				Returns the size of a character, optionally taking kerning into account if the next character is provided.
 			</description>
 		</method>
 		<method name="get_fallback" qualifiers="const">
 			<return type="BitmapFont">
 			</return>
 			<description>
+				Returns the fallback BitmapFont.
 			</description>
 		</method>
 		<method name="get_kerning_pair" qualifiers="const">
@@ -88,7 +92,7 @@
 			<argument index="1" name="char_b" type="int">
 			</argument>
 			<description>
-				Return a kerning pair as a difference.
+				Returns a kerning pair as a difference.
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
@@ -97,12 +101,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the font atlas texture at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of textures in the BitmapFont atlas.
 			</description>
 		</method>
 		<method name="set_ascent">
@@ -111,7 +117,7 @@
 			<argument index="0" name="px" type="float">
 			</argument>
 			<description>
-				Set the font ascent (number of pixels above the baseline).
+				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="set_distance_field_hint">
@@ -120,6 +126,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] distance field hint is enabled.
 			</description>
 		</method>
 		<method name="set_fallback">
@@ -128,6 +135,7 @@
 			<argument index="0" name="fallback" type="BitmapFont">
 			</argument>
 			<description>
+				Sets the fallback BitmapFont.
 			</description>
 		</method>
 		<method name="set_height">
@@ -136,24 +144,31 @@
 			<argument index="0" name="px" type="float">
 			</argument>
 			<description>
-				Set the total font height (ascent plus descent) in pixels.
+				Sets the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="ascent" type="float" setter="set_ascent" getter="get_ascent">
+			Ascent (number of pixels above the baseline).
 		</member>
 		<member name="chars" type="PoolIntArray" setter="_set_chars" getter="_get_chars">
+			The characters in the BitmapFont.
 		</member>
 		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint">
+			If [code]true[/code] distance field hint is enabled.
 		</member>
 		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback">
+			The fallback font.
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height">
+			Total font height (ascent plus descent) in pixels.
 		</member>
 		<member name="kernings" type="PoolIntArray" setter="_set_kernings" getter="_get_kernings">
+			The font's kernings as [PoolIntArray].
 		</member>
 		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures">
+			The font's [Texture]\ s.
 		</member>
 	</members>
 	<constants>
