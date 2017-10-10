@@ -343,7 +343,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			execvp(getprogname(), &args[0]);
 		}
 #else
-		execv(p_path.utf8().get_data(), &args[0]);
+		execvp(p_path.utf8().get_data(), &args[0]);
 #endif
 		// still alive? something failed..
 		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
