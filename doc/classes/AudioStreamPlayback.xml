@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayback" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Meta class for playing back audio.
 	</brief_description>
 	<description>
+		Can play, loop, pause a scroll through Audio. See [AudioStream] and [AudioStreamOGGVorbis] for usage.
 	</description>
 	<tutorials>
 	</tutorials>

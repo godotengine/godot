@@ -17,6 +17,7 @@
 			<argument index="0" name="at_position" type="int" default="-1">
 			</argument>
 			<description>
+				Adds a bus at [code]at_position[/code].
 			</description>
 		</method>
 		<method name="add_bus_effect">
@@ -29,18 +30,21 @@
 			<argument index="2" name="at_position" type="int" default="-1">
 			</argument>
 			<description>
+				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
 			<return type="AudioBusLayout">
 			</return>
 			<description>
+				Generates an [AudioBusLayout] using the available busses and effects.
 			</description>
 		</method>
 		<method name="get_bus_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of available busses.
 			</description>
 		</method>
 		<method name="get_bus_effect">
@@ -51,6 +55,7 @@
 			<argument index="1" name="effect_idx" type="int">
 			</argument>
 			<description>
+				Returns the [AudioEffect] at position [code]effect_idx[/code] in bus [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_effect_count">
@@ -59,6 +64,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				Returns the number of effects on the bus at [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_index" qualifiers="const">
@@ -67,6 +73,7 @@
 			<argument index="0" name="bus_name" type="String">
 			</argument>
 			<description>
+				Returns the index of the bus with the name [code]bus_name[/code].
 			</description>
 		</method>
 		<method name="get_bus_name" qualifiers="const">
@@ -75,6 +82,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the bus with the index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_left_db" qualifiers="const">
@@ -85,6 +93,7 @@
 			<argument index="1" name="channel" type="int">
 			</argument>
 			<description>
+				Returns the peak volume of the left speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_peak_volume_right_db" qualifiers="const">
@@ -95,6 +104,7 @@
 			<argument index="1" name="channel" type="int">
 			</argument>
 			<description>
+				Returns the peak volume of the right speaker at bus index [code]bus_idx[/code] and channel index [code]channel[/code].
 			</description>
 		</method>
 		<method name="get_bus_send" qualifiers="const">
@@ -103,6 +113,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the bus that the bus at index [code]bus_idx[/code] sends to.
 			</description>
 		</method>
 		<method name="get_bus_volume_db" qualifiers="const">
@@ -111,18 +122,21 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the sample rate at the output of the audioserver.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
 			<return type="int" enum="AudioServer.SpeakerMode">
 			</return>
 			<description>
+				Returns the speaker configuration.
 			</description>
 		</method>
 		<method name="is_bus_bypassing_effects" qualifiers="const">
@@ -131,6 +145,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="is_bus_effect_enabled" qualifiers="const">
@@ -141,6 +156,7 @@
 			<argument index="1" name="effect_idx" type="int">
 			</argument>
 			<description>
+				If [code]true[/code] the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_bus_mute" qualifiers="const">
@@ -149,6 +165,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="is_bus_solo" qualifiers="const">
@@ -157,12 +174,14 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="lock">
 			<return type="void">
 			</return>
 			<description>
+				Locks the audio drivers mainloop. Remember to unlock it afterwards.
 			</description>
 		</method>
 		<method name="move_bus">
@@ -173,6 +192,7 @@
 			<argument index="1" name="to_index" type="int">
 			</argument>
 			<description>
+				Moves the bus from index [code]index[/code] to index [code]to_index[/code].
 			</description>
 		</method>
 		<method name="remove_bus">
@@ -181,6 +201,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Removes the bus at index [code]index[/code].
 			</description>
 		</method>
 		<method name="remove_bus_effect">
@@ -191,6 +212,7 @@
 			<argument index="1" name="effect_idx" type="int">
 			</argument>
 			<description>
+				Removes the effect at index [code]effect_idx[/code] from the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="set_bus_bypass_effects">
@@ -201,6 +223,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="set_bus_count">
@@ -209,6 +232,7 @@
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
+				Adds and removes busses to make the number of busses match [code]amount[/code].
 			</description>
 		</method>
 		<method name="set_bus_effect_enabled">
@@ -221,6 +245,7 @@
 			<argument index="2" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_bus_layout">
@@ -229,6 +254,7 @@
 			<argument index="0" name="bus_layout" type="AudioBusLayout">
 			</argument>
 			<description>
+				Overwrites the currently used [AudioBusLayout].
 			</description>
 		</method>
 		<method name="set_bus_mute">
@@ -239,6 +265,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="set_bus_name">
@@ -249,6 +276,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Sets the name of the bus at index [code]bus_idx[/code] to [code]name[/code].
 			</description>
 		</method>
 		<method name="set_bus_send">
@@ -259,6 +287,7 @@
 			<argument index="1" name="send" type="String">
 			</argument>
 			<description>
+				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/send].
 			</description>
 		</method>
 		<method name="set_bus_solo">
@@ -269,6 +298,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.	
 			</description>
 		</method>
 		<method name="set_bus_volume_db">
@@ -279,6 +309,7 @@
 			<argument index="1" name="volume_db" type="float">
 			</argument>
 			<description>
+				Sets the volume of the bus at index [code]bus_idx[/code] to [code]volume_db[/code].
 			</description>
 		</method>
 		<method name="swap_bus_effects">
@@ -291,27 +322,33 @@
 			<argument index="2" name="by_effect_idx" type="int">
 			</argument>
 			<description>
+				Swaps the position of two effects in bus [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="unlock">
 			<return type="void">
 			</return>
 			<description>
+				Unlocks the audiodriver's main loop. After locking it always unlock it.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="bus_layout_changed">
 			<description>
+				Emitted when the [AudioBusLayout] changes.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="SPEAKER_MODE_STEREO" value="0">
+			Two or fewer speakers are detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2">
+			A 5.1 channel surround setup detected.
 		</constant>
 		<constant name="SPEAKER_SURROUND_71" value="3">
+			A 7.1 channel surround setup detected.
 		</constant>
 	</constants>
 </class>
