@@ -68,9 +68,9 @@ public:
 	Variant front() const;
 	Variant back() const;
 
-	void sort();
-	void sort_custom(Object *p_obj, const StringName &p_function);
-	void invert();
+	Array &sort();
+	Array &sort_custom(Object *p_obj, const StringName &p_function);
+	Array &invert();
 
 	int find(const Variant &p_value, int p_from = 0) const;
 	int rfind(const Variant &p_value, int p_from = -1) const;
