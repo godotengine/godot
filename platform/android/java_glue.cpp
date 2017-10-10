@@ -602,29 +602,16 @@ struct TST {
 
 TST tst;
 
-struct JAndroidPointerEvent {
-
-	Vector<OS_Android::TouchPos> points;
-	int pointer;
-	int what;
-};
-
-static List<JAndroidPointerEvent> pointer_events;
-static List<Ref<InputEvent> > key_events;
-static List<OS_Android::JoypadEvent> joy_events;
 static bool initialized = false;
 static int step = 0;
 static bool resized = false;
 static bool resized_reload = false;
-static bool go_back_request = false;
 static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
 static HashMap<String, JNISingleton *> jni_singletons;
 static jobject godot_io;
-
-static Vector<int> joy_device_ids;
 
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 
@@ -998,7 +985,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *en
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jobject obj) {
-	go_back_request = true;
+	os_android->main_loop_request_go_back();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jobject obj) {
@@ -1022,36 +1009,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 	}
 
 	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_id());
-
-	while (pointer_events.size()) {
-
-		JAndroidPointerEvent jpe = pointer_events.front()->get();
-		os_android->process_touch(jpe.what, jpe.pointer, jpe.points);
-
-		pointer_events.pop_front();
-	}
-
-	while (key_events.size()) {
-
-		Ref<InputEvent> event = key_events.front()->get();
-		os_android->process_event(event);
-
-		key_events.pop_front();
-	};
-
-	while (joy_events.size()) {
-
-		OS_Android::JoypadEvent event = joy_events.front()->get();
-		os_android->process_joy_event(event);
-
-		joy_events.pop_front();
-	}
-
-	if (go_back_request) {
-
-		os_android->main_loop_request_go_back();
-		go_back_request = false;
-	}
 
 	os_android->process_accelerometer(accelerometer);
 
@@ -1083,12 +1040,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jo
 		points.push_back(tp);
 	}
 
-	JAndroidPointerEvent jpe;
-	jpe.pointer = pointer;
-	jpe.points = points;
-	jpe.what = ev;
+	os_android->process_touch(ev, pointer, points);
 
-	pointer_events.push_back(jpe);
 	/*
 	if (os_android)
 		os_android->process_touch(ev,pointer,points);
@@ -1358,7 +1311,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 	jevent.index = p_button;
 	jevent.pressed = p_pressed;
 
-	joy_events.push_back(jevent);
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
@@ -1369,7 +1322,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, 
 	jevent.index = p_axis;
 	jevent.value = p_value;
 
-	joy_events.push_back(jevent);
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, jobject obj, jint p_device, jint p_hat_x, jint p_hat_y) {
@@ -1390,7 +1343,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 			hat |= InputDefault::HAT_MASK_DOWN;
 	}
 	jevent.hat = hat;
-	joy_events.push_back(jevent);
+
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jobject obj, jint p_device, jboolean p_connected, jstring p_name) {
@@ -1403,6 +1357,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
 	Ref<InputEventKey> ievent;
+	ievent.instance();
 	int val = p_unicode_char;
 	int scancode = android_get_keysym(p_scancode);
 	ievent->set_scancode(scancode);
@@ -1421,10 +1376,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobj
 		ievent->set_unicode(KEY_ENTER);
 	} else if (p_scancode == 4) {
 
-		go_back_request = true;
+		os_android->main_loop_request_go_back();
 	}
 
-	key_events.push_back(ievent);
+	os_android->process_event(ievent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
