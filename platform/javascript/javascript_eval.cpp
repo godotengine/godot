@@ -39,24 +39,41 @@ JavaScript *JavaScript::get_singleton() {
 	return singleton;
 }
 
+extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_poolbytearray_and_open_write(PoolByteArray *p_arr, PoolByteArray::Write *r_write, int p_len) {
+
+	p_arr->resize(p_len);
+	*r_write = p_arr->write();
+	return r_write->ptr();
+}
+
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
 	union {
-		int i;
+		bool b;
 		double d;
 		char *s;
 	} js_data[4];
+
+	PoolByteArray arr;
+	PoolByteArray::Write arr_write;
+
 	/* clang-format off */
 	Variant::Type return_type = static_cast<Variant::Type>(EM_ASM_INT({
 
+		const CODE = $0;
+		const USE_GLOBAL_EXEC_CONTEXT = $1;
+		const PTR = $2;
+		const ELEM_LEN = $3;
+		const BYTEARRAY_PTR = $4;
+		const BYTEARRAY_WRITE_PTR = $5;
 		var eval_ret;
 		try {
-			if ($3) { // p_use_global_exec_context
+			if (USE_GLOBAL_EXEC_CONTEXT) {
 				// indirect eval call grants global execution context
 				var global_eval = eval;
-				eval_ret = global_eval(UTF8ToString($2));
+				eval_ret = global_eval(UTF8ToString(CODE));
 			} else {
-				eval_ret = eval(UTF8ToString($2));
+				eval_ret = eval(UTF8ToString(CODE));
 			}
 		} catch (e) {
 			Module.printErr(e);
@@ -66,16 +83,11 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 		switch (typeof eval_ret) {
 
 			case 'boolean':
-				// bitwise op yields 32-bit int
-				setValue($0, eval_ret|0, 'i32');
+				setValue(PTR, eval_ret, 'i32');
 				return 1; // BOOL
 
 			case 'number':
-				if ((eval_ret|0)===eval_ret) {
-					setValue($0, eval_ret|0, 'i32');
-					return 2; // INT
-				}
-				setValue($0, eval_ret, 'double');
+				setValue(PTR, eval_ret, 'double');
 				return 3; // REAL
 
 			case 'string':
@@ -85,7 +97,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 					if (array_ptr===0) {
 						throw new Error('String allocation failed (probably out of memory)');
 					}
-					setValue($0, array_ptr|0 , '*');
+					setValue(PTR, array_ptr , '*');
 					stringToUTF8(eval_ret, array_ptr, array_len);
 					return 4; // STRING
 				} catch (e) {
@@ -102,41 +114,50 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 					break;
 				}
 
-				else if (typeof eval_ret.x==='number' && typeof eval_ret.y==='number') {
-					setValue($0, eval_ret.x, 'double');
-					setValue($0+$1, eval_ret.y, 'double');
+				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+					eval_ret = new Uint8Array(eval_ret.buffer);
+				}
+				else if (eval_ret instanceof ArrayBuffer) {
+					eval_ret = new Uint8Array(eval_ret);
+				}
+				if (eval_ret instanceof Uint8Array) {
+					var bytes_ptr = ccall('resize_poolbytearray_and_open_write', 'number', ['number', 'number' ,'number'], [BYTEARRAY_PTR, BYTEARRAY_WRITE_PTR, eval_ret.length]);
+					HEAPU8.set(eval_ret, bytes_ptr);
+					return 20; // POOL_BYTE_ARRAY
+				}
+
+				if (typeof eval_ret.x==='number' && typeof eval_ret.y==='number') {
+					setValue(PTR, eval_ret.x, 'double');
+					setValue(PTR + ELEM_LEN, eval_ret.y, 'double');
 					if (typeof eval_ret.z==='number') {
-						setValue($0+$1*2, eval_ret.z, 'double');
+						setValue(PTR + ELEM_LEN*2, eval_ret.z, 'double');
 						return 7; // VECTOR3
 					}
 					else if (typeof eval_ret.width==='number' && typeof eval_ret.height==='number') {
-						setValue($0+$1*2, eval_ret.width, 'double');
-						setValue($0+$1*3, eval_ret.height, 'double');
+						setValue(PTR + ELEM_LEN*2, eval_ret.width, 'double');
+						setValue(PTR + ELEM_LEN*3, eval_ret.height, 'double');
 						return 6; // RECT2
 					}
 					return 5; // VECTOR2
 				}
 
-				else if (typeof eval_ret.r==='number' && typeof eval_ret.g==='number' && typeof eval_ret.b==='number') {
-					// assume 8-bit rgb components since we're on the web
-					setValue($0, eval_ret.r, 'double');
-					setValue($0+$1, eval_ret.g, 'double');
-					setValue($0+$1*2, eval_ret.b, 'double');
-					setValue($0+$1*3, typeof eval_ret.a==='number' ? eval_ret.a : 1, 'double');
+				if (typeof eval_ret.r === 'number' && typeof eval_ret.g === 'number' && typeof eval_ret.b === 'number') {
+					setValue(PTR, eval_ret.r, 'double');
+					setValue(PTR + ELEM_LEN, eval_ret.g, 'double');
+					setValue(PTR + ELEM_LEN*2, eval_ret.b, 'double');
+					setValue(PTR + ELEM_LEN*3, typeof eval_ret.a === 'number' ? eval_ret.a : 1, 'double');
 					return 14; // COLOR
 				}
 				break;
 		}
 		return 0; // NIL
 
-	}, js_data, sizeof *js_data, p_code.utf8().get_data(), p_use_global_exec_context));
+	}, p_code.utf8().get_data(), p_use_global_exec_context, js_data, sizeof *js_data, &arr, &arr_write));
 	/* clang-format on */
 
 	switch (return_type) {
 		case Variant::BOOL:
-			return !!js_data->i;
-		case Variant::INT:
-			return js_data->i;
+			return js_data->b;
 		case Variant::REAL:
 			return js_data->d;
 		case Variant::STRING: {
@@ -153,7 +174,10 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 		case Variant::RECT2:
 			return Rect2(js_data[0].d, js_data[1].d, js_data[2].d, js_data[3].d);
 		case Variant::COLOR:
-			return Color(js_data[0].d / 255., js_data[1].d / 255., js_data[2].d / 255., js_data[3].d);
+			return Color(js_data[0].d, js_data[1].d, js_data[2].d, js_data[3].d);
+		case Variant::POOL_BYTE_ARRAY:
+			arr_write = PoolByteArray::Write();
+			return arr;
 	}
 	return Variant();
 }
