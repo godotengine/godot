@@ -424,6 +424,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
 	_initial_set("editors/2d/keep_margins_when_changing_anchors", false);
 	_initial_set("editors/2d/warped_mouse_panning", true);
+	_initial_set("editors/2d/simple_spacebar_panning", false);
 	_initial_set("editors/2d/scroll_to_pan", false);
 	_initial_set("editors/2d/pan_speed", 20);
 

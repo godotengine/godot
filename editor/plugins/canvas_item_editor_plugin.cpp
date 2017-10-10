@@ -1858,7 +1858,17 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		}
 
 		if (drag == DRAG_NONE) {
-			if (((m->get_button_mask() & BUTTON_MASK_LEFT) && tool == TOOL_PAN) || (m->get_button_mask() & BUTTON_MASK_MIDDLE) || ((m->get_button_mask() & BUTTON_MASK_LEFT) && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+			bool space_pressed = Input::get_singleton()->is_key_pressed(KEY_SPACE);
+			bool simple_panning = EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning");
+			int button = m->get_button_mask();
+
+			// Check if any of the panning triggers are activated
+			bool panning_tool = (button & BUTTON_MASK_LEFT) && tool == TOOL_PAN;
+			bool panning_middle_button = button & BUTTON_MASK_MIDDLE;
+			bool panning_spacebar = (button & BUTTON_MASK_LEFT) && space_pressed;
+			bool panning_spacebar_simple = space_pressed && simple_panning;
+
+			if (panning_tool || panning_middle_button || panning_spacebar || panning_spacebar_simple) {
 				// Pan the viewport
 				Point2i relative;
 				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
