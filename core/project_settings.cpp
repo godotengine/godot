@@ -797,16 +797,19 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	return OK;
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_override_default) {
 
 	Variant ret;
 	if (ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ret = ProjectSettings::get_singleton()->get(p_var);
 	} else {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
+		p_override_default = true;
 		ret = p_default;
 	}
-	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
+	if (p_override_default) {
+		ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
+	}
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
 	return ret;
 }
