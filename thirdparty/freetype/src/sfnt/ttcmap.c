@@ -23,8 +23,10 @@
 
 #include FT_INTERNAL_VALIDATE_H
 #include FT_INTERNAL_STREAM_H
+#include FT_SERVICE_POSTSCRIPT_CMAPS_H
 #include "ttload.h"
 #include "ttcmap.h"
+#include "ttpost.h"
 #include "sfntpic.h"
 
 
@@ -3622,6 +3624,110 @@
 #endif /* TT_CONFIG_CMAP_FORMAT_14 */
 
 
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                       SYNTHETIC UNICODE                       *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+  /*        This charmap is generated using postscript glyph names.        */
+
+#ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
+
+  FT_CALLBACK_DEF( const char * )
+  tt_get_glyph_name( TT_Face  face,
+                     FT_UInt  idx )
+  {
+    FT_String*  PSname;
+
+
+    tt_face_get_ps_name( face, idx, &PSname );
+
+    return PSname;
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  tt_cmap_unicode_init( PS_Unicodes  unicodes,
+                        FT_Pointer   pointer )
+  {
+    TT_Face             face    = (TT_Face)FT_CMAP_FACE( unicodes );
+    FT_Memory           memory  = FT_FACE_MEMORY( face );
+    FT_Service_PsCMaps  psnames = (FT_Service_PsCMaps)face->psnames;
+
+    FT_UNUSED( pointer );
+
+
+    return psnames->unicodes_init( memory,
+                                   unicodes,
+                                   face->root.num_glyphs,
+                                   (PS_GetGlyphNameFunc)&tt_get_glyph_name,
+                                   (PS_FreeGlyphNameFunc)NULL,
+                                   (FT_Pointer)face );
+  }
+
+
+  FT_CALLBACK_DEF( void )
+  tt_cmap_unicode_done( PS_Unicodes  unicodes )
+  {
+    FT_Face    face   = FT_CMAP_FACE( unicodes );
+    FT_Memory  memory = FT_FACE_MEMORY( face );
+
+
+    FT_FREE( unicodes->maps );
+    unicodes->num_maps = 0;
+  }
+
+
+  FT_CALLBACK_DEF( FT_UInt )
+  tt_cmap_unicode_char_index( PS_Unicodes  unicodes,
+                              FT_UInt32    char_code )
+  {
+    TT_Face             face    = (TT_Face)FT_CMAP_FACE( unicodes );
+    FT_Service_PsCMaps  psnames = (FT_Service_PsCMaps)face->psnames;
+
+
+    return psnames->unicodes_char_index( unicodes, char_code );
+  }
+
+
+  FT_CALLBACK_DEF( FT_UInt32 )
+  tt_cmap_unicode_char_next( PS_Unicodes  unicodes,
+                             FT_UInt32   *pchar_code )
+  {
+    TT_Face             face    = (TT_Face)FT_CMAP_FACE( unicodes );
+    FT_Service_PsCMaps  psnames = (FT_Service_PsCMaps)face->psnames;
+
+
+    return psnames->unicodes_char_next( unicodes, pchar_code );
+  }
+
+
+  FT_DEFINE_TT_CMAP(
+    tt_cmap_unicode_class_rec,
+
+      sizeof ( PS_UnicodesRec ),
+
+      (FT_CMap_InitFunc)     tt_cmap_unicode_init,        /* init       */
+      (FT_CMap_DoneFunc)     tt_cmap_unicode_done,        /* done       */
+      (FT_CMap_CharIndexFunc)tt_cmap_unicode_char_index,  /* char_index */
+      (FT_CMap_CharNextFunc) tt_cmap_unicode_char_next,   /* char_next  */
+
+      (FT_CMap_CharVarIndexFunc)    NULL,  /* char_var_index   */
+      (FT_CMap_CharVarIsDefaultFunc)NULL,  /* char_var_default */
+      (FT_CMap_VariantListFunc)     NULL,  /* variant_list     */
+      (FT_CMap_CharVariantListFunc) NULL,  /* charvariant_list */
+      (FT_CMap_VariantCharListFunc) NULL,  /* variantchar_list */
+
+    ~0U,
+    (TT_CMap_ValidateFunc)NULL,  /* validate      */
+    (TT_CMap_Info_GetFunc)NULL   /* get_cmap_info */
+  )
+
+#endif /* FT_CONFIG_OPTION_POSTSCRIPT_NAMES */
+
 #ifndef FT_CONFIG_OPTION_PIC
 
   static const TT_CMap_Class  tt_cmap_classes[] =
@@ -3801,8 +3907,10 @@
     FT_CMap        cmap  = (FT_CMap)charmap;
     TT_CMap_Class  clazz = (TT_CMap_Class)cmap->clazz;
 
-
-    return clazz->get_cmap_info( charmap, cmap_info );
+    if ( clazz->get_cmap_info )
+      return clazz->get_cmap_info( charmap, cmap_info );
+    else
+      return FT_THROW( Invalid_CharMap_Format );
   }
 
 

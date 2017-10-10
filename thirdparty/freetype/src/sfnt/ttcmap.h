@@ -141,6 +141,8 @@ FT_BEGIN_HEADER
 #define TT_VALID_GLYPH_COUNT( x )  TT_VALIDATOR( x )->num_glyphs
 
 
+  FT_CALLBACK_TABLE const TT_CMap_ClassRec  tt_cmap_unicode_class_rec;
+
   FT_LOCAL( FT_Error )
   tt_face_build_cmaps( TT_Face  face );
 

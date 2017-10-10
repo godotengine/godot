@@ -1064,24 +1064,24 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    FreeType used to provide an area of memory called the `render      */
-  /*    pool' available to all registered rasters.  This was not thread    */
-  /*    safe however and now FreeType never allocates this pool.  NULL     */
-  /*    is always passed in as pool_base.                                  */
+  /*    pool' available to all registered rasterizers.  This was not       */
+  /*    thread safe, however, and now FreeType never allocates this pool.  */
   /*                                                                       */
-  /*    This function is called each time the render pool changes, or just */
-  /*    after a new raster object is created.                              */
+  /*    This function is called after a new raster object is created.      */
   /*                                                                       */
   /* <Input>                                                               */
   /*    raster    :: A handle to the new raster object.                    */
   /*                                                                       */
-  /*    pool_base :: The address in memory of the render pool.             */
+  /*    pool_base :: Previously, the address in memory of the render pool. */
+  /*                 Set this to NULL.                                     */
   /*                                                                       */
-  /*    pool_size :: The size in bytes of the render pool.                 */
+  /*    pool_size :: Previously, the size in bytes of the render pool.     */
+  /*                 Set this to 0.                                        */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    Rasters should ignore the render pool and rely on dynamic or stack */
-  /*    allocation if they want to (a handle to the memory allocator is    */
-  /*    passed to the raster constructor).                                 */
+  /*    Rasterizers should rely on dynamic or stack allocation if they     */
+  /*    want to (a handle to the memory allocator is passed to the         */
+  /*    rasterizer constructor).                                           */
   /*                                                                       */
   typedef void
   (*FT_Raster_ResetFunc)( FT_Raster       raster,

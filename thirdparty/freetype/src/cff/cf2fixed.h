@@ -63,10 +63,10 @@ FT_BEGIN_HEADER
           ( (FT_Short)( ( (FT_UInt32)(x) + 0x8000U ) >> 16 ) )
 #define cf2_fixedRound( x )                                              \
           ( (CF2_Fixed)( ( (FT_UInt32)(x) + 0x8000U ) & 0xFFFF0000UL ) )
-#define cf2_floatToFixed( f )                                            \
+#define cf2_doubleToFixed( f )                                           \
           ( (CF2_Fixed)( (f) * 65536.0 + 0.5 ) )
 #define cf2_fixedAbs( x )                                                \
-          ( (x) < 0 ? -(x) : (x) )
+          ( (x) < 0 ? NEG_INT32( x ) : (x) )
 #define cf2_fixedFloor( x )                                              \
           ( (CF2_Fixed)( (FT_UInt32)(x) & 0xFFFF0000UL ) )
 #define cf2_fixedFraction( x )                                           \

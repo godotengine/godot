@@ -872,11 +872,6 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_KAYAH_LI_LARGE_DESCENDER, 0                                 }
     { AF_BLUE_STRING_MAX,                      0                                 }
 
-  AF_BLUE_STRINGSET_KNDA
-    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
-    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          }
-    { AF_BLUE_STRING_MAX,            0                          }
-
   AF_BLUE_STRINGSET_KHMR
     { AF_BLUE_STRING_KHMER_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                             AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
@@ -891,6 +886,11 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
                                                   AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
     { AF_BLUE_STRING_KHMER_SYMBOLS_WANING_BOTTOM, 0                                 }
     { AF_BLUE_STRING_MAX,                         0                                 }
+
+  AF_BLUE_STRINGSET_KNDA
+    { AF_BLUE_STRING_KANNADA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_KANNADA_BOTTOM, 0                          }
+    { AF_BLUE_STRING_MAX,            0                          }
 
   AF_BLUE_STRINGSET_LAO
     { AF_BLUE_STRING_LAO_TOP,            AF_BLUE_PROPERTY_LATIN_TOP      |
@@ -1027,6 +1027,11 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_TELUGU_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,           0                          }
 
+  AF_BLUE_STRINGSET_TFNG
+    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP }
+    { AF_BLUE_STRING_TIFINAGH, 0                          }
+    { AF_BLUE_STRING_MAX,      0                          }
+
   AF_BLUE_STRINGSET_THAI
     { AF_BLUE_STRING_THAI_TOP,             AF_BLUE_PROPERTY_LATIN_TOP      |
                                            AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
@@ -1037,11 +1042,6 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_THAI_LARGE_DESCENDER, 0                                 }
     { AF_BLUE_STRING_THAI_DIGIT_TOP,       0                                 }
     { AF_BLUE_STRING_MAX,                  0                                 }
-
-  AF_BLUE_STRINGSET_TFNG
-    { AF_BLUE_STRING_TIFINAGH, AF_BLUE_PROPERTY_LATIN_TOP }
-    { AF_BLUE_STRING_TIFINAGH, 0                          }
-    { AF_BLUE_STRING_MAX,      0                          }
 
   AF_BLUE_STRINGSET_VAII
     { AF_BLUE_STRING_VAI_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }

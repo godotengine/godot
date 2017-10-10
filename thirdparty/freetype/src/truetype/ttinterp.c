@@ -65,11 +65,15 @@
             TT_INTERPRETER_VERSION_40 )
 #endif
 
-#define PROJECT( v1, v2 )                                                \
-          exc->func_project( exc, (v1)->x - (v2)->x, (v1)->y - (v2)->y )
+#define PROJECT( v1, v2 )                                   \
+          exc->func_project( exc,                           \
+                             SUB_LONG( (v1)->x, (v2)->x ),  \
+                             SUB_LONG( (v1)->y, (v2)->y ) )
 
-#define DUALPROJ( v1, v2 )                                                \
-          exc->func_dualproj( exc, (v1)->x - (v2)->x, (v1)->y - (v2)->y )
+#define DUALPROJ( v1, v2 )                                   \
+          exc->func_dualproj( exc,                           \
+                              SUB_LONG( (v1)->x, (v2)->x ),  \
+                              SUB_LONG( (v1)->y, (v2)->y ) )
 
 #define FAST_PROJECT( v )                          \
           exc->func_project( exc, (v)->x, (v)->y )
@@ -1676,7 +1680,10 @@
       if ( SUBPIXEL_HINTING_INFINALITY                            &&
            ( !exc->ignore_x_mode                                ||
              ( exc->sph_tweak_flags & SPH_TWEAK_ALLOW_X_DMOVE ) ) )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
       else
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
@@ -1685,12 +1692,18 @@
       /* diagonal moves, but only post-IUP.  DejaVu tries to adjust */
       /* diagonal stems like on `Z' and `z' post-IUP.               */
       if ( SUBPIXEL_HINTING_MINIMAL && !exc->backward_compatibility )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
       else
 #endif
 
       if ( NO_SUBPIXEL_HINTING )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
 
       zone->tags[point] |= FT_CURVE_TAG_TOUCH_X;
     }
@@ -1705,7 +1718,10 @@
               exc->iupx_called            &&
               exc->iupy_called            ) )
 #endif
-        zone->cur[point].y += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].y = ADD_LONG( zone->cur[point].y,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
 
       zone->tags[point] |= FT_CURVE_TAG_TOUCH_Y;
     }
@@ -1741,12 +1757,18 @@
     v = exc->GS.freeVector.x;
 
     if ( v != 0 )
-      zone->org[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+      zone->org[point].x = ADD_LONG( zone->org[point].x,
+                                     FT_MulDiv( distance,
+                                                v,
+                                                exc->F_dot_P ) );
 
     v = exc->GS.freeVector.y;
 
     if ( v != 0 )
-      zone->org[point].y += FT_MulDiv( distance, v, exc->F_dot_P );
+      zone->org[point].y = ADD_LONG( zone->org[point].y,
+                                     FT_MulDiv( distance,
+                                                v,
+                                                exc->F_dot_P ) );
   }
 
 
@@ -1769,18 +1791,18 @@
   {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     if ( SUBPIXEL_HINTING_INFINALITY && !exc->ignore_x_mode )
-      zone->cur[point].x += distance;
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
     else
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
     if ( SUBPIXEL_HINTING_MINIMAL && !exc->backward_compatibility )
-      zone->cur[point].x += distance;
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
     else
 #endif
 
     if ( NO_SUBPIXEL_HINTING )
-      zone->cur[point].x += distance;
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
 
     zone->tags[point]  |= FT_CURVE_TAG_TOUCH_X;
   }
@@ -1799,7 +1821,7 @@
             exc->backward_compatibility          &&
             exc->iupx_called && exc->iupy_called ) )
 #endif
-      zone->cur[point].y += distance;
+      zone->cur[point].y = ADD_LONG( zone->cur[point].y, distance );
 
     zone->tags[point] |= FT_CURVE_TAG_TOUCH_Y;
   }
@@ -1823,7 +1845,7 @@
   {
     FT_UNUSED( exc );
 
-    zone->org[point].x += distance;
+    zone->org[point].x = ADD_LONG( zone->org[point].x, distance );
   }
 
 
@@ -1835,7 +1857,7 @@
   {
     FT_UNUSED( exc );
 
-    zone->org[point].y += distance;
+    zone->org[point].y = ADD_LONG( zone->org[point].y, distance );
   }
 
 
@@ -1873,13 +1895,13 @@
 
     if ( distance >= 0 )
     {
-      val = distance + compensation;
+      val = ADD_LONG( distance, compensation );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = distance - compensation;
+      val = SUB_LONG( distance, compensation );
       if ( val > 0 )
         val = 0;
     }
@@ -1915,13 +1937,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_ROUND( distance + compensation );
+      val = FT_PIX_ROUND_LONG( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_ROUND( compensation - distance );
+      val = NEG_LONG( FT_PIX_ROUND_LONG( SUB_LONG( compensation,
+                                                   distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -1958,13 +1981,16 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_FLOOR( distance + compensation ) + 32;
+      val = ADD_LONG( FT_PIX_FLOOR( ADD_LONG( distance, compensation ) ),
+                      32 );
       if ( val < 0 )
         val = 32;
     }
     else
     {
-      val = -( FT_PIX_FLOOR( compensation - distance ) + 32 );
+      val = NEG_LONG( ADD_LONG( FT_PIX_FLOOR( SUB_LONG( compensation,
+                                                        distance ) ),
+                                32 ) );
       if ( val > 0 )
         val = -32;
     }
@@ -2001,13 +2027,13 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_FLOOR( distance + compensation );
+      val = FT_PIX_FLOOR( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_FLOOR( compensation - distance );
+      val = NEG_LONG( FT_PIX_FLOOR( SUB_LONG( compensation, distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2044,13 +2070,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_CEIL( distance + compensation );
+      val = FT_PIX_CEIL_LONG( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_CEIL( compensation - distance );
+      val = NEG_LONG( FT_PIX_CEIL_LONG( SUB_LONG( compensation,
+                                                  distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2087,13 +2114,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PAD_ROUND( distance + compensation, 32 );
+      val = FT_PAD_ROUND_LONG( ADD_LONG( distance, compensation ), 32 );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PAD_ROUND( compensation - distance, 32 );
+      val = NEG_LONG( FT_PAD_ROUND_LONG( SUB_LONG( compensation, distance ),
+                                         32 ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2134,7 +2162,8 @@
 
     if ( distance >= 0 )
     {
-      val = ( distance - exc->phase + exc->threshold + compensation ) &
+      val = ADD_LONG( distance,
+                      exc->threshold - exc->phase + compensation ) &
               -exc->period;
       val += exc->phase;
       if ( val < 0 )
@@ -2142,8 +2171,9 @@
     }
     else
     {
-      val = -( ( exc->threshold - exc->phase - distance + compensation ) &
-               -exc->period );
+      val = NEG_LONG( SUB_LONG( exc->threshold - exc->phase + compensation,
+                                distance ) &
+                        -exc->period );
       val -= exc->phase;
       if ( val > 0 )
         val = -exc->phase;
@@ -2183,7 +2213,8 @@
 
     if ( distance >= 0 )
     {
-      val = ( ( distance - exc->phase + exc->threshold + compensation ) /
+      val = ( ADD_LONG( distance,
+                        exc->threshold - exc->phase + compensation ) /
                 exc->period ) * exc->period;
       val += exc->phase;
       if ( val < 0 )
@@ -2191,8 +2222,9 @@
     }
     else
     {
-      val = -( ( ( exc->threshold - exc->phase - distance + compensation ) /
-                   exc->period ) * exc->period );
+      val = NEG_LONG( ( SUB_LONG( exc->threshold - exc->phase + compensation,
+                                  distance ) /
+                          exc->period ) * exc->period );
       val -= exc->phase;
       if ( val > 0 )
         val = -exc->phase;
@@ -2826,7 +2858,7 @@
   static void
   Ins_ADD( FT_Long*  args )
   {
-    args[0] += args[1];
+    args[0] = ADD_LONG( args[0], args[1] );
   }
 
 
@@ -2839,7 +2871,7 @@
   static void
   Ins_SUB( FT_Long*  args )
   {
-    args[0] -= args[1];
+    args[0] = SUB_LONG( args[0], args[1] );
   }
 
 
@@ -2882,7 +2914,8 @@
   static void
   Ins_ABS( FT_Long*  args )
   {
-    args[0] = FT_ABS( args[0] );
+    if ( args[0] < 0 )
+      args[0] = NEG_LONG( args[0] );
   }
 
 
@@ -2895,7 +2928,7 @@
   static void
   Ins_NEG( FT_Long*  args )
   {
-    args[0] = -args[0];
+    args[0] = NEG_LONG( args[0] );
   }
 
 
@@ -4211,8 +4244,8 @@
     p1 = exc->zp1.cur + aIdx2;
     p2 = exc->zp2.cur + aIdx1;
 
-    A = p1->x - p2->x;
-    B = p1->y - p2->y;
+    A = SUB_LONG( p1->x, p2->x );
+    B = SUB_LONG( p1->y, p2->y );
 
     /* If p1 == p2, SPvTL and SFvTL behave the same as */
     /* SPvTCA[X] and SFvTCA[X], respectively.          */
@@ -4227,9 +4260,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, Vec );
@@ -4770,7 +4803,7 @@
 
     K = FAST_PROJECT( &exc->zp2.cur[L] );
 
-    exc->func_move( exc, &exc->zp2, L, args[1] - K );
+    exc->func_move( exc, &exc->zp2, L, SUB_LONG( args[1], K ) );
 
     /* UNDOCUMENTED!  The MS rasterizer does that with */
     /* twilight points (confirmed by Greg Hitchcock)   */
@@ -4894,12 +4927,12 @@
     }
 
     {
-      FT_Vector* v1 = exc->zp1.org + p2;
-      FT_Vector* v2 = exc->zp2.org + p1;
+      FT_Vector*  v1 = exc->zp1.org + p2;
+      FT_Vector*  v2 = exc->zp2.org + p1;
 
 
-      A = v1->x - v2->x;
-      B = v1->y - v2->y;
+      A = SUB_LONG( v1->x, v2->x );
+      B = SUB_LONG( v1->y, v2->y );
 
       /* If v1 == v2, SDPvTL behaves the same as */
       /* SVTCA[X], respectively.                 */
@@ -4915,9 +4948,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, &exc->GS.dualVector );
@@ -4927,8 +4960,8 @@
       FT_Vector*  v2 = exc->zp2.cur + p1;
 
 
-      A = v1->x - v2->x;
-      B = v1->y - v2->y;
+      A = SUB_LONG( v1->x, v2->x );
+      B = SUB_LONG( v1->y, v2->y );
 
       if ( A == 0 && B == 0 )
       {
@@ -4939,9 +4972,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, &exc->GS.projVector );
@@ -5392,7 +5425,7 @@
       if ( !( SUBPIXEL_HINTING_MINIMAL    &&
               exc->backward_compatibility ) )
 #endif
-        exc->zp2.cur[point].x += dx;
+        exc->zp2.cur[point].x = ADD_LONG( exc->zp2.cur[point].x, dx );
 
       if ( touch )
         exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_X;
@@ -5406,7 +5439,7 @@
               exc->iupx_called            &&
               exc->iupy_called            ) )
 #endif
-        exc->zp2.cur[point].y += dy;
+        exc->zp2.cur[point].y = ADD_LONG( exc->zp2.cur[point].y, dy );
 
       if ( touch )
         exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_Y;
@@ -5781,14 +5814,17 @@
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     /* subpixel hinting - make MSIRP respect CVT cut-in; */
-    if ( SUBPIXEL_HINTING_INFINALITY                         &&
-         exc->ignore_x_mode                                  &&
-         exc->GS.freeVector.x != 0                           &&
-         FT_ABS( distance - args[1] ) >= control_value_cutin )
+    if ( SUBPIXEL_HINTING_INFINALITY                                    &&
+         exc->ignore_x_mode                                             &&
+         exc->GS.freeVector.x != 0                                      &&
+         FT_ABS( SUB_LONG( distance, args[1] ) ) >= control_value_cutin )
       distance = args[1];
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
-    exc->func_move( exc, &exc->zp1, point, args[1] - distance );
+    exc->func_move( exc,
+                    &exc->zp1,
+                    point,
+                    SUB_LONG( args[1], distance ) );
 
     exc->GS.rp1 = exc->GS.rp0;
     exc->GS.rp2 = point;
@@ -6027,8 +6063,10 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( vec1->x - vec2->x, exc->metrics.x_scale );
-        vec.y = FT_MulFix( vec1->y - vec2->y, exc->metrics.y_scale );
+        vec.x = FT_MulFix( SUB_LONG( vec1->x, vec2->x ),
+                           exc->metrics.x_scale );
+        vec.y = FT_MulFix( SUB_LONG( vec1->y, vec2->y ),
+                           exc->metrics.y_scale );
 
         org_dist = FAST_DUALPROJ( &vec );
       }
@@ -6081,8 +6119,8 @@
       }
       else
       {
-        if ( distance > -minimum_distance )
-          distance = -minimum_distance;
+        if ( distance > NEG_LONG( minimum_distance ) )
+          distance = NEG_LONG( minimum_distance );
       }
     }
 
@@ -6090,7 +6128,7 @@
 
     org_dist = PROJECT( exc->zp1.cur + point, exc->zp0.cur + exc->GS.rp0 );
 
-    exc->func_move( exc, &exc->zp1, point, distance - org_dist );
+    exc->func_move( exc, &exc->zp1, point, SUB_LONG( distance, org_dist ) );
 
   Fail:
     exc->GS.rp1 = exc->GS.rp0;
@@ -6265,8 +6303,8 @@
       }
       else
       {
-        if ( distance > -minimum_distance )
-          distance = -minimum_distance;
+        if ( distance > NEG_LONG( minimum_distance ) )
+          distance = NEG_LONG( minimum_distance );
       }
     }
 
@@ -6290,7 +6328,10 @@
     }
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
-    exc->func_move( exc, &exc->zp1, point, distance - cur_dist );
+    exc->func_move( exc,
+                    &exc->zp1,
+                    point,
+                    SUB_LONG( distance, cur_dist ) );
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     if ( SUBPIXEL_HINTING_INFINALITY )
@@ -6314,7 +6355,10 @@
       }
 
       if ( reverse_move )
-        exc->func_move( exc, &exc->zp1, point, -( distance - cur_dist ) );
+        exc->func_move( exc,
+                        &exc->zp1,
+                        point,
+                        SUB_LONG( cur_dist, distance ) );
     }
 
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
@@ -6380,7 +6424,7 @@
         distance = PROJECT( exc->zp1.cur + point,
                             exc->zp0.cur + exc->GS.rp0 );
 
-        exc->func_move( exc, &exc->zp1, point, -distance );
+        exc->func_move( exc, &exc->zp1, point, NEG_LONG( distance ) );
       }
 
       exc->GS.loop--;
@@ -6437,19 +6481,19 @@
 
     /* Cramer's rule */
 
-    dbx = exc->zp0.cur[b1].x - exc->zp0.cur[b0].x;
-    dby = exc->zp0.cur[b1].y - exc->zp0.cur[b0].y;
+    dbx = SUB_LONG( exc->zp0.cur[b1].x, exc->zp0.cur[b0].x );
+    dby = SUB_LONG( exc->zp0.cur[b1].y, exc->zp0.cur[b0].y );
 
-    dax = exc->zp1.cur[a1].x - exc->zp1.cur[a0].x;
-    day = exc->zp1.cur[a1].y - exc->zp1.cur[a0].y;
+    dax = SUB_LONG( exc->zp1.cur[a1].x, exc->zp1.cur[a0].x );
+    day = SUB_LONG( exc->zp1.cur[a1].y, exc->zp1.cur[a0].y );
 
-    dx = exc->zp0.cur[b0].x - exc->zp1.cur[a0].x;
-    dy = exc->zp0.cur[b0].y - exc->zp1.cur[a0].y;
+    dx = SUB_LONG( exc->zp0.cur[b0].x, exc->zp1.cur[a0].x );
+    dy = SUB_LONG( exc->zp0.cur[b0].y, exc->zp1.cur[a0].y );
 
-    discriminant = FT_MulDiv( dax, -dby, 0x40 ) +
-                   FT_MulDiv( day, dbx, 0x40 );
-    dotproduct   = FT_MulDiv( dax, dbx, 0x40 ) +
-                   FT_MulDiv( day, dby, 0x40 );
+    discriminant = ADD_LONG( FT_MulDiv( dax, NEG_LONG( dby ), 0x40 ),
+                             FT_MulDiv( day, dbx, 0x40 ) );
+    dotproduct   = ADD_LONG( FT_MulDiv( dax, dbx, 0x40 ),
+                             FT_MulDiv( day, dby, 0x40 ) );
 
     /* The discriminant above is actually a cross product of vectors     */
     /* da and db. Together with the dot product, they can be used as     */
@@ -6459,30 +6503,29 @@
     /*       discriminant = |da||db|sin(angle)     .                     */
     /* We use these equations to reject grazing intersections by         */
     /* thresholding abs(tan(angle)) at 1/19, corresponding to 3 degrees. */
-    if ( 19 * FT_ABS( discriminant ) > FT_ABS( dotproduct ) )
+    if ( MUL_LONG( 19, FT_ABS( discriminant ) ) > FT_ABS( dotproduct ) )
     {
-      val = FT_MulDiv( dx, -dby, 0x40 ) + FT_MulDiv( dy, dbx, 0x40 );
+      val = ADD_LONG( FT_MulDiv( dx, NEG_LONG( dby ), 0x40 ),
+                      FT_MulDiv( dy, dbx, 0x40 ) );
 
       R.x = FT_MulDiv( val, dax, discriminant );
       R.y = FT_MulDiv( val, day, discriminant );
 
       /* XXX: Block in backward_compatibility and/or post-IUP? */
-      exc->zp2.cur[point].x = exc->zp1.cur[a0].x + R.x;
-      exc->zp2.cur[point].y = exc->zp1.cur[a0].y + R.y;
+      exc->zp2.cur[point].x = ADD_LONG( exc->zp1.cur[a0].x, R.x );
+      exc->zp2.cur[point].y = ADD_LONG( exc->zp1.cur[a0].y, R.y );
     }
     else
     {
       /* else, take the middle of the middles of A and B */
 
       /* XXX: Block in backward_compatibility and/or post-IUP? */
-      exc->zp2.cur[point].x = ( exc->zp1.cur[a0].x +
-                                exc->zp1.cur[a1].x +
-                                exc->zp0.cur[b0].x +
-                                exc->zp0.cur[b1].x ) / 4;
-      exc->zp2.cur[point].y = ( exc->zp1.cur[a0].y +
-                                exc->zp1.cur[a1].y +
-                                exc->zp0.cur[b0].y +
-                                exc->zp0.cur[b1].y ) / 4;
+      exc->zp2.cur[point].x =
+        ADD_LONG( ADD_LONG( exc->zp1.cur[a0].x, exc->zp1.cur[a1].x ),
+                  ADD_LONG( exc->zp0.cur[b0].x, exc->zp0.cur[b1].x ) ) / 4;
+      exc->zp2.cur[point].y =
+        ADD_LONG( ADD_LONG( exc->zp1.cur[a0].y, exc->zp1.cur[a1].y ),
+                  ADD_LONG( exc->zp0.cur[b0].y, exc->zp0.cur[b1].y ) ) / 4;
     }
 
     exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_BOTH;
@@ -6517,7 +6560,7 @@
     distance = PROJECT( exc->zp0.cur + p2, exc->zp1.cur + p1 ) / 2;
 
     exc->func_move( exc, &exc->zp1, p1, distance );
-    exc->func_move( exc, &exc->zp0, p2, -distance );
+    exc->func_move( exc, &exc->zp0, p2, NEG_LONG( distance ) );
   }
 
 
@@ -6590,9 +6633,11 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( exc->zp1.orus[exc->GS.rp2].x - orus_base->x,
+        vec.x = FT_MulFix( SUB_LONG( exc->zp1.orus[exc->GS.rp2].x,
+                                     orus_base->x ),
                            exc->metrics.x_scale );
-        vec.y = FT_MulFix( exc->zp1.orus[exc->GS.rp2].y - orus_base->y,
+        vec.y = FT_MulFix( SUB_LONG( exc->zp1.orus[exc->GS.rp2].y,
+                                     orus_base->y ),
                            exc->metrics.y_scale );
 
         old_range = FAST_DUALPROJ( &vec );
@@ -6627,9 +6672,11 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( exc->zp2.orus[point].x - orus_base->x,
+        vec.x = FT_MulFix( SUB_LONG( exc->zp2.orus[point].x,
+                                     orus_base->x ),
                            exc->metrics.x_scale );
-        vec.y = FT_MulFix( exc->zp2.orus[point].y - orus_base->y,
+        vec.y = FT_MulFix( SUB_LONG( exc->zp2.orus[point].y,
+                                     orus_base->y ),
                            exc->metrics.y_scale );
 
         org_dist = FAST_DUALPROJ( &vec );
@@ -6668,7 +6715,7 @@
       exc->func_move( exc,
                       &exc->zp2,
                       (FT_UShort)point,
-                      new_dist - cur_dist );
+                      SUB_LONG( new_dist, cur_dist ) );
     }
 
   Fail:
@@ -6733,14 +6780,14 @@
     FT_F26Dot6  dx;
 
 
-    dx = worker->curs[p].x - worker->orgs[p].x;
+    dx = SUB_LONG( worker->curs[p].x, worker->orgs[p].x );
     if ( dx != 0 )
     {
       for ( i = p1; i < p; i++ )
-        worker->curs[i].x += dx;
+        worker->curs[i].x = ADD_LONG( worker->curs[i].x, dx );
 
       for ( i = p + 1; i <= p2; i++ )
-        worker->curs[i].x += dx;
+        worker->curs[i].x = ADD_LONG( worker->curs[i].x, dx );
     }
   }
 
@@ -6785,8 +6832,8 @@
     org2   = worker->orgs[ref2].x;
     cur1   = worker->curs[ref1].x;
     cur2   = worker->curs[ref2].x;
-    delta1 = cur1 - org1;
-    delta2 = cur2 - org2;
+    delta1 = SUB_LONG( cur1, org1 );
+    delta2 = SUB_LONG( cur2, org2 );
 
     if ( cur1 == cur2 || orus1 == orus2 )
     {
@@ -6798,10 +6845,10 @@
 
 
         if ( x <= org1 )
-          x += delta1;
+          x = ADD_LONG( x, delta1 );
 
         else if ( x >= org2 )
-          x += delta2;
+          x = ADD_LONG( x, delta2 );
 
         else
           x = cur1;
@@ -6822,20 +6869,23 @@
 
 
         if ( x <= org1 )
-          x += delta1;
+          x = ADD_LONG( x, delta1 );
 
         else if ( x >= org2 )
-          x += delta2;
+          x = ADD_LONG( x, delta2 );
 
         else
         {
           if ( !scale_valid )
           {
             scale_valid = 1;
-            scale       = FT_DivFix( cur2 - cur1, orus2 - orus1 );
+            scale       = FT_DivFix( SUB_LONG( cur2, cur1 ),
+                                     SUB_LONG( orus2, orus1 ) );
           }
 
-          x = cur1 + FT_MulFix( worker->orus[i].x - orus1, scale );
+          x = ADD_LONG( cur1,
+                        FT_MulFix( SUB_LONG( worker->orus[i].x, orus1 ),
+                                   scale ) );
         }
         worker->curs[i].x = x;
       }
@@ -7310,7 +7360,11 @@
       K |= 1 << 12;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    if ( SUBPIXEL_HINTING_MINIMAL )
+    /* Toggle the following flags only outside of monochrome mode.      */
+    /* Otherwise, instructions may behave weirdly and rendering results */
+    /* may differ between v35 and v40 mode, e.g., in `Times New Roman   */
+    /* Bold Italic'. */
+    if ( SUBPIXEL_HINTING_MINIMAL && exc->subpixel_hinting_lean )
     {
       /********************************/
       /* HINTING FOR SUBPIXEL         */
@@ -7345,7 +7399,7 @@
       /*                              */
       /* The only smoothing method FreeType supports unless someone sets */
       /* FT_LOAD_TARGET_MONO.                                            */
-      if ( ( args[0] & 2048 ) != 0 )
+      if ( ( args[0] & 2048 ) != 0 && exc->subpixel_hinting_lean )
         K |= 1 << 18;
 
       /********************************/
@@ -7589,11 +7643,21 @@
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* Toggle backward compatibility according to what font says, except   */
-    /* when it's a `tricky' font that heavily relies on the interpreter to */
-    /* render glyphs correctly, e.g. DFKai-SB.  Backward compatibility     */
-    /* hacks may break it.                                                 */
+    /*
+     *  Toggle backward compatibility according to what font wants, except
+     *  when
+     *
+     *  1) we have a `tricky' font that heavily relies on the interpreter to
+     *     render glyphs correctly, for example DFKai-SB, or
+     *  2) FT_RENDER_MODE_MONO (i.e, monochome rendering) is requested.
+     *
+     *  In those cases, backward compatibility needs to be turned off to get
+     *  correct rendering.  The rendering is then completely up to the
+     *  font's programming.
+     *
+     */
     if ( SUBPIXEL_HINTING_MINIMAL          &&
+         exc->subpixel_hinting_lean        &&
          !FT_IS_TRICKY( &exc->face->root ) )
       exc->backward_compatibility = !( exc->GS.instruct_control & 4 );
     else
@@ -7639,8 +7703,7 @@
                                   FT_MAX( 50,
                                           exc->cvtSize / 10 );
     else
-      exc->loopcall_counter_max = FT_MAX( 100,
-                                          10 * exc->cvtSize );
+      exc->loopcall_counter_max = 300 + 8 * exc->cvtSize;
 
     /* as a protection against an unreasonable number of CVT entries  */
     /* we assume at most 100 control values per glyph for the counter */

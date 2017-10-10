@@ -1352,9 +1352,12 @@
       sum = cff_parse_num( parser, &parser->stack[i + base] ) * 65536;
 
       for ( j = 1; j < blend->lenBV; j++ )
-        sum += FT_MulFix( *weight++,
-                          cff_parse_num( parser,
-                                         &parser->stack[delta++] ) * 65536 );
+        sum = ADD_INT32(
+                sum,
+                FT_MulFix(
+                  *weight++,
+                  cff_parse_num( parser,
+                                 &parser->stack[delta++] ) * 65536 ) );
 
       /* point parser stack to new value on blend_stack */
       parser->stack[i + base] = subFont->blend_top;

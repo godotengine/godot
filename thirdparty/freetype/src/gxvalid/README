@@ -9,7 +9,7 @@ gxvalid: TrueType GX validator
   additional tables  in TrueType  font which are  used by  `QuickDraw GX
   Text',  Apple Advanced  Typography  (AAT).  In  addition, gxvalid  can
   validates `kern'  tables which have  been extended for AAT.   Like the
-  otvalid  module,   gxvalid  uses  Freetype   2's  validator  framework
+  otvalid  module,   gxvalid  uses   FreeType  2's  validator  framework
   (ftvalid).
 
   You can link gxvalid with your program; before running your own layout
