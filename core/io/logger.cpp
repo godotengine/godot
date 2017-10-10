@@ -33,6 +33,17 @@
 #include "os/os.h"
 #include "print_string.h"
 
+// va_copy was defined in the C99, but not in C++ standards before C++11.
+// When you compile C++ without --std=c++<XX> option, compilers still define
+// va_copy, otherwise you have to use the internal version (__va_copy).
+#if !defined(va_copy)
+#if defined(__GNUC__)
+#define va_copy(d, s) __va_copy(d, s)
+#else
+#define va_copy(d, s) ((d) = (s))
+#endif
+#endif
+
 bool Logger::should_log(bool p_err) {
 	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
 }
