@@ -162,6 +162,7 @@ void Main::print_help(const char *p_binary) {
 #endif
 	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
 	OS::get_singleton()->print("  --path <directory>               Path to a project (<directory> must contain a 'project.godot' file).\n");
+	OS::get_singleton()->print("  -u, --upwards                    Scan folders upwards for project.godot file.\n");
 	OS::get_singleton()->print("  --main-pack <file>               Path to a pack (.pck) file to load.\n");
 	OS::get_singleton()->print("  --render-thread <mode>           Render thread mode ('unsafe', 'safe', 'separate').\n");
 	OS::get_singleton()->print("  --remote-fs <address>            Remote filesystem (<host/IP>[:<port>] address).\n");
@@ -289,6 +290,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String video_driver = "";
 	String audio_driver = "";
 	String game_path = ".";
+	bool upwards = false;
 	String debug_mode;
 	String debug_host;
 	String main_pack;
@@ -497,6 +499,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
+		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
+			upwards = true;
 		} else if (I->get().ends_with("project.godot")) {
 			String path;
 			String file = I->get();
@@ -694,7 +698,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 #endif
 
-	if (globals->setup(game_path, main_pack) != OK) {
+	if (globals->setup(game_path, main_pack, upwards) != OK) {
 
 #ifdef TOOLS_ENABLED
 		editor = false;
