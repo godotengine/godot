@@ -26,14 +26,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the host OS allows drawing.
+				Returns [code]true[/code] if the host OS allows drawing.
 			</description>
 		</method>
 		<method name="can_use_threads" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns if the current host platform is using multiple threads.
+				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -117,7 +117,7 @@
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Return the commandline passed to the engine.
+				Returns the command line arguments passed to the engine.
 			</description>
 		</method>
 		<method name="get_current_screen" qualifiers="const">
@@ -131,7 +131,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the absolute directory path of user data path([user://]).
+				Returns the absolute directory path of user data path([user://]).
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -166,7 +166,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the total amount of dynamic memory used (only works in debug).
+				Returns the total amount of dynamic memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -175,14 +175,14 @@
 			<argument index="0" name="environment" type="String">
 			</argument>
 			<description>
-				Return an environment variable.
+				Returns an environment variable.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the path to the current engine executable.
+				Returns the path to the current engine executable.
 			</description>
 		</method>
 		<method name="get_exit_code" qualifiers="const">
@@ -203,7 +203,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the host OS locale.
+				Returns the host OS locale.
 			</description>
 		</method>
 		<method name="get_model_name" qualifiers="const">
@@ -217,25 +217,28 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the host OS. Possible values are: "Android", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11".
+				Returns the name of the host OS. Possible values are: "Android", "Haiku", "iOS", "HTML5", "OSX", "Server", "Windows", "UWP", "X11".
 			</description>
 		</method>
 		<method name="get_power_percent_left">
 			<return type="int">
 			</return>
 			<description>
+				Returns the amount of battery left in the device as a percentage.
 			</description>
 		</method>
 		<method name="get_power_seconds_left">
 			<return type="int">
 			</return>
 			<description>
+				Returns the time in seconds before the device runs out of battery.
 			</description>
 		</method>
 		<method name="get_power_state">
 			<return type="int" enum="OS.PowerState">
 			</return>
 			<description>
+				Returns the current state of the device regarding battery and power. See [code]POWERSTATE_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -265,7 +268,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of displays attached to the host machine
+				Returns the number of displays attached to the host machine.
 			</description>
 		</method>
 		<method name="get_screen_dpi" qualifiers="const">
@@ -298,6 +301,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
+				Returns the position of the specified screen by index. If no screen index is provided, the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
@@ -319,7 +323,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the max amount of static memory used (only works in debug).
+				Returns the max amount of static memory used (only works in debug).
 			</description>
 		</method>
 		<method name="get_static_memory_usage" qualifiers="const">
@@ -335,6 +339,7 @@
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
 			</argument>
 			<description>
+				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [OS.SystemDir].
 			</description>
 		</method>
 		<method name="get_system_time_secs" qualifiers="const">
@@ -348,7 +353,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of time passed in milliseconds since the engine started.
+				Returns the amount of time passed in milliseconds since the engine started.
 			</description>
 		</method>
 		<method name="get_time" qualifiers="const">
@@ -357,19 +362,21 @@
 			<argument index="0" name="utc" type="bool" default="false">
 			</argument>
 			<description>
-				Returns current time as a dictionary of keys: hour, minute, second
+				Returns current time as a dictionary of keys: hour, minute, second.
 			</description>
 		</method>
 		<method name="get_time_zone_info" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<description>
+				Returns the current time zone as a dictionary with the keys: bias and name.
 			</description>
 		</method>
 		<method name="get_unique_id" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns a unique string.
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">
@@ -410,20 +417,21 @@
 			<argument index="0" name="environment" type="String">
 			</argument>
 			<description>
-				Return true if an environment variable exists.
+				Returns [code]true[/code] if an environment variable exists.
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the device has a touchscreen or emulates one.
 			</description>
 		</method>
 		<method name="has_virtual_keyboard" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the platform has a virtual keyboard, false otherwise.
+				Returns [code]true[/code] if the platform has a virtual keyboard, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="hide_virtual_keyboard">
@@ -446,20 +454,21 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if low cpu usage mode is enabled.
+				Returns [code]true[/code] if low cpu usage mode is enabled.
 			</description>
 		</method>
 		<method name="is_keep_screen_on" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the screen is being kept on or not.
+				Returns [code]true[/code] if the screen is being kept on.
 			</description>
 		</method>
 		<method name="is_ok_left_and_cancel_right" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the "Okay" button should appear on the left and "Cancel" on the right. 
 			</description>
 		</method>
 		<method name="is_scancode_unicode" qualifiers="const">
@@ -468,13 +477,14 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the input code has a unicode character.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the engine was executed with -v (verbose stdout).
+				Returns [code]true[/code] if the engine was executed with -v (verbose stdout).
 			</description>
 		</method>
 		<method name="is_userfs_persistent" qualifiers="const">
@@ -495,28 +505,28 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the window is in fullscreen mode or not.
+				Returns [code]true[/code] if the window is in fullscreen mode.
 			</description>
 		</method>
 		<method name="is_window_maximized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the window is maximized.
+				Returns [code]true[/code] if the window is maximized.
 			</description>
 		</method>
 		<method name="is_window_minimized" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the window is minimized.
+				Returns [code]true[/code] if the window is minimized.
 			</description>
 		</method>
 		<method name="is_window_resizable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the window is resizable or not.
+				Returns [code]true[/code] if the window is resizable.
 			</description>
 		</method>
 		<method name="kill">
@@ -532,12 +542,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if native video is playing.
 			</description>
 		</method>
 		<method name="native_video_pause">
 			<return type="void">
 			</return>
 			<description>
+				Pauses native video playback.
 			</description>
 		</method>
 		<method name="native_video_play">
@@ -552,18 +564,21 @@
 			<argument index="3" name="subtitle_track" type="String">
 			</argument>
 			<description>
+				Plays native video from the specified path, at the given volume and with audio and subtitle tracks.
 			</description>
 		</method>
 		<method name="native_video_stop">
 			<return type="void">
 			</return>
 			<description>
+				Stops native video playback.
 			</description>
 		</method>
 		<method name="native_video_unpause">
 			<return type="void">
 			</return>
 			<description>
+				Resumes native video playback.
 			</description>
 		</method>
 		<method name="print_all_resources">
@@ -572,12 +587,14 @@
 			<argument index="0" name="tofile" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Shows all resources in the game. Optionally the list can be written to a file.
 			</description>
 		</method>
 		<method name="print_all_textures_by_size">
 			<return type="void">
 			</return>
 			<description>
+				Shows the list of loaded textures sorted by size in memory.
 			</description>
 		</method>
 		<method name="print_resources_by_type">
@@ -586,6 +603,7 @@
 			<argument index="0" name="types" type="PoolStringArray">
 			</argument>
 			<description>
+				Shows the number of resources loaded by the game of the given types.
 			</description>
 		</method>
 		<method name="print_resources_in_use">
@@ -594,6 +612,7 @@
 			<argument index="0" name="short" type="bool" default="false">
 			</argument>
 			<description>
+				Shows all resources currently used by the game.
 			</description>
 		</method>
 		<method name="request_attention">
@@ -609,6 +628,7 @@
 			<argument index="0" name="borderless" type="bool">
 			</argument>
 			<description>
+				Removes the window frame.
 			</description>
 		</method>
 		<method name="set_clipboard">
@@ -617,7 +637,7 @@
 			<argument index="0" name="clipboard" type="String">
 			</argument>
 			<description>
-				Set clipboard to the OS.
+				Sets clipboard to the OS.
 			</description>
 		</method>
 		<method name="set_current_screen">
@@ -626,6 +646,7 @@
 			<argument index="0" name="screen" type="int">
 			</argument>
 			<description>
+				Sets the current screen by index.
 			</description>
 		</method>
 		<method name="set_exit_code">
@@ -634,6 +655,7 @@
 			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
+				Sets the exit code that will be returned by the game.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -642,6 +664,7 @@
 			<argument index="0" name="icon" type="Image">
 			</argument>
 			<description>
+				Sets the game's icon.
 			</description>
 		</method>
 		<method name="set_ime_position">
@@ -658,7 +681,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set keep screen on if true, or goes to sleep by device setting if false. (for Android/iOS)
+				Sets keep screen on if true, or goes to sleep by device setting if false. (for Android/iOS)
 			</description>
 		</method>
 		<method name="set_low_processor_usage_mode">
@@ -667,7 +690,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set to true to enable the low cpu usage mode. In this mode, the screen only redraws when there are changes, and a considerable sleep time is inserted between frames. This way, editors using the engine UI only use very little cpu.
+				Set to [code]true[/code] to enable the low cpu usage mode. In this mode, the screen only redraws when there are changes, and a considerable sleep time is inserted between frames. Use this in tool mode to reduce CPU usage.
 			</description>
 		</method>
 		<method name="set_screen_orientation">
@@ -685,6 +708,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets the name of the current thread.
 			</description>
 		</method>
 		<method name="set_use_file_access_save_and_swap">
@@ -693,6 +717,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables backup saves if [code]enabled[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_use_vsync">
@@ -719,7 +744,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the window size to maximized.
+				Set [code]true[/code] to maximize the window.
 			</description>
 		</method>
 		<method name="set_window_minimized">
@@ -728,7 +753,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set whether the window is minimized.
+				Set [code]true[/code] to minimize the window.
 			</description>
 		</method>
 		<method name="set_window_position">
@@ -746,7 +771,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
+				Sets the window resizable state, if the window is not resizable it will preserve the dimensions specified in the project settings.
 			</description>
 		</method>
 		<method name="set_window_size">
@@ -773,6 +798,9 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
+				Requests the OS to open a resource with the most appropriate program. For example.
+					[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
+					[code]OS.shell_open("http://godotengine.org")[/code] opens the default web browser on the official Godot website.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">
