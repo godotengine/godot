@@ -654,6 +654,13 @@ void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
 
 	StringName type_name = p_object->get_class_name();
 
+	// ¯\_(ツ)_/¯
+	const ClassDB::ClassInfo *classinfo = ClassDB::classes.getptr(type_name);
+	while (classinfo && !classinfo->exposed)
+		classinfo = classinfo->inherits_ptr;
+	ERR_FAIL_NULL_V(classinfo, NULL);
+	type_name = classinfo->name;
+
 	GDMonoClass *type_class = GDMonoUtils::type_get_proxy_class(type_name);
 
 	ERR_FAIL_NULL_V(type_class, NULL);

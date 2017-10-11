@@ -266,9 +266,11 @@ void register_scene_types() {
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
+	ClassDB::register_class<ScrollBar>();
 	ClassDB::register_class<HScrollBar>();
 	ClassDB::register_class<VScrollBar>();
 	ClassDB::register_class<ProgressBar>();
+	ClassDB::register_class<Slider>();
 	ClassDB::register_class<HSlider>();
 	ClassDB::register_class<VSlider>();
 	ClassDB::register_class<Popup>();
@@ -352,6 +354,7 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	ClassDB::register_class<BoneAttachment>();
 	ClassDB::register_virtual_class<VisualInstance>();
+	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<ARVRCamera>();
@@ -361,6 +364,7 @@ void register_scene_types() {
 	ClassDB::register_class<InterpolatedCamera>();
 	ClassDB::register_class<MeshInstance>();
 	ClassDB::register_class<ImmediateGeometry>();
+	ClassDB::register_virtual_class<SpriteBase3D>();
 	ClassDB::register_class<Sprite3D>();
 	ClassDB::register_class<AnimatedSprite3D>();
 	ClassDB::register_virtual_class<Light>();
@@ -380,6 +384,7 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<CollisionObject>();
+	ClassDB::register_virtual_class<PhysicsBody>();
 	ClassDB::register_class<StaticBody>();
 	ClassDB::register_class<RigidBody>();
 	ClassDB::register_class<KinematicCollision>();
@@ -494,6 +499,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
+	ClassDB::register_virtual_class<Shape>();
 	ClassDB::register_class<RayShape>();
 	ClassDB::register_class<SphereShape>();
 	ClassDB::register_class<BoxShape>();
@@ -531,6 +537,7 @@ void register_scene_types() {
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
+	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
 	ClassDB::register_class<StyleBoxTexture>();
 	ClassDB::register_class<StyleBoxFlat>();

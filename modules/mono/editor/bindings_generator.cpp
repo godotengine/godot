@@ -133,12 +133,6 @@ static bool is_csharp_keyword(const String &p_name) {
 		   p_name == "virtual" || p_name == "volatile" || p_name == "void" || p_name == "while";
 }
 
-static bool is_singleton_black_listed(const String &p_type) {
-
-	return p_type == "IP_Unix" || p_type == "InputDefault" || p_type == "AudioServerSW" || p_type == "PhysicsServerSW" ||
-		   p_type == "Physics2DServerSW" || p_type == "SpatialSoundServerSW" || p_type == "SpatialSound2DServerSW";
-}
-
 inline static String escape_csharp_keyword(const String &p_name) {
 
 	return is_csharp_keyword(p_name) ? "@" + p_name : p_name;
@@ -246,9 +240,6 @@ void BindingsGenerator::_generate_header_icalls() {
 }
 
 void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
-
-	if (p_itype.base_name.length() && obj_types[p_itype.base_name].is_singleton && is_singleton_black_listed(p_itype.name))
-		return;
 
 	for (const List<MethodInterface>::Element *E = p_itype.methods.front(); E; E = E->next()) {
 		const MethodInterface &imethod = E->get();
@@ -579,9 +570,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	int method_bind_count = 0;
 
 	bool is_derived_type = itype.base_name.length();
-
-	if (is_derived_type && obj_types[itype.base_name].is_singleton && is_singleton_black_listed(itype.name))
-		return ERR_SKIP;
 
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
@@ -1167,9 +1155,6 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	for (Map<String, TypeInterface>::Element *type_elem = obj_types.front(); type_elem; type_elem = type_elem->next()) {
 		const TypeInterface &itype = type_elem->get();
 
-		if (itype.base_name.length() && obj_types[itype.base_name].is_singleton && is_singleton_black_listed(itype.name))
-			continue;
-
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
 		OS::get_singleton()->print(String("Generating " + itype.name + "...\n").utf8());
@@ -1518,6 +1503,12 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
 		itype.is_reference = ClassDB::is_parent_class(type_cname, refclass_name);
 		itype.memory_own = itype.is_reference;
+
+		if (!ClassDB::is_class_exposed(type_cname)) {
+			WARN_PRINTS("Ignoring type " + String(type_cname) + " because it's not exposed");
+			class_list.pop_front();
+			continue;
+		}
 
 		itype.c_out = "\treturn ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
