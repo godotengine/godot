@@ -1445,6 +1445,7 @@ Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surfac
 
 void VisualServer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw);
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
