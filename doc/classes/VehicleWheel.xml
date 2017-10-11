@@ -39,6 +39,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_skidinfo" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_suspension_max_force" qualifiers="const">
 			<return type="float">
 			</return>

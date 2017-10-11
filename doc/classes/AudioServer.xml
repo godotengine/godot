@@ -298,7 +298,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.	
+				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="set_bus_volume_db">

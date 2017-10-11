@@ -9,7 +9,7 @@
 		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Children nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
 		Once all nodes have been added in the scene tree, they receive the NOTIFICATION_READY notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, from the children up to the parent nodes.
 		It means that when adding a scene to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (and that recursively for the whole scene).
-		[b]Processing:[/b] Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Fixed processing (callback [method _fixed_process], toggled with [method set_fixed_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+		[b]Processing:[/b] Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
 		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
@@ -36,17 +36,6 @@
 				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification].
 			</description>
 		</method>
-		<method name="_fixed_process" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<description>
-				Called during the fixed processing step of the main loop. Fixed processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
-				It is only called if fixed processing has been enabled with [method set_fixed_process].
-				Corresponds to the NOTIFICATION_FIXED_PROCESS notification in [method Object._notification].
-			</description>
-		</method>
 		<method name="_input" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -54,6 +43,17 @@
 			</argument>
 			<description>
 				Called when there is a change to input devices. Propagated through the node tree until a Node consumes it.
+			</description>
+		</method>
+		<method name="_physics_process" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
+				It is only called if physics processing has been enabled with [method set_physics_process].
+				Corresponds to the NOTIFICATION_PHYSICS_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -187,13 +187,6 @@
 				Return a filename that may be contained by the node. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded (see [method set_filename]).
 			</description>
 		</method>
-		<method name="get_fixed_process_delta_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the time elapsed since the last fixed frame (see [method _fixed_process]). This is always the same in fixed processing unless the frames per second is changed in [OS].
-			</description>
-		</method>
 		<method name="get_groups" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -294,6 +287,13 @@
 				Return the pause mode (PAUSE_MODE_*) of this Node.
 			</description>
 		</method>
+		<method name="get_physics_process_delta_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed in [OS].
+			</description>
+		</method>
 		<method name="get_position_in_parent" qualifiers="const">
 			<return type="int">
 			</return>
@@ -359,19 +359,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_fixed_processing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if fixed processing is enabled (see [method set_fixed_process]).
-			</description>
-		</method>
-		<method name="is_fixed_processing_internal" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_greater_than" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -398,6 +385,19 @@
 			</description>
 		</method>
 		<method name="is_network_master" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_physics_processing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if physics processing is enabled (see [method set_physics_process]).
+			</description>
+		</method>
+		<method name="is_physics_processing_internal" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -666,23 +666,6 @@
 				A node can contain a filename. This filename should not be changed by the user, unless writing editors and tools. When a scene is instanced from a file, it topmost node contains the filename from where it was loaded.
 			</description>
 		</method>
-		<method name="set_fixed_process">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Enables or disables node fixed framerate processing. When a node is being processed, it will receive a NOTIFICATION_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _fixed_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_fixed_process_delta_time].
-			</description>
-		</method>
-		<method name="set_fixed_process_internal">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_name">
 			<return type="void">
 			</return>
@@ -718,6 +701,23 @@
 			</argument>
 			<description>
 				Set pause mode (PAUSE_MODE_*) of this Node.
+			</description>
+		</method>
+		<method name="set_physics_process">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enables or disables the node's physics (alias fixed framerate) processing. When a node is being processed, it will receive a NOTIFICATION_PHYSICS_PROCESS at a fixed (usually 60 fps, check [OS] to change that) interval (and the [method _physics_process] callback will be called if exists). It is common to check how much time was elapsed since the previous frame by calling [method get_physics_process_delta_time].
+			</description>
+		</method>
+		<method name="set_physics_process_internal">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_process">
@@ -806,7 +806,8 @@
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13" enum="">
 		</constant>
-		<constant name="NOTIFICATION_FIXED_PROCESS" value="16" enum="">
+		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16" enum="">
+			Notification received every frame when the physics process flag is set (see [method set_physics_process]).
 		</constant>
 		<constant name="NOTIFICATION_PROCESS" value="17" enum="">
 			Notification received every frame when the process flag is set (see [method set_process]).
@@ -833,7 +834,7 @@
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25" enum="">
 		</constant>
-		<constant name="NOTIFICATION_INTERNAL_FIXED_PROCESS" value="26" enum="">
+		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26" enum="">
 		</constant>
 		<constant name="RPC_MODE_DISABLED" value="0">
 		</constant>

@@ -72,6 +72,8 @@
 	<constants>
 	</constants>
 	<theme_items>
+		<theme_item name="bg" type="Texture">
+		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">

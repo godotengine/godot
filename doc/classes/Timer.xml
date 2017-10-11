@@ -141,8 +141,8 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TIMER_PROCESS_FIXED" value="0">
-			Update the Timer at fixed intervals (framerate processing).
+		<constant name="TIMER_PROCESS_PHYSICS" value="0">
+			Update the Timer during the physics step at each frame (fixed framerate processing).
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1">
 			Update the Timer during the idle time at each frame.

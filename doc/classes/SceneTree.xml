@@ -336,10 +336,6 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="fixed_frame">
-			<description>
-			</description>
-		</signal>
 		<signal name="idle_frame">
 			<description>
 			</description>
@@ -365,6 +361,10 @@
 		<signal name="node_removed">
 			<argument index="0" name="node" type="Object">
 			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="physics_frame">
 			<description>
 			</description>
 		</signal>
@@ -403,6 +403,8 @@
 		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2">
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP_HEIGHT" value="3">
+		</constant>
+		<constant name="STRETCH_ASPECT_EXPAND" value="4">
 		</constant>
 	</constants>
 </class>

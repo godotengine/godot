@@ -25,7 +25,7 @@
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [code]get_buton_count()[/code] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code]. 
+				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [code]get_buton_count()[/code] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">

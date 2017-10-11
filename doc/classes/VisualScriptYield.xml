@@ -47,7 +47,7 @@
 	<constants>
 		<constant name="YIELD_FRAME" value="1">
 		</constant>
-		<constant name="YIELD_FIXED_FRAME" value="2">
+		<constant name="YIELD_PHYSICS_FRAME" value="2">
 		</constant>
 		<constant name="YIELD_WAIT" value="3">
 		</constant>

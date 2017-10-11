@@ -337,6 +337,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="body_get_direct_state">
+			<return type="PhysicsDirectBodyState">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>

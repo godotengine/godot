@@ -267,7 +267,7 @@
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
 			Simulate Doppler effect by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
-		<constant name="DOPPLER_TRACKING_FIXED_STEP" value="2">
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
 			Simulate Doppler effect by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
 	</constants>

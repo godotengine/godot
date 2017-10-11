@@ -27,6 +27,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_ao_light_affect" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_ao_texture_channel" qualifiers="const">
 			<return type="int" enum="SpatialMaterial.TextureChannel">
 			</return>
@@ -353,6 +359,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="anisotropy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ao_light_affect">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
 			</description>
@@ -777,6 +791,8 @@
 		</member>
 		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature">
 		</member>
+		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect">
+		</member>
 		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="ao_texture" type="Texture" setter="set_texture" getter="get_texture">
@@ -1059,13 +1075,13 @@
 		</constant>
 		<constant name="FLAG_MAX" value="12">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT" value="0">
+		<constant name="DIFFUSE_BURLEY" value="0">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT_WRAP" value="1">
+		<constant name="DIFFUSE_LAMBERT" value="1">
 		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="2">
+		<constant name="DIFFUSE_LAMBERT_WRAP" value="2">
 		</constant>
-		<constant name="DIFFUSE_BURLEY" value="3">
+		<constant name="DIFFUSE_OREN_NAYAR" value="3">
 		</constant>
 		<constant name="DIFFUSE_TOON" value="4">
 		</constant>

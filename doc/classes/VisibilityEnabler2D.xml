@@ -33,8 +33,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="fixed_process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
-		</member>
 		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
 		<member name="pause_animated_sprites" type="bool" setter="set_enabler" getter="is_enabler_enabled">
@@ -42,6 +40,8 @@
 		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
 		<member name="pause_particles" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		</member>
+		<member name="physics_process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
 		<member name="process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
 		</member>
@@ -61,8 +61,8 @@
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
 			This enabler will stop the parent's _process function.
 		</constant>
-		<constant name="ENABLER_PARENT_FIXED_PROCESS" value="4">
-			This enabler will stop the parent's _fixed_process function.
+		<constant name="ENABLER_PARENT_PHYSICS_PROCESS" value="4">
+			This enabler will stop the parent's _physics_process function.
 		</constant>
 		<constant name="ENABLER_MAX" value="6">
 		</constant>

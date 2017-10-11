@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Environment" inherits="Resource" category="Core" version="3.0">
+<class name="Environment" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
 		Resource for environment nodes (like [WorldEnvironment]) that define multiple rendering options.
 	</brief_description>
@@ -226,7 +226,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_sky_scale" qualifiers="const">
+		<method name="get_sky_custom_fov" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -794,7 +794,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_sky_scale">
+		<method name="set_sky_custom_fov">
 			<return type="void">
 			</return>
 			<argument index="0" name="scale" type="float">
@@ -1042,8 +1042,8 @@
 		<member name="background_sky" type="Sky" setter="set_sky" getter="get_sky">
 			[Sky] resource defined as background.
 		</member>
-		<member name="background_sky_scale" type="float" setter="set_sky_scale" getter="get_sky_scale">
-			[Sky] resource's scale.
+		<member name="background_sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov">
+			[Sky] resource's custom field of view.
 		</member>
 		<member name="dof_blur_far_amount" type="float" setter="set_dof_blur_far_amount" getter="get_dof_blur_far_amount">
 			Amount of far blur.

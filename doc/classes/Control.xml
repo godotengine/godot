@@ -578,6 +578,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_anchors_and_margins_preset">
+			<return type="void">
+			</return>
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
+			</argument>
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
+			</argument>
+			<argument index="2" name="margin" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_anchors_preset">
 			<return type="void">
 			</return>
@@ -586,15 +598,6 @@
 			<argument index="1" name="keep_margin" type="bool" default="false">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_area_as_parent_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" default="0">
-			</argument>
-			<description>
-				Change all margins and anchors, so this Control always takes up the same area as the parent Control. This is a helper (see [method set_anchor], [method set_margin]).
 			</description>
 		</method>
 		<method name="set_begin">
@@ -711,6 +714,18 @@
 			</argument>
 			<description>
 				Set a margin offset. Margin can be one of (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Offset value being set depends on the anchor mode.
+			</description>
+		</method>
+		<method name="set_margins_preset">
+			<return type="void">
+			</return>
+			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
+			</argument>
+			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
+			</argument>
+			<argument index="2" name="margin" type="int" default="0">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_mouse_filter">
@@ -1095,6 +1110,14 @@
 		</constant>
 		<constant name="PRESET_WIDE" value="15">
 			Snap all 4 anchors to the respective corners of the parent container. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent container. Use with [method set_anchors_preset].
+		</constant>
+		<constant name="PRESET_MODE_MINSIZE" value="0">
+		</constant>
+		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2">
+		</constant>
+		<constant name="PRESET_MODE_KEEP_WIDTH" value="1">
+		</constant>
+		<constant name="PRESET_MODE_KEEP_SIZE" value="3">
 		</constant>
 		<constant name="SIZE_EXPAND" value="2">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].

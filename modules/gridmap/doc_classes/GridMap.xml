@@ -81,6 +81,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_used_cells" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="resource_changed">
 			<return type="void">
 			</return>

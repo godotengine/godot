@@ -19,6 +19,8 @@
 		</theme_item>
 		<theme_item name="grabber" type="Texture">
 		</theme_item>
+		<theme_item name="grabber_area" type="StyleBox">
+		</theme_item>
 		<theme_item name="grabber_disabled" type="Texture">
 		</theme_item>
 		<theme_item name="grabber_disabled" type="StyleBox">

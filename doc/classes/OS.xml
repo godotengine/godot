@@ -397,6 +397,12 @@
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
 			</description>
 		</method>
+		<method name="get_virtual_keyboard_height">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_window_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -418,6 +424,14 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if an environment variable exists.
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="tag_name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="has_touchscreen_ui_hint" qualifiers="const">
@@ -468,7 +482,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the "Okay" button should appear on the left and "Cancel" on the right. 
+				Returns [code]true[/code] if the "Okay" button should appear on the left and "Cancel" on the right.
 			</description>
 		</method>
 		<method name="is_scancode_unicode" qualifiers="const">

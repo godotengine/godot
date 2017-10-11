@@ -93,6 +93,8 @@
 		</theme_item>
 		<theme_item name="margin" type="int">
 		</theme_item>
+		<theme_item name="preset_bg" type="Texture">
+		</theme_item>
 		<theme_item name="screen_picker" type="Texture">
 		</theme_item>
 		<theme_item name="sv_height" type="int">

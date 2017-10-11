@@ -84,9 +84,9 @@
 		<method name="make_mesh_previews">
 			<return type="Array">
 			</return>
-			<argument index="0" name="arg0" type="Array">
+			<argument index="0" name="meshes" type="Array">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="preview_size" type="int">
 			</argument>
 			<description>
 			</description>

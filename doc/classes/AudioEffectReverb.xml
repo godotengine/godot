@@ -136,7 +136,7 @@
 			High-pass filter passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. Value can range from 0 to 1. Default value: [code]0[/code].
 		</member>
 		<member name="predelay_feedback" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
-			 Output percent of predelay. Value can range from 0 to 1. Default value: [code]1[/code].
+			Output percent of predelay. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="predelay_msec" type="float" setter="set_predelay_msec" getter="get_predelay_msec">
 			Time between the original signal and the early reflections of the reverb signal. Default value: [code]150ms[/code].

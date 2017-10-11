@@ -14,7 +14,7 @@
 		<method name="add_interface">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="ARVRInterface">
+			<argument index="0" name="interface" type="ARVRInterface">
 			</argument>
 			<description>
 				Mostly exposed for GDNative based interfaces, this is called to register an available interface with the AR/VR server.
@@ -94,7 +94,7 @@
 		<method name="remove_interface">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="ARVRInterface">
+			<argument index="0" name="interface" type="ARVRInterface">
 			</argument>
 			<description>
 				Removes a registered interface, again exposed mostly for GDNative based interfaces.
@@ -103,7 +103,7 @@
 		<method name="set_primary_interface">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="ARVRInterface">
+			<argument index="0" name="interface" type="ARVRInterface">
 			</argument>
 			<description>
 				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.

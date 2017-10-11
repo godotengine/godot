@@ -18,6 +18,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="force_sync">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="texture_create">
 			<return type="RID">
 			</return>

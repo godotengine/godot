@@ -210,7 +210,7 @@
 			If set, texture can be seen from the back as well, if not, it is invisible when looking at it from behind.
 		</constant>
 		<constant name="FLAG_MAX" value="3">
-			Used internally to mark the end of the Flags section. 
+			Used internally to mark the end of the Flags section.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0">
 		</constant>

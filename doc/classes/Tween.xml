@@ -296,7 +296,7 @@
 			<argument index="0" name="mode" type="int" enum="Tween.TweenProcessMode">
 			</argument>
 			<description>
-				Set whether the Tween uses [code]_process[/code] or [code]_fixed_process[/code] (accepts TWEEN_PROCESS_IDLE and TWEEN_PROCESS_FIXED constants, respectively).
+				Set whether the Tween uses [code]_process[/code] or [code]_physics_process[/code] (accepts TWEEN_PROCESS_IDLE and TWEEN_PROCESS_PHYSICS constants, respectively).
 			</description>
 		</method>
 		<method name="start">
@@ -422,8 +422,8 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TWEEN_PROCESS_FIXED" value="0">
-			The [Tween] should use [code]_fixed_process[/code] for timekeeping when this is enabled.
+		<constant name="TWEEN_PROCESS_PHYSICS" value="0">
+			The [Tween] should use [code]_physics_process[/code] for timekeeping when this is enabled.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1">
 			The [Tween] should use [code]_process[/code] for timekeeping when this is enabled (default).

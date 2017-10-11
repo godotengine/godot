@@ -178,8 +178,6 @@
 			</description>
 		</method>
 		<method name="invert">
-			<return type="Array">
-			</return>
 			<description>
 				Reverse the order of the elements in the array (so first element will now be the last) and return reference to the array.
 			</description>
@@ -241,15 +239,11 @@
 			</description>
 		</method>
 		<method name="sort">
-			<return type="Array">
-			</return>
 			<description>
 				Sort the array using natural order and return reference to the array.
 			</description>
 		</method>
 		<method name="sort_custom">
-			<return type="Array">
-			</return>
 			<argument index="0" name="obj" type="Object">
 			</argument>
 			<argument index="1" name="func" type="String">

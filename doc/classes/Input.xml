@@ -237,6 +237,20 @@
 				Returns true or false depending on whether mouse button is pressed or not. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
+		<method name="joy_connection_changed">
+			<return type="void">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<argument index="1" name="connected" type="bool">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<argument index="3" name="guid" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="parse_input_event">
 			<return type="void">
 			</return>

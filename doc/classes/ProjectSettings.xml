@@ -51,6 +51,14 @@
 				Return the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
+		<method name="get_setting" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -68,7 +76,7 @@
 				Convert a localized path (res://) to a full native OS path.
 			</description>
 		</method>
-		<method name="has" qualifiers="const">
+		<method name="has_setting" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="String">
@@ -151,6 +159,16 @@
 			</argument>
 			<description>
 				Set the order of a configuration value (influences when saved to the config file).
+			</description>
+		</method>
+		<method name="set_setting">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

@@ -170,7 +170,7 @@
 			</description>
 		</method>
 		<method name="set_point_offset">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="index" type="int">
 			</argument>

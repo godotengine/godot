@@ -15,7 +15,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_tracking_fixed_step" qualifiers="const">
+		<method name="is_tracking_physics_step" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
@@ -29,7 +29,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_track_fixed_step">
+		<method name="set_track_physics_step">
 			<return type="void">
 			</return>
 			<argument index="0" name="enable" type="bool">

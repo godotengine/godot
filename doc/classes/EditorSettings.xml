@@ -69,6 +69,14 @@
 				Get the list of recently visited folders in the file dialog for this project.
 			</description>
 		</method>
+		<method name="get_setting" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_settings_path" qualifiers="const">
 			<return type="String">
 			</return>
@@ -76,6 +84,30 @@
 				Get the global settings path for the engine. Inside this path you can find some standard paths such as:
 				settings/tmp - used for temporary storage of files
 				settings/templates - where export templates are located
+			</description>
+		</method>
+		<method name="has_setting" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="property_can_revert">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="property_get_revert">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_favorite_dirs">
@@ -87,6 +119,16 @@
 				Set the list of favorite directories for this project.
 			</description>
 		</method>
+		<method name="set_initial_value">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_recent_dirs">
 			<return type="void">
 			</return>
@@ -94,6 +136,16 @@
 			</argument>
 			<description>
 				Set the list of recently visited folders in the file dialog for this project.
+			</description>
+		</method>
+		<method name="set_setting">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

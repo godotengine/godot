@@ -380,11 +380,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_FIXED" value="0">
-			Process animation on fixed process. This is specially useful when animating kinematic bodies.
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0">
+			Process animation during the physics process. This is specially useful when animating physics bodies.
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1">
-			Process animation on idle process.
+			Process animation during the idle process.
 		</constant>
 	</constants>
 </class>

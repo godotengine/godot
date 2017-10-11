@@ -77,6 +77,8 @@
 		<constant name="RENDER_DRAW_CALLS_IN_FRAME" value="16">
 			Draw calls per frame. 3D only.
 		</constant>
+		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="20">
+		</constant>
 		<constant name="RENDER_VIDEO_MEM_USED" value="17">
 			Video memory used. Includes both texture and vertex memory.
 		</constant>
@@ -85,8 +87,6 @@
 		</constant>
 		<constant name="RENDER_VERTEX_MEM_USED" value="19">
 			Vertex memory used.
-		</constant>
-		<constant name="RENDER_USAGE_VIDEO_MEM_TOTAL" value="20">
 		</constant>
 		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="21">
 			Number of active [RigidBody2D] nodes in the game.

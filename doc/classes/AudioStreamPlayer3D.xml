@@ -357,8 +357,8 @@
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
 			Executes doppler trackin in idle step.
 		</constant>
-		<constant name="DOPPLER_TRACKING_FIXED_STEP" value="2">
-			Executes doppler tracking in fixed step.
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+			Executes doppler tracking in physics step.
 		</constant>
 	</constants>
 </class>

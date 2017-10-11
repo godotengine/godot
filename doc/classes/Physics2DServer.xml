@@ -372,6 +372,14 @@
 				Return the continuous collision detection mode.
 			</description>
 		</method>
+		<method name="body_get_direct_state">
+			<return type="Physics2DDirectBodyState">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>
