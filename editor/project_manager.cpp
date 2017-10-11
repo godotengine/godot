@@ -573,6 +573,9 @@ void ProjectManager::_unhandled_input(const InputEvent &p_ev) {
 		if (!k.pressed)
 			return;
 
+		if (tabs->get_current_tab() != 0)
+			return;
+
 		bool scancode_handled = true;
 
 		switch (k.scancode) {
