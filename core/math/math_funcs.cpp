@@ -176,3 +176,18 @@ float Math::random(float from, float to) {
 	float ret = (float)r / (float)RANDOM_MAX;
 	return (ret) * (to - from) + from;
 }
+
+int Math::wrapi(int value, int min, int max) {
+	--max;
+	int rng = max - min + 1;
+	value = ((value - min) % rng);
+	if (value < 0)
+		return max + 1 + value;
+	else
+		return min + value;
+}
+
+float Math::wrapf(float value, float min, float max) {
+	float rng = max - min;
+	return min + (value - min) - (rng * floor((value - min) / rng));
+}
