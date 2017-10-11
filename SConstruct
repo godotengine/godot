@@ -1,6 +1,7 @@
+
 #!/usr/bin/env python
 
-EnsureSConsVersion(0, 14)
+EnsureSConsVersion(0, 98, 1)
 
 
 import string
@@ -17,7 +18,6 @@ methods.update_version()
 platform_list = []  # list of platforms
 platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
-
 
 active_platforms = []
 active_platform_ids = []
@@ -88,6 +88,13 @@ env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
 
+# To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
+# http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+env_base.Decider('MD5-timestamp')
+# Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
+# http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+env_base.SetOption('implicit_cache', 1)
+
 
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
@@ -146,6 +153,7 @@ opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all 
 opts.Add('unix_global_settings_path', "UNIX-specific path to system-wide settings. Currently only used for templates", '')
 opts.Add('verbose', "Enable verbose output for the compilation (yes/no)", 'no')
 opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
+opts.Add('vsproj_jobs', "Number of parallel builds", '2')
 opts.Add('warnings', "Set the level of warnings emitted during compilation (extra/all/moderate/no)", 'no')
 opts.Add('progress', "Show a progress indicator during build (yes/no)", 'yes')
 opts.Add('dev', "If yes, alias for verbose=yes warnings=all", 'no')
@@ -262,17 +270,17 @@ if selected_platform in platform_list:
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
 
-    env.Append(CCFLAGS=string.split(str(CCFLAGS)))
+    env.Append(CCFLAGS=str(CCFLAGS).split())
 
     CFLAGS = env.get('CFLAGS', '')
     env['CFLAGS'] = ''
 
-    env.Append(CFLAGS=string.split(str(CFLAGS)))
+    env.Append(CFLAGS=str(CFLAGS).split())
 
     LINKFLAGS = env.get('LINKFLAGS', '')
     env['LINKFLAGS'] = ''
 
-    env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
+    env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
@@ -286,14 +294,6 @@ if selected_platform in platform_list:
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
     if (os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
-        # This is an ugly hack.  It's possible (and common in the case of having older versions of MSVC installed)
-        # to have MSVC installed but not Visual Studio itself.  If this happens the environment variable
-        # "VSINSTALLDIR" is never set as Visual Studio isn't installed.  However, near as I can figure out,
-        # internally scons uses the "VSINSTALLDIR" environment variable for something so it needs to be set.
-        # So we set it to the same directory as MSVC itself.  It's an ugly hack but it works without side effects.
-        if os.getenv("VSINSTALLDIR") is None:
-            os.environ["VSINSTALLDIR"] = os.getenv("VCINSTALLDIR")
-
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
@@ -411,44 +411,8 @@ if selected_platform in platform_list:
 
     # Microsoft Visual Studio Project Generation
     if (env['vsproj']) == "yes":
-
-        AddToVSProject(env.core_sources)
-        AddToVSProject(env.main_sources)
-        AddToVSProject(env.modules_sources)
-        AddToVSProject(env.scene_sources)
-        AddToVSProject(env.servers_sources)
-        AddToVSProject(env.editor_sources)
-
-        # this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
-        # Even then, SCons still seems to ignore it and builds with the latest MSVC...
-        # That said, it's not needed to be set so far but I'm leaving it here so that this comment
-        # has a purpose.
-        # env['MSVS_VERSION']='9.0'
-
-        # Calls a CMD with /C(lose) and /V(delayed environment variable expansion) options.
-        # And runs vcvarsall bat for the propper arhitecture and scons for propper configuration
-        env['MSVSBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! -j2'
-        env['MSVSREBUILDCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) & call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons platform=windows target=$(Configuration) tools=!tools! vsproj=yes -j2'
-        env['MSVSCLEANCOM'] = 'cmd /V /C set "plat=$(PlatformTarget)" ^& (if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64")) ^& set "tools=yes" ^& (if "$(Configuration)"=="release" (set "tools=no")) ^& call "$(VCInstallDir)vcvarsall.bat" !plat! ^& scons --clean platform=windows target=$(Configuration) tools=!tools! -j2'
-
-        # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
-        # required for Visual Studio to understand that it needs to generate an NMAKE
-        # project. Do not modify without knowing what you are doing.
-        debug_variants = ['debug|Win32'] + ['debug|x64']
-        release_variants = ['release|Win32'] + ['release|x64']
-        release_debug_variants = ['release_debug|Win32'] + ['release_debug|x64']
-        variants = debug_variants + release_variants + release_debug_variants
-        debug_targets = ['bin\\godot.windows.tools.32.exe'] + ['bin\\godot.windows.tools.64.exe']
-        release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
-        release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
-        targets = debug_targets + release_targets + release_debug_targets
-        msvproj = env.MSVSProject(target=['#godot' + env['MSVSPROJECTSUFFIX']],
-                                  incs=env.vs_incs,
-                                  srcs=env.vs_srcs,
-                                  runfile=targets,
-                                  buildtarget=targets,
-                                  auto_build_solution=1,
-                                  variant=variants)
+        env['CPPPATH'] = [Dir(path) for path in env['CPPPATH']]
+        methods.generate_vs_project(env, env['vsproj_jobs'])
 
 else:
 
@@ -493,5 +457,3 @@ if ('env' in locals() and env["progress"] == "yes"):
     Progress(progress_function, interval = node_count_interval)
     progress_finish_command = Command('progress_finish', [], progress_finish)
     AlwaysBuild(progress_finish_command)
-
-
