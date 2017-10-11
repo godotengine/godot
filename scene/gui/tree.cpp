@@ -47,18 +47,21 @@ void TreeItem::move_to_top() {
 }
 
 void TreeItem::move_to_bottom() {
-
 	if (!parent || !next)
 		return;
 
-	while (next) {
+	TreeItem *prev = get_prev();
+	TreeItem *last = next;
+	while (last->next)
+		last = last->next;
 
-		if (parent->childs == this)
-			parent->childs = next;
-		TreeItem *n = next;
-		next = n->next;
-		n->next = this;
+	if (prev) {
+		prev->next = next;
+	} else {
+		parent->childs = next;
 	}
+	last->next = this;
+	next = NULL;
 }
 
 Size2 TreeItem::Cell::get_icon_size() const {
