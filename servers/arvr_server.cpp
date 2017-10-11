@@ -53,10 +53,10 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tracker_count"), &ARVRServer::get_tracker_count);
 	ClassDB::bind_method(D_METHOD("get_tracker", "idx"), &ARVRServer::get_tracker);
 
-	ClassDB::bind_method(D_METHOD("set_primary_interface"), &ARVRServer::set_primary_interface);
+	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &ARVRServer::set_primary_interface);
 
-	ClassDB::bind_method(D_METHOD("add_interface"), &ARVRServer::add_interface);
-	ClassDB::bind_method(D_METHOD("remove_interface"), &ARVRServer::remove_interface);
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &ARVRServer::add_interface);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &ARVRServer::remove_interface);
 
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
