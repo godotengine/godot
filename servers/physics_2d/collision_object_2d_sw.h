@@ -110,21 +110,48 @@ public:
 	void set_shape_metadata(int p_index, const Variant &p_metadata);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
-	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const { return shapes[p_index].shape; }
-	_FORCE_INLINE_ const Transform2D &get_shape_transform(int p_index) const { return shapes[p_index].xform; }
-	_FORCE_INLINE_ const Transform2D &get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
-	_FORCE_INLINE_ const Rect2 &get_shape_aabb(int p_index) const { return shapes[p_index].aabb_cache; }
-	_FORCE_INLINE_ const Variant &get_shape_metadata(int p_index) const { return shapes[p_index].metadata; }
+	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, shapes.size(), NULL);
+		return shapes[p_index].shape;
+	}
+	_FORCE_INLINE_ const Transform2D &get_shape_transform(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, shapes.size(), Transform2D());
+		return shapes[p_index].xform;
+	}
+	_FORCE_INLINE_ const Transform2D &get_shape_inv_transform(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, shapes.size(), Transform2D());
+		return shapes[p_index].xform_inv;
+	}
+	_FORCE_INLINE_ const Rect2 &get_shape_aabb(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, shapes.size(), Rect2());
+		return shapes[p_index].aabb_cache;
+	}
+	_FORCE_INLINE_ const Variant &get_shape_metadata(int p_index) const {
+		ERR_FAIL_INDEX_V(p_index, shapes.size(), Variant());
+		return shapes[p_index].metadata;
+	}
 
 	_FORCE_INLINE_ Transform2D get_transform() const { return transform; }
 	_FORCE_INLINE_ Transform2D get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space2DSW *get_space() const { return space; }
 
-	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_disabled) { shapes[p_idx].disabled = p_disabled; }
-	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
+	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_disabled) {
+		ERR_FAIL_INDEX(p_idx, shapes.size());
+		shapes[p_idx].disabled = p_disabled;
+	}
+	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
+		return shapes[p_idx].disabled;
+	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) { shapes[p_idx].one_way_collision = p_one_way_collision; }
-	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const { return shapes[p_idx].one_way_collision; }
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) {
+		ERR_FAIL_INDEX(p_idx, shapes.size());
+		shapes[p_idx].one_way_collision = p_one_way_collision;
+	}
+	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
+		return shapes[p_idx].one_way_collision;
+	}
 
 	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
