@@ -486,7 +486,8 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 		{
 
 			PoolVector<uint8_t>::Write w = pv.write();
-			copymem(w.ptr(), data, data_bytes);
+			uint8_t *dataptr = (uint8_t *)data;
+			copymem(w.ptr(), dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
