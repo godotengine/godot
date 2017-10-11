@@ -467,6 +467,8 @@ void ScriptEditor::_update_recent_scripts() {
 
 	recent_scripts->add_separator();
 	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files")));
+
+	recent_scripts->set_as_minsize();
 }
 
 void ScriptEditor::_open_recent_script(int p_idx) {
@@ -474,7 +476,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	// clear button
 	if (p_idx == recent_scripts->get_item_count() - 1) {
 		previous_scripts.clear();
-		_update_recent_scripts();
+		call_deferred("_update_recent_scripts");
 		return;
 	}
 
@@ -2240,6 +2242,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
+	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
