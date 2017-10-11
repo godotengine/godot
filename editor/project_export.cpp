@@ -355,7 +355,6 @@ void ProjectExportDialog::_notification(int p_what) {
 
 void ProjectExportDialog::_validate_platform() {
 
-	get_ok()->set_disabled(true);
 	button_export->set_disabled(true);
 	TreeItem *selected = platforms->get_selected();
 	plat_errors->hide();
@@ -397,7 +396,6 @@ void ProjectExportDialog::_validate_platform() {
 		return;
 	}
 
-	get_ok()->set_disabled(false);
 	button_export->set_disabled(false);
 }
 
@@ -460,11 +458,12 @@ void ProjectExportDialog::_export_action(const String &p_file) {
 
 void ProjectExportDialog::_export_action_pck(const String &p_file) {
 
-	TreeItem *selected = platforms->get_selected();
-	if (!selected)
+	// we need a valid platform to get a functional platform exporter
+	TreeItem *platform = platforms->get_last_item();
+	if (!platform)
 		return;
 
-	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(selected->get_metadata(0));
+	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(platform->get_metadata(0));
 	if (exporter.is_null()) {
 		ERR_PRINT("Invalid platform for export of PCK");
 		return;
