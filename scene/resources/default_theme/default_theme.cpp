@@ -512,6 +512,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// HSlider
 
 	theme->set_stylebox("slider", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area", "HSlider", make_stylebox(hslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_highlight", "HSlider", make_stylebox(hslider_grabber_hl_png, 6, 6, 6, 6));
 	theme->set_stylebox("grabber_disabled", "HSlider", make_stylebox(hslider_grabber_disabled_png, 6, 6, 6, 6));
 	theme->set_stylebox("focus", "HSlider", focus);
@@ -524,6 +525,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// VSlider
 
 	theme->set_stylebox("slider", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
+	theme->set_stylebox("grabber_area", "VSlider", make_stylebox(vslider_bg_png, 4, 4, 4, 4));
 	theme->set_stylebox("grabber_highlight", "VSlider", make_stylebox(vslider_grabber_hl_png, 6, 6, 6, 6));
 	theme->set_stylebox("grabber_disabled", "VSlider", make_stylebox(vslider_grabber_disabled_png, 6, 6, 6, 6));
 	theme->set_stylebox("focus", "VSlider", focus);
