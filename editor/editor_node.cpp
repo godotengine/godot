@@ -1603,7 +1603,12 @@ void EditorNode::_edit_current() {
 
 	if (main_plugin) {
 
-		if (main_plugin != editor_plugin_screen) {
+		// special case if use of external editor is true
+		if (main_plugin->get_name() == "Script" && bool(EditorSettings::get_singleton()->get("external_editor/use_external_editor"))){
+			main_plugin->edit(current_obj);
+		}
+
+		else if (main_plugin != editor_plugin_screen) {
 
 			// update screen main_plugin
 
