@@ -959,80 +959,82 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
+	if (metallic < 1.0) {
 #if defined(DIFFUSE_OREN_NAYAR)
-	vec3 diffuse_brdf_NL;
+		vec3 diffuse_brdf_NL;
 #else
-	float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
+		float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
 #endif
 
 
 #if defined(DIFFUSE_LAMBERT_WRAP)
-	//energy conserving lambert wrap shader
-	diffuse_brdf_NL = max(0.0,(NdotL + roughness) / ((1.0 + roughness) * (1.0 + roughness)));
+		//energy conserving lambert wrap shader
+		diffuse_brdf_NL = max(0.0,(NdotL + roughness) / ((1.0 + roughness) * (1.0 + roughness)));
 
 #elif defined(DIFFUSE_OREN_NAYAR)
 
-	{
-		// see http://mimosa-pudica.net/improved-oren-nayar.html
-		float LdotV = dot(L, V);
+		{
+			// see http://mimosa-pudica.net/improved-oren-nayar.html
+			float LdotV = dot(L, V);
 
 
-		float s = LdotV - NdotL * NdotV;
-		float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
+			float s = LdotV - NdotL * NdotV;
+			float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
 
-		float sigma2 = roughness * roughness; // TODO: this needs checking
-		vec3 A = 1.0 + sigma2 * (- 0.5 / (sigma2 + 0.33) + 0.17*diffuse_color / (sigma2 + 0.13) );
-		float B = 0.45 * sigma2 / (sigma2 + 0.09);
+			float sigma2 = roughness * roughness; // TODO: this needs checking
+			vec3 A = 1.0 + sigma2 * (- 0.5 / (sigma2 + 0.33) + 0.17*diffuse_color / (sigma2 + 0.13) );
+			float B = 0.45 * sigma2 / (sigma2 + 0.09);
 
-		diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
-	}
+			diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
+		}
 
 #elif defined(DIFFUSE_TOON)
 
-	diffuse_brdf_NL = smoothstep(-roughness,max(roughness,0.01),NdotL);
+		diffuse_brdf_NL = smoothstep(-roughness,max(roughness,0.01),NdotL);
 
 #elif defined(DIFFUSE_BURLEY)
 
-	{
+		{
 
 
-		vec3 H = normalize(V + L);
-		float cLdotH = max(0.0,dot(L, H));
+			vec3 H = normalize(V + L);
+			float cLdotH = max(0.0,dot(L, H));
 
-		float FD90 = 0.5 + 2.0 * cLdotH * cLdotH * roughness;
-		float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotV);
-		float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotL);
-		diffuse_brdf_NL = (1.0 / M_PI) * FdV * FdL * cNdotL;
-/*
-		float energyBias = mix(roughness, 0.0, 0.5);
-		float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
-		float fd90 = energyBias + 2.0 * VoH * VoH * roughness;
-		float f0 = 1.0;
-		float lightScatter = f0 + (fd90 - f0) * pow(1.0 - cNdotL, 5.0);
-		float viewScatter = f0 + (fd90 - f0) * pow(1.0 - cNdotV, 5.0);
+			float FD90 = 0.5 + 2.0 * cLdotH * cLdotH * roughness;
+			float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotV);
+			float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotL);
+			diffuse_brdf_NL = (1.0 / M_PI) * FdV * FdL * cNdotL;
+	/*
+			float energyBias = mix(roughness, 0.0, 0.5);
+			float energyFactor = mix(roughness, 1.0, 1.0 / 1.51);
+			float fd90 = energyBias + 2.0 * VoH * VoH * roughness;
+			float f0 = 1.0;
+			float lightScatter = f0 + (fd90 - f0) * pow(1.0 - cNdotL, 5.0);
+			float viewScatter = f0 + (fd90 - f0) * pow(1.0 - cNdotV, 5.0);
 
-		diffuse_brdf_NL = lightScatter * viewScatter * energyFactor;*/
-	}
+			diffuse_brdf_NL = lightScatter * viewScatter * energyFactor;*/
+		}
 #else
-	//lambert
-	diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
+		//lambert
+		diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
 #if defined(TRANSMISSION_USED)
-	diffuse_light += light_color * diffuse_color * mix(vec3(diffuse_brdf_NL), vec3(M_PI), transmission) * attenuation;
+		diffuse_light += light_color * diffuse_color * mix(vec3(diffuse_brdf_NL), vec3(M_PI), transmission) * attenuation;
 #else
-	diffuse_light += light_color * diffuse_color * diffuse_brdf_NL * attenuation;
+		diffuse_light += light_color * diffuse_color * diffuse_brdf_NL * attenuation;
 #endif
 
 
 
 #if defined(LIGHT_USE_RIM)
-	float rim_light = pow(1.0-cNdotV, (1.0-roughness)*16.0);
-	diffuse_light += rim_light * rim * mix(vec3(1.0),diffuse_color,rim_tint) * light_color;
+		float rim_light = pow(1.0-cNdotV, (1.0-roughness)*16.0);
+		diffuse_light += rim_light * rim * mix(vec3(1.0),diffuse_color,rim_tint) * light_color;
 #endif
+	}
 
 
-	if (roughness > 0.0) {
+	if (roughness < 1.0) {
 
 
 		// D
@@ -1099,21 +1101,22 @@ LIGHT_SHADER_CODE
 #endif
 
 #if defined(LIGHT_USE_CLEARCOAT)
-
+		if (clearcoat_gloss > 0.0) {
 # if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
- 		vec3 H = normalize(V + L);
+			vec3 H = normalize(V + L);
 # endif
 # if !defined(SPECULAR_SCHLICK_GGX)
-		float cNdotH = max(dot(N,H), 0.0);
-		float cLdotH = max(dot(L,H), 0.0);
-		float cLdotH5 = SchlickFresnel(cLdotH);
+			float cNdotH = max(dot(N,H), 0.0);
+			float cLdotH = max(dot(L,H), 0.0);
+			float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
-		float Fr = mix(.04, 1.0, cLdotH5);
-		float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+			float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+			float Fr = mix(.04, 1.0, cLdotH5);
+			float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 
 
-		specular_light += .25*clearcoat*Gr*Fr*Dr;
+			specular_light += .25*clearcoat*Gr*Fr*Dr;
+		}
 #endif
 	}
 
@@ -1985,7 +1988,7 @@ FRAGMENT_SHADER_CODE
 
 
 	//energy conservation
-	diffuse_light *= 1.0-metallic; // TODO: avoid diffuse and ambient light calculations when metallic == 1
+	diffuse_light *= 1.0-metallic; // TODO: avoid all diffuse and ambient light calculations when metallic == 1 up to this point
 	ambient_light *= 1.0-metallic;
 
 
