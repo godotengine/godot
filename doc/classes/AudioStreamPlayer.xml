@@ -7,6 +7,7 @@
 		Plays background audio.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/latest/learning/features/audio/index.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -27,6 +28,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the position in the [AudioStream].
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -121,15 +123,16 @@
 	</methods>
 	<members>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
-			If [code]true[/code], audio plays when added to scene tree. Default value: [code]false[/code].
+			If [code]true[/code] audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 			Bus on which this audio is playing.
 		</member>
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget">
+			If the audio configuration has more than two speakers, this sets the target channels. See [code]MIX_TARGET_*[/code] constants.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
-			If [code]true[/code], audio is playing.
+			If [code]true[/code] audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] object to be played.
@@ -147,10 +150,13 @@
 	</signals>
 	<constants>
 		<constant name="MIX_TARGET_STEREO" value="0">
+			The audio will be played only on the first channel.
 		</constant>
 		<constant name="MIX_TARGET_SURROUND" value="1">
+			The audio will be played on all surround channels.
 		</constant>
 		<constant name="MIX_TARGET_CENTER" value="2">
+			The audio will be played on the second channel, which is usually the center.
 		</constant>
 	</constants>
 </class>

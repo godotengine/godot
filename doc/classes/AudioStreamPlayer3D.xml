@@ -82,6 +82,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the position in the [AudioStream].
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -288,7 +289,7 @@
 			Decides if audio should get quieter with distance linearly, quadratically or logarithmically.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
-			If [code]true[/code], audio plays audio plays when added to scene tree. Default value: [code]false[/code].
+			If [code]true[/code] audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 			Bus on which this audio is playing.
@@ -300,7 +301,7 @@
 			The angle in which the audio reaches cameras undampened.
 		</member>
 		<member name="emission_angle_enabled" type="bool" setter="set_emission_angle_enabled" getter="is_emission_angle_enabled">
-			If [code]true[/code], the audio should be dampened according to the direction of the sound.
+			If [code]true[/code] the audio should be dampened according to the direction of the sound.
 		</member>
 		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db">
 			dampens audio if camera is outside of 'emission_angle_degrees' and 'emission_angle_enabled' is set by this factor, in dB.

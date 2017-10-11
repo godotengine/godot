@@ -40,6 +40,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the position in the [AudioStream].
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -156,7 +157,7 @@
 			Dampens audio over distance with this as an exponent.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
-			If [code]true[/code], audio plays when added to scene tree. Default value: [code]false[/code].
+			If [code]true[/code] audio plays when added to scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus">
 			Bus on which this audio is playing.
@@ -165,7 +166,7 @@
 			Maximum distance from which audio is still hearable.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
-			If [code]true[/code], audio is playing.
+			If [code]true[/code] audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] object to be played.
