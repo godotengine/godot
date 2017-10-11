@@ -279,6 +279,7 @@ private:
 
 	EditorExportGodot3 export_godot3;
 	FileDialog *export_godot3_dialog;
+	CheckButton *export_godot3_dialog_convert_scripts;
 
 	CreateDialog *create_dialog;
 
