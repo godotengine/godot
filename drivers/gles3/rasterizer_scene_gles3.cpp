@@ -2350,22 +2350,7 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 	glDepthFunc(GL_LEQUAL);
 	glColorMask(1, 1, 1, 1);
 
-	float flip_sign = p_vflip ? -1 : 1;
-
-	Vector3 vertices[8] = {
-		Vector3(-1, -1 * flip_sign, 1),
-		Vector3(0, 1, 0),
-		Vector3(1, -1 * flip_sign, 1),
-		Vector3(1, 1, 0),
-		Vector3(1, 1 * flip_sign, 1),
-		Vector3(1, 0, 0),
-		Vector3(-1, 1 * flip_sign, 1),
-		Vector3(0, 0, 0)
-
-	};
-
-	//sky uv vectors
-	float vw, vh, zn;
+	// Camera
 	CameraMatrix camera;
 
 	if (p_custom_fov) {
@@ -2380,17 +2365,39 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 		camera = p_projection;
 	}
 
-	camera.get_viewport_size(vw, vh);
-	zn = p_projection.get_z_near();
+	float flip_sign = p_vflip ? -1 : 1;
 
-	for (int i = 0; i < 4; i++) {
+	/*
+		If matrix[2][0] or matrix[2][1] we're dealing with an asymmetrical projection matrix. This is the case for stereoscopic rendering (i.e. VR).
+		To ensure the image rendered is perspective correct we need to move some logic into the shader. For this the USE_ASYM_PANO option is introduced.
+		It also means the uv coordinates are ignored in this mode and we don't need our loop.
+	*/
+	bool asymmetrical = ((camera.matrix[2][0] != 0.0) || (camera.matrix[2][1] != 0.0));
 
-		Vector3 uv = vertices[i * 2 + 1];
-		uv.x = (uv.x * 2.0 - 1.0) * vw;
-		uv.y = -(uv.y * 2.0 - 1.0) * vh;
-		uv.z = -zn;
-		vertices[i * 2 + 1] = p_transform.basis.xform(uv).normalized();
-		vertices[i * 2 + 1].z = -vertices[i * 2 + 1].z;
+	Vector3 vertices[8] = {
+		Vector3(-1, -1 * flip_sign, 1),
+		Vector3(0, 1, 0),
+		Vector3(1, -1 * flip_sign, 1),
+		Vector3(1, 1, 0),
+		Vector3(1, 1 * flip_sign, 1),
+		Vector3(1, 0, 0),
+		Vector3(-1, 1 * flip_sign, 1),
+		Vector3(0, 0, 0)
+	};
+
+	if (!asymmetrical) {
+		float vw, vh, zn;
+		camera.get_viewport_size(vw, vh);
+		zn = p_projection.get_z_near();
+
+		for (int i = 0; i < 4; i++) {
+			Vector3 uv = vertices[i * 2 + 1];
+			uv.x = (uv.x * 2.0 - 1.0) * vw;
+			uv.y = -(uv.y * 2.0 - 1.0) * vh;
+			uv.z = -zn;
+			vertices[i * 2 + 1] = p_transform.basis.xform(uv).normalized();
+			vertices[i * 2 + 1].z = -vertices[i * 2 + 1].z;
+		}
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, state.sky_verts);
@@ -2399,16 +2406,24 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 
 	glBindVertexArray(state.sky_array);
 
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, true);
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_ASYM_PANO, asymmetrical);
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, !asymmetrical);
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_MULTIPLIER, true);
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES3::MULTIPLIER, p_energy);
+	if (asymmetrical) {
+		// pack the bits we need from our projection matrix
+		storage->shaders.copy.set_uniform(CopyShaderGLES3::ASYM_PROJ, camera.matrix[2][0], camera.matrix[0][0], camera.matrix[2][1], camera.matrix[1][1]);
+		///@TODO I couldn't get mat3 + p_transform.basis to work, that would be better here.
+		storage->shaders.copy.set_uniform(CopyShaderGLES3::PANO_TRANSFORM, p_transform);
+	}
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glBindVertexArray(0);
 	glColorMask(1, 1, 1, 1);
 
+	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_ASYM_PANO, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_MULTIPLIER, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_PANORAMA, false);
 }

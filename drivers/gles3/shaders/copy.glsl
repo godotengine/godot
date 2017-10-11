@@ -27,6 +27,8 @@ void main() {
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 	cube_interp = cube_in;
+#elif defined(USE_ASYM_PANO)
+	uv_interp = vertex_attrib.xy;
 #else
 	uv_interp = uv_in;
 #ifdef V_FLIP
@@ -59,6 +61,11 @@ in vec3 cube_interp;
 in vec2 uv_interp;
 #endif
 
+#ifdef USE_ASYM_PANO
+uniform highp mat4 pano_transform;
+uniform highp vec4 asym_proj;
+#endif
+
 #ifdef USE_CUBEMAP
 uniform samplerCube source_cube; //texunit:0
 #else
@@ -70,7 +77,7 @@ uniform sampler2D source; //texunit:0
 uniform float multiplier;
 #endif
 
-#ifdef USE_PANORAMA
+#if defined(USE_PANORAMA) || defined(USE_ASYM_PANO)
 
 vec4 texturePanorama(vec3 normal,sampler2D pano ) {
 
@@ -121,6 +128,21 @@ void main() {
 #ifdef USE_PANORAMA
 
 	vec4 color = texturePanorama(  normalize(cube_interp), source );
+
+#elif defined(USE_ASYM_PANO)
+
+	// When an assymetrical projection matrix is used (applicable for stereoscopic rendering i.e. VR) we need to do this calculation per fragment to get a perspective correct result. 
+	// Note that we're ignoring the x-offset for IPD, with Z sufficiently in the distance it becomes neglectible, as a result we could probably just set cube_normal.z to -1.
+	// The Matrix[2][0] (= asym_proj.x) and Matrix[2][1] (= asym_proj.z) values are what provide the right shift in the image.
+
+	vec3 cube_normal;
+	cube_normal.z = -1000000.0;
+	cube_normal.x = (cube_normal.z * (-uv_interp.x - asym_proj.x)) / asym_proj.y;
+	cube_normal.y = (cube_normal.z * (-uv_interp.y - asym_proj.z)) / asym_proj.a;
+	cube_normal = mat3(pano_transform) * cube_normal;
+	cube_normal.z = -cube_normal.z;
+
+	vec4 color = texturePanorama(  normalize(cube_normal.xyz), source );
 
 #elif defined(USE_CUBEMAP)
 	vec4 color = texture( source_cube,  normalize(cube_interp) );
