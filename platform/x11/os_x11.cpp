@@ -1938,14 +1938,19 @@ Error OS_X11::shell_open(String p_uri) {
 
 	Error ok;
 	List<String> args;
+	args.push_back("open");
 	args.push_back(p_uri);
+	ok = execute("/usr/bin/gio", args, false);
+	if (ok == OK)
+		return OK;
+	args.pop_front();
 	ok = execute("/usr/bin/xdg-open", args, false);
 	if (ok == OK)
 		return OK;
-	ok = execute("gnome-open", args, false);
+	ok = execute("/usr/bin/gnome-open", args, false);
 	if (ok == OK)
 		return OK;
-	ok = execute("kde-open", args, false);
+	ok = execute("/usr/bin/kde-open", args, false);
 	return ok;
 }
 
