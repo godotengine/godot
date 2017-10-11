@@ -32,7 +32,11 @@
 Size2 Separator::get_minimum_size() const {
 
 	Size2 ms(3, 3);
-	ms[orientation] = get_constant("separation");
+	if (orientation == VERTICAL) {
+		ms.x = get_constant("separation");
+	} else { // HORIZONTAL
+		ms.y = get_constant("separation");
+	}
 	return ms;
 }
 
