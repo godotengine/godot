@@ -733,8 +733,12 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
-	if (err != OK)
+	if (err != OK) {
+		error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted: ") + platform->get_name());
+		error_dialog->show();
+		error_dialog->popup_centered_minsize(Size2(300, 80));
 		ERR_PRINT("Failed to export project");
+	}
 }
 
 void ProjectExportDialog::_bind_methods() {
@@ -939,6 +943,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_templates_error->add_child(export_error2);
 	export_error2->add_color_override("font_color", get_color("error_color", "Editor"));
 	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
+
+	error_dialog = memnew(AcceptDialog);
+	error_dialog->set_title("Error");
+	error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " ");
+	main_vb->add_child(error_dialog);
+	error_dialog->hide();
 
 	LinkButton *download_templates = memnew(LinkButton);
 	download_templates->set_text(TTR("Manage Export Templates"));
