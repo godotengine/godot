@@ -3156,12 +3156,19 @@ void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 void EditorNode::_open_recent_scene(int p_idx) {
 
 	String base = "_" + ProjectSettings::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
-	Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
 
-	ERR_FAIL_INDEX(p_idx, rc.size());
+	if (p_idx == recent_scenes->get_item_count() - 1) {
 
-	String path = "res://" + rc[p_idx];
-	load_scene(path);
+		EditorSettings::get_singleton()->erase(base + "/_recent_scenes");
+		call_deferred("_update_recent_scenes");
+	} else {
+
+		Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
+		ERR_FAIL_INDEX(p_idx, rc.size());
+
+		String path = "res://" + rc[p_idx];
+		load_scene(path);
+	}
 }
 
 void EditorNode::_update_recent_scenes() {
@@ -3169,10 +3176,15 @@ void EditorNode::_update_recent_scenes() {
 	String base = "_" + ProjectSettings::get_singleton()->get_resource_path().replace("\\", "::").replace("/", "::");
 	Vector<String> rc = EDITOR_DEF(base + "/_recent_scenes", Array());
 	recent_scenes->clear();
+
 	for (int i = 0; i < rc.size(); i++) {
 
 		recent_scenes->add_item(rc[i], i);
 	}
+
+	recent_scenes->add_separator();
+	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTR("Clear Recent Scenes")));
+	recent_scenes->set_as_minsize();
 }
 
 void EditorNode::_quick_opened() {
@@ -4513,6 +4525,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
 	ClassDB::bind_method("_update_scene_tabs", &EditorNode::_update_scene_tabs);
 	ClassDB::bind_method("_discard_changes", &EditorNode::_discard_changes);
+	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
 
 	ClassDB::bind_method("_prepare_history", &EditorNode::_prepare_history);
 	ClassDB::bind_method("_select_history", &EditorNode::_select_history);
