@@ -2806,6 +2806,9 @@ void CanvasItemEditor::_notification(int p_what) {
 		unlock_button->set_icon(get_icon("Unlock", "EditorIcons"));
 		group_button->set_icon(get_icon("Group", "EditorIcons"));
 		ungroup_button->set_icon(get_icon("Ungroup", "EditorIcons"));
+		key_loc_button->set_icon(get_icon("KeyPosition", "EditorIcons"));
+		key_rot_button->set_icon(get_icon("KeyRotation", "EditorIcons"));
+		key_scale_button->set_icon(get_icon("KeyScale", "EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
 
 		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
@@ -3949,30 +3952,24 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
-	key_loc_button = memnew(Button("loc"));
+	key_loc_button = memnew(Button);
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_flat(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
-	key_loc_button->add_color_override("font_color", Color(1, 0.6, 0.6));
-	key_loc_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_loc_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_POS));
 	animation_hb->add_child(key_loc_button);
-	key_rot_button = memnew(Button("rot"));
+	key_rot_button = memnew(Button);
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_flat(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
-	key_rot_button->add_color_override("font_color", Color(1, 0.6, 0.6));
-	key_rot_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_rot_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_ROT));
 	animation_hb->add_child(key_rot_button);
-	key_scale_button = memnew(Button("scl"));
+	key_scale_button = memnew(Button);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_flat(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
-	key_scale_button->add_color_override("font_color", Color(1, 0.6, 0.6));
-	key_scale_button->add_color_override("font_color_pressed", Color(0.6, 1, 0.6));
 	key_scale_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
 	animation_hb->add_child(key_scale_button);
 	key_insert_button = memnew(Button);

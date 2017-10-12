@@ -350,6 +350,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("contrast_color_2", "Editor", contrast_color_2);
 
 	theme->set_color("font_color", "Editor", font_color);
+	theme->set_color("highlighted_font_color", "Editor", font_color_hl);
 	theme->set_color("disabled_font_color", "Editor", font_color_disabled);
 
 	theme->set_color("mono_color", "Editor", mono_color);

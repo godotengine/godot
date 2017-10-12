@@ -43,10 +43,10 @@ void SpriteFramesEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		load->set_icon(get_icon("Folder", "EditorIcons"));
-		_delete->set_icon(get_icon("Del", "EditorIcons"));
-		new_anim->set_icon(get_icon("New", "EditorIcons"));
-		remove_anim->set_icon(get_icon("Del", "EditorIcons"));
+		load->set_icon(get_icon("Load", "EditorIcons"));
+		_delete->set_icon(get_icon("Remove", "EditorIcons"));
+		new_anim->set_icon(get_icon("Add", "EditorIcons"));
+		remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -667,7 +667,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	split->add_child(vbc_animlist);
-	vbc_animlist->set_custom_minimum_size(Size2(150, 0));
+	vbc_animlist->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 	//vbc_animlist->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	VBoxContainer *sub_vb = memnew(VBoxContainer);
@@ -678,12 +678,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(hbc_animlist);
 
 	new_anim = memnew(Button);
+	new_anim->set_flat(true);
 	hbc_animlist->add_child(new_anim);
+	new_anim->set_h_size_flags(SIZE_EXPAND_FILL);
 	new_anim->connect("pressed", this, "_animation_add");
 
-	hbc_animlist->add_spacer();
-
 	remove_anim = memnew(Button);
+	remove_anim->set_flat(true);
 	hbc_animlist->add_child(remove_anim);
 	remove_anim->connect("pressed", this, "_animation_remove");
 
@@ -720,6 +721,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	//animations = memnew( ItemList );
 
 	load = memnew(Button);
+	load->set_flat(true);
 	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
@@ -736,14 +738,15 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc->add_child(empty2);
 
 	move_up = memnew(Button);
-	move_up->set_text(TTR("Up"));
+	move_up->set_text(TTR("Move (Before)"));
 	hbc->add_child(move_up);
 
 	move_down = memnew(Button);
-	move_down->set_text(TTR("Down"));
+	move_down->set_text(TTR("Move (After)"));
 	hbc->add_child(move_down);
 
 	_delete = memnew(Button);
+	_delete->set_flat(true);
 	hbc->add_child(_delete);
 
 	file = memnew(EditorFileDialog);

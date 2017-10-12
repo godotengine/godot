@@ -1,7 +1,5 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(0 -1036.4)">
-<rect x="1" y="1040.4" width="14" height="8" fill="none" stroke="#e0e0e0" stroke-linejoin="round" stroke-width="2"/>
-<ellipse cx="5" cy="1044.4" rx="2" ry="2" fill="#e0e0e0"/>
-<ellipse cx="11" cy="1044.4" rx="2" ry="2" fill="#e0e0e0"/>
+<path transform="translate(0 1036.4)" d="m2 1a1.0001 1.0001 0 0 0 -1 1v12a1.0001 1.0001 0 0 0 1 1h12a1.0001 1.0001 0 0 0 1 -1v-12a1.0001 1.0001 0 0 0 -1 -1h-12zm1 2h10v10h-10v-10zm5 2a3 3 0 0 0 -3 3 3 3 0 0 0 3 3 3 3 0 0 0 3 -3 3 3 0 0 0 -3 -3z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#e0e0e0" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
 </g>
 </svg>

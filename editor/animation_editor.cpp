@@ -1101,7 +1101,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	Color select_color = color;
 	select_color.a = 0.1;
 	Color invalid_path_color = get_color("error_color", "Editor");
-	Color track_select_color = get_color("accent", "Editor");
+	Color track_select_color = get_color("highlighted_font_color", "Editor");
 
 	Ref<Texture> remove_icon = get_icon("Remove", "EditorIcons");
 	Ref<Texture> move_up_icon = get_icon("MoveUp", "EditorIcons");
