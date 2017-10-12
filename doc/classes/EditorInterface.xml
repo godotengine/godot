@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInterface" inherits="Node" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Editor interface and main components.
 	</brief_description>
 	<description>
+		Editor interface. Allows saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview]\ er, [ScriptEditor], the editor viewport, as well as information about scenes. Also see [EditorPlugin] and [EditorScript].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,60 +17,70 @@
 			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
+				Edits the given [Resource].
 			</description>
 		</method>
 		<method name="get_base_control">
 			<return type="Control">
 			</return>
 			<description>
+				Returns the base [Control].
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
 			<return type="Node">
 			</return>
 			<description>
+				Returns the edited scene's root [Node].
 			</description>
 		</method>
 		<method name="get_editor_settings">
 			<return type="EditorSettings">
 			</return>
 			<description>
+				Returns the [EditorSettings].
 			</description>
 		</method>
 		<method name="get_editor_viewport">
 			<return type="Control">
 			</return>
 			<description>
+				Returns the editor [Viewport].
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Returns an [Array] of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_resource_filesystem">
 			<return type="EditorFileSystem">
 			</return>
 			<description>
+				Returns the [EditorFileSystem].
 			</description>
 		</method>
 		<method name="get_resource_previewer">
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
+				Returns the [EditorResourcePreview]\ er.
 			</description>
 		</method>
 		<method name="get_script_editor">
 			<return type="ScriptEditor">
 			</return>
 			<description>
+				Returns the [ScriptEditor].
 			</description>
 		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
 			<description>
+				Returns the [EditorSelection].
 			</description>
 		</method>
 		<method name="inspect_object">
@@ -79,6 +91,7 @@
 			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
+				Shows the given property on the given [code]object[/code] in the Editor's Inspector dock.
 			</description>
 		</method>
 		<method name="make_mesh_previews">
@@ -89,6 +102,7 @@
 			<argument index="1" name="preview_size" type="int">
 			</argument>
 			<description>
+				Returns mesh previews rendered at the given size as an [Array] of [Texture]\ s.
 			</description>
 		</method>
 		<method name="open_scene_from_path">
@@ -97,6 +111,7 @@
 			<argument index="0" name="scene_filepath" type="String">
 			</argument>
 			<description>
+				Opens the scene at the given path.
 			</description>
 		</method>
 		<method name="reload_scene_from_path">
@@ -105,12 +120,14 @@
 			<argument index="0" name="scene_filepath" type="String">
 			</argument>
 			<description>
+				Reloads the scene at the given path.
 			</description>
 		</method>
 		<method name="save_scene">
 			<return type="int" enum="Error">
 			</return>
 			<description>
+				Saves the scene. Returns either OK or ERR_CANT_CREATE. See [@Global Scope] constants.
 			</description>
 		</method>
 		<method name="save_scene_as">
@@ -121,6 +138,7 @@
 			<argument index="1" name="with_preview" type="bool" default="true">
 			</argument>
 			<description>
+				Saves the scene as a file at [code]path[/code].
 			</description>
 		</method>
 	</methods>
