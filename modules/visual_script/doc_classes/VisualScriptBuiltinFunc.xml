@@ -151,68 +151,74 @@
 		<constant name="MATH_DB2LINEAR" value="39">
 			Convert the input from decibel volume to linear volume.
 		</constant>
-		<constant name="MATH_WRAP" value="40">
+		<constant name="MATH_POLAR2CARTESIAN" value="40">
+			Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (x and y axis).
 		</constant>
-		<constant name="MATH_WRAPF" value="41">
+		<constant name="MATH_CARTESIAN2POLAR" value="41">
+			Converts a 2D point expressed in the cartesian coordinate system (x and y axis) to the polar coordinate system (a distance from the origin and an angle).
 		</constant>
-		<constant name="LOGIC_MAX" value="42">
+		<constant name="MATH_WRAP" value="42">
+		</constant>
+		<constant name="MATH_WRAPF" value="43">
+		</constant>
+		<constant name="LOGIC_MAX" value="44">
 			Return the greater of the two numbers, also known as their maximum.
 		</constant>
-		<constant name="LOGIC_MIN" value="43">
+		<constant name="LOGIC_MIN" value="45">
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
-		<constant name="LOGIC_CLAMP" value="44">
+		<constant name="LOGIC_CLAMP" value="46">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to `min(max(input, range_low), range_high)`
 		</constant>
-		<constant name="LOGIC_NEAREST_PO2" value="45">
+		<constant name="LOGIC_NEAREST_PO2" value="46">
 			Return the nearest power of 2 to the input.
 		</constant>
-		<constant name="OBJ_WEAKREF" value="46">
+		<constant name="OBJ_WEAKREF" value="47">
 			Create a [WeakRef] from the input.
 		</constant>
-		<constant name="FUNC_FUNCREF" value="47">
+		<constant name="FUNC_FUNCREF" value="48">
 			Create a [FuncRef] from the input.
 		</constant>
-		<constant name="TYPE_CONVERT" value="48">
+		<constant name="TYPE_CONVERT" value="49">
 			Convert between types.
 		</constant>
-		<constant name="TYPE_OF" value="49">
+		<constant name="TYPE_OF" value="50">
 			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
-		<constant name="TYPE_EXISTS" value="50">
+		<constant name="TYPE_EXISTS" value="51">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
-		<constant name="TEXT_CHAR" value="51">
+		<constant name="TEXT_CHAR" value="52">
 			Return a character with the given ascii value.
 		</constant>
-		<constant name="TEXT_STR" value="52">
+		<constant name="TEXT_STR" value="53">
 			Convert the input to a string.
 		</constant>
-		<constant name="TEXT_PRINT" value="53">
+		<constant name="TEXT_PRINT" value="54">
 			Print the given string to the output window.
 		</constant>
-		<constant name="TEXT_PRINTERR" value="54">
+		<constant name="TEXT_PRINTERR" value="55">
 			Print the given string to the standard error output.
 		</constant>
-		<constant name="TEXT_PRINTRAW" value="55">
+		<constant name="TEXT_PRINTRAW" value="56">
 			Print the given string to the standard output, without adding a newline.
 		</constant>
-		<constant name="VAR_TO_STR" value="56">
+		<constant name="VAR_TO_STR" value="57">
 			Serialize a [Variant] to a string.
 		</constant>
-		<constant name="STR_TO_VAR" value="57">
+		<constant name="STR_TO_VAR" value="58">
 			Deserialize a [Variant] from a string serialized using [VAR_TO_STR].
 		</constant>
-		<constant name="VAR_TO_BYTES" value="58">
+		<constant name="VAR_TO_BYTES" value="59">
 			Serialize a [Variant] to a [PoolByteArray].
 		</constant>
-		<constant name="BYTES_TO_VAR" value="59">
+		<constant name="BYTES_TO_VAR" value="60">
 			Deserialize a [Variant] from a [PoolByteArray] serialized using [VAR_TO_BYTES].
 		</constant>
-		<constant name="COLORN" value="60">
+		<constant name="COLORN" value="61">
 			Return the [Color] with the given name and alpha ranging from 0 to 1. Note: names are defined in color_names.inc.
 		</constant>
-		<constant name="FUNC_MAX" value="61">
+		<constant name="FUNC_MAX" value="62">
 			The maximum value the [member function] property can have.
 		</constant>
 	</constants>

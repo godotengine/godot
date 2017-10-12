@@ -138,6 +138,17 @@
 				Decodes a byte array back to a value.
 			</description>
 		</method>
+		<method name="cartesian2polar">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the cartesian coordinate system (x and y axis) to the polar coordinate system (a distance from the origin and an angle).
+			</description>
+		</method>
 		<method name="ceil">
 			<return type="float">
 			</return>
@@ -602,6 +613,17 @@
 				else:
 				    print("unexpected results")
 				[/codeblock]
+			</description>
+		</method>
+		<method name="polar2cartesian">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="th" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (x and y axis).
 			</description>
 		</method>
 		<method name="pow">
