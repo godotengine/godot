@@ -105,7 +105,7 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 		window->SetFlags(flags);
 	}
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	context_gl = memnew(ContextGL_Haiku(window));
 	context_gl->initialize();
 	context_gl->make_current();
@@ -161,7 +161,7 @@ void OS_Haiku::finalize() {
 
 	memdelete(input);
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	memdelete(context_gl);
 #endif
 }

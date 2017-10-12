@@ -94,7 +94,7 @@ class OS_X11 : public OS_Unix {
 
 	int xdnd_version;
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
 	//Rasterizer *rasterizer;

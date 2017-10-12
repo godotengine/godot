@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "context_gl_haiku.h"
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 
 ContextGL_Haiku::ContextGL_Haiku(HaikuDirectWindow *p_window) {
 	window = p_window;

@@ -35,7 +35,7 @@
 */
 #ifdef X11_ENABLED
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 
 #include "drivers/gl_context/context_gl.h"
 #include "os/os.h"

@@ -30,7 +30,7 @@
 #include "context_gl_x11.h"
 
 #ifdef X11_ENABLED
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

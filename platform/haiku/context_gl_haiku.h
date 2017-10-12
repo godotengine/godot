@@ -30,7 +30,7 @@
 #ifndef CONTEXT_GL_HAIKU_H
 #define CONTEXT_GL_HAIKU_H
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 
 #include "drivers/gl_context/context_gl.h"
 

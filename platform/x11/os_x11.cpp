@@ -235,7 +235,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 // maybe contextgl wants to be in charge of creating the window
 //print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 
 	context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, true));
 	context_gl->initialize();
@@ -533,7 +533,7 @@ void OS_X11::finalize() {
 	XUnmapWindow(x11_display, x11_window);
 	XDestroyWindow(x11_display, x11_window);
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	memdelete(context_gl);
 #endif
 	for (int i = 0; i < CURSOR_MAX; i++) {

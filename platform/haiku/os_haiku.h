@@ -60,7 +60,7 @@ private:
 	AudioDriverMediaKit driver_media_kit;
 #endif
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	ContextGL_Haiku *context_gl;
 #endif
 
