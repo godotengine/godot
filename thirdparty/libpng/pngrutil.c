@@ -1,7 +1,7 @@
 
 /* pngrutil.c - utilities to read a PNG file
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Last changed in libpng 1.6.33 [September 28, 2017]
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -314,6 +314,7 @@ png_read_buffer(png_structrp png_ptr, png_alloc_size_t new_size, int warn)
 
       if (buffer != NULL)
       {
+         memset(buffer, 0, new_size); /* just in case */
          png_ptr->read_buffer = buffer;
          png_ptr->read_buffer_size = new_size;
       }
@@ -673,6 +674,8 @@ png_decompress_chunk(png_structrp png_ptr,
 
                if (text != NULL)
                {
+                  memset(text, 0, buffer_size);
+
                   ret = png_inflate(png_ptr, png_ptr->chunk_name, 1/*finish*/,
                       png_ptr->read_buffer + prefix_size, &lzsize,
                       text + prefix_size, newlength);
@@ -736,9 +739,7 @@ png_decompress_chunk(png_structrp png_ptr,
             {
                /* inflateReset failed, store the error message */
                png_zstream_error(png_ptr, ret);
-
-               if (ret == Z_STREAM_END)
-                  ret = PNG_UNEXPECTED_ZLIB_RETURN;
+               ret = PNG_UNEXPECTED_ZLIB_RETURN;
             }
          }
 
@@ -1476,7 +1477,7 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                         /* Now read the tag table; a variable size buffer is
                          * needed at this point, allocate one for the whole
                          * profile.  The header check has already validated
-                         * that none of these stuff will overflow.
+                         * that none of this stuff will overflow.
                          */
                         const png_uint_32 tag_count = png_get_uint_32(
                             profile_header+128);
@@ -1583,19 +1584,11 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                                        return;
                                     }
                                  }
-
-                                 else if (size > 0)
-                                    errmsg = "truncated";
-
-#ifndef __COVERITY__
-                                 else
+                                 if (errmsg == NULL)
                                     errmsg = png_ptr->zstream.msg;
-#endif
                               }
-
                               /* else png_icc_check_tag_table output an error */
                            }
-
                            else /* profile truncated */
                               errmsg = png_ptr->zstream.msg;
                         }
@@ -3144,28 +3137,28 @@ png_check_chunk_length(png_const_structrp png_ptr, const png_uint_32 length)
 {
    png_alloc_size_t limit = PNG_UINT_31_MAX;
 
-   if (png_ptr->chunk_name != png_IDAT)
-   {
 # ifdef PNG_SET_USER_LIMITS_SUPPORTED
-      if (png_ptr->user_chunk_malloc_max > 0 &&
-          png_ptr->user_chunk_malloc_max < limit)
-         limit = png_ptr->user_chunk_malloc_max;
+   if (png_ptr->user_chunk_malloc_max > 0 &&
+       png_ptr->user_chunk_malloc_max < limit)
+      limit = png_ptr->user_chunk_malloc_max;
 # elif PNG_USER_CHUNK_MALLOC_MAX > 0
-      if (PNG_USER_CHUNK_MALLOC_MAX < limit)
-         limit = PNG_USER_CHUNK_MALLOC_MAX;
+   if (PNG_USER_CHUNK_MALLOC_MAX < limit)
+      limit = PNG_USER_CHUNK_MALLOC_MAX;
 # endif
-   }
-   else
+   if (png_ptr->chunk_name == png_IDAT)
    {
+      png_alloc_size_t idat_limit = PNG_UINT_31_MAX;
       size_t row_factor =
          (png_ptr->width * png_ptr->channels * (png_ptr->bit_depth > 8? 2: 1)
           + 1 + (png_ptr->interlaced? 6: 0));
       if (png_ptr->height > PNG_UINT_32_MAX/row_factor)
-         limit=PNG_UINT_31_MAX;
+         idat_limit=PNG_UINT_31_MAX;
       else
-         limit = png_ptr->height * row_factor;
-      limit += 6 + 5*(limit/32566+1); /* zlib+deflate overhead */
-      limit=limit < PNG_UINT_31_MAX? limit : PNG_UINT_31_MAX;
+         idat_limit = png_ptr->height * row_factor;
+      row_factor = row_factor > 32566? 32566 : row_factor;
+      idat_limit += 6 + 5*(idat_limit/row_factor+1); /* zlib+deflate overhead */
+      idat_limit=idat_limit < PNG_UINT_31_MAX? idat_limit : PNG_UINT_31_MAX;
+      limit = limit < idat_limit? idat_limit : limit;
    }
 
    if (length > limit)
