@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="DynamicFont" inherits="Font" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		DynamicFont renders vector font files at runtime.
 	</brief_description>
 	<description>
+		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]\ s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +17,7 @@
 			<argument index="0" name="data" type="DynamicFontData">
 			</argument>
 			<description>
+				Adds a fallback font.
 			</description>
 		</method>
 		<method name="get_fallback" qualifiers="const">
@@ -23,12 +26,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_fallback_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of fallback fonts.
 			</description>
 		</method>
 		<method name="get_font_data" qualifiers="const">
@@ -41,6 +46,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the font size in pixels.
 			</description>
 		</method>
 		<method name="get_spacing" qualifiers="const">
@@ -49,18 +55,21 @@
 			<argument index="0" name="type" type="int">
 			</argument>
 			<description>
+				Returns the given type of spacing in pixels. See [code]SPACING_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_use_filter" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if filtering is used.
 			</description>
 		</method>
 		<method name="get_use_mipmaps" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if mipmapping is used.
 			</description>
 		</method>
 		<method name="remove_fallback">
@@ -69,6 +78,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Removes the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_fallback">
@@ -79,6 +89,7 @@
 			<argument index="1" name="data" type="DynamicFontData">
 			</argument>
 			<description>
+				Sets the fallback font at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_font_data">
@@ -87,6 +98,7 @@
 			<argument index="0" name="data" type="DynamicFontData">
 			</argument>
 			<description>
+				Sets the [DynamicFontData].
 			</description>
 		</method>
 		<method name="set_size">
@@ -95,6 +107,7 @@
 			<argument index="0" name="data" type="int">
 			</argument>
 			<description>
+				Sets the font size.
 			</description>
 		</method>
 		<method name="set_spacing">
@@ -105,6 +118,7 @@
 			<argument index="1" name="value" type="int">
 			</argument>
 			<description>
+				Sets the spacing of the given type. See [code]SPACING_*[/code] constants.
 			</description>
 		</method>
 		<method name="set_use_filter">
@@ -113,6 +127,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set to [code]true[/code] to use filtering.
 			</description>
 		</method>
 		<method name="set_use_mipmaps">
@@ -121,35 +136,48 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				Set to [code]true[/code] to use mipmapping.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="extra_spacing_bottom" type="int" setter="set_spacing" getter="get_spacing">
+			Extra spacing at the bottom in pixels.
 		</member>
 		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing">
+			Extra character spacing in pixels.
 		</member>
 		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing">
+			Extra space spacing in pixels.
 		</member>
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing">
+			Extra spacing at the top in pixels.
 		</member>
 		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data">
+			The font data.
 		</member>
 		<member name="size" type="int" setter="set_size" getter="get_size">
+			The font size.
 		</member>
 		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter">
+			If [code]true[/code] filtering is used.
 		</member>
 		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps">
+			If [code]true[/code] mipmapping is used.
 		</member>
 	</members>
 	<constants>
 		<constant name="SPACING_TOP" value="0">
+			Spacing at the top.
 		</constant>
 		<constant name="SPACING_BOTTOM" value="1">
+			Spacing at the bottom.
 		</constant>
 		<constant name="SPACING_CHAR" value="2">
+			Character spacing.
 		</constant>
 		<constant name="SPACING_SPACE" value="3">
+			Space spacing.
 		</constant>
 	</constants>
 </class>
