@@ -61,6 +61,7 @@
 			if (m_type##_id_pool.size() == 0) {                                            \
 				int ret;                                                                   \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, &ret); \
+				SYNC_DEBUG                                                                 \
 			}                                                                              \
 			rid = m_type##_id_pool.front()->get();                                         \
 			m_type##_id_pool.pop_front();                                                  \
@@ -91,6 +92,7 @@
 			if (m_type##_id_pool.size() == 0) {                                                \
 				int ret;                                                                       \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, &ret); \
+				SYNC_DEBUG                                                                     \
 			}                                                                                  \
 			rid = m_type##_id_pool.front()->get();                                             \
 			m_type##_id_pool.pop_front();                                                      \
@@ -121,6 +123,7 @@
 			if (m_type##_id_pool.size() == 0) {                                                    \
 				int ret;                                                                           \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, &ret); \
+				SYNC_DEBUG                                                                         \
 			}                                                                                      \
 			rid = m_type##_id_pool.front()->get();                                                 \
 			m_type##_id_pool.pop_front();                                                          \
@@ -151,6 +154,7 @@
 			if (m_type##_id_pool.size() == 0) {                                                        \
 				int ret;                                                                               \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, &ret); \
+				SYNC_DEBUG                                                                             \
 			}                                                                                          \
 			rid = m_type##_id_pool.front()->get();                                                     \
 			m_type##_id_pool.pop_front();                                                              \
@@ -181,6 +185,7 @@
 			if (m_type##_id_pool.size() == 0) {                                                            \
 				int ret;                                                                                   \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, p4, &ret); \
+				SYNC_DEBUG                                                                                 \
 			}                                                                                              \
 			rid = m_type##_id_pool.front()->get();                                                         \
 			m_type##_id_pool.pop_front();                                                                  \
@@ -211,6 +216,7 @@
 			if (m_type##_id_pool.size() == 0) {                                                                \
 				int ret;                                                                                       \
 				command_queue.push_and_ret(this, &ServerNameWrapMT::m_type##allocn, p1, p2, p3, p4, p5, &ret); \
+				SYNC_DEBUG                                                                                     \
 			}                                                                                                  \
 			rid = m_type##_id_pool.front()->get();                                                             \
 			m_type##_id_pool.pop_front();                                                                      \
@@ -255,6 +261,7 @@
 	virtual void m_type() {                                                \
 		if (Thread::get_caller_id() != server_thread) {                    \
 			command_queue.push_and_sync(server_name, &ServerName::m_type); \
+			SYNC_DEBUG                                                     \
 		} else {                                                           \
 			server_name->m_type();                                         \
 		}                                                                  \
@@ -264,6 +271,7 @@
 	virtual void m_type() const {                                          \
 		if (Thread::get_caller_id() != server_thread) {                    \
 			command_queue.push_and_sync(server_name, &ServerName::m_type); \
+			SYNC_DEBUG                                                     \
 		} else {                                                           \
 			server_name->m_type();                                         \
 		}                                                                  \
@@ -299,6 +307,7 @@
 	virtual void m_type(m_arg1 p1) {                                           \
 		if (Thread::get_caller_id() != server_thread) {                        \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
+			SYNC_DEBUG                                                         \
 		} else {                                                               \
 			server_name->m_type(p1);                                           \
 		}                                                                      \
@@ -308,6 +317,7 @@
 	virtual void m_type(m_arg1 p1) const {                                     \
 		if (Thread::get_caller_id() != server_thread) {                        \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1); \
+			SYNC_DEBUG                                                         \
 		} else {                                                               \
 			server_name->m_type(p1);                                           \
 		}                                                                      \
@@ -359,6 +369,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2) {                                    \
 		if (Thread::get_caller_id() != server_thread) {                            \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
+			SYNC_DEBUG                                                             \
 		} else {                                                                   \
 			server_name->m_type(p1, p2);                                           \
 		}                                                                          \
@@ -368,6 +379,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2) const {                              \
 		if (Thread::get_caller_id() != server_thread) {                            \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2); \
+			SYNC_DEBUG                                                             \
 		} else {                                                                   \
 			server_name->m_type(p1, p2);                                           \
 		}                                                                          \
@@ -408,6 +420,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                     \
 			m_r ret;                                                                        \
 			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, &ret); \
+			SYNC_DEBUG                                                                      \
 			return ret;                                                                     \
 		} else {                                                                            \
 			return server_name->m_type(p1, p2, p3);                                         \
@@ -418,6 +431,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) {                             \
 		if (Thread::get_caller_id() != server_thread) {                                \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
+			SYNC_DEBUG                                                                 \
 		} else {                                                                       \
 			server_name->m_type(p1, p2, p3);                                           \
 		}                                                                              \
@@ -427,6 +441,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const {                       \
 		if (Thread::get_caller_id() != server_thread) {                                \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3); \
+			SYNC_DEBUG                                                                 \
 		} else {                                                                       \
 			server_name->m_type(p1, p2, p3);                                           \
 		}                                                                              \
@@ -478,6 +493,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) {                      \
 		if (Thread::get_caller_id() != server_thread) {                                    \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
+			SYNC_DEBUG                                                                     \
 		} else {                                                                           \
 			server_name->m_type(p1, p2, p3, p4);                                           \
 		}                                                                                  \
@@ -487,6 +503,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const {                \
 		if (Thread::get_caller_id() != server_thread) {                                    \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4); \
+			SYNC_DEBUG                                                                     \
 		} else {                                                                           \
 			server_name->m_type(p1, p2, p3, p4);                                           \
 		}                                                                                  \
@@ -538,6 +555,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {               \
 		if (Thread::get_caller_id() != server_thread) {                                        \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
+			SYNC_DEBUG                                                                         \
 		} else {                                                                               \
 			server_name->m_type(p1, p2, p3, p4, p5);                                           \
 		}                                                                                      \
@@ -547,6 +565,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const {         \
 		if (Thread::get_caller_id() != server_thread) {                                        \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5); \
+			SYNC_DEBUG                                                                         \
 		} else {                                                                               \
 			server_name->m_type(p1, p2, p3, p4, p5);                                           \
 		}                                                                                      \
@@ -587,6 +606,7 @@
 		if (Thread::get_caller_id() != server_thread) {                                                 \
 			m_r ret;                                                                                    \
 			command_queue.push_and_ret(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, &ret); \
+			SYNC_DEBUG                                                                                  \
 			return ret;                                                                                 \
 		} else {                                                                                        \
 			return server_name->m_type(p1, p2, p3, p4, p5, p6);                                         \
@@ -597,6 +617,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) {        \
 		if (Thread::get_caller_id() != server_thread) {                                            \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6); \
+			SYNC_DEBUG                                                                             \
 		} else {                                                                                   \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                           \
 		}                                                                                          \
@@ -606,6 +627,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const {  \
 		if (Thread::get_caller_id() != server_thread) {                                            \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6); \
+			SYNC_DEBUG                                                                             \
 		} else {                                                                                   \
 			server_name->m_type(p1, p2, p3, p4, p5, p6);                                           \
 		}                                                                                          \
@@ -657,6 +679,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
 		if (Thread::get_caller_id() != server_thread) {                                                \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7); \
+			SYNC_DEBUG                                                                                 \
 		} else {                                                                                       \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                           \
 		}                                                                                              \
@@ -666,6 +689,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
 		if (Thread::get_caller_id() != server_thread) {                                                      \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7);       \
+			SYNC_DEBUG                                                                                       \
 		} else {                                                                                             \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7);                                                 \
 		}                                                                                                    \
@@ -717,6 +741,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
 		if (Thread::get_caller_id() != server_thread) {                                                           \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);        \
+			SYNC_DEBUG                                                                                            \
 		} else {                                                                                                  \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                  \
 		}                                                                                                         \
@@ -726,6 +751,7 @@
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) const { \
 		if (Thread::get_caller_id() != server_thread) {                                                                 \
 			command_queue.push_and_sync(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8);              \
+			SYNC_DEBUG                                                                                                  \
 		} else {                                                                                                        \
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8);                                                        \
 		}                                                                                                               \
