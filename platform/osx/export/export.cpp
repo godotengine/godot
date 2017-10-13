@@ -244,7 +244,7 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("/usr/bin/codesign", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, NULL, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("codesign: " + str);
@@ -271,7 +271,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("/usr/bin/hdiutil", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("hdiutil", args, true, NULL, &str, NULL, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
