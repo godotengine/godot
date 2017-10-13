@@ -180,7 +180,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-                Returns true or false depending on whether the action event was just pressed. Returns [code]true[/code] only for when event starts pressing and will return [code]false[/code] when pressing continues or is released until pressed again.
+                Returns [code]true[/code] or [code]false[/code] depending on whether the action event was just pressed. Returns [code]true[/code] only for when event starts pressing and will return [code]false[/code] when pressing continues or is released until pressed again.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -189,7 +189,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-                Returns true or false depending on whether the action event was just released. Returns [code]true[/code] only for when event stops pressing and will return [code]false[/code] until event is pressed and then released again.
+                Returns [code]true[/code] or [code]false[/code] depending on whether the action event was just released. Returns [code]true[/code] only for when event stops pressing and will return [code]false[/code] until event is pressed and then released again.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
