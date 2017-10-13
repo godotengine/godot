@@ -437,6 +437,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Color, contrasted);
 	VCALL_LOCALMEM2R(Color, linear_interpolate);
 	VCALL_LOCALMEM1R(Color, blend);
+	VCALL_LOCALMEM1R(Color, lightened);
+	VCALL_LOCALMEM1R(Color, darkened);
 	VCALL_LOCALMEM1R(Color, to_html);
 
 	VCALL_LOCALMEM0R(RID, get_id);
@@ -1581,6 +1583,8 @@ void register_variant_methods() {
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
 	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", REAL, "t", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
+	ADDFUNC1R(COLOR, COLOR, Color, lightened, REAL, "amount", varray());
+	ADDFUNC1R(COLOR, COLOR, Color, darkened, REAL, "amount", varray());
 	ADDFUNC1R(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
 
 	ADDFUNC0R(_RID, INT, RID, get_id, varray());
