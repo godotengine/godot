@@ -62,12 +62,12 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		writing = false;
 		key = p_key;
 		uint32_t magic = p_base->get_32();
-		print_line("MAGIC: " + itos(magic));
 		ERR_FAIL_COND_V(magic != COMP_MAGIC, ERR_FILE_UNRECOGNIZED);
+
 		mode = Mode(p_base->get_32());
 		ERR_FAIL_INDEX_V(mode, MODE_MAX, ERR_FILE_CORRUPT);
 		ERR_FAIL_COND_V(mode == 0, ERR_FILE_CORRUPT);
-		print_line("MODE: " + itos(mode));
+
 		unsigned char md5d[16];
 		p_base->get_buffer(md5d, 16);
 		length = p_base->get_64();
