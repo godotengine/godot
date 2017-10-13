@@ -4,15 +4,22 @@
 		Helper class to handle INI-style files.
 	</brief_description>
 	<description>
-		This helper class can be used to store [Variant] values on the filesystem using an INI-style formatting. The stored values as referenced by a section and a key. The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly with accessing the filesystem.
-		The following example shows how to parse a INI-style file from the system, read its contents and store new values in it:
+		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are indentified by a section and a key:
+		[codeblock]
+		[section]
+		some_key=42
+		string_example="Hello World!"
+		a_vector=Vector3( 1, 0, 2 )
+		[/codeblock]
+		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
+		The following example shows how to parse an INI-style file from the system, read its contents and store new values in it:
 		[codeblock]
 		var config = ConfigFile.new()
 		var err = config.load("user://settings.cfg")
 		if err == OK: # if not, something went wrong with the file loading
 		    # Look for the display/width pair, and default to 1024 if missing
 		    var screen_width = get_value("display", "width", 1024)
-		    # Store a variable if and only it hasn't been defined yet
+		    # Store a variable if and only if it hasn't been defined yet
 		    if not config.has_section_key("audio", "mute"):
 		        config.set_value("audio", "mute", false)
 		    # Save the changes by overwriting the previous file
@@ -30,6 +37,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
+				Deletes the specified section along with all the key-value pairs inside.
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
@@ -38,14 +46,14 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
-				Return an array of all defined key identifiers in the specified section.
+				Returns an array of all defined key identifiers in the specified section.
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Return an array of all defined section identifiers.
+				Returns an array of all defined section identifiers.
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
@@ -58,7 +66,7 @@
 			<argument index="2" name="default" type="Variant" default="null">
 			</argument>
 			<description>
-				Return the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [i]default[/i] argument (and thus [code]NULL[/code] if not specified).
+				Returns the current value for the specified section and key. If the section and/or the key do not exist, the method returns the value of the optional [code]default[/code] argument, or [code]null[/code] if it is omitted.
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
@@ -67,7 +75,7 @@
 			<argument index="0" name="section" type="String">
 			</argument>
 			<description>
-				Check if the specified section exists.
+				Returns [code]true[/code] if the specified section exists.
 			</description>
 		</method>
 		<method name="has_section_key" qualifiers="const">
@@ -78,7 +86,7 @@
 			<argument index="1" name="key" type="String">
 			</argument>
 			<description>
-				Check if the specified section-key pair exists.
+				Returns [code]true[/code] if the specified section-key pair exists.
 			</description>
 		</method>
 		<method name="load">
@@ -87,7 +95,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object from which the method was called. The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the load was successful, it returns OK).
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@Global Scope]. If the load was successful, the return value is [code]OK[/code].
 			</description>
 		</method>
 		<method name="save">
@@ -96,8 +104,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Save the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure.
-				The return value is one of the OK, FAILED or ERR_* constants listed in [@Global Scope] (if the save was successful, it returns OK).
+				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@Global Scope]. If the load was successful, the return value is [code]OK[/code].
 			</description>
 		</method>
 		<method name="set_value">
@@ -110,7 +117,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Assign a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]NULL[/code] value deletes the specified key if it exists (and deletes the section if it ends up empty once the key has been removed).
+				Assigns a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
 			</description>
 		</method>
 	</methods>
