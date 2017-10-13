@@ -5229,6 +5229,78 @@
       "arguments": [
         ["godot_object *", "p_instance"]
       ]
+    },
+    {
+      "name": "godot_arvr_get_worldscale",
+      "return_type": "godot_real",
+      "arguments": []
+    },
+    {
+      "name": "godot_arvr_get_reference_frame",
+      "return_type": "godot_transform",
+      "arguments": []
+    },
+    {
+      "name": "godot_arvr_blit",
+      "return_type": "void",
+      "arguments": [
+        ["int", "p_eye"],
+        ["godot_rid *", "p_render_target"],
+        ["godot_rect2 *", "p_screen_rect"]
+      ]
+    },
+    {
+      "name": "godot_arvr_get_texid",
+      "return_type": "godot_int",
+      "arguments": [
+        ["godot_rid *", "p_render_target"]
+      ]
+    },
+    {
+      "name": "godot_arvr_add_controller",
+      "return_type": "godot_int",
+      "arguments": [
+        ["char *", "p_device_name"],
+        ["godot_int", "p_hand"],
+        ["godot_bool", "p_tracks_orientation"],
+        ["godot_bool", "p_tracks_position"]
+      ]
+    },
+    {
+      "name": "godot_arvr_remove_controller",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_transform",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_transform *", "p_transform"],
+        ["godot_bool", "p_tracks_orientation"],
+        ["godot_bool", "p_tracks_position"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_button",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_int", "p_button"],
+        ["godot_bool", "p_is_pressed"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_axis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_int", "p_exis"],
+        ["godot_real", "p_value"],
+        ["godot_bool", "p_can_be_negative"]
+      ]
     }
   ]
 }

@@ -35,6 +35,7 @@
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 
+#include "nativearvr/register_types.h"
 #include "nativescript/register_types.h"
 
 #include "core/engine.h"
@@ -202,6 +203,7 @@ void register_gdnative_types() {
 
 	GDNativeCallRegistry::singleton->register_native_raw_call_type("gdnative_singleton_call", cb_singleton_call);
 
+	register_nativearvr_types();
 	register_nativescript_types();
 
 	// run singletons
@@ -249,6 +251,7 @@ void unregister_gdnative_types() {
 	}
 	singleton_gdnatives.clear();
 
+	unregister_nativearvr_types();
 	unregister_nativescript_types();
 
 	memdelete(GDNativeCallRegistry::singleton);
