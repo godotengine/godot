@@ -215,9 +215,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		bool has_groups = p_node->has_persistent_groups();
 
 		if (has_connections && has_groups) {
-			item->add_button(0, get_icon("ConnectionAndGroups", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connection(s) and group(s)\nClick to show signals dock."));
+			item->add_button(0, get_icon("SignalsAndGroups", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connection(s) and group(s)\nClick to show signals dock."));
 		} else if (has_connections) {
-			item->add_button(0, get_icon("Connect", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connections.\nClick to show signals dock."));
+			item->add_button(0, get_icon("Signals", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connections.\nClick to show signals dock."));
 		} else if (has_groups) {
 			item->add_button(0, get_icon("Groups", "EditorIcons"), BUTTON_GROUPS, false, TTR("Node is in group(s).\nClick to show groups dock."));
 		}

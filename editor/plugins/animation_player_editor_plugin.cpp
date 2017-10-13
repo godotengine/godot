@@ -557,7 +557,7 @@ void AnimationPlayerEditor::_animation_blend() {
 
 	String current = animation->get_item_text(animation->get_selected());
 
-	blend_editor.dialog->popup_centered(Size2(400, 400));
+	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
 
 	blend_editor.tree->set_hide_root(true);
 	blend_editor.tree->set_column_min_width(0, 10);
