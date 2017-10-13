@@ -2474,6 +2474,7 @@ void Image::fix_alpha_edges() {
 					if (rp[3] < alpha_threshold)
 						continue;
 
+					closest_dist = dist;
 					closest_color[0] = rp[0];
 					closest_color[1] = rp[1];
 					closest_color[2] = rp[2];
