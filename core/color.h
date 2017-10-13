@@ -101,6 +101,30 @@ struct Color {
 		return res;
 	}
 
+	_FORCE_INLINE_ Color darken(float amt) const {
+
+		Color res = *this;
+
+		res.r = CLAMP(res.r * (1.0f - amt), 0.0, 1.0);
+		res.g = CLAMP(res.g * (1.0f - amt), 0.0, 1.0);
+		res.b = CLAMP(res.b * (1.0f - amt), 0.0, 1.0);
+		// res.a = CLAMP(res.a * (1.0f - amt), 0.0, 1.0);
+
+		return res;
+	}
+
+	_FORCE_INLINE_ Color lighten(float amt) const {
+
+		Color res = *this;
+
+		res.r = CLAMP(res.r + (1.0f - res.r) * amt, 0.0, 1.0);
+		res.g = CLAMP(res.g + (1.0f - res.g) * amt, 0.0, 1.0);
+		res.b = CLAMP(res.b + (1.0f - res.b) * amt, 0.0, 1.0);
+		// res.a = CLAMP(res.a + (1.0f - res.a) * amt, 0.0, 1.0);
+
+		return res;
+	}
+
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
 
 		const float pow2to9 = 512.0f;
