@@ -4,7 +4,7 @@
 		A Singleton that deals with inputs.
 	</brief_description>
 	<description>
-		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions.
+		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -180,7 +180,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-                Returns [code]true[/code] or [code]false[/code] depending on whether the action event was just pressed. Returns [code]true[/code] only for when event starts pressing and will return [code]false[/code] when pressing continues or is released until pressed again.
+				Returns [code]true[/code] once if the action event was pressed.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -189,7 +189,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-                Returns [code]true[/code] or [code]false[/code] depending on whether the action event was just released. Returns [code]true[/code] only for when event stops pressing and will return [code]false[/code] until event is pressed and then released again.
+				Returns [code]true[/code] once if the action event was released.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -198,7 +198,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns true or false depending on whether the action event is pressed. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
+				Returns [code]true[/code] if the action event is pressed.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -227,7 +227,7 @@
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
-				Returns true or false depending on whether the key is pressed or not. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
+				Returns true if the key is pressed. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -236,7 +236,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns true or false depending on whether mouse button is pressed or not. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
+				Returns true if the mouse button is pressed. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="joy_connection_changed">
