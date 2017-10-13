@@ -694,7 +694,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			inherits = doc->class_list[inherits].inherits;
 
 			if (inherits != "") {
-				class_desc->add_text(" , ");
+				class_desc->add_text(" < ");
 			}
 		}
 
