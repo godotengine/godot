@@ -16,14 +16,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the tabs should be visible or hidden.
+				Returns [code]true[/code] if the tabs are visible.
 			</description>
 		</method>
 		<method name="get_current_tab" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the current tab index that is being shown.
+				Returns the current tab index that is being shown.
 			</description>
 		</method>
 		<method name="get_current_tab_control" qualifiers="const">
@@ -42,14 +42,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the previous tab index that was being shown.
+				Returns the previous tab index that was being shown.
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
 			<return type="int" enum="TabContainer.TabAlign">
 			</return>
 			<description>
-				Return tab alignment, from the ALIGN_* enum.
+				Returns the tab alignment.See the ALIGN_* constants.
 			</description>
 		</method>
 		<method name="get_tab_control" qualifiers="const">
@@ -58,14 +58,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the current tab control that is being shown.
+				Returns the current tab control that is being shown.
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of tabs.
+				Returns the amount of tabs.
 			</description>
 		</method>
 		<method name="get_tab_disabled" qualifiers="const">
@@ -74,6 +74,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
@@ -82,6 +83,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Returns the [Texture] for the tab at index [code]tab_idx[/code] or null if the tab has no [Texture].
 			</description>
 		</method>
 		<method name="get_tab_title" qualifiers="const">
@@ -90,7 +92,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Return the title for the tab. Tab titles are by default the children node name, but this can be overridden.
+				Returns the title for the tab at index [code]tab_idx[/code]. Tab titles are by default the children node name, but this can be overridden.
 			</description>
 		</method>
 		<method name="set_current_tab">
@@ -127,6 +129,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				Set tab at index [code]tab_idx[/code] disabled.
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -137,7 +140,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Set an icon for a tab.
+				Set an icon for a tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -148,7 +151,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Set a title for the tab. Tab titles are by default the children node name, but this can be overridden.
+				Set a title for the tab at index [code]tab_idx[/code]. Tab titles are by default the children node name, but this can be overridden.
 			</description>
 		</method>
 		<method name="set_tabs_visible">
@@ -157,16 +160,19 @@
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
-				Set whether the tabs should be visible or hidden.
+				If [code]true[/code] all the tabs will be visible.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+			The current tab.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign">
+			The alignment of all the tabs of the tab container. See the [code]ALIGN_*[/code] constants.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible">
+			If [code]true[/code] all tabs that are children of the TabContainer will be visible.
 		</member>
 	</members>
 	<signals>
