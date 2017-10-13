@@ -40,12 +40,15 @@ void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			//sample->set_texture(get_icon("color_sample"));
+			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
+			bt_add_preset->set_icon(get_icon("add_preset"));
 
 			_update_controls();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			btn_pick->set_icon(get_icon("screen_picker", "ColorPicker"));
+			bt_add_preset->set_icon(get_icon("add_preset"));
 
 			_update_color();
 		} break;
@@ -601,7 +604,6 @@ ColorPicker::ColorPicker()
 	preset->connect("draw", this, "_update_presets");
 
 	bt_add_preset = memnew(Button);
-	bt_add_preset->set_icon(get_icon("add_preset"));
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset"));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 	bbc->add_child(bt_add_preset);
