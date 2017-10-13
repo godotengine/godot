@@ -263,6 +263,7 @@ RigidBodyBullet::RigidBodyBullet()
 	: RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
 	  kinematic_utilities(NULL),
 	  gravity_scale(1),
+	  mass(1),
 	  linearDamp(0),
 	  angularDamp(0),
 	  onStateChange_callback(NULL),
@@ -273,15 +274,17 @@ RigidBodyBullet::RigidBodyBullet()
 	  areaWhereIamCount(0),
 	  countGravityPointSpaces(0),
 	  isScratchedSpaceOverrideModificator(false) {
+
 	godotMotionState = bulletnew(GodotMotionState(this));
 
 	// Initial properties
-	const btScalar mass = 0;
 	const btVector3 localInertia(0, 0, 0);
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, compoundShape, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
 	setupBulletCollisionObject(btBody);
+
+	set_mode(PhysicsServer::BODY_MODE_RIGID);
 
 	areasWhereIam.resize(maxAreasWhereIam);
 	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
@@ -447,49 +450,8 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 			btBody->setFriction(p_value);
 			break;
 		case PhysicsServer::BODY_PARAM_MASS: {
-			ERR_FAIL_COND(p_value < 0);
-
-			btVector3 localInertia(0, 0, 0);
-
-			int clearedCurrentFlags = btBody->getCollisionFlags();
-			clearedCurrentFlags &= ~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
-
-			// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
-			const bool isDynamic = p_value != 0.f;
-			if (isDynamic) {
-
-				ERR_FAIL_COND(PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode);
-
-				compoundShape->calculateLocalInertia(p_value, localInertia);
-
-				btBody->forceActivationState(ACTIVE_TAG); // ACTIVE_TAG 1
-				if (PhysicsServer::BODY_MODE_RIGID == mode) {
-
-					btBody->setCollisionFlags(clearedCurrentFlags); // Just set the flags without Kin and Static
-				} else {
-
-					btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_CHARACTER_OBJECT);
-				}
-			} else {
-
-				ERR_FAIL_COND(PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode);
-
-				btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
-				if (PhysicsServer::BODY_MODE_STATIC == mode) {
-
-					btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
-				} else {
-
-					btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
-					set_transform(btBody->getWorldTransform()); // Set current Transform using kinematic method
-				}
-			}
-
-			btBody->setMassProps(p_value, localInertia);
-			btBody->updateInertiaTensor();
-			btBody->setAngularFactor(0.0);
-
-			reload_body();
+			mass = p_value;
+			_internal_set_mass(p_value);
 			break;
 		}
 		case PhysicsServer::BODY_PARAM_LINEAR_DAMP:
@@ -540,29 +502,27 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 			// This allow me to set KINEMATIC
 			mode = PhysicsServer::BODY_MODE_KINEMATIC;
 			btBody->setAngularFactor(1);
-			set_param(PhysicsServer::BODY_PARAM_MASS, 0);
+			_internal_set_mass(0);
 			init_kinematic_utilities();
 			m_isStatic = true;
 			break;
 		case PhysicsServer::BODY_MODE_STATIC:
 			mode = PhysicsServer::BODY_MODE_STATIC;
 			btBody->setAngularFactor(1);
-			set_param(PhysicsServer::BODY_PARAM_MASS, 0);
+			_internal_set_mass(0);
 			m_isStatic = true;
 			break;
 		case PhysicsServer::BODY_MODE_RIGID: {
 			mode = PhysicsServer::BODY_MODE_RIGID;
 			btBody->setAngularFactor(1);
-			const btScalar invMass = btBody->getInvMass();
-			set_param(PhysicsServer::BODY_PARAM_MASS, 0 == invMass ? 1 : 1 / invMass);
+			_internal_set_mass(0 == mass ? 1 : mass);
 			m_isStatic = false;
 			break;
 		}
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
 			btBody->setAngularFactor(0);
-			const btScalar invMass = btBody->getInvMass();
-			set_param(PhysicsServer::BODY_PARAM_MASS, 0 == invMass ? 1 : 1 / invMass);
+			_internal_set_mass(0 == mass ? 1 : mass);
 			m_isStatic = false;
 			break;
 		}
@@ -992,4 +952,50 @@ void RigidBodyBullet::reload_kinematic_shapes() {
 		return;
 	}
 	kinematic_utilities->copyAllOwnerShapes();
+}
+
+void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
+	ERR_FAIL_COND(p_mass < 0);
+
+	btVector3 localInertia(0, 0, 0);
+
+	int clearedCurrentFlags = btBody->getCollisionFlags();
+	clearedCurrentFlags &= ~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
+
+	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
+	const bool isDynamic = p_mass != 0.f;
+	if (isDynamic) {
+
+		ERR_FAIL_COND(PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode);
+
+		compoundShape->calculateLocalInertia(p_mass, localInertia);
+
+		btBody->forceActivationState(ACTIVE_TAG); // ACTIVE_TAG 1
+		if (PhysicsServer::BODY_MODE_RIGID == mode) {
+
+			btBody->setCollisionFlags(clearedCurrentFlags); // Just set the flags without Kin and Static
+		} else {
+
+			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_CHARACTER_OBJECT);
+		}
+	} else {
+
+		ERR_FAIL_COND(PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode);
+
+		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
+		if (PhysicsServer::BODY_MODE_STATIC == mode) {
+
+			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
+		} else {
+
+			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
+			set_transform(btBody->getWorldTransform()); // Set current Transform using kinematic method
+		}
+	}
+
+	btBody->setMassProps(p_mass, localInertia);
+	btBody->updateInertiaTensor();
+	btBody->setAngularFactor(0.0);
+
+	reload_body();
 }

@@ -188,6 +188,7 @@ private:
 	PhysicsServer::BodyMode mode;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
+	real_t mass;
 	real_t gravity_scale;
 	real_t linearDamp;
 	real_t angularDamp;
@@ -294,6 +295,9 @@ public:
 
 	/// Kinematic
 	void reload_kinematic_shapes();
+
+private:
+	void _internal_set_mass(real_t p_mass);
 };
 
 #endif
