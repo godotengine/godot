@@ -65,6 +65,8 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"decimals",
 	"stepify",
 	"lerp",
+	"inverse_lerp",
+	"range_lerp",
 	"dectime",
 	"randomize",
 	"randi",
@@ -194,9 +196,12 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case COLORN:
 			return 2;
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
 		case MATH_DECTIME:
 		case LOGIC_CLAMP:
 			return 3;
+		case MATH_RANGE_LERP:
+			return 5;
 		case FUNC_MAX: {
 		}
 	}
@@ -297,7 +302,26 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::REAL, "to");
 			else
 				return PropertyInfo(Variant::REAL, "weight");
-
+		} break;
+		case MATH_INVERSE_LERP: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "from");
+			else if (p_idx == 1)
+				return PropertyInfo(Variant::REAL, "to");
+			else
+				return PropertyInfo(Variant::REAL, "value");
+		} break;
+		case MATH_RANGE_LERP: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "value");
+			else if (p_idx == 1)
+				return PropertyInfo(Variant::REAL, "istart");
+			else if (p_idx == 2)
+				return PropertyInfo(Variant::REAL, "istop");
+			else if (p_idx == 3)
+				return PropertyInfo(Variant::REAL, "ostart");
+			else
+				return PropertyInfo(Variant::REAL, "ostop");
 		} break;
 		case MATH_DECTIME: {
 			if (p_idx == 0)
@@ -495,6 +519,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case MATH_STEPIFY:
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
+		case MATH_RANGE_LERP:
 		case MATH_DECTIME: {
 			t = Variant::REAL;
 
@@ -794,6 +820,22 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_INVERSE_LERP: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::inverse_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_RANGE_LERP: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			VALIDATE_ARG_NUM(3);
+			VALIDATE_ARG_NUM(4);
+			*r_return = Math::range_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2], (double)*p_inputs[3], (double)*p_inputs[4]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DECTIME: {
 
@@ -1203,6 +1245,8 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_DECIMALS);
 	BIND_ENUM_CONSTANT(MATH_STEPIFY);
 	BIND_ENUM_CONSTANT(MATH_LERP);
+	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
+	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
 	BIND_ENUM_CONSTANT(MATH_DECTIME);
 	BIND_ENUM_CONSTANT(MATH_RANDOMIZE);
 	BIND_ENUM_CONSTANT(MATH_RAND);
@@ -1282,6 +1326,8 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECIMALS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/range_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANGE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/dectime", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECTIME>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randomize", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOMIZE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rand", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAND>);
