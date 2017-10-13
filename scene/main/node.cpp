@@ -2104,37 +2104,59 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		ERR_FAIL_COND_V(!node, NULL);
 	}
 
-	List<PropertyInfo> plist;
-
-	get_property_list(&plist);
+	if (get_filename() != "") { //an instance
+		node->set_filename(get_filename());
+	}
 
 	StringName script_property_name = CoreStringNames::get_singleton()->_script;
 
-	if (p_flags & DUPLICATE_SCRIPTS) {
-		bool is_valid = false;
-		Variant script = get(script_property_name, &is_valid);
-		if (is_valid) {
-			node->set(script_property_name, script);
+	List<const Node *> node_tree;
+	node_tree.push_front(this);
+
+	if (instanced) {
+		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+			for (int i = 0; i < N->get()->get_child_count(); ++i) {
+				node_tree.push_back(N->get()->get_child(i));
+			}
 		}
 	}
 
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-			continue;
-		String name = E->get().name;
-		if (name == script_property_name)
-			continue;
+		Node *current_node = node->get_node(get_path_to(N->get()));
 
-		Variant value = get(name);
-		// Duplicate dictionaries and arrays, mainly needed for __meta__
-		if (value.get_type() == Variant::DICTIONARY) {
-			value = Dictionary(value).copy();
-		} else if (value.get_type() == Variant::ARRAY) {
-			value = Array(value).duplicate();
+		if (p_flags & DUPLICATE_SCRIPTS) {
+			bool is_valid = false;
+			Variant script = N->get()->get(script_property_name, &is_valid);
+			if (is_valid) {
+				current_node->set(script_property_name, script);
+			}
 		}
 
-		node->set(name, value);
+		List<PropertyInfo> plist;
+		N->get()->get_property_list(&plist);
+
+		if (!current_node)
+			continue;
+
+		for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+
+			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+				continue;
+			String name = E->get().name;
+			if (name == script_property_name)
+				continue;
+
+			Variant value = N->get()->get(name);
+			// Duplicate dictionaries and arrays, mainly needed for __meta__
+			if (value.get_type() == Variant::DICTIONARY) {
+				value = Dictionary(value).copy();
+			} else if (value.get_type() == Variant::ARRAY) {
+				value = Array(value).duplicate();
+			}
+
+			current_node->set(name, value);
+		}
 	}
 
 	node->set_name(get_name());
