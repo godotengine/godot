@@ -462,8 +462,6 @@ void ParticlesMaterial::finish_shaders() {
 
 void ParticlesMaterial::_update_shader() {
 
-	print_line("updating shader");
-
 	dirty_materials.remove(&element);
 
 	MaterialKey mk = _compute_key();
@@ -913,9 +911,7 @@ void ParticlesMaterial::_queue_shader_change() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	print_line("queuing change");
 	if (!element.in_list()) {
-		print_line("not in list, adding");
 		dirty_materials.add(&element);
 	}
 

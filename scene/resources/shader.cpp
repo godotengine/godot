@@ -43,8 +43,6 @@ void Shader::set_code(const String &p_code) {
 
 	String type = ShaderLanguage::get_shader_type(p_code);
 
-	print_line("mode: " + type);
-
 	if (type == "canvas_item") {
 		mode = MODE_CANVAS_ITEM;
 	} else if (type == "particles") {

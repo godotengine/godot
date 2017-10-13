@@ -129,7 +129,6 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
-	printf("instance at %p, data %p\n", this, data);
 
 	ERR_FAIL_COND_V(data == NULL, ovs);
 
@@ -208,8 +207,6 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 			break;
 		}
 	}
-
-	printf("create at %p, data %p\n", this, data);
 }
 
 PoolVector<uint8_t> AudioStreamOGGVorbis::get_data() const {
