@@ -8,3 +8,4 @@ drivers/* linguist-vendored
 *.h eol=lf
 *.py eol=lf
 *.hpp eol=lf
+*.xml eol=lf
