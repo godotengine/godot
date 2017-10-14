@@ -153,7 +153,7 @@ elif env['android_arch'] == 'armv7':
 elif env['android_arch'] == 'x86':
     lib_arch_dir = 'x86'
 else:
-    print 'WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin'
+    print('WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin')
 
 if lib_arch_dir != '':
     if env['target'] == 'release':
