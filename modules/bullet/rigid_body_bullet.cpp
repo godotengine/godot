@@ -522,13 +522,12 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
 			btBody->setAngularFactor(0);
+			btBody->setAngularVelocity(btVector3(0, 0, 0));
 			_internal_set_mass(0 == mass ? 1 : mass);
 			m_isStatic = false;
 			break;
 		}
 	}
-	btBody->setAngularVelocity(btVector3(0, 0, 0));
-	btBody->setLinearVelocity(btVector3(0, 0, 0));
 }
 PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
 	return mode;
