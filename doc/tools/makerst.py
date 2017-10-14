@@ -14,14 +14,14 @@ for arg in sys.argv[1:]:
     input_list.append(arg)
 
 if len(input_list) < 1:
-    print 'usage: makerst.py <path to folders> and/or <path to .xml files> (order of arguments irrelevant)'
-    print 'example: makerst.py "../../modules/" "../classes" path_to/some_class.xml'
+    print('usage: makerst.py <path to folders> and/or <path to .xml files> (order of arguments irrelevant)')
+    print('example: makerst.py "../../modules/" "../classes" path_to/some_class.xml')
     sys.exit(0)
 
 
 def validate_tag(elem, tag):
     if elem.tag != tag:
-        print "Tag mismatch, expected '" + tag + "', got " + elem.tag
+        print("Tag mismatch, expected '" + tag + "', got " + elem.tag)
         sys.exit(255)
 
 
@@ -41,7 +41,7 @@ def make_class_list(class_list, columns):
     f = codecs.open('class_list.rst', 'wb', 'utf-8')
     prev = 0
     col_max = len(class_list) / columns + 1
-    print ('col max is ', col_max)
+    print(('col max is ', col_max))
     col_count = 0
     row_count = 0
     last_initial = ''
@@ -300,11 +300,6 @@ def make_method(
 
     if declare or pp == None:
 
-        # span.attrib["class"]="funcdecl"
-        # a=ET.SubElement(span,"a")
-        # a.attrib["name"]=name+"_"+m.attrib["name"]
-        # a.text=name+"::"+m.attrib["name"]
-
         s = ' **' + m.attrib['name'] + '** '
     else:
         s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
@@ -446,6 +441,7 @@ def make_rst_class(node):
         f.write(make_heading('Signals', '-'))
         for m in list(events):
             make_method(f, node.attrib['name'], m, True, name, True)
+            f.write('\n')
             d = m.find('description')
             if d == None or d.text.strip() == '':
                 continue
@@ -507,8 +503,8 @@ for path in input_list:
         for subdir, dirs, _ in os.walk(path):
             if 'doc_classes' in dirs:
                 doc_dir = os.path.join(subdir, 'doc_classes')
-                class_file_name = [f for f in os.listdir(doc_dir) if f.endswith('.xml')][0]
-                file_list.append(os.path.join(doc_dir, class_file_name))
+                class_file_names = [f for f in os.listdir(doc_dir) if f.endswith('.xml')]
+                file_list += [os.path.join(doc_dir, f) for f in class_file_names]
     elif not os.path.isfile(path):
         file_list += [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.xml')]
     elif os.path.isfile(path) and path.endswith('.xml'):
@@ -519,7 +515,7 @@ for file in file_list:
     doc = tree.getroot()
 
     if 'version' not in doc.attrib:
-        print "Version missing from 'doc'"
+        print("Version missing from 'doc'")
         sys.exit(255)
 
     version = doc.attrib['version']

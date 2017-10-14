@@ -24,5 +24,5 @@ rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
 	pushd $(OUTPUTDIR)/rst
-	python2 $(TOOLSDIR)/makerst.py $(CLASSES)
+	python $(TOOLSDIR)/makerst.py $(CLASSES)
 	popd
