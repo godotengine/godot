@@ -405,6 +405,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				if (a->value_track_get_update_mode(i) == Animation::UPDATE_CONTINUOUS || (p_delta == 0 && a->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
 
 					Variant value = a->value_track_interpolate(i, p_time);
+
+					if (value == Variant())
+						continue;
+
 					//thanks to trigger mode, this should be solved now..
 					/*
 					if (p_delta==0 && value.get_type()==Variant::STRING)
