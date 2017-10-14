@@ -50,7 +50,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_CONTROL, VK_CONTROL }, //(0x11)
 
-	{ KEY_MENU, VK_MENU }, //(0x12)
+	{ KEY_ALT, VK_MENU }, //(0x12)
 
 	{ KEY_PAUSE, VK_PAUSE }, //(0x13)
 
