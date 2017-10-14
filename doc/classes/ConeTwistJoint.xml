@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ConeTwistJoint" inherits="Joint" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A twist joint between two 3D bodies
 	</brief_description>
 	<description>
+		The joint can rotate the bodies across an axis defined by the local x-axes of the [Joint].
+		The twist axis is initiated as the x-axis of the [Joint].
+		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint in the local space of the two Bodies.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,28 +34,49 @@
 	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_param" getter="get_param">
+			The speed with which the swing or twist will take place.
+			The higher, the faster.
 		</member>
 		<member name="relaxation" type="float" setter="set_param" getter="get_param">
+			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
 		</member>
 		<member name="softness" type="float" setter="set_param" getter="get_param">
+			The ease with which the joint starts to twist. If it's too low, it takes more force to start twisting the joint.
 		</member>
 		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span">
+			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
+			The swing span defines, how much rotation will not get corrected allong the swing axis.
+			Could be defined as looseness in the [ConeTwistJoint].
+			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</member>
 		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span">
+			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
+			Twist is locked if below 0.05.
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_SWING_SPAN" value="0">
+			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
+			The swing span defines, how much rotation will not get corrected allong the swing axis.
+			Could be defined as looseness in the [ConeTwistJoint].
+			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
 		<constant name="PARAM_TWIST_SPAN" value="1">
+			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
+			Twist is locked if below 0.05.
 		</constant>
 		<constant name="PARAM_BIAS" value="2">
+			The speed with which the swing or twist will take place.
+			The higher, the faster.
 		</constant>
 		<constant name="PARAM_SOFTNESS" value="3">
+			The ease with which the joint starts to twist. If it's too low, it takes more force to start twisting the joint.
 		</constant>
 		<constant name="PARAM_RELAXATION" value="4">
+			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
 		</constant>
 		<constant name="PARAM_MAX" value="5">
+			End flag of PARAM_* constants, used internally.
 		</constant>
 	</constants>
 </class>

@@ -4,7 +4,7 @@
 		Software implementation of [Physics2DServer].
 	</brief_description>
 	<description>
-		Software implementation of [Physics2DServer]. This class exposes no new methods or properties and should not be used, as [Physics2DServer] automatically selects the best implementation available.
+		This class exposes no new methods or properties and should not be used, as [Physics2DServer] automatically selects the best implementation available.
 	</description>
 	<tutorials>
 	</tutorials>

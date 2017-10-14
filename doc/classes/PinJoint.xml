@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PinJoint" inherits="Joint" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Pin Joint for 3D Shapes.
 	</brief_description>
 	<description>
+		Pin Joint for 3D Rigid Bodies. It pins 2 bodies (rigid or static) together.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,18 +32,28 @@
 	</methods>
 	<members>
 		<member name="params/bias" type="float" setter="set_param" getter="get_param">
+			The force with wich the pinned objects stay in positional relation to each other.
+			The higher, the stronger.
 		</member>
 		<member name="params/damping" type="float" setter="set_param" getter="get_param">
+			The force with wich the pinned objects stay in velocity relation to each other.
+			The higher, the stronger.
 		</member>
 		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param">
+			If above 0, this value is the maximum value for an impulse that this Joint produces.
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_BIAS" value="0">
+			The force with wich the pinned objects stay in positional relation to each other.
+			The higher, the stronger.
 		</constant>
 		<constant name="PARAM_DAMPING" value="1">
+			The force with wich the pinned objects stay in velocity relation to each other.
+			The higher, the stronger.
 		</constant>
 		<constant name="PARAM_IMPULSE_CLAMP" value="2">
+			If above 0, this value is the maximum value for an impulse that this Joint produces.
 		</constant>
 	</constants>
 </class>

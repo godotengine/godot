@@ -28,6 +28,7 @@
 	</methods>
 	<members>
 		<member name="softness" type="float" setter="set_softness" getter="get_softness">
+			The higher this value, the more the bond to the pinned partner can flex.
 		</member>
 	</members>
 	<constants>
