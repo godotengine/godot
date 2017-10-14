@@ -994,7 +994,6 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 
 	btBody->setMassProps(p_mass, localInertia);
 	btBody->updateInertiaTensor();
-	btBody->setAngularFactor(0.0);
 
 	reload_body();
 }
