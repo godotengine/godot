@@ -72,6 +72,7 @@ private:
 	Button *button_export;
 	bool updating;
 
+	AcceptDialog *error_dialog;
 	ConfirmationDialog *delete_confirm;
 
 	OptionButton *export_filter;
