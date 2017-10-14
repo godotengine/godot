@@ -1447,6 +1447,7 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw);
+	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "where", "method", "userdata"), &VisualServer::request_frame_drawn_callback);
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	//ClassDB::bind_method(D_METHOD("texture_allocate"),&VisualServer::texture_allocate,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
