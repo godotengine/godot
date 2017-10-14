@@ -47,7 +47,7 @@ extern "C" {
 #define GDAPI GDCALLINGCONV
 #endif
 #else
-#define GDCALLINGCONV __attribute__((sysv_abi, visibility("default")))
+#define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV
 #endif
 

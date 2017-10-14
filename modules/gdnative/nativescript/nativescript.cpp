@@ -438,7 +438,7 @@ NativeScript::~NativeScript() {
 #endif
 }
 
-	////// ScriptInstance stuff
+////// ScriptInstance stuff
 
 #define GET_SCRIPT_DESC() script->get_script_desc()
 

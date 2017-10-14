@@ -36,6 +36,26 @@
 extern "C" {
 #endif
 
+typedef struct {
+	void *(*constructor)(godot_object *);
+	void (*destructor)(void *);
+	godot_string (*get_name)(const void *);
+	godot_int (*get_capabilities)(const void *);
+	godot_bool (*get_anchor_detection_is_enabled)(const void *);
+	void (*set_anchor_detection_is_enabled)(void *, godot_bool);
+	godot_bool (*is_stereo)(const void *);
+	godot_bool (*is_initialized)(const void *);
+	godot_bool (*initialize)(void *);
+	void (*uninitialize)(void *);
+	godot_vector2 (*get_recommended_render_targetsize)(const void *);
+	godot_transform (*get_transform_for_eye)(void *, godot_int, godot_transform *);
+	void (*fill_projection_for_eye)(void *, godot_real *, godot_int, godot_real, godot_real, godot_real);
+	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
+	void (*process)(void *);
+} godot_arvr_interface_gdnative;
+
+void GDAPI godot_arvr_register_interface(const char *p_name, const godot_arvr_interface_gdnative *p_interface);
+
 // helper functions to access ARVRServer data
 godot_real GDAPI godot_arvr_get_worldscale();
 godot_transform GDAPI godot_arvr_get_reference_frame();
