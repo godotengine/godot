@@ -46,17 +46,15 @@ class ARVRInterfaceGDNative : public ARVRInterface {
 	void cleanup();
 
 protected:
-	godot_arvr_interface_gdnative *interface;
+	const godot_arvr_interface_gdnative *interface;
 	void *data;
-
-	static void _bind_methods();
 
 public:
 	/** general interface information **/
 	ARVRInterfaceGDNative();
 	~ARVRInterfaceGDNative();
 
-	void set_interface(StringName p_name);
+	void set_interface(const godot_arvr_interface_gdnative *p_interface);
 
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const;

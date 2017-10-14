@@ -33,10 +33,6 @@
 #include "servers/arvr/arvr_positional_tracker.h"
 #include "servers/visual/visual_server_global.h"
 
-#include "oa_hash_map.h"
-
-extern OAHashMap<StringName, godot_arvr_interface_gdnative *> *_registered_interfaces;
-
 ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
 	// testing
 	printf("Construct gdnative interface\n");
@@ -66,23 +62,16 @@ void ARVRInterfaceGDNative::cleanup() {
 	}
 }
 
-void ARVRInterfaceGDNative::set_interface(StringName p_name) {
-
-	godot_arvr_interface_gdnative *new_interface;
-
-	if (!_registered_interfaces->lookup(p_name, &new_interface)) {
-		ERR_PRINT((String("ARVR interface \"") + p_name + "\" does not exist.").utf8().get_data());
-		return;
-	}
-
+void ARVRInterfaceGDNative::set_interface(const godot_arvr_interface_gdnative *p_interface) {
+	// this should only be called once, just being paranoid..
 	if (interface) {
 		cleanup();
 	}
 
-	interface = new_interface;
+	// bind to our interface
+	interface = p_interface;
 
 	// Now we do our constructing...
-
 	data = interface->constructor((godot_object *)this);
 }
 
@@ -222,20 +211,16 @@ void ARVRInterfaceGDNative::process() {
 	interface->process(data);
 }
 
-void ARVRInterfaceGDNative::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_interface", "name"), &ARVRInterfaceGDNative::set_interface);
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 // some helper callbacks
 
 extern "C" {
 
-void GDAPI godot_arvr_register_interface(const char *p_name, const godot_arvr_interface_gdnative *p_interface) {
-	// this method is supposed to only be called by GDNative singletons
-	// which are initialized in a thread safe way, so using a global map is fine here
-
-	_registered_interfaces->set(StringName(p_name), (godot_arvr_interface_gdnative * const)p_interface);
+void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface) {
+	Ref<ARVRInterfaceGDNative> new_interface;
+	new_interface.instance();
+	new_interface->set_interface((godot_arvr_interface_gdnative * const)p_interface);
+	ARVRServer::get_singleton()->add_interface(new_interface);
 }
 
 godot_real GDAPI godot_arvr_get_worldscale() {

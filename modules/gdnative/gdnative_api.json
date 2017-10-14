@@ -5234,7 +5234,6 @@
       "name": "godot_arvr_register_interface",
       "return_type": "void",
       "arguments": [
-        ["const char *", "p_name"],
         ["const godot_arvr_interface_gdnative *", "p_interface"]
       ]
     },
