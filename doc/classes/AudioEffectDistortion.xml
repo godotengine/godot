@@ -5,7 +5,7 @@
 		Modify the sound to make it dirty.
 	</brief_description>
 	<description>
-		Modify the sound and make it dirty. Differents types available : clip, tan, lofi (bit crushing), overdrive, or waveshape.
+		Modify the sound and make it dirty. Different types are available : clip, tan, lofi (bit crushing), overdrive, or waveshape.
 		By distorting the waveform the frequency content change, which will often make the sound "crunchy" or "abrasive". For games, it can simulate sound coming from some saturated device or speaker very efficiently.
 	</description>
 	<tutorials>

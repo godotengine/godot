@@ -310,7 +310,7 @@
 			Sets the absolute maximum of the soundlevel, in dB.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance">
-			Sets the distance from wich the 'out_of_range_mode' takes effect. Has no effect if set to 0.
+			Sets the distance from which the 'out_of_range_mode' takes effect. Has no effect if set to 0.
 		</member>
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
 			Decides if audio should pause when source is outside of 'max_distance' range.
@@ -355,7 +355,7 @@
 			Disables doppler tracking.
 		</constant>
 		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
-			Executes doppler trackin in idle step.
+			Executes doppler tracking in idle step.
 		</constant>
 		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
 			Executes doppler tracking in physics step.

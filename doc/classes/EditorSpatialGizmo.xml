@@ -96,7 +96,7 @@
 			<argument index="2" name="cancel" type="bool" default="false">
 			</argument>
 			<description>
-				Commit a handle being edited (handles must have been prevously added by [method add_handles]).
+				Commit a handle being edited (handles must have been previously added by [method add_handles]).
 				If the cancel parameter is true, an option to restore the edited value to the original is provided.
 			</description>
 		</method>

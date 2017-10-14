@@ -180,7 +180,7 @@
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
-			The RayCast's collison layer(s). Only bodies in the same collision layer(s) will be detected.
+			The RayCast's collision layer(s). Only bodies in the same collision layer(s) will be detected.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].

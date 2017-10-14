@@ -209,7 +209,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Makes the node ignore its parents tranformations. Node tranformations are only in global space.
+				Makes the node ignore its parents transformations. Node transformations are only in global space.
 			</description>
 		</method>
 		<method name="set_gizmo">
@@ -234,7 +234,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Reset all tranformations for this node. Set its [Transform3D] to identity matrix.
+				Reset all transformations for this node. Set its [Transform3D] to identity matrix.
 			</description>
 		</method>
 		<method name="set_ignore_transform_notification">
@@ -329,7 +329,7 @@
 			<argument index="0" name="local_point" type="Vector3">
 			</argument>
 			<description>
-				Tranforms [Vector3] "local_point" from this node's local space to world space.
+				Transforms [Vector3] "local_point" from this node's local space to world space.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
@@ -338,7 +338,7 @@
 			<argument index="0" name="global_point" type="Vector3">
 			</argument>
 			<description>
-				Tranforms [Vector3] "global_point" from world space to this node's local space.
+				Transforms [Vector3] "global_point" from world space to this node's local space.
 			</description>
 		</method>
 		<method name="translate">

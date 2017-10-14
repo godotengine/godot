@@ -111,7 +111,7 @@
 			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders. Default value: [code]true[/code]
 		</member>
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin">
-			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values indivually to create panels with non-uniform borders.
+			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
 		</member>
 		<member name="patch_margin_left" type="int" setter="set_patch_margin" getter="get_patch_margin">
 			The height of the 9-slice's left column.

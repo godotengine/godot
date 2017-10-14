@@ -14,12 +14,12 @@
 			[codeblock]
 			height = 30
 			corner_radius_top_left = 50
-			corner_raidus_bottom_left = 100
+			corner_radius_bottom_left = 100
 			[/codeblock]
 			The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
 			[codeblock]
 			corner_radius_top_left: 10
-			corner_raidus_bottom_left: 20
+			corner_radius_bottom_left: 20
 			[/codeblock]
 	</description>
 	<tutorials>
@@ -268,7 +268,7 @@
 	</methods>
 	<members>
 		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased">
-			Anti Aliasing draws a small ring around edges. This ring fades to transparent. As a result edges look much smoother. This is only noticable when using rounded corners.
+			Anti Aliasing draws a small ring around edges. This ring fades to transparent. As a result edges look much smoother. This is only noticeable when using rounded corners.
 		</member>
 		<member name="anti_aliasing_size" type="int" setter="set_aa_size" getter="get_aa_size">
 			This changes the size of the faded ring. Higher values can be used to achieve a "blurry" effect.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorResourcePreview" inherits="Node" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Helper to generate previews of reources or files.
+		Helper to generate previews of resources or files.
 	</brief_description>
 	<description>
 		This object is used to generate previews for resources of files.

@@ -178,7 +178,7 @@
 			Used internally to filter trackers of any known type.
 		</constant>
 		<constant name="TRACKER_ANY" value="255">
-			Used interally to select all trackers.
+			Used internally to select all trackers.
 		</constant>
 	</constants>
 </class>

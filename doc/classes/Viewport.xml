@@ -192,14 +192,14 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returs the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
+				Returns the drag data from the GUI, that was previously returned by [method Control.get_drag_data].
 			</description>
 		</method>
 		<method name="gui_has_modal_stack" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returs whether there are shown modals on-screen.
+				Returns whether there are shown modals on-screen.
 			</description>
 		</method>
 		<method name="has_transparent_background" qualifiers="const">

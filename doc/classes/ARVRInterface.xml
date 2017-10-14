@@ -94,7 +94,7 @@
 			<argument index="0" name="initialized" type="bool">
 			</argument>
 			<description>
-				Initialise/uninitilise this interface (same effect as calling intialize/uninitialize).
+				Initialize/uninitialize this interface (same effect as calling initialize/uninitialize).
 			</description>
 		</method>
 		<method name="set_is_primary">
