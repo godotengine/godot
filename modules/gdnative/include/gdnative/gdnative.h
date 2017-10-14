@@ -47,7 +47,7 @@ extern "C" {
 #define GDAPI GDCALLINGCONV
 #endif
 #else
-#define GDCALLINGCONV __attribute__((sysv_abi, visibility("default")))
+#define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV
 #endif
 
@@ -255,7 +255,7 @@ godot_dictionary GDAPI godot_get_global_constants();
 ////// GDNative procedure types
 typedef void (*godot_gdnative_init_fn)(godot_gdnative_init_options *);
 typedef void (*godot_gdnative_terminate_fn)(godot_gdnative_terminate_options *);
-typedef godot_variant (*godot_gdnative_procedure_fn)(void *, godot_array *);
+typedef godot_variant (*godot_gdnative_procedure_fn)(godot_array *);
 
 ////// System Functions
 

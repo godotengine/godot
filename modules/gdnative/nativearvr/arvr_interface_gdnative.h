@@ -41,12 +41,12 @@
 */
 
 class ARVRInterfaceGDNative : public ARVRInterface {
-	GDCLASS(ARVRInterfaceGDNative, ARVRInterface);
+	GDCLASS(ARVRInterfaceGDNative, ARVRInterface)
 
 	void cleanup();
 
 protected:
-	Ref<GDNative> library;
+	godot_arvr_interface_gdnative *interface;
 	void *data;
 
 	static void _bind_methods();
@@ -56,7 +56,7 @@ public:
 	ARVRInterfaceGDNative();
 	~ARVRInterfaceGDNative();
 
-	void set_gdnative_library(Ref<GDNativeLibrary> p_library);
+	void set_interface(StringName p_name);
 
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const;

@@ -128,57 +128,12 @@ static void editor_init_callback() {
 
 #endif
 
-godot_variant cb_standard_varcall(void *handle, godot_string *p_procedure, godot_array *p_args) {
-	if (handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call standard varcall procedure");
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
-
-	void *library_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			handle,
-			*(String *)p_procedure,
-			library_proc,
-			true); // we roll our own message
-	if (err != OK) {
-		ERR_PRINT((String("GDNative procedure \"" + *(String *)p_procedure) + "\" does not exists and can't be called").utf8().get_data());
-		godot_variant ret;
-		godot_variant_new_nil(&ret);
-		return ret;
-	}
+godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *p_args) {
 
 	godot_gdnative_procedure_fn proc;
-	proc = (godot_gdnative_procedure_fn)library_proc;
+	proc = (godot_gdnative_procedure_fn)p_procedure_handle;
 
-	return proc(NULL, p_args);
-}
-
-void cb_singleton_call(
-		void *p_handle,
-		godot_string *p_proc_name,
-		void *p_data,
-		int p_num_args,
-		void **p_args,
-		void *r_return) {
-	if (p_handle == NULL) {
-		ERR_PRINT("No valid library handle, can't call singleton procedure");
-		return;
-	}
-
-	void *singleton_proc;
-	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(
-			p_handle,
-			*(String *)p_proc_name,
-			singleton_proc);
-
-	if (err != OK) {
-		return;
-	}
-
-	void (*singleton_procedure_ptr)() = (void (*)())singleton_proc;
-	singleton_procedure_ptr();
+	return proc(p_args);
 }
 
 GDNativeCallRegistry *GDNativeCallRegistry::singleton;
@@ -200,8 +155,6 @@ void register_gdnative_types() {
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
 
 	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
-
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("gdnative_singleton_call", cb_singleton_call);
 
 	register_nativearvr_types();
 	register_nativescript_types();
@@ -225,13 +178,16 @@ void register_gdnative_types() {
 			continue;
 		}
 
-		singleton_gdnatives[i]->call_native_raw(
-				"gdnative_singleton_call",
+		void *proc_ptr;
+		Error err = singleton_gdnatives[i]->get_symbol(
 				"godot_gdnative_singleton",
-				NULL,
-				0,
-				NULL,
-				NULL);
+				proc_ptr);
+
+		if (err != OK) {
+			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_active_library_path()) + "\" found").utf8().get_data());
+		} else {
+			((void (*)())proc_ptr)();
+		}
 	}
 }
 
