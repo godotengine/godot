@@ -343,7 +343,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 		isScratched = false;
 
 		if (onStateChange_callback) {
-			BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::getSingleton(this);
+			BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
 			Variant variantBodyDirect = bodyDirect;
 

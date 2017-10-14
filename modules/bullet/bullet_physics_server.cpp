@@ -793,6 +793,12 @@ bool BulletPhysicsServer::body_is_ray_pickable(RID p_body) const {
 	return body->is_ray_pickable();
 }
 
+PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, NULL);
+	return BulletPhysicsDirectBodyState::get_singleton(body);
+}
+
 bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin, MotionResult *r_result) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);

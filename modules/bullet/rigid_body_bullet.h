@@ -71,7 +71,7 @@ public:
 		singleton->deltaTime = p_deltaTime;
 	}
 
-	static BulletPhysicsDirectBodyState *getSingleton(RigidBodyBullet *p_body) {
+	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
 		singleton->body = p_body;
 		return singleton;
 	}
