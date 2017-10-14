@@ -2815,6 +2815,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
 
+		presets_menu->set_icon(get_icon("ControlLayout", "EditorIcons"));
 		PopupMenu *p = presets_menu->get_popup();
 
 		p->clear();

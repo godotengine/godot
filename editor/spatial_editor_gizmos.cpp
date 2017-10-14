@@ -298,11 +298,11 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	}
 }
 
-void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 size) {
+void EditorSpatialGizmo::add_solid_box(Ref<Material> &p_material, Vector3 p_size) {
 	ERR_FAIL_COND(!spatial_node);
 
 	CubeMesh cubem;
-	cubem.set_size(size);
+	cubem.set_size(p_size);
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	m->add_surface_from_arrays(cubem.surface_get_primitive_type(0), cubem.surface_get_arrays(0));
 	m->surface_set_material(0, p_material);

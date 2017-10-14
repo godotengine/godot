@@ -45,7 +45,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_icon("Load", "EditorIcons"));
 		_delete->set_icon(get_icon("Remove", "EditorIcons"));
-		new_anim->set_icon(get_icon("Add", "EditorIcons"));
+		new_anim->set_icon(get_icon("New", "EditorIcons"));
 		remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
 	}
 
@@ -821,7 +821,7 @@ SpriteFramesEditorPlugin::SpriteFramesEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
 	frames_editor = memnew(SpriteFramesEditor);
-	frames_editor->set_custom_minimum_size(Size2(0, 300));
+	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = editor->add_bottom_panel_item("SpriteFrames", frames_editor);
 	button->hide();
 }
