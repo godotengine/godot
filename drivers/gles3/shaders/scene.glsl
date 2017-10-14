@@ -895,7 +895,7 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// return 1.0 /( cos_theta_m + sqrt(cos2 + alpha*alpha*sin2) );
 }
 
-float D_GXX(float cos_theta_m, float alpha) {
+float D_GGX(float cos_theta_m, float alpha) {
 	float alpha2 = alpha*alpha;
 	float d = 1.0 + (alpha2-1.0)*cos_theta_m*cos_theta_m;
 	return alpha2/(M_PI * d * d);
@@ -909,7 +909,7 @@ float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, fl
 	return 1.0  / (cos_theta_m + sqrt(cos2 + (s_x*s_x + s_y*s_y)*sin2 ));
 }
 
-float D_GXX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
+float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
 	float cos2 = cos_theta_m * cos_theta_m;
 	float sin2 = (1.0-cos2);
 	float r_x = cos_phi/alpha_x;
@@ -1080,7 +1080,7 @@ LIGHT_SHADER_CODE
 		float ay = ry*ry;
 		float XdotH = dot( T, H );
 		float YdotH = dot( B, H );
-		float D = D_GXX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
+		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
 		float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
 
 #else
@@ -2104,5 +2104,3 @@ FRAGMENT_SHADER_CODE
 
 
 }
-
-
