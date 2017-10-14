@@ -6,7 +6,7 @@
 	<description>
 		Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
 		Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
-		Some derivates add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
+		Some derivatives add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
 		Objects also receive notifications ([method _notification]). Notifications are a simple way to notify the object about simple events, so they can all be handled together.
 	</description>
@@ -165,7 +165,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of dictionaries with informations about signals that are connected to this object.
+				Returns an [Array] of dictionaries with information about signals that are connected to this object.
 				Inside each [Dictionary] there are 3 fields:
 				- "source" is a reference to signal emitter.
 				- "signal_name" is name of connected signal.

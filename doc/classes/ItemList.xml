@@ -217,7 +217,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns whether the tooptip is enabled for specified item index.
+				Returns whether the tooltip is enabled for specified item index.
 			</description>
 		</method>
 		<method name="is_same_column_width" qualifiers="const">
@@ -511,7 +511,7 @@
 			<argument index="1" name="selected" type="bool">
 			</argument>
 			<description>
-				Fired when a multiple selection is altered on a list allowing mutliple selection.
+				Fired when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
 	</signals>

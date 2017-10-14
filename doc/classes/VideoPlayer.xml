@@ -22,7 +22,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Get the amount of miliseconds to store in buffer while playing.
+				Get the amount of milliseconds to store in buffer while playing.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">
@@ -126,7 +126,7 @@
 			<argument index="0" name="msec" type="int">
 			</argument>
 			<description>
-				Set the amount of miliseconds to buffer during playback.
+				Set the amount of milliseconds to buffer during playback.
 			</description>
 		</method>
 		<method name="set_expand">

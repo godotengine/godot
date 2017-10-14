@@ -166,7 +166,7 @@
 			Request does not have a response(yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
-			Request exceded its maximum size limit, see [method set_body_size_limit].
+			Request exceeded its maximum size limit, see [method set_body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8">
 			Request failed. (unused)

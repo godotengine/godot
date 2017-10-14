@@ -12,7 +12,7 @@
 		tween.start()
 		[/codeblock]
 		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
-		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -135,7 +135,7 @@
 			<argument index="7" name="arg5" type="Variant" default="null">
 			</argument>
 			<description>
-				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [methog Object.call_deferred). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
+				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [method Object.call_deferred]). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_method">
@@ -158,7 +158,7 @@
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -346,7 +346,7 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>

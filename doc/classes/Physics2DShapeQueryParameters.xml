@@ -129,7 +129,7 @@
 			<argument index="0" name="transform" type="Transform2D">
 			</argument>
 			<description>
-				Set the transormation matrix of the shape. This is necessary to set its position/rotation/scale.
+				Set the transformation matrix of the shape. This is necessary to set its position/rotation/scale.
 			</description>
 		</method>
 	</methods>

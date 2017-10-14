@@ -112,7 +112,7 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Returns the transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">

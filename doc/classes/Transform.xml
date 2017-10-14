@@ -68,7 +68,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transfrom, under the assumption that the transformation is composed of rotation, scaling and translation.
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="interpolate_with">
@@ -104,7 +104,7 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the transfrom with the basis orthogonal (90 degrees), and normalized axis vectors.
+				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated">

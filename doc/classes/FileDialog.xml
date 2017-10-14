@@ -86,7 +86,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the diaog allows show hidden files.
+				Return true if the dialog allows show hidden files.
 			</description>
 		</method>
 		<method name="set_access">
@@ -205,10 +205,10 @@
 			The dialog allows the selection of file and directory.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1">
-			The dialog allows ascess files under [Resource] path(res://) .
+			The dialog allows access files under [Resource] path(res://) .
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2">
-			The dialog allows ascess files in whole file system.
+			The dialog allows access files in whole file system.
 		</constant>
 	</constants>
 	<theme_items>

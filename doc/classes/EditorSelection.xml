@@ -31,7 +31,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Get the list of selectes nodes.
+				Get the list of selected nodes.
 			</description>
 		</method>
 		<method name="get_transformable_selected_nodes">
