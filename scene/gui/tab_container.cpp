@@ -94,15 +94,20 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 		// Handle navigation buttons.
 		if (buttons_visible_cache) {
+			int popup_ofs = 0;
+			if (popup) {
+				popup_ofs = menu->get_width();
+			}
+
 			Ref<Texture> increment = get_icon("increment");
 			Ref<Texture> decrement = get_icon("decrement");
-			if (pos.x > size.width - increment->get_width()) {
+			if (pos.x > size.width - increment->get_width() - popup_ofs) {
 				if (last_tab_cache < tabs.size() - 1) {
 					first_tab_cache += 1;
 					update();
 				}
 				return;
-			} else if (pos.x > size.width - increment->get_width() - decrement->get_width()) {
+			} else if (pos.x > size.width - increment->get_width() - decrement->get_width() - popup_ofs) {
 				if (first_tab_cache > 0) {
 					first_tab_cache -= 1;
 					update();
