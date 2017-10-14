@@ -192,6 +192,7 @@ private:
 	real_t gravity_scale;
 	real_t linearDamp;
 	real_t angularDamp;
+	bool can_sleep;
 
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize

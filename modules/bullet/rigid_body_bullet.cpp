@@ -266,6 +266,7 @@ RigidBodyBullet::RigidBodyBullet()
 	  mass(1),
 	  linearDamp(0),
 	  angularDamp(0),
+	  can_sleep(true),
 	  onStateChange_callback(NULL),
 	  isScratched(false),
 	  maxCollisionsDetection(0),
@@ -450,6 +451,7 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 			btBody->setFriction(p_value);
 			break;
 		case PhysicsServer::BODY_PARAM_MASS: {
+			ERR_FAIL_COND(p_value < 0);
 			mass = p_value;
 			_internal_set_mass(p_value);
 			break;
@@ -499,35 +501,32 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 	// The mode change is relevant to its mass
 	switch (p_mode) {
 		case PhysicsServer::BODY_MODE_KINEMATIC:
-			// This allow me to set KINEMATIC
 			mode = PhysicsServer::BODY_MODE_KINEMATIC;
 			btBody->setAngularFactor(1);
 			_internal_set_mass(0);
 			init_kinematic_utilities();
-			m_isStatic = true;
 			break;
 		case PhysicsServer::BODY_MODE_STATIC:
 			mode = PhysicsServer::BODY_MODE_STATIC;
 			btBody->setAngularFactor(1);
 			_internal_set_mass(0);
-			m_isStatic = true;
 			break;
 		case PhysicsServer::BODY_MODE_RIGID: {
 			mode = PhysicsServer::BODY_MODE_RIGID;
 			btBody->setAngularFactor(1);
 			_internal_set_mass(0 == mass ? 1 : mass);
-			m_isStatic = false;
 			break;
 		}
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
 			btBody->setAngularFactor(0);
-			btBody->setAngularVelocity(btVector3(0, 0, 0));
 			_internal_set_mass(0 == mass ? 1 : mass);
-			m_isStatic = false;
 			break;
 		}
 	}
+
+	btBody->setAngularVelocity(btVector3(0, 0, 0));
+	btBody->setLinearVelocity(btVector3(0, 0, 0));
 }
 PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
 	return mode;
@@ -549,10 +548,8 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 			set_activation_state(!bool(p_variant));
 			break;
 		case PhysicsServer::BODY_STATE_CAN_SLEEP:
-			if (bool(p_variant)) {
-				// Can sleep
-				btBody->forceActivationState(ACTIVE_TAG);
-			} else {
+			can_sleep = bool(p_variant);
+			if (!can_sleep) {
 				// Can't sleep
 				btBody->forceActivationState(DISABLE_DEACTIVATION);
 			}
@@ -571,7 +568,7 @@ Variant RigidBodyBullet::get_state(PhysicsServer::BodyState p_state) const {
 		case PhysicsServer::BODY_STATE_SLEEPING:
 			return !is_active();
 		case PhysicsServer::BODY_STATE_CAN_SLEEP:
-			return btBody->getActivationState();
+			return can_sleep;
 		default:
 			WARN_PRINTS("This state " + itos(p_state) + " is not supported by Bullet");
 			return Variant();
@@ -954,7 +951,6 @@ void RigidBodyBullet::reload_kinematic_shapes() {
 }
 
 void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
-	ERR_FAIL_COND(p_mass < 0);
 
 	btVector3 localInertia(0, 0, 0);
 
@@ -967,9 +963,9 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 
 		ERR_FAIL_COND(PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode);
 
+		m_isStatic = false;
 		compoundShape->calculateLocalInertia(p_mass, localInertia);
 
-		btBody->forceActivationState(ACTIVE_TAG); // ACTIVE_TAG 1
 		if (PhysicsServer::BODY_MODE_RIGID == mode) {
 
 			btBody->setCollisionFlags(clearedCurrentFlags); // Just set the flags without Kin and Static
@@ -977,11 +973,17 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_CHARACTER_OBJECT);
 		}
+
+		if (can_sleep) {
+			btBody->forceActivationState(ACTIVE_TAG); // ACTIVE_TAG 1
+		} else {
+			btBody->forceActivationState(DISABLE_DEACTIVATION); // DISABLE_DEACTIVATION 4
+		}
 	} else {
 
 		ERR_FAIL_COND(PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode);
 
-		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
+		m_isStatic = true;
 		if (PhysicsServer::BODY_MODE_STATIC == mode) {
 
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
@@ -990,6 +992,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
 			set_transform(btBody->getWorldTransform()); // Set current Transform using kinematic method
 		}
+		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
 	}
 
 	btBody->setMassProps(p_mass, localInertia);
