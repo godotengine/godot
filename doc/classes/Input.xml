@@ -218,7 +218,7 @@
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-				Returns if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
