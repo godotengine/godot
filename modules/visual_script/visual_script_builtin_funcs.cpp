@@ -1280,6 +1280,11 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
+VisualScriptBuiltinFunc::VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::BuiltinFunc func) {
+
+	this->func = func;
+}
+
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {
 
 	func = MATH_SIN;
@@ -1288,9 +1293,7 @@ VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {
 template <VisualScriptBuiltinFunc::BuiltinFunc func>
 static Ref<VisualScriptNode> create_builtin_func_node(const String &p_name) {
 
-	Ref<VisualScriptBuiltinFunc> node;
-	node.instance();
-	node->set_func(func);
+	Ref<VisualScriptBuiltinFunc> node = memnew(VisualScriptBuiltinFunc(func));
 	return node;
 }
 
