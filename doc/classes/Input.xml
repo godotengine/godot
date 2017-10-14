@@ -75,7 +75,7 @@
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
-				Returns the current value of the joypad axis at given index (see JOY_* constants in [@Global Scope])
+				Returns the current value of the joypad axis at given index (see [code]JOY_*[/code] constants in [@Global Scope])
 			</description>
 		</method>
 		<method name="get_joy_axis_index_from_string">
@@ -180,7 +180,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] once if the action event was pressed.
+				Returns [code]true[/code] when you start pressing the action event.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -189,7 +189,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] once if the action event was released.
+				Returns [code]true[/code] when you stop pressing the action event.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -198,7 +198,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the action event is pressed.
+				Returns [code]true[/code] if you are pressing the action event.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -209,7 +209,7 @@
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-				Returns if the joypad button at the given index is currently pressed. (see JOY_* constants in [@Global Scope])
+				Returns [code]true[/code] if you are pressing the joypad button. (see [code]JOY_*[/code] constants in [@Global Scope])
 			</description>
 		</method>
 		<method name="is_joy_known">
@@ -218,7 +218,7 @@
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-				Returns if the specified device is known by the system. This means that it sets all button and axis indices exactly as defined in the JOY_* constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				Returns if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
@@ -227,7 +227,7 @@
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
-				Returns true if the key is pressed. You can pass KEY_*, which are pre-defined constants listed in [@Global Scope].
+				Returns [code]true[/code] if you are pressing the key. You can pass [code]KEY_*[/code], which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -236,7 +236,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns true if the mouse button is pressed. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
+				Returns [code]true[/code] if you are pressing the mouse button. You can pass [code]BUTTON_*[/code], which are pre-defined constants listed in [@Global Scope].
 			</description>
 		</method>
 		<method name="joy_connection_changed">
