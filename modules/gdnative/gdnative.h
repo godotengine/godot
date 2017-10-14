@@ -100,8 +100,7 @@ public:
 	_FORCE_INLINE_ void set_singleton_gdnative(bool p_singleton) { singleton_gdnative = p_singleton; }
 };
 
-typedef godot_variant (*native_call_cb)(void *, godot_string *, godot_array *);
-typedef void (*native_raw_call_cb)(void *, godot_string *, void *, int, void **, void *);
+typedef godot_variant (*native_call_cb)(void *, godot_array *);
 
 struct GDNativeCallRegistry {
 	static GDNativeCallRegistry *singleton;
@@ -111,17 +110,13 @@ struct GDNativeCallRegistry {
 	}
 
 	inline GDNativeCallRegistry()
-		: native_calls(),
-		  native_raw_calls() {}
+		: native_calls() {}
 
 	Map<StringName, native_call_cb> native_calls;
-	Map<StringName, native_raw_call_cb> native_raw_calls;
 
 	void register_native_call_type(StringName p_call_type, native_call_cb p_callback);
-	void register_native_raw_call_type(StringName p_raw_call_type, native_raw_call_cb p_callback);
 
 	Vector<StringName> get_native_call_types();
-	Vector<StringName> get_native_raw_call_types();
 };
 
 class GDNative : public Reference {
@@ -149,7 +144,8 @@ public:
 	bool terminate();
 
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
-	void call_native_raw(StringName p_raw_call_type, StringName p_procedure_name, void *data, int num_args, void **args, void *r_return);
+
+	Error get_symbol(StringName p_procedure_name, void *&r_handle);
 };
 
 #endif // GDNATIVE_H

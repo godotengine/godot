@@ -54,7 +54,7 @@ ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
 
 void ARVRInterfaceGDNative::cleanup() {
 	if (data != NULL) {
-		library->call_native_raw("arvr_call_destructor", "godot_arvr_destructor", data, 0, NULL, NULL);
+		// library->call_native_raw("arvr_call_destructor", "godot_arvr_destructor", data, 0, NULL, NULL);
 		data = NULL;
 	};
 
@@ -76,7 +76,7 @@ void ARVRInterfaceGDNative::set_gdnative_library(Ref<GDNativeLibrary> p_library)
 	// Now we do our constructing...
 	void *parameters[1];
 	parameters[0] = (void *)this;
-	library->call_native_raw("arvr_call_constructor", "godot_arvr_constructor", NULL, 1, parameters, &data);
+	// library->call_native_raw("arvr_call_constructor", "godot_arvr_constructor", NULL, 1, parameters, &data);
 }
 
 StringName ARVRInterfaceGDNative::get_name() const {
@@ -84,7 +84,7 @@ StringName ARVRInterfaceGDNative::get_name() const {
 
 	ERR_FAIL_COND_V(data == NULL, StringName());
 
-	const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_string", "godot_arvr_get_name", data, 0, NULL, &name);
+	// const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_string", "godot_arvr_get_name", data, 0, NULL, &name);
 
 	return name;
 }
@@ -94,7 +94,7 @@ int ARVRInterfaceGDNative::get_capabilities() const {
 
 	ERR_FAIL_COND_V(data == NULL, 0); // 0 = None
 
-	const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_int", "godot_arvr_get_capabilities", data, 0, NULL, &capabilities);
+	// const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_int", "godot_arvr_get_capabilities", data, 0, NULL, &capabilities);
 
 	return capabilities;
 };
@@ -104,7 +104,7 @@ bool ARVRInterfaceGDNative::get_anchor_detection_is_enabled() const {
 
 	ERR_FAIL_COND_V(data == NULL, false);
 
-	const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_bool", "godot_arvr_get_anchor_detection_is_enabled", data, 0, NULL, &enabled);
+	// const_cast<GDNative *>(library.ptr())->call_native_raw("arvr_return_bool", "godot_arvr_get_anchor_detection_is_enabled", data, 0, NULL, &enabled);
 
 	return enabled;
 };
@@ -115,7 +115,7 @@ void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
 	ERR_FAIL_COND(data == NULL);
 
 	parameters[0] = (void *)&p_enable;
-	library->call_native_raw("arvr_set_bool", "godot_arvr_set_anchor_detection_is_enabled", data, 1, parameters, NULL);
+	// library->call_native_raw("arvr_set_bool", "godot_arvr_set_anchor_detection_is_enabled", data, 1, parameters, NULL);
 };
 
 bool ARVRInterfaceGDNative::is_stereo() {
@@ -123,7 +123,7 @@ bool ARVRInterfaceGDNative::is_stereo() {
 
 	ERR_FAIL_COND_V(data == NULL, false);
 
-	library->call_native_raw("arvr_return_bool", "godot_arvr_is_stereo", data, 0, NULL, &stereo);
+	// library->call_native_raw("arvr_return_bool", "godot_arvr_is_stereo", data, 0, NULL, &stereo);
 
 	return stereo;
 };
@@ -133,7 +133,7 @@ bool ARVRInterfaceGDNative::is_initialized() {
 
 	ERR_FAIL_COND_V(data == NULL, false);
 
-	library->call_native_raw("arvr_return_bool", "godot_arvr_is_initialized", data, 0, NULL, &initialized);
+	// library->call_native_raw("arvr_return_bool", "godot_arvr_is_initialized", data, 0, NULL, &initialized);
 
 	return initialized;
 };
@@ -143,7 +143,7 @@ bool ARVRInterfaceGDNative::initialize() {
 
 	ERR_FAIL_COND_V(data == NULL, false);
 
-	library->call_native_raw("arvr_return_bool", "godot_arvr_initialize", data, 0, NULL, &initialized);
+	// library->call_native_raw("arvr_return_bool", "godot_arvr_initialize", data, 0, NULL, &initialized);
 
 	if (initialized) {
 		// if we successfully initialize our interface and we don't have a primary interface yet, this becomes our primary interface
@@ -166,7 +166,7 @@ void ARVRInterfaceGDNative::uninitialize() {
 		arvr_server->clear_primary_interface_if(this);
 	}
 
-	library->call_native_raw("arvr_call_method", "godot_arvr_uninitialize", data, 0, NULL, NULL);
+	// library->call_native_raw("arvr_call_method", "godot_arvr_uninitialize", data, 0, NULL, NULL);
 }
 
 Size2 ARVRInterfaceGDNative::get_recommended_render_targetsize() {
@@ -174,7 +174,7 @@ Size2 ARVRInterfaceGDNative::get_recommended_render_targetsize() {
 
 	ERR_FAIL_COND_V(data == NULL, Size2());
 
-	library->call_native_raw("arvr_return_vector2", "godot_arvr_get_recommended_render_targetsize", data, 0, NULL, &size);
+	// library->call_native_raw("arvr_return_vector2", "godot_arvr_get_recommended_render_targetsize", data, 0, NULL, &size);
 
 	return size;
 }
@@ -187,7 +187,7 @@ Transform ARVRInterfaceGDNative::get_transform_for_eye(ARVRInterface::Eyes p_eye
 
 	parameters[0] = (void *)&p_eye;
 	parameters[1] = (void *)&p_cam_transform;
-	library->call_native_raw("arvr_return_transform_for_eye", "godot_arvr_get_transform_for_eye", data, 2, parameters, &ret);
+	// library->call_native_raw("arvr_return_transform_for_eye", "godot_arvr_get_transform_for_eye", data, 2, parameters, &ret);
 
 	return ret;
 }
@@ -203,7 +203,7 @@ CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p
 	parameters[2] = (void *)&p_aspect;
 	parameters[3] = (void *)&p_z_near;
 	parameters[4] = (void *)&p_z_far;
-	library->call_native_raw("arvr_call_fill_projection_for_eye", "godot_arvr_fill_projection_for_eye", data, 5, parameters, NULL);
+	// library->call_native_raw("arvr_call_fill_projection_for_eye", "godot_arvr_fill_projection_for_eye", data, 5, parameters, NULL);
 
 	return cm;
 }
@@ -216,13 +216,13 @@ void ARVRInterfaceGDNative::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_rend
 	parameters[0] = (void *)&p_eye;
 	parameters[1] = (void *)&p_render_target;
 	parameters[2] = (void *)&p_screen_rect;
-	library->call_native_raw("arvr_call_commit_for_eye", "godot_arvr_commit_for_eye", data, 3, parameters, NULL);
+	// library->call_native_raw("arvr_call_commit_for_eye", "godot_arvr_commit_for_eye", data, 3, parameters, NULL);
 }
 
 void ARVRInterfaceGDNative::process() {
 	ERR_FAIL_COND(data == NULL);
 
-	library->call_native_raw("arvr_call_method", "godot_arvr_process", data, 0, NULL, NULL);
+	// library->call_native_raw("arvr_call_method", "godot_arvr_process", data, 0, NULL, NULL);
 }
 
 void ARVRInterfaceGDNative::_bind_methods() {

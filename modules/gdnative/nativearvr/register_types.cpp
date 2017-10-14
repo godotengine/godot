@@ -395,17 +395,6 @@ void arvr_call_commit_for_eye(
 };
 
 void register_nativearvr_types() {
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_call_constructor", arvr_call_constructor);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_call_destructor", arvr_call_destructor);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_return_string", arvr_return_string);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_return_int", arvr_return_int);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_return_bool", arvr_return_bool);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_set_bool", arvr_set_bool);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_call_method", arvr_call_method);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_return_vector2", arvr_return_vector2);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_return_transform_for_eye", arvr_return_transform_for_eye);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_call_fill_projection_for_eye", arvr_call_fill_projection_for_eye);
-	GDNativeCallRegistry::singleton->register_native_raw_call_type("arvr_call_commit_for_eye", arvr_call_commit_for_eye);
 
 	ClassDB::register_class<ARVRInterfaceGDNative>();
 }
