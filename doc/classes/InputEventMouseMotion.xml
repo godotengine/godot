@@ -4,8 +4,10 @@
 		Input event type for mouse motion events.
 	</brief_description>
 	<description>
+		Contains mouse motion informations. Supports relative, absolute positions and speed. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -41,10 +43,10 @@
 	</methods>
 	<members>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative">
-			Position of the mouse pointer relative to the previous mouse position.
+			Mouse position relative to the previous position (position at the last frame).
 		</member>
 		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed">
-			Speed of the mouse pointer.
+			Mouse speed.
 		</member>
 	</members>
 	<constants>
