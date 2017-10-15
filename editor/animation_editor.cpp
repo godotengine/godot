@@ -64,6 +64,8 @@ private:
 	float transition;
 	Mode mode;
 
+	LineEdit *value_edit;
+
 	void _notification(int p_what) {
 
 		if (p_what == NOTIFICATION_DRAW) {
@@ -144,14 +146,11 @@ private:
 				}
 			}
 
-			String txt = String::num(exp, 2);
 			if (mode == MODE_DISABLED) {
-				txt = TTR("Disabled");
+				f->draw(ci, Point2(5, 5 + f->get_ascent()), TTR("Disabled"), color);
 			} else if (mode == MODE_MULTIPLE) {
-				txt += " - " + TTR("All Selection");
+				f->draw(ci, Point2(5, 5 + f->get_ascent() + value_edit->get_size().height), TTR("All Selection"), color);
 			}
-
-			f->draw(ci, Point2(10, 10 + f->get_ascent()), txt, color);
 		}
 	}
 
@@ -162,6 +161,8 @@ private:
 
 			if (mode == MODE_DISABLED)
 				return;
+
+			value_edit->release_focus();
 
 			float rel = mm->get_relative().x;
 			if (rel == 0)
@@ -187,11 +188,13 @@ private:
 			if (sg)
 				val = -val;
 
-			transition = val;
-			update();
-			//emit_signal("variant_changed");
-			emit_signal("transition_changed", transition);
+			force_transition(val);
 		}
+	}
+
+	void _edit_value_changed(const String &p_value_str) {
+
+		force_transition(p_value_str.to_float());
 	}
 
 public:
@@ -199,12 +202,14 @@ public:
 
 		//ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
 		ClassDB::bind_method("_gui_input", &AnimationCurveEdit::_gui_input);
+		ClassDB::bind_method("_edit_value_changed", &AnimationCurveEdit::_edit_value_changed);
 		ADD_SIGNAL(MethodInfo("transition_changed"));
 	}
 
 	void set_mode(Mode p_mode) {
 
 		mode = p_mode;
+		value_edit->set_visible(mode != MODE_DISABLED);
 		update();
 	}
 
@@ -218,7 +223,8 @@ public:
 	}
 
 	void set_transition(float p_transition) {
-		transition = p_transition;
+		transition = Math::stepify(p_transition, 0.01);
+		value_edit->set_text(String::num(transition));
 		update();
 	}
 
@@ -229,9 +235,8 @@ public:
 	void force_transition(float p_value) {
 		if (mode == MODE_DISABLED)
 			return;
-		transition = p_value;
+		set_transition(p_value);
 		emit_signal("transition_changed", p_value);
-		update();
 	}
 
 	AnimationCurveEdit() {
@@ -239,6 +244,11 @@ public:
 		transition = 1.0;
 		set_default_cursor_shape(CURSOR_HSPLIT);
 		mode = MODE_DISABLED;
+
+		value_edit = memnew(LineEdit);
+		value_edit->hide();
+		value_edit->connect("text_entered", this, "_edit_value_changed");
+		add_child(value_edit);
 	}
 };
 
