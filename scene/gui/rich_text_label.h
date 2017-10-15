@@ -221,6 +221,7 @@ private:
 
 	int tab_size;
 	bool underline_meta;
+	bool override_selected_font_color;
 
 	Align default_align;
 
@@ -312,6 +313,9 @@ public:
 
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
+
+	void set_override_selected_font_color(bool p_override_selected_font_color);
+	bool is_overriding_selected_font_color() const;
 
 	void set_scroll_active(bool p_active);
 	bool is_scroll_active() const;

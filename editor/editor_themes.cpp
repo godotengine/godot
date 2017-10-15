@@ -972,8 +972,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
 
 	const float mono_value = mono_color.r;
-	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.1);
-	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.3);
+	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
+	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
 	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.5);
 	const Color alpha4 = Color(mono_value, mono_value, mono_value, 0.7);
 
@@ -998,7 +998,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color caret_color = mono_color;
 	const Color caret_background_color = mono_color.inverted();
 	const Color text_selected_color = dark_color_3;
-	const Color selection_color = alpha3;
+	const Color selection_color = alpha2;
 	const Color brace_mismatch_color = error_color;
 	const Color current_line_color = alpha1;
 	const Color line_length_guideline_color = warning_color;

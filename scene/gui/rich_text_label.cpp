@@ -354,7 +354,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									cw = font->get_char_size(c[i], c[i + 1]).x;
 									draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									if (visible)
-										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], selection_fg);
+										font->draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - (fh - ascent)), c[i], c[i + 1], override_selected_font_color ? selection_fg : color);
 
 								} else {
 									if (visible)
@@ -1376,6 +1376,16 @@ bool RichTextLabel::is_meta_underlined() const {
 	return underline_meta;
 }
 
+void RichTextLabel::set_override_selected_font_color(bool p_override_selected_font_color) {
+
+	override_selected_font_color = p_override_selected_font_color;
+}
+
+bool RichTextLabel::is_overriding_selected_font_color() const {
+
+	return override_selected_font_color;
+}
+
 void RichTextLabel::set_offset(int p_pixel) {
 
 	vscroll->set_value(p_pixel);
@@ -1906,6 +1916,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_underline", "enable"), &RichTextLabel::set_meta_underline);
 	ClassDB::bind_method(D_METHOD("is_meta_underlined"), &RichTextLabel::is_meta_underlined);
 
+	ClassDB::bind_method(D_METHOD("set_override_selected_font_color", "override"), &RichTextLabel::set_override_selected_font_color);
+	ClassDB::bind_method(D_METHOD("is_overriding_selected_font_color"), &RichTextLabel::is_overriding_selected_font_color);
+
 	ClassDB::bind_method(D_METHOD("set_scroll_active", "active"), &RichTextLabel::set_scroll_active);
 	ClassDB::bind_method(D_METHOD("is_scroll_active"), &RichTextLabel::is_scroll_active);
 
@@ -1948,6 +1961,7 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 
 	ADD_SIGNAL(MethodInfo("meta_clicked", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 
@@ -2003,6 +2017,7 @@ RichTextLabel::RichTextLabel() {
 	tab_size = 4;
 	default_align = ALIGN_LEFT;
 	underline_meta = true;
+	override_selected_font_color = false;
 
 	scroll_visible = false;
 	scroll_follow = false;
