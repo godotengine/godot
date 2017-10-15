@@ -532,6 +532,7 @@ String VisualScriptOperator::get_text() const {
 		L"A or B", //OP_OR,
 		L"A xor B", //OP_XOR,
 		L"not A", //OP_NOT,
+		L"A in B", //OP_IN,
 
 	};
 	return op_names[op];
