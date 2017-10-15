@@ -402,18 +402,18 @@ Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool EditorPlugin::forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) {
+bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
-		return get_script_instance()->call("forward_canvas_gui_input", p_canvas_xform, p_event);
+		return get_script_instance()->call("forward_canvas_gui_input", p_event);
 	}
 	return false;
 }
 
-void EditorPlugin::forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas) {
+void EditorPlugin::forward_draw_over_canvas(Control *p_canvas) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_canvas")) {
-		get_script_instance()->call("forward_draw_over_canvas", p_canvas_xform, p_canvas);
+		get_script_instance()->call("forward_draw_over_canvas", p_canvas);
 	}
 }
 

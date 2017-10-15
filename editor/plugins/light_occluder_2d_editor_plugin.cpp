@@ -119,9 +119,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-		cpoint = canvas_item_editor->snap_point(cpoint);
-		cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
+		Vector2 cpoint = node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		Vector<Vector2> poly = Variant(node->get_occluder_polygon()->get_polygon());
 
@@ -319,7 +317,8 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	return false;
 }
-void LightOccluder2DEditor::_canvas_draw() {
+
+void LightOccluder2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 
 	if (!node || !node->get_occluder_polygon().is_valid())
 		return;
@@ -368,17 +367,12 @@ void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 	if (p_collision_polygon) {
 
 		node = Object::cast_to<LightOccluder2D>(p_collision_polygon);
-		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
 		canvas_item_editor->get_viewport_control()->update();
 	} else {
 		node = NULL;
-
-		if (canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->get_viewport_control()->disconnect("draw", this, "_canvas_draw");
 	}
 }
 
@@ -395,7 +389,6 @@ void LightOccluder2DEditor::_create_poly() {
 void LightOccluder2DEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_menu_option"), &LightOccluder2DEditor::_menu_option);
-	ClassDB::bind_method(D_METHOD("_canvas_draw"), &LightOccluder2DEditor::_canvas_draw);
 	ClassDB::bind_method(D_METHOD("_node_removed"), &LightOccluder2DEditor::_node_removed);
 	ClassDB::bind_method(D_METHOD("_create_poly"), &LightOccluder2DEditor::_create_poly);
 }
@@ -430,7 +423,7 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 
 void LightOccluder2DEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
+	light_occluder_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool LightOccluder2DEditorPlugin::handles(Object *p_object) const {
@@ -441,21 +434,21 @@ bool LightOccluder2DEditorPlugin::handles(Object *p_object) const {
 void LightOccluder2DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		collision_polygon_editor->show();
+		light_occluder_editor->show();
 	} else {
 
-		collision_polygon_editor->hide();
-		collision_polygon_editor->edit(NULL);
+		light_occluder_editor->hide();
+		light_occluder_editor->edit(NULL);
 	}
 }
 
 LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	collision_polygon_editor = memnew(LightOccluder2DEditor(p_node));
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
+	light_occluder_editor = memnew(LightOccluder2DEditor(p_node));
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(light_occluder_editor);
 
-	collision_polygon_editor->hide();
+	light_occluder_editor->hide();
 }
 
 LightOccluder2DEditorPlugin::~LightOccluder2DEditorPlugin() {

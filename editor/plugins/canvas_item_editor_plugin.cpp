@@ -1198,14 +1198,23 @@ void CanvasItemEditor::_update_cursor() {
 	viewport->set_default_cursor_shape(c);
 }
 
-void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) {
+void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> m = p_event;
+	if (m.is_valid()) {
+		if (!viewport_base->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
+			viewport_base->call_deferred("grab_focus");
+	}
+}
+
+void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	{
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
 		if (!over_plugin_list->empty()) {
-			bool discard = over_plugin_list->forward_gui_input(transform, p_event);
+			bool discard = over_plugin_list->forward_gui_input(p_event);
 			if (discard) {
 				accept_event();
 				return;
@@ -1224,7 +1233,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 				_update_scroll(0);
 				viewport->update();
 			} else {
-				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()));
+				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), b->get_position());
 			}
 
 			return;
@@ -1237,7 +1246,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 				_update_scroll(0);
 				viewport->update();
 			} else {
-				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()));
+				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), b->get_position());
 			}
 
 			return;
@@ -1320,7 +1329,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 		if (b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) {
 			if (b->is_pressed()) {
 				// Set the pivot point
-				Point2 mouse_pos = viewport_scrollable->get_transform().affine_inverse().xform(b->get_position());
+				Point2 mouse_pos = b->get_position();
 				mouse_pos = transform.affine_inverse().xform(mouse_pos);
 				mouse_pos = snap_point(mouse_pos, SNAP_DEFAULT, _get_single_item());
 				_edit_set_pivot(mouse_pos);
@@ -1443,8 +1452,8 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 					E->get().to
 				};
 
-				Vector2 p = Geometry::get_closest_point_to_segment_2d(viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()), s);
-				float d = p.distance_to(viewport_scrollable->get_transform().affine_inverse().xform(b->get_position()));
+				Vector2 p = Geometry::get_closest_point_to_segment_2d(b->get_position(), s);
+				float d = p.distance_to(b->get_position());
 				if (d < bone_width && d < closest_dist) {
 					Cbone = E;
 					closest_dist = d;
@@ -1506,7 +1515,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			ERR_FAIL_COND(!se);
 
-			Point2 click = viewport_scrollable->get_transform().affine_inverse().xform(b->get_position());
+			Point2 click = b->get_position();
 
 			// Rotation
 			if ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
@@ -1561,7 +1570,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 		}
 
 		// Multiple selected items
-		Point2 click = viewport_scrollable->get_transform().affine_inverse().xform(b->get_position());
+		Point2 click = b->get_position();
 
 		if ((b->get_alt() || tool == TOOL_MOVE) && get_item_count()) {
 			// Drag the nodes
@@ -1621,12 +1630,9 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 		// Mouse motion event
 		_update_cursor();
 
-		if (!viewport_base->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
-			viewport_base->call_deferred("grab_focus");
-
 		if (box_selecting) {
 			// Update box selection
-			box_selecting_to = transform.affine_inverse().xform(viewport_scrollable->get_transform().affine_inverse().xform(m->get_position()));
+			box_selecting_to = transform.affine_inverse().xform(m->get_position());
 			viewport->update();
 			return;
 		}
@@ -1672,7 +1678,7 @@ void CanvasItemEditor::_viewport_base_gui_input(const Ref<InputEvent> &p_event) 
 			}
 
 			Vector2 dfrom = drag_from;
-			Vector2 dto = transform.affine_inverse().xform(viewport_scrollable->get_transform().affine_inverse().xform(m->get_position()));
+			Vector2 dto = transform.affine_inverse().xform(m->get_position());
 			if (canvas_item->has_meta("_edit_lock_"))
 				continue;
 
@@ -2681,9 +2687,8 @@ void CanvasItemEditor::_draw_viewport() {
 
 	EditorPluginList *over_plugin_list = editor->get_editor_plugins_over();
 	if (!over_plugin_list->empty()) {
-		over_plugin_list->forward_draw_over_canvas(transform, viewport);
+		over_plugin_list->forward_draw_over_canvas(viewport);
 	}
-	_draw_focus();
 	_draw_bones();
 }
 
@@ -3694,7 +3699,8 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_unhandled_key_input", &CanvasItemEditor::_unhandled_key_input);
 	ClassDB::bind_method("_draw_viewport", &CanvasItemEditor::_draw_viewport);
 	ClassDB::bind_method("_draw_viewport_base", &CanvasItemEditor::_draw_viewport_base);
-	ClassDB::bind_method("_viewport_base_gui_input", &CanvasItemEditor::_viewport_base_gui_input);
+	ClassDB::bind_method("_gui_input_viewport", &CanvasItemEditor::_gui_input_viewport);
+	ClassDB::bind_method("_gui_input_viewport_base", &CanvasItemEditor::_gui_input_viewport_base);
 	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
@@ -3747,7 +3753,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	palette_split->add_child(viewport_base);
 	viewport_base->set_clip_contents(true);
 	viewport_base->connect("draw", this, "_draw_viewport_base");
-	viewport_base->connect("gui_input", this, "_viewport_base_gui_input");
+	viewport_base->connect("gui_input", this, "_gui_input_viewport_base");
 	viewport_base->set_focus_mode(FOCUS_ALL);
 	viewport_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	viewport_base->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -3771,6 +3777,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	viewport->set_clip_contents(true);
 	viewport->connect("draw", this, "_draw_viewport");
+	viewport->connect("gui_input", this, "_gui_input_viewport");
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
