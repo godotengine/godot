@@ -63,7 +63,8 @@
 #define ZOOM_MULTIPLIER 1.08
 #define ZOOM_INDICATOR_DELAY_S 1.5
 
-#define FREELOOK_MIN_SPEED 0.1
+#define FREELOOK_MIN_SPEED 0.01
+#define FREELOOK_SPEED_MULTIPLIER 1.08
 
 #define MIN_Z 0.01
 #define MAX_Z 10000
@@ -75,33 +76,65 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
 	bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 
-	//when not being manipulated, move softly
-	float free_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
-	float free_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
-	//when being manipulated, move more quickly
-	float manip_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_orbit_inertia");
-	float manip_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_translation_inertia");
-
-	float zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
-
-	//determine if being manipulated
-	bool manipulated = (Input::get_singleton()->get_mouse_button_mask() & (2 | 4)) || Input::get_singleton()->is_key_pressed(KEY_SHIFT) || Input::get_singleton()->is_key_pressed(KEY_ALT) || Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-
-	float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
-	float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
-
 	Cursor old_camera_cursor = camera_cursor;
 	camera_cursor = cursor;
 
-	camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-	camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+	if (p_interp_delta > 0) {
 
-	camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
-	camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.f, p_interp_delta * (1 / zoom_inertia)));
+		//-------
+		// Perform smoothing
 
-	if (p_interp_delta == 0 || is_freelook_active()) {
-		camera_cursor = cursor;
+		if (is_freelook_active()) {
+
+			// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
+			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
+			real_t inertia = EDITOR_GET("editors/3d/freelook/freelook_inertia");
+			inertia = MAX(0.001, inertia);
+			real_t factor = (1.0 / inertia) * p_interp_delta;
+
+			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
+			camera_cursor.eye_pos = old_camera_cursor.eye_pos.linear_interpolate(cursor.eye_pos, CLAMP(factor, 0, 1));
+			//camera_cursor.pos = camera_cursor.eye_pos + (cursor.pos - cursor.eye_pos);
+
+			float orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+			orbit_inertia = MAX(0.0001, orbit_inertia);
+			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+
+			Vector3 forward = to_camera_transform(camera_cursor).basis.xform(Vector3(0, 0, -1));
+			camera_cursor.pos = camera_cursor.eye_pos + forward * camera_cursor.distance;
+
+		} else {
+
+			//when not being manipulated, move softly
+			float free_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
+			float free_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/translation_inertia");
+			//when being manipulated, move more quickly
+			float manip_orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_orbit_inertia");
+			float manip_translation_inertia = EDITOR_GET("editors/3d/navigation_feel/manipulation_translation_inertia");
+
+			float zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
+
+			//determine if being manipulated
+			bool manipulated = Input::get_singleton()->get_mouse_button_mask() & (2 | 4);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_ALT);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+			float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
+			float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
+			zoom_inertia = MAX(0.0001, zoom_inertia);
+
+			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+
+			camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
+			camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.f, p_interp_delta * (1 / zoom_inertia)));
+		}
 	}
+
+	//-------
+	// Apply camera transform
 
 	float tolerance = 0.001;
 	bool equal = true;
@@ -845,11 +878,17 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		switch (b->get_button_index()) {
 
 			case BUTTON_WHEEL_UP: {
-				scale_cursor_distance(is_freelook_active() ? zoom_factor : 1.0 / zoom_factor);
+				if (is_freelook_active())
+					scale_freelook_speed(zoom_factor);
+				else
+					scale_cursor_distance(1.0 / zoom_factor);
 			} break;
 
 			case BUTTON_WHEEL_DOWN: {
-				scale_cursor_distance(is_freelook_active() ? 1.0 / zoom_factor : zoom_factor);
+				if (is_freelook_active())
+					scale_freelook_speed(1.0 / zoom_factor);
+				else
+					scale_cursor_distance(zoom_factor);
 			} break;
 
 			case BUTTON_RIGHT: {
@@ -901,10 +940,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (b->is_pressed()) {
 					int mod = _get_key_modifier(b);
 					if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
-						freelook_active = true;
+						set_freelook_active(true);
 					}
 				} else {
-					freelook_active = false;
+					set_freelook_active(false);
 				}
 
 				if (freelook_active && !surface->has_focus()) {
@@ -1645,6 +1684,9 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 					real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 
+					// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+					Transform prev_camera_transform = to_camera_transform(cursor);
+
 					cursor.x_rot += relative.y * radians_per_pixel;
 					cursor.y_rot += relative.x * radians_per_pixel;
 					if (cursor.x_rot > Math_PI / 2.0)
@@ -1652,12 +1694,12 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (cursor.x_rot < -Math_PI / 2.0)
 						cursor.x_rot = -Math_PI / 2.0;
 
-					// Look is like Orbit, except the cursor translates, not the camera
+					// Look is like the opposite of Orbit: the focus point rotates around the camera
 					Transform camera_transform = to_camera_transform(cursor);
 					Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-					Vector3 diff = camera->get_translation() - pos;
+					Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
+					Vector3 diff = prev_pos - pos;
 					cursor.pos += diff;
-					freelook_target_position += diff;
 
 					name = "";
 					_update_name();
@@ -1755,23 +1797,57 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void SpatialEditorViewport::set_freelook_active(bool active_now) {
+
+	if (!freelook_active && active_now) {
+		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
+		cursor = camera_cursor;
+
+		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos
+		Vector3 forward = to_camera_transform(cursor).basis.xform(Vector3(0, 0, -1));
+		cursor.eye_pos = cursor.pos - cursor.distance * forward;
+		// Also sync the camera cursor, otherwise switching to freelook will be trippy if inertia is active
+		camera_cursor.eye_pos = cursor.eye_pos;
+
+		if (EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_speed_zoom_link")) {
+			// Re-adjust freelook speed from the current zoom level
+			real_t base_speed = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_base_speed");
+			freelook_speed = base_speed * cursor.distance;
+		}
+
+	} else if (freelook_active && !active_now) {
+		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
+		cursor = camera_cursor;
+	}
+
+	freelook_active = active_now;
+}
+
 void SpatialEditorViewport::scale_cursor_distance(real_t scale) {
 
 	// Prevents zero distance which would short-circuit any scaling
 	if (cursor.distance < ZOOM_MIN_DISTANCE)
 		cursor.distance = ZOOM_MIN_DISTANCE;
 
-	real_t prev_distance = cursor.distance;
 	cursor.distance *= scale;
 
 	if (cursor.distance < ZOOM_MIN_DISTANCE)
 		cursor.distance = ZOOM_MIN_DISTANCE;
 
-	if (is_freelook_active()) {
-		// In freelook mode, cursor reference is reversed so it needs to be adjusted
-		Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
-		cursor.pos += (cursor.distance - prev_distance) * forward;
-	}
+	zoom_indicator_delay = ZOOM_INDICATOR_DELAY_S;
+	surface->update();
+}
+
+void SpatialEditorViewport::scale_freelook_speed(real_t scale) {
+
+	// Prevents zero distance which would short-circuit any scaling
+	if (freelook_speed < FREELOOK_MIN_SPEED)
+		freelook_speed = FREELOOK_MIN_SPEED;
+
+	freelook_speed *= scale;
+
+	if (freelook_speed < FREELOOK_MIN_SPEED)
+		freelook_speed = FREELOOK_MIN_SPEED;
 
 	zoom_indicator_delay = ZOOM_INDICATOR_DELAY_S;
 	surface->update();
@@ -1790,7 +1866,6 @@ Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMous
 void SpatialEditorViewport::_update_freelook(real_t delta) {
 
 	if (!is_freelook_active()) {
-		freelook_target_position = cursor.pos;
 		return;
 	}
 
@@ -1833,21 +1908,15 @@ void SpatialEditorViewport::_update_freelook(real_t delta) {
 		speed_modifier = true;
 	}
 
-	real_t inertia = EDITOR_DEF("editors/3d/freelook/freelook_inertia", 0.1);
-	inertia = MAX(0, inertia);
-	const real_t base_speed = EDITOR_DEF("editors/3d/freelook/freelook_base_speed", 0.5);
-	const real_t modifier_speed_factor = EDITOR_DEF("editors/3d/freelook/freelook_modifier_speed_factor", 3);
-
-	real_t speed = base_speed * cursor.distance;
-	if (speed_modifier)
+	real_t speed = freelook_speed;
+	if (speed_modifier) {
+		real_t modifier_speed_factor = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_modifier_speed_factor");
 		speed *= modifier_speed_factor;
+	}
 
-	// Higher inertia should increase "lag" (lerp with factor between 0 and 1)
-	// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-
-	freelook_target_position += direction * speed;
-	real_t factor = (1.0 / (inertia + 0.001)) * delta;
-	cursor.pos = cursor.pos.linear_interpolate(freelook_target_position, CLAMP(factor, 0, 1));
+	Vector3 motion = direction * speed * delta;
+	cursor.pos += motion;
+	cursor.eye_pos += motion;
 }
 
 void SpatialEditorViewport::set_message(String p_message, float p_time) {
@@ -1886,7 +1955,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		}
 		*/
 
-		real_t delta = get_tree()->get_idle_process_time();
+		real_t delta = get_process_delta_time();
 
 		if (zoom_indicator_delay > 0) {
 			zoom_indicator_delay -= delta;
@@ -1897,7 +1966,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		_update_freelook(delta);
 
-		_update_camera(get_process_delta_time());
+		_update_camera(delta);
 
 		Map<Node *, Object *> &selection = editor_selection->get_selection();
 
@@ -3037,6 +3106,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	accept = NULL;
 
 	freelook_active = false;
+	freelook_speed = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_base_speed");
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
