@@ -56,6 +56,8 @@
 #include <process.h>
 #include <regstr.h>
 
+#include <ShellScalingApi.h>
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
@@ -892,6 +894,41 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 }
 
 void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+
+    // The following code addresses https://github.com/godotengine/godot/issues/11760 by
+    // setting the Windows process to be PER_MONITOR_DPI_AWARE. This seems to resolve the
+    // issue from the ticket. I attempted to follow the same pattern of dll usage as
+    // the QueryDpiForMonitor function.
+    //printf("Attempting to make process DPI Aware\n");
+    static HMODULE Shcore = NULL;
+    typedef HRESULT(WINAPI * SetProcessDPIAwareness_t)(PROCESS_DPI_AWARENESS awareness);
+    static SetProcessDPIAwareness_t setProcessDPIAwareness = NULL;
+
+    if (Shcore == NULL) {
+        Shcore = LoadLibraryW(L"Shcore.dll");
+        setProcessDPIAwareness = Shcore ? (SetProcessDPIAwareness_t)GetProcAddress(Shcore,"SetProcessDpiAwareness") : NULL;
+        if ((Shcore == NULL) || (setProcessDPIAwareness == NULL)) {
+            if (Shcore)
+                FreeLibrary(Shcore);
+            Shcore = (HMODULE)INVALID_HANDLE_VALUE;
+        }
+    }
+
+    if(Shcore != NULL && Shcore != INVALID_HANDLE_VALUE) {
+        if(setProcessDPIAwareness != NULL) {
+            HRESULT hr = E_FAIL;
+            hr = setProcessDPIAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+
+            if (hr != S_OK) {
+                printf("ERROR using SetProcessDpiAwareness for Windows process.\n");
+            }
+            else {
+                printf("DPI Awareness set for Windows process.\n");
+            }
+        }
+
+    }
+    // End https://github.com/godotengine/godot/issues/11760 fix
 
 	main_loop = NULL;
 	outside = true;
