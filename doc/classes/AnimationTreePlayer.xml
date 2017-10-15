@@ -93,6 +93,13 @@
 				Returns whether node [code]id[/code] and [code]dst_id[/code] are connected at the specified slot.
 			</description>
 		</method>
+		<method name="auto_place_nodes">
+			<return type="void">
+			</return>
+			<description>
+				Arrange nodes to form a nice tree.
+			</description>
+		</method>
 		<method name="blend2_node_get_amount" qualifiers="const">
 			<return type="float">
 			</return>

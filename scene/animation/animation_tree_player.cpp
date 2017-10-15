@@ -1699,6 +1699,141 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 	return OK;
 }
 
+void AnimationTreePlayer::_translate_subtree(NodeBase *p_node, Point2 p_offset) {
+	p_node->pos.x += p_offset.x;
+	p_node->pos.y += p_offset.y;
+	for (int i = 0; i < p_node->inputs.size(); i++) {
+		_translate_subtree(node_map[p_node->inputs[i].node], p_offset);
+	}
+}
+
+void AnimationTreePlayer::_subtree_extents_by_level(NodeBase *p_node, int p_depth, Vector<float> *r_min_ys, Vector<float> *r_max_ys) {
+
+	ERR_FAIL_COND(p_node == NULL);
+	ERR_FAIL_COND(r_min_ys == NULL);
+	ERR_FAIL_COND(r_max_ys == NULL);
+
+	int child_count = p_node->inputs.size();
+
+	if (p_depth == 0) {
+		r_min_ys->resize(MAX(r_min_ys->size(), 1));
+		r_max_ys->resize(MAX(r_max_ys->size(), 1));
+
+		(*r_min_ys)[p_depth] = (*r_max_ys)[p_depth] = p_node->pos.y;
+	} else {
+		(*r_min_ys)[p_depth] = MIN((*r_min_ys)[p_depth], p_node->pos.y);
+		(*r_max_ys)[p_depth] = MAX((*r_max_ys)[p_depth], p_node->pos.y);
+	}
+
+	if (child_count > 0) {
+
+		int child_depth = p_depth + 1;
+
+		if (r_min_ys->size() < child_depth + 1 || r_max_ys->size() < child_depth + 1) {
+			// Ensure we have enough space
+			r_min_ys->resize(MAX(r_min_ys->size(), child_depth + 1));
+			r_max_ys->resize(MAX(r_max_ys->size(), child_depth + 1));
+
+			// Initialize values for children
+			(*r_min_ys)[child_depth] = Math_INF;
+			(*r_max_ys)[child_depth] = -Math_INF;
+		}
+
+		for (int i = 0; i < child_count; i++) {
+			_subtree_extents_by_level(node_map[p_node->inputs[i].node], child_depth, r_min_ys, r_max_ys);
+		}
+	}
+}
+
+float AnimationTreePlayer::_min_subtree_dist(NodeBase *p_node, int p_child_a, int p_child_b) {
+
+	ERR_FAIL_COND_V(p_node == NULL, 0);
+
+	ERR_FAIL_INDEX_V(p_child_a, p_node->inputs.size(), 0);
+	ERR_FAIL_INDEX_V(p_child_b, p_node->inputs.size(), 0);
+	ERR_FAIL_COND_V(p_child_a == p_child_b, 0);
+
+	if (p_child_b < p_child_a) {
+		SWAP(p_child_a, p_child_b);
+	}
+
+	Vector<float> min_ys[2];
+	Vector<float> max_ys[2];
+
+	_subtree_extents_by_level(node_map[p_node->inputs[p_child_a].node], 0, &min_ys[0], &max_ys[0]);
+	_subtree_extents_by_level(node_map[p_node->inputs[p_child_b].node], 0, &min_ys[1], &max_ys[1]);
+
+	float min_dist = Math_INF;
+
+	for (int i = 0; i < MIN(max_ys[0].size(), min_ys[1].size()); i++) {
+		min_dist = MIN(min_dist, min_ys[1][i] - max_ys[0][i]);
+	}
+	return min_dist;
+}
+
+void AnimationTreePlayer::_auto_place_nodes(NodeBase *p_node, Point2 *r_min_xy, Point2 *r_max_xy) {
+
+	static const float node_max_width = 480;
+	static const float node_max_height = 480;
+
+	ERR_FAIL_COND(p_node == NULL);
+
+	int child_count = p_node->inputs.size();
+
+	float min_child_y = Math_INF;
+	float max_child_y = -Math_INF;
+
+	for (int i = 0; i < child_count; i++) {
+
+		StringName child_name = p_node->inputs[i].node;
+		NodeBase *child_node = node_map[child_name];
+		Point2 child_min_xy(Math_INF, Math_INF);
+		Point2 child_max_xy(-Math_INF, -Math_INF);
+
+		_auto_place_nodes(child_node, &child_min_xy, &child_max_xy);
+
+		if (i > 0) {
+			// move child nodes
+			float min_dist_prev_sub_tree = Math_INF;
+			for (int j = i - 1; j >= 0; j--) {
+				min_dist_prev_sub_tree = MIN(min_dist_prev_sub_tree, _min_subtree_dist(p_node, j, i));
+			}
+			float offset_y = node_max_height - min_dist_prev_sub_tree;
+			float offset_x = p_node->pos.x - child_node->pos.x - node_max_width;
+			Point2 translation(offset_x, offset_y);
+			_translate_subtree(child_node, translation);
+			child_min_xy += translation;
+			child_max_xy += translation;
+		}
+		r_min_xy->x = MIN(r_min_xy->x, child_min_xy.x);
+		r_min_xy->y = MIN(r_min_xy->y, child_min_xy.y);
+		r_max_xy->x = MAX(r_max_xy->x, child_max_xy.x);
+		r_max_xy->y = MAX(r_max_xy->y, child_max_xy.y);
+		min_child_y = MIN(min_child_y, child_min_xy.y);
+		max_child_y = MAX(max_child_y, child_max_xy.y);
+	}
+	if (child_count != 0) {
+
+		p_node->pos.y = (max_child_y - min_child_y) / 2 + min_child_y;
+	} else {
+
+		r_min_xy->x = MIN(r_min_xy->x, p_node->pos.x);
+		r_min_xy->y = MIN(r_min_xy->y, p_node->pos.y);
+		r_max_xy->x = MAX(r_max_xy->x, p_node->pos.x);
+		r_max_xy->y = MAX(r_max_xy->y, p_node->pos.y);
+	}
+}
+
+void AnimationTreePlayer::auto_place_nodes() {
+	static const Point2 margin(50, 50);
+
+	NodeBase *out_node = node_map[out_name];
+	Point2 min_xy(Math_INF, Math_INF);
+	Point2 max_xy(-Math_INF, -Math_INF);
+	_auto_place_nodes(out_node, &min_xy, &max_xy);
+	_translate_subtree(out_node, min_xy + margin);
+}
+
 void AnimationTreePlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_node", "type", "id"), &AnimationTreePlayer::add_node);
@@ -1709,6 +1844,8 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("node_get_type", "id"), &AnimationTreePlayer::node_get_type);
 	ClassDB::bind_method(D_METHOD("node_get_input_count", "id"), &AnimationTreePlayer::node_get_input_count);
 	ClassDB::bind_method(D_METHOD("node_get_input_source", "id", "idx"), &AnimationTreePlayer::node_get_input_source);
+
+	ClassDB::bind_method(D_METHOD("auto_place_nodes"), &AnimationTreePlayer::auto_place_nodes);
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_animation", "id", "animation"), &AnimationTreePlayer::animation_node_set_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_animation", "id"), &AnimationTreePlayer::animation_node_get_animation);
