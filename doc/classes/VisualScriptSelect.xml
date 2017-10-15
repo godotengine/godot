@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptSelect" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Chooses between two input values.
 	</brief_description>
 	<description>
+		Chooses between two input values based on a Boolean condition.
+		[b]Input Ports:[/b]
+		- Data (boolean): [code]cond[/code]
+		- Data (variant): [code]a[/code]
+		- Data (variant): [code]b[/code]
+		[b]Output Ports:[/b]
+		- Data (variant): [code]out[/code]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +34,7 @@
 	</methods>
 	<members>
 		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type">
+			The input variables' type.
 		</member>
 	</members>
 	<constants>

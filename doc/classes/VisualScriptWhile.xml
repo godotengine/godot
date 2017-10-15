@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptWhile" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Conditional loop.
 	</brief_description>
 	<description>
+		Loops while a condition is [code]true[/code]. Execution continues out the [code]exit[/code] Sequence port when the loop terminates.
+		[b]Input Ports:[/b]
+		- Sequence: [code]while(cond)[/code]
+		- Data (bool): [code]cond[/code]
+		[b]Output Ports:[/b]
+		- Sequence: [code]repeat[/code]
+		- Sequence: [code]exit[/code]
 	</description>
 	<tutorials>
 	</tutorials>
