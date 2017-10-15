@@ -397,7 +397,7 @@ Error EditorExportPlatformIOS::_codesign(String p_file, void *p_userdata) {
 		codesign_args.push_back("-s");
 		codesign_args.push_back(data->preset->get(data->debug ? "application/code_sign_identity_debug" : "application/code_sign_identity_release"));
 		codesign_args.push_back(p_file);
-		return OS::get_singleton()->execute("/usr/bin/codesign", codesign_args, true);
+		return OS::get_singleton()->execute("codesign", codesign_args, true);
 	}
 	return OK;
 }
@@ -608,7 +608,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("archive");
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
-	err = OS::get_singleton()->execute("/usr/bin/xcodebuild", archive_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", archive_args, true);
 	ERR_FAIL_COND_V(err, err);
 
 	ep.step("Code-signing dylibs", 3);
@@ -628,7 +628,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	export_args.push_back(dest_dir + "export_options.plist");
 	export_args.push_back("-exportPath");
 	export_args.push_back(dest_dir);
-	err = OS::get_singleton()->execute("/usr/bin/xcodebuild", export_args, true);
+	err = OS::get_singleton()->execute("xcodebuild", export_args, true);
 	ERR_FAIL_COND_V(err, err);
 #else
 	print_line(".ipa can only be built on macOS. Leaving XCode project without building the package.");

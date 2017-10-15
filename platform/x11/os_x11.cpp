@@ -1939,7 +1939,7 @@ Error OS_X11::shell_open(String p_uri) {
 	Error ok;
 	List<String> args;
 	args.push_back(p_uri);
-	ok = execute("/usr/bin/xdg-open", args, false);
+	ok = execute("xdg-open", args, false);
 	if (ok == OK)
 		return OK;
 	ok = execute("gnome-open", args, false);
@@ -2003,7 +2003,7 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_X11 *>(this)->execute("/usr/bin/xdg-user-dir", arg, true, NULL, &pipe);
+	Error err = const_cast<OS_X11 *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
 	if (err != OK)
 		return ".";
 	return pipe.strip_edges();
@@ -2053,7 +2053,7 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	args.push_back(p_title);
 	args.push_back(p_alert);
 
-	execute("/usr/bin/xmessage", args, true);
+	execute("xmessage", args, true);
 }
 
 void OS_X11::set_icon(const Ref<Image> &p_icon) {
@@ -2236,12 +2236,12 @@ Error OS_X11::move_to_trash(const String &p_path) {
 	List<String> args;
 	args.push_back("-p");
 	args.push_back(trashcan);
-	Error err = execute("/bin/mkdir", args, true);
+	Error err = execute("mkdir", args, true);
 	if (err == OK) {
 		List<String> args2;
 		args2.push_back(p_path);
 		args2.push_back(trashcan);
-		err = execute("/bin/mv", args2, true);
+		err = execute("mv", args2, true);
 	}
 
 	return err;
