@@ -137,7 +137,6 @@ bool NativeScript::can_instance() const {
 #endif
 }
 
-// TODO(karroffel): implement this
 Ref<Script> NativeScript::get_base_script() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
@@ -1052,9 +1051,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 			void *proc_ptr;
 			Error err = L->get()->get_symbol(name, proc_ptr);
 
-			if (err != OK) {
-				ERR_PRINT((String("No godot_gdnative_init in \"" + L->get()->get_library()->get_active_library_path()) + "\" found").utf8().get_data());
-			} else {
+			if (!err) {
 				((void (*)())proc_ptr)();
 			}
 		}
