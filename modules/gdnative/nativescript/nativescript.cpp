@@ -1011,10 +1011,13 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 
 		void *proc_ptr;
 
-		gdn->get_symbol(_init_call_name, proc_ptr);
+		Error err = gdn->get_symbol(_init_call_name, proc_ptr);
 
-		((void (*)(godot_string *))proc_ptr)((godot_string *)&lib_path);
-
+		if (err != OK) {
+			ERR_PRINT(String("No " + _init_call_name + " in \"" + lib_path + "\" found").utf8().get_data());
+		} else {
+			((void (*)(godot_string *))proc_ptr)((godot_string *)&lib_path);
+		}
 	} else {
 		// already initialized. Nice.
 	}
@@ -1138,9 +1141,12 @@ void NativeReloadNode::_notification(int p_what) {
 				// here the library registers all the classes and stuff.
 
 				void *proc_ptr;
-				L->get()->get_symbol("godot_nativescript_init", proc_ptr);
-
-				((void (*)(void *))proc_ptr)((void *)&L->key());
+				Error err = L->get()->get_symbol("godot_nativescript_init", proc_ptr);
+				if (err != OK) {
+					ERR_PRINT(String("No godot_nativescript_init in \"" + L->key() + "\" found").utf8().get_data());
+				} else {
+					((void (*)(void *))proc_ptr)((void *)&L->key());
+				}
 
 				for (Map<String, Set<NativeScript *> >::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
 					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
