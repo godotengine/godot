@@ -376,7 +376,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			if (hint == PROPERTY_HINT_RANGE) {
 
 				int c = hint_text.get_slice_count(",");
-				float min = 0, max = 100, step = 1;
+				float min = 0, max = 100, step = type == Variant::REAL ? .01 : 1;
 				if (c >= 1) {
 
 					if (!hint_text.get_slice(",", 0).empty())
@@ -3032,7 +3032,7 @@ void PropertyEditor::update_tree() {
 				if (p.hint == PROPERTY_HINT_SPRITE_FRAME || p.hint == PROPERTY_HINT_RANGE || p.hint == PROPERTY_HINT_EXP_RANGE) {
 
 					int c = p.hint_string.get_slice_count(",");
-					float min = 0, max = 100, step = 1;
+					float min = 0, max = 100, step = p.type == Variant::REAL ? .01 : 1;
 					if (c >= 1) {
 
 						min = p.hint_string.get_slice(",", 0).to_double();
