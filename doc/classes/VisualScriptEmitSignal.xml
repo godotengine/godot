@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptEmitSignal" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		A Visual Script node which emits a specified signal.
+		Emits a specified signal.
 	</brief_description>
 	<description>
-		A Visual Script node which emits a specified signal when it is executed.
+		Emits a specified signal when it is executed.
+		[b]Input Ports:[/b]
+		- Sequence: [code]emit[/code]
+		[b]Output Ports:[/b]
+		- Sequence
 	</description>
 	<tutorials>
 	</tutorials>
