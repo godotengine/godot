@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptVariableSet" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Changes a variable's value.
 	</brief_description>
 	<description>
+		Changes a variable's value to the given input.
+		[b]Input Ports:[/b]
+		- Sequence
+		- Data (variant): [code]set[/code]
+		[b]Output Ports:[/b]
+		- Sequence
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +33,7 @@
 	</methods>
 	<members>
 		<member name="var_name" type="String" setter="set_variable" getter="get_variable">
+			The variable's name.
 		</member>
 	</members>
 	<constants>

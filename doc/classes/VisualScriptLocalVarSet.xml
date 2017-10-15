@@ -4,7 +4,7 @@
 		Changes a local variable's value.
 	</brief_description>
 	<description>
-		The node changes a local variable's value to the given input. The new value is also provided on an output Data port.
+		Changes a local variable's value to the given input. The new value is also provided on an output Data port.
 		[b]Input Ports:[/b]
 		- Sequence
 		- Data (variant): [code]set[/code]

@@ -4,7 +4,7 @@
 		Gets a local variable's value.
 	</brief_description>
 	<description>
-		This node returns a local variable's value. "Var Name" must be supplied, with an optional type.
+		Returns a local variable's value. "Var Name" must be supplied, with an optional type.
 		[b]Input Ports:[/b]
 		none
 		[b]Output Ports:[/b]

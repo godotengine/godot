@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptVariableGet" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Gets a variable's value.
 	</brief_description>
 	<description>
+		Returns a variable's value. "Var Name" must be supplied, with an optional type.
+		[b]Input Ports:[/b]
+		none
+		[b]Output Ports:[/b]
+		- Data (variant): [code]value[/code]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +32,7 @@
 	</methods>
 	<members>
 		<member name="var_name" type="String" setter="set_variable" getter="get_variable">
+			The variable's name.
 		</member>
 	</members>
 	<constants>
