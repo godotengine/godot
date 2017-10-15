@@ -286,7 +286,7 @@
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount">
-			Number of particles to emit.
+			Number of particles emitted in one emission cycle.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder">
 			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [code]DRAW_ORDER_INDEX[/code].
@@ -295,7 +295,7 @@
 			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
-			Time ratio between each emission. If [code]0[/code] particles are emitted continuously. If [code]1[/code] all particles are emitted simultaneously. Default value: [code]0[/code].
+			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
 		</member>
@@ -313,18 +313,19 @@
 		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
-			If [code]true[/code] only [code]amount[/code] particles will be emitted. Default value: [code]false[/code].
+			If [code]true[/code] only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end. Default value: [code]false[/code].
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
+			Particle system starts as if it had already run for this many seconds.
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
 			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
-			Emission randomness ratio. Default value: [code]0[/code].
+			Emission lifetime randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
-			Speed scaling ratio. Default value: [code]1[/code].
+			Particle system's running speed scaling ratio. Default value: [code]1[/code].
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code] particles will be squares.
@@ -333,6 +334,7 @@
 			Number of vertical frames in [code]texture[/code].
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
+			Editor visibility helper.
 		</member>
 	</members>
 	<constants>
