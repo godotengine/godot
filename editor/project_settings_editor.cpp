@@ -1189,7 +1189,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
-	ERR_FAIL_INDEX(idx, remaps.size());
+	ERR_FAIL_INDEX(idx, r.size());
 	r.remove(idx);
 	remaps[key] = r;
 
