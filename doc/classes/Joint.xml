@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Joint" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Base class for all 3D joints
 	</brief_description>
 	<description>
+		All 3D joints link two nodes, has a priority, and can decide if the two bodies of the nodes should be able to collide with each other
 	</description>
 	<tutorials>
 	</tutorials>
@@ -68,12 +70,16 @@
 	</methods>
 	<members>
 		<member name="collision/exclude_nodes" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">
+			If [code]true[/code] the two bodies of the nodes are not able to collide with each other.
 		</member>
 		<member name="nodes/node_a" type="NodePath" setter="set_node_a" getter="get_node_a">
+			The [Node], the first side of the Joint attaches to.
 		</member>
 		<member name="nodes/node_b" type="NodePath" setter="set_node_b" getter="get_node_b">
+			The [Node], the second side of the Joint attaches to.
 		</member>
 		<member name="solver/priority" type="int" setter="set_solver_priority" getter="get_solver_priority">
+			The order in wich the solver is executed compared to the other [Joints], the lower, the earlier.
 		</member>
 	</members>
 	<constants>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HingeJoint" inherits="Joint" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		A hinge between two 3D bodies.
 	</brief_description>
 	<description>
+		Normaly uses the z-axis of body A as the hinge axis, another axis can be specified when adding it manually though.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -48,50 +50,70 @@
 	</methods>
 	<members>
 		<member name="angular_limit/bias" type="float" setter="set_param" getter="get_param">
+			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</member>
 		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code] the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</member>
 		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit">
+			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param">
+			The lower this value, the more the rotation gets slowed down.
 		</member>
 		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
 		</member>
 		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit">
+			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag">
+			When activated, a motor turns the hinge.
 		</member>
 		<member name="motor/max_impulse" type="float" setter="set_param" getter="get_param">
+			Maximum acceleration for the motor.
 		</member>
 		<member name="motor/target_velocity" type="float" setter="set_param" getter="get_param">
+			Target speed for the motor.
 		</member>
 		<member name="params/bias" type="float" setter="set_param" getter="get_param">
+			The speed with wich the two bodies get pulled together when they move in different directions.
 		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_BIAS" value="0">
+			The speed with wich the two bodies get pulled together when they move in different directions.
 		</constant>
 		<constant name="PARAM_LIMIT_UPPER" value="1">
+			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_LOWER" value="2">
+			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_BIAS" value="3">
+			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</constant>
 		<constant name="PARAM_LIMIT_SOFTNESS" value="4">
 		</constant>
 		<constant name="PARAM_LIMIT_RELAXATION" value="5">
+			The lower this value, the more the rotation gets slowed down.
 		</constant>
 		<constant name="PARAM_MOTOR_TARGET_VELOCITY" value="6">
+			Target speed for the motor.
 		</constant>
 		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7">
+			Maximum acceleration for the motor.
 		</constant>
 		<constant name="PARAM_MAX" value="8">
+			End flag of PARAM_* constants, used internally.
 		</constant>
 		<constant name="FLAG_USE_LIMIT" value="0">
+			If [code]true[/code] the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</constant>
 		<constant name="FLAG_ENABLE_MOTOR" value="1">
+			When activated, a motor turns the hinge.
 		</constant>
 		<constant name="FLAG_MAX" value="2">
+			End flag of FLAG_* constants, used internally.
 		</constant>
 	</constants>
 </class>

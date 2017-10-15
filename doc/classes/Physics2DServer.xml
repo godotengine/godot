@@ -21,7 +21,7 @@
 			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
 			<description>
-				Add a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="area_attach_object_instance_id">
@@ -32,7 +32,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Assign the area to a descendant of [Object], so it can exist in the node tree.
+				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="area_clear_shapes">
@@ -41,14 +41,14 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Remove all shapes from an area. It does not delete the shapes, so they can be reassigned later.
+				Removes all shapes from an area. It does not delete the shapes, so they can be reassigned later.
 			</description>
 		</method>
 		<method name="area_create">
 			<return type="RID">
 			</return>
 			<description>
-				Create an [Area2D].
+				Creates an [Area2D].
 			</description>
 		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
@@ -57,7 +57,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Get the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="area_get_param" qualifiers="const">
@@ -68,7 +68,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.AreaParameter">
 			</argument>
 			<description>
-				Return an area parameter value.
+				Returns an area parameter value. A list of available parameters is on the AREA_PARAM_* constants.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -79,7 +79,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Return the [RID] of the nth shape of an area.
+				Returns the [RID] of the nth shape of an area.
 			</description>
 		</method>
 		<method name="area_get_shape_count" qualifiers="const">
@@ -88,7 +88,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Return the number of shapes assigned to an area.
+				Returns the number of shapes assigned to an area.
 			</description>
 		</method>
 		<method name="area_get_shape_transform" qualifiers="const">
@@ -99,7 +99,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Return the transform matrix of a shape within an area.
+				Returns the transform matrix of a shape within an area.
 			</description>
 		</method>
 		<method name="area_get_space" qualifiers="const">
@@ -108,7 +108,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Return the space assigned to the area.
+				Returns the space assigned to the area.
 			</description>
 		</method>
 		<method name="area_get_space_override_mode" qualifiers="const">
@@ -117,7 +117,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Return the space override mode for the area.
+				Returns the space override mode for the area.
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
@@ -126,7 +126,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				Return the transform matrix for an area.
+				Returns the transform matrix for an area.
 			</description>
 		</method>
 		<method name="area_remove_shape">
@@ -137,7 +137,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Remove a shape from an area. It does not delete the shape, so it can be reassigned later.
+				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
 		<method name="area_set_collision_layer">
@@ -148,7 +148,7 @@
 			<argument index="1" name="layer" type="int">
 			</argument>
 			<description>
-				Assign the area to one or many physics layers.
+				Assigns the area to one or many physics layers.
 			</description>
 		</method>
 		<method name="area_set_collision_mask">
@@ -159,7 +159,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				Set which physics layers the area will monitor.
+				Sets which physics layers the area will monitor.
 			</description>
 		</method>
 		<method name="area_set_monitor_callback">
@@ -172,7 +172,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Set the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
+				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
 				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
 				2: [RID] of the object that entered/exited the area.
 				3: Instance ID of the object that entered/exited the area.
@@ -190,7 +190,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Set the value for an area parameter. A list of available parameters is on the AREA_PARAM_* constants.
+				Sets the value for an area parameter. A list of available parameters is on the AREA_PARAM_* constants.
 			</description>
 		</method>
 		<method name="area_set_shape">
@@ -203,7 +203,7 @@
 			<argument index="2" name="shape" type="RID">
 			</argument>
 			<description>
-				Substitute a given area shape by another. The old shape is selected by its index, the new one by its [RID].
+				Substitutes a given area shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="area_set_shape_disabled">
@@ -216,6 +216,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
+				Disables a given shape in this area if [code]disable is true[/code]
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -228,7 +229,7 @@
 			<argument index="2" name="transform" type="Transform2D">
 			</argument>
 			<description>
-				Set the transform matrix for an area shape.
+				Sets the transform matrix for an area shape.
 			</description>
 		</method>
 		<method name="area_set_space">
@@ -239,7 +240,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assign a space to the area.
+				Assigns a space to the area.
 			</description>
 		</method>
 		<method name="area_set_space_override_mode">
@@ -250,7 +251,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.AreaSpaceOverrideMode">
 			</argument>
 			<description>
-				Set the space override mode for the area. The modes are described in the constants AREA_SPACE_OVERRIDE_*.
+				Sets the space override mode for the area. The modes are described in the constants AREA_SPACE_OVERRIDE_*.
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -261,7 +262,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
-				Set the transform matrix for an area.
+				Sets the transform matrix for an area.
 			</description>
 		</method>
 		<method name="body_add_collision_exception">
@@ -272,7 +273,7 @@
 			<argument index="1" name="excepted_body" type="RID">
 			</argument>
 			<description>
-				Add a body to the list of bodies exempt from collisions.
+				Adds a body to the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_add_force">
@@ -285,7 +286,7 @@
 			<argument index="2" name="force" type="Vector2">
 			</argument>
 			<description>
-				Add a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
+				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -298,7 +299,7 @@
 			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
 			<description>
-				Add a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -311,7 +312,7 @@
 			<argument index="2" name="impulse" type="Vector2">
 			</argument>
 			<description>
-				Add a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
+				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="body_attach_object_instance_id">
@@ -322,7 +323,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Assign the area to a descendant of [Object], so it can exist in the node tree.
+				Assigns the area to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="body_clear_shapes">
@@ -331,7 +332,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Remove all shapes from a body.
+				Removes all shapes from a body.
 			</description>
 		</method>
 		<method name="body_create">
@@ -342,7 +343,7 @@
 			<argument index="1" name="init_sleeping" type="bool" default="false">
 			</argument>
 			<description>
-				Create a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
+				Creates a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
 			</description>
 		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
@@ -351,7 +352,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the physics layer or layers a body belongs to.
+				Returns the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_get_collision_mask" qualifiers="const">
@@ -360,7 +361,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the physics layer or layers a body can collide with.
+				Returns the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_get_continuous_collision_detection_mode" qualifiers="const">
@@ -369,7 +370,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the continuous collision detection mode.
+				Returns the continuous collision detection mode.
 			</description>
 		</method>
 		<method name="body_get_direct_state">
@@ -378,6 +379,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
+				Returns the [Physics2DDirectBodyState] of the body.
 			</description>
 		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
@@ -386,7 +388,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the maximum contacts that can be reported. See [method body_set_max_contacts_reported].
+				Returns the maximum contacts that can be reported. See [method body_set_max_contacts_reported].
 			</description>
 		</method>
 		<method name="body_get_mode" qualifiers="const">
@@ -395,7 +397,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the body mode.
+				Returns the body mode.
 			</description>
 		</method>
 		<method name="body_get_object_instance_id" qualifiers="const">
@@ -404,7 +406,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Get the instance ID of the object the area is assigned to.
+				Gets the instance ID of the object the area is assigned to.
 			</description>
 		</method>
 		<method name="body_get_param" qualifiers="const">
@@ -415,7 +417,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.BodyParameter">
 			</argument>
 			<description>
-				Return the value of a body parameter.
+				Returns the value of a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -426,7 +428,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Return the [RID] of the nth shape of a body.
+				Returns the [RID] of the nth shape of a body.
 			</description>
 		</method>
 		<method name="body_get_shape_count" qualifiers="const">
@@ -435,7 +437,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the number of shapes assigned to a body.
+				Returns the number of shapes assigned to a body.
 			</description>
 		</method>
 		<method name="body_get_shape_metadata" qualifiers="const">
@@ -446,7 +448,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Return the metadata of a shape of a body.
+				Returns the metadata of a shape of a body.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -457,7 +459,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Return the transform matrix of a body shape.
+				Returns the transform matrix of a body shape.
 			</description>
 		</method>
 		<method name="body_get_space" qualifiers="const">
@@ -466,7 +468,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return the [RID] of the space assigned to a body.
+				Returns the [RID] of the space assigned to a body.
 			</description>
 		</method>
 		<method name="body_get_state" qualifiers="const">
@@ -477,7 +479,7 @@
 			<argument index="1" name="state" type="int" enum="Physics2DServer.BodyState">
 			</argument>
 			<description>
-				Return a body state.
+				Returns a body state.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
@@ -486,7 +488,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				Return whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -497,7 +499,7 @@
 			<argument index="1" name="excepted_body" type="RID">
 			</argument>
 			<description>
-				Remove a body from the list of bodies exempt from collisions.
+				Removes a body from the list of bodies exempt from collisions.
 			</description>
 		</method>
 		<method name="body_remove_shape">
@@ -508,7 +510,7 @@
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Remove a shape from a body. The shape is not deleted, so it can be reused afterwards.
+				Removes a shape from a body. The shape is not deleted, so it can be reused afterwards.
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
@@ -519,7 +521,7 @@
 			<argument index="1" name="axis_velocity" type="Vector2">
 			</argument>
 			<description>
-				Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="body_set_collision_layer">
@@ -530,7 +532,7 @@
 			<argument index="1" name="layer" type="int">
 			</argument>
 			<description>
-				Set the physics layer or layers a body belongs to.
+				Sets the physics layer or layers a body belongs to.
 			</description>
 		</method>
 		<method name="body_set_collision_mask">
@@ -541,7 +543,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				Set the physics layer or layers a body can collide with.
+				Sets the physics layer or layers a body can collide with.
 			</description>
 		</method>
 		<method name="body_set_continuous_collision_detection_mode">
@@ -552,7 +554,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.CCDMode">
 			</argument>
 			<description>
-				Set the continuous collision detection mode from any of the CCD_MODE_* constants.
+				Sets the continuous collision detection mode from any of the CCD_MODE_* constants.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -568,7 +570,7 @@
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
-				Set the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -579,7 +581,7 @@
 			<argument index="1" name="amount" type="int">
 			</argument>
 			<description>
-				Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="body_set_mode">
@@ -590,7 +592,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.BodyMode">
 			</argument>
 			<description>
-				Set the body mode, from one of the constants BODY_MODE*.
+				Sets the body mode, from one of the constants BODY_MODE*.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
@@ -601,7 +603,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether a body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
 			</description>
 		</method>
 		<method name="body_set_param">
@@ -614,7 +616,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Set a body parameter (see BODY_PARAM* constants).
+				Sets a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
 			</description>
 		</method>
 		<method name="body_set_shape">
@@ -627,7 +629,7 @@
 			<argument index="2" name="shape" type="RID">
 			</argument>
 			<description>
-				Substitute a given body shape by another. The old shape is selected by its index, the new one by its [RID].
+				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
 		<method name="body_set_shape_as_one_way_collision">
@@ -640,6 +642,7 @@
 			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
+				Enables one way collision on body if [code]enable is true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
@@ -652,6 +655,7 @@
 			<argument index="2" name="disable" type="bool">
 			</argument>
 			<description>
+				Disables shape in body if [code]disable is true[/code].
 			</description>
 		</method>
 		<method name="body_set_shape_metadata">
@@ -664,7 +668,7 @@
 			<argument index="2" name="metadata" type="Variant">
 			</argument>
 			<description>
-				Set metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
+				Sets metadata of a shape within a body. This metadata is different from [method Object.set_meta], and can be retrieved on shape queries.
 			</description>
 		</method>
 		<method name="body_set_shape_transform">
@@ -677,7 +681,7 @@
 			<argument index="2" name="transform" type="Transform2D">
 			</argument>
 			<description>
-				Set the transform matrix for a body shape.
+				Sets the transform matrix for a body shape.
 			</description>
 		</method>
 		<method name="body_set_space">
@@ -688,7 +692,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assign a space to the body (see [method create_space]).
+				Assigns a space to the body (see [method create_space]).
 			</description>
 		</method>
 		<method name="body_set_state">
@@ -701,7 +705,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Set a body state (see BODY_STATE* constants).
+				Sets a body state (see BODY_STATE* constants).
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -718,7 +722,7 @@
 			<argument index="4" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
 			<description>
-				Return whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+				Returns whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
 		<method name="damped_spring_joint_create">
@@ -733,7 +737,7 @@
 			<argument index="3" name="body_b" type="RID">
 			</argument>
 			<description>
-				Create a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
+				Creates a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
 			</description>
 		</method>
 		<method name="damped_string_joint_get_param" qualifiers="const">
@@ -744,7 +748,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.DampedStringParam">
 			</argument>
 			<description>
-				Return the value of a damped spring joint parameter.
+				Returns the value of a damped spring joint parameter.
 			</description>
 		</method>
 		<method name="damped_string_joint_set_param">
@@ -757,7 +761,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Set a damped spring joint parameter. Parameters are explained in the DAMPED_STRING* constants.
+				Sets a damped spring joint parameter. Parameters are explained in the DAMPED_STRING* constants.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -766,7 +770,7 @@
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
-				Destroy any of the objects created by Physics2DServer. If the [RID] passed is not one of the objects that can be created by Physics2DServer, an error will be sent to the console.
+				Destroys any of the objects created by Physics2DServer. If the [RID] passed is not one of the objects that can be created by Physics2DServer, an error will be sent to the console.
 			</description>
 		</method>
 		<method name="get_process_info">
@@ -775,7 +779,7 @@
 			<argument index="0" name="process_info" type="int" enum="Physics2DServer.ProcessInfo">
 			</argument>
 			<description>
-				Return information about the current state of the 2D physics engine. The states are listed under the INFO_* constants.
+				Returns information about the current state of the 2D physics engine. The states are listed under the INFO_* constants.
 			</description>
 		</method>
 		<method name="groove_joint_create">
@@ -792,7 +796,7 @@
 			<argument index="4" name="body_b" type="RID">
 			</argument>
 			<description>
-				Create a groove joint between two bodies. If not specified, the bodyies are assumed to be the joint itself.
+				Creates a groove joint between two bodies. If not specified, the bodyies are assumed to be the joint itself.
 			</description>
 		</method>
 		<method name="joint_get_param" qualifiers="const">
@@ -803,7 +807,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.JointParam">
 			</argument>
 			<description>
-				Return the value of a joint parameter.
+				Returns the value of a joint parameter.
 			</description>
 		</method>
 		<method name="joint_get_type" qualifiers="const">
@@ -812,7 +816,7 @@
 			<argument index="0" name="joint" type="RID">
 			</argument>
 			<description>
-				Return the type of a joint (see JOINT_* constants).
+				Returns the type of a joint (see JOINT_* constants).
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -825,7 +829,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Set a joint parameter. Parameters are explained in the JOINT_PARAM* constants.
+				Sets a joint parameter. Parameters are explained in the JOINT_PARAM* constants.
 			</description>
 		</method>
 		<method name="pin_joint_create">
@@ -838,7 +842,7 @@
 			<argument index="2" name="body_b" type="RID">
 			</argument>
 			<description>
-				Create a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
+				Creates a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
 			</description>
 		</method>
 		<method name="set_active">
@@ -847,7 +851,7 @@
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
-				Activate or deactivate the 2D physics engine.
+				Activates or deactivates the 2D physics engine.
 			</description>
 		</method>
 		<method name="shape_create">
@@ -856,7 +860,7 @@
 			<argument index="0" name="type" type="int" enum="Physics2DServer.ShapeType">
 			</argument>
 			<description>
-				Create a shape of type SHAPE_*. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
+				Creates a shape of type SHAPE_*. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
@@ -865,7 +869,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Return the shape data.
+				Returns the shape data.
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
@@ -874,7 +878,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Return the type of shape (see SHAPE_* constants).
+				Returns the type of shape (see SHAPE_* constants).
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -885,14 +889,14 @@
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<description>
-				Set the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
 			</description>
 		</method>
 		<method name="space_create">
 			<return type="RID">
 			</return>
 			<description>
-				Create a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
+				Creates a space. A space is a collection of parameters for the physics engine that can be assigned to an area or a body. It can be assigned to an area with [method area_set_space], or to a body with [method body_set_space].
 			</description>
 		</method>
 		<method name="space_get_direct_state">
@@ -901,7 +905,7 @@
 			<argument index="0" name="space" type="RID">
 			</argument>
 			<description>
-				Return the state of a space, a [Physics2DDirectSpaceState]. This object can be used to make collision/intersection queries.
+				Returns the state of a space, a [Physics2DDirectSpaceState]. This object can be used to make collision/intersection queries.
 			</description>
 		</method>
 		<method name="space_get_param" qualifiers="const">
@@ -912,7 +916,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.SpaceParameter">
 			</argument>
 			<description>
-				Return the value of a space parameter.
+				Returns the value of a space parameter.
 			</description>
 		</method>
 		<method name="space_is_active" qualifiers="const">
@@ -921,7 +925,7 @@
 			<argument index="0" name="space" type="RID">
 			</argument>
 			<description>
-				Return whether the space is active.
+				Returns whether the space is active.
 			</description>
 		</method>
 		<method name="space_set_active">
@@ -932,7 +936,7 @@
 			<argument index="1" name="active" type="bool">
 			</argument>
 			<description>
-				Mark a space as active. It will not have an effect, unless it is assigned to an area or body.
+				Marks a space as active. It will not have an effect, unless it is assigned to an area or body.
 			</description>
 		</method>
 		<method name="space_set_param">
@@ -945,7 +949,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Set the value for a space parameter. A list of available parameters is on the SPACE_PARAM_* constants.
+				Sets the value for a space parameter. A list of available parameters is on the SPACE_PARAM_* constants.
 			</description>
 		</method>
 	</methods>
@@ -960,8 +964,10 @@
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3">
+			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4">
+			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
 		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
@@ -985,7 +991,7 @@
 			This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks.
 		</constant>
 		<constant name="SHAPE_CONVEX_POLYGON" value="6">
-			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the method [method CollisionPolygon2D.set_polygon], polygons modified with [method shape_set_data] do not verify that the points supplied form, in fact, a convex polygon.
+			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the method [method CollisionPolygon2D.set_polygon], polygons modified with [method shape_set_data] do not verify that the points supplied form is a convex polygon.
 		</constant>
 		<constant name="SHAPE_CONCAVE_POLYGON" value="7">
 			This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks.
