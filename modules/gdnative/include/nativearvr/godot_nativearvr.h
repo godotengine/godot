@@ -54,7 +54,7 @@ typedef struct {
 	void (*process)(void *);
 } godot_arvr_interface_gdnative;
 
-void GDAPI godot_arvr_register_interface(const char *p_name, const godot_arvr_interface_gdnative *p_interface);
+void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface);
 
 // helper functions to access ARVRServer data
 godot_real GDAPI godot_arvr_get_worldscale();

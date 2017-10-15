@@ -29,29 +29,11 @@
 /*************************************************************************/
 
 #include "register_types.h"
-
 #include "arvr_interface_gdnative.h"
-#include "core/os/os.h"
-
-#include "oa_hash_map.h"
-#include "ustring.h"
-
-// what is this?? I can't memnew(OAHashMap<String, godot_arvr_interface_gdnative *>)
-// but with this typedef it's working just fine...
-// C++ grammar can be a joy.
-typedef OAHashMap<StringName, godot_arvr_interface_gdnative *> InterfaceMap;
-
-InterfaceMap *_registered_interfaces;
 
 void register_nativearvr_types() {
-
-	_registered_interfaces = memnew(InterfaceMap);
-
 	ClassDB::register_class<ARVRInterfaceGDNative>();
 }
 
 void unregister_nativearvr_types() {
-	memdelete(_registered_interfaces);
-
-	_registered_interfaces = NULL;
 }
