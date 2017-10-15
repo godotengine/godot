@@ -529,12 +529,12 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 		if (&cd == &playback.current) {
 
-			if (!backwards && cd.pos < len && next_pos == len /*&& playback.blend.empty()*/) {
+			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
 
-			if (backwards && cd.pos > 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
+			if (backwards && cd.pos >= 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
