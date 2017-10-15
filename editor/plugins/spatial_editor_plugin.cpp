@@ -2576,6 +2576,7 @@ void SpatialEditorViewport::reset() {
 	cursor.y_rot = 0.5;
 	cursor.distance = 4;
 	cursor.region_select = false;
+	cursor.pos = Vector3();
 	_update_name();
 }
 
