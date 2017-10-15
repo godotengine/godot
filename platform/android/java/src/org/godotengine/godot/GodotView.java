@@ -285,13 +285,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	@Override public boolean onKeyDown(final int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			queueEvent(new Runnable() {
-				@Override
-				public void run() {
-					GodotLib.back();
-				}
-			});
-
+			activity.onBackPressed();
 			// press 'back' button should not terminate program
 			//normal handle 'back' event in game logic
 			return true;
