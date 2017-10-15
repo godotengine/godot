@@ -32,6 +32,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
@@ -67,9 +68,11 @@ private:
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
+		FILE_RENAME,
 		FILE_REMOVE,
 		FILE_REIMPORT,
 		FILE_INFO,
+		FILE_NEW_FOLDER,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH
 	};
@@ -77,7 +80,12 @@ private:
 	enum FolderMenu {
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
-		FOLDER_SHOW_IN_EXPLORER
+		FOLDER_MOVE,
+		FOLDER_RENAME,
+		FOLDER_REMOVE,
+		FOLDER_NEW_FOLDER,
+		FOLDER_SHOW_IN_EXPLORER,
+		FOLDER_COPY_PATH
 	};
 
 	VBoxContainer *scanning_vb;
@@ -110,10 +118,23 @@ private:
 	DependencyRemoveDialog *remove_dialog;
 
 	EditorDirDialog *move_dialog;
-	EditorFileDialog *rename_dialog;
+	ConfirmationDialog *rename_dialog;
+	LineEdit *rename_dialog_text;
+	ConfirmationDialog *make_dir_dialog;
+	LineEdit *make_dir_dialog_text;
 
-	Vector<String> move_dirs;
-	Vector<String> move_files;
+	class FileOrFolder {
+	public:
+		String path;
+		bool is_file;
+
+		FileOrFolder()
+			: path(""), is_file(false) {}
+		FileOrFolder(const String &p_path, bool p_is_file)
+			: path(p_path), is_file(p_is_file) {}
+	};
+	FileOrFolder to_rename;
+	Vector<FileOrFolder> to_move;
 
 	Vector<String> history;
 	int history_pos;
@@ -135,11 +156,15 @@ private:
 
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir);
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
-	void _find_inside_move_files(EditorFileSystemDirectory *efsd, Vector<String> &files);
-	void _find_remaps(EditorFileSystemDirectory *efsd, Map<String, String> &renames, List<String> &to_remaps);
 
-	void _rename_operation(const String &p_to_path);
-	void _move_operation(const String &p_to_path);
+	void _get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files) const;
+	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
+	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) const;
+	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
+
+	void _make_dir_confirm();
+	void _rename_operation_confirm();
+	void _move_operation_confirm(const String &p_to_path);
 
 	void _file_option(int p_option);
 	void _folder_option(int p_option);

@@ -337,92 +337,142 @@ DependencyEditorOwners::DependencyEditorOwners() {
 
 ///////////////////////
 
-void DependencyRemoveDialog::_fill_owners(EditorFileSystemDirectory *efsd) {
+void DependencyRemoveDialog::_find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder) {
+	if (!efsd)
+		return;
 
+	for (int i = 0; i < efsd->get_subdir_count(); ++i) {
+		_find_files_in_removed_folder(efsd->get_subdir(i), p_folder);
+	}
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+		String file = efsd->get_file_path(i);
+		ERR_FAIL_COND(all_remove_files.has(file)); //We are deleting a directory which is contained in a directory we are deleting...
+		all_remove_files[file] = p_folder; //Point the file to the ancestor directory we are deleting so we know what to parent it under in the tree.
+	}
+}
+
+void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed) {
 	if (!efsd)
 		return;
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		_fill_owners(efsd->get_subdir(i));
+		_find_all_removed_dependencies(efsd->get_subdir(i), p_removed);
 	}
 
 	for (int i = 0; i < efsd->get_file_count(); i++) {
+		const String path = efsd->get_file_path(i);
 
-		Vector<String> deps = efsd->get_file_deps(i);
-		//print_line(":::"+efsd->get_file_path(i));
-		Set<String> met;
-		for (int j = 0; j < deps.size(); j++) {
-			if (files.has(deps[j])) {
-				met.insert(deps[j]);
-			}
-		}
-		if (!met.size())
+		//It doesn't matter if a file we are about to delete will have some of its dependencies removed too
+		if (all_remove_files.has(path))
 			continue;
 
-		exist = true;
-
-		Ref<Texture> icon;
-		String type = efsd->get_file_type(i);
-		if (!has_icon(type, "EditorIcons")) {
-			icon = get_icon("Object", "EditorIcons");
-		} else {
-			icon = get_icon(type, "EditorIcons");
-		}
-
-		for (Set<String>::Element *E = met.front(); E; E = E->next()) {
-
-			String which = E->get();
-			if (!files[which]) {
-				TreeItem *ti = owners->create_item(owners->get_root());
-				ti->set_text(0, which.get_file());
-				files[which] = ti;
+		Vector<String> all_deps = efsd->get_file_deps(i);
+		for (int j = 0; j < all_deps.size(); ++j) {
+			if (all_remove_files.has(all_deps[j])) {
+				RemovedDependency dep;
+				dep.file = path;
+				dep.file_type = efsd->get_file_type(i);
+				dep.dependency = all_deps[j];
+				dep.dependency_folder = all_remove_files[all_deps[j]];
+				p_removed.push_back(dep);
 			}
-			TreeItem *ti = owners->create_item(files[which]);
-			ti->set_text(0, efsd->get_file_path(i));
-			ti->set_icon(0, icon);
 		}
 	}
 }
 
-void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
-
-	exist = false;
+void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed) {
 	owners->clear();
-	files.clear();
 	owners->create_item(); // root
-	for (int i = 0; i < to_erase.size(); i++) {
-		files[to_erase[i]] = NULL;
+
+	Map<String, TreeItem *> tree_items;
+	for (int i = 0; i < p_removed.size(); i++) {
+		RemovedDependency rd = p_removed[i];
+
+		//Ensure that the dependency is already in the tree
+		if (!tree_items.has(rd.dependency)) {
+			if (rd.dependency_folder.length() > 0) {
+				//Ensure the ancestor folder is already in the tree
+				if (!tree_items.has(rd.dependency_folder)) {
+					TreeItem *folder_item = owners->create_item(owners->get_root());
+					folder_item->set_text(0, rd.dependency_folder);
+					folder_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+					tree_items[rd.dependency_folder] = folder_item;
+				}
+				TreeItem *dependency_item = owners->create_item(tree_items[rd.dependency_folder]);
+				dependency_item->set_text(0, rd.dependency);
+				dependency_item->set_icon(0, get_icon("Warning", "EditorIcons"));
+				tree_items[rd.dependency] = dependency_item;
+			} else {
+				TreeItem *dependency_item = owners->create_item(owners->get_root());
+				dependency_item->set_text(0, rd.dependency);
+				dependency_item->set_icon(0, get_icon("Warning", "EditorIcons"));
+				tree_items[rd.dependency] = dependency_item;
+			}
+		}
+
+		//List this file under this dependency
+		Ref<Texture> icon = has_icon(rd.file_type, "EditorIcons") ? get_icon(rd.file_type, "EditorIcons") : get_icon("Object", "EditorIcons");
+		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
+		file_item->set_text(0, rd.file);
+		file_item->set_icon(0, icon);
+	}
+}
+
+void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<String> &p_files) {
+	all_remove_files.clear();
+	to_delete.clear();
+	owners->clear();
+
+	for (int i = 0; i < p_folders.size(); ++i) {
+		String folder = p_folders[i].ends_with("/") ? p_folders[i] : (p_folders[i] + "/");
+		_find_files_in_removed_folder(EditorFileSystem::get_singleton()->get_filesystem_path(folder), folder);
+		to_delete.push_back(folder);
+	}
+	for (int i = 0; i < p_files.size(); ++i) {
+		all_remove_files[p_files[i]] = String();
+		to_delete.push_back(p_files[i]);
 	}
 
-	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
+	Vector<RemovedDependency> removed_deps;
+	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
+	removed_deps.sort();
 
-	if (exist) {
-		owners->show();
-		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
-		popup_centered_minsize(Size2(500, 220));
-	} else {
+	if (removed_deps.empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove selected files from the project? (no undo)"));
 		popup_centered_minsize(Size2(400, 100));
+	} else {
+		_build_removed_dependency_tree(removed_deps);
+		owners->show();
+		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
+		popup_centered_minsize(Size2(500, 350));
 	}
 }
 
 void DependencyRemoveDialog::ok_pressed() {
-
-	bool changed = false;
-
-	for (Map<String, TreeItem *>::Element *E = files.front(); E; E = E->next()) {
-
-		if (ResourceCache::has(E->key())) {
-			Resource *res = ResourceCache::get(E->key());
+	bool files_only = true;
+	for (int i = 0; i < to_delete.size(); ++i) {
+		if (to_delete[i].ends_with("/")) {
+			files_only = false;
+		} else if (ResourceCache::has(to_delete[i])) {
+			Resource *res = ResourceCache::get(to_delete[i]);
 			res->set_path(""); //clear reference to path
 		}
-		String fpath = OS::get_singleton()->get_resource_dir() + E->key().replace_first("res://", "/");
-		OS::get_singleton()->move_to_trash(fpath);
-		changed = true;
+
+		String path = OS::get_singleton()->get_resource_dir() + to_delete[i].replace_first("res://", "/");
+		print_line("Moving to trash: " + path);
+		Error err = OS::get_singleton()->move_to_trash(path);
+		if (err != OK) {
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:\n") + to_delete[i] + "\n");
+		}
 	}
 
-	if (changed) {
+	if (files_only) {
+		//If we only deleted files we should only need to tell the file system about the files we touched.
+		for (int i = 0; i < to_delete.size(); ++i) {
+			EditorFileSystem::get_singleton()->update_file(to_delete[i]);
+		}
+	} else {
 		EditorFileSystem::get_singleton()->scan_changes();
 	}
 }
