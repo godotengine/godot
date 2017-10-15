@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptMathConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Commonly used mathematical constants.
 	</brief_description>
 	<description>
+		Provides common math constants, such as Pi or Euler's constant, on an output Data port.
+		[b]Input Ports:[/b]
+		none
+		[b]Output Ports:[/b]
+		- Data (variant): [code]get[/code]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,24 +32,33 @@
 	</methods>
 	<members>
 		<member name="constant" type="int" setter="set_math_constant" getter="get_math_constant" enum="VisualScriptMathConstant.MathConstant">
+			The math constant.
 		</member>
 	</members>
 	<constants>
 		<constant name="MATH_CONSTANT_ONE" value="0">
+			Unity: [code]1[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_PI" value="1">
+			Pi: [code]3.141593[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_2PI" value="2">
+			Pi times two: [code]6.283185[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_HALF_PI" value="3">
+			Pi divided by two: [code]1.570796[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_E" value="4">
+			Natural log: [code]2.718282[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_SQRT2" value="5">
+			Square root of two: [code]1.414214[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_INF" value="6">
+			Infinity: [code]inf[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_NAN" value="7">
+			Not a number: [code]nan[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_MAX" value="8">
 		</constant>

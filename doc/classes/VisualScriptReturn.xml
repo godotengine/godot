@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptReturn" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Exits a function and returns an optional value.
 	</brief_description>
 	<description>
+		Ends the execution of a function and returns control to the calling function. Optionally, it can return a [Variant] value.
+		[b]Input Ports:[/b]
+		- Sequence
+		- Data (variant): [code]result[/code] (optional)
+		[b]Output Ports:[/b]
+		none
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,8 +47,10 @@
 	</methods>
 	<members>
 		<member name="return_enabled" type="bool" setter="set_enable_return_value" getter="is_return_value_enabled">
+			If [code]true[/code] the [code]return[/code] input port is available.
 		</member>
 		<member name="return_type" type="int" setter="set_return_type" getter="get_return_type" enum="Variant.Type">
+			The return value's data type.
 		</member>
 	</members>
 	<constants>

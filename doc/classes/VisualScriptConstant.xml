@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualScriptConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		A Visual Script node which returns a constant value.
+		Gets a contant's value.
 	</brief_description>
 	<description>
-		A Visual Script node which returns the specified constant value.
+		This node returns a constant's value.
+		[b]Input Ports:[/b]
+		none
+		[b]Output Ports:[/b]
+		- Data (variant): [code]get[/code]
 	</description>
 	<tutorials>
 	</tutorials>
