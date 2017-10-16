@@ -42,7 +42,7 @@ namespace GDMonoUtils {
 
 typedef MonoObject *(*MarshalUtils_DictToArrays)(MonoObject *, MonoArray **, MonoArray **, MonoObject **);
 typedef MonoObject *(*MarshalUtils_ArraysToDict)(MonoArray *, MonoArray *, MonoObject **);
-typedef MonoObject *(*GodotObject__AwaitedSignalCallback)(MonoObject *, MonoArray **, MonoObject *, MonoObject **);
+typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray **, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
 typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
 
@@ -113,7 +113,7 @@ struct MonoCache {
 
 	MarshalUtils_DictToArrays methodthunk_MarshalUtils_DictionaryToArrays;
 	MarshalUtils_ArraysToDict methodthunk_MarshalUtils_ArraysToDictionary;
-	GodotObject__AwaitedSignalCallback methodthunk_GodotObject__AwaitedSignalCallback;
+	SignalAwaiter_SignalCallback methodthunk_SignalAwaiter_SignalCallback;
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
 

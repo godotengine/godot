@@ -111,7 +111,7 @@ void MonoCache::clear_members() {
 
 	methodthunk_MarshalUtils_DictionaryToArrays = NULL;
 	methodthunk_MarshalUtils_ArraysToDictionary = NULL;
-	methodthunk_GodotObject__AwaitedSignalCallback = NULL;
+	methodthunk_SignalAwaiter_SignalCallback = NULL;
 	methodthunk_SignalAwaiter_FailureCallback = NULL;
 	methodthunk_GodotTaskScheduler_Activate = NULL;
 
@@ -178,7 +178,7 @@ void update_godot_api_cache() {
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryToArrays, (MarshalUtils_DictToArrays)CACHED_CLASS(MarshalUtils)->get_method("DictionaryToArrays", 3)->get_thunk());
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArraysToDictionary, (MarshalUtils_ArraysToDict)CACHED_CLASS(MarshalUtils)->get_method("ArraysToDictionary", 2)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, _AwaitedSignalCallback, (GodotObject__AwaitedSignalCallback)CACHED_CLASS(GodotObject)->get_method("_AwaitedSignalCallback", 2)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1)->get_thunk());
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("FailureCallback", 0)->get_thunk());
 	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method("Activate", 0)->get_thunk());
 

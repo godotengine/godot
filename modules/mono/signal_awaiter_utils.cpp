@@ -29,6 +29,9 @@
 /*************************************************************************/
 #include "signal_awaiter_utils.h"
 
+#include "csharp_script.h"
+#include "mono_gd/gd_mono_class.h"
+#include "mono_gd/gd_mono_marshal.h"
 #include "mono_gd/gd_mono_utils.h"
 
 namespace SignalAwaiterUtils {
@@ -40,13 +43,20 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 
 	uint32_t awaiter_handle = MonoGCHandle::make_strong_handle(p_awaiter);
 	Ref<SignalAwaiterHandle> sa_con = memnew(SignalAwaiterHandle(awaiter_handle));
+#ifdef DEBUG_ENABLED
+	sa_con->set_connection_target(p_target);
+#endif
+
 	Vector<Variant> binds;
 	binds.push_back(sa_con);
-	Error err = p_source->connect(p_signal, p_target, "_AwaitedSignalCallback", binds, Object::CONNECT_ONESHOT);
+
+	Error err = p_source->connect(p_signal, sa_con.ptr(),
+			CSharpLanguage::get_singleton()->get_string_names()._signal_callback,
+			binds, Object::CONNECT_ONESHOT);
 
 	if (err != OK) {
-		// set it as completed to prevent it from calling the failure callback when deleted
-		// the awaiter will be aware of the failure by checking the returned error
+		// Set it as completed to prevent it from calling the failure callback when released.
+		// The awaiter will be aware of the failure by checking the returned error.
 		sa_con->set_completed(true);
 	}
 
@@ -54,11 +64,66 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 }
 }
 
-SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_handle)
-	: MonoGCHandle(p_handle) {
+Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+
+#ifdef DEBUG_ENABLED
+	if (conn_target_id && !ObjectDB::get_instance(conn_target_id)) {
+		ERR_EXPLAIN("Resumed after await, but class instance is gone");
+		ERR_FAIL_V(Variant());
+	}
+#endif
+
+	if (p_argcount < 1) {
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 1;
+		return Variant();
+	}
+
+	Ref<SignalAwaiterHandle> self = *p_args[p_argcount - 1];
+
+	if (self.is_null()) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = p_argcount - 1;
+		r_error.expected = Variant::OBJECT;
+		return Variant();
+	}
+
+	set_completed(true);
+
+	int signal_argc = p_argcount - 1;
+	MonoArray *signal_args = mono_array_new(SCRIPTS_DOMAIN, CACHED_CLASS_RAW(MonoObject), signal_argc);
+
+	for (int i = 0; i < signal_argc; i++) {
+		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
+		mono_array_set(signal_args, MonoObject *, i, boxed);
+	}
+
+	GDMonoUtils::SignalAwaiter_SignalCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback);
+
+	MonoObject *ex = NULL;
+	thunk(get_target(), &signal_args, &ex);
+
+	if (ex) {
+		mono_print_unhandled_exception(ex);
+		ERR_FAIL_V(Variant());
+	}
+
+	return Variant();
+}
+
+void SignalAwaiterHandle::_bind_methods() {
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
+}
+
+SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_managed_handle)
+	: MonoGCHandle(p_managed_handle) {
+
+	conn_target_id = 0;
 }
 
 SignalAwaiterHandle::~SignalAwaiterHandle() {
+
 	if (!completed) {
 		GDMonoUtils::SignalAwaiter_FailureCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback);
 
