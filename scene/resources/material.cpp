@@ -1242,6 +1242,15 @@ Ref<Texture> SpatialMaterial::get_texture(TextureParam p_param) const {
 	return textures[p_param];
 }
 
+Ref<Texture> SpatialMaterial::get_texture_by_name(StringName p_name) const {
+	for (int i = 0; i < (int)SpatialMaterial::TEXTURE_MAX; i++) {
+		TextureParam param = TextureParam(i);
+		if (p_name == shader_names->texture_names[param])
+			return textures[param];
+	}
+	return Ref<Texture>();
+}
+
 void SpatialMaterial::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
 		property.usage = 0;
