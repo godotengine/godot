@@ -47,9 +47,33 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	ToolButton *button_create;
 	ToolButton *button_edit;
 
-	int edited_polygon;
-	int edited_point;
-	Vector2 edited_point_pos;
+	struct Vertex {
+		Vertex();
+		Vertex(int p_vertex);
+		Vertex(int p_polygon, int p_vertex);
+
+		bool operator==(const Vertex &p_vertex) const;
+		bool operator!=(const Vertex &p_vertex) const;
+
+		bool valid() const;
+
+		int polygon;
+		int vertex;
+	};
+
+	struct PosVertex : public Vertex {
+		PosVertex();
+		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos);
+		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos);
+
+		Vector2 pos;
+	};
+
+	PosVertex edited_point;
+	Vertex hover_point; // point under mouse cursor
+	Vertex selected_point; // currently selected
+	PosVertex edge_point; // adding an edge point?
+
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
 	bool wip_active;
@@ -79,6 +103,11 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
+
+	void remove_point(const Vertex &p_vertex);
+	Vertex get_active_point() const;
+	PosVertex closest_point(const Vector2 &p_pos) const;
+	PosVertex closest_edge_point(const Vector2 &p_pos) const;
 
 	bool _is_empty() const;
 	void _commit_action();
