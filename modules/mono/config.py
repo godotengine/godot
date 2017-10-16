@@ -130,7 +130,7 @@ def configure(env):
             if mono_static:
                 raise RuntimeError('mono-static: Not supported with pkg-config. Specify a mono prefix manually')
 
-            env.ParseConfig('pkg-config mono-2 --cflags --libs')
+            env.ParseConfig('pkg-config monosgen-2 --cflags --libs')
 
         env.Append(LINKFLAGS='-rdynamic')
 
