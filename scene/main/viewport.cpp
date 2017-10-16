@@ -2371,8 +2371,13 @@ void Viewport::input(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
 
-	get_tree()->_call_input_pause(input_group, "_input", p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
-	_gui_input_event(p_event);
+	if (!get_tree()->is_input_handled()) {
+		get_tree()->_call_input_pause(input_group, "_input", p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+	}
+
+	if (!get_tree()->is_input_handled()) {
+		_gui_input_event(p_event);
+	}
 	//get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
