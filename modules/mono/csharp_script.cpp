@@ -48,7 +48,7 @@
 #include "mono_gd/gd_mono_marshal.h"
 #include "signal_awaiter_utils.h"
 
-#define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->string_names.m_var)
+#define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
 static bool _create_project_solution_if_needed() {
 
@@ -896,46 +896,6 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 			} else {
 				return Variant();
 			}
-		} else if (p_method == CACHED_STRING_NAME(_awaited_signal_callback)) {
-			// shitty hack..
-			// TODO move to its own function, thx
-
-			if (p_argcount < 1) {
-				r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				r_error.argument = 1;
-				return Variant();
-			}
-
-			Ref<SignalAwaiterHandle> awaiter = *p_args[p_argcount - 1];
-
-			if (awaiter.is_null()) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = p_argcount - 1;
-				r_error.expected = Variant::OBJECT;
-				return Variant();
-			}
-
-			awaiter->set_completed(true);
-
-			int extra_argc = p_argcount - 1;
-			MonoArray *extra_args = mono_array_new(SCRIPTS_DOMAIN, CACHED_CLASS_RAW(MonoObject), extra_argc);
-
-			for (int i = 0; i < extra_argc; i++) {
-				MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-				mono_array_set(extra_args, MonoObject *, i, boxed);
-			}
-
-			GDMonoUtils::GodotObject__AwaitedSignalCallback thunk = CACHED_METHOD_THUNK(GodotObject, _AwaitedSignalCallback);
-
-			MonoObject *ex = NULL;
-			thunk(mono_object, &extra_args, awaiter->get_target(), &ex);
-
-			if (ex) {
-				mono_print_unhandled_exception(ex);
-				ERR_FAIL_V(Variant());
-			}
-
-			return Variant();
 		}
 
 		top = top->get_parent_class();
@@ -1908,7 +1868,7 @@ bool ResourceFormatSaverCSharpScript::recognize(const RES &p_resource) const {
 
 CSharpLanguage::StringNameCache::StringNameCache() {
 
-	_awaited_signal_callback = StaticCString::create("_AwaitedSignalCallback");
+	_signal_callback = StaticCString::create("_signal_callback");
 	_set = StaticCString::create("_set");
 	_get = StaticCString::create("_get");
 	_notification = StaticCString::create("_notification");

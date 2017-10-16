@@ -225,7 +225,7 @@ class CSharpLanguage : public ScriptLanguage {
 
 	struct StringNameCache {
 
-		StringName _awaited_signal_callback;
+		StringName _signal_callback;
 		StringName _set;
 		StringName _get;
 		StringName _notification;
@@ -241,6 +241,8 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
+
+	_FORCE_INLINE_ const StringNameCache &get_string_names() { return string_names; }
 
 	_FORCE_INLINE_ static CSharpLanguage *get_singleton() { return singleton; }
 

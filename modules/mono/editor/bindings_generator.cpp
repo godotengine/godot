@@ -916,10 +916,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				return ERR_BUG;
 			}
 
-			cs_file.push_back(MEMBER_BEGIN "private void _AwaitedSignalCallback(");
-			cs_file.push_back(array_itype->get().cs_type);
-			cs_file.push_back(" args, SignalAwaiter awaiter)\n" OPEN_BLOCK_L2 "awaiter.SignalCallback(args);\n" CLOSE_BLOCK_L2);
-
 			Map<String, TypeInterface>::Element *object_itype = obj_types.find("Object");
 
 			if (!object_itype) {
