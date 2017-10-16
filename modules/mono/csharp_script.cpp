@@ -41,6 +41,7 @@
 #include "editor/csharp_project.h"
 #include "editor/editor_node.h"
 #include "editor/godotsharp_editor.h"
+#include "utils/string_utils.h"
 #endif
 
 #include "godotsharp_dirs.h"
@@ -295,20 +296,88 @@ bool CSharpLanguage::has_named_classes() const {
 	return true;
 }
 
-String CSharpLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+static String variant_type_to_managed_name(const String &p_var_type_name) {
 
+	if (p_var_type_name.empty())
+		return "object";
+
+	if (!ClassDB::class_exists(p_var_type_name)) {
+		Variant::Type var_types[] = {
+			Variant::BOOL,
+			Variant::INT,
+			Variant::REAL,
+			Variant::STRING,
+			Variant::VECTOR2,
+			Variant::RECT2,
+			Variant::VECTOR3,
+			Variant::TRANSFORM2D,
+			Variant::PLANE,
+			Variant::QUAT,
+			Variant::RECT3,
+			Variant::BASIS,
+			Variant::TRANSFORM,
+			Variant::COLOR,
+			Variant::NODE_PATH,
+			Variant::_RID
+		};
+
+		for (int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
+			if (p_var_type_name == Variant::get_type_name(var_types[i]))
+				return p_var_type_name;
+		}
+
+		if (p_var_type_name == "String")
+			return "string"; // I prefer this one >:[
+
+		// TODO these will be rewritten later into custom containers
+
+		if (p_var_type_name == "Array")
+			return "object[]";
+
+		if (p_var_type_name == "Dictionary")
+			return "Dictionary<object, object>";
+
+		if (p_var_type_name == "PoolByteArray")
+			return "byte[]";
+		if (p_var_type_name == "PoolIntArray")
+			return "int[]";
+		if (p_var_type_name == "PoolRealArray")
+			return "float[]";
+		if (p_var_type_name == "PoolStringArray")
+			return "string[]";
+		if (p_var_type_name == "PoolVector2Array")
+			return "Vector2[]";
+		if (p_var_type_name == "PoolVector3Array")
+			return "Vector3[]";
+		if (p_var_type_name == "PoolColorArray")
+			return "Color[]";
+
+		return "object";
+	}
+
+	return p_var_type_name;
+}
+
+String CSharpLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
+#ifdef TOOLS_ENABLED
 	// FIXME
-	// Due to Godot's API limitation this just appends the function to the end of the file
-	// Another limitation is that the parameter types are not specified, so we must use System.Object
+	// - Due to Godot's API limitation this just appends the function to the end of the file
+	// - Use fully qualified name if there is ambiguity
 	String s = "private void " + p_name + "(";
 	for (int i = 0; i < p_args.size(); i++) {
+		const String &arg = p_args[i];
+
 		if (i > 0)
 			s += ", ";
-		s += "object " + p_args[i];
+
+		s += variant_type_to_managed_name(arg.get_slice(":", 1)) + " " + escape_csharp_keyword(arg.get_slice(":", 0));
 	}
 	s += ")\n{\n    // Replace with function body\n}\n";
 
 	return s;
+#else
+	return String();
+#endif
 }
 
 void CSharpLanguage::frame() {

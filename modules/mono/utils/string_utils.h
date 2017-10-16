@@ -35,4 +35,10 @@
 
 String sformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
 
+#ifdef TOOLS_ENABLED
+bool is_csharp_keyword(const String &p_name);
+
+String escape_csharp_keyword(const String &p_name);
+#endif
+
 #endif // STRING_FORMAT_H
