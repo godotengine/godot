@@ -38,8 +38,19 @@
 #include "space_bullet.h"
 
 AreaBullet::AreaBullet()
-	: RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA), monitorable(true), isScratched(false),
-	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED), spOv_gravityPoint(false), spOv_gravityPointDistanceScale(0), spOv_gravityPointAttenuation(1), spOv_gravityVec(0, -1, 0), spOv_gravityMag(10), spOv_linearDump(0.1), spOv_angularDump(1), spOv_priority(0) {
+	: RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
+	  monitorable(true),
+	  isScratched(false),
+	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
+	  spOv_gravityPoint(false),
+	  spOv_gravityPointDistanceScale(0),
+	  spOv_gravityPointAttenuation(1),
+	  spOv_gravityVec(0, -1, 0),
+	  spOv_gravityMag(10),
+	  spOv_linearDump(0.1),
+	  spOv_angularDump(1),
+	  spOv_priority(0) {
+
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(compoundShape);
 	setupBulletCollisionObject(btGhost);
@@ -142,6 +153,10 @@ void AreaBullet::set_monitorable(bool p_monitorable) {
 	monitorable = p_monitorable;
 }
 
+bool AreaBullet::is_monitoring() const {
+	return get_godot_object_flags() & GOF_IS_MONITORING_AREA;
+}
+
 void AreaBullet::reload_body() {
 	if (space) {
 		space->remove_area(this);
@@ -187,24 +202,6 @@ void AreaBullet::put_overlap_as_inside(int p_index) {
 	if (OVERLAP_STATE_DIRTY == overlappingObjects[p_index].state) {
 		overlappingObjects[p_index].state = OVERLAP_STATE_INSIDE;
 	}
-}
-
-void AreaBullet::set_transform(const Transform &p_global_transform) {
-	Basis decomposed_basis;
-	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
-	set_body_scale(decomposed_scale);
-
-	btTransform btTrans;
-	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
-	G_TO_B(decomposed_basis, btTrans.getBasis());
-
-	btGhost->setWorldTransform(btTrans);
-}
-
-Transform AreaBullet::get_transform() const {
-	Transform gTrans;
-	B_TO_G(btGhost->getWorldTransform(), gTrans);
-	return gTrans;
 }
 
 void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
@@ -266,6 +263,13 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 	InOutEventCallback &ev = eventsCallbacks[static_cast<int>(p_callbackObjectType)];
 	ev.event_callback_id = p_id;
 	ev.event_callback_method = p_method;
+
+	/// Set if monitoring
+	if (eventsCallbacks[0].event_callback_id || eventsCallbacks[1].event_callback_id) {
+		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
+	} else {
+		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
+	}
 }
 
 bool AreaBullet::has_event_callback(Type p_callbackObjectType) {

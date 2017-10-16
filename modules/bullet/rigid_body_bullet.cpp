@@ -732,19 +732,7 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 	return gVec;
 }
 
-void RigidBodyBullet::set_transform(const Transform &p_global_transform) {
-	Basis decomposed_basis;
-	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
-	set_body_scale(decomposed_scale);
-
-	btTransform btTrans;
-	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
-	G_TO_B(decomposed_basis, btTrans.getBasis());
-
-	set_transform(btTrans);
-}
-
-void RigidBodyBullet::set_transform(const btTransform &p_global_transform) {
+void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(p_global_transform);
@@ -752,12 +740,14 @@ void RigidBodyBullet::set_transform(const btTransform &p_global_transform) {
 	btBody->setWorldTransform(p_global_transform);
 }
 
-Transform RigidBodyBullet::get_transform() const {
-	btTransform btTrans;
-	Transform gTrans;
-	godotMotionState->getCurrentWorldTransform(btTrans);
-	B_TO_G(btTrans, gTrans);
-	return gTrans;
+const btTransform &RigidBodyBullet::get_transform__bullet() const {
+	if (is_static()) {
+
+		return RigidCollisionObjectBullet::get_transform__bullet();
+	} else {
+
+		return godotMotionState->getCurrentWorldTransform();
+	}
 }
 
 void RigidBodyBullet::on_shapes_changed() {
@@ -990,7 +980,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 		} else {
 
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
-			set_transform(btBody->getWorldTransform()); // Set current Transform using kinematic method
+			set_transform__bullet(btBody->getWorldTransform()); // Set current Transform using kinematic method
 		}
 		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
 	}

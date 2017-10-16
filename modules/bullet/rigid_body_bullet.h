@@ -284,9 +284,8 @@ public:
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
 
-	void set_transform(const Transform &p_global_transform);
-	void set_transform(const btTransform &p_global_transform);
-	Transform get_transform() const;
+	virtual void set_transform__bullet(const btTransform &p_global_transform);
+	virtual const btTransform &get_transform__bullet() const;
 
 	virtual void on_shapes_changed();
 

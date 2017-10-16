@@ -108,6 +108,8 @@ public:
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
 
+	bool is_monitoring() const;
+
 	_FORCE_INLINE_ void set_spOv_mode(PhysicsServer::AreaSpaceOverrideMode p_mode) { spOv_mode = p_mode; }
 	_FORCE_INLINE_ PhysicsServer::AreaSpaceOverrideMode get_spOv_mode() { return spOv_mode; }
 
@@ -153,9 +155,6 @@ public:
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);
 	void put_overlap_as_inside(int p_index);
-
-	void set_transform(const Transform &p_global_transform);
-	Transform get_transform() const;
 
 	void set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer::AreaParameter p_param) const;

@@ -56,7 +56,7 @@ public:
 
 	/// IMPORTANT DON'T USE THIS FUNCTION TO KNOW THE CURRENT BODY TRANSFORM
 	/// This class is used internally by Bullet
-	/// Use getCurrentWorldTransform to know current position inside Physics engine
+	/// Use GodotMotionState::getCurrentWorldTransform to know current position
 	///
 	/// This function is used by Bullet to get the position of object in the world
 	/// if the body is kinematic Bullet will move the object to this location
@@ -87,8 +87,8 @@ public:
 	}
 
 	/// It returns the current body transform from last Bullet update
-	void getCurrentWorldTransform(btTransform &outWorldTrans) {
-		outWorldTrans = bodyCurrentWorldTransform;
+	const btTransform &getCurrentWorldTransform() const {
+		return bodyCurrentWorldTransform;
 	}
 };
 #endif

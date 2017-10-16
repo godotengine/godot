@@ -125,6 +125,42 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 	areasOverlapped.erase(p_area);
 }
 
+void CollisionObjectBullet::set_godot_object_flags(int flags) {
+	bt_collision_object->setUserIndex2(flags);
+}
+
+int CollisionObjectBullet::get_godot_object_flags() const {
+	return bt_collision_object->getUserIndex2();
+}
+
+void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
+
+	btTransform btTrans;
+	Basis decomposed_basis;
+
+	Vector3 decomposed_scale = p_global_transform.get_basis().rotref_posscale_decomposition(decomposed_basis);
+
+	G_TO_B(p_global_transform.get_origin(), btTrans.getOrigin());
+	G_TO_B(decomposed_basis, btTrans.getBasis());
+
+	set_body_scale(decomposed_scale);
+	set_transform__bullet(btTrans);
+}
+
+Transform CollisionObjectBullet::get_transform() const {
+	Transform t;
+	B_TO_G(get_transform__bullet(), t);
+	return t;
+}
+
+void CollisionObjectBullet::set_transform__bullet(const btTransform &p_global_transform) {
+	bt_collision_object->setWorldTransform(p_global_transform);
+}
+
+const btTransform &CollisionObjectBullet::get_transform__bullet() const {
+	return bt_collision_object->getWorldTransform();
+}
+
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type)
 	: CollisionObjectBullet(p_type), compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {
 }

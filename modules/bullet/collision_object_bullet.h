@@ -48,6 +48,15 @@ class SpaceBullet;
 
 class CollisionObjectBullet : public RIDBullet {
 public:
+	enum GodotObjectFlags {
+		GOF_IS_MONITORING_AREA = 1 << 0
+		// FLAG2 = 1 << 1,
+		// FLAG3 = 1 << 2,
+		// FLAG4 = 1 << 3,
+		// FLAG5 = 1 << 4,
+		// FLAG6 = 1 << 5
+		// etc..
+	};
 	enum Type {
 		TYPE_AREA = 0,
 		TYPE_RIGID_BODY,
@@ -170,6 +179,15 @@ public:
 	void notify_new_overlap(AreaBullet *p_area);
 	virtual void on_enter_area(AreaBullet *p_area) = 0;
 	virtual void on_exit_area(AreaBullet *p_area);
+
+	/// GodotObjectFlags
+	void set_godot_object_flags(int flags);
+	int get_godot_object_flags() const;
+
+	void set_transform(const Transform &p_global_transform);
+	Transform get_transform() const;
+	virtual void set_transform__bullet(const btTransform &p_global_transform);
+	virtual const btTransform &get_transform__bullet() const;
 };
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
