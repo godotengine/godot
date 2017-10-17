@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +70,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"decimals",
 		"stepify",
 		"lerp",
+		"inverse_lerp",
+		"range_lerp",
 		"dectime",
 		"randomize",
 		"randi",
@@ -112,6 +115,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"ColorN",
 		"print_stack",
 		"instance_from_id",
+		"len",
 	};
 
 	return _names[p_func];
@@ -324,6 +328,22 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_NUM(2);
 			r_ret = Math::lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
+		case MATH_INVERSE_LERP: {
+			VALIDATE_ARG_COUNT(3);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			r_ret = Math::inverse_lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
+		} break;
+		case MATH_RANGE_LERP: {
+			VALIDATE_ARG_COUNT(5);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			VALIDATE_ARG_NUM(3);
+			VALIDATE_ARG_NUM(4);
+			r_ret = Math::range_lerp((double)*p_args[0], (double)*p_args[1], (double)*p_args[2], (double)*p_args[3], (double)*p_args[4]);
+		} break;
 		case MATH_DECTIME: {
 			VALIDATE_ARG_COUNT(3);
 			VALIDATE_ARG_NUM(0);
@@ -444,7 +464,7 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			int64_t num = *p_args[0];
-			r_ret = nearest_power_of_2(num);
+			r_ret = next_power_of_2(num);
 		} break;
 		case OBJ_WEAKREF: {
 			VALIDATE_ARG_COUNT(1);
@@ -1153,6 +1173,70 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			r_ret = ObjectDB::get_instance(id);
 
 		} break;
+		case LEN: {
+
+			VALIDATE_ARG_COUNT(1);
+			switch (p_args[0]->get_type()) {
+				case Variant::STRING: {
+
+					String d = *p_args[0];
+					r_ret = d.length();
+				} break;
+				case Variant::DICTIONARY: {
+
+					Dictionary d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::ARRAY: {
+
+					Array d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_BYTE_ARRAY: {
+
+					PoolVector<uint8_t> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_INT_ARRAY: {
+
+					PoolVector<int> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_REAL_ARRAY: {
+
+					PoolVector<real_t> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_STRING_ARRAY: {
+
+					PoolVector<String> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_VECTOR2_ARRAY: {
+
+					PoolVector<Vector2> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_VECTOR3_ARRAY: {
+
+					PoolVector<Vector3> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				case Variant::POOL_COLOR_ARRAY: {
+
+					PoolVector<Color> d = *p_args[0];
+					r_ret = d.size();
+				} break;
+				default: {
+					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+					r_error.argument = 0;
+					r_error.expected = Variant::OBJECT;
+					r_ret = Variant();
+					r_ret = RTR("Object can't provide a length.");
+				}
+			}
+
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1194,6 +1278,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_DECIMALS:
 		case MATH_STEPIFY:
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
+		case MATH_RANGE_LERP:
 		case MATH_DECTIME:
 		case MATH_DEG2RAD:
 		case MATH_RAD2DEG:
@@ -1209,6 +1295,7 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case TEXT_CHAR:
 		case TEXT_STR:
 		case COLOR8:
+		case LEN:
 			// enable for debug only, otherwise not desirable - case GEN_RANGE:
 			return true;
 		default:
@@ -1333,12 +1420,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_ISNAN: {
 			MethodInfo mi("is_nan", PropertyInfo(Variant::REAL, "s"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_ISINF: {
 			MethodInfo mi("is_inf", PropertyInfo(Variant::REAL, "s"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
 		case MATH_EASE: {
@@ -1358,6 +1445,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_LERP: {
 			MethodInfo mi("lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "weight"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_INVERSE_LERP: {
+			MethodInfo mi("inverse_lerp", PropertyInfo(Variant::REAL, "from"), PropertyInfo(Variant::REAL, "to"), PropertyInfo(Variant::REAL, "value"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_RANGE_LERP: {
+			MethodInfo mi("range_lerp", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "istart"), PropertyInfo(Variant::REAL, "istop"), PropertyInfo(Variant::REAL, "ostart"), PropertyInfo(Variant::REAL, "ostop"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
@@ -1483,43 +1580,49 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case TEXT_STR: {
 
-			MethodInfo mi("str", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("str");
 			mi.return_val.type = Variant::STRING;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT: {
 
-			MethodInfo mi("print", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("print");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_TABBED: {
 
-			MethodInfo mi("printt", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printt");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINT_SPACED: {
 
-			MethodInfo mi("prints", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("prints");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTERR: {
 
-			MethodInfo mi("printerr", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printerr");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
 		case TEXT_PRINTRAW: {
 
-			MethodInfo mi("printraw", PropertyInfo(Variant::NIL, "what"), PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("printraw");
 			mi.return_val.type = Variant::NIL;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 
 		} break;
@@ -1531,8 +1634,9 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case STR_TO_VAR: {
 
-			MethodInfo mi("str2var:Variant", PropertyInfo(Variant::STRING, "string"));
+			MethodInfo mi(Variant::NIL, "str2var", PropertyInfo(Variant::STRING, "string"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case VAR_TO_BYTES: {
@@ -1543,14 +1647,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case BYTES_TO_VAR: {
 
-			MethodInfo mi("bytes2var:Variant", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"));
+			MethodInfo mi(Variant::NIL, "bytes2var", PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case GEN_RANGE: {
 
-			MethodInfo mi("range", PropertyInfo(Variant::NIL, "..."));
+			MethodInfo mi("range");
 			mi.return_val.type = Variant::ARRAY;
+			mi.flags |= METHOD_FLAG_VARARG;
 			return mi;
 		} break;
 		case RESOURCE_LOAD: {
@@ -1574,25 +1680,26 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case VALIDATE_JSON: {
 
-			MethodInfo mi("validate_json:Variant", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi("validate_json", PropertyInfo(Variant::STRING, "json"));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case PARSE_JSON: {
 
-			MethodInfo mi("parse_json:Variant", PropertyInfo(Variant::STRING, "json"));
+			MethodInfo mi(Variant::NIL, "parse_json", PropertyInfo(Variant::STRING, "json"));
 			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case TO_JSON: {
 
-			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, "var:Variant"));
+			MethodInfo mi("to_json", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::STRING;
 			return mi;
 		} break;
 		case HASH: {
 
-			MethodInfo mi("hash", PropertyInfo(Variant::NIL, "var:Variant"));
+			MethodInfo mi("hash", PropertyInfo(Variant::NIL, "var"));
 			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
@@ -1618,6 +1725,11 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case INSTANCE_FROM_ID: {
 			MethodInfo mi("instance_from_id", PropertyInfo(Variant::INT, "instance_id"));
 			mi.return_val.type = Variant::OBJECT;
+			return mi;
+		} break;
+		case LEN: {
+			MethodInfo mi("len", PropertyInfo(Variant::NIL, "var"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,11 +78,11 @@ class GDScript : public Script {
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Vector<StringName> function_indices;
-	Map<StringName, Variant> constants;
-	Map<StringName, GDFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName,Variant> constants;
+	Map<StringName,GDFunction*> member_functions;
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
+	Map<StringName,Ref<GDScript> > subclasses;
+	Map<StringName,Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -206,6 +207,7 @@ class GDInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDFunction;
 	friend class GDFunctions;
+	friend class GDCompiler;
 	friend class GDFunctionObject;
 	friend class GDLambdaFunctionObject;
 	friend class GDNativeFunctionObject;
@@ -219,16 +221,16 @@ class GDInstance : public ScriptInstance {
 #endif
 	Vector<Variant> members;
 	Map<StringName, Ref<GDFunctionObject> > functions;
-	Vector<GDLambdaFunctionObject *> lambda_functions;
+	Vector< GDLambdaFunctionObject* > lambda_functions;
 	bool base_ref;
 
 	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
+
 	Ref<GDFunctionObject> get_function(StringName p_name);
 	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
-	_FORCE_INLINE_ void remove_lambda_function(GDLambdaFunctionObject *func) { lambda_functions.erase(func); }
-
-	Variant call_member(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-
+	_FORCE_INLINE_ void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
+	
+	Variant call_member(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 public:
 	_FORCE_INLINE_ Object *get_owner() { return owner; }
 
@@ -309,7 +311,7 @@ public:
 
 	_FORCE_INLINE_ void enter_function(GDInstance *p_instance, GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
@@ -332,7 +334,7 @@ public:
 
 	_FORCE_INLINE_ void exit_function() {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
@@ -349,7 +351,7 @@ public:
 	}
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return Vector<StackInfo>();
 
 		Vector<StackInfo> csi;
@@ -392,15 +394,20 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
+	virtual bool is_using_templates();
+	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
+	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint);
+	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return OK; }
+	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result);
 #endif
+	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 
