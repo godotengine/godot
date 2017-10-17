@@ -1268,8 +1268,10 @@ bool CSharpScript::_update_exports() {
 			for (int i = 0; i < fields.size(); i++) {
 				GDMonoField *field = fields[i];
 
-				if (field->is_static() || field->get_visibility() != GDMono::PUBLIC)
+				if (field->is_static()) {
+					ERR_PRINTS("Cannot export field because it is static: " + top->get_full_name() + "." + field->get_name());
 					continue;
+				}
 
 				String name = field->get_name();
 				StringName cname = name;
@@ -1277,17 +1279,39 @@ bool CSharpScript::_update_exports() {
 				if (member_info.has(cname))
 					continue;
 
-				Variant::Type type = GDMonoMarshal::managed_to_variant_type(field->get_type());
+				ManagedType field_type = field->get_type();
+				Variant::Type type = GDMonoMarshal::managed_to_variant_type(field_type);
 
 				if (field->has_attribute(CACHED_CLASS(ExportAttribute))) {
+					// Field has Export attribute
 					MonoObject *attr = field->get_attribute(CACHED_CLASS(ExportAttribute));
 
-					// Field has Export attribute
-					int hint = CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr);
-					String hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
-					int usage = CACHED_FIELD(ExportAttribute, usage)->get_int_value(attr);
+					PropertyHint hint;
+					String hint_string;
 
-					PropertyInfo prop_info = PropertyInfo(type, name, PropertyHint(hint), hint_string, PropertyUsageFlags(usage));
+					if (type == Variant::NIL) {
+						ERR_PRINTS("Unknown type of exported field: " + top->get_full_name() + "." + field->get_name());
+						continue;
+					} else if (type == Variant::INT && field_type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(field_type.type_class->get_raw())) {
+						type = Variant::INT;
+						hint = PROPERTY_HINT_ENUM;
+
+						Vector<MonoClassField *> fields = field_type.type_class->get_enum_fields();
+
+						for (int i = 0; i < fields.size(); i++) {
+							if (i > 0)
+								hint_string += ",";
+							hint_string += mono_field_get_name(fields[i]);
+						}
+					} else if (type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(field_type.type_class)) {
+						hint = PROPERTY_HINT_RESOURCE_TYPE;
+						hint_string = NATIVE_GDMONOCLASS_NAME(field_type.type_class);
+					} else {
+						hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
+						hint_string = CACHED_FIELD(ExportAttribute, hint_string)->get_string_value(attr);
+					}
+
+					PropertyInfo prop_info = PropertyInfo(type, name, hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
 
 					member_info[cname] = prop_info;
 					exported_members_cache.push_back(prop_info);
@@ -1711,16 +1735,6 @@ void CSharpScript::update_exports() {
 
 #ifdef TOOLS_ENABLED
 	_update_exports();
-
-	if (placeholders.size()) {
-		Map<StringName, Variant> values;
-		List<PropertyInfo> propnames;
-		_update_exports_values(values, propnames);
-
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->update(propnames, values);
-		}
-	}
 #endif
 }
 
