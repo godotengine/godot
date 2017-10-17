@@ -432,6 +432,7 @@ public:
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].collider_velocity_at_pos;
 	}
+	virtual void clear_forces() {}
 
 	virtual PhysicsDirectSpaceState *get_space_state();
 

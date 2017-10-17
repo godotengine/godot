@@ -82,6 +82,9 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const = 0;
 
+	/// Use it to clear all body forces either into "integrate forces"
+	virtual void clear_forces() = 0;
+
 	virtual real_t get_step() const = 0;
 	virtual void integrate_forces();
 
