@@ -54,7 +54,6 @@
 #include <shlobj.h>
 
 #include "modules/bullet/bullet_physics_server.h"
-#include "modules/bullet/stepper_bullet.h"
 
 static const WORD MAX_CONSOLE_LINES = 1500;
 
@@ -1065,9 +1064,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		physics_server = memnew(PhysicsServerSW);
 	} else {
 		// 1 Bullet
-		BulletPhysicsServer *bps = memnew(BulletPhysicsServer);
-		bps->setStepper<SyncStepperBullet>();
-		physics_server = bps;
+		physics_server = memnew(BulletPhysicsServer);
 	}
 	physics_server->init();
 

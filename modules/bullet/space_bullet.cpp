@@ -726,6 +726,10 @@ void SpaceBullet::flush_queries() {
 	}
 }
 
+void SpaceBullet::step(real_t p_delta_time) {
+	dynamicsWorld->stepSimulation(p_delta_time);
+}
+
 void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
 	assert(dynamicsWorld);
 
@@ -892,6 +896,10 @@ void SpaceBullet::remove_all_collision_objects() {
 	}
 }
 
+void onBulletPreTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
+	static_cast<SpaceBullet *>(p_dynamicsWorld->getWorldUserInfo())->flush_queries();
+}
+
 void onBulletTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
 
 	// Notify all Collision objects the collision checker is started
@@ -935,8 +943,8 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 
 	dynamicsWorld->setWorldUserInfo(this);
 
-	const bool isPreTick = false;
-	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, isPreTick);
+	dynamicsWorld->setInternalTickCallback(onBulletPreTickCallback, this, true);
+	dynamicsWorld->setInternalTickCallback(onBulletTickCallback, this, false);
 	dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback); // Setup ghost check
 	dynamicsWorld->getPairCache()->setOverlapFilterCallback(godotFilterCallback);
 

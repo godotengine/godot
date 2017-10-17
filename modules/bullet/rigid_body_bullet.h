@@ -67,7 +67,7 @@ public:
 		singleton = NULL;
 	}
 
-	static void setDeltaTime(real_t p_deltaTime) {
+	static void singleton_setDeltaTime(real_t p_deltaTime) {
 		singleton->deltaTime = p_deltaTime;
 	}
 

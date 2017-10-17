@@ -56,7 +56,6 @@ class btSoftBodyWorldInfo;
 class ConstraintBullet;
 class CollisionObjectBullet;
 class RigidBodyBullet;
-class StepperBullet;
 class SpaceBullet;
 class SoftBodyBullet;
 
@@ -92,8 +91,6 @@ class SpaceBullet : public RIDBullet {
 private:
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
-	friend class SyncStepperBullet;
-	friend class SubstepStepperBullet;
 	friend class BulletPhysicsDirectSpaceState;
 
 	btBroadphaseInterface *broadphase;
@@ -118,7 +115,8 @@ public:
 	SpaceBullet(bool p_create_soft_world);
 	virtual ~SpaceBullet();
 
-	virtual void flush_queries();
+	void flush_queries();
+	void step(real_t p_delta_time);
 
 	_FORCE_INLINE_ btCollisionDispatcher *get_dispatcher() { return dispatcher; }
 	_FORCE_INLINE_ btSoftBodyWorldInfo *get_soft_body_world_info() { return soft_body_world_info; }

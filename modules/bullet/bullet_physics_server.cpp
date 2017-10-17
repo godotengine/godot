@@ -41,7 +41,6 @@
 #include "pin_joint_bullet.h"
 #include "shape_bullet.h"
 #include "slider_joint_bullet.h"
-#include "stepper_bullet.h"
 #include <assert.h>
 
 #define CreateThenReturnRID(owner, ridData) \
@@ -80,13 +79,11 @@ void BulletPhysicsServer::_bind_methods() {
 }
 
 BulletPhysicsServer::BulletPhysicsServer()
-	: PhysicsServer(), active(true), stepper(NULL), activeSpace(NULL) {
-}
+	: PhysicsServer(),
+	  active(true),
+	  activeSpace(NULL) {}
 
-BulletPhysicsServer::~BulletPhysicsServer() {
-	bulletdelete(stepper);
-	stepper = NULL;
-}
+BulletPhysicsServer::~BulletPhysicsServer() {}
 
 RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 	ShapeBullet *shape = NULL;
@@ -1298,9 +1295,9 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 	if (!active)
 		return;
 
-	BulletPhysicsDirectBodyState::setDeltaTime(p_deltaTime);
+	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 	if (activeSpace) {
-		stepper->step(activeSpace, p_deltaTime);
+		activeSpace->step(p_deltaTime);
 	}
 }
 
@@ -1308,12 +1305,6 @@ void BulletPhysicsServer::sync() {
 }
 
 void BulletPhysicsServer::flush_queries() {
-	if (!active)
-		return;
-
-	if (activeSpace) {
-		activeSpace->flush_queries();
-	}
 }
 
 void BulletPhysicsServer::finish() {

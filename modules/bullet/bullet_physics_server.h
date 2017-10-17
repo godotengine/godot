@@ -41,8 +41,6 @@
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
 
-class StepperBullet;
-
 class BulletPhysicsServer : public PhysicsServer {
 	GDCLASS(BulletPhysicsServer, PhysicsServer)
 
@@ -57,8 +55,6 @@ class BulletPhysicsServer : public PhysicsServer {
 	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
 	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
 	mutable RID_Owner<JointBullet> joint_owner;
-
-	StepperBullet *stepper;
 
 private:
 	/// This is used when a collision shape is not active, so the bullet compound shapes index are always sync with godot index
