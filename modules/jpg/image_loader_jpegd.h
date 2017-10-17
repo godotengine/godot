@@ -38,7 +38,7 @@
 class ImageLoaderJPG : public ImageFormatLoader {
 
 public:
-	virtual Error load_image(Image *p_image, FileAccess *f);
+	Error load_image(Image *p_image, FileAccess *f, String* p_path) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderJPG();
 };

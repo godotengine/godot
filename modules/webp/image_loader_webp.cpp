@@ -112,7 +112,7 @@ static Image _webp_lossy_unpack(const DVector<uint8_t> &p_buffer) {
 	return Image(features.width, features.height, 0, features.has_alpha ? Image::FORMAT_RGBA : Image::FORMAT_RGB, dst_image);
 }
 
-Error ImageLoaderWEBP::load_image(Image *p_image, FileAccess *f) {
+Error ImageLoaderWEBP::load_image(Image *p_image, FileAccess *f, String *p_path) {
 
 	uint32_t size = f->get_len();
 	DVector<uint8_t> src_image;

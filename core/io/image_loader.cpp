@@ -61,7 +61,7 @@ Error ImageLoader::load_image(String p_file, Image *p_image, FileAccess *p_custo
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		Error err = loader[i]->load_image(p_image, f);
+		Error err = loader[i]->load_image(p_image, f, &p_file);
 
 		if (err != ERR_FILE_UNRECOGNIZED) {
 
