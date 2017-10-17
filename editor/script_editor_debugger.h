@@ -74,12 +74,13 @@ class ScriptEditorDebugger : public Control {
 
 	Tree *inspect_scene_tree;
 	HSplitContainer *inspect_info;
-	PropertyEditor *inspect_properties;
+
+	bool updating_scene_tree;
 	float inspect_scene_tree_timeout;
 	float inspect_edited_object_timeout;
 	ObjectID inspected_object_id;
-	ScriptEditorDebuggerInspectedObject *inspected_object;
-	bool updating_scene_tree;
+	ScriptEditorDebuggerVariables *variables;
+	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<ObjectID> unfold_cache;
 
 	HSplitContainer *error_split;
@@ -96,7 +97,6 @@ class ScriptEditorDebugger : public Control {
 	TabContainer *tabs;
 
 	Label *reason;
-	ScriptEditorDebuggerVariables *variables;
 
 	Button *step;
 	Button *next;
@@ -173,6 +173,9 @@ class ScriptEditorDebugger : public Control {
 	void _profiler_seeked();
 
 	void _paused();
+
+	void _set_remote_object(ObjectID p_id, ScriptEditorDebuggerInspectedObject *p_obj);
+	void _clear_remote_objects();
 
 protected:
 	void _notification(int p_what);
