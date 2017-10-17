@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_tokenizer.h"
-
 #include "gd_functions.h"
 #include "io/marshalls.h"
 #include "map.h"

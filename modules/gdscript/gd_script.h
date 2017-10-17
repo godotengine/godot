@@ -78,11 +78,11 @@ class GDScript : public Script {
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Vector<StringName> function_indices;
-	Map<StringName, Variant> constants;
-	Map<StringName, GDFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	Map<StringName,Variant> constants;
+	Map<StringName,GDFunction*> member_functions;
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
+	Map<StringName,Ref<GDScript> > subclasses;
+	Map<StringName,Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -207,6 +207,7 @@ class GDInstance : public ScriptInstance {
 	friend class GDScript;
 	friend class GDFunction;
 	friend class GDFunctions;
+	friend class GDCompiler;
 	friend class GDFunctionObject;
 	friend class GDLambdaFunctionObject;
 	friend class GDNativeFunctionObject;
@@ -220,16 +221,16 @@ class GDInstance : public ScriptInstance {
 #endif
 	Vector<Variant> members;
 	Map<StringName, Ref<GDFunctionObject> > functions;
-	Vector<GDLambdaFunctionObject *> lambda_functions;
+	Vector< GDLambdaFunctionObject* > lambda_functions;
 	bool base_ref;
 
 	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
+
 	Ref<GDFunctionObject> get_function(StringName p_name);
 	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
-	_FORCE_INLINE_ void remove_lambda_function(GDLambdaFunctionObject *func) { lambda_functions.erase(func); }
-
-	Variant call_member(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-
+	_FORCE_INLINE_ void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
+	
+	Variant call_member(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 public:
 	_FORCE_INLINE_ Object *get_owner() { return owner; }
 
@@ -401,6 +402,7 @@ public:
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
+	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return OK; }
 	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result);

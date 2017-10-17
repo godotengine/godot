@@ -908,7 +908,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 			Variant::Operator vop = Variant::OP_MAX;
 			switch (op->op) {
 				case GDParser::OperatorNode::OP_ADD: vop = Variant::OP_ADD; break;
-				case GDParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBTRACT; break;
+				case GDParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBSTRACT; break;
 				case GDParser::OperatorNode::OP_MUL: vop = Variant::OP_MULTIPLY; break;
 				case GDParser::OperatorNode::OP_DIV: vop = Variant::OP_DIVIDE; break;
 				case GDParser::OperatorNode::OP_MOD: vop = Variant::OP_MODULE; break;
@@ -1952,6 +1952,7 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 		//make sure identifier exists...
 
 		const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1]);
+
 		if (op->arguments[0]->type == GDParser::Node::TYPE_SELF) {
 			//self, look up
 
@@ -2020,7 +2021,7 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 						base = script->get_native();
 				} else if (nc.is_valid()) {
 
-					if (!(context.function && context.function->_static)) {
+					if (context.function && !context.function->_static) {
 
 						GDCompletionIdentifier ci;
 						ci.type = Variant::OBJECT;
