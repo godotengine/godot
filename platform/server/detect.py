@@ -12,6 +12,9 @@ def get_name():
 
 def can_build():
 
+    # Doesn't build against Godot 3.0 for now, disable to avoid confusing users
+    return False
+
     if (os.name != "posix" or sys.platform == "darwin"):
         return False
 
