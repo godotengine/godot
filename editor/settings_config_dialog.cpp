@@ -35,6 +35,7 @@
 #include "os/keyboard.h"
 #include "project_settings.h"
 #include "scene/gui/margin_container.h"
+#include "script_editor_debugger.h"
 
 void EditorSettingsDialog::ok_pressed() {
 
@@ -91,6 +92,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->grab_focus();
 
 	_update_shortcuts();
+	set_process_unhandled_input(true);
 
 	// Restore valid window bounds or pop up at default size.
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/editor_settings_bounds")) {
@@ -121,16 +123,59 @@ void EditorSettingsDialog::_filter_shortcuts(const String &p_filter) {
 	_update_shortcuts();
 }
 
+void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
+	EditorNode::get_log()->add_message(p_name);
+}
+
 void EditorSettingsDialog::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+			undo_redo->set_method_notify_callback(sed->_method_changeds, sed);
+			undo_redo->set_property_notify_callback(sed->_property_changeds, sed);
+			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 			shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/editor_settings_bounds", get_rect());
+			set_process_unhandled_input(false);
 		} break;
+	}
+}
+
+void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && is_window_modal_on_top()) {
+
+		if (k->is_pressed()) {
+
+			bool handled = false;
+
+			if (ED_IS_SHORTCUT("editor/undo", p_event)) {
+				String action = undo_redo->get_current_action_name();
+				if (action != "")
+					EditorNode::get_log()->add_message("UNDO: " + action);
+				undo_redo->undo();
+				handled = true;
+			}
+			if (ED_IS_SHORTCUT("editor/redo", p_event)) {
+				undo_redo->redo();
+				String action = undo_redo->get_current_action_name();
+				if (action != "")
+					EditorNode::get_log()->add_message("REDO: " + action);
+				handled = true;
+			}
+
+			if (handled) {
+				accept_event();
+			}
+		}
 	}
 }
 
@@ -212,30 +257,28 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		if (!sc.is_valid())
 			return; //pointless, there is nothing
 
-		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Erase Shortcut");
-		ur->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
-		ur->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
-		ur->add_do_method(this, "_update_shortcuts");
-		ur->add_undo_method(this, "_update_shortcuts");
-		ur->add_do_method(this, "_settings_changed");
-		ur->add_undo_method(this, "_settings_changed");
-		ur->commit_action();
+		undo_redo->create_action("Erase Shortcut");
+		undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
+		undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
 	} else if (p_idx == 2) { //revert to original
 		if (!sc.is_valid())
 			return; //pointless, there is nothing
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
-		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-		ur->create_action("Restore Shortcut");
-		ur->add_do_method(sc.ptr(), "set_shortcut", original);
-		ur->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
-		ur->add_do_method(this, "_update_shortcuts");
-		ur->add_undo_method(this, "_update_shortcuts");
-		ur->add_do_method(this, "_settings_changed");
-		ur->add_undo_method(this, "_settings_changed");
-		ur->commit_action();
+		undo_redo->create_action("Restore Shortcut");
+		undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
+		undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
+		undo_redo->add_do_method(this, "_update_shortcuts");
+		undo_redo->add_undo_method(this, "_update_shortcuts");
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
 	}
 }
 
@@ -276,19 +319,19 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Change Shortcut '" + shortcut_configured + "'");
-	ur->add_do_method(sc.ptr(), "set_shortcut", ie);
-	ur->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
-	ur->add_do_method(this, "_update_shortcuts");
-	ur->add_undo_method(this, "_update_shortcuts");
-	ur->add_do_method(this, "_settings_changed");
-	ur->add_undo_method(this, "_settings_changed");
-	ur->commit_action();
+	undo_redo->create_action("Change Shortcut '" + shortcut_configured + "'");
+	undo_redo->add_do_method(sc.ptr(), "set_shortcut", ie);
+	undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
+	undo_redo->add_do_method(this, "_update_shortcuts");
+	undo_redo->add_undo_method(this, "_update_shortcuts");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
 }
 
 void EditorSettingsDialog::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 	ClassDB::bind_method(D_METHOD("_settings_property_edited"), &EditorSettingsDialog::_settings_property_edited);
@@ -305,6 +348,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	set_title(TTR("Editor Settings"));
 	set_resizable(true);
+	undo_redo = memnew(UndoRedo);
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -336,7 +380,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->get_property_editor()->set_use_filter(true);
 	property_editor->register_search_box(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	property_editor->get_property_editor()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	property_editor->get_property_editor()->set_undo_redo(undo_redo);
 	vbc->add_child(property_editor);
 	property_editor->get_property_editor()->connect("property_edited", this, "_settings_property_edited");
 
@@ -399,4 +443,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	get_ok()->set_text(TTR("Close"));
 
 	updating = false;
+}
+
+EditorSettingsDialog::~EditorSettingsDialog() {
+	memdelete(undo_redo);
 }

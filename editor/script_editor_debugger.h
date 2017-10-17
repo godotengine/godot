@@ -166,9 +166,6 @@ class ScriptEditorDebugger : public Control {
 	void _method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
-	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
-
 	void _error_selected(int p_idx);
 	void _error_stack_selected(int p_idx);
 
@@ -195,6 +192,9 @@ public:
 	String get_var_value(const String &p_var) const;
 
 	void set_live_debugging(bool p_enable);
+
+	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
+	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
 	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
