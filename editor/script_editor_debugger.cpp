@@ -1802,7 +1802,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
 		sc->add_child(inspector);
-		editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
 		server = TCP_Server::create_ref();
 
