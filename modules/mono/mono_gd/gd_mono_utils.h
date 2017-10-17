@@ -88,6 +88,7 @@ struct MonoCache {
 	GDMonoClass *class_NodePath;
 	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
+	GDMonoClass *class_GodotReference;
 	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
@@ -97,7 +98,6 @@ struct MonoCache {
 	GDMonoClass *class_ExportAttribute;
 	GDMonoField *field_ExportAttribute_hint;
 	GDMonoField *field_ExportAttribute_hint_string;
-	GDMonoField *field_ExportAttribute_usage;
 	GDMonoClass *class_ToolAttribute;
 	GDMonoClass *class_RemoteAttribute;
 	GDMonoClass *class_SyncAttribute;
@@ -164,7 +164,7 @@ String get_exception_name_and_message(MonoObject *p_ex);
 
 } // GDMonoUtils
 
-#define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field("nativeName")->get_value(NULL)))
+#define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL)))
 
 #define CACHED_CLASS(m_class) (GDMonoUtils::mono_cache.class_##m_class)
 #define CACHED_CLASS_RAW(m_class) (GDMonoUtils::mono_cache.class_##m_class->get_raw())

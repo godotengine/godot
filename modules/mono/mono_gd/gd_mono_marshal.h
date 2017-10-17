@@ -53,6 +53,7 @@ T unbox(MonoObject *p_obj) {
 #define BOX_UINT8(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), &x)
 #define BOX_BOOLEAN(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(bool), &x)
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
+#define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
 Variant::Type managed_to_variant_type(const ManagedType &p_type);
 
