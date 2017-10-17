@@ -809,7 +809,7 @@ void VisualScriptEditor::_update_members() {
 
 		ti->set_text(0, E->get());
 		Variant var = script->get_variable_default_value(E->get());
-		ti->set_suffix(0, "=" + String(var));
+		ti->set_suffix(0, "= " + String(var));
 		ti->set_icon(0, type_icons[script->get_variable_info(E->get()).type]);
 
 		ti->set_selectable(0, true);
