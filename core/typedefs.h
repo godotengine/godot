@@ -98,10 +98,10 @@ T *_nullptr() {
 #undef OK
 #endif
 
+#include "int_types.h"
+
 #include "error_list.h"
 #include "error_macros.h"
-
-#include "int_types.h"
 
 /** Generic ABS function, for math uses please use Math::abs */
 
