@@ -100,7 +100,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 #endif
 	instance->owner->set_script_instance(instance);
 
-/* STEP 2, INITIALIZE AND CONSRTUCT */
+	/* STEP 2, INITIALIZE AND CONSRTUCT */
 
 #ifndef NO_THREADS
 	GDScriptLanguage::singleton->lock->lock();
@@ -613,6 +613,23 @@ Error GDScript::reload(bool p_keep_state) {
 ScriptLanguage *GDScript::get_language() const {
 
 	return GDScriptLanguage::get_singleton();
+}
+
+void GDScript::get_constants(Map<StringName, Variant> *p_constants) {
+
+	if (p_constants) {
+		for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+			(*p_constants)[E->key()] = E->value();
+		}
+	}
+}
+
+void GDScript::get_members(Set<StringName> *p_members) {
+	if (p_members) {
+		for (Set<StringName>::Element *E = members.front(); E; E = E->next()) {
+			p_members->insert(E->get());
+		}
+	}
 }
 
 Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
