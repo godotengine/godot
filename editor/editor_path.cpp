@@ -149,14 +149,14 @@ void EditorPath::_notification(int p_what) {
 
 						if (name == "")
 							name = r->get_class();
-					} else if (Object::cast_to<Node>(obj)) {
-
+					} else if (obj->is_class("ScriptEditorDebuggerInspectedObject"))
+						name = obj->call("get_title");
+					else if (Object::cast_to<Node>(obj))
 						name = Object::cast_to<Node>(obj)->get_name();
-					} else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "") {
+					else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "")
 						name = Object::cast_to<Resource>(obj)->get_name();
-					} else {
+					else
 						name = obj->get_class();
-					}
 
 					set_tooltip(obj->get_class());
 
