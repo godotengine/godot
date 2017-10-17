@@ -33,6 +33,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
+#include "os/dir_access.h"
 #include "project_settings.h"
 #include "version.h"
 #endif
@@ -60,12 +61,20 @@ String _get_mono_user_dir() {
 	} else {
 		String settings_path;
 
-		if (OS::get_singleton()->has_environment("APPDATA")) {
-			String app_data = OS::get_singleton()->get_environment("APPDATA").replace("\\", "/");
-			settings_path = app_data.plus_file(String(_MKSTR(VERSION_SHORT_NAME)).capitalize());
-		} else if (OS::get_singleton()->has_environment("HOME")) {
-			String home = OS::get_singleton()->get_environment("HOME");
-			settings_path = home.plus_file("." + String(_MKSTR(VERSION_SHORT_NAME)).to_lower());
+		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		DirAccessRef d = DirAccess::create_for_path(exe_dir);
+
+		if (d->file_exists("._sc_") || d->file_exists("_sc_")) {
+			// contain yourself
+			settings_path = exe_dir.plus_file("editor_data");
+		} else {
+			if (OS::get_singleton()->has_environment("APPDATA")) {
+				String app_data = OS::get_singleton()->get_environment("APPDATA").replace("\\", "/");
+				settings_path = app_data.plus_file(String(_MKSTR(VERSION_SHORT_NAME)).capitalize());
+			} else if (OS::get_singleton()->has_environment("HOME")) {
+				String home = OS::get_singleton()->get_environment("HOME");
+				settings_path = home.plus_file("." + String(_MKSTR(VERSION_SHORT_NAME)).to_lower());
+			}
 		}
 
 		return settings_path.plus_file("mono");
