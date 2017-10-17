@@ -112,6 +112,9 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			if (tclass == CACHED_CLASS(Plane))
 				return Variant::PLANE;
+
+			if (mono_class_is_enum(tclass->get_raw()))
+				return Variant::INT;
 		} break;
 
 		case MONO_TYPE_ARRAY:
@@ -165,9 +168,12 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 				return Variant::DICTIONARY;
 			}
 		} break;
+
+		default: {
+		} break;
 	}
 
-	// No error, the caller will decide what to do in this case
+	// Unknown
 	return Variant::NIL;
 }
 
@@ -299,6 +305,11 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 			if (tclass == CACHED_CLASS(Plane))
 				RETURN_BOXED_STRUCT(Plane, p_var);
+
+			if (mono_class_is_enum(tclass->get_raw())) {
+				int val = p_var->operator signed int();
+				return BOX_ENUM(tclass->get_raw(), val);
+			}
 		} break;
 
 		case MONO_TYPE_ARRAY:
@@ -515,6 +526,9 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 
 			if (tclass == CACHED_CLASS(Plane))
 				RETURN_UNBOXED_STRUCT(Plane, p_obj);
+
+			if (mono_class_is_enum(tclass->get_raw()))
+				return unbox<int32_t>(p_obj);
 		} break;
 
 		case MONO_TYPE_ARRAY:

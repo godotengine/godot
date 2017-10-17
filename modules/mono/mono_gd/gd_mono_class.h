@@ -98,7 +98,13 @@ public:
 	_FORCE_INLINE_ MonoClass *get_raw() const { return mono_class; }
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
+	String get_full_name() const;
+
 	GDMonoClass *get_parent_class();
+
+#ifdef TOOLS_ENABLED
+	Vector<MonoClassField *> get_enum_fields();
+#endif
 
 	bool has_method(const StringName &p_name);
 
