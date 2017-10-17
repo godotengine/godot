@@ -2569,8 +2569,8 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 	ubo_data.light_direction_attenuation[3] = 1.0;
 
 	ubo_data.light_params[0] = 0;
-	ubo_data.light_params[1] = li->light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-	ubo_data.light_params[2] = 0;
+	ubo_data.light_params[1] = 0;
+	ubo_data.light_params[2] = li->light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
 	ubo_data.light_params[3] = 0;
 
 	Color shadow_color = li->light_ptr->shadow_color.to_linear();
