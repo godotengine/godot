@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  av_stream_webm.cpp.cpp                                              */
+/*  video_stream_webm.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +32,12 @@
 #include "OpusVorbisDecoder.hpp"
 #include "VPXDecoder.hpp"
 
-#include "../theora/yuv2rgb.h"
 #include "mkvparser/mkvparser.h"
 
-#include "global_config.h"
 #include "os/file_access.h"
+#include "project_settings.h"
+
+#include "thirdparty/misc/yuv2rgb.h"
 
 #include <string.h>
 
@@ -57,7 +59,7 @@ public:
 
 		if (file) {
 
-			if (file->get_pos() != (size_t)pos)
+			if (file->get_position() != (size_t)pos)
 				file->seek(pos);
 			if (file->get_buffer(buf, len) == len)
 				return 0;
@@ -166,7 +168,7 @@ void VideoStreamPlaybackWebm::play() {
 
 	stop();
 
-	delay_compensation = GlobalConfig::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 
 	playing = true;
@@ -202,11 +204,11 @@ float VideoStreamPlaybackWebm::get_length() const {
 	return 0.0f;
 }
 
-float VideoStreamPlaybackWebm::get_pos() const {
+float VideoStreamPlaybackWebm::get_playback_position() const {
 
 	return video_pos;
 }
-void VideoStreamPlaybackWebm::seek_pos(float p_time) {
+void VideoStreamPlaybackWebm::seek(float p_time) {
 
 	//Not implemented
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ARVRPositionalTracker" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A tracked object
+	</brief_description>
+	<description>
+		An instance of this object represents a device that is tracked such as a controller or anchor point. HMDs aren't represented here as they are fully handled internally.
+		As controllers are turned on and the AR/VR interface detects them instances of this object are automatically added to this list of active tracking objects accessible through the ARVRServer
+		The ARVRController and ARVRAnchor both consume objects of this type and should be the objects you use in game. The positional trackers are just the under the hood objects that make this all work and are mostly exposed so GDNative based interfaces can interact with them.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_joy_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				If this is a controller that is being tracked the controller will also be represented by a joystick entry with this id.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				If available this returns the name of the controller or anchor point.
+			</description>
+		</method>
+		<method name="get_orientation" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Returns the orientation matrix of the controller.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the position of the controller adjusted by world scale.
+			</description>
+		</method>
+		<method name="get_tracks_orientation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the orientation of this device is being tracked.
+			</description>
+		</method>
+		<method name="get_tracks_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the position of this device is being tracked.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="adjust_by_reference_frame" type="bool">
+			</argument>
+			<description>
+				Returns the transform combining the orientation and position of this device.
+			</description>
+		</method>
+		<method name="get_type" qualifiers="const">
+			<return type="int" enum="ARVRServer.TrackerType">
+			</return>
+			<description>
+				Type of tracker.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TRACKER_HAND_UNKNOWN" value="0">
+		</constant>
+		<constant name="TRACKER_LEFT_HAND" value="1">
+		</constant>
+		<constant name="TRACKER_RIGHT_HAND" value="2">
+		</constant>
+	</constants>
+</class>

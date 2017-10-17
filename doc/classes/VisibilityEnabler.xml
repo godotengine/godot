@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisibilityEnabler" inherits="VisibilityNotifier" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Enable certain nodes only when visible.
+	</brief_description>
+	<description>
+		The VisibilityEnabler will disable [RigidBody] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler itself.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_enabler_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler.Enabler">
+			</argument>
+			<description>
+				Returns whether the specified enabler was set to true or not.
+			</description>
+		</method>
+		<method name="set_enabler">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler.Enabler">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set an enabler to true for all nodes of its type to be disabled when the VisibilityEnabler is not in view. See the constants for enablers and what they affect.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		</member>
+		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		</member>
+	</members>
+	<constants>
+		<constant name="ENABLER_FREEZE_BODIES" value="1">
+			This enabler will freeze [RigidBody] nodes.
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+			This enabler will pause [AnimationPlayer] nodes.
+		</constant>
+		<constant name="ENABLER_MAX" value="2">
+		</constant>
+	</constants>
+</class>

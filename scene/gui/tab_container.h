@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +54,7 @@ private:
 	bool tabs_visible;
 	bool buttons_visible_cache;
 	TabAlign align;
-	Control *_get_tab(int idx) const;
+	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	Popup *popup;
 
@@ -62,7 +63,7 @@ private:
 
 protected:
 	void _child_renamed_callback();
-	void _gui_input(const InputEvent &p_event);
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +29,15 @@
 /*************************************************************************/
 #include "reference_rect.h"
 
+#include "engine.h"
+
 void ReferenceRect::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
 		if (!is_inside_tree())
 			return;
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			draw_style_box(get_stylebox("border"), Rect2(Point2(), get_size()));
 	}
 }

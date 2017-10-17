@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR loader (body).                                          */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -562,7 +562,7 @@
     FT_UInt    len    = (FT_UInt)( limit - p );
 
 
-    if ( phy_font->font_id != NULL )
+    if ( phy_font->font_id )
       goto Exit;
 
     if ( FT_ALLOC( phy_font->font_id, len + 1 ) )
@@ -589,7 +589,7 @@
     FT_Memory  memory = phy_font->memory;
 
 
-    if ( phy_font->vertical.stem_snaps != NULL )
+    if ( phy_font->vertical.stem_snaps )
       goto Exit;
 
     PFR_CHECK( 1 );

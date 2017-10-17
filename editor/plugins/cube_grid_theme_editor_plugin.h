@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +33,9 @@
 #include "editor/editor_node.h"
 #include "scene/resources/mesh_library.h"
 
-#if 0
 class MeshLibraryEditor : public Control {
 
-	GDCLASS( MeshLibraryEditor, Control );
+	GDCLASS(MeshLibraryEditor, Control);
 
 	Ref<MeshLibrary> theme;
 
@@ -54,7 +54,7 @@ class MeshLibraryEditor : public Control {
 	};
 
 	int option;
-	void _import_scene_cbk(const String& p_str);
+	void _import_scene_cbk(const String &p_str);
 	void _menu_cbk(int p_option);
 	void _menu_confirm();
 
@@ -62,25 +62,22 @@ class MeshLibraryEditor : public Control {
 
 protected:
 	static void _bind_methods();
-public:
 
-	void edit(const Ref<MeshLibrary>& p_theme);
-	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml,bool p_merge=true);
+public:
+	void edit(const Ref<MeshLibrary> &p_theme);
+	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true);
 
 	MeshLibraryEditor(EditorNode *p_editor);
 };
 
-
-
 class MeshLibraryEditorPlugin : public EditorPlugin {
 
-	GDCLASS( MeshLibraryEditorPlugin, EditorPlugin );
+	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
 	MeshLibraryEditor *theme_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "MeshLibrary"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -88,8 +85,6 @@ public:
 	virtual void make_visible(bool p_visible);
 
 	MeshLibraryEditorPlugin(EditorNode *p_node);
-
 };
 
 #endif // CUBE_GRID_THEME_EDITOR_PLUGIN_H
-#endif

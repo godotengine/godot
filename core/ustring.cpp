@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,14 @@
 #include "ustring.h"
 
 #include "color.h"
-#include "io/md5.h"
-#include "io/sha256.h"
 #include "math_funcs.h"
 #include "os/memory.h"
 #include "print_string.h"
 #include "ucaps.h"
 #include "variant.h"
+
+#include "thirdparty/misc/md5.h"
+#include "thirdparty/misc/sha256.h"
 
 #include <wchar.h>
 
@@ -51,6 +53,8 @@
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c) >= 'a' && (m_c) <= 'z') ? ((m_c) - ('a' - 'A')) : (m_c))
 #define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
+#define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
+#define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
 
 /** STRING **/
 
@@ -61,7 +65,7 @@ bool CharString::operator<(const CharString &p_right) const {
 	}
 
 	const char *this_str = get_data();
-	const char *that_str = get_data();
+	const char *that_str = p_right.get_data();
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
@@ -92,6 +96,12 @@ const char *CharString::get_data() const {
 
 void String::copy_from(const char *p_cstr) {
 
+	if (!p_cstr) {
+
+		resize(0);
+		return;
+	}
+
 	int len = 0;
 	const char *ptr = p_cstr;
 	while (*(ptr++) != 0)
@@ -114,6 +124,12 @@ void String::copy_from(const char *p_cstr) {
 }
 
 void String::copy_from(const CharType *p_cstr, int p_clip_to) {
+
+	if (!p_cstr) {
+
+		resize(0);
+		return;
+	}
 
 	int len = 0;
 	const CharType *ptr = p_cstr;
@@ -263,16 +279,16 @@ void String::operator=(const CharType *p_str) {
 	copy_from(p_str);
 }
 
-bool String::operator==(const StrRange &p_range) const {
+bool String::operator==(const StrRange &p_str_range) const {
 
-	int len = p_range.len;
+	int len = p_str_range.len;
 
 	if (length() != len)
 		return false;
 	if (empty())
 		return true;
 
-	const CharType *c_str = p_range.c_str;
+	const CharType *c_str = p_str_range.c_str;
 	const CharType *dst = &operator[](0);
 
 	/* Compare char by char */
@@ -479,6 +495,68 @@ signed char String::casecmp_to(const String &p_str) const {
 	return 0; //should never reach anyway
 }
 
+signed char String::naturalnocasecmp_to(const String &p_str) const {
+
+	const CharType *this_str = c_str();
+	const CharType *that_str = p_str.c_str();
+
+	if (this_str && that_str) {
+
+		while (*this_str == '.' || *that_str == '.') {
+			if (*this_str++ != '.')
+				return 1;
+			if (*that_str++ != '.')
+				return -1;
+			if (!*that_str)
+				return 1;
+			if (!*this_str)
+				return -1;
+		}
+
+		while (*this_str) {
+
+			if (!*that_str)
+				return 1;
+			else if (IS_DIGIT(*this_str)) {
+
+				int64_t this_int, that_int;
+
+				if (!IS_DIGIT(*that_str))
+					return -1;
+
+				/* Compare the numbers */
+				this_int = to_int(this_str);
+				that_int = to_int(that_str);
+
+				if (this_int < that_int)
+					return -1;
+				else if (this_int > that_int)
+					return 1;
+
+				/* Skip */
+				while (IS_DIGIT(*this_str))
+					this_str++;
+				while (IS_DIGIT(*that_str))
+					that_str++;
+			} else if (IS_DIGIT(*that_str))
+				return 1;
+			else {
+				if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
+					return -1;
+				else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
+					return 1;
+
+				this_str++;
+				that_str++;
+			}
+		}
+		if (*that_str)
+			return -1;
+	}
+
+	return 0;
+}
+
 void String::erase(int p_pos, int p_chars) {
 
 	*this = left(p_pos) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
@@ -510,16 +588,18 @@ String String::camelcase_to_underscore(bool lowercase) const {
 	const char a = 'a', z = 'z';
 	int start_index = 0;
 
-	for (size_t i = 1; i < this->size(); i++) {
+	for (int i = 1; i < this->size(); i++) {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
+		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;
 		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
+		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
 
 		if (i + 2 < this->size()) {
 			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
 		}
 
-		bool should_split = ((is_upper && !was_precedent_upper) || (was_precedent_upper && is_upper && are_next_2_lower));
+		bool should_split = ((is_upper && !was_precedent_upper && !was_precedent_number) || (was_precedent_upper && is_upper && are_next_2_lower) || (is_number && !was_precedent_number));
 		if (should_split) {
 			new_string += this->substr(start_index, i - start_index) + "_";
 			start_index = i;
@@ -1172,66 +1252,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 
 	return ret;
 };
-#if 0
-_FORCE_INLINE static int parse_utf8_char(const char *p_utf8,unsigned int *p_ucs4,int p_left) { //return len
 
-
-	int len=0;
-
-/* Determine the number of characters in sequence */
-	if ((*p_utf8 & 0x80)==0)
-		len=1;
-	else if ((*p_utf8 & 0xE0)==0xC0)
-		len=2;
-	else if ((*p_utf8 & 0xF0)==0xE0)
-		len=3;
-	else if ((*p_utf8 & 0xF8)==0xF0)
-		len=4;
-	else if ((*p_utf8 & 0xFC)==0xF8)
-		len=5;
-	else if ((*p_utf8 & 0xFE)==0xFC)
-		len=6;
-	else
-		return -1; //invalid UTF8
-
-	if (len>p_left)
-		return -1; //not enough space
-
-	if (len==2 && (*p_utf8&0x1E)==0) {
-		//printf("overlong rejected\n");
-		return -1; //reject overlong
-	}
-
-	/* Convert the first character */
-
-	unsigned int unichar=0;
-
-	if (len == 1)
-		unichar=*p_utf8;
-	else {
-
-		unichar=(0xFF >> (len +1)) & *p_utf8;
-
-		for (int i=1;i<len;i++) {
-
-			if ((p_utf8[i] & 0xC0) != 0x80) {
-				//printf("invalid utf8\n");
-				return -1; //invalid utf8
-			}
-			if (unichar==0 && i==2 && ((p_utf8[i] & 0x7F) >> (7 - len)) == 0) {
-				//printf("no overlong\n");
-				return -1; //no overlong
-			}
-			unichar = (unichar << 6) | (p_utf8[i] & 0x3F);
-		}
-	}
-
-	*p_ucs4=unichar;
-
-	return len;
-
-}
-#endif
 bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 #define _UNICERROR(m_err) print_line("unicode error: " + String(m_err));
@@ -1694,9 +1715,6 @@ bool String::is_numeric() const {
 	return true; // TODO: Use the parser below for this instead
 };
 
-#define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
-#define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
-
 template <class C>
 static double built_in_strtod(const C *string, /* A decimal ASCII floating-point number,
 				 * optionally preceded by white space. Must
@@ -1737,7 +1755,7 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	register int c;
 	int exp = 0; /* Exponent read from "EX" field. */
 	int fracExp = 0; /* Exponent that derives from the fractional
-				 * part. Under normal circumstatnces, it is
+				 * part. Under normal circumstances, it is
 				 * the negative of the number of digits in F.
 				 * However, if I is very long, the last digits
 				 * of I get dropped (otherwise a long I with a
@@ -1921,94 +1939,6 @@ double String::to_double(const char *p_str) {
 #else
 	return built_in_strtod<char>(p_str);
 #endif
-#if 0
-#if 0
-
-
-	return atof(p_str);
-#else
-	if (!p_str[0])
-		return 0;
-///@todo make more exact so saving and loading does not lose precision
-
-	double integer=0;
-	double decimal=0;
-	double decimal_mult=0.1;
-	double sign=1.0;
-	double exp=0;
-	double exp_sign=1.0;
-	int reading=READING_SIGN;
-
-	const char *str=p_str;
-
-	while(*str && reading!=READING_DONE) {
-
-		CharType c=*(str++);
-		switch(reading) {
-			case READING_SIGN: {
-				if (c>='0' && c<='9')
-					reading=READING_INT;
-					// let it fallthrough
-				else if (c=='-') {
-					sign=-1.0;
-					reading=READING_INT;
-					break;
-				} else if (c=='.') {
-					reading=READING_DEC;
-					break;
-				} else {
-					break;
-				}
-			}
-			case READING_INT: {
-
-				if (c>='0' && c<='9') {
-
-					integer*=10;
-					integer+=c-'0';
-				} else if (c=='.') {
-					reading=READING_DEC;
-				} else if (c=='e') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_DEC: {
-
-				if (c>='0' && c<='9') {
-
-					decimal+=(c-'0')*decimal_mult;
-					decimal_mult*=0.1;
-				} else if (c=='e') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_EXP: {
-
-				if (c>='0' && c<='9') {
-
-					exp*=10.0;
-					exp+=(c-'0');
-				} else if (c=='-' && exp==0) {
-					exp_sign=-1.0;
-				} else if (exp_sign>=0 && c=='+') {
-					//redundant...
-					exp_sign=1.0;
-				} else {
-					reading=READING_DONE;
-				}
-			 } break;
-		}
-	}
-
-	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
-#endif
-#endif
 }
 
 float String::to_float() const {
@@ -2019,100 +1949,6 @@ float String::to_float() const {
 double String::to_double(const CharType *p_str, const CharType **r_end) {
 
 	return built_in_strtod<CharType>(p_str, (CharType **)r_end);
-#if 0
-#if 0
-	//ndef NO_USE_STDLIB
-	return wcstod(p_str,p_len<0?NULL:p_str+p_len);
-#else
-	if (p_len==0 || !p_str[0])
-		return 0;
-///@todo make more exact so saving and loading does not lose precision
-
-	double integer=0;
-	double decimal=0;
-	double decimal_mult=0.1;
-	double sign=1.0;
-	double exp=0;
-	double exp_sign=1.0;
-	int reading=READING_SIGN;
-
-	const CharType *str=p_str;
-	const CharType *limit=&p_str[p_len];
-
-	while(reading!=READING_DONE && str!=limit) {
-
-		CharType c=*(str++);
-		switch(reading) {
-			case READING_SIGN: {
-				if (c>='0' && c<='9')
-					reading=READING_INT;
-					// let it fallthrough
-				else if (c=='-') {
-					sign=-1.0;
-					reading=READING_INT;
-					break;
-				} else if (c=='.') {
-					reading=READING_DEC;
-					break;
-				} else if (c==0) {
-					reading=READING_DONE;
-					break;
-				} else {
-					break;
-				}
-			}
-			case READING_INT: {
-
-				if (c>='0' && c<='9') {
-
-					integer*=10;
-					integer+=c-'0';
-				} else if (c=='.') {
-					reading=READING_DEC;
-				} else if (c=='e' || c=='E') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_DEC: {
-
-				if (c>='0' && c<='9') {
-
-					decimal+=(c-'0')*decimal_mult;
-					decimal_mult*=0.1;
-				} else if (c=='e' || c=='E') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_EXP: {
-
-				if (c>='0' && c<='9') {
-
-					exp*=10.0;
-					exp+=(c-'0');
-				} else if (c=='-' && exp==0) {
-					exp_sign=-1.0;
-				} else if (exp_sign>=0 && c=='+') {
-					//redundant...
-					exp_sign=1.0;
-				} else {
-					reading=READING_DONE;
-				}
-			 } break;
-		}
-	}
-
-	if (r_end)
-		*r_end=str-1;
-
-	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
-#endif
-#endif
 }
 
 int64_t String::to_int(const CharType *p_str, int p_len) {
@@ -2174,98 +2010,6 @@ double String::to_double() const {
 //return wcstod(c_str(),NULL); DOES NOT WORK ON ANDROID :(
 #else
 	return built_in_strtod<CharType>(c_str());
-#endif
-#if 0
-#ifndef NO_USE_STDLIB
-
-	return atof(utf8().get_data());
-#else
-
-	double integer=0;
-	double decimal=0;
-	double decimal_mult=0.1;
-	double sign=1.0;
-	double exp=0;
-	double exp_sign=1.0;
-	int reading=READING_SIGN;
-
-	const CharType *str=&operator[](0);
-
-	while(*str && reading!=READING_DONE) {
-
-		CharType c=*(str++);
-		switch(reading) {
-			case READING_SIGN: {
-				if (c>='0' && c<='9')
-					reading=READING_INT;
-					// let it fallthrough
-				else if (c=='-') {
-					sign=-1.0;
-					reading=READING_INT;
-					break;
-				} else if (c=='.') {
-					reading=READING_DEC;
-					break;
-				} else {
-					break;
-				}
-			}
-			case READING_INT: {
-
-				if (c>='0' && c<='9') {
-
-					integer*=10;
-					integer+=c-'0';
-				} else if (c=='.') {
-					reading=READING_DEC;
-				} else if (c=='e') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_DEC: {
-
-				if (c>='0' && c<='9') {
-
-					decimal+=(c-'0')*decimal_mult;
-					decimal_mult*=0.1;
-				} else if (c=='e') {
-					reading=READING_EXP;
-				} else {
-					reading=READING_DONE;
-				}
-
-			 } break;
-			case READING_EXP: {
-
-				if (c>='0' && c<='9') {
-
-					exp*=10.0;
-					exp+=(c-'0');
-				} else if (c=='-' && exp==0) {
-					exp_sign=-1.0;
-				} else if (exp_sign>=0 && c=='+') {
-					//redundant...
-					exp_sign=1.0;
-				} else {
-					reading=READING_DONE;
-				}
-			 } break;
-		}
-	}
-
-	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
-#endif
-#if 0
-
-
-	double ret=sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
-
-	print_line(*this +" == "+rtos(ret));
-	return ret;
-#endif
 #endif
 }
 
@@ -2588,12 +2332,12 @@ int String::findn(String p_str, int p_from) const {
 
 int String::rfind(String p_str, int p_from) const {
 
-	//stabilish a limit
+	// establish a limit
 	int limit = length() - p_str.length();
 	if (limit < 0)
 		return -1;
 
-	//stabilish a starting point
+	// establish a starting point
 	if (p_from < 0)
 		p_from = limit;
 	else if (p_from > limit)
@@ -2603,7 +2347,7 @@ int String::rfind(String p_str, int p_from) const {
 	int len = length();
 
 	if (src_len == 0 || len == 0)
-		return -1; //wont find anything!
+		return -1; // won't find anything!
 
 	const CharType *src = c_str();
 
@@ -2634,12 +2378,12 @@ int String::rfind(String p_str, int p_from) const {
 }
 int String::rfindn(String p_str, int p_from) const {
 
-	//stabilish a limit
+	// establish a limit
 	int limit = length() - p_str.length();
 	if (limit < 0)
 		return -1;
 
-	//stabilish a starting point
+	// establish a starting point
 	if (p_from < 0)
 		p_from = limit;
 	else if (p_from > limit)
@@ -3911,12 +3655,12 @@ String String::sprintf(const Array &values, bool *error) const {
 	CharType *self = (CharType *)c_str();
 	bool in_format = false;
 	int value_index = 0;
-	int min_chars;
-	int min_decimals;
-	bool in_decimals;
-	bool pad_with_zeroes;
-	bool left_justified;
-	bool show_sign;
+	int min_chars = 0;
+	int min_decimals = 0;
+	bool in_decimals = false;
+	bool pad_with_zeroes = false;
+	bool left_justified = false;
+	bool show_sign = false;
 
 	*error = true;
 
@@ -3943,12 +3687,12 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					int64_t value = values[value_index];
-					int base;
+					int base = 16;
 					bool capitalize = false;
 					switch (c) {
 						case 'd': base = 10; break;
 						case 'o': base = 8; break;
-						case 'x': base = 16; break;
+						case 'x': break;
 						case 'X':
 							base = 16;
 							capitalize = true;
@@ -4098,7 +3842,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 					break;
 				}
-				case '.': { // Float separtor.
+				case '.': { // Float separator.
 					if (in_decimals) {
 						return "too many decimal points in format";
 					}
@@ -4107,7 +3851,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					break;
 				}
 
-				case '*': { // Dyanmic width, based on value.
+				case '*': { // Dynamic width, based on value.
 					if (value_index >= values.size()) {
 						return "not enough arguments for format string";
 					}

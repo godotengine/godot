@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,6 +94,8 @@ bool Camera::_set(const StringName &p_name, const Variant &p_value) {
 		set_cull_mask(p_value);
 	} else if (p_name == "environment") {
 		set_environment(p_value);
+	} else if (p_name == "doppler/tracking") {
+		set_doppler_tracking(DopplerTracking(int(p_value)));
 	} else
 		return false;
 
@@ -130,6 +133,8 @@ bool Camera::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_v_offset();
 	} else if (p_name == "environment") {
 		r_ret = get_environment();
+	} else if (p_name == "doppler/tracking") {
+		r_ret = get_doppler_tracking();
 	} else
 		return false;
 
@@ -170,6 +175,7 @@ void Camera::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
+	p_list->push_back(PropertyInfo(Variant::INT, "doppler/tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Fixed"));
 }
 
 void Camera::_update_camera() {
@@ -208,6 +214,9 @@ void Camera::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			_request_camera_update();
+			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+				velocity_tracker->update_position(get_global_transform().origin);
+			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
@@ -330,15 +339,8 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
 	}
 
-#if 0
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	Vector2 cpos = p_pos;
-#else
-
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
-#endif
-
 	Vector3 ray;
 
 	if (mode == PROJECTION_ORTHOGONAL) {
@@ -362,17 +364,9 @@ Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
 	}
 
-#if 0
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	Vector2 cpos = p_pos;
-#else
-
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
-#endif
-
 	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
-	//float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
 
@@ -506,6 +500,22 @@ Camera::KeepAspect Camera::get_keep_aspect_mode() const {
 	return keep_aspect;
 }
 
+void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
+
+	if (doppler_tracking == p_tracking)
+		return;
+
+	doppler_tracking = p_tracking;
+	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
+		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
+		velocity_tracker->reset(get_global_transform().origin);
+	}
+}
+
+Camera::DopplerTracking Camera::get_doppler_tracking() const {
+	return doppler_tracking;
+}
+
 void Camera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("project_ray_normal", "screen_point"), &Camera::project_ray_normal);
@@ -531,17 +541,23 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera::get_cull_mask);
-	ClassDB::bind_method(D_METHOD("set_environment", "env:Environment"), &Camera::set_environment);
-	ClassDB::bind_method(D_METHOD("get_environment:Environment"), &Camera::get_environment);
+	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment"), &Camera::get_environment);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
+	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
-	BIND_CONSTANT(PROJECTION_PERSPECTIVE);
-	BIND_CONSTANT(PROJECTION_ORTHOGONAL);
+	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
+	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
 
-	BIND_CONSTANT(KEEP_WIDTH);
-	BIND_CONSTANT(KEEP_HEIGHT);
+	BIND_ENUM_CONSTANT(KEEP_WIDTH);
+	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
+
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP)
 }
 
 float Camera::get_fov() const {
@@ -615,6 +631,14 @@ float Camera::get_h_offset() const {
 	return h_offset;
 }
 
+Vector3 Camera::get_doppler_tracked_velocity() const {
+
+	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
+		return velocity_tracker->get_tracked_linear_velocity();
+	} else {
+		return Vector3();
+	}
+}
 Camera::Camera() {
 
 	camera = VisualServer::get_singleton()->camera_create();
@@ -625,13 +649,15 @@ Camera::Camera() {
 	current = false;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
-	set_perspective(60.0, 0.1, 100.0);
+	set_perspective(65.0, 0.1, 100.0);
 	keep_aspect = KEEP_HEIGHT;
 	layers = 0xfffff;
 	v_offset = 0;
 	h_offset = 0;
 	VisualServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
+	velocity_tracker.instance();
+	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
 }
 

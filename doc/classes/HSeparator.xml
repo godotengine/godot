@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HSeparator" inherits="Separator" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Horizontal separator.
+	</brief_description>
+	<description>
+		Horizontal separator. See [Separator]. It is used to separate objects vertically, though (but it looks horizontal!).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="separation" type="int">
+		</theme_item>
+		<theme_item name="separator" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

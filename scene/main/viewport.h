@@ -1,11 +1,13 @@
+
 /*************************************************************************/
 /*  viewport.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +78,8 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
+	virtual Ref<Image> get_data() const;
+
 	ViewportTexture();
 	~ViewportTexture();
 };
@@ -112,6 +116,38 @@ public:
 		MSAA_16X,
 	};
 
+	enum Usage {
+		USAGE_2D,
+		USAGE_2D_NO_SAMPLING,
+		USAGE_3D,
+		USAGE_3D_NO_EFFECTS,
+	};
+
+	enum RenderInfo {
+
+		RENDER_INFO_OBJECTS_IN_FRAME,
+		RENDER_INFO_VERTICES_IN_FRAME,
+		RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
+		RENDER_INFO_SHADER_CHANGES_IN_FRAME,
+		RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
+		RENDER_INFO_DRAW_CALLS_IN_FRAME,
+		RENDER_INFO_MAX
+	};
+
+	enum DebugDraw {
+		DEBUG_DRAW_DISABLED,
+		DEBUG_DRAW_UNSHADED,
+		DEBUG_DRAW_OVERDRAW,
+		DEBUG_DRAW_WIREFRAME,
+	};
+
+	enum ClearMode {
+
+		CLEAR_MODE_ALWAYS,
+		CLEAR_MODE_NEVER,
+		CLEAR_MODE_ONLY_NEXT_FRAME
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -119,6 +155,8 @@ private:
 
 	Listener *listener;
 	Set<Listener *> listeners;
+
+	bool arvr;
 
 	Camera *camera;
 	Set<Camera *> cameras;
@@ -152,12 +190,14 @@ private:
 
 	bool transparent_bg;
 	bool vflip;
-	bool clear_on_new_frame;
+	ClearMode clear_mode;
 	bool filter;
 	bool gen_mipmaps;
 
+	bool snap_controls_to_pixels;
+
 	bool physics_object_picking;
-	List<InputEvent> physics_picking_events;
+	List<Ref<InputEvent> > physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
@@ -193,6 +233,10 @@ private:
 	UpdateMode update_mode;
 	RID texture_rid;
 	uint32_t texture_flags;
+
+	DebugDraw debug_draw;
+
+	Usage usage;
 
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
@@ -236,14 +280,14 @@ private:
 
 	bool disable_input;
 
-	void _gui_call_input(Control *p_control, const InputEvent &p_input);
+	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
 	Control *_gui_find_control(const Point2 &p_global);
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
-	void _gui_input_event(InputEvent p_event);
+	void _gui_input_event(Ref<InputEvent> p_event);
 
 	void update_worlds();
 
@@ -252,10 +296,10 @@ private:
 	void _vp_enter_tree();
 	void _vp_exit_tree();
 
-	void _vp_input(const InputEvent &p_ev);
+	void _vp_input(const Ref<InputEvent> &p_ev);
 	void _vp_input_text(const String &p_text);
-	void _vp_unhandled_input(const InputEvent &p_ev);
-	void _make_input_local(InputEvent &ev);
+	void _vp_unhandled_input(const Ref<InputEvent> &p_ev);
+	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
 	friend class Control;
 
@@ -317,6 +361,9 @@ public:
 	Listener *get_listener() const;
 	Camera *get_camera() const;
 
+	void set_use_arvr(bool p_use_arvr);
+	bool use_arvr();
+
 	void set_as_audio_listener(bool p_enable);
 	bool is_audio_listener() const;
 
@@ -358,9 +405,8 @@ public:
 	void set_vflip(bool p_enable);
 	bool get_vflip() const;
 
-	void set_clear_on_new_frame(bool p_enable);
-	bool get_clear_on_new_frame() const;
-	void clear();
+	void set_clear_mode(ClearMode p_mode);
+	ClearMode get_clear_mode() const;
 
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
@@ -381,14 +427,11 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
-	void queue_screen_capture();
-	Image get_screen_capture() const;
-
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;
 
-	void input(const InputEvent &p_event);
-	void unhandled_input(const InputEvent &p_event);
+	void input(const Ref<InputEvent> &p_event);
+	void unhandled_input(const Ref<InputEvent> &p_event);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
@@ -399,7 +442,7 @@ public:
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
 
-	Vector2 get_mouse_pos() const;
+	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);
 
 	void set_physics_object_picking(bool p_enable);
@@ -415,6 +458,17 @@ public:
 
 	virtual String get_configuration_warning() const;
 
+	void set_usage(Usage p_usage);
+	Usage get_usage() const;
+
+	void set_debug_draw(DebugDraw p_debug_draw);
+	DebugDraw get_debug_draw() const;
+
+	int get_render_info(RenderInfo p_info);
+
+	void set_snap_controls_to_pixels(bool p_enable);
+	bool is_snap_controls_to_pixels_enabled() const;
+
 	Viewport();
 	~Viewport();
 };
@@ -422,5 +476,9 @@ public:
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::Usage);
+VARIANT_ENUM_CAST(Viewport::DebugDraw);
+VARIANT_ENUM_CAST(Viewport::ClearMode);
+VARIANT_ENUM_CAST(Viewport::RenderInfo);
 
 #endif

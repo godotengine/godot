@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MainLoop" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Main loop is the abstract main loop base class.
+	</brief_description>
+	<description>
+		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_drop_files" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="files" type="PoolStringArray">
+			</argument>
+			<argument index="1" name="screen" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_finalize" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called before the program exits.
+			</description>
+		</method>
+		<method name="_idle" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+				Called each idle frame with time since last call as an only argument.
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called once during initialization.
+			</description>
+		</method>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="ev" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_input_text" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_iteration" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="finish">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="idle">
+			<return type="bool">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="init">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="input_event">
+			<return type="void">
+			</return>
+			<argument index="0" name="ev" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="input_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="iteration">
+			<return type="bool">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="2" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="3" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_FOCUS_IN" value="4" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="5" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="6" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="8" enum="">
+		</constant>
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="9" enum="">
+		</constant>
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="90" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_ABOUT" value="91" enum="">
+		</constant>
+	</constants>
+</class>

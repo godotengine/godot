@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Dictionary" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Dictionary type.
+	</brief_description>
+	<description>
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<description>
+				Clear the dictionary, removing all key/value pairs.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the dictionary is empty.
+			</description>
+		</method>
+		<method name="erase">
+			<argument index="0" name="key" type="var">
+			</argument>
+			<description>
+				Erase a dictionary key/value pair by key.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="key" type="var">
+			</argument>
+			<description>
+				Return true if the dictionary has a given key.
+			</description>
+		</method>
+		<method name="has_all">
+			<return type="bool">
+			</return>
+			<argument index="0" name="keys" type="Array">
+			</argument>
+			<description>
+				Return true if the dictionary has all of the keys in the given array.
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<description>
+				Return a hashed integer value representing the dictionary contents.
+			</description>
+		</method>
+		<method name="keys">
+			<return type="Array">
+			</return>
+			<description>
+				Return the list of keys in the [Dictionary].
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Return the size of the dictionary (in pairs).
+			</description>
+		</method>
+		<method name="values">
+			<return type="Array">
+			</return>
+			<description>
+				Return the list of values in the [Dictionary].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

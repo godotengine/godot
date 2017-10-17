@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +82,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 2, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 2, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
 
@@ -108,7 +109,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 32, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
 
@@ -135,7 +136,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 32, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 32, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
 
@@ -163,7 +164,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 				}
 			}
 
-			Image image(32, 64, 0, Image::FORMAT_LA8, pixels);
+			Ref<Image> image = memnew(Image(32, 64, 0, Image::FORMAT_LA8, pixels));
 
 			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
 
@@ -177,7 +178,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 		{
 
-			Image image(convex_png);
+			Ref<Image> image = memnew(Image(convex_png));
 
 			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_create_from_image(image);
 
@@ -207,35 +208,36 @@ class TestPhysics2DMainLoop : public MainLoop {
 	}
 
 protected:
-	void input_event(const InputEvent &p_event) {
+	void input_event(const Ref<InputEvent> &p_event) {
 
-		if (p_event.type == InputEvent::MOUSE_BUTTON) {
+		Ref<InputEventMouseButton> mb = p_event;
 
-			const InputEventMouseButton &mb = p_event.mouse_button;
+		if (mb.is_valid()) {
 
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 
-				Point2 p(mb.x, mb.y);
+				Point2 p(mb->get_position().x, mb->get_position().y);
 
-				if (mb.button_index == 1) {
+				if (mb->get_button_index() == 1) {
 					ray_to = p;
 					_do_ray_query();
-				} else if (mb.button_index == 2) {
+				} else if (mb->get_button_index() == 2) {
 					ray_from = p;
 					_do_ray_query();
 				}
 			}
 		}
-		if (p_event.type == InputEvent::MOUSE_MOTION) {
 
-			const InputEventMouseMotion &mm = p_event.mouse_motion;
+		Ref<InputEventMouseMotion> mm = p_event;
 
-			Point2 p(mm.x, mm.y);
+		if (mm.is_valid()) {
 
-			if (mm.button_mask & BUTTON_MASK_LEFT) {
+			Point2 p = mm->get_position();
+
+			if (mm->get_button_mask() & BUTTON_MASK_LEFT) {
 				ray_to = p;
 				_do_ray_query();
-			} else if (mm.button_mask & BUTTON_MASK_RIGHT) {
+			} else if (mm->get_button_mask() & BUTTON_MASK_RIGHT) {
 				ray_from = p;
 				_do_ray_query();
 			}

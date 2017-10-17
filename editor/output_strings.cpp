@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,15 +38,15 @@ void OutputStrings::update_scrollbars() {
 	v_scroll->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	v_scroll->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 
-	v_scroll->set_begin(Point2(vmin.width, 0));
+	v_scroll->set_begin(Point2(-vmin.width, 0));
 	v_scroll->set_end(Point2(0, 0));
 
 	h_scroll->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	h_scroll->set_anchor(MARGIN_TOP, ANCHOR_END);
 	h_scroll->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 
-	h_scroll->set_begin(Point2(0, hmin.y));
-	h_scroll->set_end(Point2(vmin.x, 0));
+	h_scroll->set_begin(Point2(0, -hmin.y));
+	h_scroll->set_end(Point2(-vmin.x, 0));
 
 	margin.y = hmin.y;
 	margin.x = vmin.x;

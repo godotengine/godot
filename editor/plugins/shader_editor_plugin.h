@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +45,8 @@ class ShaderTextEditor : public CodeTextEditor {
 
 	Ref<Shader> shader;
 
+	void _check_shader_mode();
+
 protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings();
@@ -74,7 +77,6 @@ class ShaderEditor : public VBoxContainer {
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
 		SEARCH_REPLACE,
-		//SEARCH_LOCATE_SYMBOL,
 		SEARCH_GOTO_LINE,
 
 	};
@@ -89,7 +91,7 @@ class ShaderEditor : public VBoxContainer {
 
 	ShaderTextEditor *shader_editor;
 
-	void _menu_option(int p_optin);
+	void _menu_option(int p_option);
 	void _params_changed();
 	mutable Ref<Shader> shader;
 
@@ -104,10 +106,6 @@ public:
 
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
-
-	Dictionary get_state() const;
-	void set_state(const Dictionary &p_state);
-	void clear();
 
 	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
@@ -127,14 +125,10 @@ class ShaderEditorPlugin : public EditorPlugin {
 public:
 	virtual String get_name() const { return "Shader"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
-
-	Dictionary get_state() const;
-	virtual void set_state(const Dictionary &p_state);
-	virtual void clear();
 
 	virtual void save_external_data();
 	virtual void apply_changes();

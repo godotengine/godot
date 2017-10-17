@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PostScript hints recorder (body).                           */
 /*                                                                         */
-/*  Copyright 2001-2016 by                                                 */
+/*  Copyright 2001-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -818,7 +818,7 @@
   ps_hints_init( PS_Hints   hints,
                  FT_Memory  memory )
   {
-    FT_MEM_ZERO( hints, sizeof ( *hints ) );
+    FT_ZERO( hints );
     hints->memory = memory;
   }
 
@@ -1140,7 +1140,7 @@
   FT_LOCAL_DEF( void )
   t1_hints_funcs_init( T1_Hints_FuncsRec*  funcs )
   {
-    FT_MEM_ZERO( (char*)funcs, sizeof ( *funcs ) );
+    FT_ZERO( funcs );
 
     funcs->open  = (T1_Hints_OpenFunc)    t1_hints_open;
     funcs->close = (T1_Hints_CloseFunc)   ps_hints_close;
@@ -1206,7 +1206,7 @@
   FT_LOCAL_DEF( void )
   t2_hints_funcs_init( T2_Hints_FuncsRec*  funcs )
   {
-    FT_MEM_ZERO( funcs, sizeof ( *funcs ) );
+    FT_ZERO( funcs );
 
     funcs->open    = (T2_Hints_OpenFunc)   t2_hints_open;
     funcs->close   = (T2_Hints_CloseFunc)  ps_hints_close;

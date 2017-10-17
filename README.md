@@ -1,4 +1,4 @@
-[![GODOT](/logo.png)](https://godotengine.org)
+[![Godot Engine logo](/logo.png)](https://godotengine.org)
 
 ## Godot Engine
 
@@ -35,7 +35,7 @@ Official binaries for the Godot editor and the export templates can be found
 
 #### Compiling from source
 
-[See the official docs](http://docs.godotengine.org/en/latest/reference/_compiling.html)
+[See the official docs](http://docs.godotengine.org/en/latest/development/compiling/)
 for compilation instructions for every supported platform.
 
 ### Community
@@ -52,7 +52,7 @@ on Freenode.
 The official documentation is hosted on [ReadTheDocs](http://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
-The [class reference](http://docs.godotengine.org/en/latest/classes/_classes.html)
+The [class reference](http://docs.godotengine.org/en/latest/classes/)
 is also accessible from within the engine.
 
 The official demos are maintained in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
@@ -62,5 +62,6 @@ There are also a number of other learning resources provided by the community,
 such as text and video tutorials, demos, etc. Consult the [community channels](https://godotengine.org/community)
 for more info.
 
-[![Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
-[![Code Triagers Badge](http://www.codetriage.com/godotengine/godot/badges/users.svg)](http://www.codetriage.com/godotengine/godot)
+[![Travis Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/bfiihqq6byxsjxxh/branch/master?svg=true)](https://ci.appveyor.com/project/akien-mga/godot)
+[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)

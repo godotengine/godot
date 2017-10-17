@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType MATH table validation (body).                               */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
+/*  Copyright 2007-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  Written by George Williams.                                            */
@@ -60,7 +60,7 @@
     table_size = 2 * ( 56 + 51 );
 
     p += 4 * 2;                 /* First 4 constants have no device tables */
-    for ( i = 0; i < 51; ++i )
+    for ( i = 0; i < 51; i++ )
     {
       p += 2;                                            /* skip the value */
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
@@ -110,7 +110,7 @@
     OTV_SIZE_CHECK( Coverage );
     otv_Coverage_validate( table + Coverage, otvalid, (FT_Int)cnt );
 
-    for ( i = 0; i < cnt; ++i )
+    for ( i = 0; i < cnt; i++ )
     {
       p += 2;                                            /* Skip the value */
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
@@ -151,7 +151,7 @@
     table_size = 4 + 4 * cnt;
 
     /* Heights */
-    for ( i = 0; i < cnt; ++i )
+    for ( i = 0; i < cnt; i++ )
     {
       p += 2;                                            /* Skip the value */
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
@@ -161,7 +161,7 @@
     }
 
     /* One more Kerning value */
-    for ( i = 0; i < cnt + 1; ++i )
+    for ( i = 0; i < cnt + 1; i++ )
     {
       p += 2;                                            /* Skip the value */
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
@@ -198,9 +198,9 @@
     OTV_SIZE_CHECK( Coverage );
     otv_Coverage_validate( table + Coverage, otvalid, (FT_Int)cnt );
 
-    for ( i = 0; i < cnt; ++i )
+    for ( i = 0; i < cnt; i++ )
     {
-      for ( j = 0; j < 4; ++j )
+      for ( j = 0; j < 4; j++ )
       {
         OTV_OPTIONAL_OFFSET( MKRecordOffset );
         OTV_SIZE_CHECK( MKRecordOffset );
@@ -296,7 +296,7 @@
     if ( DeviceTableOffset )
       otv_Device_validate( table + DeviceTableOffset, otvalid );
 
-    for ( i = 0; i < pcnt; ++i )
+    for ( i = 0; i < pcnt; i++ )
     {
       FT_UInt  gid;
 
@@ -332,7 +332,7 @@
     OTV_LIMIT_CHECK( 4 * vcnt );
     table_size = 4 + 4 * vcnt;
 
-    for ( i = 0; i < vcnt; ++i )
+    for ( i = 0; i < vcnt; i++ )
     {
       FT_UInt  gid;
 
@@ -384,14 +384,14 @@
     if ( HCoverage )
       otv_Coverage_validate( table + HCoverage, otvalid, (FT_Int)hcnt );
 
-    for ( i = 0; i < vcnt; ++i )
+    for ( i = 0; i < vcnt; i++ )
     {
       OTV_OPTIONAL_OFFSET( Offset );
       OTV_SIZE_CHECK( Offset );
       otv_MathGlyphConstruction_validate( table + Offset, otvalid );
     }
 
-    for ( i = 0; i < hcnt; ++i )
+    for ( i = 0; i < hcnt; i++ )
     {
       OTV_OPTIONAL_OFFSET( Offset );
       OTV_SIZE_CHECK( Offset );

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR object methods (body).                                  */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -185,7 +185,7 @@
        * nothing.
        */
       pfrface->family_name = phy_font->family_name;
-      if ( pfrface->family_name == NULL )
+      if ( !pfrface->family_name )
         pfrface->family_name = phy_font->font_id;
 
       /* note that the style name can be NULL in certain PFR fonts,
@@ -264,12 +264,6 @@
         charmap.encoding    = FT_ENCODING_UNICODE;
 
         error = FT_CMap_New( &pfr_cmap_class_rec, NULL, &charmap, NULL );
-
-#if 0
-        /* select default charmap */
-        if ( pfrface->num_charmaps )
-          pfrface->charmap = pfrface->charmaps[0];
-#endif
       }
 
       /* check whether we have loaded any kerning pairs */
@@ -342,8 +336,12 @@
     /* try to load an embedded bitmap */
     if ( ( load_flags & ( FT_LOAD_NO_SCALE | FT_LOAD_NO_BITMAP ) ) == 0 )
     {
-      error = pfr_slot_load_bitmap( slot, size, gindex );
-      if ( error == 0 )
+      error = pfr_slot_load_bitmap(
+                slot,
+                size,
+                gindex,
+                ( load_flags & FT_LOAD_BITMAP_METRICS_ONLY ) != 0 );
+      if ( !error )
         goto Exit;
     }
 

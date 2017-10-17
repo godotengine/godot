@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PrismMesh" inherits="PrimitiveMesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class representing a prism-shaped [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a prism-shaped [PrimitiveMesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_left_to_right" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdivide_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_left_to_right">
+			<return type="void">
+			</return>
+			<argument index="0" name="left_to_right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_depth">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdivide_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right">
+			Displacement of of the upper edge along the x-axis. 0.0 positions edge straight above the bottome left edge. Defaults to 0.5 (positioned on the midpoint).
+		</member>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size">
+			Size of the prism. Defaults to (2.0, 2.0, 2.0).
+		</member>
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth">
+			Number of added edge loops along the z-axis. Defaults to 0.
+		</member>
+		<member name="subdivide_height" type="int" setter="set_subdivide_height" getter="get_subdivide_height">
+			Number of added edge loops along the y-axis. Defaults to 0.
+		</member>
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width">
+			Number of added edge loops along the x-axis. Defaults to 0.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ProceduralSky" inherits="Sky" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_ground_bottom_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ground_curve" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ground_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ground_horizon_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sky_curve" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sky_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sky_horizon_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sky_top_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_angle_max" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_angle_min" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_curve" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_latitude" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_sun_longitude" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture_size" qualifiers="const">
+			<return type="int" enum="ProceduralSky.TextureSize">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_ground_bottom_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ground_curve">
+			<return type="void">
+			</return>
+			<argument index="0" name="curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ground_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ground_horizon_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sky_curve">
+			<return type="void">
+			</return>
+			<argument index="0" name="curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sky_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sky_horizon_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sky_top_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_angle_max">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_angle_min">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_curve">
+			<return type="void">
+			</return>
+			<argument index="0" name="curve" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_latitude">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_sun_longitude">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_texture_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="int" enum="ProceduralSky.TextureSize">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color">
+		</member>
+		<member name="ground_curve" type="float" setter="set_ground_curve" getter="get_ground_curve">
+		</member>
+		<member name="ground_energy" type="float" setter="set_ground_energy" getter="get_ground_energy">
+		</member>
+		<member name="ground_horizon_color" type="Color" setter="set_ground_horizon_color" getter="get_ground_horizon_color">
+		</member>
+		<member name="sky_curve" type="float" setter="set_sky_curve" getter="get_sky_curve">
+		</member>
+		<member name="sky_energy" type="float" setter="set_sky_energy" getter="get_sky_energy">
+		</member>
+		<member name="sky_horizon_color" type="Color" setter="set_sky_horizon_color" getter="get_sky_horizon_color">
+		</member>
+		<member name="sky_top_color" type="Color" setter="set_sky_top_color" getter="get_sky_top_color">
+		</member>
+		<member name="sun_angle_max" type="float" setter="set_sun_angle_max" getter="get_sun_angle_max">
+		</member>
+		<member name="sun_angle_min" type="float" setter="set_sun_angle_min" getter="get_sun_angle_min">
+		</member>
+		<member name="sun_color" type="Color" setter="set_sun_color" getter="get_sun_color">
+		</member>
+		<member name="sun_curve" type="float" setter="set_sun_curve" getter="get_sun_curve">
+		</member>
+		<member name="sun_energy" type="float" setter="set_sun_energy" getter="get_sun_energy">
+		</member>
+		<member name="sun_latitude" type="float" setter="set_sun_latitude" getter="get_sun_latitude">
+		</member>
+		<member name="sun_longitude" type="float" setter="set_sun_longitude" getter="get_sun_longitude">
+		</member>
+		<member name="texture_size" type="int" setter="set_texture_size" getter="get_texture_size" enum="ProceduralSky.TextureSize">
+		</member>
+	</members>
+	<constants>
+		<constant name="TEXTURE_SIZE_256" value="0">
+		</constant>
+		<constant name="TEXTURE_SIZE_512" value="1">
+		</constant>
+		<constant name="TEXTURE_SIZE_1024" value="2">
+		</constant>
+		<constant name="TEXTURE_SIZE_2048" value="3">
+		</constant>
+		<constant name="TEXTURE_SIZE_4096" value="4">
+		</constant>
+		<constant name="TEXTURE_SIZE_MAX" value="5">
+		</constant>
+	</constants>
+</class>

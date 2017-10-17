@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CylinderMesh" inherits="PrimitiveMesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class representing a cylindrical [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a cylindrical [PrimitiveMesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_bottom_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_top_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bottom_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<return type="void">
+			</return>
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_top_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius">
+			Bottom radius of the cylinder. Defaults to 1.0.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height">
+			Full height of the cylinder. Defaults to 2.0.
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
+			Number of radial segments on the cylinder. Defaults to 64.
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
+			Number of edge rings along the height of the cylinder. Defaults to 4.
+		</member>
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius">
+			Top radius of the cylinder. Defaults to 1.0.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

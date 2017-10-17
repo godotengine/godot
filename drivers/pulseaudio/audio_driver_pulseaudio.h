@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,23 +43,21 @@ class AudioDriverPulseAudio : public AudioDriver {
 
 	pa_simple *pulse;
 
-	int32_t *samples_in;
-	int16_t *samples_out;
-
-	static void thread_func(void *p_udata);
+	Vector<int32_t> samples_in;
+	Vector<int16_t> samples_out;
 
 	unsigned int mix_rate;
-	SpeakerMode speaker_mode;
-
+	unsigned int buffer_frames;
 	unsigned int buffer_size;
 	int channels;
 
 	bool active;
 	bool thread_exited;
 	mutable bool exit_thread;
-	bool pcm_open;
 
 	float latency;
+
+	static void thread_func(void *p_udata);
 
 public:
 	const char *get_name() const {

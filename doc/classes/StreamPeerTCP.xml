@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		TCP Stream peer.
+	</brief_description>
+	<description>
+		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a tcp server.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="connect_to_host">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<description>
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
+			</description>
+		</method>
+		<method name="disconnect_from_host">
+			<return type="void">
+			</return>
+			<description>
+				Disconnect from host.
+			</description>
+		</method>
+		<method name="get_connected_host" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the IP of this peer.
+			</description>
+		</method>
+		<method name="get_connected_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the port of this peer.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerTCP.Status">
+			</return>
+			<description>
+				Return the status of the connection, one of STATUS_* enum.
+			</description>
+		</method>
+		<method name="is_connected_to_host" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_NONE" value="0">
+			The initial status of the [StreamPeerTCP], also the status after a disconnect.
+		</constant>
+		<constant name="STATUS_CONNECTING" value="1">
+			A status representing a [StreamPeerTCP] that is connecting to a host.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2">
+			A status representing a [StreamPeerTCP] that is connected to a host.
+		</constant>
+		<constant name="STATUS_ERROR" value="3">
+			A staus representing a [StreamPeerTCP] in error state.
+		</constant>
+	</constants>
+</class>

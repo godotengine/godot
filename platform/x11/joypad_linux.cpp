@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -124,7 +125,6 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 	enumerate = udev_enumerate_new(p_udev);
 	udev_enumerate_add_match_subsystem(enumerate, "input");
-	udev_enumerate_add_match_property(enumerate, "ID_INPUT_JOYPAD", "1");
 
 	udev_enumerate_scan_devices(enumerate);
 	devices = udev_enumerate_get_list_entry(enumerate);
@@ -454,10 +454,10 @@ InputDefault::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int 
 	return jx;
 }
 
-uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
+void JoypadLinux::process_joypads() {
 
 	if (joy_mutex->try_lock() != OK) {
-		return p_event_id;
+		return;
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 
@@ -477,11 +477,11 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 				// ev may be tainted and out of MAX_KEY range, which will cause
 				// joy->key_map[ev.code] to crash
 				if (ev.code < 0 || ev.code >= MAX_KEY)
-					return p_event_id;
+					return;
 
 				switch (ev.type) {
 					case EV_KEY:
-						p_event_id = input->joy_button(p_event_id, i, joy->key_map[ev.code], ev.value);
+						input->joy_button(i, joy->key_map[ev.code], ev.value);
 						break;
 
 					case EV_ABS:
@@ -496,7 +496,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 								} else
 									joy->dpad &= ~(InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_RIGHT);
 
-								p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+								input->joy_hat(i, joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
@@ -508,7 +508,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 								} else
 									joy->dpad &= ~(InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_DOWN);
 
-								p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+								input->joy_hat(i, joy->dpad);
 								break;
 
 							default:
@@ -525,7 +525,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];
 			if (index != -1) {
-				p_event_id = input->joy_axis(p_event_id, i, index, joy->curr_axis[index]);
+				input->joy_axis(i, index, joy->curr_axis[index]);
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
@@ -546,6 +546,5 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 		}
 	}
 	joy_mutex->unlock();
-	return p_event_id;
 }
 #endif

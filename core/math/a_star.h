@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  a_star.h                                                        */
+/*  a_star.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,22 +94,27 @@ class AStar : public Reference {
 protected:
 	static void _bind_methods();
 
+	virtual float _estimate_cost(int p_from_id, int p_to_id);
+	virtual float _compute_cost(int p_from_id, int p_to_id);
+
 public:
 	int get_available_point_id() const;
 
 	void add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
-	Vector3 get_point_pos(int p_id) const;
+	Vector3 get_point_position(int p_id) const;
 	real_t get_point_weight_scale(int p_id) const;
 	void remove_point(int p_id);
+	bool has_point(int p_id) const;
+	Array get_points();
 
-	void connect_points(int p_id, int p_with_id);
+	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
 
 	void clear();
 
 	int get_closest_point(const Vector3 &p_point) const;
-	Vector3 get_closest_pos_in_segment(const Vector3 &p_point) const;
+	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
 	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id);
 	PoolVector<int> get_id_path(int p_from_id, int p_to_id);

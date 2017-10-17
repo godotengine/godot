@@ -5,7 +5,7 @@
 /*    FreeType API for color filtering of subpixel bitmap glyphs           */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 2006-2016 by                                                 */
+/*  Copyright 2006-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -44,21 +44,22 @@ FT_BEGIN_HEADER
    *   Reduce color fringes of subpixel-rendered bitmaps.
    *
    * @description:
-   *   Subpixel rendering exploits the color-striped structure of LCD
-   *   pixels, increasing the available resolution in the direction of the
-   *   stripe (usually horizontal RGB) by a factor of~3.  Since these
+   *   Should you #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING in your
+   *   `ftoption.h', which enables patented ClearType-style rendering,
+   *   the LCD-optimized glyph bitmaps should be filtered to reduce color
+   *   fringes inherent to this technology.  The default FreeType LCD
+   *   rendering uses different technology, and API described below,
+   *   although available, does nothing.
+   *
+   *   ClearType-style LCD rendering exploits the color-striped structure of
+   *   LCD pixels, increasing the available resolution in the direction of
+   *   the stripe (usually horizontal RGB) by a factor of~3.  Since these
    *   subpixels are color pixels, using them unfiltered creates severe
    *   color fringes.  Use the @FT_Library_SetLcdFilter API to specify a
    *   low-pass filter, which is then applied to subpixel-rendered bitmaps
    *   generated through @FT_Render_Glyph.  The filter sacrifices some of
    *   the higher resolution to reduce color fringes, making the glyph image
    *   slightly blurrier.  Positional improvements will remain.
-   *
-   *   Note that no filter is active by default, and that this function is
-   *   *not* implemented in default builds of the library.  You need to
-   *   #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING in your `ftoption.h' file
-   *   in order to activate it and explicitly call @FT_Library_SetLcdFilter
-   *   to enable it.
    *
    *   A filter should have two properties:
    *
@@ -268,12 +269,47 @@ FT_BEGIN_HEADER
    *   defined in your build of the library, which should correspond to all
    *   default builds of FreeType.
    *
+   *   LCD filter weights can also be set per face using @FT_Face_Properties
+   *   with @FT_PARAM_TAG_LCD_FILTER_WEIGHTS.
+   *
    * @since:
    *   2.4.0
    */
   FT_EXPORT( FT_Error )
   FT_Library_SetLcdFilterWeights( FT_Library      library,
                                   unsigned char  *weights );
+
+
+  /**************************************************************************
+   *
+   * @constant:
+   *   FT_PARAM_TAG_LCD_FILTER_WEIGHTS
+   *
+   * @description:
+   *   An @FT_Parameter tag to be used with @FT_Face_Properties.  The
+   *   corresponding argument specifies the five LCD filter weights for a
+   *   given face (if using @FT_LOAD_TARGET_LCD, for example), overriding
+   *   the global default values or the values set up with
+   *   @FT_Library_SetLcdFilterWeights.
+   *
+   */
+#define FT_PARAM_TAG_LCD_FILTER_WEIGHTS \
+          FT_MAKE_TAG( 'l', 'c', 'd', 'f' )
+
+
+  /*
+   * @type:
+   *   FT_LcdFiveTapFilter
+   *
+   * @description:
+   *   A typedef for passing the five LCD filter weights to
+   *   @FT_Face_Properties within an @FT_Parameter structure.
+   *
+   */
+#define FT_LCD_FILTER_FIVE_TAPS  5
+
+  typedef FT_Byte  FT_LcdFiveTapFilter[FT_LCD_FILTER_FIVE_TAPS];
+
 
   /* */
 

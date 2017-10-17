@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DirectionalLight" inherits="Light" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Directional Light, such as the Sun or the Moon.
+	</brief_description>
+	<description>
+		A DirectionalLight is a type of [Light] node that emits light constantly in one direction (the negative z axis of the node). It is used lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight transform (origin) is ignored, only the basis is used do determine light direction.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_shadow_depth_range" qualifiers="const">
+			<return type="int" enum="DirectionalLight.ShadowDepthRange">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_mode" qualifiers="const">
+			<return type="int" enum="DirectionalLight.ShadowMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_blend_splits_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_splits">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_depth_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowDepthRange">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled">
+		</member>
+		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange">
+		</member>
+		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="DirectionalLight.ShadowMode">
+		</member>
+		<member name="directional_shadow_normal_bias" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="directional_shadow_split_1" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="directional_shadow_split_2" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param">
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_ORTHOGONAL" value="0">
+		</constant>
+		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1">
+		</constant>
+		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2">
+		</constant>
+		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0">
+		</constant>
+		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1">
+		</constant>
+	</constants>
+</class>

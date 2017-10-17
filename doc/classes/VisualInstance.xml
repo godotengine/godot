@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualInstance" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transformed_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base">
+			<return type="void">
+			</return>
+			<argument index="0" name="base" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="layers" type="int" setter="set_layer_mask" getter="get_layer_mask">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

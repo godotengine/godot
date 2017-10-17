@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +29,10 @@
 /*************************************************************************/
 #include "file_access_memory.h"
 
-#include "global_config.h"
 #include "map.h"
 #include "os/copymem.h"
 #include "os/dir_access.h"
+#include "project_settings.h"
 
 static Map<String, Vector<uint8_t> > *files = NULL;
 
@@ -42,8 +43,8 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 	}
 
 	String name;
-	if (GlobalConfig::get_singleton())
-		name = GlobalConfig::get_singleton()->globalize_path(p_name);
+	if (ProjectSettings::get_singleton())
+		name = ProjectSettings::get_singleton()->globalize_path(p_name);
 	else
 		name = p_name;
 	//name = DirAccess::normalize_path(name);
@@ -119,7 +120,7 @@ void FileAccessMemory::seek_end(int64_t p_position) {
 	pos = length + p_position;
 }
 
-size_t FileAccessMemory::get_pos() const {
+size_t FileAccessMemory::get_position() const {
 
 	ERR_FAIL_COND_V(!data, 0);
 	return pos;
@@ -167,6 +168,10 @@ int FileAccessMemory::get_buffer(uint8_t *p_dst, int p_length) const {
 Error FileAccessMemory::get_error() const {
 
 	return pos >= length ? ERR_FILE_EOF : OK;
+}
+
+void FileAccessMemory::flush() {
+	ERR_FAIL_COND(!data);
 }
 
 void FileAccessMemory::store_8(uint8_t p_byte) {

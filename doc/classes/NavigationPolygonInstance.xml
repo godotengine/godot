@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationPolygonInstance" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_navigation_polygon" qualifiers="const">
+			<return type="NavigationPolygon">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_navigation_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="navpoly" type="NavigationPolygon">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
+		</member>
+		<member name="navpoly" type="NavigationPolygon" setter="set_navigation_polygon" getter="get_navigation_polygon">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +110,7 @@ private:
 	bool awaiting_scroll_offset_update;
 	List<Connection> connections;
 
-	void _bake_segment2d(CanvasItem *p_where, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
+	void _bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_min_depth, int p_max_depth, float p_tol, const Color &p_color, const Color &p_to_color, int &lines) const;
 
 	void _draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color);
 
@@ -118,11 +119,11 @@ private:
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _gui_input(const InputEvent &p_ev);
+	void _gui_input(const Ref<InputEvent> &p_ev);
 
 	Control *connections_layer;
 	GraphEditFilter *top_layer;
-	void _top_layer_input(const InputEvent &p_ev);
+	void _top_layer_input(const Ref<InputEvent> &p_ev);
 	void _top_layer_draw();
 	void _connections_layer_draw();
 	void _update_scroll_offset();

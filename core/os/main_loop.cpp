@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@ void MainLoop::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
 	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::INPUT_EVENT, "ev")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_input_text", PropertyInfo(Variant::STRING, "text")));
 	BIND_VMETHOD(MethodInfo("_initialize"));
 	BIND_VMETHOD(MethodInfo("_iteration", PropertyInfo(Variant::REAL, "delta")));
@@ -53,6 +54,8 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_QUIT_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_WM_UNFOCUS_REQUEST);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
+	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
@@ -72,7 +75,7 @@ void MainLoop::input_text(const String &p_text) {
 		get_script_instance()->call("_input_text", p_text);
 }
 
-void MainLoop::input_event(const InputEvent &p_event) {
+void MainLoop::input_event(const Ref<InputEvent> &p_event) {
 
 	if (get_script_instance())
 		get_script_instance()->call("_input_event", p_event);

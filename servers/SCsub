@@ -7,12 +7,11 @@ env.add_source_files(env.servers_sources, "*.cpp")
 
 Export('env')
 
+SConscript('arvr/SCsub')
 SConscript('physics/SCsub')
 SConscript('physics_2d/SCsub')
 SConscript('visual/SCsub')
 SConscript('audio/SCsub')
-SConscript('spatial_sound/SCsub')
-SConscript('spatial_sound_2d/SCsub')
 
 lib = env.Library("servers", env.servers_sources)
 

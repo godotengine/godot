@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BaseButton" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Provides a base class for different kinds of buttons.
+	</brief_description>
+	<description>
+		BaseButton is the abstract base class for buttons, so it shouldn't be used directly (It doesn't display anything). Other types of buttons inherit from it.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_pressed" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called when button is pressed.
+			</description>
+		</method>
+		<method name="_toggled" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+				Called when button is toggled (only if toggle_mode is active).
+			</description>
+		</method>
+		<method name="get_action_mode" qualifiers="const">
+			<return type="int" enum="BaseButton.ActionMode">
+			</return>
+			<description>
+				Return the current mode of action (see [method set_action_mode]) (one of the ACTION_MODE_* constants).
+			</description>
+		</method>
+		<method name="get_button_group" qualifiers="const">
+			<return type="ButtonGroup">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_mode" qualifiers="const">
+			<return type="int" enum="BaseButton.DrawMode">
+			</return>
+			<description>
+				Return the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the DRAW_* enum.
+			</description>
+		</method>
+		<method name="get_enabled_focus_mode" qualifiers="const">
+			<return type="int" enum="Control.FocusMode">
+			</return>
+			<description>
+				Returns focus access mode used when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
+			</description>
+		</method>
+		<method name="get_shortcut" qualifiers="const">
+			<return type="ShortCut">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the button is in disabled state (see [method set_disabled]).
+			</description>
+		</method>
+		<method name="is_hovered" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if mouse entered the button before it exit.
+			</description>
+		</method>
+		<method name="is_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				If toggle_mode is active, return whether the button is toggled. If toggle_mode is not active, return whether the button is pressed down.
+			</description>
+		</method>
+		<method name="is_toggle_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return the toggle_mode property (see [method set_toggle_mode]).
+			</description>
+		</method>
+		<method name="set_action_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="BaseButton.ActionMode">
+			</argument>
+			<description>
+				Set the current mode of action, determining when the button is considered clicked (see the ACTION_MODE_* constants).
+			</description>
+		</method>
+		<method name="set_button_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="button_group" type="ButtonGroup">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="disabled" type="bool">
+			</argument>
+			<description>
+				Set the button into disabled state. When a button is disabled, it can't be clicked or toggled.
+			</description>
+		</method>
+		<method name="set_enabled_focus_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Control.FocusMode">
+			</argument>
+			<description>
+				Sets the focus access mode to use when switching between enabled/disabled (see [method Control.set_focus_mode] and [method set_disabled]).
+			</description>
+		</method>
+		<method name="set_pressed">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+				Set the button to pressed state (only if toggle_mode is active).
+			</description>
+		</method>
+		<method name="set_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_toggle_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the button toggle_mode property. Toggle mode makes the button flip state between pressed and unpressed each time its area is clicked.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" enum="BaseButton.ActionMode">
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
+		</member>
+		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" enum="Control.FocusMode">
+		</member>
+		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
+		</member>
+		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut">
+		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode">
+		</member>
+	</members>
+	<signals>
+		<signal name="button_down">
+			<description>
+				Emitted when the button starts being held down.
+			</description>
+		</signal>
+		<signal name="button_up">
+			<description>
+				Emitted when the button stops being held down.
+			</description>
+		</signal>
+		<signal name="pressed">
+			<description>
+				This signal is emitted every time the button is toggled or pressed (i.e. activated, so on [code]button_down[/code] if "Click on press" is active and on [code]button_up[/code] otherwise).
+			</description>
+		</signal>
+		<signal name="toggled">
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+				This signal is emitted when the button was just toggled between pressed and normal states (only if toggle_mode is active). The new state is contained in the [i]pressed[/i] argument.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DRAW_NORMAL" value="0">
+			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
+		</constant>
+		<constant name="DRAW_PRESSED" value="1">
+			The state of buttons are pressed.
+		</constant>
+		<constant name="DRAW_HOVER" value="2">
+			The state of buttons are hovered.
+		</constant>
+		<constant name="DRAW_DISABLED" value="3">
+			The state of buttons are disabled.
+		</constant>
+		<constant name="ACTION_MODE_BUTTON_PRESS" value="0">
+			Require just a press to consider the button clicked.
+		</constant>
+		<constant name="ACTION_MODE_BUTTON_RELEASE" value="1">
+			Require a press and a subsequent release before considering the button clicked.
+		</constant>
+	</constants>
+</class>

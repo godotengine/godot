@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +32,9 @@
 
 #include "resource.h"
 
-class ColorRamp : public Resource {
-	GDCLASS(ColorRamp, Resource);
-	OBJ_SAVE_TYPE(ColorRamp);
+class Gradient : public Resource {
+	GDCLASS(Gradient, Resource);
+	OBJ_SAVE_TYPE(Gradient);
 
 public:
 	struct Point {
@@ -53,13 +54,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	ColorRamp();
-	virtual ~ColorRamp();
+	Gradient();
+	virtual ~Gradient();
 
 	void add_point(float p_offset, const Color &p_color);
 	void remove_point(int p_index);
 
-	void set_points(Vector<Point> &points);
+	void set_points(Vector<Point> &p_points);
 	Vector<Point> &get_points();
 
 	void set_offset(int pos, const float offset);
@@ -68,10 +69,10 @@ public:
 	void set_color(int pos, const Color &color);
 	Color get_color(int pos) const;
 
-	void set_offsets(const Vector<float> &offsets);
+	void set_offsets(const Vector<float> &p_offsets);
 	Vector<float> get_offsets() const;
 
-	void set_colors(const Vector<Color> &colors);
+	void set_colors(const Vector<Color> &p_colors);
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
@@ -87,7 +88,12 @@ public:
 		//binary search
 		int low = 0;
 		int high = points.size() - 1;
-		int middle;
+		int middle = 0;
+
+#if DEBUG_ENABLED
+		if (low > high)
+			ERR_PRINT("low > high, this may be a bug");
+#endif
 
 		while (low <= high) {
 			middle = (low + high) / 2;

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEvent" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Generic input event
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="action_match" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+				Returns true if this input event matches the event passed.
+			</description>
+		</method>
+		<method name="as_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representation of the event.
+			</description>
+		</method>
+		<method name="get_device" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the id of the device that generated the event.
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the id of the event.
+			</description>
+		</method>
+		<method name="is_action" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Returns true if this input event matches a pre-defined action, no matter the type.
+			</description>
+		</method>
+		<method name="is_action_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Returns true if the given action is being pressed (and is not an echo event for KEY events). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+			</description>
+		</method>
+		<method name="is_action_released" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+				Returns true if the given action is released (i.e. not pressed). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+			</description>
+		</method>
+		<method name="is_action_type" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_echo" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this input event is an echo event (only for events of type KEY, it will return false for other types).
+			</description>
+		</method>
+		<method name="is_pressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this input event is pressed. Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+			</description>
+		</method>
+		<method name="set_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="device" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shortcut_match" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="xformed_by" qualifiers="const">
+			<return type="InputEvent">
+			</return>
+			<argument index="0" name="xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="local_ofs" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="device" type="int" setter="set_device" getter="get_device">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

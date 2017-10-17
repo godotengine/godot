@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CenterContainer" inherits="Container" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Keeps children controls centered.
+	</brief_description>
+	<description>
+		CenterContainer Keeps children controls centered. This container keeps all children to their minimum size, in the center.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_using_top_left" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Should put children to the top left corner instead of center of the container.
+			</description>
+		</method>
+		<method name="set_use_top_left">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				This function will anchor the container children to the top left corner of the the container boundaries, moving all its children to that position, (the children new center will be the top left corner of the container).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

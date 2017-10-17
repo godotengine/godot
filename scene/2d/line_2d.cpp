@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "line_2d.h"
+#include "line_builder.h"
 
 #include "core_string_names.h"
 
 // Needed so we can bind functions
-VARIANT_ENUM_CAST(LineJointMode)
-VARIANT_ENUM_CAST(LineCapMode)
-VARIANT_ENUM_CAST(LineTextureMode)
+VARIANT_ENUM_CAST(Line2D::LineJointMode)
+VARIANT_ENUM_CAST(Line2D::LineCapMode)
+VARIANT_ENUM_CAST(Line2D::LineTextureMode)
 
 Line2D::Line2D()
 	: Node2D() {
@@ -66,12 +68,12 @@ PoolVector<Vector2> Line2D::get_points() const {
 	return _points;
 }
 
-void Line2D::set_point_pos(int i, Vector2 pos) {
+void Line2D::set_point_position(int i, Vector2 pos) {
 	_points.set(i, pos);
 	update();
 }
 
-Vector2 Line2D::get_point_pos(int i) const {
+Vector2 Line2D::get_point_position(int i) const {
 	return _points.get(i);
 }
 
@@ -98,7 +100,7 @@ Color Line2D::get_default_color() const {
 	return _default_color;
 }
 
-void Line2D::set_gradient(const Ref<ColorRamp> &gradient) {
+void Line2D::set_gradient(const Ref<Gradient> &gradient) {
 
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
@@ -115,7 +117,7 @@ void Line2D::set_gradient(const Ref<ColorRamp> &gradient) {
 	update();
 }
 
-Ref<ColorRamp> Line2D::get_gradient() const {
+Ref<Gradient> Line2D::get_gradient() const {
 	return _gradient;
 }
 
@@ -133,7 +135,7 @@ void Line2D::set_texture_mode(const LineTextureMode mode) {
 	update();
 }
 
-LineTextureMode Line2D::get_texture_mode() const {
+Line2D::LineTextureMode Line2D::get_texture_mode() const {
 	return _texture_mode;
 }
 
@@ -142,7 +144,7 @@ void Line2D::set_joint_mode(LineJointMode mode) {
 	update();
 }
 
-LineJointMode Line2D::get_joint_mode() const {
+Line2D::LineJointMode Line2D::get_joint_mode() const {
 	return _joint_mode;
 }
 
@@ -151,7 +153,7 @@ void Line2D::set_begin_cap_mode(LineCapMode mode) {
 	update();
 }
 
-LineCapMode Line2D::get_begin_cap_mode() const {
+Line2D::LineCapMode Line2D::get_begin_cap_mode() const {
 	return _begin_cap_mode;
 }
 
@@ -160,7 +162,7 @@ void Line2D::set_end_cap_mode(LineCapMode mode) {
 	update();
 }
 
-LineCapMode Line2D::get_end_cap_mode() const {
+Line2D::LineCapMode Line2D::get_end_cap_mode() const {
 	return _end_cap_mode;
 }
 
@@ -268,12 +270,12 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
 
-	ClassDB::bind_method(D_METHOD("set_point_pos", "i", "pos"), &Line2D::set_point_pos);
-	ClassDB::bind_method(D_METHOD("get_point_pos", "i"), &Line2D::get_point_pos);
+	ClassDB::bind_method(D_METHOD("set_point_position", "i", "position"), &Line2D::set_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_position", "i"), &Line2D::get_point_position);
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
 
-	ClassDB::bind_method(D_METHOD("add_point", "pos"), &Line2D::add_point);
+	ClassDB::bind_method(D_METHOD("add_point", "position"), &Line2D::add_point);
 	ClassDB::bind_method(D_METHOD("remove_point", "i"), &Line2D::remove_point);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Line2D::set_width);
@@ -309,25 +311,28 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "ColorRamp"), "set_gradient", "get_gradient");
+	ADD_GROUP("Fill", "");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile"), "set_texture_mode", "get_texture_mode");
+	ADD_GROUP("Capping", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round"), "set_joint_mode", "get_joint_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_begin_cap_mode", "get_begin_cap_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_end_cap_mode", "get_end_cap_mode");
+	ADD_GROUP("Border", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), "set_round_precision", "get_round_precision");
 
-	BIND_CONSTANT(LINE_JOINT_SHARP);
-	BIND_CONSTANT(LINE_JOINT_BEVEL);
-	BIND_CONSTANT(LINE_JOINT_ROUND);
+	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);
+	BIND_ENUM_CONSTANT(LINE_JOINT_BEVEL);
+	BIND_ENUM_CONSTANT(LINE_JOINT_ROUND);
 
-	BIND_CONSTANT(LINE_CAP_NONE);
-	BIND_CONSTANT(LINE_CAP_BOX);
-	BIND_CONSTANT(LINE_CAP_ROUND);
+	BIND_ENUM_CONSTANT(LINE_CAP_NONE);
+	BIND_ENUM_CONSTANT(LINE_CAP_BOX);
+	BIND_ENUM_CONSTANT(LINE_CAP_ROUND);
 
-	BIND_CONSTANT(LINE_TEXTURE_NONE);
-	BIND_CONSTANT(LINE_TEXTURE_TILE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_NONE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_TILE);
 
 	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
 }

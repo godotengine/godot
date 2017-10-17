@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +30,28 @@
 
 /*
 Adapted to Godot from the Bullet library.
-See corresponding header file for licensing info.
+*/
+
+/*
+Bullet Continuous Collision Detection and Physics Library
+Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the use of this software.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
+subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+*/
+
+/*
+2007-09-09
+Generic6DOFJointSW Refactored by Francisco Le?n
+email: projectileman@yahoo.com
+http://gimpact.sf.net
 */
 
 #include "generic_6dof_joint_sw.h"
@@ -276,7 +298,7 @@ bool Generic6DOFJointSW::testAngularLimitMotor(int axis_index) {
 	return m_angularLimits[axis_index].needApplyTorques();
 }
 
-bool Generic6DOFJointSW::setup(real_t p_step) {
+bool Generic6DOFJointSW::setup(real_t p_timestep) {
 
 	// Clear accumulated impulses for the next simulation step
 	m_linearLimits.m_accumulatedImpulse = Vector3(real_t(0.), real_t(0.), real_t(0.));
@@ -325,8 +347,8 @@ bool Generic6DOFJointSW::setup(real_t p_step) {
 	return true;
 }
 
-void Generic6DOFJointSW::solve(real_t timeStep) {
-	m_timeStep = timeStep;
+void Generic6DOFJointSW::solve(real_t p_timestep) {
+	m_timeStep = p_timestep;
 
 	//calculateTransforms();
 

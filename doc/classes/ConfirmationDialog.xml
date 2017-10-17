@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConfirmationDialog" inherits="AcceptDialog" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Dialog for confirmation of actions.
+	</brief_description>
+	<description>
+		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_cancel">
+			<return type="Button">
+			</return>
+			<description>
+				Return the cancel button.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

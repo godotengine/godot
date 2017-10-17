@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CapsuleShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Capsule shape for 2D collisions.
+	</brief_description>
+	<description>
+		Capsule shape for 2D collisions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the height of the [CapsuleShape2D].
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the radius of the [CapsuleShape2D].
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+				Set the height of the [CapsuleShape2D].
+			</description>
+		</method>
+		<method name="set_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+				Set the radius of the [CapsuleShape2D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height">
+			The capsule's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+			The capsules's radius.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

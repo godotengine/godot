@@ -5,7 +5,7 @@
 /*    FreeType API for controlling the TrueType driver                     */
 /*    (specification only).                                                */
 /*                                                                         */
-/*  Copyright 2013-2016 by                                                 */
+/*  Copyright 2013-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -110,7 +110,7 @@ FT_BEGIN_HEADER
    *   TrueType interpreter fully allows the advance width to be adjusted in
    *   this mode, just the DWrite client will ignore those changes.
    *
-   *   _ClearType_ _Backwards_ _Compatibility_
+   *   _ClearType_ _Backward_ _Compatibility_
    *
    *   This is a set of exceptions made in the TrueType interpreter to
    *   minimize hinting techniques that were problematic with the extra
@@ -118,9 +118,9 @@ FT_BEGIN_HEADER
    *   http://www.beatstamm.com/typography/RTRCh4.htm#Sec1 and
    *   http://www.microsoft.com/typography/cleartype/truetypecleartype.aspx.
    *   This technique is not to be confused with ClearType compatible
-   *   widths.  ClearType backwards compatibility has no direct impact on
+   *   widths.  ClearType backward compatibility has no direct impact on
    *   changing advance widths, but there might be an indirect impact on
-   *   disabling some deltas.  This could be worked around in backwards
+   *   disabling some deltas.  This could be worked around in backward
    *   compatibility mode.
    *
    *   _Native_ _ClearType_ _Mode_
@@ -138,7 +138,6 @@ FT_BEGIN_HEADER
    *   interpreter-version
    *
    * @description:
-
    *   Currently, three versions are available, two representing the
    *   bytecode interpreter with subpixel hinting support (old `Infinality'
    *   code and new stripped-down and higher performance `minimal' code) and
@@ -181,6 +180,8 @@ FT_BEGIN_HEADER
    * @note:
    *   This property can be used with @FT_Property_Get also.
    *
+   *   This property can be set via the `FREETYPE_PROPERTIES' environment
+   *   variable (using values `35', `38', or `40').
    */
 
 
@@ -224,7 +225,7 @@ FT_BEGIN_HEADER
    *   filtering.
    *
    *   If FreeType has not been compiled with the configuration option
-   *   FT_CONFIG_OPTION_SUBPIXEL_HINTING, selecting version~38 or~40 causes
+   *   TT_CONFIG_OPTION_SUBPIXEL_HINTING, selecting version~38 or~40 causes
    *   an `FT_Err_Unimplemented_Feature' error.
    *
    *   Depending on the graphics framework, Microsoft uses different

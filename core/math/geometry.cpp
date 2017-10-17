@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -300,7 +301,7 @@ enum _CellFlags {
 static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, const Vector3 &voxelsize, const Face3 &p_face) {
 
 	Rect3 aabb(Vector3(x, y, z), Vector3(len_x, len_y, len_z));
-	aabb.pos = aabb.pos * voxelsize;
+	aabb.position = aabb.position * voxelsize;
 	aabb.size = aabb.size * voxelsize;
 
 	if (!p_face.intersects_aabb(aabb))
@@ -639,7 +640,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 		Face3 f = faces[i];
 		for (int j = 0; j < 3; j++) {
 
-			f.vertex[j] -= global_aabb.pos;
+			f.vertex[j] -= global_aabb.position;
 		}
 		_plot_face(cell_status, 0, 0, 0, div_x, div_y, div_z, voxelsize, f);
 	}
@@ -706,7 +707,7 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 
 			Vector3 &v = wrapped_faces_ptr[i].vertex[j];
 			v = v * voxelsize;
-			v += global_aabb.pos;
+			v += global_aabb.position;
 		}
 	}
 
@@ -990,7 +991,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	//super simple, almost brute force scanline stacking fitter
 	//it's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	//resulting atlas is somehow square. This is necesary because video cards have limits
+	//resulting atlas is somehow square. This is necessary because video cards have limits
 	//on texture size (usually 2048 or 4096), so the more square a texture, the more chances
 	//it will work in every hardware.
 	// for example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
@@ -1057,7 +1058,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 			if (end_w > max_w)
 				max_w = end_w;
 
-			if (ofs == 0 || end_h > limit_h) //while h limit not reched, keep stacking
+			if (ofs == 0 || end_h > limit_h) //while h limit not reached, keep stacking
 				ofs += wrects[j].s.width;
 		}
 
@@ -1075,8 +1076,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	for (int i = 0; i < results.size(); i++) {
 
-		real_t h = nearest_power_of_2(results[i].max_h);
-		real_t w = nearest_power_of_2(results[i].max_w);
+		real_t h = next_power_of_2(results[i].max_h);
+		real_t w = next_power_of_2(results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;

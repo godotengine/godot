@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +95,9 @@ static bool _get_token(FileAccessRef &f, uint8_t &saved, PoolVector<uint8_t> &r_
 				resized = true;
 			}
 			if (resized) {
+				// Note: Certain C++ static analyzers might point out that the following assigment is unnecessary.
+				// This is wrong since PoolVector<class T>::Write has an operator= method where the lhs gets updated under certain conditions.
+				// See core/dvector.h.
 				w = PoolVector<uint8_t>::Write();
 				r_token.resize(token_max);
 				w = r_token.write();

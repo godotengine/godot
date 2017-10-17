@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,7 +71,7 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 		outside_point.y = i == 0 ? p_points[0].y : (MAX(p_points[i].y, outside_point.y));
 
 		if (i == 0) {
-			bounds.pos = points[i].pos;
+			bounds.position = points[i].pos;
 		} else {
 			bounds.expand_to(points[i].pos);
 		}

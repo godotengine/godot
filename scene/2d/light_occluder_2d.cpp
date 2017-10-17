@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "light_occluder_2d.h"
+
+#include "engine.h"
 
 void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 
@@ -86,9 +89,9 @@ void OccluderPolygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Disabled,ClockWise,CounterClockWise"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 
-	BIND_CONSTANT(CULL_DISABLED);
-	BIND_CONSTANT(CULL_CLOCKWISE);
-	BIND_CONSTANT(CULL_COUNTER_CLOCKWISE);
+	BIND_ENUM_CONSTANT(CULL_DISABLED);
+	BIND_ENUM_CONSTANT(CULL_CLOCKWISE);
+	BIND_ENUM_CONSTANT(CULL_COUNTER_CLOCKWISE);
 }
 
 OccluderPolygon2D::OccluderPolygon2D() {
@@ -129,7 +132,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		if (get_tree()->is_editor_hint()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
 
 			if (occluder_polygon.is_valid()) {
 
@@ -211,8 +214,8 @@ String LightOccluder2D::get_configuration_warning() const {
 
 void LightOccluder2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_occluder_polygon", "polygon:OccluderPolygon2D"), &LightOccluder2D::set_occluder_polygon);
-	ClassDB::bind_method(D_METHOD("get_occluder_polygon:OccluderPolygon2D"), &LightOccluder2D::get_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("set_occluder_polygon", "polygon"), &LightOccluder2D::set_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("get_occluder_polygon"), &LightOccluder2D::get_occluder_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &LightOccluder2D::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &LightOccluder2D::get_occluder_light_mask);

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +88,7 @@ CameraEditor::CameraEditor() {
 	preview->set_toggle_mode(true);
 	preview->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
 	preview->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
-	preview->set_margin(MARGIN_LEFT, 60);
+	preview->set_margin(MARGIN_LEFT, -60);
 	preview->set_margin(MARGIN_RIGHT, 0);
 	preview->set_margin(MARGIN_TOP, 0);
 	preview->set_margin(MARGIN_BOTTOM, 10);
@@ -96,8 +97,8 @@ CameraEditor::CameraEditor() {
 
 void CameraEditorPlugin::edit(Object *p_object) {
 
-	SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
-	//camera_editor->edit(p_object->cast_to<Node>());
+	SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
+	//camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
@@ -108,7 +109,7 @@ bool CameraEditorPlugin::handles(Object *p_object) const {
 void CameraEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
+		//SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
 	} else {
 		SpatialEditor::get_singleton()->set_can_preview(NULL);
 	}

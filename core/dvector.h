@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,6 +92,7 @@ class PoolVector {
 
 		//		ERR_FAIL_COND(alloc->lock>0); should not be illegal to lock this for copy on write, as it's a copy on write after all
 
+		// Refcount should not be zero, otherwise it's a misuse of COW
 		if (alloc->refcount.get() == 1)
 			return; //nothing to do
 
@@ -215,7 +217,12 @@ class PoolVector {
 
 		{
 			int cur_elements = alloc->size / sizeof(T);
-			Write w = write();
+
+			// Don't use write() here because it could otherwise provoke COW,
+			// which is not desirable here because we are destroying the last reference anyways
+			Write w;
+			// Reference to still prevent other threads from touching the alloc
+			w._ref(alloc);
 
 			for (int i = 0; i < cur_elements; i++) {
 
@@ -402,14 +409,9 @@ public:
 		if (p_to < 0) {
 			p_to = size() + p_to;
 		}
-		if (p_from < 0 || p_from >= size()) {
-			PoolVector<T> &aux = *((PoolVector<T> *)0); // nullreturn
-			ERR_FAIL_COND_V(p_from < 0 || p_from >= size(), aux)
-		}
-		if (p_to < 0 || p_to >= size()) {
-			PoolVector<T> &aux = *((PoolVector<T> *)0); // nullreturn
-			ERR_FAIL_COND_V(p_to < 0 || p_to >= size(), aux)
-		}
+
+		CRASH_BAD_INDEX(p_from, size());
+		CRASH_BAD_INDEX(p_to, size());
 
 		PoolVector<T> slice;
 		int span = 1 + p_to - p_from;
@@ -499,13 +501,9 @@ void PoolVector<T>::push_back(const T &p_val) {
 template <class T>
 const T PoolVector<T>::operator[](int p_index) const {
 
-	if (p_index < 0 || p_index >= size()) {
-		T &aux = *((T *)0); //nullreturn
-		ERR_FAIL_COND_V(p_index < 0 || p_index >= size(), aux);
-	}
+	CRASH_BAD_INDEX(p_index, size());
 
 	Read r = read();
-
 	return r[p_index];
 }
 

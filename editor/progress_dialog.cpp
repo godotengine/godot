@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +49,7 @@ void BackgroundProgress::_add_task(const String &p_task, const String &p_label, 
 	Control *ec = memnew(Control);
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-	t.progress->set_area_as_parent_rect();
+	t.progress->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	ec->add_child(t.progress);
 	ec->set_custom_minimum_size(Size2(80, 5) * EDSCALE);
 	t.hb->add_child(ec);
@@ -154,9 +155,10 @@ void ProgressDialog::_popup() {
 
 	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
 	ms += style->get_minimum_size();
-	for (int i = 0; i < 4; i++) {
-		main->set_margin(Margin(i), style->get_margin(Margin(i)));
-	}
+	main->set_margin(MARGIN_LEFT, style->get_margin(MARGIN_LEFT));
+	main->set_margin(MARGIN_RIGHT, -style->get_margin(MARGIN_RIGHT));
+	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
+	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
 	popup_centered(ms);
 }
@@ -220,7 +222,7 @@ ProgressDialog::ProgressDialog() {
 
 	main = memnew(VBoxContainer);
 	add_child(main);
-	main->set_area_as_parent_rect();
+	main->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	set_exclusive(true);
 	last_progress_tick = 0;
 	singleton = this;

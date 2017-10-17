@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +55,7 @@ class CanvasLayer : public Node {
 	int sort_index;
 
 	// Deprecated, should be removed in a future version.
-	void _set_rotationd(real_t p_rotation);
+	void _set_rotationd(real_t p_degrees);
 	real_t _get_rotationd() const;
 
 	void _update_xform();

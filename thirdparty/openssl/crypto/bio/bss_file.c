@@ -174,7 +174,11 @@ BIO *BIO_new_file(const char *filename, const char *mode)
     if (file == NULL) {
         SYSerr(SYS_F_FOPEN, get_last_sys_error());
         ERR_add_error_data(5, "fopen('", filename, "','", mode, "')");
-        if (errno == ENOENT)
+        if (errno == ENOENT
+# ifdef ENXIO
+            || errno == ENXIO
+# endif
+            )
             BIOerr(BIO_F_BIO_NEW_FILE, BIO_R_NO_SUCH_FILE);
         else
             BIOerr(BIO_F_BIO_NEW_FILE, ERR_R_SYS_LIB);
@@ -247,7 +251,7 @@ static int MS_CALLBACK file_read(BIO *b, char *out, int outl)
             ret = fread(out, 1, (int)outl, (FILE *)b->ptr);
         if (ret == 0
             && (b->flags & BIO_FLAGS_UPLINK) ? UP_ferror((FILE *)b->ptr) :
-            ferror((FILE *)b->ptr)) {
+                                               ferror((FILE *)b->ptr)) {
             SYSerr(SYS_F_FREAD, get_last_sys_error());
             BIOerr(BIO_F_FILE_READ, ERR_R_SYS_LIB);
             ret = -1;
@@ -283,6 +287,7 @@ static long MS_CALLBACK file_ctrl(BIO *b, int cmd, long num, void *ptr)
     FILE *fp = (FILE *)b->ptr;
     FILE **fpp;
     char p[4];
+    int st;
 
     switch (cmd) {
     case BIO_C_FILE_SEEK:
@@ -314,8 +319,11 @@ static long MS_CALLBACK file_ctrl(BIO *b, int cmd, long num, void *ptr)
 #   if defined(__MINGW32__) && defined(__MSVCRT__) && !defined(_IOB_ENTRIES)
 #    define _IOB_ENTRIES 20
 #   endif
-#   if defined(_IOB_ENTRIES)
         /* Safety net to catch purely internal BIO_set_fp calls */
+#   if defined(_MSC_VER) && _MSC_VER>=1900
+        if (ptr == stdin || ptr == stdout || ptr == stderr)
+            BIO_clear_flags(b, BIO_FLAGS_UPLINK);
+#   elif defined(_IOB_ENTRIES)
         if ((size_t)ptr >= (size_t)stdin &&
             (size_t)ptr < (size_t)(stdin + _IOB_ENTRIES))
             BIO_clear_flags(b, BIO_FLAGS_UPLINK);
@@ -420,10 +428,14 @@ static long MS_CALLBACK file_ctrl(BIO *b, int cmd, long num, void *ptr)
         b->shutdown = (int)num;
         break;
     case BIO_CTRL_FLUSH:
-        if (b->flags & BIO_FLAGS_UPLINK)
-            UP_fflush(b->ptr);
-        else
-            fflush((FILE *)b->ptr);
+        st = b->flags & BIO_FLAGS_UPLINK
+                ? UP_fflush(b->ptr) : fflush((FILE *)b->ptr);
+        if (st == EOF) {
+            SYSerr(SYS_F_FFLUSH, get_last_sys_error());
+            ERR_add_error_data(1, "fflush()");
+            BIOerr(BIO_F_FILE_CTRL, ERR_R_SYS_LIB);
+            ret = 0;
+        }
         break;
     case BIO_CTRL_DUP:
         ret = 1;

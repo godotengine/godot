@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType PFR driver interface (body).                                */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -181,10 +181,10 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module-specific interface */
+      NULL,    /* module-specific interface */
 
-      0,                        /* FT_Module_Constructor  module_init   */
-      0,                        /* FT_Module_Destructor   module_done   */
+      NULL,                     /* FT_Module_Constructor  module_init   */
+      NULL,                     /* FT_Module_Destructor   module_done   */
       pfr_get_service           /* FT_Module_Requester    get_interface */
     },
 
@@ -194,19 +194,19 @@
 
     pfr_face_init,              /* FT_Face_InitFunc  init_face */
     pfr_face_done,              /* FT_Face_DoneFunc  done_face */
-    0,                          /* FT_Size_InitFunc  init_size */
-    0,                          /* FT_Size_DoneFunc  done_size */
+    NULL,                       /* FT_Size_InitFunc  init_size */
+    NULL,                       /* FT_Size_DoneFunc  done_size */
     pfr_slot_init,              /* FT_Slot_InitFunc  init_slot */
     pfr_slot_done,              /* FT_Slot_DoneFunc  done_slot */
 
     pfr_slot_load,              /* FT_Slot_LoadFunc  load_glyph */
 
     pfr_get_kerning,            /* FT_Face_GetKerningFunc   get_kerning  */
-    0,                          /* FT_Face_AttachFunc       attach_file  */
-    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
+    NULL,                       /* FT_Face_AttachFunc       attach_file  */
+    NULL,                       /* FT_Face_GetAdvancesFunc  get_advances */
 
-    0,                          /* FT_Size_RequestFunc  request_size */
-    0,                          /* FT_Size_SelectFunc   select_size  */
+    NULL,                       /* FT_Size_RequestFunc  request_size */
+    NULL,                       /* FT_Size_SelectFunc   select_size  */
   };
 
 

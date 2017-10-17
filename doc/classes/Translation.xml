@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Translation" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Language Translation.
+	</brief_description>
+	<description>
+		Translations are resources that can be loaded/unloaded on demand. They map a string to another string.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_message">
+			<return type="void">
+			</return>
+			<argument index="0" name="src_message" type="String">
+			</argument>
+			<argument index="1" name="xlated_message" type="String">
+			</argument>
+			<description>
+				Add a message for translation.
+			</description>
+		</method>
+		<method name="erase_message">
+			<return type="void">
+			</return>
+			<argument index="0" name="src_message" type="String">
+			</argument>
+			<description>
+				Erase a message.
+			</description>
+		</method>
+		<method name="get_locale" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the locale of the translation.
+			</description>
+		</method>
+		<method name="get_message" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="src_message" type="String">
+			</argument>
+			<description>
+				Return a message for translation.
+			</description>
+		</method>
+		<method name="get_message_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_message_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return all the messages (keys).
+			</description>
+		</method>
+		<method name="set_locale">
+			<return type="void">
+			</return>
+			<argument index="0" name="locale" type="String">
+			</argument>
+			<description>
+				Set the locale of the translation.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="locale" type="String" setter="set_locale" getter="get_locale">
+		</member>
+		<member name="messages" type="PoolStringArray" setter="_set_messages" getter="_get_messages">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

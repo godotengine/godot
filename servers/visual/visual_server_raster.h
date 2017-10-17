@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,10 +57,23 @@ class VisualServerRaster : public VisualServer {
 
 	};
 
-	int changes;
+	static int changes;
 	bool draw_extra_frame;
 	RID test_cube;
 
+	int black_margin[4];
+	RID black_image[4];
+
+	struct FrameDrawnCallbacks {
+
+		ObjectID object;
+		StringName method;
+		Variant param;
+	};
+
+	List<FrameDrawnCallbacks> frame_drawn_callbacks;
+
+// FIXME: Kept as reference for future implementation
 #if 0
 	struct Room {
 
@@ -376,7 +390,7 @@ class VisualServerRaster : public VisualServer {
 
 
 
-	mutable RID_Owner<Rasterizer::CanvasItemMaterial> canvas_item_material_owner;
+	mutable RID_Owner<Rasterizer::ShaderMaterial> canvas_item_material_owner;
 
 
 
@@ -574,8 +588,30 @@ class VisualServerRaster : public VisualServer {
 
 #endif
 
+	void _draw_margins();
+	static void _changes_changed() {}
+
 public:
-#define DISPLAY_CHANGED changes++;
+//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
+//#define DEBUG_CHANGES
+
+#ifdef DEBUG_CHANGES
+	_FORCE_INLINE_ static void redraw_request() {
+		changes++;
+		_changes_changed();
+	}
+
+#define DISPLAY_CHANGED \
+	changes++;          \
+	_changes_changed();
+
+#else
+	_FORCE_INLINE_ static void redraw_request() { changes++; }
+
+#define DISPLAY_CHANGED \
+	changes++;
+#endif
+//	print_line(String("CHANGED: ") + __FUNCTION__);
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
@@ -583,6 +619,8 @@ public:
 	m_r m_name(m_type1 arg1) { return BINDBASE->m_name(arg1); }
 #define BIND1RC(m_r, m_name, m_type1) \
 	m_r m_name(m_type1 arg1) const { return BINDBASE->m_name(arg1); }
+#define BIND2R(m_r, m_name, m_type1, m_type2) \
+	m_r m_name(m_type1 arg1, m_type2 arg2) { return BINDBASE->m_name(arg1, arg2); }
 #define BIND2RC(m_r, m_name, m_type1, m_type2) \
 	m_r m_name(m_type1 arg1, m_type2 arg2) const { return BINDBASE->m_name(arg1, arg2); }
 #define BIND3RC(m_r, m_name, m_type1, m_type2, m_type3) \
@@ -612,6 +650,8 @@ public:
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9); }
 #define BIND10(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10); }
+#define BIND11(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
 
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::storage
@@ -620,18 +660,19 @@ public:
 
 	BIND0R(RID, texture_create)
 	BIND5(texture_allocate, RID, int, int, Image::Format, uint32_t)
-	BIND3(texture_set_data, RID, const Image &, CubeMapSide)
-	BIND2RC(Image, texture_get_data, RID, CubeMapSide)
+	BIND3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
+	BIND2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
 	BIND1RC(Image::Format, texture_get_format, RID)
+	BIND1RC(uint32_t, texture_get_texid, RID)
 	BIND1RC(uint32_t, texture_get_width, RID)
 	BIND1RC(uint32_t, texture_get_height, RID)
 	BIND3(texture_set_size_override, RID, int, int)
-	BIND2RC(RID, texture_create_radiance_cubemap, RID, int)
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
+	BIND3(texture_set_detect_normal_callback, RID, TextureDetectCallback, void *)
 
 	BIND2(texture_set_path, RID, const String &)
 	BIND1RC(String, texture_get_path, RID)
@@ -640,17 +681,14 @@ public:
 
 	BIND1(textures_keep_original, bool)
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	BIND0R(RID, skybox_create)
-	BIND3(skybox_set_texture, RID, RID, int)
+	BIND0R(RID, sky_create)
+	BIND3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
-	BIND1R(RID, shader_create, ShaderMode)
-
-	BIND2(shader_set_mode, RID, ShaderMode)
-	BIND1RC(ShaderMode, shader_get_mode, RID)
+	BIND0R(RID, shader_create)
 
 	BIND2(shader_set_code, RID, const String &)
 	BIND1RC(String, shader_get_code, RID)
@@ -670,7 +708,9 @@ public:
 	BIND3(material_set_param, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
 
+	BIND2(material_set_render_priority, RID, int)
 	BIND2(material_set_line_width, RID, float)
+	BIND2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
 
@@ -766,12 +806,14 @@ public:
 	BIND2(light_set_projector, RID, RID)
 	BIND2(light_set_negative, RID, bool)
 	BIND2(light_set_cull_mask, RID, uint32_t)
+	BIND2(light_set_reverse_cull_face_mode, RID, bool)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	BIND2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
 
 	BIND2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	BIND2(light_directional_set_blend_splits, RID, bool)
+	BIND2(light_directional_set_shadow_depth_range_mode, RID, LightDirectionalShadowDepthRangeMode)
 
 	/* PROBE API */
 
@@ -789,23 +831,6 @@ public:
 	BIND2(reflection_probe_set_enable_box_projection, RID, bool)
 	BIND2(reflection_probe_set_enable_shadows, RID, bool)
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
-
-	/* ROOM API */
-
-	BIND0R(RID, room_create)
-	BIND4(room_add_bounds, RID, const PoolVector<Vector2> &, float, const Transform &)
-	BIND1(room_clear_bounds, RID)
-
-	/* PORTAL API */
-
-	// portals are only (x/y) points, forming a convex shape, which its clockwise
-	// order points outside. (z is 0);
-
-	BIND0R(RID, portal_create)
-	BIND2(portal_set_shape, RID, const Vector<Point2> &)
-	BIND2(portal_set_enabled, RID, bool)
-	BIND2(portal_set_disable_distance, RID, float)
-	BIND2(portal_set_disabled_color, RID, const Color &)
 
 	/* BAKED LIGHT API */
 
@@ -829,6 +854,9 @@ public:
 	BIND2(gi_probe_set_bias, RID, float)
 	BIND1RC(float, gi_probe_get_bias, RID)
 
+	BIND2(gi_probe_set_normal_bias, RID, float)
+	BIND1RC(float, gi_probe_get_normal_bias, RID)
+
 	BIND2(gi_probe_set_propagation, RID, float)
 	BIND1RC(float, gi_probe_get_propagation, RID)
 
@@ -848,26 +876,25 @@ public:
 	BIND2(particles_set_emitting, RID, bool)
 	BIND2(particles_set_amount, RID, int)
 	BIND2(particles_set_lifetime, RID, float)
+	BIND2(particles_set_one_shot, RID, bool)
 	BIND2(particles_set_pre_process_time, RID, float)
 	BIND2(particles_set_explosiveness_ratio, RID, float)
 	BIND2(particles_set_randomness_ratio, RID, float)
 	BIND2(particles_set_custom_aabb, RID, const Rect3 &)
-	BIND2(particles_set_gravity, RID, const Vector3 &)
+	BIND2(particles_set_speed_scale, RID, float)
 	BIND2(particles_set_use_local_coordinates, RID, bool)
 	BIND2(particles_set_process_material, RID, RID)
-
-	BIND2(particles_set_emission_shape, RID, VS::ParticlesEmissionShape)
-	BIND2(particles_set_emission_sphere_radius, RID, float)
-	BIND2(particles_set_emission_box_extents, RID, const Vector3 &)
-	BIND2(particles_set_emission_points, RID, const PoolVector<Vector3> &)
+	BIND2(particles_set_fixed_fps, RID, int)
+	BIND2(particles_set_fractional_delta, RID, bool)
+	BIND1(particles_restart, RID)
 
 	BIND2(particles_set_draw_order, RID, VS::ParticlesDrawOrder)
 
 	BIND2(particles_set_draw_passes, RID, int)
-	BIND3(particles_set_draw_pass_material, RID, int, RID)
 	BIND3(particles_set_draw_pass_mesh, RID, int, RID)
 
-	BIND1R(Rect3, particles_get_current_aabb, RID);
+	BIND1R(Rect3, particles_get_current_aabb, RID)
+	BIND2(particles_set_emission_transform, RID, const Transform &)
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -891,6 +918,7 @@ public:
 
 	BIND0R(RID, viewport_create)
 
+	BIND2(viewport_set_use_arvr, RID, bool)
 	BIND3(viewport_set_size, RID, int, int)
 
 	BIND2(viewport_set_active, RID, bool)
@@ -925,6 +953,10 @@ public:
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_hdr, RID, bool)
+	BIND2(viewport_set_usage, RID, ViewportUsage)
+
+	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
+	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 /* ENVIRONMENT API */
 
@@ -935,23 +967,26 @@ public:
 	BIND0R(RID, environment_create)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
-	BIND2(environment_set_skybox, RID, RID)
-	BIND2(environment_set_skybox_scale, RID, float)
+	BIND2(environment_set_sky, RID, RID)
+	BIND2(environment_set_sky_custom_fov, RID, float)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
-	BIND8(environment_set_ssr, RID, bool, int, float, float, float, bool, bool)
+	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND10(environment_set_ssao, RID, bool, float, float, float, float, float, float, const Color &, bool)
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
-	BIND5(environment_set_fog, RID, bool, float, float, RID)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
+
+	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
+	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
 /* SCENARIO API */
 
@@ -973,14 +1008,13 @@ public:
 	BIND2(instance_set_scenario, RID, RID) // from can be mesh, light, poly, area and portal so far.
 	BIND2(instance_set_layer_mask, RID, uint32_t)
 	BIND2(instance_set_transform, RID, const Transform &)
-	BIND2(instance_attach_object_instance_ID, RID, ObjectID)
+	BIND2(instance_attach_object_instance_id, RID, ObjectID)
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
 
 	BIND2(instance_attach_skeleton, RID, RID)
 	BIND2(instance_set_exterior, RID, bool)
-	BIND2(instance_set_room, RID, RID)
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
@@ -1022,16 +1056,18 @@ public:
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
 
 	BIND6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
+	BIND5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
 	BIND3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
 	BIND4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
-	BIND6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
-	BIND6(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool)
-	BIND10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &)
-	BIND6(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float)
-	BIND5(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)
-	BIND7(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int)
+	BIND7(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool, RID)
+	BIND8(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, RID, bool)
+	BIND11(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, NinePatchAxisMode, NinePatchAxisMode, bool, const Color &, RID)
+	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
+	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
+	BIND8(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, int, RID)
 	BIND3(canvas_item_add_mesh, RID, const RID &, RID)
 	BIND3(canvas_item_add_multimesh, RID, RID, RID)
+	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_add_clip_ignore, RID, bool)
 	BIND2(canvas_item_set_sort_children_by_y, RID, bool)
@@ -1068,6 +1104,7 @@ public:
 	BIND2(canvas_light_set_shadow_gradient_length, RID, float)
 	BIND2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	BIND2(canvas_light_set_shadow_color, RID, const Color &)
+	BIND2(canvas_light_set_shadow_smooth, RID, float)
 
 	BIND0R(RID, canvas_light_occluder_create)
 	BIND2(canvas_light_occluder_attach_to_canvas, RID, RID)
@@ -1082,12 +1119,6 @@ public:
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 
-	/* CURSOR */
-	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0); // radians
-	virtual void cursor_set_texture(RID p_texture, const Point2 &p_center_offset = Point2(0, 0), int p_cursor = 0, const Rect2 &p_region = Rect2());
-	virtual void cursor_set_visible(bool p_visible, int p_cursor = 0);
-	virtual void cursor_set_pos(const Point2 &p_pos, int p_cursor = 0);
-
 	/* BLACK BARS */
 
 	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom);
@@ -1098,6 +1129,8 @@ public:
 	virtual void free(RID p_rid); ///< free RIDs associated with the visual server
 
 	/* EVENT QUEUING */
+
+	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
 
 	virtual void draw();
 	virtual void sync();
@@ -1113,12 +1146,13 @@ public:
 
 	/* TESTING */
 
-	virtual void set_boot_image(const Image &p_image, const Color &p_color, bool p_scale);
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color &p_color);
 
 	virtual bool has_feature(Features p_feature) const;
 
 	virtual bool has_os_feature(const String &p_feature) const;
+	virtual void set_debug_generate_wireframes(bool p_generate);
 
 	VisualServerRaster();
 	~VisualServerRaster();

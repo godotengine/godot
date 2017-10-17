@@ -82,6 +82,7 @@ struct OpusCustomDecoder {
    int error;
    int last_pitch_index;
    int loss_count;
+   int skip_plc;
    int postfilter_period;
    int postfilter_period_old;
    opus_val16 postfilter_gain;
@@ -163,8 +164,6 @@ OPUS_CUSTOM_NOSTATIC int opus_custom_decoder_init(CELTDecoder *st, const CELTMod
    st->end = st->mode->effEBands;
    st->signalling = 1;
    st->arch = opus_select_arch();
-
-   st->loss_count = 0;
 
    opus_custom_decoder_ctl(st, OPUS_RESET_STATE);
 
@@ -447,7 +446,7 @@ static void celt_decode_lost(CELTDecoder * OPUS_RESTRICT st, int N, int LM)
 
    loss_count = st->loss_count;
    start = st->start;
-   noise_based = loss_count >= 5 || start != 0;
+   noise_based = loss_count >= 5 || start != 0 || st->skip_plc;
    if (noise_based)
    {
       /* Noise-based PLC/CNG */
@@ -832,6 +831,10 @@ int celt_decode_with_ec(CELTDecoder * OPUS_RESTRICT st, const unsigned char *dat
       return frame_size/st->downsample;
    }
 
+   /* Check if there are at least two packets received consecutively before
+    * turning on the pitch-based PLC */
+   st->skip_plc = st->loss_count != 0;
+
    if (dec == NULL)
    {
       ec_dec_init(&_dec,(unsigned char*)data,len);
@@ -1198,6 +1201,7 @@ int opus_custom_decoder_ctl(CELTDecoder * OPUS_RESTRICT st, int request, ...)
                ((char*)&st->DECODER_RESET_START - (char*)st));
          for (i=0;i<2*st->mode->nbEBands;i++)
             oldLogE[i]=oldLogE2[i]=-QCONST16(28.f,DB_SHIFT);
+         st->skip_plc = 1;
       }
       break;
       case OPUS_GET_PITCH_REQUEST:

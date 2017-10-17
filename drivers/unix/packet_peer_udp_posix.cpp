@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,8 +73,8 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer, int &r_buffer_siz
 	if (queue_count == 0)
 		return ERR_UNAVAILABLE;
 
-	uint32_t size;
-	uint8_t type;
+	uint32_t size = 0;
+	uint8_t type = IP::TYPE_NONE;
 	rb.read(&type, 1, true);
 	if (type == IP::TYPE_IPV4) {
 		uint8_t ip[4];
@@ -107,10 +108,14 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer, int p_buffer_size)
 	errno = 0;
 	int err;
 
+	_set_sock_blocking(blocking);
+
 	while ((err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr *)&addr, addr_size)) != p_buffer_size) {
 
 		if (errno != EAGAIN) {
 			return FAILED;
+		} else if (!blocking) {
+			return ERR_UNAVAILABLE;
 		}
 	}
 
@@ -122,7 +127,7 @@ int PacketPeerUDPPosix::get_max_packet_size() const {
 	return 512; // uhm maybe not
 }
 
-Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_recv_buffer_size) {
+Error PacketPeerUDPPosix::listen(int p_port, const IP_Address &p_bind_address, int p_recv_buffer_size) {
 
 	ERR_FAIL_COND_V(sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -167,16 +172,18 @@ Error PacketPeerUDPPosix::wait() {
 	return _poll(true);
 }
 
-Error PacketPeerUDPPosix::_poll(bool p_wait) {
+Error PacketPeerUDPPosix::_poll(bool p_block) {
 
 	if (sockfd == -1) {
 		return FAILED;
 	}
 
+	_set_sock_blocking(p_block);
+
 	struct sockaddr_storage from = { 0 };
 	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
-	while ((ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer), MAX(rb.space_left() - 24, 0)), p_wait ? 0 : MSG_DONTWAIT, (struct sockaddr *)&from, &len)) > 0) {
+	while ((ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer), MAX(rb.space_left() - 24, 0)), 0, (struct sockaddr *)&from, &len)) > 0) {
 
 		uint32_t port = 0;
 
@@ -209,6 +216,8 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		len = sizeof(struct sockaddr_storage);
 		++queue_count;
+		if (p_block)
+			break;
 	};
 
 	// TODO: Should ECONNRESET be handled here?
@@ -243,7 +252,33 @@ int PacketPeerUDPPosix::_get_socket() {
 
 	sockfd = _socket_create(sock_type, SOCK_DGRAM, IPPROTO_UDP);
 
+	if (sockfd != -1)
+		_set_sock_blocking(false);
+
 	return sockfd;
+}
+
+void PacketPeerUDPPosix::_set_sock_blocking(bool p_blocking) {
+
+	if (sock_blocking == p_blocking)
+		return;
+
+	sock_blocking = p_blocking;
+
+#ifndef NO_FCNTL
+	int opts = fcntl(sockfd, F_GETFL);
+	int ret = 0;
+	if (sock_blocking)
+		ret = fcntl(sockfd, F_SETFL, opts & ~O_NONBLOCK);
+	else
+		ret = fcntl(sockfd, F_SETFL, opts | O_NONBLOCK);
+	if (ret == -1)
+		perror("setting non-block mode");
+#else
+	int bval = sock_blocking ? 0 : 1;
+	if (ioctl(sockfd, FIONBIO, &bval) == -1)
+		perror("setting non-block mode");
+#endif
 }
 
 void PacketPeerUDPPosix::set_dest_address(const IP_Address &p_address, int p_port) {
@@ -264,6 +299,8 @@ void PacketPeerUDPPosix::make_default() {
 
 PacketPeerUDPPosix::PacketPeerUDPPosix() {
 
+	blocking = true;
+	sock_blocking = true;
 	sockfd = -1;
 	packet_port = 0;
 	queue_count = 0;

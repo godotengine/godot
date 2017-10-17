@@ -1,0 +1,1078 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="@GDScript" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Built-in GDScript functions.
+	</brief_description>
+	<description>
+		This contains the list of built-in gdscript functions. Mostly math functions and other utilities. Everything else is expanded by objects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Color8">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r8" type="int">
+			</argument>
+			<argument index="1" name="g8" type="int">
+			</argument>
+			<argument index="2" name="b8" type="int">
+			</argument>
+			<argument index="3" name="a8" type="int">
+			</argument>
+			<description>
+				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
+				[code]r8[/code] red channel
+				[code]g8[/code] green channel
+				[code]b8[/code] blue channel
+				[code]a8[/code] alpha channel
+				[codeblock]
+				red = Color8(255, 0, 0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="ColorN">
+			<return type="Color">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="alpha" type="float">
+			</argument>
+			<description>
+				Returns color [code]name[/code] with [code]alpha[/code] ranging from 0 to 1. Note: [code]name[/code] is defined in color_names.inc.
+				[codeblock]
+				red = ColorN('red')
+				[/codeblock]
+			</description>
+		</method>
+		<method name="abs">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the absolute value of parameter [code]s[/code]  (i.e. unsigned value, works for integer and float).
+				[codeblock]
+				# a is 1
+				a = abs(-1)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="acos">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code].
+				[codeblock]
+				# c is 0.523599 or 30 degrees if converted with rad2deg(s)
+				c = acos(0.866025)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asin">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code].
+				[codeblock]
+				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
+				s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="assert">
+			<return type="void">
+			</return>
+			<argument index="0" name="condition" type="bool">
+			</argument>
+			<description>
+				Assert that the [code]condition[/code] is true. If the [code]condition[/code] is false a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always true.
+				[codeblock]
+				# Speed should always be between 0 and 20
+				speed = -10
+				assert(speed &lt; 20) # Is true and program continues
+				assert(speed &gt;= 0) # Is false and program stops
+				assert(speed &gt;= 0 &amp;&amp; speed &lt; 20) # Or combined
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]s[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you always want an exact angle.
+				[codeblock]
+				a = atan(0.5) # a is 0.463648
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan2">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
+				[codeblock]
+				a = atan(0,-1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="bytes2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="PoolByteArray">
+			</argument>
+			<description>
+				Decodes a byte array back to a value.
+			</description>
+		</method>
+		<method name="ceil">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Rounds [code]s[/code] upward, returning the smallest integral value that is not less than [code]s[/code].
+				[codeblock]
+				i = ceil(1.45)  # i is 2
+				i = ceil(1.001) # i is 2
+				[/codeblock]
+			</description>
+		</method>
+		<method name="char">
+			<return type="String">
+			</return>
+			<argument index="0" name="ascii" type="int">
+			</argument>
+			<description>
+				Returns a character as a String of the given ASCII code.
+				[codeblock]
+				# a is 'A'
+				a = char(65)
+				# a is 'a'
+				a = char(65+32)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="clamp">
+			<return type="float">
+			</return>
+			<argument index="0" name="val" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Clamps [code]val[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 1000
+				# a is 20
+				a = clamp(speed, 1, 20)
+
+				speed = -10
+				# a is 1
+				a = clamp(speed, 1, 20)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="convert">
+			<return type="Object">
+			</return>
+			<argument index="0" name="what" type="Variant">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<description>
+				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum TYPE_* in [@Global Scope].
+				[codeblock]
+				a = Vector2(1, 0)
+				# prints 1
+				print(a.length())
+				a = convert(a, TYPE_STRING)
+				# prints 6
+				# (1, 0) is 6 characters
+				print(a.length())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cos">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the cosine of angle [code]s[/code] in radians.
+				[codeblock]
+				# prints 1 and -1
+				print(cos(PI*2))
+				print(cos(PI))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cosh">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic cosine of [code]s[/code] in radians.
+				[codeblock]
+				# prints 1.543081
+				print(cosh(1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="db2linear">
+			<return type="float">
+			</return>
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+				Converts from decibels to linear energy (audio).
+			</description>
+		</method>
+		<method name="decimals">
+			<return type="float">
+			</return>
+			<argument index="0" name="step" type="float">
+			</argument>
+			<description>
+				Returns the position of the first non-zero digit, after the decimal point.
+				[codeblock]
+				# n is 2
+				n = decimals(0.035)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="dectime">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="amount" type="float">
+			</argument>
+			<argument index="2" name="step" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
+				[codeblock]
+				# a = 59
+				a = dectime(60, 10, 0.1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="deg2rad">
+			<return type="float">
+			</return>
+			<argument index="0" name="deg" type="float">
+			</argument>
+			<description>
+				Returns degrees converted to radians.
+				[codeblock]
+				# r is 3.141593
+				r = deg2rad(180)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="dict2inst">
+			<return type="Object">
+			</return>
+			<argument index="0" name="dict" type="Dictionary">
+			</argument>
+			<description>
+				Converts a previously converted instance to a dictionary, back into an instance. Useful for deserializing.
+			</description>
+		</method>
+		<method name="ease">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<argument index="1" name="curve" type="float">
+			</argument>
+			<description>
+				Easing function, based on exponent. 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+			</description>
+		</method>
+		<method name="exp">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Raises the Euler's constant [b]e[/b] to the power of [code]s[/code] and returns it. [b]e[/b] has an approximate value of 2.71828.
+				[codeblock]
+				a = exp(2) # approximately 7.39
+				[/codeblock]
+			</description>
+		</method>
+		<method name="floor">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Rounds [code]s[/code] to the closest smaller integer and returns it.
+				[codeblock]
+				# a is 2
+				a = floor(2.99)
+				# a is -3
+				a = floor(-2.99)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="fmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point remainder of [code]x/y[/code].
+				[codeblock]
+				# remainder is 1.5
+				var remainder = fmod(7, 5.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="fposmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point remainder of [code]x/y[/code] that wraps equally in positive and negative.
+				[codeblock]
+				var i = -10;
+				while i &lt; 0:
+				    prints(i, fposmod(i, 10))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-10 10
+				-9 1
+				-8 2
+				-7 3
+				-6 4
+				-5 5
+				-4 6
+				-3 7
+				-2 8
+				-1 9
+				[/codeblock]
+			</description>
+		</method>
+		<method name="funcref">
+			<return type="Object">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<argument index="1" name="funcname" type="String">
+			</argument>
+			<description>
+				Returns a reference to the specified function [code]funcname[/code] in the [code]instance[/code] node. As functions aren't first-class objects in GDscript, use [code]funcref[/code] to store a [FuncRef] in a variable and call it later.
+				[codeblock]
+				func foo():
+				    return("bar")
+
+				a = funcref(self, "foo")
+				print(a.call_func()) # prints bar
+				[/codeblock]
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Returns the integer hash of the variable passed.
+				[codeblock]
+				print(hash("a")) # prints 177670
+				[/codeblock]
+			</description>
+		</method>
+		<method name="inst2dict">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="inst" type="Object">
+			</argument>
+			<description>
+				Returns the passed instance converted to a dictionary (useful for serializing).
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var d = inst2dict(self)
+				    print(d.keys())
+				    print(d.values())
+				[/codeblock]
+				Prints out:
+				[codeblock]
+				[@subpath, @path, foo]
+				[, res://test.gd, bar]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="instance_from_id">
+			<return type="Object">
+			</return>
+			<argument index="0" name="instance_id" type="int">
+			</argument>
+			<description>
+				Returns the Object that corresponds to [code]instance_id[/code]. All Objects have a unique instance ID.
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var id = get_instance_id()
+				    var inst = instance_from_id(id)
+				    print(inst.foo) # prints bar
+				[/codeblock]
+			</description>
+		</method>
+		<method name="inverse_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="value" type="float">
+			</argument>
+			<description>
+				Returns a normalized value considering the given range.
+				[codeblock]
+				inverse_lerp(3, 5, 4) # returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_inf">
+			<return type="bool">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns True/False whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
+			</description>
+		</method>
+		<method name="is_nan">
+			<return type="bool">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns True/False whether [code]s[/code] is a NaN (Not-A-Number) value.
+			</description>
+		</method>
+		<method name="len">
+			<return type="int">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+				[codeblock]
+				a = [1, 2, 3, 4]
+				len(a) # returns 4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two values by a normalized value.
+				[codeblock]
+				lerp(1, 3, 0.5) # returns 2
+				[/codeblock]
+			</description>
+		</method>
+		<method name="linear2db">
+			<return type="float">
+			</return>
+			<argument index="0" name="nrg" type="float">
+			</argument>
+			<description>
+				Converts from linear energy to decibels (audio).
+			</description>
+		</method>
+		<method name="load">
+			<return type="Object">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Loads a resource from the filesystem located at 'path'. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = load("res://main.tscn")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="log">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log function on your calculator which is a base 10 logarithm.
+				[codeblock]
+				log(10) # returns 2.302585
+				[/codeblock]
+			</description>
+		</method>
+		<method name="max">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the maximum of two values.
+				[codeblock]
+				max(1,2) # returns 2
+				max(-3.99, -4) # returns -3.99
+				[/codeblock]
+			</description>
+		</method>
+		<method name="min">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the minimum of two values.
+				[codeblock]
+				min(1,2) # returns 1
+				min(-3.99, -4) # returns -4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="nearest_po2">
+			<return type="int">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Returns the nearest larger power of 2 for integer [code]val[/code].
+				[codeblock]
+				nearest_po2(3) # returns 4
+				nearest_po2(4) # returns 4
+				nearest_po2(5) # returns 8
+				[/codeblock]
+			</description>
+		</method>
+		<method name="parse_json">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="json" type="String">
+			</argument>
+			<description>
+				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
+				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0]) # prints a
+				else:
+				    print("unexpected results")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="pow">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
+				[codeblock]
+				pow(2,5) # returns 32
+				[/codeblock]
+			</description>
+		</method>
+		<method name="preload">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Returns a resource from the filesystem that is loaded during script parsing. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				[codeblock]
+				# load a scene called main located in the root of the project directory
+				var main = preload("res://main.tscn")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="print" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				[codeblock]
+				a = [1,2,3]
+				print("a","b",a) # prints ab[1, 2, 3]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="print_stack">
+			<return type="void">
+			</return>
+			<description>
+				Prints a stack track at code location, only works when running with debugger turned on.
+				Output in the console would look something like this:
+				[codeblock]
+				Frame 0 - res://test.gd:16 in function '_process'
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printerr" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Prints one or more arguments to strings in the best way possible to standard error line.
+				[codeblock]
+				printerr("prints to stderr")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printraw" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Prints one or more arguments to strings in the best way possible to console. No newline is added at the end.
+				[codeblock]
+				printraw("A")
+				printraw("B")
+				# prints AB
+				[/codeblock]
+			</description>
+		</method>
+		<method name="prints" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Prints one or more arguments to the console with a space between each argument.
+				[codeblock]
+				prints("A", "B", "C") # prints A B C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printt" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+				Prints one or more arguments to the console with a tab between each argument.
+				[codeblock]
+				printt("A", "B", "C") # prints A       B       C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rad2deg">
+			<return type="float">
+			</return>
+			<argument index="0" name="rad" type="float">
+			</argument>
+			<description>
+				Converts from radians to degrees.
+				[codeblock]
+				rad2deg(0.523599) # returns 30
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rand_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				[codeblock]
+				prints(rand_range(0, 1), rand_range(0, 1)) # prints 0.135591 0.405263
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rand_seed">
+			<return type="Array">
+			</return>
+			<argument index="0" name="seed" type="int">
+			</argument>
+			<description>
+				Random from seed: pass a [code]seed[/code], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
+			</description>
+		</method>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Returns a random floating point value between 0 and 1.
+				[codeblock]
+				randf() # returns 0.375671
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Returns a random 32 bit integer. Use remainder to obtain a random value between 0 and N (where N is smaller than 2^32 -1).
+				[codeblock]
+				randi() % 20      # returns random number between 0 and 19
+				randi() % 100     # returns random number between 0 and 99
+				randi() % 100 + 1 # returns random number between 1 and 100
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randomize">
+			<return type="void">
+			</return>
+			<description>
+				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
+				[codeblock]
+				func _ready():
+				    randomize()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range" qualifiers="vararg">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial, final-1, increment).
+				[codeblock]
+				for i in range(4):
+				    print(i)
+				for i in range(2, 5):
+				    print(i)
+				for i in range(0, 6, 2):
+				    print(i)
+				[/codeblock]
+				Output:
+				[codeblock]
+				0
+				1
+				2
+				3
+
+				2
+				3
+				4
+
+				0
+				2
+				4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="istart" type="float">
+			</argument>
+			<argument index="2" name="istop" type="float">
+			</argument>
+			<argument index="3" name="ostart" type="float">
+			</argument>
+			<argument index="4" name="ostop" type="float">
+			</argument>
+			<description>
+				Maps a [code]value[/code] from range [code][istart, istop][/code] to [code][ostart, ostop][/code].
+				[codeblock]
+				range_lerp(75, 0, 100, -1, 1) # returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="round">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the integral value that is nearest to [code]s[/code], with halfway cases rounded away from zero.
+				[codeblock]
+				round(2.6) # returns 3
+				[/codeblock]
+			</description>
+		</method>
+		<method name="seed">
+			<return type="void">
+			</return>
+			<argument index="0" name="seed" type="int">
+			</argument>
+			<description>
+				Sets seed for the random number generator.
+				[codeblock]
+				my_seed = "Godot Rocks"
+				seed(my_seed.hash())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sign">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns sign of [code]s[/code] -1 or 1.
+				[codeblock]
+				sign(-6) # returns -1
+				sign(6)  # returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sin">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the sine of angle [code]s[/code] in radians.
+				[codeblock]
+				sin(0.523599) # returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sinh">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic sine of [code]s[/code].
+				[codeblock]
+				a = log(2.0) # returns 0.693147
+				sinh(a) # returns 0.75
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sqrt">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the square root of [code]s[/code].
+				[codeblock]
+				sqrt(9) # returns 3
+				[/codeblock]
+			</description>
+		</method>
+		<method name="stepify">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]s[/code] to a given [code]step[/code].
+			</description>
+		</method>
+		<method name="str" qualifiers="vararg">
+			<return type="String">
+			</return>
+			<description>
+				Converts one or more arguments to string in the best way possible.
+				[codeblock]
+				var a = [10, 20, 30]
+				var b = str(a);
+				len(a) # returns 3
+				len(b) # returns 12
+				[/codeblock]
+			</description>
+		</method>
+		<method name="str2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Converts a formatted string that was returned by [method var2str] to the original value.
+				[codeblock]
+				a = '{ "a": 1, "b": 2 }'
+				b = str2var(a)
+				print(b['a']) # prints 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tan">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the tangent of angle [code]s[/code] in radians.
+				[codeblock]
+				tan( deg2rad(45) ) # returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tanh">
+			<return type="float">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic tangent of [code]s[/code].
+				[codeblock]
+				a = log(2.0) # returns 0.693147
+				tanh(a)      # returns 0.6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_json">
+			<return type="String">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Converts a Variant [code]var[/code] to JSON text and return the result. Useful for serializing data to store or send over the network.
+				[codeblock]
+				a = { 'a': 1, 'b': 2 }
+				b = to_json(a)
+				print(b) # {"a":1, "b":2}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="type_exists">
+			<return type="bool">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+				Returns whether the given class exists in [ClassDB].
+				[codeblock]
+				type_exists("Sprite") # returns true
+				type_exists("Variant") # returns false
+				[/codeblock]
+			</description>
+		</method>
+		<method name="typeof">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="Variant">
+			</argument>
+			<description>
+				Returns the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0]) # prints a
+				else:
+				    print("unexpected results")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="validate_json">
+			<return type="String">
+			</return>
+			<argument index="0" name="json" type="String">
+			</argument>
+			<description>
+				Checks that [code]json[/code] is valid JSON data. Returns empty string if valid. Returns error message if not valid.
+				[codeblock]
+				j = to_json([1, 2, 3])
+				v = validate_json(j)
+				if not v:
+				    print("valid")
+				else:
+				    prints("invalid", v)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="var2bytes">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Encodes a variable value to a byte array.
+			</description>
+		</method>
+		<method name="var2str">
+			<return type="String">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+				Converts a Variant [code]var[/code] to a formatted string that can later be parsed using [method str2var].
+				[codeblock]
+				a = { 'a': 1, 'b': 2 }
+				print(var2str(a))
+				[/codeblock]
+				prints
+				[codeblock]
+				{
+				"a": 1,
+				"b": 2
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="weakref">
+			<return type="Object">
+			</return>
+			<argument index="0" name="obj" type="Object">
+			</argument>
+			<description>
+				Returns a weak reference to an object.
+				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
+			</description>
+		</method>
+		<method name="yield">
+			<return type="GDFunctionState">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="signal" type="String">
+			</argument>
+			<description>
+				Stops the function execution and returns the current state. Call [method GDFunctionState.resume] on the state to resume execution. This invalidates the state.
+				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PI" value="3.141593" enum="">
+			Constant that represents how many times the diameter of a circumference fits around its perimeter.
+		</constant>
+		<constant name="INF" value="inf" enum="">
+			A positive infinity. (For negative infinity, use -INF).
+		</constant>
+		<constant name="NAN" value="nan" enum="">
+			Macro constant that expands to an expression of type float that represents a NaN.
+			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
+		</constant>
+	</constants>
+</class>

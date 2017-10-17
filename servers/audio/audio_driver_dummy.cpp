@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,25 +29,24 @@
 /*************************************************************************/
 #include "audio_driver_dummy.h"
 
-#include "global_config.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 Error AudioDriverDummy::init() {
 
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
-	pcm_open = false;
 	samples_in = NULL;
 
-	mix_rate = 44100;
+	mix_rate = DEFAULT_MIX_RATE;
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_size * channels);
+	samples_in = memnew_arr(int32_t, buffer_frames * channels);
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverDummy::thread_func, this);
@@ -58,17 +58,15 @@ void AudioDriverDummy::thread_func(void *p_udata) {
 
 	AudioDriverDummy *ad = (AudioDriverDummy *)p_udata;
 
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
+	uint64_t usdelay = (ad->buffer_frames / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
 
-		if (!ad->active) {
-
-		} else {
+		if (ad->active) {
 
 			ad->lock();
 
-			ad->audio_server_process(ad->buffer_size, ad->samples_in);
+			ad->audio_server_process(ad->buffer_frames, ad->samples_in);
 
 			ad->unlock();
 		};

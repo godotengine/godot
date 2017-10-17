@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,9 +53,9 @@ void FileAccessWindows::check_errors() const {
 	}
 }
 
-Error FileAccessWindows::_open(const String &p_filename, int p_mode_flags) {
+Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 
-	String filename = fix_path(p_filename);
+	String filename = fix_path(p_path);
 	if (f)
 		close();
 
@@ -155,10 +156,11 @@ void FileAccessWindows::seek_end(int64_t p_position) {
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
 }
-size_t FileAccessWindows::get_pos() const {
+size_t FileAccessWindows::get_position() const {
 
 	size_t aux_position = 0;
-	if (!(aux_position = ftell(f))) {
+	aux_position = ftell(f);
+	if (!aux_position) {
 		check_errors();
 	};
 	return aux_position;
@@ -167,9 +169,9 @@ size_t FileAccessWindows::get_len() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	size_t pos = get_pos();
+	size_t pos = get_position();
 	fseek(f, 0, SEEK_END);
-	int size = get_pos();
+	int size = get_position();
 	fseek(f, pos, SEEK_SET);
 
 	return size;
@@ -203,6 +205,12 @@ int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
 Error FileAccessWindows::get_error() const {
 
 	return last_error;
+}
+
+void FileAccessWindows::flush() {
+
+	ERR_FAIL_COND(!f);
+	fflush(f);
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {

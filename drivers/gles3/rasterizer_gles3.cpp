@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +30,8 @@
 #include "rasterizer_gles3.h"
 
 #include "gl_context/context_gl.h"
-#include "global_config.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include <string.h>
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
@@ -71,7 +72,7 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-#ifdef WINDOWS_ENABLED
+#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
 #define GLAPIENTRY
@@ -82,7 +83,6 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
 		return;
 
-	print_line("mesege");
 	char debSource[256], debType[256], debSev[256];
 	if (source == _EXT_DEBUG_SOURCE_API_ARB)
 		strcpy(debSource, "OpenGL");
@@ -185,6 +185,9 @@ void RasterizerGLES3::initialize() {
 			GL_DEBUG_SEVERITY_HIGH_ARB,5, "hello");
 
 */
+
+	const GLubyte *renderer = glGetString(GL_RENDERER);
+	print_line("OpenGL ES 3.0 Renderer: " + String((const char *)renderer));
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -194,28 +197,35 @@ void RasterizerGLES3::begin_frame() {
 
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 
-	double time_total = double(tick) / 1000000.0;
+	double delta = double(tick - prev_ticks) / 1000000.0;
+	delta *= Engine::get_singleton()->get_time_scale();
+
+	time_total += delta;
+
+	if (delta == 0) {
+		//to avoid hiccups
+		delta = 0.001;
+	}
+
+	prev_ticks = tick;
+
+	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	if (time_total > time_roll_over)
+		time_total = 0; //roll over every day (should be customz
 
 	storage->frame.time[0] = time_total;
 	storage->frame.time[1] = Math::fmod(time_total, 3600);
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
-	storage->frame.delta = double(tick - storage->frame.prev_tick) / 1000000.0;
-	if (storage->frame.prev_tick == 0) {
-		//to avoid hiccups
-		storage->frame.delta = 0.001;
-	}
+	storage->frame.delta = delta;
 
 	storage->frame.prev_tick = tick;
 
 	storage->update_dirty_resources();
 
-	storage->info.render_object_count = 0;
-	storage->info.render_material_switch_count = 0;
-	storage->info.render_surface_switch_count = 0;
-	storage->info.render_shader_rebind_count = 0;
-	storage->info.render_vertices_count = 0;
+	storage->info.render_final = storage->info.render;
+	storage->info.render.reset();
 
 	scene->iteration();
 }
@@ -237,11 +247,8 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 
 	if (p_render_target.is_valid()) {
 		RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
-		if (!rt) {
-			storage->frame.current_rt = NULL;
-		}
-		ERR_FAIL_COND(!rt);
 		storage->frame.current_rt = rt;
+		ERR_FAIL_COND(!rt);
 		storage->frame.clear_request = false;
 
 		glViewport(0, 0, rt->width, rt->height);
@@ -270,6 +277,62 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
+void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
+
+	if (p_image.is_null() || p_image->empty())
+		return;
+
+	begin_frame();
+
+	int window_w = OS::get_singleton()->get_video_mode(0).width;
+	int window_h = OS::get_singleton()->get_video_mode(0).height;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+	glViewport(0, 0, window_w, window_h);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	canvas->canvas_begin();
+
+	RID texture = storage->texture_create();
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), VS::TEXTURE_FLAG_FILTER);
+	storage->texture_set_data(texture, p_image);
+
+	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
+	Rect2 screenrect;
+	if (p_scale) {
+
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+		}
+	} else {
+
+		screenrect = imgrect;
+		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+	}
+
+	RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, t->tex_id);
+	canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
+	glBindTexture(GL_TEXTURE_2D, 0);
+	canvas->canvas_end();
+
+	storage->free(texture); // free since it's only one frame that stays there
+
+	OS::get_singleton()->swap_buffers();
+}
+
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
@@ -282,6 +345,10 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
+	//glBindTexture(GL_TEXTURE_2D, rt->effects.mip_maps[0].color);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, storage->resources.normal_tex);
+
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();
@@ -346,10 +413,9 @@ void RasterizerGLES3::make_current() {
 
 void RasterizerGLES3::register_config() {
 
-	GLOBAL_DEF("rendering/gles3/render_architecture", 0);
-	GlobalConfig::get_singleton()->set_custom_property_info("rendering/gles3/render_architecture", PropertyInfo(Variant::INT, "", PROPERTY_HINT_ENUM, "Desktop,Mobile"));
-	GLOBAL_DEF("rendering/quality/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF("rendering/quality/anisotropic_filter_level", 4.0);
+	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
+	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4.0);
+	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
 }
 
 RasterizerGLES3::RasterizerGLES3() {
@@ -358,9 +424,13 @@ RasterizerGLES3::RasterizerGLES3() {
 	canvas = memnew(RasterizerCanvasGLES3);
 	scene = memnew(RasterizerSceneGLES3);
 	canvas->storage = storage;
+	canvas->scene_render = scene;
 	storage->canvas = canvas;
 	scene->storage = storage;
 	storage->scene = scene;
+
+	prev_ticks = 0;
+	time_total = 0;
 }
 
 RasterizerGLES3::~RasterizerGLES3() {

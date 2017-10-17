@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,20 +45,20 @@ class Memory {
 
 	Memory();
 #ifdef DEBUG_ENABLED
-	static size_t mem_usage;
-	static size_t max_usage;
+	static uint64_t mem_usage;
+	static uint64_t max_usage;
 #endif
 
-	static size_t alloc_count;
+	static uint64_t alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
 
-	static size_t get_mem_available();
-	static size_t get_mem_usage();
-	static size_t get_mem_max_usage();
+	static uint64_t get_mem_available();
+	static uint64_t get_mem_usage();
+	static uint64_t get_mem_max_usage();
 };
 
 class DefaultAllocator {

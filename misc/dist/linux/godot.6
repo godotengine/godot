@@ -1,0 +1,165 @@
+.TH GODOT "6" "September 2017" "godot 3.0-alpha" "Games"
+.SH NAME
+godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
+.SH SYNOPSIS
+.B godot
+[\fI\,options\/\fR] [path to scene or 'project.godot' file]
+.SH DESCRIPTION
+Godot Engine is an advanced, feature\-packed, multi\-platform 2D and 3D game
+engine.
+.br
+It provides a huge set of common tools, so you can just focus on making
+your game without reinventing the wheel.
+.SS "General options:"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display this help message.
+.TP
+\fB\-\-version\fR
+Display the version string.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Use verbose stdout mode.
+.TP
+\fB\-\-quiet\fR
+Quiet mode, silences stdout messages. Errors are still displayed.
+.SS "Run options:"
+.TP
+\fB\-e\fR, \fB\-\-editor\fR
+Start the editor instead of running the scene.
+.TP
+\fB\-p\fR, \fB\-\-project\-manager\fR
+Start the project manager, even if a project is auto\-detected.
+.TP
+\fB\-l\fR, \fB\-\-language\fR <locale>
+Use a specific locale (<locale> being a two\-letter code).
+.TP
+\fB\-\-path\fR <directory>
+Path to a project (<directory> must contain a 'project.godot' file).
+.TP
+\fB\-\-main\-pack\fR <file>
+Path to a pack (.pck) file to load.
+.TP
+\fB\-\-render\-thread\fR <mode>
+Render thread mode ('unsafe', 'safe', 'separate').
+.TP
+\fB\-\-remote\-fs\fR <address>
+Remote filesystem (<host/IP>[:<port>] address).
+.TP
+\fB\-\-remote\-fs\-password\fR <password>
+Password for remote filesystem.
+.TP
+\fB\-\-audio\-driver\fR <driver>
+Audio driver ('PulseAudio', 'ALSA').
+.TP
+\fB\-\-video\-driver\fR <driver>
+Video driver ('GLES3').
+.SS "Display options:"
+.TP
+\fB\-f\fR, \fB\-\-fullscreen\fR
+Request fullscreen mode.
+.TP
+\fB\-m\fR, \fB\-\-maximized\fR
+Request a maximized window.
+.TP
+\fB\-w\fR, \fB\-\-windowed\fR
+Request windowed mode.
+.TP
+\fB\-\-resolution\fR <W>x<H>
+Request window resolution.
+.TP
+\fB\-\-position\fR <X>,<Y>
+Request window position.
+.TP
+\fB\-\-low\-dpi\fR
+Force low\-DPI mode (macOS and Windows only).
+.TP
+\fB\-\-no\-window\fR
+Disable window creation (Windows only). Useful together with \fB\-\-script\fR.
+.SS "Debug options:"
+.TP
+\fB\-d\fR, \fB\-\-debug\fR
+Debug (local stdout debugger).
+.TP
+\fB\-b\fR, \fB\-\-breakpoints\fR
+Breakpoint list as source::line comma\-separated pairs, no spaces (use %20 instead).
+.TP
+\fB\-\-profiling\fR
+Enable profiling in the script debugger.
+.TP
+\fB\-\-remote\-debug\fR <address>
+Remote debug (<host/IP>:<port> address).
+.TP
+\fB\-\-debug\-collisions\fR
+Show collisions shapes when running the scene.
+.TP
+\fB\-\-debug\-navigation\fR
+Show navigation polygons when running the scene.
+.TP
+\fB\-\-frame\-delay\fR <ms>
+Simulate high CPU load (delay each frame by <ms> milliseconds).
+.TP
+\fB\-\-time\-scale\fR <scale>
+Force time scale (higher values are faster, 1.0 is normal speed).
+.TP
+\fB\-\-disable\-render\-loop\fR
+Disable render loop so rendering only occurs when called explicitly from script.
+.TP
+\fB\-\-disable\-crash\-handler\fR
+Disable crash handler when supported by the platform code.
+.TP
+\fB\-\-fixed\-fps\fR <fps>
+Force a fixed number of frames per second. This setting disables real\-time synchronization.
+.SS "Standalone tools:"
+.TP
+\fB\-s\fR, \fB\-\-script\fR <script>
+Run a script.
+.TP
+\fB\-\-export\fR <target>
+Export the project using the given export target.
+.TP
+\fB\-\-export\-debug\fR
+Use together with \fB\-\-export\fR, enables debug mode for the template.
+.TP
+\fB\-\-doctool\fR <path>
+Dump the engine API reference to the given <path> in XML format, merging if existing files are found.
+.TP
+\fB\-\-no\-docbase\fR
+Disallow dumping the base types (used with \fB\-\-doctool\fR).
+.TP
+\fB\-\-gdnative\-generate\-json\-api\fR
+Generate JSON dump of the Godot API for GDNative bindings.
+.TP
+\fB\-\-test\fR <test>
+Run a unit test ('string', 'containers', 'math', 'render', 'multimesh', 'gui', 'io', 'shaderlang', 'physics', 'oa_hash_map').
+.SH FILES
+~/.godot/
+.RS
+User\-specific configuration and cache folder, contains persistent editor and game configuration and saved files, temporary metadata, etc.
+.RE
+~/.godot/app_userdata/
+.RS
+Contains the default configuration and user data folders for Godot\-made games (\fIuser://\fR path).
+.RE
+~/.godot/templates/
+.RS
+Installation folder for "export templates", compiled binaries of the engine to deploy on the many supported platforms.
+.RE
+/usr/share/doc/godot/
+.RS
+Additional documentation files.
+.RE
+/usr/share/licenses/godot/
+.RS
+Detailed licensing information.
+.RE
+.SH "SEE ALSO"
+See the project website at \fIhttps://godotengine.org\fR and the source
+code repository at \fIhttps://github.com/godotengine/godot\fR for more details.
+.SH BUGS
+Godot Engine is a free and open source project and welcomes any kind of
+contributions. In particular, you can report issues or make suggestions on
+Godot's issue tracker at \fIhttps://github.com/godotengine/godot/issues\fR.
+.SH AUTHOR
+Man page written by Rémi Verschelde <akien@godotengine.org> on behalf of the
+Godot Engine development team.

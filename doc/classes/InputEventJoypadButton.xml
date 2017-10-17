@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Input event type for joypad button events.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_button_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pressure" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_button_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="button_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pressed">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pressure">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressure" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
+			Joypad button identifier, one of the JOY_BUTTON_* constants in [@Global Scope].
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
+			Pressed state of the joypad button.
+		</member>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure">
+			Intensity of the button pressure, ranges from 0 to 1.0.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

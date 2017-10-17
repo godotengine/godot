@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NodePath" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Pre-parsed scene tree path.
+	</brief_description>
+	<description>
+		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the size property of the texture resource on the node named "Sprite" which is a child of the other named nodes in the path. Note that if you want to get a resource, you must end the path with a colon, otherwise the last element will be used as a property name.
+		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
+		A [NodePath] is made up of a list of node names, a list of "subnode" (resource) names, and the name of a property in the final node or resource.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="NodePath">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Create a NodePath from a string, e.g. "Path2D/PathFollow2D/Sprite:texture:size". A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
+			</description>
+		</method>
+		<method name="get_name">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Get the node name indicated by [code]idx[/code] (0 to [method get_name_count])
+			</description>
+		</method>
+		<method name="get_name_count">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of node names which make up the path.
+			</description>
+		</method>
+		<method name="get_property">
+			<return type="String">
+			</return>
+			<description>
+				Get the path's property name, or an empty string if the path doesn't have a property.
+			</description>
+		</method>
+		<method name="get_subname">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Get the resource name indicated by [code]idx[/code] (0 to [method get_subname_count])
+			</description>
+		</method>
+		<method name="get_subname_count">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of resource names in the path.
+			</description>
+		</method>
+		<method name="is_absolute">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the node path is absolute (not relative).
+			</description>
+		</method>
+		<method name="is_empty">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the node path is empty.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

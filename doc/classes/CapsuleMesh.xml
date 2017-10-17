@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CapsuleMesh" inherits="PrimitiveMesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class representing a capsule-shaped [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a capsule-shaped [PrimitiveMesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_mid_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_mid_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="mid_height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<return type="void">
+			</return>
+			<argument index="0" name="segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<return type="void">
+			</return>
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height">
+			Height of the capsule mesh from the center point. Defaults to 1.0.
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
+			Number of radial segments on the capsule mesh. Defaults to 64.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+			Radius of the capsule mesh. Defaults to 1.0.
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
+			Number of rings along the height of the capsule. Defaults to 8.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

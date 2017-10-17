@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Simple MRU list-cache (specification).                               */
 /*                                                                         */
-/*  Copyright 2000-2016 by                                                 */
+/*  Copyright 2000-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -108,12 +108,14 @@ FT_BEGIN_HEADER
   typedef struct  FTC_MruListClassRec_
   {
     FT_Offset                node_size;
+
     FTC_MruNode_CompareFunc  node_compare;
     FTC_MruNode_InitFunc     node_init;
     FTC_MruNode_ResetFunc    node_reset;
     FTC_MruNode_DoneFunc     node_done;
 
   } FTC_MruListClassRec;
+
 
   typedef struct  FTC_MruListRec_
   {

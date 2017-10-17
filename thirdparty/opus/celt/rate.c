@@ -296,7 +296,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
    done = 0;
    for (j=end;j-->start;)
    {
-      int tmp = bits1[j] + (lo*bits2[j]>>ALLOC_STEPS);
+      int tmp = bits1[j] + ((opus_int32)lo*bits2[j]>>ALLOC_STEPS);
       if (tmp < thresh[j] && !done)
       {
          if (tmp >= alloc_floor)

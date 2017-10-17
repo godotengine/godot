@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -202,7 +203,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 		smin *= axis_scale;
 		smax *= axis_scale;
 
-		local_aabb.pos[i] = smin;
+		local_aabb.position[i] = smin;
 		local_aabb.size[i] = smax - smin;
 	}
 

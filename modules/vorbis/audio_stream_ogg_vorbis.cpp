@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +58,7 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int 
 		fa->seek(offs);
 	} else if (whence == SEEK_CUR) {
 
-		fa->seek(fa->get_pos() + offs);
+		fa->seek(fa->get_position() + offs);
 	} else if (whence == SEEK_END) {
 
 		fa->seek_end(offs);
@@ -88,7 +89,7 @@ long AudioStreamPlaybackOGGVorbis::_ov_tell_func(void *_f) {
 	//printf("close %p\n",_f);
 
 	FileAccess *fa = (FileAccess *)_f;
-	return fa->get_pos();
+	return fa->get_position();
 }
 
 int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_bufer, int p_frames) {
@@ -179,7 +180,7 @@ void AudioStreamPlaybackOGGVorbis::play(float p_from) {
 	frames_mixed = 0;
 	playing = true;
 	if (p_from > 0) {
-		seek_pos(p_from);
+		seek(p_from);
 	}
 }
 
@@ -202,7 +203,7 @@ void AudioStreamPlaybackOGGVorbis::stop() {
 	//_clear();
 }
 
-float AudioStreamPlaybackOGGVorbis::get_pos() const {
+float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 
 	int32_t frames = int32_t(frames_mixed);
 	if (frames < 0)
@@ -210,7 +211,7 @@ float AudioStreamPlaybackOGGVorbis::get_pos() const {
 	return double(frames) / stream_srate;
 }
 
-void AudioStreamPlaybackOGGVorbis::seek_pos(float p_time) {
+void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 
 	if (!playing)
 		return;

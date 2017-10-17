@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,8 +55,8 @@ void Joint::_update_joint(bool p_only_free) {
 	if (!node_a && !node_b)
 		return;
 
-	PhysicsBody *body_a = node_a ? node_a->cast_to<PhysicsBody>() : (PhysicsBody *)NULL;
-	PhysicsBody *body_b = node_b ? node_b->cast_to<PhysicsBody>() : (PhysicsBody *)NULL;
+	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
+	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
 
 	if (!body_a && !body_b)
 		return;
@@ -187,9 +188,9 @@ void PinJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/damping", PROPERTY_HINT_RANGE, "0.01,8.0,0.01"), "set_param", "get_param", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/impulse_clamp", PROPERTY_HINT_RANGE, "0.0,64.0,0.01"), "set_param", "get_param", PARAM_IMPULSE_CLAMP);
 
-	BIND_CONSTANT(PARAM_BIAS);
-	BIND_CONSTANT(PARAM_DAMPING);
-	BIND_CONSTANT(PARAM_IMPULSE_CLAMP);
+	BIND_ENUM_CONSTANT(PARAM_BIAS);
+	BIND_ENUM_CONSTANT(PARAM_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_IMPULSE_CLAMP);
 }
 
 void PinJoint::set_param(Param p_param, float p_value) {
@@ -281,19 +282,19 @@ void HingeJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "motor/target_velocity", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_param", "get_param", PARAM_MOTOR_TARGET_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "motor/max_impulse", PROPERTY_HINT_RANGE, "0.01,1024,0.01"), "set_param", "get_param", PARAM_MOTOR_MAX_IMPULSE);
 
-	BIND_CONSTANT(PARAM_BIAS);
-	BIND_CONSTANT(PARAM_LIMIT_UPPER);
-	BIND_CONSTANT(PARAM_LIMIT_LOWER);
-	BIND_CONSTANT(PARAM_LIMIT_BIAS);
-	BIND_CONSTANT(PARAM_LIMIT_SOFTNESS);
-	BIND_CONSTANT(PARAM_LIMIT_RELAXATION);
-	BIND_CONSTANT(PARAM_MOTOR_TARGET_VELOCITY);
-	BIND_CONSTANT(PARAM_MOTOR_MAX_IMPULSE);
-	BIND_CONSTANT(PARAM_MAX);
+	BIND_ENUM_CONSTANT(PARAM_BIAS);
+	BIND_ENUM_CONSTANT(PARAM_LIMIT_UPPER);
+	BIND_ENUM_CONSTANT(PARAM_LIMIT_LOWER);
+	BIND_ENUM_CONSTANT(PARAM_LIMIT_BIAS);
+	BIND_ENUM_CONSTANT(PARAM_LIMIT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_LIMIT_RELAXATION);
+	BIND_ENUM_CONSTANT(PARAM_MOTOR_TARGET_VELOCITY);
+	BIND_ENUM_CONSTANT(PARAM_MOTOR_MAX_IMPULSE);
+	BIND_ENUM_CONSTANT(PARAM_MAX);
 
-	BIND_CONSTANT(FLAG_USE_LIMIT);
-	BIND_CONSTANT(FLAG_ENABLE_MOTOR);
-	BIND_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(FLAG_USE_LIMIT);
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_MOTOR);
+	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
 void HingeJoint::set_param(Param p_param, float p_value) {
@@ -427,31 +428,31 @@ void SliderJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_ortho/restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_ORTHOGONAL_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_ortho/damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_ORTHOGONAL_DAMPING);
 
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_UPPER);
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_LOWER);
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_RESTITUTION);
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_DAMPING);
-	BIND_CONSTANT(PARAM_LINEAR_MOTION_SOFTNESS);
-	BIND_CONSTANT(PARAM_LINEAR_MOTION_RESTITUTION);
-	BIND_CONSTANT(PARAM_LINEAR_MOTION_DAMPING);
-	BIND_CONSTANT(PARAM_LINEAR_ORTHOGONAL_SOFTNESS);
-	BIND_CONSTANT(PARAM_LINEAR_ORTHOGONAL_RESTITUTION);
-	BIND_CONSTANT(PARAM_LINEAR_ORTHOGONAL_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_UPPER);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_LOWER);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_MOTION_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_MOTION_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_MOTION_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_DAMPING);
 
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_UPPER);
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_LOWER);
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_SOFTNESS);
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_RESTITUTION);
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_DAMPING);
-	BIND_CONSTANT(PARAM_ANGULAR_MOTION_SOFTNESS);
-	BIND_CONSTANT(PARAM_ANGULAR_MOTION_RESTITUTION);
-	BIND_CONSTANT(PARAM_ANGULAR_MOTION_DAMPING);
-	BIND_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_SOFTNESS);
-	BIND_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_RESTITUTION);
-	BIND_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_UPPER);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_LOWER);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTION_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTION_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTION_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_DAMPING);
 
-	BIND_CONSTANT(PARAM_MAX);
+	BIND_ENUM_CONSTANT(PARAM_MAX);
 }
 
 void SliderJoint::set_param(Param p_param, float p_value) {
@@ -559,12 +560,12 @@ void ConeTwistJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "relaxation", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_RELAXATION);
 
-	BIND_CONSTANT(PARAM_SWING_SPAN);
-	BIND_CONSTANT(PARAM_TWIST_SPAN);
-	BIND_CONSTANT(PARAM_BIAS);
-	BIND_CONSTANT(PARAM_SOFTNESS);
-	BIND_CONSTANT(PARAM_RELAXATION);
-	BIND_CONSTANT(PARAM_MAX);
+	BIND_ENUM_CONSTANT(PARAM_SWING_SPAN);
+	BIND_ENUM_CONSTANT(PARAM_TWIST_SPAN);
+	BIND_ENUM_CONSTANT(PARAM_BIAS);
+	BIND_ENUM_CONSTANT(PARAM_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_RELAXATION);
+	BIND_ENUM_CONSTANT(PARAM_MAX);
 }
 
 void ConeTwistJoint::set_param(Param p_param, float p_value) {
@@ -772,26 +773,26 @@ void Generic6DOFJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_motor_z/target_velocity"), "set_param_z", "get_param_z", PARAM_ANGULAR_MOTOR_TARGET_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_motor_z/force_limit"), "set_param_z", "get_param_z", PARAM_ANGULAR_MOTOR_FORCE_LIMIT);
 
-	BIND_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
-	BIND_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
-	BIND_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
-	BIND_CONSTANT(PARAM_LINEAR_RESTITUTION);
-	BIND_CONSTANT(PARAM_LINEAR_DAMPING);
-	BIND_CONSTANT(PARAM_ANGULAR_LOWER_LIMIT);
-	BIND_CONSTANT(PARAM_ANGULAR_UPPER_LIMIT);
-	BIND_CONSTANT(PARAM_ANGULAR_LIMIT_SOFTNESS);
-	BIND_CONSTANT(PARAM_ANGULAR_DAMPING);
-	BIND_CONSTANT(PARAM_ANGULAR_RESTITUTION);
-	BIND_CONSTANT(PARAM_ANGULAR_FORCE_LIMIT);
-	BIND_CONSTANT(PARAM_ANGULAR_ERP);
-	BIND_CONSTANT(PARAM_ANGULAR_MOTOR_TARGET_VELOCITY);
-	BIND_CONSTANT(PARAM_ANGULAR_MOTOR_FORCE_LIMIT);
-	BIND_CONSTANT(PARAM_MAX);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LOWER_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_UPPER_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LOWER_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_UPPER_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_RESTITUTION);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ERP);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTOR_TARGET_VELOCITY);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTOR_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(PARAM_MAX);
 
-	BIND_CONSTANT(FLAG_ENABLE_LINEAR_LIMIT);
-	BIND_CONSTANT(FLAG_ENABLE_ANGULAR_LIMIT);
-	BIND_CONSTANT(FLAG_ENABLE_MOTOR);
-	BIND_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_LINEAR_LIMIT);
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_ANGULAR_LIMIT);
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_MOTOR);
+	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
 void Generic6DOFJoint::set_param_x(Param p_param, float p_value) {
@@ -972,301 +973,3 @@ Generic6DOFJoint::Generic6DOFJoint() {
 	set_flag_z(FLAG_ENABLE_LINEAR_LIMIT, true);
 	set_flag_z(FLAG_ENABLE_MOTOR, false);
 }
-
-#if 0
-
-void PhysicsJoint::_set(const String& p_name, const Variant& p_value) {
-
-	if (p_name=="body_A")
-		set_body_A(p_value);
-	else if (p_name=="body_B")
-		set_body_B(p_value);
-	else if (p_name=="active")
-		set_active(p_value);
-	else if (p_name=="no_collision")
-		set_disable_collision(p_value);
-}
-Variant PhysicsJoint::_get(const String& p_name) const {
-
-	if (p_name=="body_A")
-		return get_body_A();
-	else if (p_name=="body_B")
-		return get_body_B();
-	else if (p_name=="active")
-		return is_active();
-	else if (p_name=="no_collision")
-		return has_disable_collision();
-
-	return Variant();
-}
-void PhysicsJoint::_get_property_list( List<PropertyInfo> *p_list) const {
-
-
-	p_list->push_back( PropertyInfo( Variant::NODE_PATH, "body_A" ) );
-	p_list->push_back( PropertyInfo( Variant::NODE_PATH, "body_B" ) );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "active" ) );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "no_collision" ) );
-}
-void PhysicsJoint::_notification(int p_what) {
-
-
-	switch(p_what) {
-
-		case NOTIFICATION_PARENT_CONFIGURED: {
-
-			_connect();
-			if (get_root_node()->get_editor() && !indicator.is_valid()) {
-
-				indicator=VisualServer::get_singleton()->poly_create();
-				RID mat=VisualServer::get_singleton()->fixed_material_create();
-				VisualServer::get_singleton()->material_set_flag( mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-				VisualServer::get_singleton()->material_set_flag( mat, VisualServer::MATERIAL_FLAG_ONTOP, true );
-				VisualServer::get_singleton()->material_set_flag( mat, VisualServer::MATERIAL_FLAG_WIREFRAME, true );
-				VisualServer::get_singleton()->material_set_flag( mat, VisualServer::MATERIAL_FLAG_DOUBLE_SIDED, true );
-				VisualServer::get_singleton()->material_set_line_width( mat, 3 );
-
-				VisualServer::get_singleton()->poly_set_material(indicator,mat,true);
-				_update_indicator();
-
-			}
-
-			if (indicator.is_valid()) {
-
-				indicator_instance=VisualServer::get_singleton()->instance_create(indicator,get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_attach_object_instance_ID( indicator_instance,get_instance_ID() );
-			}
-		} break;
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-
-			if (indicator_instance.is_valid()) {
-
-				VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
-			}
-		} break;
-		case NOTIFICATION_EXIT_SCENE: {
-
-			if (indicator_instance.is_valid()) {
-
-				VisualServer::get_singleton()->free(indicator_instance);
-			}
-			_disconnect();
-
-		} break;
-
-	}
-}
-
-
-RID PhysicsJoint::_get_visual_instance_rid() const {
-
-	return indicator_instance;
-
-}
-
-void PhysicsJoint::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"),&PhysicsJoint::_get_visual_instance_rid);
-	ClassDB::bind_method(D_METHOD("set_body_A","path"),&PhysicsJoint::set_body_A);
-	ClassDB::bind_method(D_METHOD("set_body_B"),&PhysicsJoint::set_body_B);
-	ClassDB::bind_method(D_METHOD("get_body_A","path"),&PhysicsJoint::get_body_A);
-	ClassDB::bind_method(D_METHOD("get_body_B"),&PhysicsJoint::get_body_B);
-
-	ClassDB::bind_method(D_METHOD("set_active","active"),&PhysicsJoint::set_active);
-	ClassDB::bind_method(D_METHOD("is_active"),&PhysicsJoint::is_active);
-
-	ClassDB::bind_method(D_METHOD("set_disable_collision","disable"),&PhysicsJoint::set_disable_collision);
-	ClassDB::bind_method(D_METHOD("has_disable_collision"),&PhysicsJoint::has_disable_collision);
-
-
-	ClassDB::bind_method("reconnect",&PhysicsJoint::reconnect);
-
-	ClassDB::bind_method(D_METHOD("get_rid"),&PhysicsJoint::get_rid);
-
-}
-
-void PhysicsJoint::set_body_A(const NodePath& p_path) {
-
-	_disconnect();
-	body_A=p_path;
-	_connect();
-	_change_notify("body_A");
-}
-void PhysicsJoint::set_body_B(const NodePath& p_path) {
-
-	_disconnect();
-	body_B=p_path;
-	_connect();
-	_change_notify("body_B");
-
-}
-NodePath PhysicsJoint::get_body_A() const {
-
-	return body_A;
-}
-NodePath PhysicsJoint::get_body_B() const {
-
-	return body_B;
-}
-
-void PhysicsJoint::set_active(bool p_active) {
-
-	active=p_active;
-	if (is_inside_scene()) {
-		PhysicsServer::get_singleton()->joint_set_active(joint,active);
-	}
-	_change_notify("active");
-}
-
-void PhysicsJoint::set_disable_collision(bool p_active) {
-
-	if (no_collision==p_active)
-		return;
-	_disconnect();
-	no_collision=p_active;
-	_connect();
-
-	_change_notify("no_collision");
-}
-bool PhysicsJoint::has_disable_collision() const {
-
-	return no_collision;
-}
-
-
-
-bool PhysicsJoint::is_active() const {
-
-	return active;
-}
-
-void PhysicsJoint::_disconnect() {
-
-	if (!is_inside_scene())
-		return;
-
-	if (joint.is_valid())
-		PhysicsServer::get_singleton()->free(joint);
-
-	joint=RID();
-
-	Node *nA = get_node(body_A);
-	Node *nB = get_node(body_B);
-
-	PhysicsBody *A = nA?nA->cast_to<PhysicsBody>():NULL;
-	PhysicsBody *B = nA?nB->cast_to<PhysicsBody>():NULL;
-
-	if (!A ||!B)
-		return;
-
-	if (no_collision)
-		PhysicsServer::get_singleton()->body_remove_collision_exception(A->get_body(),B->get_body());
-
-}
-void PhysicsJoint::_connect() {
-
-	if (!is_inside_scene())
-		return;
-
-	ERR_FAIL_COND(joint.is_valid());
-
-	Node *nA = get_node(body_A);
-	Node *nB = get_node(body_B);
-
-	PhysicsBody *A = nA?nA->cast_to<PhysicsBody>():NULL;
-	PhysicsBody *B = nA?nB->cast_to<PhysicsBody>():NULL;
-
-	if (!A && !B)
-		return;
-
-	if (B && !A)
-		SWAP(B,A);
-
-	joint = create(A,B);
-
-	if (A<B)
-		SWAP(A,B);
-
-	if (no_collision)
-		PhysicsServer::get_singleton()->body_add_collision_exception(A->get_body(),B->get_body());
-
-
-
-}
-
-void PhysicsJoint::reconnect() {
-
-	_disconnect();
-	_connect();
-
-}
-
-
-RID PhysicsJoint::get_rid() {
-
-	return joint;
-}
-
-
-PhysicsJoint::PhysicsJoint() {
-
-	active=true;
-	no_collision=true;
-}
-
-
-PhysicsJoint::~PhysicsJoint() {
-
-	if (indicator.is_valid()) {
-
-		VisualServer::get_singleton()->free(indicator);
-	}
-
-}
-
-/* PIN */
-
-void PhysicsJointPin::_update_indicator() {
-
-
-	VisualServer::get_singleton()->poly_clear(indicator);
-
-	Vector<Color> colors;
-	colors.push_back( Color(0.3,0.9,0.2,0.7) );
-	colors.push_back( Color(0.3,0.9,0.2,0.7) );
-
-	Vector<Vector3> points;
-	points.resize(2);
-	points[0]=Vector3(Vector3(-0.2,0,0));
-	points[1]=Vector3(Vector3(0.2,0,0));
-	VisualServer::get_singleton()->poly_add_primitive(indicator,points,Vector<Vector3>(),colors,Vector<Vector3>());
-
-	points[0]=Vector3(Vector3(0,-0.2,0));
-	points[1]=Vector3(Vector3(0,0.2,0));
-	VisualServer::get_singleton()->poly_add_primitive(indicator,points,Vector<Vector3>(),colors,Vector<Vector3>());
-
-	points[0]=Vector3(Vector3(0,0,-0.2));
-	points[1]=Vector3(Vector3(0,0,0.2));
-	VisualServer::get_singleton()->poly_add_primitive(indicator,points,Vector<Vector3>(),colors,Vector<Vector3>());
-
-}
-
-RID PhysicsJointPin::create(PhysicsBody*A,PhysicsBody*B) {
-
-	RID body_A = A->get_body();
-	RID body_B = B?B->get_body():RID();
-
-	ERR_FAIL_COND_V( !body_A.is_valid(), RID() );
-
-	Vector3 pin_pos = get_global_transform().origin;
-
-	if (body_B.is_valid())
-		return PhysicsServer::get_singleton()->joint_create_double_pin_global(body_A,pin_pos,body_B,pin_pos);
-	else
-		return PhysicsServer::get_singleton()->joint_create_pin(body_A,A->get_global_transform().xform_inv(pin_pos),pin_pos);
-}
-
-PhysicsJointPin::PhysicsJointPin() {
-
-
-}
-#endif

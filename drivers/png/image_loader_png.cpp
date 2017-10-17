@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +68,7 @@ static void _png_warn_function(png_structp, png_const_charp text) {
 
 typedef void(PNGAPI *png_error_ptr) PNGARG((png_structp, png_const_charp));
 
-Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Image *p_image) {
+Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_image) {
 
 	png_structp png;
 	png_infop info;
@@ -200,7 +201,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Image *p_image
 	return OK;
 }
 
-Error ImageLoaderPNG::load_image(Image *p_image, FileAccess *f) {
+Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
 	Error err = _load_image(f, _read_png_data, p_image);
 	f->close();
@@ -215,8 +216,8 @@ void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const
 
 struct PNGReadStatus {
 
-	int offset;
-	int size;
+	uint32_t offset;
+	uint32_t size;
 	const unsigned char *image;
 };
 
@@ -237,25 +238,27 @@ static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t p_len
 	}
 }
 
-static Image _load_mem_png(const uint8_t *p_png, int p_size) {
+static Ref<Image> _load_mem_png(const uint8_t *p_png, int p_size) {
 
 	PNGReadStatus prs;
 	prs.image = p_png;
 	prs.offset = 0;
 	prs.size = p_size;
 
-	Image img;
-	Error err = ImageLoaderPNG::_load_image(&prs, user_read_data, &img);
-	ERR_FAIL_COND_V(err, Image());
+	Ref<Image> img;
+	img.instance();
+	Error err = ImageLoaderPNG::_load_image(&prs, user_read_data, img);
+	ERR_FAIL_COND_V(err, Ref<Image>());
 
 	return img;
 }
 
-static Image _lossless_unpack_png(const PoolVector<uint8_t> &p_data) {
+static Ref<Image> _lossless_unpack_png(const PoolVector<uint8_t> &p_data) {
 
 	int len = p_data.size();
+	ERR_FAIL_COND_V(len < 4, Ref<Image>());
 	PoolVector<uint8_t>::Read r = p_data.read();
-	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Image());
+	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Ref<Image>());
 	return _load_mem_png(&r[4], len - 4);
 }
 
@@ -270,13 +273,14 @@ static void _write_png_data(png_structp png_ptr, png_bytep data, png_size_t p_le
 	//print_line("png write: "+itos(p_length));
 }
 
-static PoolVector<uint8_t> _lossless_pack_png(const Image &p_image) {
+static PoolVector<uint8_t> _lossless_pack_png(const Ref<Image> &p_image) {
 
-	Image img = p_image;
-	if (img.is_compressed())
-		img.decompress();
+	Ref<Image> img = p_image->duplicate();
 
-	ERR_FAIL_COND_V(img.is_compressed(), PoolVector<uint8_t>());
+	if (img->is_compressed())
+		img->decompress();
+
+	ERR_FAIL_COND_V(img->is_compressed(), PoolVector<uint8_t>());
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -310,7 +314,7 @@ static PoolVector<uint8_t> _lossless_pack_png(const Image &p_image) {
 	int pngf = 0;
 	int cs = 0;
 
-	switch (img.get_format()) {
+	switch (img->get_format()) {
 
 		case Image::FORMAT_L8: {
 
@@ -334,22 +338,22 @@ static PoolVector<uint8_t> _lossless_pack_png(const Image &p_image) {
 		} break;
 		default: {
 
-			if (img.detect_alpha()) {
+			if (img->detect_alpha()) {
 
-				img.convert(Image::FORMAT_RGBA8);
+				img->convert(Image::FORMAT_RGBA8);
 				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
 				cs = 4;
 			} else {
 
-				img.convert(Image::FORMAT_RGB8);
+				img->convert(Image::FORMAT_RGB8);
 				pngf = PNG_COLOR_TYPE_RGB;
 				cs = 3;
 			}
 		}
 	}
 
-	int w = img.get_width();
-	int h = img.get_height();
+	int w = img->get_width();
+	int h = img->get_height();
 	png_set_IHDR(png_ptr, info_ptr, w, h,
 			8, pngf, PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
@@ -361,7 +365,7 @@ static PoolVector<uint8_t> _lossless_pack_png(const Image &p_image) {
 		ERR_FAIL_V(PoolVector<uint8_t>());
 	}
 
-	PoolVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t>::Read r = img->get_data().read();
 
 	row_pointers = (png_bytep *)memalloc(sizeof(png_bytep) * h);
 	for (int i = 0; i < h; i++) {

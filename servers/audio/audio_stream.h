@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +31,7 @@
 #define AUDIO_STREAM_H
 
 #include "resource.h"
+#include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
 class AudioStreamPlayback : public Reference {
@@ -43,8 +45,8 @@ public:
 
 	virtual int get_loop_count() const = 0; //times it looped
 
-	virtual float get_pos() const = 0;
-	virtual void seek_pos(float p_time) = 0;
+	virtual float get_playback_position() const = 0;
+	virtual void seek(float p_time) = 0;
 
 	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames) = 0;
 
@@ -72,7 +74,7 @@ protected:
 	virtual float get_stream_sampling_rate() = 0;
 
 public:
-	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
@@ -85,6 +87,60 @@ class AudioStream : public Resource {
 public:
 	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
 	virtual String get_stream_name() const = 0;
+};
+
+class AudioStreamPlaybackRandomPitch;
+
+class AudioStreamRandomPitch : public AudioStream {
+
+	GDCLASS(AudioStreamRandomPitch, AudioStream)
+	friend class AudioStreamPlaybackRandomPitch;
+
+	Set<AudioStreamPlaybackRandomPitch *> playbacks;
+	Ref<AudioStream> audio_stream;
+	float random_pitch;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_audio_stream(const Ref<AudioStream> &p_audio_stream);
+	Ref<AudioStream> get_audio_stream() const;
+
+	void set_random_pitch(float p_pitch);
+	float get_random_pitch() const;
+
+	virtual Ref<AudioStreamPlayback> instance_playback();
+	virtual String get_stream_name() const;
+
+	AudioStreamRandomPitch();
+};
+
+class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
+
+	GDCLASS(AudioStreamPlaybackRandomPitch, AudioStreamPlayback)
+	friend class AudioStreamRandomPitch;
+
+	Ref<AudioStreamRandomPitch> random_pitch;
+	Ref<AudioStreamPlayback> playback;
+	Ref<AudioStreamPlayback> playing;
+	float pitch_scale;
+
+public:
+	virtual void start(float p_from_pos = 0.0);
+	virtual void stop();
+	virtual bool is_playing() const;
+
+	virtual int get_loop_count() const; //times it looped
+
+	virtual float get_playback_position() const;
+	virtual void seek(float p_time);
+
+	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames);
+
+	virtual float get_length() const; //if supported, otherwise return 0
+
+	~AudioStreamPlaybackRandomPitch();
 };
 
 #endif // AUDIO_STREAM_H

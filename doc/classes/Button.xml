@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Button" inherits="BaseButton" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Standard themed Button.
+	</brief_description>
+	<description>
+		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_button_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_clip_text" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_text_align" qualifiers="const">
+			<return type="int" enum="Button.TextAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_flat" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_button_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clip_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flat">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_text_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="Button.TextAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign">
+			Text alignment policy for the button's text, use one of the ALIGN_* constants.
+		</member>
+		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text">
+			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
+		</member>
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat">
+			Flat buttons don't display decoration.
+		</member>
+		<member name="icon" type="Texture" setter="set_button_icon" getter="get_button_icon">
+			Button's icon, if text is present the icon will be placed before the text.
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+			The button's text that will be displayed inside the button's area.
+		</member>
+	</members>
+	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+			Align the text to the left.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+			Align the text to the center.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+			Align the text to the right.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="disabled" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="pressed" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

@@ -163,6 +163,15 @@ FT_BEGIN_HEADER
   } PCF_FaceRec, *PCF_Face;
 
 
+  typedef struct  PCF_DriverRec_
+  {
+    FT_DriverRec  root;
+
+    FT_Bool  no_long_family_names;
+
+  } PCF_DriverRec, *PCF_Driver;
+
+
   /* macros for pcf font format */
 
 #define LSBFirst  0

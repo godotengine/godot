@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ typedef void (*ScriptEditRequestFunction)(const String &p_path);
 class ScriptServer {
 	enum {
 
-		MAX_LANGUAGES = 4
+		MAX_LANGUAGES = 16
 	};
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
@@ -56,7 +57,7 @@ public:
 
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
-	static int get_language_count();
+	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
 	static void unregister_language(ScriptLanguage *p_language);
@@ -68,6 +69,7 @@ public:
 	static void thread_exit();
 
 	static void init_languages();
+	static void finish_languages();
 };
 
 class ScriptInstance;
@@ -118,7 +120,7 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
 
-	virtual int get_member_line(const StringName &p_member) const { return 0; }
+	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
 	Script() {}
 };
@@ -195,13 +197,18 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
+	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
+	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const = 0;
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
+	virtual bool can_inherit_from_file() { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;
+	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
+	virtual bool overrides_external_editor() { return false; }
 
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	struct LookupResult {
 		enum Type {
@@ -268,6 +275,9 @@ public:
 
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
+
+	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
+	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
 
 	virtual void frame();
 
@@ -387,7 +397,7 @@ public:
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;
 	virtual void profiling_start() = 0;
 	virtual void profiling_end() = 0;
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_fixed_time, float p_fixed_frame_time) = 0;
+	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) = 0;
 
 	ScriptDebugger();
 	virtual ~ScriptDebugger() { singleton = NULL; }

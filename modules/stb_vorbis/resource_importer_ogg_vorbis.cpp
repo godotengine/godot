@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +48,7 @@ void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extens
 }
 
 String ResourceImporterOGGVorbis::get_save_extension() const {
-	return "asogg";
+	return "oggstr";
 }
 
 String ResourceImporterOGGVorbis::get_resource_type() const {
@@ -71,11 +72,13 @@ String ResourceImporterOGGVorbis::get_preset_name(int p_idx) const {
 void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "loop_offset"), 0));
 }
 
 Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
 	bool loop = p_options["loop"];
+	float loop_offset = p_options["loop_offset"];
 
 	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
 	if (!f) {
@@ -97,8 +100,9 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	ogg_stream->set_data(data);
 	ogg_stream->set_loop(loop);
+	ogg_stream->set_loop_offset(loop_offset);
 
-	return ResourceSaver::save(p_save_path + ".asogg", ogg_stream);
+	return ResourceSaver::save(p_save_path + ".oggstr", ogg_stream);
 }
 
 ResourceImporterOGGVorbis::ResourceImporterOGGVorbis() {

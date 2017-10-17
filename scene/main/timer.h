@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +40,7 @@ class Timer : public Node {
 	bool one_shot;
 	bool autostart;
 	bool processing;
-	bool active;
+	bool paused;
 
 	double time_left;
 
@@ -49,7 +50,7 @@ protected:
 
 public:
 	enum TimerProcessMode {
-		TIMER_PROCESS_FIXED,
+		TIMER_PROCESS_PHYSICS,
 		TIMER_PROCESS_IDLE,
 	};
 
@@ -64,8 +65,11 @@ public:
 
 	void start();
 	void stop();
-	void set_active(bool p_active);
-	bool is_active() const;
+
+	void set_paused(bool p_paused);
+	bool is_paused() const;
+
+	bool is_stopped() const;
 
 	float get_time_left() const;
 

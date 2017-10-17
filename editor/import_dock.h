@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +41,7 @@ class ImportDockParameters;
 class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer)
 
-	LineEdit *imported;
+	Label *imported;
 	OptionButton *import_as;
 	MenuButton *preset;
 	PropertyEditor *import_opts;
@@ -56,12 +57,20 @@ class ImportDock : public VBoxContainer {
 
 	void _reimport();
 
+	enum {
+		ITEM_SET_AS_DEFAULT = 100,
+		ITEM_LOAD_DEFAULT,
+		ITEM_CLEAR_DEFAULT,
+	};
+
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	void set_edit_path(const String &p_path);
 	void set_edit_multiple_paths(const Vector<String> &p_paths);
+	void initialize_import_options() const;
 	void clear();
 
 	ImportDock();

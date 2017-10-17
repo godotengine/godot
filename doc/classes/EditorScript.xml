@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScript" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Simple script to perform changes in the currently edited scene.
+	</brief_description>
+	<description>
+		This script can be run from the Scene -&gt; Run Script menu option.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_run" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="add_root_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_editor_interface">
+			<return type="EditorInterface">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene">
+			<return type="Node">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

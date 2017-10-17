@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RemoteTransform" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_remote_node" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_rotation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_update_scale" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_global_coordinates" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_remote_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="update_remote_position" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_rotation">
+			<return type="void">
+			</return>
+			<argument index="0" name="update_remote_rotation" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_update_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="update_remote_scale" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_global_coordinates">
+			<return type="void">
+			</return>
+			<argument index="0" name="use_global_coordinates" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node">
+		</member>
+		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position">
+		</member>
+		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation">
+		</member>
+		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale">
+		</member>
+		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

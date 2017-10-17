@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +115,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void ItemListOptionButtonPlugin::set_object(Object *p_object) {
 
-	ob = p_object->cast_to<OptionButton>();
+	ob = Object::cast_to<OptionButton>(p_object);
 }
 
 bool ItemListOptionButtonPlugin::handles(Object *p_object) const {
@@ -154,9 +155,9 @@ ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 void ItemListPopupMenuPlugin::set_object(Object *p_object) {
 
 	if (p_object->is_class("MenuButton"))
-		pp = p_object->cast_to<MenuButton>()->get_popup();
+		pp = Object::cast_to<MenuButton>(p_object)->get_popup();
 	else
-		pp = p_object->cast_to<PopupMenu>();
+		pp = Object::cast_to<PopupMenu>(p_object);
 }
 
 bool ItemListPopupMenuPlugin::handles(Object *p_object) const {
@@ -187,6 +188,45 @@ void ItemListPopupMenuPlugin::erase(int p_idx) {
 }
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
+
+	pp = NULL;
+}
+
+///////////////////////////////////////////////////////////////
+
+void ItemListItemListPlugin::set_object(Object *p_object) {
+
+	pp = Object::cast_to<ItemList>(p_object);
+}
+
+bool ItemListItemListPlugin::handles(Object *p_object) const {
+
+	return p_object->is_class("ItemList");
+}
+
+int ItemListItemListPlugin::get_flags() const {
+
+	return FLAG_ICON | FLAG_ENABLE;
+}
+
+void ItemListItemListPlugin::add_item() {
+
+	pp->add_item(vformat(TTR("Item %d"), pp->get_item_count()));
+	_change_notify();
+}
+
+int ItemListItemListPlugin::get_item_count() const {
+
+	return pp->get_item_count();
+}
+
+void ItemListItemListPlugin::erase(int p_idx) {
+
+	pp->remove_item(p_idx);
+	_change_notify();
+}
+
+ItemListItemListPlugin::ItemListItemListPlugin() {
 
 	pp = NULL;
 }
@@ -344,7 +384,7 @@ ItemListEditor::~ItemListEditor() {
 
 void ItemListEditorPlugin::edit(Object *p_object) {
 
-	item_list_editor->edit(p_object->cast_to<Node>());
+	item_list_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool ItemListEditorPlugin::handles(Object *p_object) const {
@@ -372,6 +412,7 @@ ItemListEditorPlugin::ItemListEditorPlugin(EditorNode *p_node) {
 	item_list_editor->hide();
 	item_list_editor->add_plugin(memnew(ItemListOptionButtonPlugin));
 	item_list_editor->add_plugin(memnew(ItemListPopupMenuPlugin));
+	item_list_editor->add_plugin(memnew(ItemListItemListPlugin));
 }
 
 ItemListEditorPlugin::~ItemListEditorPlugin() {

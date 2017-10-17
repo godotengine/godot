@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +30,14 @@
 #ifndef PROJECT_MANAGER_H
 #define PROJECT_MANAGER_H
 
-#include "editor/asset_library_editor_plugin.h"
+#include "editor/plugins/asset_library_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-class NewProjectDialog;
+class ProjectDialog;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
@@ -44,6 +45,7 @@ class ProjectManager : public Control {
 
 	Button *erase_btn;
 	Button *open_btn;
+	Button *rename_btn;
 	Button *run_btn;
 
 	FileDialog *scan_dir;
@@ -56,7 +58,9 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
-	NewProjectDialog *npdialog;
+	AcceptDialog *run_error_diag;
+	AcceptDialog *dialog_error;
+	ProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
 	Map<String, String> selected_list; // name -> main_scene
@@ -76,6 +80,7 @@ class ProjectManager : public Control {
 	void _open_project_confirm();
 	void _import_project();
 	void _new_project();
+	void _rename_project();
 	void _erase_project();
 	void _erase_project_confirm();
 	void _update_project_buttons();
@@ -84,14 +89,15 @@ class ProjectManager : public Control {
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
-	void _update_scroll_pos(const String &dir);
+	void _on_project_renamed();
+	void _update_scroll_position(const String &dir);
 	void _scan_dir(DirAccess *da, float pos, float total, List<String> *r_projects);
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 
 	void _panel_draw(Node *p_hb);
-	void _panel_input(const InputEvent &p_ev, Node *p_hb);
-	void _unhandled_input(const InputEvent &p_ev);
+	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
+	void _unhandled_input(const Ref<InputEvent> &p_ev);
 	void _favorite_pressed(Node *p_hb);
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);

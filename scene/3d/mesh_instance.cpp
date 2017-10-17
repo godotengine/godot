@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +29,10 @@
 /*************************************************************************/
 #include "mesh_instance.h"
 
-#include "body_shape.h"
+#include "collision_shape.h"
 #include "core_string_names.h"
 #include "physics_body.h"
+#include "scene/resources/material.h"
 #include "scene/scene_string_names.h"
 #include "skeleton.h"
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
@@ -97,7 +99,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "Material"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
 		}
 	}
 }
@@ -146,7 +148,7 @@ void MeshInstance::_resolve_skeleton_path() {
 	if (skeleton_path.is_empty())
 		return;
 
-	Skeleton *skeleton = get_node(skeleton_path) ? get_node(skeleton_path)->cast_to<Skeleton>() : NULL;
+	Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
 	if (skeleton)
 		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skeleton->get_skeleton());
 }
@@ -192,24 +194,24 @@ Node *MeshInstance::create_trimesh_collision_node() {
 		return NULL;
 
 	StaticBody *static_body = memnew(StaticBody);
-	static_body->add_shape(shape);
+	CollisionShape *cshape = memnew(CollisionShape);
+	cshape->set_shape(shape);
+	static_body->add_child(cshape);
 	return static_body;
 }
 
 void MeshInstance::create_trimesh_collision() {
 
-	StaticBody *static_body = create_trimesh_collision_node()->cast_to<StaticBody>();
+	StaticBody *static_body = Object::cast_to<StaticBody>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body);
-	if (get_owner())
+	if (get_owner()) {
+		CollisionShape *cshape = Object::cast_to<CollisionShape>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
-	CollisionShape *cshape = memnew(CollisionShape);
-	cshape->set_shape(static_body->get_shape(0));
-	static_body->add_child(cshape);
-	if (get_owner())
 		cshape->set_owner(get_owner());
+	}
 }
 
 Node *MeshInstance::create_convex_collision_node() {
@@ -222,24 +224,24 @@ Node *MeshInstance::create_convex_collision_node() {
 		return NULL;
 
 	StaticBody *static_body = memnew(StaticBody);
-	static_body->add_shape(shape);
+	CollisionShape *cshape = memnew(CollisionShape);
+	cshape->set_shape(shape);
+	static_body->add_child(cshape);
 	return static_body;
 }
 
 void MeshInstance::create_convex_collision() {
 
-	StaticBody *static_body = create_convex_collision_node()->cast_to<StaticBody>();
+	StaticBody *static_body = Object::cast_to<StaticBody>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body);
-	if (get_owner())
+	if (get_owner()) {
+		CollisionShape *cshape = Object::cast_to<CollisionShape>(static_body->get_child(0));
 		static_body->set_owner(get_owner());
-	CollisionShape *cshape = memnew(CollisionShape);
-	cshape->set_shape(static_body->get_shape(0));
-	static_body->add_child(cshape);
-	if (get_owner())
 		cshape->set_owner(get_owner());
+	}
 }
 
 void MeshInstance::_notification(int p_what) {
@@ -273,18 +275,99 @@ void MeshInstance::_mesh_changed() {
 	materials.resize(mesh->get_surface_count());
 }
 
+void MeshInstance::create_debug_tangents() {
+
+	Vector<Vector3> lines;
+	Vector<Color> colors;
+
+	Ref<Mesh> mesh = get_mesh();
+	if (!mesh.is_valid())
+		return;
+
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		Array arrays = mesh->surface_get_arrays(i);
+		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
+		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
+		if (norms.size() == 0)
+			continue;
+		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
+		if (tangents.size() == 0)
+			continue;
+
+		for (int j = 0; j < verts.size(); j++) {
+			Vector3 v = verts[j];
+			Vector3 n = norms[j];
+			Vector3 t = Vector3(tangents[j * 4 + 0], tangents[j * 4 + 1], tangents[j * 4 + 2]);
+			Vector3 b = (n.cross(t)).normalized() * tangents[j * 4 + 3];
+
+			lines.push_back(v); //normal
+			colors.push_back(Color(0, 0, 1)); //color
+			lines.push_back(v + n * 0.04); //normal
+			colors.push_back(Color(0, 0, 1)); //color
+
+			lines.push_back(v); //tangent
+			colors.push_back(Color(1, 0, 0)); //color
+			lines.push_back(v + t * 0.04); //tangent
+			colors.push_back(Color(1, 0, 0)); //color
+
+			lines.push_back(v); //binormal
+			colors.push_back(Color(0, 1, 0)); //color
+			lines.push_back(v + b * 0.04); //binormal
+			colors.push_back(Color(0, 1, 0)); //color
+		}
+	}
+
+	if (lines.size()) {
+
+		Ref<SpatialMaterial> sm;
+		sm.instance();
+
+		sm->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		sm->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		sm->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+		Ref<ArrayMesh> am;
+		am.instance();
+		Array a;
+		a.resize(Mesh::ARRAY_MAX);
+		a[Mesh::ARRAY_VERTEX] = lines;
+		a[Mesh::ARRAY_COLOR] = colors;
+
+		am->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
+		am->surface_set_material(0, sm);
+
+		MeshInstance *mi = memnew(MeshInstance);
+		mi->set_mesh(am);
+		mi->set_name("DebugTangents");
+		add_child(mi);
+#ifdef TOOLS_ENABLED
+
+		if (this == get_tree()->get_edited_scene_root())
+			mi->set_owner(this);
+		else
+			mi->set_owner(get_owner());
+#endif
+	}
+}
+
 void MeshInstance::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_mesh", "mesh:Mesh"), &MeshInstance::set_mesh);
-	ClassDB::bind_method(D_METHOD("get_mesh:Mesh"), &MeshInstance::get_mesh);
-	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path:NodePath"), &MeshInstance::set_skeleton_path);
-	ClassDB::bind_method(D_METHOD("get_skeleton_path:NodePath"), &MeshInstance::get_skeleton_path);
+	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
+	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
+
+	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
+	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance::get_surface_material);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &MeshInstance::_mesh_changed);
+
+	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance::create_debug_tangents);
+	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton"), "set_skeleton_path", "get_skeleton_path");

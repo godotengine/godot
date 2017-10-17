@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoxShape" inherits="Shape" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Box shape resource.
+	</brief_description>
+	<description>
+		3D box shape that can be a child of a [PhysicsBody] or [Area].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_extents" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the half extents of the shape.
+			</description>
+		</method>
+		<method name="set_extents">
+			<return type="void">
+			</return>
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+				Set the half extents for the shape.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
+			The shape's half extents.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

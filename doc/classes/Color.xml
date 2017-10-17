@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Color" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Color in RGBA format with some support for ARGB format.
+	</brief_description>
+	<description>
+		A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate(color)) may accept values &gt; 1.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="g" type="float">
+			</argument>
+			<argument index="2" name="b" type="float">
+			</argument>
+			<argument index="3" name="a" type="float">
+			</argument>
+			<description>
+				Constructs a color from an RGBA profile using values between 0 and 1 (float).
+				[codeblock]
+				var c = Color(0.2, 1.0, .7, .8) # a color of an RGBA(51, 255, 178, 204)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="g" type="float">
+			</argument>
+			<argument index="2" name="b" type="float">
+			</argument>
+			<description>
+				Constructs a color from an RGB profile using values between 0 and 1 (float). Alpha will always be 1.
+				[codeblock]
+				var c = Color(0.2, 1.0, .7) # a color of an RGBA(51, 255, 178, 255)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<description>
+				Constructs a color from a 32-bit integer (each byte represents a component of the RGBA profile).
+				[codeblock]
+				var c = Color(274) # a color of an RGBA(0, 0, 1, 18)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format.
+				The following string formats are supported:
+					[code]"#ff00ff00"[/code] - ARGB format with '#'
+					[code]"ff00ff00"[/code] - ARGB format
+					[code]"#ff00ff"[/code] - RGB format with '#'
+					[code]"ff00ff"[/code] - RGB format
+				[codeblock]
+				# The following code creates the same color of an RGBA(178, 217, 10, 255)
+				var c1 = Color("#ffb2d90a") # ARGB format with '#'
+				var c2 = Color("ffb2d90a")  # ARGB format
+				var c3 = Color("#b2d90a")   # RGB format with '#'
+				var c4 = Color("b2d90a")    # RGB format
+				[/codeblock]
+			</description>
+		</method>
+		<method name="blend">
+			<return type="Color">
+			</return>
+			<argument index="0" name="over" type="Color">
+			</argument>
+			<description>
+				Returns a new color resulting from blending this color over another color. If the color is opaque, the result would also be opaque. The other color could then take a range of values with different alpha values.
+				[codeblock]
+				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%
+				var fg = Color(1.0, 0.0, 0.0, .5) # Red with alpha of 50%
+				var blendedColor = bg.blend(fg) # Brown with alpha of 75%
+				[/codeblock]
+			</description>
+		</method>
+		<method name="contrasted">
+			<return type="Color">
+			</return>
+			<description>
+				Returns the most contrasting color.
+				[codeblock]
+				var c = Color(.3, .4, .9)
+				var contrastedColor = c.contrasted() # a color of an RGBA(204, 229, 102, 255)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="gray">
+			<return type="float">
+			</return>
+			<description>
+				Returns the color's grayscale.
+				The gray is calculated by (r + g + b) / 3.
+				[codeblock]
+				var c = Color(0.2, 0.45, 0.82)
+				var gray = c.gray() # a value of 0.466667
+				[/codeblock]
+			</description>
+		</method>
+		<method name="inverted">
+			<return type="Color">
+			</return>
+			<description>
+				Returns the inverted color (1-r, 1-g, 1-b, 1-a).
+				[codeblock]
+				var c = Color(.3, .4, .9)
+				var invertedColor = c.inverted() # a color of an RGBA(178, 153, 26, 255)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="linear_interpolate">
+			<return type="Color">
+			</return>
+			<argument index="0" name="b" type="Color">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Returns the color of the linear interpolation with another color. The value t is between 0 and 1 (float).
+				[codeblock]
+				var c1 = Color(1.0, 0.0, 0.0)
+				var c2 = Color(0.0, 1.0, 0.0)
+				var li_c = c1.linear_interpolate(c2, 0.5) # a color of an RGBA(128, 128, 0, 255)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_argb32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). More compatible with DirectX.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(str(c.to_32())) # prints 4294934323
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_html">
+			<return type="String">
+			</return>
+			<argument index="0" name="with_alpha" type="bool" default="True">
+			</argument>
+			<description>
+				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
+				Optionally flag 'false' to not include alpha in hexadecimal string.
+				[codeblock]
+				var c = Color(1, 1, 1, .5)
+				var s1 = c.to_html() # Results "7fffffff"
+				var s2 = c.to_html(false) # Results 'ffffff'
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_rgba32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile).
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(str(c.to_32())) # prints 4294934323
+				[/codeblock]
+
+				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="a" type="float" setter="" getter="">
+			Alpha (0 to 1)
+		</member>
+		<member name="a8" type="int" setter="" getter="">
+			Alpha (0 to 255)
+		</member>
+		<member name="b" type="float" setter="" getter="">
+			Blue (0 to 1)
+		</member>
+		<member name="b8" type="int" setter="" getter="">
+			Blue (0 to 255)
+		</member>
+		<member name="g" type="float" setter="" getter="">
+			Green (0 to 1)
+		</member>
+		<member name="g8" type="int" setter="" getter="">
+			Green (0 to 255)
+		</member>
+		<member name="h" type="float" setter="" getter="">
+			Hue (0 to 1)
+		</member>
+		<member name="r" type="float" setter="" getter="">
+			Red (0 to 1)
+		</member>
+		<member name="r8" type="int" setter="" getter="">
+			Red (0 to 255)
+		</member>
+		<member name="s" type="float" setter="" getter="">
+			Saturation (0 to 1)
+		</member>
+		<member name="v" type="float" setter="" getter="">
+			Value (0 to 1)
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,8 +136,13 @@ int widechar_main(int argc, wchar_t **argv) {
 
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
-	if (err != OK)
+	if (err != OK) {
+		for (int i = 0; i < argc; ++i) {
+			delete[] argv_utf8[i];
+		}
+		delete[] argv_utf8;
 		return 255;
+	}
 
 	if (Main::start())
 		os.run();
@@ -150,10 +156,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	return os.get_exit_code();
 };
 
-int main(int _argc, char **_argv) {
-	// _argc and _argv are ignored
-	// we are going to use the WideChar version of them instead
-
+int _main() {
 	LPWSTR *wc_argv;
 	int argc;
 	int result;
@@ -169,6 +172,21 @@ int main(int _argc, char **_argv) {
 
 	LocalFree(wc_argv);
 	return result;
+}
+
+int main(int _argc, char **_argv) {
+// _argc and _argv are ignored
+// we are going to use the WideChar version of them instead
+
+#ifdef CRASH_HANDLER_EXCEPTION
+	__try {
+		return _main();
+	} __except (CrashHandlerException(GetExceptionInformation())) {
+		return 1;
+	}
+#else
+	return _main();
+#endif
 }
 
 HINSTANCE godot_hinstance = NULL;

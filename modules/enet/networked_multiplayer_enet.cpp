@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,8 +54,21 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 
 	ENetAddress address;
-	address.host = bind_ip;
 
+#ifdef GODOT_ENET
+	if (bind_ip.is_wildcard()) {
+		address.wildcard = 1;
+	} else {
+		enet_address_set_ip(&address, bind_ip.get_ipv6(), 16);
+	}
+#else
+	if (bind_ip.is_wildcard()) {
+		address.host = 0;
+	} else {
+		ERR_FAIL_COND_V(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER);
+		address.host = *(uint32_t *)bind_ip.get_ipv4();
+	}
+#endif
 	address.port = p_port;
 
 	host = enet_host_create(&address /* the address to bind the server host to */,
@@ -76,7 +90,6 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
 
 	host = enet_host_create(NULL /* create a client host */,
 			1 /* only allow 1 outgoing connection */,
@@ -89,7 +102,12 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port
 	_setup_compressor();
 
 	ENetAddress address;
-	address.host = *((uint32_t *)p_ip.get_ipv4());
+#ifdef GODOT_ENET
+	enet_address_set_ip(&address, p_ip.get_ipv6(), 16);
+#else
+	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
+	address.host = *(uint32_t *)p_ip.get_ipv4();
+#endif
 	address.port = p_port;
 
 	//enet_address_set_host (& address, "localhost");
@@ -145,9 +163,6 @@ void NetworkedMultiplayerENet::poll() {
 					enet_peer_reset(event.peer);
 					break;
 				}
-
-				IP_Address ip;
-				ip.set_ipv4((uint8_t *)&(event.peer->address.host));
 
 				int *new_id = memnew(int);
 				*new_id = event.data;
@@ -493,7 +508,7 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 				(uint32_t)OS::get_singleton()->get_data_dir().hash64(), hash);
 		/*
 		hash = hash_djb2_one_32(
-					(uint32_t)OS::get_singleton()->get_unique_ID().hash64(), hash );
+					(uint32_t)OS::get_singleton()->get_unique_id().hash64(), hash );
 		*/
 		hash = hash_djb2_one_32(
 				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
@@ -560,6 +575,9 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		case COMPRESS_ZLIB: {
 			mode = Compression::MODE_DEFLATE;
 		} break;
+		case COMPRESS_ZSTD: {
+			mode = Compression::MODE_ZSTD;
+		} break;
 		default: { ERR_FAIL_V(0); }
 	}
 
@@ -593,6 +611,10 @@ size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8
 
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_DEFLATE);
 		} break;
+		case COMPRESS_ZSTD: {
+
+			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_ZSTD);
+		} break;
 		default: {}
 	}
 	if (ret < 0) {
@@ -614,7 +636,8 @@ void NetworkedMultiplayerENet::_setup_compressor() {
 			enet_host_compress_with_range_coder(host);
 		} break;
 		case COMPRESS_FASTLZ:
-		case COMPRESS_ZLIB: {
+		case COMPRESS_ZLIB:
+		case COMPRESS_ZSTD: {
 
 			enet_host_compress(host, &enet_compressor);
 		} break;
@@ -635,10 +658,11 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
 
-	BIND_CONSTANT(COMPRESS_NONE);
-	BIND_CONSTANT(COMPRESS_RANGE_CODER);
-	BIND_CONSTANT(COMPRESS_FASTLZ);
-	BIND_CONSTANT(COMPRESS_ZLIB);
+	BIND_ENUM_CONSTANT(COMPRESS_NONE);
+	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);
+	BIND_ENUM_CONSTANT(COMPRESS_FASTLZ);
+	BIND_ENUM_CONSTANT(COMPRESS_ZLIB);
+	BIND_ENUM_CONSTANT(COMPRESS_ZSTD);
 }
 
 NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
@@ -657,7 +681,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	enet_compressor.decompress = enet_decompress;
 	enet_compressor.destroy = enet_compressor_destroy;
 
-	bind_ip = ENET_HOST_ANY;
+	bind_ip = IP_Address("*");
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
@@ -668,6 +692,7 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {
 // sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address &p_ip) {
-	ERR_FAIL_COND(!p_ip.is_ipv4());
-	bind_ip = *(uint32_t *)p_ip.get_ipv4();
+	ERR_FAIL_COND(!p_ip.is_valid() && !p_ip.is_wildcard());
+
+	bind_ip = p_ip;
 }

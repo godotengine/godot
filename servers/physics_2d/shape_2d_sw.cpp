@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shape_2d_sw.h"
+
 #include "geometry.h"
 #include "sort.h"
 
@@ -196,7 +198,7 @@ Variant RayShape2DSW::get_data() const {
 
 void SegmentShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports, int &r_amount) const {
 
-	if (Math::abs(p_normal.dot(n)) > _SEGMENT_IS_VALID_SUPPORT_TRESHOLD) {
+	if (Math::abs(p_normal.dot(n)) > _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
 		r_supports[0] = a;
 		r_supports[1] = b;
 		r_amount = 2;
@@ -245,12 +247,12 @@ void SegmentShape2DSW::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::RECT2);
 
 	Rect2 r = p_data;
-	a = r.pos;
+	a = r.position;
 	b = r.size;
 	n = (b - a).tangent();
 
 	Rect2 aabb;
-	aabb.pos = a;
+	aabb.position = a;
 	aabb.expand_to(b);
 	if (aabb.size.x == 0)
 		aabb.size.x = 0.001;
@@ -262,7 +264,7 @@ void SegmentShape2DSW::set_data(const Variant &p_data) {
 Variant SegmentShape2DSW::get_data() const {
 
 	Rect2 r;
-	r.pos = a;
+	r.position = a;
 	r.size = b;
 	return r;
 }
@@ -336,7 +338,7 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 		Vector2 ag;
 		ag[i] = 1.0;
 		real_t dp = ag.dot(p_normal);
-		if (Math::abs(dp) < _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)
+		if (Math::abs(dp) < _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)
 			continue;
 
 		real_t sgn = dp > 0 ? 1.0 : -1.0;
@@ -399,7 +401,7 @@ void CapsuleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_supports
 
 	real_t d = n.y;
 
-	if (Math::abs(d) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)) {
+	if (Math::abs(d) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 
 		// make it flat
 		n.y = 0.0;
@@ -546,7 +548,7 @@ void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_su
 		}
 
 		//test segment
-		if (points[i].normal.dot(p_normal) > _SEGMENT_IS_VALID_SUPPORT_TRESHOLD) {
+		if (points[i].normal.dot(p_normal) > _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
 
 			r_amount = 2;
 			r_supports[0] = points[i].pos;
@@ -620,13 +622,13 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	Rect2 aabb;
-	aabb.pos = points[0].pos * p_scale;
+	aabb.position = points[0].pos * p_scale;
 	for (int i = 0; i < point_count; i++) {
 
 		aabb.expand_to(points[i].pos * p_scale);
 	}
 
-	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.pos + aabb.size * 0.5).length_squared();
+	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.position + aabb.size * 0.5).length_squared();
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
@@ -676,7 +678,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
 
 	ERR_FAIL_COND(point_count == 0);
 	Rect2 aabb;
-	aabb.pos = points[0].pos;
+	aabb.position = points[0].pos;
 	for (int i = 1; i < point_count; i++)
 		aabb.expand_to(points[i].pos);
 
@@ -941,7 +943,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		}
 
 		points.resize(pointmap.size());
-		aabb.pos = pointmap.front()->key();
+		aabb.position = pointmap.front()->key();
 		for (Map<Point2, int>::Element *E = pointmap.front(); E; E = E->next()) {
 
 			aabb.expand_to(E->key());
@@ -952,7 +954,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		main_vbh.resize(segments.size());
 		for (int i = 0; i < main_vbh.size(); i++) {
 
-			main_vbh[i].aabb.pos = points[segments[i].points[0]];
+			main_vbh[i].aabb.position = points[segments[i].points[0]];
 			main_vbh[i].aabb.expand_to(points[segments[i].points[1]]);
 			main_vbh[i].left = -1;
 			main_vbh[i].right = i;

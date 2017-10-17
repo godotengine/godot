@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +34,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/path_2d.h"
-#include "scene/gui/button_group.h"
 #include "scene/gui/tool_button.h"
 
 class CanvasItemEditor;
@@ -42,7 +42,7 @@ class Line2DEditor : public HBoxContainer {
 	GDCLASS(Line2DEditor, HBoxContainer)
 
 public:
-	bool forward_gui_input(const InputEvent &p_event);
+	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void edit(Node *p_line2d);
 	Line2DEditor(EditorNode *p_editor);
 
@@ -94,14 +94,14 @@ class Line2DEditorPlugin : public EditorPlugin {
 public:
 	virtual bool forward_canvas_gui_input(
 			const Transform2D &p_canvas_xform,
-			const InputEvent &p_event) {
+			const Ref<InputEvent> &p_event) {
 		return line2d_editor->forward_gui_input(p_event);
 	}
 
 	virtual String get_name() const { return "Line2D"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	Line2DEditorPlugin(EditorNode *p_node);

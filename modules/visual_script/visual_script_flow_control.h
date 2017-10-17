@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,11 +228,12 @@ public:
 	VisualScriptSwitch();
 };
 
+#if 0
 class VisualScriptInputFilter : public VisualScriptNode {
 
 	GDCLASS(VisualScriptInputFilter, VisualScriptNode)
 
-	Vector<InputEvent> filters;
+	Vector<Ref<InputEvent>> filters;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -258,6 +260,7 @@ public:
 
 	VisualScriptInputFilter();
 };
+#endif
 
 class VisualScriptTypeCast : public VisualScriptNode {
 
@@ -290,6 +293,8 @@ public:
 
 	void set_base_script(const String &p_path);
 	String get_base_script() const;
+
+	virtual TypeGuess guess_output_type(TypeGuess *p_inputs, int p_output) const;
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 

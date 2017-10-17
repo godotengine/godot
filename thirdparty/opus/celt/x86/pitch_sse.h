@@ -102,21 +102,21 @@ opus_val32 celt_inner_prod_sse(
 #if defined(OPUS_X86_PRESUME_SSE4_1) && defined(FIXED_POINT)
 #define OVERRIDE_CELT_INNER_PROD
 #define celt_inner_prod(x, y, N, arch) \
-	((void)arch, celt_inner_prod_sse4_1(x, y, N))
+    ((void)arch, celt_inner_prod_sse4_1(x, y, N))
 
 #elif defined(OPUS_X86_PRESUME_SSE2) && defined(FIXED_POINT) && !defined(OPUS_X86_MAY_HAVE_SSE4_1)
 #define OVERRIDE_CELT_INNER_PROD
 #define celt_inner_prod(x, y, N, arch) \
-	((void)arch, celt_inner_prod_sse2(x, y, N))
+    ((void)arch, celt_inner_prod_sse2(x, y, N))
 
 #elif defined(OPUS_X86_PRESUME_SSE) && !defined(FIXED_POINT)
 #define OVERRIDE_CELT_INNER_PROD
 #define celt_inner_prod(x, y, N, arch) \
-	((void)arch, celt_inner_prod_sse(x, y, N))
+    ((void)arch, celt_inner_prod_sse(x, y, N))
 
 
 #elif ((defined(OPUS_X86_MAY_HAVE_SSE4_1) || defined(OPUS_X86_MAY_HAVE_SSE2)) && defined(FIXED_POINT)) || \
-	(defined(OPUS_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT))
+    (defined(OPUS_X86_MAY_HAVE_SSE) && !defined(FIXED_POINT))
 
 extern opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
                     const opus_val16 *x,
@@ -138,19 +138,19 @@ extern opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
 #undef comb_filter_const
 
 void dual_inner_prod_sse(const opus_val16 *x,
-	const opus_val16 *y01,
-	const opus_val16 *y02,
-	int               N,
-	opus_val32       *xy1,
-	opus_val32       *xy2);
+    const opus_val16 *y01,
+    const opus_val16 *y02,
+    int               N,
+    opus_val32       *xy1,
+    opus_val32       *xy2);
 
 void comb_filter_const_sse(opus_val32 *y,
-	opus_val32 *x,
-	int         T,
-	int         N,
-	opus_val16  g10,
-	opus_val16  g11,
-	opus_val16  g12);
+    opus_val32 *x,
+    int         T,
+    int         N,
+    opus_val16  g10,
+    opus_val16  g11,
+    opus_val16  g12);
 
 
 #if defined(OPUS_X86_PRESUME_SSE)
@@ -169,7 +169,7 @@ extern void (*const DUAL_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
               opus_val32       *xy1,
               opus_val32       *xy2);
 
-#define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch)			\
+#define dual_inner_prod(x, y01, y02, N, xy1, xy2, arch) \
     ((*DUAL_INNER_PROD_IMPL[(arch) & OPUS_ARCHMASK])(x, y01, y02, N, xy1, xy2))
 
 extern void (*const COMB_FILTER_CONST_IMPL[OPUS_ARCHMASK + 1])(
@@ -181,7 +181,7 @@ extern void (*const COMB_FILTER_CONST_IMPL[OPUS_ARCHMASK + 1])(
               opus_val16  g11,
               opus_val16  g12);
 
-#define comb_filter_const(y, x, T, N, g10, g11, g12, arch)				\
+#define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
     ((*COMB_FILTER_CONST_IMPL[(arch) & OPUS_ARCHMASK])(y, x, T, N, g10, g11, g12))
 
 #define NON_STATIC_COMB_FILTER_CONST_C

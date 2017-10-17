@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +31,7 @@
 #define SHAPE_2D_2DSW_H
 
 #include "servers/physics_2d_server.h"
-#define _SEGMENT_IS_VALID_SUPPORT_TRESHOLD 0.99998
+#define _SEGMENT_IS_VALID_SUPPORT_THRESHOLD 0.99998
 
 /*
 
@@ -105,7 +106,7 @@ public:
 
 		if (r_amount == 1) {
 
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//make line because they are parallel
 				r_amount = 2;
 				r_supports[1] = r_supports[0] + p_cast;
@@ -116,7 +117,7 @@ public:
 
 		} else {
 
-			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_TRESHOLD)) {
+			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
 				//optimize line and make it larger because they are parallel
 				if ((r_supports[1] - r_supports[0]).dot(p_cast) > 0) {
 					//larger towards 1
@@ -512,7 +513,7 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
 
-			return (a.aabb.pos.x + a.aabb.size.x * 0.5) < (b.aabb.pos.x + b.aabb.size.x * 0.5);
+			return (a.aabb.position.x + a.aabb.size.x * 0.5) < (b.aabb.position.x + b.aabb.size.x * 0.5);
 		}
 	};
 
@@ -520,7 +521,7 @@ class ConcavePolygonShape2DSW : public ConcaveShape2DSW {
 
 		_FORCE_INLINE_ bool operator()(const BVH &a, const BVH &b) const {
 
-			return (a.aabb.pos.y + a.aabb.size.y * 0.5) < (b.aabb.pos.y + b.aabb.size.y * 0.5);
+			return (a.aabb.position.y + a.aabb.size.y * 0.5) < (b.aabb.position.y + b.aabb.size.y * 0.5);
 		}
 	};
 

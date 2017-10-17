@@ -219,7 +219,7 @@ void silk_decode_core(
             }
 
             /* Add prediction to LPC excitation */
-            sLPC_Q14[ MAX_LPC_ORDER + i ] = silk_ADD_LSHIFT32( pres_Q14[ i ], LPC_pred_Q10, 4 );
+            sLPC_Q14[ MAX_LPC_ORDER + i ] = silk_ADD_SAT32( pres_Q14[ i ], silk_LSHIFT_SAT32( LPC_pred_Q10, 4 ) );
 
             /* Scale with gain */
             pxq[ i ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( sLPC_Q14[ MAX_LPC_ORDER + i ], Gain_Q10 ), 8 ) );

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED)
+#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED)
 
 //
 // C++ Implementation: context_gl_x11
@@ -129,24 +130,28 @@ Error ContextGL_Win::initialize() {
 		0, 0, 0 // Layer Masks Ignored
 	};
 
-	if (!(hDC = GetDC(hWnd))) {
+	hDC = GetDC(hWnd);
+	if (!hDC) {
 		MessageBox(NULL, "Can't Create A GL Device Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!(pixel_format = ChoosePixelFormat(hDC, &pfd))) // Did Windows Find A Matching Pixel Format?
+	pixel_format = ChoosePixelFormat(hDC, &pfd);
+	if (!pixel_format) // Did Windows Find A Matching Pixel Format?
 	{
 		MessageBox(NULL, "Can't Find A Suitable pixel_format.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!SetPixelFormat(hDC, pixel_format, &pfd)) // Are We Able To Set The Pixel Format?
+	BOOL ret = SetPixelFormat(hDC, pixel_format, &pfd);
+	if (!ret) // Are We Able To Set The Pixel Format?
 	{
 		MessageBox(NULL, "Can't Set The pixel_format.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
 	}
 
-	if (!(hRC = wglCreateContext(hDC))) // Are We Able To Get A Rendering Context?
+	hRC = wglCreateContext(hDC);
+	if (!hRC) // Are We Able To Get A Rendering Context?
 	{
 		MessageBox(NULL, "Can't Create A Temporary GL Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_CANT_CREATE; // Return FALSE
@@ -169,13 +174,13 @@ Error ContextGL_Win::initialize() {
 
 		if (wglCreateContextAttribsARB == NULL) //OpenGL 3.0 is not supported
 		{
-			MessageBox(NULL, "Cannot get Proc Adress for CreateContextAttribs", "ERROR", MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(NULL, "Cannot get Proc Address for CreateContextAttribs", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 			wglDeleteContext(hRC);
 			return ERR_CANT_CREATE;
 		}
 
-		HGLRC new_hRC;
-		if (!(new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs))) {
+		HGLRC new_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+		if (!new_hRC) {
 			wglDeleteContext(hRC);
 			MessageBox(NULL, "Can't Create An OpenGL 3.3 Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return ERR_CANT_CREATE; // Return false

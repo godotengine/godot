@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Anti-aliasing renderer interface (body).                             */
 /*                                                                         */
-/*  Copyright 2000-2016 by                                                 */
+/*  Copyright 2000-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,12 +31,7 @@
   static FT_Error
   ft_smooth_init( FT_Renderer  render )
   {
-    FT_Library  library = FT_MODULE_LIBRARY( render );
-
-
-    render->clazz->raster_class->raster_reset( render->raster,
-                                               library->raster_pool,
-                                               library->raster_pool_size );
+    render->clazz->raster_class->raster_reset( render->raster, NULL, 0 );
 
     return 0;
   }
@@ -87,7 +82,7 @@
                       FT_GlyphSlot  slot,
                       FT_BBox*      cbox )
   {
-    FT_MEM_ZERO( cbox, sizeof ( *cbox ) );
+    FT_ZERO( cbox );
 
     if ( slot->format == render->glyph_format )
       FT_Outline_Get_CBox( &slot->outline, cbox );
@@ -111,17 +106,65 @@
     FT_Pos       y_shift = 0;
     FT_Pos       x_left, y_top;
     FT_Pos       width, height, pitch;
-#ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-    FT_Pos       height_org, width_org;
-#endif
-    FT_Int       hmul    = mode == FT_RENDER_MODE_LCD;
-    FT_Int       vmul    = mode == FT_RENDER_MODE_LCD_V;
+    FT_Int       hmul    = ( mode == FT_RENDER_MODE_LCD );
+    FT_Int       vmul    = ( mode == FT_RENDER_MODE_LCD_V );
 
     FT_Raster_Params  params;
 
     FT_Bool  have_outline_shifted = FALSE;
     FT_Bool  have_buffer          = FALSE;
 
+#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+
+    FT_LcdFiveTapFilter      lcd_weights        = { 0 };
+    FT_Bool                  have_custom_weight = FALSE;
+    FT_Bitmap_LcdFilterFunc  lcd_filter_func    = NULL;
+
+
+    if ( slot->face )
+    {
+      FT_Char  i;
+
+
+      for ( i = 0; i < FT_LCD_FILTER_FIVE_TAPS; i++ )
+        if ( slot->face->internal->lcd_weights[i] != 0 )
+        {
+          have_custom_weight = TRUE;
+          break;
+        }
+    }
+
+    /*
+     * The LCD filter can be set library-wide and per-face.  Face overrides
+     * library.  If the face filter weights are all zero (the default), it
+     * means that the library default should be used.
+     */
+    if ( have_custom_weight )
+    {
+      /*
+       * A per-font filter is set.  It always uses the default 5-tap
+       * in-place FIR filter.
+       */
+      ft_memcpy( lcd_weights,
+                 slot->face->internal->lcd_weights,
+                 FT_LCD_FILTER_FIVE_TAPS );
+      lcd_filter_func = ft_lcd_filter_fir;
+    }
+    else
+    {
+      /*
+       * The face's lcd_weights is {0, 0, 0, 0, 0}, meaning `use library
+       * default'.  If the library is set to use no LCD filtering
+       * (lcd_filter_func == NULL), `lcd_filter_func' here is also set to
+       * NULL and the tests further below pass over the filtering process.
+       */
+      ft_memcpy( lcd_weights,
+                 slot->library->lcd_weights,
+                 FT_LCD_FILTER_FIVE_TAPS );
+      lcd_filter_func = slot->library->lcd_filter_func;
+    }
+
+#endif /*FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
     /* check glyph image format */
     if ( slot->format != render->glyph_format )
@@ -147,6 +190,45 @@
     /* taking into account the origin shift     */
     FT_Outline_Get_CBox( outline, &cbox );
 
+#ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+
+    /* add minimal padding for LCD rendering */
+    if ( hmul )
+    {
+      cbox.xMax += 21;
+      cbox.xMin -= 21;
+    }
+
+    if ( vmul )
+    {
+      cbox.yMax += 21;
+      cbox.yMin -= 21;
+    }
+
+#else /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
+
+    /* add minimal padding for LCD filter depending on specific weights */
+    if ( lcd_filter_func )
+    {
+      if ( hmul )
+      {
+        cbox.xMax += lcd_weights[4] ? 43
+                                    : lcd_weights[3] ? 22 : 0;
+        cbox.xMin -= lcd_weights[0] ? 43
+                                    : lcd_weights[1] ? 22 : 0;
+      }
+
+      if ( vmul )
+      {
+        cbox.yMax += lcd_weights[4] ? 43
+                                    : lcd_weights[3] ? 22 : 0;
+        cbox.yMin -= lcd_weights[0] ? 43
+                                    : lcd_weights[1] ? 22 : 0;
+      }
+    }
+
+#endif /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
+
     cbox.xMin = FT_PIX_FLOOR( cbox.xMin + x_shift );
     cbox.yMin = FT_PIX_FLOOR( cbox.yMin + y_shift );
     cbox.xMax = FT_PIX_CEIL( cbox.xMax + x_shift );
@@ -161,11 +243,6 @@
     width  = (FT_ULong)( cbox.xMax - cbox.xMin ) >> 6;
     height = (FT_ULong)( cbox.yMax - cbox.yMin ) >> 6;
 
-#ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-    width_org  = width;
-    height_org = height;
-#endif
-
     pitch = width;
     if ( hmul )
     {
@@ -175,31 +252,6 @@
 
     if ( vmul )
       height *= 3;
-
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-
-    if ( slot->library->lcd_filter_func )
-    {
-      FT_Int  extra = slot->library->lcd_extra;
-
-
-      if ( hmul )
-      {
-        x_shift += 64 * ( extra >> 1 );
-        x_left  -= extra >> 1;
-        width   += 3 * extra;
-        pitch    = FT_PAD_CEIL( width, 4 );
-      }
-
-      if ( vmul )
-      {
-        y_shift += 64 * ( extra >> 1 );
-        y_top   += extra >> 1;
-        height  += 3 * extra;
-      }
-    }
-
-#endif
 
     /*
      * XXX: on 16bit system, we return an error for huge bitmap
@@ -299,62 +351,103 @@
     if ( error )
       goto Exit;
 
-    if ( slot->library->lcd_filter_func )
-      slot->library->lcd_filter_func( bitmap, mode, slot->library );
+    if ( lcd_filter_func )
+      lcd_filter_func( bitmap, mode, lcd_weights );
 
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-    /* render outline into bitmap */
-    error = render->raster_render( render->raster, &params );
-    if ( error )
-      goto Exit;
-
-    /* expand it horizontally */
-    if ( hmul )
+    if ( hmul )  /* lcd */
     {
-      FT_Byte*  line = bitmap->buffer;
-      FT_UInt   hh;
+      FT_Byte*  line;
+      FT_Byte*  temp;
+      FT_Int    i, j;
 
 
-      for ( hh = height_org; hh > 0; hh--, line += pitch )
+      /* Render 3 separate monochrome bitmaps, shifting the outline  */
+      /* by 1/3 pixel.                                               */
+      width /= 3;
+
+      FT_Outline_Translate( outline,  21, 0 );
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline, -21, 0 );
+      bitmap->buffer += width;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline, -21, 0 );
+      bitmap->buffer += width;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline,  21, 0 );
+      bitmap->buffer -= 2 * width;
+
+      /* XXX: Rearrange the bytes according to FT_PIXEL_MODE_LCD.    */
+      /* XXX: It is more efficient to render every third byte above. */
+
+      if ( FT_ALLOC( temp, (FT_ULong)pitch ) )
+        goto Exit;
+
+      for ( i = 0; i < height; i++ )
       {
-        FT_UInt   xx;
-        FT_Byte*  end = line + width;
-
-
-        for ( xx = width_org; xx > 0; xx-- )
+        line = bitmap->buffer + i * pitch;
+        for ( j = 0; j < width; j++ )
         {
-          FT_UInt  pixel = line[xx-1];
-
-
-          end[-3] = (FT_Byte)pixel;
-          end[-2] = (FT_Byte)pixel;
-          end[-1] = (FT_Byte)pixel;
-          end    -= 3;
+          temp[3 * j    ] = line[j];
+          temp[3 * j + 1] = line[j + width];
+          temp[3 * j + 2] = line[j + width + width];
         }
+        FT_MEM_COPY( line, temp, pitch );
       }
+
+      FT_FREE( temp );
     }
-
-    /* expand it vertically */
-    if ( vmul )
+    else if ( vmul )  /* lcd_v */
     {
-      FT_Byte*  read  = bitmap->buffer + ( height - height_org ) * pitch;
-      FT_Byte*  write = bitmap->buffer;
-      FT_UInt   hh;
+      /* Render 3 separate monochrome bitmaps, shifting the outline  */
+      /* by 1/3 pixel. Triple the pitch to render on each third row. */
+      bitmap->pitch *= 3;
+      bitmap->rows  /= 3;
 
+      FT_Outline_Translate( outline, 0,  21 );
+      bitmap->buffer += 2 * pitch;
 
-      for ( hh = height_org; hh > 0; hh-- )
-      {
-        ft_memcpy( write, read, pitch );
-        write += pitch;
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
 
-        ft_memcpy( write, read, pitch );
-        write += pitch;
+      FT_Outline_Translate( outline, 0, -21 );
+      bitmap->buffer -= pitch;
 
-        ft_memcpy( write, read, pitch );
-        write += pitch;
-        read  += pitch;
-      }
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline, 0, -21 );
+      bitmap->buffer -= pitch;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline, 0,  21 );
+
+      bitmap->pitch /= 3;
+      bitmap->rows  *= 3;
+    }
+    else  /* grayscale */
+    {
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
     }
 
 #endif /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
@@ -428,7 +521,8 @@
   }
 
 
-  FT_DEFINE_RENDERER( ft_smooth_renderer_class,
+  FT_DEFINE_RENDERER(
+    ft_smooth_renderer_class,
 
       FT_MODULE_RENDERER,
       sizeof ( FT_RendererRec ),
@@ -437,25 +531,25 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module specific interface */
+      NULL,    /* module specific interface */
 
-      (FT_Module_Constructor)ft_smooth_init,
-      (FT_Module_Destructor) 0,
-      (FT_Module_Requester)  0
-    ,
+      (FT_Module_Constructor)ft_smooth_init,  /* module_init   */
+      (FT_Module_Destructor) NULL,            /* module_done   */
+      (FT_Module_Requester)  NULL,            /* get_interface */
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Renderer_RenderFunc)   ft_smooth_render,
-    (FT_Renderer_TransformFunc)ft_smooth_transform,
-    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,
-    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,
+    (FT_Renderer_RenderFunc)   ft_smooth_render,     /* render_glyph    */
+    (FT_Renderer_TransformFunc)ft_smooth_transform,  /* transform_glyph */
+    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,   /* get_glyph_cbox  */
+    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,   /* set_mode        */
 
-    (FT_Raster_Funcs*)    &FT_GRAYS_RASTER_GET
+    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET           /* raster_class    */
   )
 
 
-  FT_DEFINE_RENDERER( ft_smooth_lcd_renderer_class,
+  FT_DEFINE_RENDERER(
+    ft_smooth_lcd_renderer_class,
 
       FT_MODULE_RENDERER,
       sizeof ( FT_RendererRec ),
@@ -464,24 +558,25 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module specific interface */
+      NULL,    /* module specific interface */
 
-      (FT_Module_Constructor)ft_smooth_init,
-      (FT_Module_Destructor) 0,
-      (FT_Module_Requester)  0
-    ,
+      (FT_Module_Constructor)ft_smooth_init,  /* module_init   */
+      (FT_Module_Destructor) NULL,            /* module_done   */
+      (FT_Module_Requester)  NULL,            /* get_interface */
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd,
-    (FT_Renderer_TransformFunc)ft_smooth_transform,
-    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,
-    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,
+    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd,  /* render_glyph    */
+    (FT_Renderer_TransformFunc)ft_smooth_transform,   /* transform_glyph */
+    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,    /* get_glyph_cbox  */
+    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,    /* set_mode        */
 
-    (FT_Raster_Funcs*)    &FT_GRAYS_RASTER_GET
+    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET            /* raster_class    */
   )
 
-  FT_DEFINE_RENDERER( ft_smooth_lcdv_renderer_class,
+
+  FT_DEFINE_RENDERER(
+    ft_smooth_lcdv_renderer_class,
 
       FT_MODULE_RENDERER,
       sizeof ( FT_RendererRec ),
@@ -490,21 +585,20 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module specific interface */
+      NULL,    /* module specific interface */
 
-      (FT_Module_Constructor)ft_smooth_init,
-      (FT_Module_Destructor) 0,
-      (FT_Module_Requester)  0
-    ,
+      (FT_Module_Constructor)ft_smooth_init,  /* module_init   */
+      (FT_Module_Destructor) NULL,            /* module_done   */
+      (FT_Module_Requester)  NULL,            /* get_interface */
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd_v,
-    (FT_Renderer_TransformFunc)ft_smooth_transform,
-    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,
-    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,
+    (FT_Renderer_RenderFunc)   ft_smooth_render_lcd_v,  /* render_glyph    */
+    (FT_Renderer_TransformFunc)ft_smooth_transform,     /* transform_glyph */
+    (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,      /* get_glyph_cbox  */
+    (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,      /* set_mode        */
 
-    (FT_Raster_Funcs*)    &FT_GRAYS_RASTER_GET
+    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET              /* raster_class    */
   )
 
 

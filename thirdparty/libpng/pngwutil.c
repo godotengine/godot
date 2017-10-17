@@ -1,8 +1,8 @@
 
 /* pngwutil.c - utilities to write a PNG file
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -675,6 +675,7 @@ png_write_IHDR(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
     int interlace_type)
 {
    png_byte buf[13]; /* Buffer to store the IHDR info */
+   int is_invalid_depth;
 
    png_debug(1, "in png_write_IHDR");
 
@@ -700,11 +701,11 @@ png_write_IHDR(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
          break;
 
       case PNG_COLOR_TYPE_RGB:
+         is_invalid_depth = (bit_depth != 8);
 #ifdef PNG_WRITE_16BIT_SUPPORTED
-         if (bit_depth != 8 && bit_depth != 16)
-#else
-         if (bit_depth != 8)
+         is_invalid_depth = (is_invalid_depth && bit_depth != 16);
 #endif
+         if (is_invalid_depth)
             png_error(png_ptr, "Invalid bit depth for RGB image");
 
          png_ptr->channels = 3;
@@ -726,18 +727,22 @@ png_write_IHDR(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
          break;
 
       case PNG_COLOR_TYPE_GRAY_ALPHA:
-         if (bit_depth != 8 && bit_depth != 16)
+         is_invalid_depth = (bit_depth != 8);
+#ifdef PNG_WRITE_16BIT_SUPPORTED
+         is_invalid_depth = (is_invalid_depth && bit_depth != 16);
+#endif
+         if (is_invalid_depth)
             png_error(png_ptr, "Invalid bit depth for grayscale+alpha image");
 
          png_ptr->channels = 2;
          break;
 
       case PNG_COLOR_TYPE_RGB_ALPHA:
+         is_invalid_depth = (bit_depth != 8);
 #ifdef PNG_WRITE_16BIT_SUPPORTED
-         if (bit_depth != 8 && bit_depth != 16)
-#else
-         if (bit_depth != 8)
+         is_invalid_depth = (is_invalid_depth && bit_depth != 16);
 #endif
+         if (is_invalid_depth)
             png_error(png_ptr, "Invalid bit depth for RGBA image");
 
          png_ptr->channels = 4;
@@ -998,7 +1003,8 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
                optimize_cmf(data, png_image_size(png_ptr));
 #endif
 
-         png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+         if (size > 0)
+            png_write_complete_chunk(png_ptr, png_IDAT, data, size);
          png_ptr->mode |= PNG_HAVE_IDAT;
 
          png_ptr->zstream.next_out = data;
@@ -1044,7 +1050,8 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
             optimize_cmf(data, png_image_size(png_ptr));
 #endif
 
-         png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+         if (size > 0)
+            png_write_complete_chunk(png_ptr, png_IDAT, data, size);
          png_ptr->zstream.avail_out = 0;
          png_ptr->zstream.next_out = NULL;
          png_ptr->mode |= PNG_HAVE_IDAT | PNG_AFTER_IDAT;
@@ -1463,6 +1470,28 @@ png_write_bKGD(png_structrp png_ptr, png_const_color_16p back, int color_type)
       png_save_uint_16(buf, back->gray);
       png_write_complete_chunk(png_ptr, png_bKGD, buf, (png_size_t)2);
    }
+}
+#endif
+
+#ifdef PNG_WRITE_eXIf_SUPPORTED
+/* Write the Exif data */
+void /* PRIVATE */
+png_write_eXIf(png_structrp png_ptr, png_bytep exif, int num_exif)
+{
+   int i;
+   png_byte buf[1];
+
+   png_debug(1, "in png_write_eXIf");
+
+   png_write_chunk_header(png_ptr, png_eXIf, (png_uint_32)(num_exif));
+
+   for (i = 0; i < num_exif; i++)
+   {
+      buf[0] = exif[i];
+      png_write_chunk_data(png_ptr, buf, (png_size_t)1);
+   }
+
+   png_write_chunk_end(png_ptr);
 }
 #endif
 

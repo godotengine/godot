@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,7 +112,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 						Ref<Reference> ref = *p_args[i];
 						if (!ref.is_null()) {
-							if (ref->cast_to<JavaObject>()) {
+							if (Object::cast_to<JavaObject>(ref.ptr())) {
 
 								Ref<JavaObject> jo = ref;
 								//could be faster
@@ -189,7 +190,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].i = *p_args[i];
 			} break;
 			case ARG_TYPE_LONG: {
-				argv[i].j = *p_args[i];
+				argv[i].j = (int64_t)*p_args[i];
 			} break;
 			case ARG_TYPE_FLOAT: {
 				argv[i].f = *p_args[i];
@@ -349,7 +350,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				Array arr = *p_args[i];
 				jlongArray a = env->NewLongArray(arr.size());
 				for (int j = 0; j < arr.size(); j++) {
-					jlong val = arr[j];
+					jlong val = (int64_t)arr[j];
 					env->SetLongArrayRegion(a, j, 1, &val);
 				}
 				argv[i].l = a;
@@ -459,9 +460,9 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		case ARG_TYPE_LONG: {
 
 			if (method->_static) {
-				ret = env->CallStaticLongMethodA(_class, method->method, argv);
+				ret = (int64_t)env->CallStaticLongMethodA(_class, method->method, argv);
 			} else {
-				ret = env->CallLongMethodA(p_instance->instance, method->method, argv);
+				ret = (int64_t)env->CallLongMethodA(p_instance->instance, method->method, argv);
 			}
 
 		} break;
@@ -545,7 +546,7 @@ JavaObject::~JavaObject() {
 
 void JavaClassWrapper::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("wrap:JavaClass", "name"), &JavaClassWrapper::wrap);
+	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
 }
 
 bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig) {
@@ -679,7 +680,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 		} break;
 		case ARG_TYPE_LONG | ARG_NUMBER_CLASS_BIT: {
 
-			var = env->CallLongMethod(obj, JavaClassWrapper::singleton->Long_longValue);
+			var = (int64_t)env->CallLongMethod(obj, JavaClassWrapper::singleton->Long_longValue);
 			return true;
 
 		} break;
@@ -801,7 +802,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 				jlong val;
 				env->GetLongArrayRegion((jlongArray)arr, 0, 1, &val);
-				ret.push_back(val);
+				ret.push_back((int64_t)val);
 			}
 
 			var = ret;

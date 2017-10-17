@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +57,8 @@ enum KeyList {
 	KEY_TAB = SPKEY | 0x02,
 	KEY_BACKTAB = SPKEY | 0x03,
 	KEY_BACKSPACE = SPKEY | 0x04,
-	KEY_RETURN = SPKEY | 0x05,
-	KEY_ENTER = SPKEY | 0x06,
+	KEY_ENTER = SPKEY | 0x05,
+	KEY_KP_ENTER = SPKEY | 0x06,
 	KEY_INSERT = SPKEY | 0x07,
 	KEY_DELETE = SPKEY | 0x08,
 	KEY_PAUSE = SPKEY | 0x09,
@@ -95,7 +96,6 @@ enum KeyList {
 	KEY_F14 = SPKEY | 0x29,
 	KEY_F15 = SPKEY | 0x2A,
 	KEY_F16 = SPKEY | 0x2B,
-	KEY_KP_ENTER = SPKEY | 0x80,
 	KEY_KP_MULTIPLY = SPKEY | 0x81,
 	KEY_KP_DIVIDE = SPKEY | 0x82,
 	KEY_KP_SUBTRACT = SPKEY | 0x83,
@@ -324,7 +324,7 @@ enum KeyModifierMask {
 };
 
 String keycode_get_string(uint32_t p_code);
-bool keycode_has_unicode(uint32_t p_unicode);
+bool keycode_has_unicode(uint32_t p_keycode);
 int find_keycode(const String &p_code);
 int keycode_get_count();
 int keycode_get_value_by_index(int p_index);

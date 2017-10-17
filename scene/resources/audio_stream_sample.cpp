@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +39,9 @@ void AudioStreamPlaybackSample::start(float p_from_pos) {
 		ima_adpcm[i].last_nibble = -1;
 		ima_adpcm[i].loop_pos = 0x7FFFFFFF;
 		ima_adpcm[i].window_ofs = 0;
-		ima_adpcm[i].ptr = (const uint8_t *)base->data;
-		ima_adpcm[i].ptr += AudioStreamSample::DATA_PAD;
 	}
 
-	seek_pos(p_from_pos);
+	seek(p_from_pos);
 	sign = 1;
 	active = true;
 }
@@ -62,11 +61,11 @@ int AudioStreamPlaybackSample::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackSample::get_pos() const {
+float AudioStreamPlaybackSample::get_playback_position() const {
 
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }
-void AudioStreamPlaybackSample::seek_pos(float p_time) {
+void AudioStreamPlaybackSample::seek(float p_time) {
 
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
 		return; //no seeking in ima-adpcm
@@ -121,7 +120,8 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 					int16_t nibble, diff, step;
 
 					ima_adpcm[i].last_nibble++;
-					const uint8_t *src_ptr = ima_adpcm[i].ptr;
+					const uint8_t *src_ptr = (const uint8_t *)base->data;
+					src_ptr += AudioStreamSample::DATA_PAD;
 
 					uint8_t nbb = src_ptr[(ima_adpcm[i].last_nibble >> 1) * (is_stereo ? 2 : 1) + i];
 					nibble = (ima_adpcm[i].last_nibble & 1) ? (nbb >> 4) : (nbb & 0xF);
@@ -231,7 +231,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 	/* some 64-bit fixed point precaches */
 
-	int64_t loop_begin_fp = ((int64_t)len << MIX_FRAC_BITS);
+	int64_t loop_begin_fp = ((int64_t)base->loop_begin << MIX_FRAC_BITS);
 	int64_t loop_end_fp = ((int64_t)base->loop_end << MIX_FRAC_BITS);
 	int64_t length_fp = ((int64_t)len << MIX_FRAC_BITS);
 	int64_t begin_limit = (base->loop_mode != AudioStreamSample::LOOP_DISABLED) ? loop_begin_fp : 0;
@@ -289,7 +289,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 					offset = loop_end_fp - (loop_begin_fp - offset);
 				}
 			} else {
-				/* check for sample not reaching begining */
+				/* check for sample not reaching beginning */
 				if (offset < 0) {
 
 					active = false;
@@ -486,7 +486,8 @@ PoolVector<uint8_t> AudioStreamSample::get_data() const {
 		{
 
 			PoolVector<uint8_t>::Write w = pv.write();
-			copymem(w.ptr(), data, data_bytes);
+			uint8_t *dataptr = (uint8_t *)data;
+			copymem(w.ptr(), dataptr + DATA_PAD, data_bytes);
 		}
 	}
 
@@ -536,6 +537,14 @@ void AudioStreamSample::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
+
+	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
+	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
+	BIND_ENUM_CONSTANT(FORMAT_IMA_ADPCM);
+
+	BIND_ENUM_CONSTANT(LOOP_DISABLED);
+	BIND_ENUM_CONSTANT(LOOP_FORWARD);
+	BIND_ENUM_CONSTANT(LOOP_PING_PONG);
 }
 
 AudioStreamSample::AudioStreamSample() {

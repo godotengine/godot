@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,7 +100,7 @@ class FindReplaceBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _unhandled_input(const InputEvent &p_event);
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
@@ -185,7 +186,7 @@ public:
 	FindReplaceDialog();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<String> *r_options);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<String> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 
@@ -212,7 +213,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _complete_request();
 	void _font_resize_timeout();
 
-	void _text_editor_gui_input(const InputEvent &p_event);
+	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();
 	void _reset_zoom();

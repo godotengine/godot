@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Tabs" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Tabs Control.
+	</brief_description>
+	<description>
+		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interact with children.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_tab">
+			<return type="void">
+			</return>
+			<argument index="0" name="title" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="1" name="icon" type="Texture" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="ensure_tab_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_current_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_align" qualifiers="const">
+			<return type="int" enum="Tabs.TabAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_close_display_policy" qualifiers="const">
+			<return type="int" enum="Tabs.CloseButtonDisplayPolicy">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+				Returns tab [Rect2] with local position and size.
+			</description>
+		</method>
+		<method name="get_tab_title" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="move_tab">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Rearrange tab.
+			</description>
+		</method>
+		<method name="remove_tab">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_current_tab">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="Tabs.TabAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_close_display_policy">
+			<return type="void">
+			</return>
+			<argument index="0" name="policy" type="int" enum="Tabs.CloseButtonDisplayPolicy">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="icon" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_tab_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<argument index="1" name="title" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		</member>
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
+		</member>
+	</members>
+	<signals>
+		<signal name="reposition_active_tab_request">
+			<argument index="0" name="idx_to" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="right_button_pressed">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="tab_changed">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="tab_clicked">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="tab_close">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="tab_hover">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+		</constant>
+		<constant name="ALIGN_MAX" value="3">
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1">
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2">
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
+		</constant>
+		<constant name="CLOSE_BUTTON_MAX" value="3">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="button" type="StyleBox">
+		</theme_item>
+		<theme_item name="button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="close" type="Texture">
+		</theme_item>
+		<theme_item name="decrement" type="Texture">
+		</theme_item>
+		<theme_item name="decrement_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color_bg" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_fg" type="Color">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="increment" type="Texture">
+		</theme_item>
+		<theme_item name="increment_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="label_valign_bg" type="int">
+		</theme_item>
+		<theme_item name="label_valign_fg" type="int">
+		</theme_item>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="tab_bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="tab_fg" type="StyleBox">
+		</theme_item>
+		<theme_item name="top_margin" type="int">
+		</theme_item>
+	</theme_items>
+</class>

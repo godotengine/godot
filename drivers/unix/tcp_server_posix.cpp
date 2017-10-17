@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +69,7 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port, const IP_Address p_bind_address) {
+Error TCPServerPosix::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 
 	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -164,7 +165,7 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	Ref<StreamPeerTCPPosix> conn = memnew(StreamPeerTCPPosix);
 	IP_Address ip;
 
-	int port;
+	int port = 0;
 	_set_ip_addr_port(ip, port, &their_addr);
 
 	conn->set_socket(fd, ip, port, sock_type);

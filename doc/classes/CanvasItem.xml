@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasItem" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class of anything 2D.
+	</brief_description>
+	<description>
+		Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
+		Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
+		Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
+		Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
+		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_draw" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Called (if exists) to draw the canvas item.
+			</description>
+		</method>
+		<method name="draw_char">
+			<return type="float">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="char" type="String">
+			</argument>
+			<argument index="3" name="next" type="String">
+			</argument>
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<description>
+				Draw a string character using a custom font. Returns the advance, depending on the char width and kerning with an optional next char.
+			</description>
+		</method>
+		<method name="draw_circle">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="radius" type="float">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+				Draw a colored circle.
+			</description>
+		</method>
+		<method name="draw_colored_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="3" name="texture" type="Texture" default="null">
+			</argument>
+			<argument index="4" name="normal_map" type="Texture" default="null">
+			</argument>
+			<argument index="5" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+				Draw a colored polygon of any amount of points, convex or concave.
+			</description>
+		</method>
+		<method name="draw_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<argument index="3" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+				Draw a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
+			</description>
+		</method>
+		<method name="draw_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="2" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="3" name="texture" type="Texture" default="null">
+			</argument>
+			<argument index="4" name="normal_map" type="Texture" default="null">
+			</argument>
+			<argument index="5" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+				Draw a polygon of any amount of points, convex or concave.
+			</description>
+		</method>
+		<method name="draw_polyline">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_polyline_colors">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_primitive">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="2" name="uvs" type="PoolVector2Array">
+			</argument>
+			<argument index="3" name="texture" type="Texture" default="null">
+			</argument>
+			<argument index="4" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="null">
+			</argument>
+			<description>
+				Draw a custom primitive, 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
+			</description>
+		</method>
+		<method name="draw_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="filled" type="bool" default="true">
+			</argument>
+			<description>
+				Draw a colored rectangle.
+			</description>
+		</method>
+		<method name="draw_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="rotation" type="float">
+			</argument>
+			<argument index="2" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set a custom transform for drawing. Anything drawn afterwards will be transformed by this.
+			</description>
+		</method>
+		<method name="draw_set_transform_matrix">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="clip_w" type="int" default="-1">
+			</argument>
+			<description>
+				Draw a string using a custom font.
+			</description>
+		</method>
+		<method name="draw_style_box">
+			<return type="void">
+			</return>
+			<argument index="0" name="style_box" type="StyleBox">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+				Draw a styled rectangle.
+			</description>
+		</method>
+		<method name="draw_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="3" name="normal_map" type="Texture" default="null">
+			</argument>
+			<description>
+				Draw a texture at a given position.
+			</description>
+		</method>
+		<method name="draw_texture_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="tile" type="bool">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="null">
+			</argument>
+			<description>
+				Draw a textured rectangle at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
+			</description>
+		</method>
+		<method name="draw_texture_rect_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="5" name="normal_map" type="Texture" default="null">
+			</argument>
+			<argument index="6" name="clip_uv" type="bool" default="true">
+			</argument>
+			<description>
+				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
+			</description>
+		</method>
+		<method name="edit_get_state" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+				Used for editing, returns an opaque value representing the transform state.
+			</description>
+		</method>
+		<method name="edit_rotate">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+				Used for editing, handle rotation.
+			</description>
+		</method>
+		<method name="edit_set_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="edit_set_state">
+			<return type="void">
+			</return>
+			<argument index="0" name="state" type="Variant">
+			</argument>
+			<description>
+				Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation (radians) and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
+			</description>
+		</method>
+		<method name="get_canvas" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return the [RID] of the [World2D] canvas where this item is in.
+			</description>
+		</method>
+		<method name="get_canvas_item" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return the canvas item RID used by [VisualServer] for this item.
+			</description>
+		</method>
+		<method name="get_canvas_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Get the transform matrix of this item's canvas.
+			</description>
+		</method>
+		<method name="get_global_mouse_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Get the global position of the mouse.
+			</description>
+		</method>
+		<method name="get_global_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Get the global transform matrix of this item.
+			</description>
+		</method>
+		<method name="get_global_transform_with_canvas" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Get the global transform matrix of this item in relation to the canvas.
+			</description>
+		</method>
+		<method name="get_item_and_children_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+				Get a [Rect2] with the boundaries of this item and its children.
+			</description>
+		</method>
+		<method name="get_item_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+				Return a rect containing the editable boundaries of the item.
+			</description>
+		</method>
+		<method name="get_light_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Get this item's light mask number.
+			</description>
+		</method>
+		<method name="get_local_mouse_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Get the mouse position relative to this item's position.
+			</description>
+		</method>
+		<method name="get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+				Get the material of this item.
+			</description>
+		</method>
+		<method name="get_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+				Get the modulate of the CanvasItem, which affects children items too.
+			</description>
+		</method>
+		<method name="get_self_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+				Get the self-modulate of the CanvasItem.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Get the transform matrix of this item.
+			</description>
+		</method>
+		<method name="get_use_parent_material" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Get whether this item uses its parent's material.
+			</description>
+		</method>
+		<method name="get_viewport_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+				Get the viewport's boundaries as a [Rect2].
+			</description>
+		</method>
+		<method name="get_viewport_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<description>
+				Get this item's transform in relation to the viewport.
+			</description>
+		</method>
+		<method name="get_world_2d" qualifiers="const">
+			<return type="World2D">
+			</return>
+			<description>
+				Get the [World2D] where this item is in.
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void">
+			</return>
+			<description>
+				Hide the CanvasItem currently visible.
+			</description>
+		</method>
+		<method name="is_draw_behind_parent_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the item is drawn behind its parent.
+			</description>
+		</method>
+		<method name="is_local_transform_notification_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_set_as_toplevel" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return if set as toplevel. See [method set_as_toplevel].
+			</description>
+		</method>
+		<method name="is_transform_notification_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if this CanvasItem is visible. It may be invisible because itself or a parent canvas item is hidden.
+			</description>
+		</method>
+		<method name="is_visible_in_tree" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_canvas_position_local" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="make_input_local" qualifiers="const">
+			<return type="InputEvent">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_as_toplevel">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set as top level. This means that it will not inherit transform from parent canvas items.
+			</description>
+		</method>
+		<method name="set_draw_behind_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether the canvas item is drawn behind its parent.
+			</description>
+		</method>
+		<method name="set_light_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="light_mask" type="int">
+			</argument>
+			<description>
+				Set the ligtht mask number of this item.
+			</description>
+		</method>
+		<method name="set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+				Set the material of this item.
+			</description>
+		</method>
+		<method name="set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="modulate" type="Color">
+			</argument>
+			<description>
+				Set the modulate of the CanvasItem. This [i]affects[/i] the modulation of children items.
+			</description>
+		</method>
+		<method name="set_notify_local_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_notify_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_self_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="self_modulate" type="Color">
+			</argument>
+			<description>
+				Set the self-modulate of the CanvasItem. This does not affect the modulation of children items.
+			</description>
+		</method>
+		<method name="set_use_parent_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether or not this item should use its parent's material.
+			</description>
+		</method>
+		<method name="set_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+				Set whether this item should be visible or not.
+				Note that a hidden CanvasItem will make all children hidden too, so no matter what is set here this item won't be shown if its parent or grandparents nodes are hidden.
+			</description>
+		</method>
+		<method name="show">
+			<return type="void">
+			</return>
+			<description>
+				Show the CanvasItem currently hidden.
+			</description>
+		</method>
+		<method name="update">
+			<return type="void">
+			</return>
+			<description>
+				Queue the CanvasItem for update. [code]NOTIFICATION_DRAW[/code] will be called on idle time to request redraw.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
+		</member>
+		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate">
+		</member>
+		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
+		</member>
+		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
+		</member>
+		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
+		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
+		</member>
+	</members>
+	<signals>
+		<signal name="draw">
+			<description>
+				Emitted when the CanvasItem must redraw. This can only be connected realtime, as deferred will not allow drawing.
+			</description>
+		</signal>
+		<signal name="hide">
+			<description>
+				Emitted when becoming hidden.
+			</description>
+		</signal>
+		<signal name="item_rect_changed">
+			<description>
+				Emitted when the item rect has changed.
+			</description>
+		</signal>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when the visibility (hidden/visible) changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="BLEND_MODE_MIX" value="0">
+			Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1">
+			Additive blending mode.
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2">
+			Subtractive blending mode.
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3">
+			Multiplicative blending mode.
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
+		</constant>
+		<constant name="NOTIFICATION_DRAW" value="30" enum="">
+			CanvasItem is requested to draw.
+		</constant>
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31" enum="">
+			Canvas item visibility has changed.
+		</constant>
+		<constant name="NOTIFICATION_ENTER_CANVAS" value="32" enum="">
+			Canvas item has entered the canvas.
+		</constant>
+		<constant name="NOTIFICATION_EXIT_CANVAS" value="33" enum="">
+			Canvas item has exited the canvas.
+		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
+			Canvas item transform has changed. Only received if requested.
+		</constant>
+	</constants>
+</class>

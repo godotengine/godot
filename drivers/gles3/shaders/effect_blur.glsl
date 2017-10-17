@@ -6,15 +6,28 @@ layout(location=4) in vec2 uv_in;
 
 out vec2 uv_interp;
 
+#ifdef USE_BLUR_SECTION
+
+uniform vec4 blur_section;
+
+#endif
 
 void main() {
 
 	uv_interp = uv_in;
 	gl_Position = vertex_attrib;
+#ifdef USE_BLUR_SECTION
+
+	uv_interp = blur_section.xy + uv_interp * blur_section.zw;
+	gl_Position.xy = (blur_section.xy + (gl_Position.xy * 0.5 + 0.5) * blur_section.zw) * 2.0 - 1.0;
+#endif
 }
 
 [fragment]
 
+#if !defined(GLES_OVER_GL)
+precision mediump float;
+#endif
 
 in vec2 uv_interp;
 uniform sampler2D source_color; //texunit:0
@@ -89,7 +102,7 @@ uniform highp float auto_exposure_grey;
 #endif
 
 uniform float glow_bloom;
-uniform float glow_hdr_treshold;
+uniform float glow_hdr_threshold;
 uniform float glow_hdr_scale;
 
 #endif
@@ -155,7 +168,11 @@ void main() {
 
 	float depth = textureLod( dof_source_depth, uv_interp, 0.0).r;
 	depth = depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	depth = ((depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
+#endif
 
 	float amount = smoothstep(dof_begin,dof_end,depth);
 	float k_accum=0.0;
@@ -169,8 +186,11 @@ void main() {
 
 		float tap_depth = texture( dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
-
+#endif
 		float tap_amount = mix(smoothstep(dof_begin,dof_end,tap_depth),1.0,int_ofs==0);
 		tap_amount*=tap_amount*tap_amount; //prevent undesired glow effect
 
@@ -208,7 +228,11 @@ void main() {
 
 		float tap_depth = texture( dof_source_depth, tap_uv, 0.0).r;
 		tap_depth = tap_depth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION	
+		tap_depth = ((tap_depth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		tap_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - tap_depth * (camera_z_far - camera_z_near));
+#endif
 		float tap_amount = 1.0-smoothstep(dof_end,dof_begin,tap_depth);
 		tap_amount*=tap_amount*tap_amount; //prevent undesired glow effect
 
@@ -252,7 +276,7 @@ void main() {
 	frag_color*=exposure;
 
 	float luminance = max(frag_color.r,max(frag_color.g,frag_color.b));
-	float feedback = max( smoothstep(glow_hdr_treshold,glow_hdr_treshold+glow_hdr_scale,luminance), glow_bloom );
+	float feedback = max( smoothstep(glow_hdr_threshold,glow_hdr_threshold+glow_hdr_scale,luminance), glow_bloom );
 
 	frag_color *= feedback;
 
@@ -275,4 +299,3 @@ void main() {
 
 
 }
-

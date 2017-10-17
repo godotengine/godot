@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KinematicCollision2D" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Collision data for KinematicBody2D collisions.
+	</brief_description>
+	<description>
+		Contains collision data for KinematicBody2D collisions. When a [KinematicBody2D] is moved using [method KinematicBody2D.move_and_collide], it stops if it detects a collision with another body. If a collision is detected, a KinematicCollision2D object is returned.
+		This object contains information about the collision, including the colliding object, the remaining motion, and the collision position. This information can be used to calculate a collision response.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_shape_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_local_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_remainder" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_travel" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collider" type="Object" setter="" getter="get_collider">
+			The colliding body.
+		</member>
+		<member name="collider_id" type="int" setter="" getter="get_collider_id">
+			The colliding body's unique [RID].
+		</member>
+		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
+			The colliding body's metadata. See [Object].
+		</member>
+		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
+			The colliding body's shape.
+		</member>
+		<member name="collider_shape_index" type="int" setter="" getter="get_collider_shape_index">
+			The colliding shape's index. See [CollisionObject2D].
+		</member>
+		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity">
+			The colliding object's velocity.
+		</member>
+		<member name="local_shape" type="Object" setter="" getter="get_local_shape">
+			The moving object's colliding shape.
+		</member>
+		<member name="normal" type="Vector2" setter="" getter="get_normal">
+			The colliding body's shape's normal at the point of collision.
+		</member>
+		<member name="position" type="Vector2" setter="" getter="get_position">
+			The point of collision.
+		</member>
+		<member name="remainder" type="Vector2" setter="" getter="get_remainder">
+			The moving object's remaining movement vector.
+		</member>
+		<member name="travel" type="Vector2" setter="" getter="get_travel">
+			The distance the moving object traveled before collision.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

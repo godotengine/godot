@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +37,8 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
-	s.trigger = false;
+	s.disabled = false;
+	s.one_way_collision = false;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 	_update_shapes();
@@ -168,7 +170,7 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 		Rect2 shape_aabb = s.shape->get_aabb();
 		Transform2D xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(Rect2(shape_aabb.pos + p_motion, shape_aabb.size)); //use motion
+		shape_aabb = shape_aabb.merge(Rect2(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
 		space->get_broadphase()->move(s.bpid, shape_aabb);
@@ -213,6 +215,6 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	space = NULL;
 	instance_id = 0;
 	collision_mask = 1;
-	layer_mask = 1;
+	collision_layer = 1;
 	pickable = true;
 }

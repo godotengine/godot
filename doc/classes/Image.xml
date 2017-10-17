@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Image" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Image datatype.
+	</brief_description>
+	<description>
+		Native image datatype. Contains image data, which can be converted to a texture, and several functions to interact with it.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="blend_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="2" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+			</description>
+		</method>
+		<method name="blend_rect_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="mask" type="Image">
+			</argument>
+			<argument index="2" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="3" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channels are required for both "src" and "mask", dest pixels and src pixels will blend if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+			</description>
+		</method>
+		<method name="blit_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="2" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Copy a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+			</description>
+		</method>
+		<method name="blit_rect_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="mask" type="Image">
+			</argument>
+			<argument index="2" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="3" name="dst" type="Vector2">
+			</argument>
+			<description>
+				Blits a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+			</description>
+		</method>
+		<method name="clear_mipmaps">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="compress">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
+			</argument>
+			<argument index="1" name="source" type="int" enum="Image.CompressSource">
+			</argument>
+			<argument index="2" name="lossy_quality" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="convert">
+			<return type="void">
+			</return>
+			<argument index="0" name="format" type="int" enum="Image.Format">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="copy_from">
+			<return type="void">
+			</return>
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="use_mipmaps" type="bool">
+			</argument>
+			<argument index="3" name="format" type="int" enum="Image.Format">
+			</argument>
+			<description>
+				Create an empty image of a specific size and format.
+			</description>
+		</method>
+		<method name="create_from_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="use_mipmaps" type="bool">
+			</argument>
+			<argument index="3" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="4" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="crop">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="detect_alpha" qualifiers="const">
+			<return type="int" enum="Image.AlphaMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="expand_x2_hq2x">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Fills an [Image] with a specified [Color]
+			</description>
+		</method>
+		<method name="fix_alpha_edges">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="flip_x">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="flip_y">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="generate_mipmaps">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_data" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Return the raw data of the [Image].
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format">
+			</return>
+			<description>
+				Return the format of the [Image], one of [Image].FORMAT_*.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the height of the [Image].
+			</description>
+		</method>
+		<method name="get_mipmap_offset" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mipmap" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_pixel" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rect" qualifiers="const">
+			<return type="Image">
+			</return>
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<description>
+				Return a new [Image] that is a copy of "area" in this [Image].
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_used_rect" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+				Return the area of this [Image] that is used/visibly colored/opaque.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the width of the [Image].
+			</description>
+		</method>
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_compressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_invisible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Load an [Image].
+			</description>
+		</method>
+		<method name="lock">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="normalmap_to_xy">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="premultiply_alpha">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="resize_to_po2">
+			<return type="void">
+			</return>
+			<argument index="0" name="square" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_png" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Save this [Image] as a png.
+			</description>
+		</method>
+		<method name="set_pixel">
+			<return type="void">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shrink_x2">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="srgb_to_linear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="unlock">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+		</member>
+	</members>
+	<constants>
+		<constant name="FORMAT_L8" value="0">
+		</constant>
+		<constant name="FORMAT_LA8" value="1">
+		</constant>
+		<constant name="FORMAT_R8" value="2">
+		</constant>
+		<constant name="FORMAT_RG8" value="3">
+		</constant>
+		<constant name="FORMAT_RGB8" value="4">
+		</constant>
+		<constant name="FORMAT_RGBA8" value="5">
+		</constant>
+		<constant name="FORMAT_RGBA4444" value="6">
+		</constant>
+		<constant name="FORMAT_RGBA5551" value="7">
+		</constant>
+		<constant name="FORMAT_RF" value="8">
+		</constant>
+		<constant name="FORMAT_RGF" value="9">
+		</constant>
+		<constant name="FORMAT_RGBF" value="10">
+		</constant>
+		<constant name="FORMAT_RGBAF" value="11">
+		</constant>
+		<constant name="FORMAT_RH" value="12">
+		</constant>
+		<constant name="FORMAT_RGH" value="13">
+		</constant>
+		<constant name="FORMAT_RGBH" value="14">
+		</constant>
+		<constant name="FORMAT_RGBAH" value="15">
+		</constant>
+		<constant name="FORMAT_RGBE9995" value="16">
+		</constant>
+		<constant name="FORMAT_DXT1" value="17">
+		</constant>
+		<constant name="FORMAT_DXT3" value="18">
+		</constant>
+		<constant name="FORMAT_DXT5" value="19">
+		</constant>
+		<constant name="FORMAT_RGTC_R" value="20">
+		</constant>
+		<constant name="FORMAT_RGTC_RG" value="21">
+		</constant>
+		<constant name="FORMAT_BPTC_RGBA" value="22">
+		</constant>
+		<constant name="FORMAT_BPTC_RGBF" value="23">
+		</constant>
+		<constant name="FORMAT_BPTC_RGBFU" value="24">
+		</constant>
+		<constant name="FORMAT_PVRTC2" value="25">
+		</constant>
+		<constant name="FORMAT_PVRTC2A" value="26">
+		</constant>
+		<constant name="FORMAT_PVRTC4" value="27">
+		</constant>
+		<constant name="FORMAT_PVRTC4A" value="28">
+		</constant>
+		<constant name="FORMAT_ETC" value="29">
+		</constant>
+		<constant name="FORMAT_ETC2_R11" value="30">
+		</constant>
+		<constant name="FORMAT_ETC2_R11S" value="31">
+		</constant>
+		<constant name="FORMAT_ETC2_RG11" value="32">
+		</constant>
+		<constant name="FORMAT_ETC2_RG11S" value="33">
+		</constant>
+		<constant name="FORMAT_ETC2_RGB8" value="34">
+		</constant>
+		<constant name="FORMAT_ETC2_RGBA8" value="35">
+		</constant>
+		<constant name="FORMAT_ETC2_RGB8A1" value="36">
+		</constant>
+		<constant name="FORMAT_MAX" value="37">
+		</constant>
+		<constant name="INTERPOLATE_NEAREST" value="0">
+		</constant>
+		<constant name="INTERPOLATE_BILINEAR" value="1">
+		</constant>
+		<constant name="INTERPOLATE_CUBIC" value="2">
+		</constant>
+		<constant name="ALPHA_NONE" value="0">
+		</constant>
+		<constant name="ALPHA_BIT" value="1">
+		</constant>
+		<constant name="ALPHA_BLEND" value="2">
+		</constant>
+		<constant name="COMPRESS_S3TC" value="0">
+		</constant>
+		<constant name="COMPRESS_PVRTC2" value="1">
+		</constant>
+		<constant name="COMPRESS_PVRTC4" value="2">
+		</constant>
+		<constant name="COMPRESS_ETC" value="3">
+		</constant>
+		<constant name="COMPRESS_ETC2" value="4">
+		</constant>
+		<constant name="COMPRESS_SOURCE_GENERIC" value="0">
+		</constant>
+		<constant name="COMPRESS_SOURCE_SRGB" value="1">
+		</constant>
+		<constant name="COMPRESS_SOURCE_NORMAL" value="2">
+		</constant>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +35,7 @@
 #include "ref_ptr.h"
 #include "reference.h"
 #include "safe_refcount.h"
+#include "self_list.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -73,6 +75,8 @@ class Resource : public Reference {
 	friend class SceneState;
 	Node *local_scene;
 
+	SelfList<Resource> remapped_list;
+
 protected:
 	void emit_changed();
 
@@ -102,8 +106,8 @@ public:
 	void set_subindex(int p_sub_index);
 	int get_subindex() const;
 
-	Ref<Resource> duplicate(bool p_subresources = false);
-	Ref<Resource> duplicate_for_local_scene(Node *p_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
@@ -126,6 +130,9 @@ public:
 
 #endif
 
+	void set_as_translation_remapped(bool p_remapped);
+	bool is_translation_remapped() const;
+
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
 	Resource();
@@ -136,6 +143,7 @@ typedef Ref<Resource> RES;
 
 class ResourceCache {
 	friend class Resource;
+	friend class ResourceLoader; //need the lock
 	static RWLock *lock;
 	static HashMap<String, Resource *> resources;
 	friend void unregister_core_types();

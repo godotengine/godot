@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ class AnimationPlayer : public Node {
 
 public:
 	enum AnimationProcessMode {
-		ANIMATION_PROCESS_FIXED,
+		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 	};
 
@@ -270,7 +271,7 @@ public:
 	void set_speed_scale(float p_speed);
 	float get_speed_scale() const;
 
-	void set_autoplay(const String &pname);
+	void set_autoplay(const String &p_name);
 	String get_autoplay() const;
 
 	void set_animation_process_mode(AnimationProcessMode p_mode);
@@ -278,7 +279,7 @@ public:
 
 	void seek(float p_time, bool p_update = false);
 	void seek_delta(float p_time, float p_delta);
-	float get_current_animation_pos() const;
+	float get_current_animation_position() const;
 	float get_current_animation_length() const;
 
 	void advance(float p_time);

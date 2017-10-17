@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpriteFrames" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Sprite frame library for AnimatedSprite.
+	</brief_description>
+	<description>
+		Sprite frame library for [AnimatedSprite]. Contains frames and animation data for playback.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				Adds a new animation to the the library.
+			</description>
+		</method>
+		<method name="add_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="frame" type="Texture">
+			</argument>
+			<argument index="2" name="at_position" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a frame to the given animation.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				Removes all frames from the given animation.
+			</description>
+		</method>
+		<method name="clear_all">
+			<return type="void">
+			</return>
+			<description>
+				Removes all animations. A "default" animation will be created.
+			</description>
+		</method>
+		<method name="get_animation_loop" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				If [code]true[/code] the given animation will loop.
+			</description>
+		</method>
+		<method name="get_animation_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				The animation's speed in frames per second.
+			</description>
+		</method>
+		<method name="get_frame" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the animation's selected frame.
+			</description>
+		</method>
+		<method name="get_frame_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				Returns the number of frames in the animation.
+			</description>
+		</method>
+		<method name="has_animation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				If [code]true[/code] the named animation exists.
+			</description>
+		</method>
+		<method name="remove_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<description>
+				Removes the given animation.
+			</description>
+		</method>
+		<method name="remove_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Removes the animation's selected frame.
+			</description>
+		</method>
+		<method name="rename_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="newname" type="String">
+			</argument>
+			<description>
+				Changes the animation's name to [code]newname[/code].
+			</description>
+		</method>
+		<method name="set_animation_loop">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="loop" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code] the animation will loop.
+			</description>
+		</method>
+		<method name="set_animation_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="speed" type="float">
+			</argument>
+			<description>
+				The animation's speed in frames per second.
+			</description>
+		</method>
+		<method name="set_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="anim" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="txt" type="Texture">
+			</argument>
+			<description>
+				Sets the texture of the given frame.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="animations" type="Array" setter="_set_animations" getter="_get_animations">
+			An [Array] containing the [code]name[/code], [code]speed[/code], [code]loop[/code], and [code]frames[/code] of each animation.
+		</member>
+		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

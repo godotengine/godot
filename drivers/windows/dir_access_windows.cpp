@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +40,7 @@
 
 /*
 
-[03:57] <reduz> yessopie, so i dont havemak to rely on unicows
+[03:57] <reduz> yessopie, so i don't havemak to rely on unicows
 [03:58] <yessopie> reduz- yeah, all of the functions fail, and then you can call GetLastError () which will return 120
 [03:58] <drumstick> CategoryApl, hehe, what? :)
 [03:59] <CategoryApl> didn't Verona lead to some trouble
@@ -161,10 +162,10 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path())
-		p_dir = get_current_dir().plus_file(p_dir);
-
 	p_dir = fix_path(p_dir);
+	if (p_dir.is_rel_path())
+		p_dir = current_dir.plus_file(p_dir);
+
 	p_dir = p_dir.replace("/", "\\");
 
 	bool success;

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamRandomPitch" inherits="AudioStream" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Plays audio with random pitch tweaking.
+	</brief_description>
+	<description>
+		Randomly varies pitch on each start.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_audio_stream" qualifiers="const">
+			<return type="AudioStream">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_random_pitch" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_audio_stream">
+			<return type="void">
+			</return>
+			<argument index="0" name="stream" type="AudioStream">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_random_pitch">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream">
+			The current [AudioStream].
+		</member>
+		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch">
+			The intensity of random pitch variation.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

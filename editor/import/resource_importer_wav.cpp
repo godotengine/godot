@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +48,7 @@ void ResourceImporterWAV::get_recognized_extensions(List<String> *p_extensions) 
 	p_extensions->push_back("wav");
 }
 String ResourceImporterWAV::get_save_extension() const {
-	return "smp";
+	return "sample";
 }
 
 String ResourceImporterWAV::get_resource_type() const {
@@ -102,7 +103,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	}
 
 	/* GET FILESIZE */
-	uint32_t filesize = file->get_32();
+	file->get_32(); // filesize
 
 	/* CHECK WAVE */
 
@@ -122,12 +123,13 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	int format_channels = 0;
 
 	AudioStreamSample::LoopMode loop = AudioStreamSample::LOOP_DISABLED;
+	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
 	int format_freq = 0;
 	int loop_begin = 0;
 	int loop_end = 0;
-	int frames;
+	int frames = 0;
 
 	Vector<float> data;
 
@@ -139,7 +141,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		/* chunk size */
 		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_pos(); //save file pos, so we can skip to next chunk safely
+		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
 
@@ -150,9 +152,10 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		if (chunkID[0] == 'f' && chunkID[1] == 'm' && chunkID[2] == 't' && chunkID[3] == ' ' && !format_found) {
 			/* IS FORMAT CHUNK */
 
-			uint16_t compression_code = file->get_16();
-
-			if (compression_code != 1) {
+			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
+			//Consider revision for engine version 3.0
+			compression_code = file->get_16();
+			if (compression_code != 1 && compression_code != 3) {
 				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
 				break;
 			}
@@ -176,7 +179,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				break;
 			}
 
-			/* Dont need anything else, continue */
+			/* Don't need anything else, continue */
 			format_found = true;
 		}
 
@@ -207,33 +210,37 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			data.resize(frames * format_channels);
 
-			for (int i = 0; i < frames; i++) {
+			if (format_bits == 8) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					// 8 bit samples are UNSIGNED
 
-				for (int c = 0; c < format_channels; c++) {
+					data[i] = int8_t(file->get_8() - 128) / 128.f;
+				}
+			} else if (format_bits == 32 && compression_code == 3) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//32 bit IEEE Float
 
-					if (format_bits == 8) {
-						// 8 bit samples are UNSIGNED
+					data[i] = file->get_float();
+				}
+			} else if (format_bits == 16) {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16 bit SIGNED
 
-						uint8_t s = file->get_8();
-						s -= 128;
-						int8_t *sp = (int8_t *)&s;
+					data[i] = int16_t(file->get_16()) / 32768.f;
+				}
+			} else {
+				for (int i = 0; i < frames * format_channels; i++) {
+					//16+ bits samples are SIGNED
+					// if sample is > 16 bits, just read extra bytes
 
-						data[i * format_channels + c] = float(*sp) / 128.0;
+					uint32_t s = 0;
+					for (int b = 0; b < (format_bits >> 3); b++) {
 
-					} else {
-						//16+ bits samples are SIGNED
-						// if sample is > 16 bits, just read extra bytes
-
-						uint32_t s = 0;
-						for (int b = 0; b < (format_bits >> 3); b++) {
-
-							s |= ((uint32_t)file->get_8()) << (b * 8);
-						}
-						s <<= (32 - format_bits);
-						int32_t ss = s;
-
-						data[i * format_channels + c] = (ss >> 16) / 32768.0;
+						s |= ((uint32_t)file->get_8()) << (b * 8);
 					}
+					s <<= (32 - format_bits);
+
+					data[i] = (int32_t(s) >> 16) / 32768.f;
 				}
 			}
 
@@ -247,6 +254,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
 			//loop point info!
+
+			/**
+			*	Consider exploring next document:
+			*		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			*	Especially on page:
+			*		16 - 17
+			*	Timestamp:
+			*		22:38 06.07.2017 GMT
+			**/
 
 			for (int i = 0; i < 10; i++)
 				file->get_32(); // i wish to know why should i do this... no doc!
@@ -279,7 +295,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool limit_rate = p_options["force/max_rate"];
 	int limit_rate_hz = p_options["force/max_rate_hz"];
-	if (limit_rate && rate > limit_rate_hz) {
+	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
 		//resampleeee!!!
 		int new_data_frames = frames * limit_rate_hz / rate;
 		Vector<float> new_data;
@@ -344,7 +360,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-	if (trim && !loop) {
+	if (trim && !loop && format_channels > 0) {
 
 		int first = 0;
 		int last = (frames * format_channels) - 1;
@@ -484,7 +500,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
 
-	ResourceSaver::save(p_save_path + ".smp", sample);
+	ResourceSaver::save(p_save_path + ".sample", sample);
 
 	return OK;
 }

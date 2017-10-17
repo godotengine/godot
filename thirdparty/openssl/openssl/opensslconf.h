@@ -1,37 +1,26 @@
 /* opensslconf.h */
 /* WARNING: Generated automatically from opensslconf.h.in by Configure. */
 
-//sorry godot needs a single file for multiple builds
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
-
-// Check windows
-
-#ifdef USE_64BITS
-//weirder platforms that don't use GCC, LLVM  or MSVC must define this
-# define OPENSSL_USE_64_BITS
-#elif _WIN32 || _WIN64
-# if _WIN64
-# define OPENSSL_USE_64_BITS
-# endif
-// Check GCC
-#elif __GNUC__
-# if __x86_64__ || __ppc64__
-# define OPENSSL_USE_64_BITS
-# endif
-#endif
-
-#ifndef OPENSSL_USE_64_BITS
-//wqerw
-#endif
-
-
-
 /* OpenSSL was configured with the following options: */
 #ifndef OPENSSL_DOING_MAKEDEPEND
 
+// -- GODOT start --
+#if defined(OPENSSL_SYS_WINDOWS)
+# define WIN32_LEAN_AND_MEAN
+// Seems like we have troubles properly using the logic in e_os2.h
+# if defined(_WIN32)
+#  define OPENSSL_SYS_WIN32
+#  define OPENSSL_SYSNAME_WIN32
+# endif
+# if defined(_WIN64)
+#  define OPENSSL_SYS_WIN64
+#  define OPENSSL_SYSNAME_WIN64
+# endif
+#endif
+// -- GODOT end --
 
 #ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
 # define OPENSSL_NO_EC_NISTP_64_GCC_128
@@ -78,9 +67,6 @@ extern "C" {
 
 #endif /* OPENSSL_DOING_MAKEDEPEND */
 
-#ifndef OPENSSL_THREADS
-# define OPENSSL_THREADS
-#endif
 #ifndef OPENSSL_NO_DYNAMIC_ENGINE
 # define OPENSSL_NO_DYNAMIC_ENGINE
 #endif
@@ -134,8 +120,6 @@ extern "C" {
 # endif
 #endif
 
-//#define OPENSSL_CPUID_OBJ
-
 /* crypto/opensslconf.h.in */
 
 /* Generate 80386 code? */
@@ -175,19 +159,14 @@ extern "C" {
  * - Intel P6 because partial register stalls are very expensive;
  * - elder Alpha because it lacks byte load/store instructions;
  */
-#ifdef OPENSSL_USE_64_BITS 
 #define RC4_INT unsigned int
-#else
-#define RC4_INT unsigned char
-#endif
-
 #endif
 #if !defined(RC4_CHUNK)
 /*
  * This enables code handling data aligned at natural CPU word
  * boundary. See crypto/rc4/rc4_enc.c for further details.
  */
-#define RC4_CHUNK unsigned long
+#undef RC4_CHUNK
 #endif
 #endif
 
@@ -195,42 +174,20 @@ extern "C" {
 /* If this is set to 'unsigned int' on a DEC Alpha, this gives about a
  * %20 speed up (longs are 8 bytes, int's are 4). */
 #ifndef DES_LONG
-#define DES_LONG unsigned int
+#define DES_LONG unsigned long
 #endif
 #endif
 
 #if defined(HEADER_BN_H) && !defined(CONFIG_HEADER_BN_H)
 #define CONFIG_HEADER_BN_H
-#ifdef OPENSSL_USE_64_BITS
 #undef BN_LLONG
-#else
-#define BN_LLONG
-#endif
 
 /* Should we define BN_DIV2W here? */
 
 /* Only one for the following should be defined */
-
-#ifdef OPENSSL_USE_64_BITS
-
-# ifdef _WIN32
-#  undef SIXTY_FOUR_BIT_LONG
-#  define SIXTY_FOUR_BIT
-# else
-#  define SIXTY_FOUR_BIT_LONG
-#  undef SIXTY_FOUR_BIT
-# endif
-#undef THIRTY_TWO_BIT
-
-#else
-
 #undef SIXTY_FOUR_BIT_LONG
 #undef SIXTY_FOUR_BIT
 #define THIRTY_TWO_BIT
-
-#endif
-
-
 #endif
 
 #if defined(HEADER_RC4_LOCL_H) && !defined(CONFIG_HEADER_RC4_LOCL_H)
@@ -272,7 +229,7 @@ extern "C" {
 /* Unroll the inner loop, this sometimes helps, sometimes hinders.
  * Very mucy CPU dependant */
 #ifndef DES_UNROLL
-#define DES_UNROLL
+#undef DES_UNROLL
 #endif
 
 /* These default values were supplied by

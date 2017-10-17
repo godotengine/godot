@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PNG Bitmap glyph support.                                            */
 /*                                                                         */
-/*  Copyright 2013-2016 by                                                 */
+/*  Copyright 2013-2017 by                                                 */
 /*  Google, Inc.                                                           */
 /*  Written by Stuart Gill and Behdad Esfahbod.                            */
 /*                                                                         */
@@ -24,9 +24,10 @@
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#ifdef FT_CONFIG_OPTION_USE_PNG
+#if defined( TT_CONFIG_OPTION_EMBEDDED_BITMAPS ) && \
+    defined( FT_CONFIG_OPTION_USE_PNG )
 
-  /* We always include <stjmp.h>, so make libpng shut up! */
+  /* We always include <setjmp.h>, so make libpng shut up! */
 #define PNG_SKIP_SETJMP_CHECK 1
 #include <png.h>
 #include "pngshim.h"
@@ -48,18 +49,82 @@
   }
 
 
-  /* Premultiplies data and converts RGBA bytes => native endian. */
+  /* Premultiplies data and converts RGBA bytes => BGRA. */
   static void
   premultiply_data( png_structp    png,
                     png_row_infop  row_info,
                     png_bytep      data )
   {
-    unsigned int  i;
+    unsigned int  i = 0, limit;
+
+    /* The `vector_size' attribute was introduced in gcc 3.1, which */
+    /* predates clang; the `__BYTE_ORDER__' preprocessor symbol was */
+    /* introduced in gcc 4.6 and clang 3.2, respectively.           */
+    /* `__builtin_shuffle' for gcc was introduced in gcc 4.7.0.     */
+#if ( ( defined( __GNUC__ )                                &&             \
+        ( ( __GNUC__ >= 5 )                              ||               \
+        ( ( __GNUC__ == 4 ) && ( __GNUC_MINOR__ >= 7 ) ) ) )         ||   \
+      ( defined( __clang__ )                                       &&     \
+        ( ( __clang_major__ >= 4 )                               ||       \
+        ( ( __clang_major__ == 3 ) && ( __clang_minor__ >= 2 ) ) ) ) ) && \
+    defined( __OPTIMIZE__ )                                            && \
+    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+
+#ifdef __clang__
+    /* the clang documentation doesn't cover the two-argument case of */
+    /* `__builtin_shufflevector'; however, it is is implemented since */
+    /* version 2.8                                                    */
+#define vector_shuffle  __builtin_shufflevector
+#else
+#define vector_shuffle  __builtin_shuffle
+#endif
+
+    typedef unsigned short  v82 __attribute__(( vector_size( 16 ) ));
+
+
+    /* process blocks of 16 bytes in one rush, which gives a nice speed-up */
+    limit = row_info->rowbytes - 16 + 1;
+    for ( ; i < limit; i += 16 )
+    {
+      unsigned char*  base = &data[i];
+
+      v82  s, s0, s1, a;
+
+      /* clang <= 3.9 can't apply scalar values to vectors */
+      /* (or rather, it needs a different syntax)          */
+      v82  n0x80 = { 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
+      v82  n0xFF = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+      v82  n8    = { 8, 8, 8, 8, 8, 8, 8, 8 };
+
+      v82  ma = { 1, 1, 3, 3, 5, 5, 7, 7 };
+      v82  o1 = { 0, 0xFF, 0, 0xFF, 0, 0xFF, 0, 0xFF };
+      v82  m0 = { 1, 0, 3, 2, 5, 4, 7, 6 };
+
+
+      memcpy( &s, base, 16 );               /* RGBA RGBA RGBA RGBA */
+      s0 = s & n0xFF;                       /*  R B  R B  R B  R B */
+      s1 = s >> n8;                         /*  G A  G A  G A  G A */
+
+      a   = vector_shuffle( s1, ma );       /*  A A  A A  A A  A A */
+      s1 |= o1;                             /*  G 1  G 1  G 1  G 1 */
+      s0  = vector_shuffle( s0, m0 );       /*  B R  B R  B R  B R */
+
+      s0 *= a;
+      s1 *= a;
+      s0 += n0x80;
+      s1 += n0x80;
+      s0  = ( s0 + ( s0 >> n8 ) ) >> n8;
+      s1  = ( s1 + ( s1 >> n8 ) ) >> n8;
+
+      s = s0 | ( s1 << n8 );
+      memcpy( base, &s, 16 );
+    }
+#endif /* use `vector_size' */
 
     FT_UNUSED( png );
 
-
-    for ( i = 0; i < row_info->rowbytes; i += 4 )
+    limit = row_info->rowbytes;
+    for ( ; i < limit; i += 4 )
     {
       unsigned char*  base  = &data[i];
       unsigned int    alpha = base[3];
@@ -184,7 +249,8 @@
                  FT_Memory        memory,
                  FT_Byte*         data,
                  FT_UInt          png_len,
-                 FT_Bool          populate_map_and_metrics )
+                 FT_Bool          populate_map_and_metrics,
+                 FT_Bool          metrics_only )
   {
     FT_Bitmap    *map   = &slot->bitmap;
     FT_Error      error = FT_Err_Ok;
@@ -258,9 +324,6 @@
 
     if ( populate_map_and_metrics )
     {
-      FT_ULong  size;
-
-
       metrics->width  = (FT_UShort)imgWidth;
       metrics->height = (FT_UShort)imgHeight;
 
@@ -276,13 +339,6 @@
         error = FT_THROW( Array_Too_Large );
         goto DestroyExit;
       }
-
-      /* this doesn't overflow: 0x7FFF * 0x7FFF * 4 < 2^32 */
-      size = map->rows * (FT_ULong)map->pitch;
-
-      error = ft_glyphslot_alloc_bitmap( slot, size );
-      if ( error )
-        goto DestroyExit;
     }
 
     /* convert palette/gray image to rgb */
@@ -334,6 +390,9 @@
       goto DestroyExit;
     }
 
+    if ( metrics_only )
+      goto DestroyExit;
+
     switch ( color_type )
     {
     default:
@@ -347,6 +406,17 @@
       /* Humm, this smells.  Carry on though. */
       png_set_read_user_transform_fn( png, convert_bytes_to_data );
       break;
+    }
+
+    if ( populate_map_and_metrics )
+    {
+      /* this doesn't overflow: 0x7FFF * 0x7FFF * 4 < 2^32 */
+      FT_ULong  size = map->rows * (FT_ULong)map->pitch;
+
+
+      error = ft_glyphslot_alloc_bitmap( slot, size );
+      if ( error )
+        goto DestroyExit;
     }
 
     if ( FT_NEW_ARRAY( rows, imgHeight ) )
@@ -372,7 +442,12 @@
     return error;
   }
 
-#endif /* FT_CONFIG_OPTION_USE_PNG */
+#else /* !(TT_CONFIG_OPTION_EMBEDDED_BITMAPS && FT_CONFIG_OPTION_USE_PNG) */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _pngshim_dummy;
+
+#endif /* !(TT_CONFIG_OPTION_EMBEDDED_BITMAPS && FT_CONFIG_OPTION_USE_PNG) */
 
 
 /* END */

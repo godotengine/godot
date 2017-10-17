@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,19 +33,32 @@
 
 #include <errno.h>
 
-#include <Foundation/NSString.h>
+#include <AppKit/NSWorkspace.h>
+#include <Foundation/Foundation.h>
 
-
-String DirAccessOSX::fix_unicode_name(const char* p_name) const {
+String DirAccessOSX::fix_unicode_name(const char *p_name) const {
 
 	String fname;
-	NSString* nsstr = [[NSString stringWithUTF8String: p_name] precomposedStringWithCanonicalMapping];
+	NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
 
 	fname.parse_utf8([nsstr UTF8String]);
 
 	return fname;
 }
 
+int DirAccessOSX::get_drive_count() {
+	NSArray *vols = [[NSWorkspace sharedWorkspace] mountedLocalVolumePaths];
+	return [vols count];
+}
 
+String DirAccessOSX::get_drive(int p_drive) {
+	NSArray *vols = [[NSWorkspace sharedWorkspace] mountedLocalVolumePaths];
+	int count = [vols count];
+
+	ERR_FAIL_INDEX_V(p_drive, count, "");
+
+	NSString *path = vols[p_drive];
+	return String([path UTF8String]);
+}
 
 #endif //posix_enabled

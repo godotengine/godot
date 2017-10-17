@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType font driver interface (specification).                      */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -65,15 +65,6 @@ FT_BEGIN_HEADER
                        FT_Size       size,
                        FT_UInt       glyph_index,
                        FT_Int32      load_flags );
-
-
-  typedef FT_UInt
-  (*FT_CharMap_CharIndexFunc)( FT_CharMap  charmap,
-                               FT_Long     charcode );
-
-  typedef FT_Long
-  (*FT_CharMap_CharNextFunc)( FT_CharMap  charmap,
-                              FT_Long     charcode );
 
 
   typedef FT_Error

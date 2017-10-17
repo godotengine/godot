@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,12 +76,13 @@ struct Vector3 {
 
 	_FORCE_INLINE_ void normalize();
 	_FORCE_INLINE_ Vector3 normalized() const;
+	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
 
 	_FORCE_INLINE_ void zero();
 
-	void snap(real_t p_val);
-	Vector3 snapped(real_t p_val) const;
+	void snap(Vector3 p_val);
+	Vector3 snapped(Vector3 p_val) const;
 
 	void rotate(const Vector3 &p_axis, real_t p_phi);
 	Vector3 rotated(const Vector3 &p_axis, real_t p_phi) const;
@@ -98,6 +100,7 @@ struct Vector3 {
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
+	_FORCE_INLINE_ Vector3 sign() const;
 	_FORCE_INLINE_ Vector3 ceil() const;
 
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
@@ -105,8 +108,9 @@ struct Vector3 {
 
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
 
-	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_vec) const;
-	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_vec) const;
+	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
+	_FORCE_INLINE_ Vector3 bounce(const Vector3 &p_normal) const;
+	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	/* Operators */
 
@@ -184,6 +188,11 @@ Vector3 Vector3::abs() const {
 	return Vector3(Math::abs(x), Math::abs(y), Math::abs(z));
 }
 
+Vector3 Vector3::sign() const {
+
+	return Vector3(SGN(x), SGN(y), SGN(z));
+}
+
 Vector3 Vector3::floor() const {
 
 	return Vector3(Math::floor(x), Math::floor(y), Math::floor(z));
@@ -214,7 +223,7 @@ real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 
 real_t Vector3::angle_to(const Vector3 &p_b) const {
 
-	return Math::acos(this->dot(p_b) / Math::sqrt(this->length_squared() * p_b.length_squared()));
+	return Math::atan2(cross(p_b).length(), dot(p_b));
 }
 
 /* Operators */
@@ -385,6 +394,11 @@ Vector3 Vector3::normalized() const {
 	return v;
 }
 
+bool Vector3::is_normalized() const {
+	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
+	return Math::is_equal_approx(length_squared(), 1.0);
+}
+
 Vector3 Vector3::inverse() const {
 
 	return Vector3(1.0 / x, 1.0 / y, 1.0 / z);
@@ -395,14 +409,23 @@ void Vector3::zero() {
 	x = y = z = 0;
 }
 
-Vector3 Vector3::slide(const Vector3 &p_vec) const {
-
-	return p_vec - *this * this->dot(p_vec);
+// slide returns the component of the vector along the given plane, specified by its normal vector.
+Vector3 Vector3::slide(const Vector3 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector3());
+#endif
+	return *this - p_normal * this->dot(p_normal);
 }
 
-Vector3 Vector3::reflect(const Vector3 &p_vec) const {
+Vector3 Vector3::bounce(const Vector3 &p_normal) const {
+	return -reflect(p_normal);
+}
 
-	return p_vec - *this * this->dot(p_vec) * 2.0;
+Vector3 Vector3::reflect(const Vector3 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector3());
+#endif
+	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }
 
 #endif

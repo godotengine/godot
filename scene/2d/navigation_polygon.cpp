@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "navigation_polygon.h"
+
 #include "core_string_names.h"
+#include "engine.h"
 #include "navigation2d.h"
-#include "triangulator.h"
+
+#include "thirdparty/misc/triangulator.h"
 
 void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 
@@ -294,7 +298,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 		}
 	}
 
-	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
 	//update_gizmo();
@@ -315,7 +319,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 			Node2D *c = this;
 			while (c) {
 
-				navigation = c->cast_to<Navigation2D>();
+				navigation = Object::cast_to<Navigation2D>(c);
 				if (navigation) {
 
 					if (enabled && navpoly.is_valid()) {
@@ -325,7 +329,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 					break;
 				}
 
-				c = c->get_parent()->cast_to<Node2D>();
+				c = Object::cast_to<Node2D>(get_parent());
 			}
 
 		} break;
@@ -349,7 +353,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
+			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
 				PoolVector<Vector2> verts = navpoly->get_vertices();
 				int vsize = verts.size();
@@ -429,7 +433,7 @@ Ref<NavigationPolygon> NavigationPolygonInstance::get_navigation_polygon() const
 
 void NavigationPolygonInstance::_navpoly_changed() {
 
-	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
 		update();
 }
 
@@ -444,11 +448,11 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 	const Node2D *c = this;
 	while (c) {
 
-		if (c->cast_to<Navigation2D>()) {
+		if (Object::cast_to<Navigation2D>(c)) {
 			return String();
 		}
 
-		c = c->get_parent()->cast_to<Node2D>();
+		c = Object::cast_to<Node2D>(get_parent());
 	}
 
 	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
@@ -456,8 +460,8 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 
 void NavigationPolygonInstance::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly:NavigationPolygon"), &NavigationPolygonInstance::set_navigation_polygon);
-	ClassDB::bind_method(D_METHOD("get_navigation_polygon:NavigationPolygon"), &NavigationPolygonInstance::get_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "navpoly"), &NavigationPolygonInstance::set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("get_navigation_polygon"), &NavigationPolygonInstance::get_navigation_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationPolygonInstance::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationPolygonInstance::is_enabled);

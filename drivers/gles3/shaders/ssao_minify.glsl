@@ -41,7 +41,11 @@ void main() {
 #ifdef MINIFY_START
 	float fdepth = texelFetch(source_depth, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), from_size - ivec2(1)), source_mipmap).r;
 	fdepth = fdepth * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+	fdepth = ((fdepth + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 	fdepth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - fdepth * (camera_z_far - camera_z_near));
+#endif
 	fdepth /= camera_z_far;
 	depth = uint(clamp(fdepth*65535.0,0.0,65535.0));
 

@@ -277,7 +277,7 @@ void surround_analysis(const CELTMode *celt_mode, const void *pcm, opus_val16 *b
          sum = celt_inner_prod(in, in, frame_size+overlap, 0);
          /* This should filter out both NaNs and ridiculous signals that could
             cause NaNs further down. */
-         if (!(sum < 1e9f) || celt_isnan(sum))
+         if (!(sum < 1e18f) || celt_isnan(sum))
          {
             OPUS_CLEAR(in, frame_size+overlap);
             preemph_mem[c] = 0;

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Embedded resource forks accessor (specification).                    */
 /*                                                                         */
-/*  Copyright 2004-2016 by                                                 */
+/*  Copyright 2004-2017 by                                                 */
 /*  Masatake YAMATO and Redhat K.K.                                        */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -43,10 +43,11 @@ FT_BEGIN_HEADER
 
   typedef struct  FT_RFork_Ref_
   {
-    FT_UShort  res_id;
-    FT_Long    offset;
+    FT_Short  res_id;
+    FT_Long   offset;
 
   } FT_RFork_Ref;
+
 
 #ifdef FT_CONFIG_OPTION_GUESSING_EMBEDDED_RFORK
   typedef FT_Error

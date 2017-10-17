@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PopupDialog" inherits="Popup" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for Popup Dialogs.
+	</brief_description>
+	<description>
+		PopupDialog is a base class for popup dialogs, along with [WindowDialog].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

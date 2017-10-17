@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +30,18 @@
 #ifndef STREAM_PEER_OPEN_SSL_H
 #define STREAM_PEER_OPEN_SSL_H
 
-#include "curl_hostcheck.h"
-#include "global_config.h"
 #include "io/stream_peer_ssl.h"
 #include "os/file_access.h"
-#include <stdio.h> // If you don't know what this is for stop reading now.
+#include "project_settings.h"
+
+#include "thirdparty/misc/curl_hostcheck.h"
 
 #include <openssl/bio.h> // BIO objects for I/O
 #include <openssl/err.h> // Error reporting
 #include <openssl/ssl.h> // SSL and SSL_CTX for SSL connections
 #include <openssl/x509v3.h>
+
+#include <stdio.h>
 
 class StreamPeerOpenSSL : public StreamPeerSSL {
 private:
@@ -50,7 +53,12 @@ private:
 	static int _bio_gets(BIO *b, char *buf, int len);
 	static int _bio_puts(BIO *b, const char *str);
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	static BIO_METHOD *_bio_method;
+#else
 	static BIO_METHOD _bio_method;
+#endif
+	static BIO_METHOD *_get_bio_method();
 
 	static bool _match_host_name(const char *name, const char *hostname);
 	static Error _match_common_name(const char *hostname, const X509 *server_cert);

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,27 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "video_player.h"
+
 #include "os/os.h"
 #include "servers/audio_server.h"
-/*
-
-int VideoPlayer::InternalStream::get_channel_count() const {
-
-	return player->sp_get_channel_count();
-}
-void VideoPlayer::InternalStream::set_mix_rate(int p_rate){
-
-	return player->sp_set_mix_rate(p_rate);
-}
-bool VideoPlayer::InternalStream::mix(int32_t *p_buffer,int p_frames){
-
-	return player->sp_mix(p_buffer,p_frames);
-}
-void VideoPlayer::InternalStream::update(){
-
-	player->sp_update();
-}
-*/
 
 int VideoPlayer::sp_get_channel_count() const {
 
@@ -66,31 +49,6 @@ bool VideoPlayer::sp_mix(int32_t *p_buffer, int p_frames) {
 	}
 
 	return false;
-}
-
-void VideoPlayer::sp_update() {
-#if 0
-	_THREAD_SAFE_METHOD_
-	//update is unused
-	if (!paused && playback.is_valid()) {
-
-		if (!playback->is_playing()) {
-			//stream depleted data, but there's still audio in the ringbuffer
-			//check that all this audio has been flushed before stopping the stream
-			int to_mix = resampler.get_total() - resampler.get_todo();
-			if (to_mix==0) {
-				stop();
-				return;
-			}
-
-			return;
-		}
-
-		int todo =resampler.get_todo();
-		int wrote = playback->mix(resampler.get_write_buffer(),todo);
-		resampler.write(wrote);
-	}
-#endif
 }
 
 int VideoPlayer::_audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames) {
@@ -115,7 +73,7 @@ void VideoPlayer::_notification(int p_notification) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint()) {
+			if (stream.is_valid() && autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
 		} break;
@@ -320,12 +278,18 @@ String VideoPlayer::get_stream_name() const {
 	return stream->get_name();
 };
 
-float VideoPlayer::get_stream_pos() const {
+float VideoPlayer::get_stream_position() const {
 
 	if (playback.is_null())
 		return 0;
-	return playback->get_pos();
+	return playback->get_playback_position();
 };
+
+void VideoPlayer::set_stream_position(float p_position) {
+
+	if (playback.is_valid())
+		playback->seek(p_position);
+}
 
 Ref<Texture> VideoPlayer::get_video_texture() {
 
@@ -347,8 +311,8 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_stream", "stream:VideoStream"), &VideoPlayer::set_stream);
-	ClassDB::bind_method(D_METHOD("get_stream:VideoStream"), &VideoPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"), &VideoPlayer::get_stream);
 
 	ClassDB::bind_method(D_METHOD("play"), &VideoPlayer::play);
 	ClassDB::bind_method(D_METHOD("stop"), &VideoPlayer::stop);
@@ -369,7 +333,8 @@ void VideoPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoPlayer::get_stream_name);
 
-	ClassDB::bind_method(D_METHOD("get_stream_pos"), &VideoPlayer::get_stream_pos);
+	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoPlayer::set_stream_position);
+	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoPlayer::get_stream_position);
 
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enabled"), &VideoPlayer::set_autoplay);
 	ClassDB::bind_method(D_METHOD("has_autoplay"), &VideoPlayer::has_autoplay);
@@ -380,7 +345,7 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffering_msec", "msec"), &VideoPlayer::set_buffering_msec);
 	ClassDB::bind_method(D_METHOD("get_buffering_msec"), &VideoPlayer::get_buffering_msec);
 
-	ClassDB::bind_method(D_METHOD("get_video_texture:Texture"), &VideoPlayer::get_video_texture);
+	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoPlayer::get_video_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
@@ -398,7 +363,6 @@ VideoPlayer::VideoPlayer() {
 	paused = false;
 	autoplay = false;
 	expand = true;
-	loops = false;
 
 	audio_track = 0;
 

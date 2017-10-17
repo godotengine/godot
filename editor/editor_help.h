@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,14 +49,13 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	GDCLASS(EditorHelpSearch, ConfirmationDialog)
 
-	EditorNode *editor;
 	LineEdit *search_box;
 	Tree *search_options;
 	String base_type;
 
 	void _update_search();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
@@ -80,7 +80,7 @@ class EditorHelpIndex : public ConfirmationDialog {
 
 	void _tree_item_selected();
 	void _text_changed(const String &p_text);
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _update_class_list();
 
@@ -118,12 +118,13 @@ class EditorHelp : public VBoxContainer {
 
 	String edited_class;
 
-	EditorNode *editor;
+	Vector<Pair<String, int> > section_line;
 	Map<String, int> method_line;
 	Map<String, int> signal_line;
 	Map<String, int> property_line;
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
+	Map<String, int> enum_line;
 	int description_line;
 
 	RichTextLabel *class_desc;
@@ -137,16 +138,15 @@ class EditorHelp : public VBoxContainer {
 
 	void _help_callback(const String &p_topic);
 
-	void _add_text(const String &p_text);
+	void _add_text(const String &p_bbcode);
 	bool scroll_locked;
 
 	//void _button_pressed(int p_idx);
-	void _add_type(const String &p_type);
+	void _add_type(const String &p_type, const String &p_enum = String());
 
-	void _scroll_changed(double p_scroll);
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
-	void _class_desc_input(const InputEvent &p_input);
+	void _class_desc_input(const Ref<InputEvent> &p_input);
 
 	Error _goto_desc(const String &p_class, int p_vscr = -1);
 	//void _update_history_buttons();
@@ -156,7 +156,7 @@ class EditorHelp : public VBoxContainer {
 	void _search(const String &p_str);
 	void _search_cbk();
 
-	void _unhandled_key_input(const InputEvent &p_ev);
+	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
 protected:
 	void _notification(int p_what);
@@ -168,6 +168,9 @@ public:
 
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);
+
+	Vector<Pair<String, int> > get_sections();
+	void scroll_to_section(int p_section_index);
 
 	void popup_search();
 	void search_again();
@@ -189,7 +192,7 @@ class EditorHelpBit : public Panel {
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
-	void _meta_clicked(String p_what);
+	void _meta_clicked(String p_select);
 
 protected:
 	static void _bind_methods();

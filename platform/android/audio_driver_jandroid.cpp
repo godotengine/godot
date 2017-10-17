@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +29,8 @@
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
 
-#include "global_config.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "thread_jandroid.h"
 
 #ifndef ANDROID_NATIVE_ACTIVITY
@@ -79,8 +80,7 @@ Error AudioDriverAndroid::init() {
 	int mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
-	latency = 50;
-	unsigned int buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
+	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("audio buffer size: " + itos(buffer_size));
 	}

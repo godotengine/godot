@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +57,17 @@ class ScriptTextEditor : public ScriptEditorBase {
 	int color_line;
 	String color_args;
 
+	struct ColorsCache {
+		Color symbol_color;
+		Color keyword_color;
+		Color basetype_color;
+		Color type_color;
+		Color comment_color;
+		Color string_color;
+	} colors_cache;
+
+	bool theme_loaded;
+
 	enum {
 		EDIT_UNDO,
 		EDIT_REDO,
@@ -66,13 +78,19 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_CONVERT_INDENT_TO_SPACES,
+		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
 		EDIT_INDENT_RIGHT,
 		EDIT_INDENT_LEFT,
+		EDIT_DELETE_LINE,
 		EDIT_CLONE_DOWN,
 		EDIT_PICK_COLOR,
+		EDIT_TO_UPPERCASE,
+		EDIT_TO_LOWERCASE,
+		EDIT_CAPITALIZE,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -87,24 +105,32 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 protected:
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options);
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force);
 	void _breakpoint_toggled(int p_row);
 
 	//no longer virtual
 	void _validate_script();
-	void _code_complete_script(const String &p_code, List<String> *r_options);
+	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
+	void _set_theme_for_script();
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_color);
-	void _text_edit_gui_input(const InputEvent &ev);
+	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+
+	enum CaseStyle {
+		UPPER,
+		LOWER,
+		CAPITALIZE,
+	};
+	void _convert_case(CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -124,6 +150,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void ensure_focus();
 	virtual void trim_trailing_whitespace();
+	virtual void convert_indent_to_spaces();
+	virtual void convert_indent_to_tabs();
 	virtual void tag_saved_version();
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
@@ -133,14 +161,15 @@ public:
 
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
-	virtual bool goto_method(const String &p_method);
+
+	virtual bool show_members_overview();
 
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 
 	virtual void set_debugger_active(bool p_active);
 
 	Control *get_edit_menu();
-
+	virtual void clear_edit_menu();
 	static void register_editor();
 
 	ScriptTextEditor();

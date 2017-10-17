@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Theme" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Theme for controls.
+	</brief_description>
+	<description>
+		Theme for skinning controls. Controls can be skinned individually, but for complex applications it's more efficient to just create a global theme that defines everything. This theme can be applied to any [Control], and it and its children will automatically use it.
+		Theme resources can be alternatively loaded by writing them in a .theme file, see docs for more info.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_stylebox">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="copy_default_theme">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_color_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_constant" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_constant_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_default_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_font_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_icon_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stylebox" qualifiers="const">
+			<return type="StyleBox">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stylebox_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stylebox_types" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_type_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_constant" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_font" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_icon" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_stylebox" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="constant" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_default_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="font" type="Font">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stylebox">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="type" type="String">
+			</argument>
+			<argument index="2" name="texture" type="StyleBox">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

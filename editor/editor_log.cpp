@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +31,13 @@
 
 #include "editor_node.h"
 #include "scene/gui/center_container.h"
+#include "scene/resources/dynamic_font.h"
 #include "version.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 
 	EditorLog *self = (EditorLog *)p_self;
-	if (self->current != Thread::get_caller_ID())
+	if (self->current != Thread::get_caller_id())
 		return;
 
 	String err_str;
@@ -50,32 +52,6 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		self->emit_signal("show_request");
 	*/
 
-	err_str = " " + err_str;
-	self->log->add_newline();
-
-	Ref<Texture> icon;
-
-	switch (p_type) {
-		case ERR_HANDLER_ERROR: {
-
-			icon = self->get_icon("Error", "EditorIcons");
-			return; // these are confusing
-		} break;
-		case ERR_HANDLER_WARNING: {
-
-			icon = self->get_icon("Error", "EditorIcons");
-
-		} break;
-		case ERR_HANDLER_SCRIPT: {
-
-			icon = self->get_icon("ScriptError", "EditorIcons");
-		} break;
-		case ERR_HANDLER_SHADER: {
-
-			icon = self->get_icon("Shader", "EditorIcons");
-		} break;
-	}
-
 	self->add_message(err_str, true);
 }
 
@@ -83,8 +59,14 @@ void EditorLog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		log->add_color_override("default_color", get_color("font_color", "Tree"));
 		//button->set_icon(get_icon("Console","EditorIcons"));
+		log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
+		if (df_output_code.is_valid()) {
+			df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+			log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+		}
 	}
 
 	/*if (p_what==NOTIFICATION_DRAW) {
@@ -110,16 +92,18 @@ void EditorLog::clear() {
 
 void EditorLog::add_message(const String &p_msg, bool p_error) {
 
+	log->add_newline();
+
 	if (p_error) {
+		log->push_color(get_color("error_color", "Editor"));
 		Ref<Texture> icon = get_icon("Error", "EditorIcons");
 		log->add_image(icon);
+		log->add_text(" ");
 		//button->set_icon(icon);
-		log->push_color(get_color("fg_error", "Editor"));
 	} else {
 		//button->set_icon(Ref<Texture>());
 	}
 
-	log->add_newline();
 	log->add_text(p_msg);
 	//button->set_text(p_msg);
 
@@ -151,7 +135,6 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
-	ClassDB::bind_method("_override_logger_styles", &EditorLog::_override_logger_styles);
 	//ClassDB::bind_method(D_METHOD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL(MethodInfo("clear_request"));
 }
@@ -164,35 +147,23 @@ EditorLog::EditorLog() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
 	title = memnew(Label);
-	title->set_text(TTR(" Output:"));
+	title->set_text(TTR("Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
-
-	//pd = memnew( PaneDrag );
-	//hb->add_child(pd);
-	//pd->connect("dragged",this,"_dragged");
-	//pd->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->connect("pressed", this, "_clear_request");
 
-	ec = memnew(Control);
-	vb->add_child(ec);
-	ec->set_custom_minimum_size(Size2(0, 180));
-	ec->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	pc = memnew(PanelContainer);
-	ec->add_child(pc);
-	pc->set_area_as_parent_rect();
-	pc->connect("tree_entered", this, "_override_logger_styles");
-
 	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
-	pc->add_child(log);
+	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	log->set_v_size_flags(SIZE_EXPAND_FILL);
+	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 
@@ -200,7 +171,7 @@ EditorLog::EditorLog() {
 	eh.userdata = this;
 	add_error_handler(&eh);
 
-	current = Thread::get_caller_ID();
+	current = Thread::get_caller_id();
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
@@ -208,11 +179,6 @@ EditorLog::EditorLog() {
 void EditorLog::deinit() {
 
 	remove_error_handler(&eh);
-}
-
-void EditorLog::_override_logger_styles() {
-
-	pc->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 }
 
 EditorLog::~EditorLog() {

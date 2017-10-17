@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,14 +65,14 @@ LineEdit *SpinBox::get_line_edit() {
 	return line_edit;
 }
 
-void SpinBox::_line_edit_input(const InputEvent &p_event) {
+void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpinBox::_range_click_timeout() {
 
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
-		bool up = get_local_mouse_pos().y < (get_size().height / 2);
+		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
 		if (range_click_timer->is_one_shot()) {
@@ -85,17 +86,19 @@ void SpinBox::_range_click_timeout() {
 	}
 }
 
-void SpinBox::_gui_input(const InputEvent &p_event) {
+void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (!is_editable()) {
 		return;
 	}
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed) {
-		const InputEventMouseButton &mb = p_event.mouse_button;
 
-		bool up = mb.y < (get_size().height / 2);
+	Ref<InputEventMouseButton> mb = p_event;
 
-		switch (mb.button_index) {
+	if (mb.is_valid() && mb->is_pressed()) {
+
+		bool up = mb->get_position().y < (get_size().height / 2);
+
+		switch (mb->get_button_index()) {
 
 			case BUTTON_LEFT: {
 
@@ -114,27 +117,29 @@ void SpinBox::_gui_input(const InputEvent &p_event) {
 			} break;
 			case BUTTON_WHEEL_UP: {
 				if (line_edit->has_focus()) {
-					set_value(get_value() + get_step());
+
+					set_value(get_value() + get_step() * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case BUTTON_WHEEL_DOWN: {
 				if (line_edit->has_focus()) {
-					set_value(get_value() - get_step());
+
+					set_value(get_value() - get_step() * mb->get_factor());
 					accept_event();
 				}
 			} break;
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index == 1) {
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1) {
 
 		//set_default_cursor_shape(CURSOR_VSIZE);
-		Vector2 cpos = Vector2(p_event.mouse_button.x, p_event.mouse_button.y);
+		Vector2 cpos = Vector2(mb->get_position().x, mb->get_position().y);
 		drag.mouse_pos = cpos;
 	}
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && !p_event.mouse_button.pressed && p_event.mouse_button.button_index == 1) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == 1) {
 
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
@@ -146,9 +151,12 @@ void SpinBox::_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION && p_event.mouse_button.button_mask & 1) {
+	Ref<InputEventMouseMotion> mm = p_event;
 
-		Vector2 cpos = Vector2(p_event.mouse_motion.x, p_event.mouse_motion.y);
+	if (mm.is_valid() && mm->get_button_mask() & 1) {
+
+		Vector2 cpos = mm->get_position();
+
 		if (drag.enabled) {
 
 			float diff_y = drag.mouse_pos.y - cpos.y;
@@ -184,7 +192,7 @@ void SpinBox::_notification(int p_what) {
 
 		int w = updown->get_width();
 		if (w != last_w) {
-			line_edit->set_margin(MARGIN_RIGHT, w);
+			line_edit->set_margin(MARGIN_RIGHT, -w);
 			last_w = w;
 		}
 
@@ -260,7 +268,7 @@ SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);
 
-	line_edit->set_area_as_parent_rect();
+	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", this, "_text_entered", Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", this, "_line_edit_focus_exit", Vector<Variant>(), CONNECT_DEFERRED);

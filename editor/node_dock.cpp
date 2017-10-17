@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,12 +56,20 @@ void NodeDock::_bind_methods() {
 void NodeDock::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connections_button->set_icon(get_icon("Connect", "EditorIcons"));
+		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
+		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
 	}
 }
 
 NodeDock *NodeDock::singleton = NULL;
+
+void NodeDock::update_lists() {
+
+	connections->update_tree();
+}
 
 void NodeDock::set_node(Node *p_node) {
 

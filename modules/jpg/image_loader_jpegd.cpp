@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +89,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	return OK;
 }
 
-Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
+Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
@@ -101,7 +102,7 @@ Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
 
 	f->close();
 
-	Error err = jpeg_load_image_from_buffer(p_image, w.ptr(), src_image_len);
+	Error err = jpeg_load_image_from_buffer(p_image.ptr(), w.ptr(), src_image_len);
 
 	w = PoolVector<uint8_t>::Write();
 
@@ -114,10 +115,11 @@ void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("jpeg");
 }
 
-static Image _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
+static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 
-	Image img;
-	Error err = jpeg_load_image_from_buffer(&img, p_png, p_size);
+	Ref<Image> img;
+	img.instance();
+	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
 	if (err)
 		ERR_PRINT("Couldn't initialize ImageLoaderJPG with the given resource.");
 

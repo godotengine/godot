@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,8 +51,9 @@ struct Color {
 	bool operator==(const Color &p_color) const { return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a); }
 	bool operator!=(const Color &p_color) const { return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a); }
 
-	uint32_t to_32() const;
-	uint32_t to_ARGB32() const;
+	uint32_t to_rgba32() const;
+	uint32_t to_argb32() const;
+	uint32_t to_abgr32() const;
 	float gray() const;
 	float get_h() const;
 	float get_s() const;
@@ -64,6 +66,23 @@ struct Color {
 	_FORCE_INLINE_ const float &operator[](int idx) const {
 		return components[idx];
 	}
+
+	Color operator+(const Color &p_color) const;
+	void operator+=(const Color &p_color);
+
+	Color operator-() const;
+	Color operator-(const Color &p_color) const;
+	void operator-=(const Color &p_color);
+
+	Color operator*(const Color &p_color) const;
+	Color operator*(const real_t &rvalue) const;
+	void operator*=(const Color &p_color);
+	void operator*=(const real_t &rvalue);
+
+	Color operator/(const Color &p_color) const;
+	Color operator/(const real_t &rvalue) const;
+	void operator/=(const Color &p_color);
+	void operator/=(const real_t &rvalue);
 
 	void invert();
 	void contrast();
@@ -80,6 +99,40 @@ struct Color {
 		res.a += (p_t * (p_b.a - a));
 
 		return res;
+	}
+
+	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
+
+		const float pow2to9 = 512.0f;
+		const float B = 15.0f;
+		//const float Emax = 31.0f;
+		const float N = 9.0f;
+
+		float sharedexp = 65408.000f; //(( pow2to9  - 1.0f)/ pow2to9)*powf( 2.0f, 31.0f - 15.0f);
+
+		float cRed = MAX(0.0f, MIN(sharedexp, r));
+		float cGreen = MAX(0.0f, MIN(sharedexp, g));
+		float cBlue = MAX(0.0f, MIN(sharedexp, b));
+
+		float cMax = MAX(cRed, MAX(cGreen, cBlue));
+
+		// expp = MAX(-B - 1, log2(maxc)) + 1 + B
+
+		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
+
+		float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
+
+		float exps = expp + 1.0f;
+
+		if (0.0 <= sMax && sMax < pow2to9) {
+			exps = expp;
+		}
+
+		float sRed = Math::floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
+		float sGreen = Math::floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
+		float sBlue = Math::floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
+
+		return (uint32_t(Math::fast_ftoi(sRed)) & 0x1FF) | ((uint32_t(Math::fast_ftoi(sGreen)) & 0x1FF) << 9) | ((uint32_t(Math::fast_ftoi(sBlue)) & 0x1FF) << 18) | ((uint32_t(Math::fast_ftoi(exps)) & 0x1F) << 27);
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
@@ -104,6 +157,13 @@ struct Color {
 				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				b < 0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				a);
+	}
+	_FORCE_INLINE_ Color to_srgb() const {
+
+		return Color(
+				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
+				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
+				b < 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
 	}
 
 	static Color hex(uint32_t p_hex);

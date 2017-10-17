@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +34,10 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel_container.h"
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
@@ -43,30 +46,49 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *error_label;
 	Label *path_error_label;
 	LineEdit *parent_name;
+	Button *parent_browse_button;
 	OptionButton *language_menu;
+	OptionButton *template_menu;
 	LineEdit *file_path;
+	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckButton *internal;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	bool path_valid;
 	bool create_new;
+	bool is_browsing_parent;
 	String initial_bp;
-	EditorSettings *editor_settings;
+	bool is_new_script_created;
+	bool is_path_valid;
+	bool has_named_classes;
+	bool can_inherit_from_file;
+	bool is_parent_name_valid;
+	bool is_class_name_valid;
+	bool is_built_in;
+	int current_language;
+	bool re_check_path;
+	String script_template;
+	Vector<String> template_list;
 
 	void _path_changed(const String &p_path = String());
 	void _lang_changed(int l = 0);
 	void _built_in_pressed();
-	bool _validate(const String &p_strin);
+	bool _validate(const String &p_string);
 	void _class_name_changed(const String &p_name);
-	void _browse_path();
+	void _parent_name_changed(const String &p_parent);
+	void _template_changed(int p_template = 0);
+	void _browse_path(bool browse_parent);
 	void _file_selected(const String &p_file);
 	virtual void ok_pressed();
 	void _create_new();
 	void _load_exist();
-	void _update_controls();
+	void _msg_script_valid(bool valid, const String &p_msg = String());
+	void _msg_path_valid(bool valid, const String &p_msg = String());
+	void _update_dialog();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

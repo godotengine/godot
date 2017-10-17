@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Semaphore" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A synchronization Semaphore.
+	</brief_description>
+	<description>
+		A synchronization Semaphore. Element used in multi-threadding. Initialized to zero on creation.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="post">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Lowers the [Semaphore], allowing one more thread in.
+			</description>
+		</method>
+		<method name="wait">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

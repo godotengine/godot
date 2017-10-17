@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +38,7 @@ Size2 ViewportContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Viewport *c = get_child(i)->cast_to<Viewport>();
+		Viewport *c = Object::cast_to<Viewport>(get_child(i));
 		if (!c)
 			continue;
 
@@ -70,7 +71,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -82,7 +83,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 
@@ -97,7 +98,7 @@ void ViewportContainer::_notification(int p_what) {
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Viewport *c = get_child(i)->cast_to<Viewport>();
+			Viewport *c = Object::cast_to<Viewport>(get_child(i));
 			if (!c)
 				continue;
 

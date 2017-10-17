@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InterpolatedCamera" inherits="Camera" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_target_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_interpolation_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_interpolation_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="target_path" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="speed" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_target">
+			<return type="void">
+			</return>
+			<argument index="0" name="target" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_target_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="target_path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_interpolation_enabled" getter="is_interpolation_enabled">
+		</member>
+		<member name="speed" type="float" setter="set_speed" getter="get_speed">
+		</member>
+		<member name="target" type="NodePath" setter="set_target_path" getter="get_target_path">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

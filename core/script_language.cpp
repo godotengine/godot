@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +54,11 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
 	ClassDB::bind_method(D_METHOD("reload", "keep_state"), &Script::reload, DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
+
+	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+	ClassDB::bind_method(D_METHOD("get_node_type"), &Script::get_node_type);
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
@@ -63,11 +69,6 @@ void ScriptServer::set_scripting_enabled(bool p_enabled) {
 bool ScriptServer::is_scripting_enabled() {
 
 	return scripting_enabled;
-}
-
-int ScriptServer::get_language_count() {
-
-	return _language_count;
 }
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
@@ -100,6 +101,13 @@ void ScriptServer::init_languages() {
 
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->init();
+	}
+}
+
+void ScriptServer::finish_languages() {
+
+	for (int i = 0; i < _language_count; i++) {
+		_languages[i]->finish();
 	}
 }
 
@@ -176,7 +184,6 @@ void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DEC
 		argc++;
 	}
 
-	Variant::CallError error;
 	call_multilevel(p_method, argptr, argc);
 }
 
@@ -277,8 +284,23 @@ ScriptDebugger::ScriptDebugger() {
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	if (values.has(p_name)) {
+		Variant defval;
+		if (script->get_property_default_value(p_name, defval)) {
+			if (defval == p_value) {
+				values.erase(p_name);
+				return true;
+			}
+		}
 		values[p_name] = p_value;
 		return true;
+	} else {
+		Variant defval;
+		if (script->get_property_default_value(p_name, defval)) {
+			if (defval != p_value) {
+				values[p_name] = p_value;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -288,12 +310,22 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 		r_ret = values[p_name];
 		return true;
 	}
+
+	Variant defval;
+	if (script->get_property_default_value(p_name, defval)) {
+		r_ret = defval;
+		return true;
+	}
 	return false;
 }
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		PropertyInfo pinfo = E->get();
+		if (!values.has(pinfo.name)) {
+			pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
+		}
 		p_properties->push_back(E->get());
 	}
 }
@@ -333,6 +365,14 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		if (!new_values.has(E->key()))
 			to_remove.push_back(E->key());
+
+		Variant defval;
+		if (script->get_property_default_value(E->key(), defval)) {
+			//remove because it's the same as the default value
+			if (defval == E->get()) {
+				to_remove.push_back(E->key());
+			}
+		}
 	}
 
 	while (to_remove.size()) {
@@ -348,11 +388,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	//change notify
 }
 
-PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) {
-
-	language = p_language;
-	script = p_script;
-	owner = p_owner;
+PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner)
+	: owner(p_owner),
+	  language(p_language),
+	  script(p_script) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {

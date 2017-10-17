@@ -66,6 +66,12 @@
 
 # if defined(OPUS_HAVE_RTCD)
 int opus_select_arch(void);
+
+#define OPUS_ARCH_ARM_V4    (0)
+#define OPUS_ARCH_ARM_EDSP  (1)
+#define OPUS_ARCH_ARM_MEDIA (2)
+#define OPUS_ARCH_ARM_NEON  (3)
+
 # endif
 
 #endif

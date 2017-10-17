@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,6 +168,63 @@ class CommandQueueMT {
 		typename GetSimpleTypeT<P8>::type_t p8;
 
 		virtual void call() { (instance->*method)(p1, p2, p3, p4, p5, p6, p7, p8); }
+	};
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
+	struct Command9 : public CommandBase {
+
+		T *instance;
+		M method;
+		typename GetSimpleTypeT<P1>::type_t p1;
+		typename GetSimpleTypeT<P2>::type_t p2;
+		typename GetSimpleTypeT<P3>::type_t p3;
+		typename GetSimpleTypeT<P4>::type_t p4;
+		typename GetSimpleTypeT<P5>::type_t p5;
+		typename GetSimpleTypeT<P6>::type_t p6;
+		typename GetSimpleTypeT<P7>::type_t p7;
+		typename GetSimpleTypeT<P8>::type_t p8;
+		typename GetSimpleTypeT<P9>::type_t p9;
+
+		virtual void call() { (instance->*method)(p1, p2, p3, p4, p5, p6, p7, p8, p9); }
+	};
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9, class P10>
+	struct Command10 : public CommandBase {
+
+		T *instance;
+		M method;
+		typename GetSimpleTypeT<P1>::type_t p1;
+		typename GetSimpleTypeT<P2>::type_t p2;
+		typename GetSimpleTypeT<P3>::type_t p3;
+		typename GetSimpleTypeT<P4>::type_t p4;
+		typename GetSimpleTypeT<P5>::type_t p5;
+		typename GetSimpleTypeT<P6>::type_t p6;
+		typename GetSimpleTypeT<P7>::type_t p7;
+		typename GetSimpleTypeT<P8>::type_t p8;
+		typename GetSimpleTypeT<P9>::type_t p9;
+		typename GetSimpleTypeT<P10>::type_t p10;
+
+		virtual void call() { (instance->*method)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10); }
+	};
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9, class P10, class P11>
+	struct Command11 : public CommandBase {
+
+		T *instance;
+		M method;
+		typename GetSimpleTypeT<P1>::type_t p1;
+		typename GetSimpleTypeT<P2>::type_t p2;
+		typename GetSimpleTypeT<P3>::type_t p3;
+		typename GetSimpleTypeT<P4>::type_t p4;
+		typename GetSimpleTypeT<P5>::type_t p5;
+		typename GetSimpleTypeT<P6>::type_t p6;
+		typename GetSimpleTypeT<P7>::type_t p7;
+		typename GetSimpleTypeT<P8>::type_t p8;
+		typename GetSimpleTypeT<P9>::type_t p9;
+		typename GetSimpleTypeT<P10>::type_t p10;
+		typename GetSimpleTypeT<P11>::type_t p11;
+
+		virtual void call() { (instance->*method)(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11); }
 	};
 
 	/* comands that return */
@@ -550,12 +608,12 @@ class CommandQueueMT {
 			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + 4) {
 				// no room at the end, wrap down;
 
-				if (read_ptr == 0) // dont want write_ptr to become read_ptr
+				if (read_ptr == 0) // don't want write_ptr to become read_ptr
 					return NULL;
 
 				// if this happens, it's a bug
 				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < sizeof(uint32_t), NULL);
-				// zero means, wrap to begining
+				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
 				*p = 0;
@@ -778,17 +836,89 @@ public:
 
 		if (sync) sync->post();
 	}
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9>
+	void push(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9) {
+
+		Command9<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9> *cmd = allocate_and_lock<Command9<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9> >();
+
+		cmd->instance = p_instance;
+		cmd->method = p_method;
+		cmd->p1 = p1;
+		cmd->p2 = p2;
+		cmd->p3 = p3;
+		cmd->p4 = p4;
+		cmd->p5 = p5;
+		cmd->p6 = p6;
+		cmd->p7 = p7;
+		cmd->p8 = p8;
+		cmd->p9 = p9;
+
+		unlock();
+
+		if (sync) sync->post();
+	}
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9, class P10>
+	void push(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10) {
+
+		Command10<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> *cmd = allocate_and_lock<Command10<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> >();
+
+		cmd->instance = p_instance;
+		cmd->method = p_method;
+		cmd->p1 = p1;
+		cmd->p2 = p2;
+		cmd->p3 = p3;
+		cmd->p4 = p4;
+		cmd->p5 = p5;
+		cmd->p6 = p6;
+		cmd->p7 = p7;
+		cmd->p8 = p8;
+		cmd->p9 = p9;
+		cmd->p10 = p10;
+
+		unlock();
+
+		if (sync) sync->post();
+	}
+
+	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class P9, class P10, class P11>
+	void push(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, P9 p9, P10 p10, P11 p11) {
+
+		Command11<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> *cmd = allocate_and_lock<Command11<T, M, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11> >();
+
+		cmd->instance = p_instance;
+		cmd->method = p_method;
+		cmd->p1 = p1;
+		cmd->p2 = p2;
+		cmd->p3 = p3;
+		cmd->p4 = p4;
+		cmd->p5 = p5;
+		cmd->p6 = p6;
+		cmd->p7 = p7;
+		cmd->p8 = p8;
+		cmd->p9 = p9;
+		cmd->p10 = p10;
+		cmd->p11 = p11;
+
+		unlock();
+
+		if (sync) sync->post();
+	}
+
 	/*** PUSH AND RET COMMANDS ***/
 
 	template <class T, class M, class R>
 	void push_and_ret(T *p_instance, M p_method, R *r_ret) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandRet0<T, M, R> *cmd = allocate_and_lock<CommandRet0<T, M, R> >();
 
 		cmd->instance = p_instance;
 		cmd->method = p_method;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -800,13 +930,15 @@ public:
 	template <class T, class M, class P1, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, R *r_ret) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandRet1<T, M, P1, R> *cmd = allocate_and_lock<CommandRet1<T, M, P1, R> >();
 
 		cmd->instance = p_instance;
 		cmd->method = p_method;
 		cmd->p1 = p1;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -818,6 +950,8 @@ public:
 	template <class T, class M, class P1, class P2, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, R *r_ret) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandRet2<T, M, P1, P2, R> *cmd = allocate_and_lock<CommandRet2<T, M, P1, P2, R> >();
 
 		cmd->instance = p_instance;
@@ -825,7 +959,7 @@ public:
 		cmd->p1 = p1;
 		cmd->p2 = p2;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -837,6 +971,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, R *r_ret) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandRet3<T, M, P1, P2, P3, R> *cmd = allocate_and_lock<CommandRet3<T, M, P1, P2, P3, R> >();
 
 		cmd->instance = p_instance;
@@ -845,7 +981,7 @@ public:
 		cmd->p2 = p2;
 		cmd->p3 = p3;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -857,6 +993,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3, class P4, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, R *r_ret) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandRet4<T, M, P1, P2, P3, P4, R> *cmd = allocate_and_lock<CommandRet4<T, M, P1, P2, P3, P4, R> >();
 
 		cmd->instance = p_instance;
@@ -866,7 +1004,7 @@ public:
 		cmd->p3 = p3;
 		cmd->p4 = p4;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -878,6 +1016,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, R *r_ret) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandRet5<T, M, P1, P2, P3, P4, P5, R> *cmd = allocate_and_lock<CommandRet5<T, M, P1, P2, P3, P4, P5, R> >();
 
 		cmd->instance = p_instance;
@@ -888,7 +1028,7 @@ public:
 		cmd->p4 = p4;
 		cmd->p5 = p5;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -899,6 +1039,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, R *r_ret) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandRet6<T, M, P1, P2, P3, P4, P5, P6, R> *cmd = allocate_and_lock<CommandRet6<T, M, P1, P2, P3, P4, P5, P6, R> >();
 
@@ -911,7 +1053,7 @@ public:
 		cmd->p5 = p5;
 		cmd->p6 = p6;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -922,6 +1064,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, R *r_ret) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandRet7<T, M, P1, P2, P3, P4, P5, P6, P7, R> *cmd = allocate_and_lock<CommandRet7<T, M, P1, P2, P3, P4, P5, P6, P7, R> >();
 
@@ -935,7 +1079,7 @@ public:
 		cmd->p6 = p6;
 		cmd->p7 = p7;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -946,6 +1090,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8, class R>
 	void push_and_ret(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8, R *r_ret) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandRet8<T, M, P1, P2, P3, P4, P5, P6, P7, P8, R> *cmd = allocate_and_lock<CommandRet8<T, M, P1, P2, P3, P4, P5, P6, P7, P8, R> >();
 
@@ -960,7 +1106,7 @@ public:
 		cmd->p7 = p7;
 		cmd->p8 = p8;
 		cmd->ret = r_ret;
-		SyncSemaphore *ss = _alloc_sync_sem();
+
 		cmd->sync = ss;
 
 		unlock();
@@ -972,12 +1118,13 @@ public:
 	template <class T, class M>
 	void push_and_sync(T *p_instance, M p_method) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync0<T, M> *cmd = allocate_and_lock<CommandSync0<T, M> >();
 
 		cmd->instance = p_instance;
 		cmd->method = p_method;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -989,13 +1136,14 @@ public:
 	template <class T, class M, class P1>
 	void push_and_sync(T *p_instance, M p_method, P1 p1) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync1<T, M, P1> *cmd = allocate_and_lock<CommandSync1<T, M, P1> >();
 
 		cmd->instance = p_instance;
 		cmd->method = p_method;
 		cmd->p1 = p1;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1007,6 +1155,8 @@ public:
 	template <class T, class M, class P1, class P2>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync2<T, M, P1, P2> *cmd = allocate_and_lock<CommandSync2<T, M, P1, P2> >();
 
 		cmd->instance = p_instance;
@@ -1014,7 +1164,6 @@ public:
 		cmd->p1 = p1;
 		cmd->p2 = p2;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1026,6 +1175,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync3<T, M, P1, P2, P3> *cmd = allocate_and_lock<CommandSync3<T, M, P1, P2, P3> >();
 
 		cmd->instance = p_instance;
@@ -1034,7 +1185,6 @@ public:
 		cmd->p2 = p2;
 		cmd->p3 = p3;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1046,6 +1196,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3, class P4>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync4<T, M, P1, P2, P3, P4> *cmd = allocate_and_lock<CommandSync4<T, M, P1, P2, P3, P4> >();
 
 		cmd->instance = p_instance;
@@ -1055,7 +1207,6 @@ public:
 		cmd->p3 = p3;
 		cmd->p4 = p4;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1067,6 +1218,8 @@ public:
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) {
 
+		SyncSemaphore *ss = _alloc_sync_sem();
+
 		CommandSync5<T, M, P1, P2, P3, P4, P5> *cmd = allocate_and_lock<CommandSync5<T, M, P1, P2, P3, P4, P5> >();
 
 		cmd->instance = p_instance;
@@ -1077,7 +1230,6 @@ public:
 		cmd->p4 = p4;
 		cmd->p5 = p5;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1088,6 +1240,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandSync6<T, M, P1, P2, P3, P4, P5, P6> *cmd = allocate_and_lock<CommandSync6<T, M, P1, P2, P3, P4, P5, P6> >();
 
@@ -1100,7 +1254,6 @@ public:
 		cmd->p5 = p5;
 		cmd->p6 = p6;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1111,6 +1264,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandSync7<T, M, P1, P2, P3, P4, P5, P6, P7> *cmd = allocate_and_lock<CommandSync7<T, M, P1, P2, P3, P4, P5, P6, P7> >();
 
@@ -1124,7 +1279,6 @@ public:
 		cmd->p6 = p6;
 		cmd->p7 = p7;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();
@@ -1135,6 +1289,8 @@ public:
 
 	template <class T, class M, class P1, class P2, class P3, class P4, class P5, class P6, class P7, class P8>
 	void push_and_sync(T *p_instance, M p_method, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5, P6 p6, P7 p7, P8 p8) {
+
+		SyncSemaphore *ss = _alloc_sync_sem();
 
 		CommandSync8<T, M, P1, P2, P3, P4, P5, P6, P7, P8> *cmd = allocate_and_lock<CommandSync8<T, M, P1, P2, P3, P4, P5, P6, P7, P8> >();
 
@@ -1149,7 +1305,6 @@ public:
 		cmd->p7 = p7;
 		cmd->p8 = p8;
 
-		SyncSemaphore *ss = _alloc_sync_sem();
 		cmd->sync = ss;
 
 		unlock();

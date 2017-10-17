@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +37,8 @@ class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);
 
 protected:
+	bool blocking;
+
 	static PacketPeerUDP *(*_create)();
 	static void _bind_methods();
 
@@ -44,7 +47,9 @@ protected:
 	Error _set_dest_address(const String &p_address, int p_port);
 
 public:
-	virtual Error listen(int p_port, IP_Address p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536) = 0;
+	void set_blocking_mode(bool p_enable);
+
+	virtual Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536) = 0;
 	virtual void close() = 0;
 	virtual Error wait() = 0;
 	virtual bool is_listening() const = 0;

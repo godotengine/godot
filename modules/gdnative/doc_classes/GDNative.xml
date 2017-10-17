@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDNative" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="call_native">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="procedure_name" type="String">
+			</argument>
+			<argument index="1" name="arguments" type="String">
+			</argument>
+			<argument index="2" name="arg2" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_library">
+			<return type="GDNativeLibrary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_library">
+			<return type="void">
+			</return>
+			<argument index="0" name="library" type="GDNativeLibrary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="terminate">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

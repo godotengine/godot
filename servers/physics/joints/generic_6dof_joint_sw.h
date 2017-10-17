@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -237,7 +238,7 @@ protected:
 	Vector3 m_calculatedAxisAngleDiff;
 	Vector3 m_calculatedAxis[3];
 
-	Vector3 m_AnchorPos; // point betwen pivots of bodies A and B to solve linear axes
+	Vector3 m_AnchorPos; // point between pivots of bodies A and B to solve linear axes
 
 	bool m_useLinearReferenceFrameA;
 
@@ -263,8 +264,8 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
 
-	virtual bool setup(real_t p_step);
-	virtual void solve(real_t p_step);
+	virtual bool setup(real_t p_timestep);
+	virtual void solve(real_t p_timestep);
 
 	//! Calcs global transform of the offsets
 	/*!

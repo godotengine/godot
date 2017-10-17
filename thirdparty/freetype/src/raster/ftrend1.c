@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph rasterizer interface (body).                      */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,12 +31,7 @@
   static FT_Error
   ft_raster1_init( FT_Renderer  render )
   {
-    FT_Library  library = FT_MODULE_LIBRARY( render );
-
-
-    render->clazz->raster_class->raster_reset( render->raster,
-                                               library->raster_pool,
-                                               library->raster_pool_size );
+    render->clazz->raster_class->raster_reset( render->raster, NULL, 0 );
 
     return FT_Err_Ok;
   }
@@ -88,7 +83,7 @@
                        FT_GlyphSlot  slot,
                        FT_BBox*      cbox )
   {
-    FT_MEM_ZERO( cbox, sizeof ( *cbox ) );
+    FT_ZERO( cbox );
 
     if ( slot->format == render->glyph_format )
       FT_Outline_Get_CBox( &slot->outline, cbox );
@@ -194,7 +189,7 @@
     bitmap->rows  = height;
     bitmap->pitch = (int)pitch;
 
-    if ( FT_ALLOC_MULT( bitmap->buffer, pitch, height ) )
+    if ( FT_ALLOC_MULT( bitmap->buffer, height, pitch ) )
       goto Exit;
 
     slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
@@ -224,7 +219,8 @@
   }
 
 
-  FT_DEFINE_RENDERER( ft_raster1_renderer_class,
+  FT_DEFINE_RENDERER(
+    ft_raster1_renderer_class,
 
       FT_MODULE_RENDERER,
       sizeof ( FT_RendererRec ),
@@ -233,21 +229,20 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module specific interface */
+      NULL,    /* module specific interface */
 
-      (FT_Module_Constructor)ft_raster1_init,
-      (FT_Module_Destructor) 0,
-      (FT_Module_Requester)  0
-    ,
+      (FT_Module_Constructor)ft_raster1_init,  /* module_init   */
+      (FT_Module_Destructor) NULL,             /* module_done   */
+      (FT_Module_Requester)  NULL,             /* get_interface */
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Renderer_RenderFunc)   ft_raster1_render,
-    (FT_Renderer_TransformFunc)ft_raster1_transform,
-    (FT_Renderer_GetCBoxFunc)  ft_raster1_get_cbox,
-    (FT_Renderer_SetModeFunc)  ft_raster1_set_mode,
+    (FT_Renderer_RenderFunc)   ft_raster1_render,     /* render_glyph    */
+    (FT_Renderer_TransformFunc)ft_raster1_transform,  /* transform_glyph */
+    (FT_Renderer_GetCBoxFunc)  ft_raster1_get_cbox,   /* get_glyph_cbox  */
+    (FT_Renderer_SetModeFunc)  ft_raster1_set_mode,   /* set_mode        */
 
-    (FT_Raster_Funcs*)    &FT_STANDARD_RASTER_GET
+    (FT_Raster_Funcs*)&FT_STANDARD_RASTER_GET         /* raster_class    */
   )
 
 

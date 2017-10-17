@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +30,12 @@
 #ifndef RESOURCE_SAVER_PNG_H
 #define RESOURCE_SAVER_PNG_H
 
+#include "image.h"
 #include "io/resource_saver.h"
 
 class ResourceSaverPNG : public ResourceFormatSaver {
 public:
-	static Error save_image(const String &p_path, Image &p_img);
+	static Error save_image(const String &p_path, const Ref<Image> &p_img);
 
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	virtual bool recognize(const RES &p_resource) const;

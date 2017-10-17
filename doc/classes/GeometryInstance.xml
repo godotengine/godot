@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GeometryInstance" inherits="VisualInstance" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base node for geometry based visual instances.
+	</brief_description>
+	<description>
+		Base node for geometry based visual instances. Shares some common functionality like visibility and custom materials.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_cast_shadows_setting" qualifiers="const">
+			<return type="int" enum="GeometryInstance.ShadowCastingSetting">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_extra_cull_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_lod_max_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lod_max_hysteresis" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lod_min_distance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lod_min_hysteresis" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_material_override" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+				Return the material override for the whole geometry.
+			</description>
+		</method>
+		<method name="set_cast_shadows_setting">
+			<return type="void">
+			</return>
+			<argument index="0" name="shadow_casting_setting" type="int" enum="GeometryInstance.ShadowCastingSetting">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_extra_cull_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lod_max_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lod_max_hysteresis">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lod_min_distance">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lod_min_hysteresis">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_material_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+				Set the material override for the whole geometry.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance.ShadowCastingSetting">
+		</member>
+		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin">
+		</member>
+		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance">
+		</member>
+		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis">
+		</member>
+		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance">
+		</member>
+		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis">
+		</member>
+		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
+		</member>
+		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag">
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
+		</constant>
+		<constant name="FLAG_USE_BAKED_LIGHT" value="0">
+		</constant>
+		<constant name="FLAG_MAX" value="1">
+		</constant>
+	</constants>
+</class>

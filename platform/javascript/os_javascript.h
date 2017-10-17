@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,26 +45,11 @@
 
 #include <emscripten/html5.h>
 
-typedef void (*GFXInitFunc)(void *ud, bool gl2, int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
 
 class OS_JavaScript : public OS_Unix {
-public:
-	struct TouchPos {
-		int id;
-		Point2 pos;
-	};
 
-private:
-	Vector<TouchPos> touch;
-	Point2 last_mouse;
-	int last_button_mask;
-	unsigned int last_id;
-	GFXInitFunc gfx_init_func;
-	void *gfx_init_ud;
-
-	bool use_gl2;
-
+	bool idbfs_available;
 	int64_t time_to_save_sync;
 	int64_t last_sync_time;
 
@@ -74,8 +60,12 @@ private:
 	const char *gl_extensions;
 
 	InputDefault *input;
+	Vector2 windowed_size;
 	bool window_maximized;
+	bool soft_fs_enabled;
+	bool canvas_size_adjustment_requested;
 	VideoMode video_mode;
+	CursorShape cursor_shape;
 	MainLoop *main_loop;
 
 	GetDataDirFunc get_data_dir_func;
@@ -90,6 +80,9 @@ private:
 
 	void process_joypads();
 
+	void set_css_cursor(const char *);
+	const char *get_css_cursor() const;
+
 public:
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const;
@@ -100,6 +93,7 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -112,17 +106,11 @@ public:
 
 	//static OS* get_singleton();
 
-	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
-		OS::print_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
-	}
-
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
-	virtual void set_mouse_show(bool p_show);
-	virtual void set_mouse_grab(bool p_grab);
-	virtual bool is_mouse_grab_enabled() const;
-	virtual Point2 get_mouse_pos() const;
+	virtual void set_mouse_mode(MouseMode p_mode);
+	virtual MouseMode get_mouse_mode() const;
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
@@ -133,7 +121,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
-	virtual Size2 get_screen_size(int p_screen = 0) const;
+	virtual Size2 get_screen_size(int p_screen = -1) const;
 
 	virtual void set_window_size(const Size2);
 	virtual Size2 get_window_size() const;
@@ -142,10 +130,14 @@ public:
 	virtual void set_window_fullscreen(bool p_enable);
 	virtual bool is_window_fullscreen() const;
 
+	void request_canvas_size_adjustment();
+
 	virtual String get_name();
 	virtual MainLoop *get_main_loop() const;
 
 	virtual bool can_draw() const;
+
+	virtual bool is_userfs_persistent() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 
@@ -166,18 +158,21 @@ public:
 	virtual String get_resource_dir() const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
-	void push_input(const InputEvent &p_ev);
+	void push_input(const Ref<InputEvent> &p_ev);
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 	bool joy_connection_changed(int p_type, const EmscriptenGamepadEvent *p_event);
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	OS_JavaScript(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func);
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void set_idbfs_available(bool p_idbfs_available);
+
+	OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 };
 

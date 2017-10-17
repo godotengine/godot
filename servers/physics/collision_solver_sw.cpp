@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,7 +166,7 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform 
 		smin *= axis_scale;
 		smax *= axis_scale;
 
-		local_aabb.pos[i] = smin;
+		local_aabb.position[i] = smin;
 		local_aabb.size[i] = smax - smin;
 	}
 
@@ -270,7 +271,7 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A, const Tra
 
 	bool collided = false;
 	Vector3 closest;
-	real_t closest_d;
+	real_t closest_d = 0;
 
 	for (int i = 0; i < support_count; i++) {
 
@@ -331,7 +332,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		Rect3 cc_hint_aabb;
 		if (use_cc_hint) {
 			cc_hint_aabb = p_concave_hint;
-			cc_hint_aabb.pos -= p_transform_B.origin;
+			cc_hint_aabb.position -= p_transform_B.origin;
 		}
 
 		Rect3 local_aabb;
@@ -352,7 +353,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 			smin *= axis_scale;
 			smax *= axis_scale;
 
-			local_aabb.pos[i] = smin;
+			local_aabb.position[i] = smin;
 			local_aabb.size[i] = smax - smin;
 		}
 

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    AFM parser (body).                                                   */
 /*                                                                         */
-/*  Copyright 2006-2016 by                                                 */
+/*  Copyright 2006-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -19,6 +19,8 @@
 #include FT_FREETYPE_H
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
+
+#ifndef T1_CONFIG_OPTION_NO_AFM
 
 #include "afmparse.h"
 #include "psconv.h"
@@ -972,6 +974,13 @@
 
     return error;
   }
+
+#else /* T1_CONFIG_OPTION_NO_AFM */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _afm_parse_dummy;
+
+#endif /* T1_CONFIG_OPTION_NO_AFM */
 
 
 /* END */

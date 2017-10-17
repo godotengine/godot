@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WindowDialog" inherits="Popup" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for window dialogs.
+	</brief_description>
+	<description>
+		Windowdialog is the base class for all window-based dialogs. It's a by-default toplevel [Control] that draws a window decoration and allows motion and resizing.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_close_button">
+			<return type="TextureButton">
+			</return>
+			<description>
+				Return the close [TextureButton].
+			</description>
+		</method>
+		<method name="get_resizable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_title" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the title of the window.
+			</description>
+		</method>
+		<method name="set_resizable">
+			<return type="void">
+			</return>
+			<argument index="0" name="resizable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="title" type="String">
+			</argument>
+			<description>
+				Set the title of the window.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable">
+		</member>
+		<member name="window_title" type="String" setter="set_title" getter="get_title">
+		</member>
+	</members>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="close" type="Texture">
+		</theme_item>
+		<theme_item name="close_h_ofs" type="int">
+		</theme_item>
+		<theme_item name="close_highlight" type="Texture">
+		</theme_item>
+		<theme_item name="close_v_ofs" type="int">
+		</theme_item>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="scaleborder_size" type="int">
+		</theme_item>
+		<theme_item name="title_color" type="Color">
+		</theme_item>
+		<theme_item name="title_font" type="Font">
+		</theme_item>
+		<theme_item name="title_height" type="int">
+		</theme_item>
+	</theme_items>
+</class>

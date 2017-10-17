@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +64,6 @@ static size_t _set_sockaddr(struct sockaddr_storage *p_addr, const IP_Address &p
 		// IPv4 socket with IPv6 address
 		ERR_FAIL_COND_V(!p_ip.is_ipv4(), 0);
 
-		uint32_t ipv4 = *((uint32_t *)p_ip.get_ipv4());
 		struct sockaddr_in *addr4 = (struct sockaddr_in *)p_addr;
 		addr4->sin_family = AF_INET;
 		addr4->sin_port = htons(p_port); // short, network byte order
@@ -99,12 +99,20 @@ static size_t _set_listen_sockaddr(struct sockaddr_storage *p_addr, int p_port, 
 	};
 };
 
-static int _socket_create(IP::Type p_type, int type, int protocol) {
+static int _socket_create(IP::Type &p_type, int type, int protocol) {
 
 	ERR_FAIL_COND_V(p_type > IP::TYPE_ANY || p_type < IP::TYPE_NONE, ERR_INVALID_PARAMETER);
 
 	int family = p_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
 	int sockfd = socket(family, type, protocol);
+
+	if (sockfd == -1 && p_type == IP::TYPE_ANY) {
+		// Careful here, changing the referenced parameter so the caller knows that we are using an IPv4 socket
+		// in place of a dual stack one, and further calls to _set_sock_addr will work as expected.
+		p_type = IP::TYPE_IPV4;
+		family = AF_INET;
+		sockfd = socket(family, type, protocol);
+	}
 
 	ERR_FAIL_COND_V(sockfd == -1, -1);
 

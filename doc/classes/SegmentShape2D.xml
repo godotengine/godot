@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SegmentShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Segment shape for 2D collisions.
+	</brief_description>
+	<description>
+		Segment shape for 2D collisions. Consists of two points, [code]a[/code] and [code]b[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_a" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the first point's position.
+			</description>
+		</method>
+		<method name="get_b" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the second point's position.
+			</description>
+		</method>
+		<method name="set_a">
+			<return type="void">
+			</return>
+			<argument index="0" name="a" type="Vector2">
+			</argument>
+			<description>
+				Set the first point's position.
+			</description>
+		</method>
+		<method name="set_b">
+			<return type="void">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<description>
+				Set the second point's position.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="a" type="Vector2" setter="set_a" getter="get_a">
+			The segment's first point position.
+		</member>
+		<member name="b" type="Vector2" setter="set_b" getter="get_b">
+			The segment's second point position.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

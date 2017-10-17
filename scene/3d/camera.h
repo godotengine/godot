@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +31,7 @@
 #define CAMERA_H
 
 #include "scene/3d/spatial.h"
+#include "scene/3d/spatial_velocity_tracker.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 /**
@@ -49,6 +51,12 @@ public:
 	enum KeepAspect {
 		KEEP_WIDTH,
 		KEEP_HEIGHT
+	};
+
+	enum DopplerTracking {
+		DOPPLER_TRACKING_DISABLED,
+		DOPPLER_TRACKING_IDLE_STEP,
+		DOPPLER_TRACKING_PHYSICS_STEP
 	};
 
 private:
@@ -78,6 +86,9 @@ private:
 	//void _camera_make_current(Node *p_camera);
 	friend class Viewport;
 	void _update_audio_listener_state();
+
+	DopplerTracking doppler_tracking;
+	Ref<SpatialVelocityTracker> velocity_tracker;
 
 protected:
 	void _update_camera();
@@ -115,17 +126,17 @@ public:
 
 	virtual Transform get_camera_transform() const;
 
-	Vector3 project_ray_normal(const Point2 &p_point) const;
-	Vector3 project_ray_origin(const Point2 &p_point) const;
-	Vector3 project_local_ray_normal(const Point2 &p_point) const;
-	Point2 unproject_position(const Vector3 &p_pos) const;
+	Vector3 project_ray_normal(const Point2 &p_pos) const;
+	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
+	Vector3 project_local_ray_normal(const Point2 &p_pos) const;
+	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
-	Vector3 project_position(const Point2 &p_point) const;
+	virtual Vector3 project_position(const Point2 &p_point) const;
 
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
-	Vector<Plane> get_frustum() const;
+	virtual Vector<Plane> get_frustum() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
@@ -139,11 +150,17 @@ public:
 	void set_h_offset(float p_offset);
 	float get_h_offset() const;
 
+	void set_doppler_tracking(DopplerTracking p_tracking);
+	DopplerTracking get_doppler_tracking() const;
+
+	Vector3 get_doppler_tracked_velocity() const;
+
 	Camera();
 	~Camera();
 };
 
 VARIANT_ENUM_CAST(Camera::Projection);
 VARIANT_ENUM_CAST(Camera::KeepAspect);
+VARIANT_ENUM_CAST(Camera::DopplerTracking);
 
 #endif

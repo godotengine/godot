@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RigidBody" inherits="PhysicsBody" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Physics Body whose position is determined through physics simulation in 3D space.
+	</brief_description>
+	<description>
+		This is the node that implements full 3D physics. This means that you do not control a RigidBody directly. Instead you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
+		This node can use custom force integration, for writing complex physics motion behavior per node.
+		This node can shift state between regular Rigid body, Kinematic, Character or Static.
+		Character mode forbids this node from being rotated.
+		As a warning, don't change RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_integrate_forces" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="state" type="PhysicsDirectBodyState">
+			</argument>
+			<description>
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
+			</description>
+		</method>
+		<method name="apply_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<argument index="1" name="impulse" type="Vector3">
+			</argument>
+			<description>
+				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
+		<method name="get_angular_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body angular damp. Default is -1.
+			</description>
+		</method>
+		<method name="get_angular_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the current body angular velocity.
+			</description>
+		</method>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="int" enum="RigidBody.AxisLock">
+			</return>
+			<description>
+				Return the current axis lock of the body. One of AXIS_LOCK_* enum.
+			</description>
+		</method>
+		<method name="get_bounce" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body bounciness.
+			</description>
+		</method>
+		<method name="get_colliding_bodies" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.
+			</description>
+		</method>
+		<method name="get_friction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body friction, from 0 (frictionless) to 1 (max friction).
+			</description>
+		</method>
+		<method name="get_gravity_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body gravity scale.
+			</description>
+		</method>
+		<method name="get_linear_damp" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body linear damp. Default is -1.
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return the current body linear velocity.
+			</description>
+		</method>
+		<method name="get_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body mass.
+			</description>
+		</method>
+		<method name="get_max_contacts_reported" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="RigidBody.Mode">
+			</return>
+			<description>
+				Return the current body mode, see [method set_mode].
+			</description>
+		</method>
+		<method name="get_weight" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the current body weight, given standard earth-weight (gravity 9.8).
+			</description>
+		</method>
+		<method name="is_able_to_sleep" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body has the ability to fall asleep when not moving. See [method set_can_sleep].
+			</description>
+		</method>
+		<method name="is_contact_monitor_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether contact monitoring is enabled.
+			</description>
+		</method>
+		<method name="is_sleeping" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body is sleeping.
+			</description>
+		</method>
+		<method name="is_using_continuous_collision_detection" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this body is using continuous collision detection.
+			</description>
+		</method>
+		<method name="is_using_custom_integrator">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether the body is using a custom integrator.
+			</description>
+		</method>
+		<method name="set_angular_damp">
+			<return type="void">
+			</return>
+			<argument index="0" name="angular_damp" type="float">
+			</argument>
+			<description>
+				Set the angular damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any angular damp derived from the world or areas will be overridden.
+			</description>
+		</method>
+		<method name="set_angular_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="angular_velocity" type="Vector3">
+			</argument>
+			<description>
+				Set the body angular velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
+			</description>
+		</method>
+		<method name="set_axis_lock">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis_lock" type="int" enum="RigidBody.AxisLock">
+			</argument>
+			<description>
+				Set the axis lock of the body, from the AXIS_LOCK_* enum. Axis lock stops the body from moving along the specified axis(X/Y/Z) and rotating along the other two axes.
+			</description>
+		</method>
+		<method name="set_axis_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis_velocity" type="Vector3">
+			</argument>
+			<description>
+				Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+			</description>
+		</method>
+		<method name="set_bounce">
+			<return type="void">
+			</return>
+			<argument index="0" name="bounce" type="float">
+			</argument>
+			<description>
+				Set the body bounciness, from 0 (no bounciness) to 1 (max bounciness).
+			</description>
+		</method>
+		<method name="set_can_sleep">
+			<return type="void">
+			</return>
+			<argument index="0" name="able_to_sleep" type="bool">
+			</argument>
+			<description>
+				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
+			</description>
+		</method>
+		<method name="set_contact_monitor">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Enable contact monitoring. This allows the body to emit signals when it collides with another.
+			</description>
+		</method>
+		<method name="set_friction">
+			<return type="void">
+			</return>
+			<argument index="0" name="friction" type="float">
+			</argument>
+			<description>
+				Set the body friction, from 0 (frictionless) to 1 (max friction).
+			</description>
+		</method>
+		<method name="set_gravity_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="gravity_scale" type="float">
+			</argument>
+			<description>
+				Set the gravity factor. This factor multiplies gravity intensity just for this body.
+			</description>
+		</method>
+		<method name="set_linear_damp">
+			<return type="void">
+			</return>
+			<argument index="0" name="linear_damp" type="float">
+			</argument>
+			<description>
+				Set the linear damp for this body. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
+			</description>
+		</method>
+		<method name="set_linear_velocity">
+			<return type="void">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector3">
+			</argument>
+			<description>
+				Set the body linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
+			</description>
+		</method>
+		<method name="set_mass">
+			<return type="void">
+			</return>
+			<argument index="0" name="mass" type="float">
+			</argument>
+			<description>
+				Set the body mass.
+			</description>
+		</method>
+		<method name="set_max_contacts_reported">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+				Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+			</description>
+		</method>
+		<method name="set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="RigidBody.Mode">
+			</argument>
+			<description>
+				Set the body mode, from the MODE_* enum. This allows to change to a static body or a character body.
+			</description>
+		</method>
+		<method name="set_sleeping">
+			<return type="void">
+			</return>
+			<argument index="0" name="sleeping" type="bool">
+			</argument>
+			<description>
+				Set whether a body is sleeping or not. Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] wakes them up. Until then, they behave like a static body.
+			</description>
+		</method>
+		<method name="set_use_continuous_collision_detection">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the continuous collision detection mode from the enum CCD_MODE_*.
+				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
+			</description>
+		</method>
+		<method name="set_use_custom_integrator">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Pass true to disable the internal force integration (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+			</description>
+		</method>
+		<method name="set_weight">
+			<return type="void">
+			</return>
+			<argument index="0" name="weight" type="float">
+			</argument>
+			<description>
+				Set the body weight given standard earth-weight (gravity 9.8).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
+			Damps RigidBody's rotational forces.
+		</member>
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
+			RigidBody's rotational velocity.
+		</member>
+		<member name="axis_lock" type="int" setter="set_axis_lock" getter="get_axis_lock" enum="RigidBody.AxisLock">
+			Locks the rotational forces to a particular axis, preventing rotations on other axes.
+		</member>
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+			RigidBody's bounciness.
+		</member>
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
+			If [code]true[/code] the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
+		</member>
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
+			If true, the RigidBody will emit signals when it collides with another RigidBody.
+		</member>
+		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
+			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+		</member>
+		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection">
+			If [code]true[/code] continuous collision detection is used.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+		</member>
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
+			If [code]true[/code] internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+		</member>
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+			The body friction, from 0 (frictionless) to 1 (max friction).
+		</member>
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
+			This is multiplied by the global 3D gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 3d" to produce RigidBody's gravity. E.g. a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+		</member>
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
+			RigidBody's linear damp. Default value: -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
+		</member>
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
+			RigidBody's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass">
+			RigidBody's mass.
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode">
+			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
+		</member>
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
+			If [code]true[/code] RigidBody is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
+		</member>
+		<member name="weight" type="float" setter="set_weight" getter="get_weight">
+			RigidBody's weight based on its mass and the global 3D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 3d".
+		</member>
+	</members>
+	<signals>
+		<signal name="body_entered">
+			<argument index="0" name="body" type="Object">
+			</argument>
+			<description>
+				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			</description>
+		</signal>
+		<signal name="body_exited">
+			<argument index="0" name="body" type="Object">
+			</argument>
+			<description>
+				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+			</description>
+		</signal>
+		<signal name="body_shape_entered">
+			<argument index="0" name="body_id" type="int">
+			</argument>
+			<argument index="1" name="body" type="Object">
+			</argument>
+			<argument index="2" name="body_shape" type="int">
+			</argument>
+			<argument index="3" name="local_shape" type="int">
+			</argument>
+			<description>
+				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
+			</description>
+		</signal>
+		<signal name="body_shape_exited">
+			<argument index="0" name="body_id" type="int">
+			</argument>
+			<argument index="1" name="body" type="Object">
+			</argument>
+			<argument index="2" name="body_shape" type="int">
+			</argument>
+			<argument index="3" name="local_shape" type="int">
+			</argument>
+			<description>
+				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+			</description>
+		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
+				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MODE_STATIC" value="1">
+			Static mode. The body behaves like a [StaticBody], and can only move by user code.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="3">
+			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
+		</constant>
+		<constant name="MODE_RIGID" value="0">
+			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+		</constant>
+		<constant name="MODE_CHARACTER" value="2">
+			Character body. This behaves like a rigid body, but can not rotate.
+		</constant>
+		<constant name="AXIS_LOCK_DISABLED" value="0">
+		</constant>
+		<constant name="AXIS_LOCK_X" value="1">
+		</constant>
+		<constant name="AXIS_LOCK_Y" value="2">
+		</constant>
+		<constant name="AXIS_LOCK_Z" value="3">
+		</constant>
+	</constants>
+</class>

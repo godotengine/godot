@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceInteractiveLoader" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Interactive Resource Loader.
+	</brief_description>
+	<description>
+		Interactive Resource Loader. This object is returned by ResourceLoader when performing an interactive load. It allows to load with high granularity, so this is mainly useful for displaying load bars/percentages.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_resource">
+			<return type="Resource">
+			</return>
+			<description>
+				Return the loaded resource (only if loaded). Otherwise, returns null.
+			</description>
+		</method>
+		<method name="get_stage" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the load stage. The total amount of stages can be queried with [method get_stage_count]
+			</description>
+		</method>
+		<method name="get_stage_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the total amount of stages (calls to [method poll]) needed to completely load this resource.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Poll the load. If OK is returned, this means poll will have to be called again. If ERR_FILE_EOF is returned, them the load has finished and the resource can be obtained by calling [method get_resource].
+			</description>
+		</method>
+		<method name="wait">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType common tables validation (body).                            */
 /*                                                                         */
-/*  Copyright 2004-2016 by                                                 */
+/*  Copyright 2004-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -68,7 +68,7 @@
 
         OTV_LIMIT_CHECK( GlyphCount * 2 );        /* GlyphArray */
 
-        for ( i = 0; i < GlyphCount; ++i )
+        for ( i = 0; i < GlyphCount; i++ )
         {
           FT_UInt  gid;
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,7 +137,7 @@ Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) 
 
 		const Vector3 &v = p_face.vertex[i];
 
-		if (plane.has_point(v)) //coplanar, dont bother
+		if (plane.has_point(v)) //coplanar, don't bother
 			continue;
 
 		if (plane.is_point_over(v))
@@ -196,20 +197,20 @@ bool Face3::intersects_aabb(const Rect3 &p_aabb) const {
 
 /** TEST FACE AXIS */
 
-#define TEST_AXIS(m_ax)                                       \
-	{                                                         \
-		real_t aabb_min = p_aabb.pos.m_ax;                    \
-		real_t aabb_max = p_aabb.pos.m_ax + p_aabb.size.m_ax; \
-		real_t tri_min, tri_max;                              \
-		for (int i = 0; i < 3; i++) {                         \
-			if (i == 0 || vertex[i].m_ax > tri_max)           \
-				tri_max = vertex[i].m_ax;                     \
-			if (i == 0 || vertex[i].m_ax < tri_min)           \
-				tri_min = vertex[i].m_ax;                     \
-		}                                                     \
-                                                              \
-		if (tri_max < aabb_min || aabb_max < tri_min)         \
-			return false;                                     \
+#define TEST_AXIS(m_ax)                                            \
+	{                                                              \
+		real_t aabb_min = p_aabb.position.m_ax;                    \
+		real_t aabb_max = p_aabb.position.m_ax + p_aabb.size.m_ax; \
+		real_t tri_min, tri_max;                                   \
+		for (int i = 0; i < 3; i++) {                              \
+			if (i == 0 || vertex[i].m_ax > tri_max)                \
+				tri_max = vertex[i].m_ax;                          \
+			if (i == 0 || vertex[i].m_ax < tri_min)                \
+				tri_min = vertex[i].m_ax;                          \
+		}                                                          \
+                                                                   \
+		if (tri_max < aabb_min || aabb_max < tri_min)              \
+			return false;                                          \
 	}
 
 	TEST_AXIS(x);
@@ -271,8 +272,8 @@ void Face3::project_range(const Vector3 &p_normal, const Transform &p_transform,
 
 void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const {
 
-#define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.98
-#define _EDGE_IS_VALID_SUPPORT_TRESHOLD 0.05
+#define _FACE_IS_VALID_SUPPORT_THRESHOLD 0.98
+#define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.05
 
 	if (p_max <= 0)
 		return;
@@ -280,7 +281,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 	Vector3 n = p_transform.basis.xform_inv(p_normal);
 
 	/** TEST FACE AS SUPPORT **/
-	if (get_plane().normal.dot(n) > _FACE_IS_VALID_SUPPORT_TRESHOLD) {
+	if (get_plane().normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		*p_count = MIN(3, p_max);
 
@@ -295,7 +296,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 
@@ -317,7 +318,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform &p_transform, V
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[(i + 1) % 3]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
+		if (dot < _EDGE_IS_VALID_SUPPORT_THRESHOLD) {
 
 			*p_count = MIN(2, p_max);
 

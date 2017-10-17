@@ -365,7 +365,8 @@ static OPUS_INLINE void silk_PLC_conceal(
         }
 
         /* Add prediction to LPC excitation */
-        sLPC_Q14_ptr[ MAX_LPC_ORDER + i ] = silk_ADD_LSHIFT32( sLPC_Q14_ptr[ MAX_LPC_ORDER + i ], LPC_pred_Q10, 4 );
+        sLPC_Q14_ptr[ MAX_LPC_ORDER + i ] = silk_ADD_SAT32( sLPC_Q14_ptr[ MAX_LPC_ORDER + i ],
+                                            silk_LSHIFT_SAT32( LPC_pred_Q10, 4 ));
 
         /* Scale with Gain */
         frame[ i ] = (opus_int16)silk_SAT16( silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( sLPC_Q14_ptr[ MAX_LPC_ORDER + i ], prevGain_Q10[ 1 ] ), 8 ) ) );

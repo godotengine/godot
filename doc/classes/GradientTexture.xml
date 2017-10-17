@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GradientTexture" inherits="Texture" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Gradient filled texture.
+	</brief_description>
+	<description>
+		Uses a [Gradient] to fill the texture data, the gradient will be filled from left to right using colors obtained from the gradient, this means that the texture does not necessarily represent an exact copy of the gradient, but instead an interpolation of samples obtained from the gradient at fixed steps (see [method set_width]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_gradient" qualifiers="const">
+			<return type="Gradient">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_gradient">
+			<return type="void">
+			</return>
+			<argument index="0" name="gradient" type="Gradient">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
+			The [Gradient] that will be used to fill the texture.
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width">
+			The number of color samples that will be obtained from the [Gradient].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

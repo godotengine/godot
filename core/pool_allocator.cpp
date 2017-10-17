@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -231,7 +232,7 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	Entry &entry = entry_array[entry_indices[new_entry_indices_pos]];
 
 	entry.len = p_size;
-	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); //alloc either at begining or end of previous
+	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); //alloc either at beginning or end of previous
 	entry.lock = 0;
 	entry.check = (check_count++) & CHECK_MASK;
 	free_mem -= size_to_alloc;
@@ -338,9 +339,9 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		ERR_FAIL_COND_V(e->lock, ERR_ALREADY_IN_USE);
 	}
 
-	int alloc_size = aligned(p_new_size);
+	uint32_t alloc_size = aligned(p_new_size);
 
-	if (aligned(e->len) == alloc_size) {
+	if ((uint32_t)aligned(e->len) == alloc_size) {
 
 		e->len = p_new_size;
 		mt_unlock();
@@ -373,7 +374,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 	}
 
 	//no need to move stuff around, it fits before the next block
-	int next_pos;
+	uint32_t next_pos;
 	if (entry_indices_pos + 1 == entry_count) {
 		next_pos = pool_size; // - static_area_size;
 	} else {

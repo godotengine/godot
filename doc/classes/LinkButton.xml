@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LinkButton" inherits="BaseButton" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Simple button used to represent a link to some resource
+	</brief_description>
+	<description>
+		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the text of the button.
+			</description>
+		</method>
+		<method name="get_underline_mode" qualifiers="const">
+			<return type="int" enum="LinkButton.UnderlineMode">
+			</return>
+			<description>
+				Returns the underline mode for this button.
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Sets the text of the button.
+			</description>
+		</method>
+		<method name="set_underline_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="underline_mode" type="int" enum="LinkButton.UnderlineMode">
+			</argument>
+			<description>
+				Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+		</member>
+		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode">
+		</member>
+	</members>
+	<constants>
+		<constant name="UNDERLINE_MODE_ALWAYS" value="0">
+			The LinkButton will always show an underline at the bottom of its text
+		</constant>
+		<constant name="UNDERLINE_MODE_ON_HOVER" value="1">
+			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
+		</constant>
+		<constant name="UNDERLINE_MODE_NEVER" value="2">
+			The LinkButton will never show an underline at the bottom of its text.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="underline_spacing" type="int">
+		</theme_item>
+	</theme_items>
+</class>

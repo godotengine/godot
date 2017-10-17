@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 Rémi Verschelde <akien@godotengine.org> -->
+<component type="desktop">
+  <id>godot.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Godot Engine</name>
+  <summary>Multi-platform 2D and 3D game engine with a feature-rich editor</summary>
+  <description>
+    <p>
+      Godot is an advanced, feature-packed, multi-platform 2D and 3D game
+      engine. It provides a huge set of common tools, so you can just focus on
+      making your game without reinventing the wheel.
+    </p>
+    <p>
+      Godot is completely free and open source under the very permissive MIT
+      license. No strings attached, no royalties, nothing. Your game is yours,
+      down to the last line of engine code.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default" width="1330" height="720">
+      <caption>3D project loaded in the Godot Engine editor</caption>
+      <image>https://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://godotengine.org</url>
+  <url type="bugtracker">https://github.com/godotengine/godot/issues</url>
+  <url type="help">http://docs.godotengine.org</url>
+  <url type="donation">https://godotengine.org/donate</url>
+  <url type="translate">https://hosted.weblate.org/projects/godot-engine/godot</url>
+  <developer_name>The Godot Engine Community</developer_name>
+  <update_contact>akien_at_godotengine_dot_org</update_contact>
+</component>

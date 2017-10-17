@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,17 +31,16 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "crash_handler_x11.h"
 #include "drivers/unix/os_unix.h"
 #include "os/input.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
-#include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
@@ -94,7 +94,7 @@ class OS_X11 : public OS_Unix {
 
 	int xdnd_version;
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
 	//Rasterizer *rasterizer;
@@ -112,16 +112,18 @@ class OS_X11 : public OS_Unix {
 	::XIC xic;
 	::XIM xim;
 	::XIMStyle xim_style;
+	static void xim_destroy_callback(::XIM im, ::XPointer client_data,
+			::XPointer call_data);
+
 	Point2i last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
-	unsigned int event_id;
 	uint32_t last_button_state;
 
 	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
-	InputModifierState get_key_modifier_state(unsigned int p_x11_state);
+	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	Physics2DServer *physics_2d_server;
 
 	MouseMode mouse_mode;
@@ -150,10 +152,6 @@ class OS_X11 : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-#ifdef RTAUDIO_ENABLED
-	AudioDriverRtAudio driver_rtaudio;
-#endif
-
 #ifdef ALSA_ENABLED
 	AudioDriverALSA driver_alsa;
 #endif
@@ -161,11 +159,12 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
-	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 
 	PowerX11 *power_manager;
+
+	CrashHandler crash_handler;
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -188,6 +187,7 @@ protected:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
@@ -201,12 +201,12 @@ public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
-	virtual void warp_mouse_pos(const Point2 &p_to);
-	virtual Point2 get_mouse_pos() const;
+	virtual void warp_mouse_position(const Point2 &p_to);
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
-	virtual void set_icon(const Image &p_icon);
+	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual MainLoop *get_main_loop() const;
 
@@ -230,9 +230,9 @@ public:
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
-	virtual Point2 get_screen_position(int p_screen = 0) const;
-	virtual Size2 get_screen_size(int p_screen = 0) const;
-	virtual int get_screen_dpi(int p_screen = 0) const;
+	virtual Point2 get_screen_position(int p_screen = -1) const;
+	virtual Size2 get_screen_size(int p_screen = -1) const;
+	virtual int get_screen_dpi(int p_screen = -1) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
@@ -247,6 +247,10 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void request_attention();
 
+	virtual void set_borderless_window(int p_borderless);
+	virtual bool get_borderless_window();
+	virtual void set_ime_position(const Point2 &p_pos);
+
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
@@ -258,11 +262,18 @@ public:
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
 	void run();
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
+
+	virtual Error move_to_trash(const String &p_path);
 
 	OS_X11();
 };

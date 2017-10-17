@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,13 +89,11 @@ public:
 	struct TypeGuess {
 
 		Variant::Type type;
-		InputEvent::Type ev_type;
-		StringName GDCLASS;
+		StringName gdclass;
 		Ref<Script> script;
 
 		TypeGuess() {
 			type = Variant::NIL;
-			ev_type = InputEvent::NONE;
 		}
 	};
 
@@ -279,8 +278,8 @@ public:
 	void remove_node(const StringName &p_func, int p_id);
 	bool has_node(const StringName &p_func, int p_id) const;
 	Ref<VisualScriptNode> get_node(const StringName &p_func, int p_id) const;
-	void set_node_pos(const StringName &p_func, int p_id, const Point2 &p_pos);
-	Point2 get_node_pos(const StringName &p_func, int p_id) const;
+	void set_node_position(const StringName &p_func, int p_id, const Point2 &p_pos);
+	Point2 get_node_position(const StringName &p_func, int p_id) const;
 	void get_node_list(const StringName &p_func, List<int> *r_nodes) const;
 
 	void sequence_connect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node);
@@ -292,8 +291,8 @@ public:
 	void data_disconnect(const StringName &p_func, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	bool has_data_connection(const StringName &p_func, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const;
 	void get_data_connection_list(const StringName &p_func, List<DataConnection> *r_connection) const;
-	bool is_input_value_port_connected(const StringName &p_name, int p_node, int p_port) const;
-	bool get_input_value_port_connection_source(const StringName &p_name, int p_node, int p_port, int *r_node, int *r_port) const;
+	bool is_input_value_port_connected(const StringName &p_func, int p_node, int p_port) const;
+	bool get_input_value_port_connection_source(const StringName &p_func, int p_node, int p_port, int *r_node, int *r_port) const;
 
 	void add_variable(const StringName &p_name, const Variant &p_default_value = Variant(), bool p_export = false);
 	bool has_variable(const StringName &p_name) const;
@@ -354,6 +353,8 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual int get_member_line(const StringName &p_member) const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
@@ -508,7 +509,7 @@ public:
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
@@ -531,7 +532,7 @@ public:
 
 	_FORCE_INLINE_ void exit_function() {
 
-		if (Thread::get_main_ID() != Thread::get_caller_ID())
+		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
 
 		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && ScriptDebugger::get_singleton()->get_depth() >= 0)
@@ -563,6 +564,8 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
+	virtual bool is_using_templates();
+	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;

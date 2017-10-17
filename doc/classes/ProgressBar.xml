@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ProgressBar" inherits="Range" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		General purpose progress bar.
+	</brief_description>
+	<description>
+		General purpose progress bar. Shows fill percentage from right to left.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_percent_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_percent_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible">
+		</member>
+	</members>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="bg" type="StyleBox">
+		</theme_item>
+		<theme_item name="fg" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_shadow" type="Color">
+		</theme_item>
+	</theme_items>
+</class>

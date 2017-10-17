@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationPolygon" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_outline">
+			<return type="void">
+			</return>
+			<argument index="0" name="outline" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_outline_at_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="outline" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="polygon" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_outlines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_polygons">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_outline" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_outline_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_polygon">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_polygon_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_polygons_from_outlines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="remove_outline">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_outline">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="outline" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertices">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertices" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="outlines" type="Array" setter="_set_outlines" getter="_get_outlines">
+		</member>
+		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
+		</member>
+		<member name="vertices" type="PoolVector2Array" setter="set_vertices" getter="get_vertices">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

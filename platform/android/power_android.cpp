@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/error_macros.h"
+/*
+Adapted from corresponding SDL 2.0 code.
+*/
+
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
 
 #include "power_android.h"
+
+#include "core/error_macros.h"
 
 static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder) {
 	if (refholder->m_env) {
@@ -172,19 +198,19 @@ bool power_android::GetPowerInfo_Android() {
 	if (Android_JNI_GetPowerInfo(&plugged, &charged, &battery, &this->nsecs_left, &this->percent_left) != -1) {
 		if (plugged) {
 			if (charged) {
-				this->power_state = POWERSTATE_CHARGED;
+				this->power_state = OS::POWERSTATE_CHARGED;
 			} else if (battery) {
-				this->power_state = POWERSTATE_CHARGING;
+				this->power_state = OS::POWERSTATE_CHARGING;
 			} else {
-				this->power_state = POWERSTATE_NO_BATTERY;
+				this->power_state = OS::POWERSTATE_NO_BATTERY;
 				this->nsecs_left = -1;
 				this->percent_left = -1;
 			}
 		} else {
-			this->power_state = POWERSTATE_ON_BATTERY;
+			this->power_state = OS::POWERSTATE_ON_BATTERY;
 		}
 	} else {
-		this->power_state = POWERSTATE_UNKNOWN;
+		this->power_state = OS::POWERSTATE_UNKNOWN;
 		this->nsecs_left = -1;
 		this->percent_left = -1;
 	}
@@ -192,12 +218,12 @@ bool power_android::GetPowerInfo_Android() {
 	return true;
 }
 
-PowerState power_android::get_power_state() {
+OS::PowerState power_android::get_power_state() {
 	if (GetPowerInfo_Android()) {
 		return power_state;
 	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 
@@ -220,7 +246,7 @@ int power_android::get_power_percent_left() {
 }
 
 power_android::power_android()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 power_android::~power_android() {

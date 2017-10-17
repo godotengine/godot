@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 42 font parser (body).                                          */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2017 by                                                 */
 /*  Roberto Alameda.                                                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -936,7 +936,7 @@
       if ( *cur == '/' || *cur == '(' )
       {
         FT_UInt  len;
-        FT_Bool  have_literal = ( *cur == '(' );
+        FT_Bool  have_literal = FT_BOOL( *cur == '(' );
 
 
         if ( cur + ( have_literal ? 3 : 2 ) >= limit )
@@ -1268,7 +1268,7 @@
   {
     FT_UNUSED( face );
 
-    FT_MEM_ZERO( loader, sizeof ( *loader ) );
+    FT_ZERO( loader );
     loader->num_glyphs = 0;
     loader->num_chars  = 0;
 

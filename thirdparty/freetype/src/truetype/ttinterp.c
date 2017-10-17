@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType bytecode interpreter (body).                                */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -26,10 +26,14 @@
 #include FT_TRIGONOMETRY_H
 #include FT_SYSTEM_H
 #include FT_TRUETYPE_DRIVER_H
+#include FT_MULTIPLE_MASTERS_H
 
 #include "ttinterp.h"
 #include "tterrors.h"
 #include "ttsubpix.h"
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#include "ttgxvar.h"
+#endif
 
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
@@ -61,11 +65,15 @@
             TT_INTERPRETER_VERSION_40 )
 #endif
 
-#define PROJECT( v1, v2 )                                                \
-          exc->func_project( exc, (v1)->x - (v2)->x, (v1)->y - (v2)->y )
+#define PROJECT( v1, v2 )                                   \
+          exc->func_project( exc,                           \
+                             SUB_LONG( (v1)->x, (v2)->x ),  \
+                             SUB_LONG( (v1)->y, (v2)->y ) )
 
-#define DUALPROJ( v1, v2 )                                                \
-          exc->func_dualproj( exc, (v1)->x - (v2)->x, (v1)->y - (v2)->y )
+#define DUALPROJ( v1, v2 )                                   \
+          exc->func_dualproj( exc,                           \
+                              SUB_LONG( (v1)->x, (v2)->x ),  \
+                              SUB_LONG( (v1)->y, (v2)->y ) )
 
 #define FAST_PROJECT( v )                          \
           exc->func_project( exc, (v)->x, (v)->y )
@@ -125,7 +133,7 @@
 
     coderange = &exec->codeRangeTable[range - 1];
 
-    FT_ASSERT( coderange->base != NULL );
+    FT_ASSERT( coderange->base );
 
     /* NOTE: Because the last instruction of a program may be a CALL */
     /*       which will return to the first byte *after* the code    */
@@ -396,8 +404,9 @@
       exec->maxIDefs   = size->max_instruction_defs;
       exec->FDefs      = size->function_defs;
       exec->IDefs      = size->instruction_defs;
+      exec->pointSize  = size->point_size;
       exec->tt_metrics = size->ttmetrics;
-      exec->metrics    = size->metrics;
+      exec->metrics    = *size->metrics;
 
       exec->maxFunc    = size->max_func;
       exec->maxIns     = size->max_ins;
@@ -418,7 +427,7 @@
 
       /* In case of multi-threading it can happen that the old size object */
       /* no longer exists, thus we must clear all glyph zone references.   */
-      ft_memset( &exec->zp0, 0, sizeof ( exec->zp0 ) );
+      FT_ZERO( &exec->zp0 );
       exec->zp1 = exec->zp0;
       exec->zp2 = exec->zp0;
     }
@@ -681,17 +690,17 @@
 
     /*  IUP[0]    */  PACK( 0, 0 ),
     /*  IUP[1]    */  PACK( 0, 0 ),
-    /*  SHP[0]    */  PACK( 0, 0 ),
-    /*  SHP[1]    */  PACK( 0, 0 ),
+    /*  SHP[0]    */  PACK( 0, 0 ), /* loops */
+    /*  SHP[1]    */  PACK( 0, 0 ), /* loops */
     /*  SHC[0]    */  PACK( 1, 0 ),
     /*  SHC[1]    */  PACK( 1, 0 ),
     /*  SHZ[0]    */  PACK( 1, 0 ),
     /*  SHZ[1]    */  PACK( 1, 0 ),
-    /*  SHPIX     */  PACK( 1, 0 ),
-    /*  IP        */  PACK( 0, 0 ),
+    /*  SHPIX     */  PACK( 1, 0 ), /* loops */
+    /*  IP        */  PACK( 0, 0 ), /* loops */
     /*  MSIRP[0]  */  PACK( 2, 0 ),
     /*  MSIRP[1]  */  PACK( 2, 0 ),
-    /*  AlignRP   */  PACK( 0, 0 ),
+    /*  AlignRP   */  PACK( 0, 0 ), /* loops */
     /*  RTDG      */  PACK( 0, 0 ),
     /*  MIAP[0]   */  PACK( 2, 0 ),
     /*  MIAP[1]   */  PACK( 2, 0 ),
@@ -764,7 +773,7 @@
     /*  SANGW     */  PACK( 1, 0 ),
     /*  AA        */  PACK( 1, 0 ),
 
-    /*  FlipPT    */  PACK( 0, 0 ),
+    /*  FlipPT    */  PACK( 0, 0 ), /* loops */
     /*  FlipRgON  */  PACK( 2, 0 ),
     /*  FlipRgOFF */  PACK( 2, 0 ),
     /*  INS_$83   */  PACK( 0, 0 ),
@@ -782,8 +791,8 @@
     /*  INS_$8F   */  PACK( 0, 0 ),
 
     /*  INS_$90  */   PACK( 0, 0 ),
-    /*  INS_$91  */   PACK( 0, 0 ),
-    /*  INS_$92  */   PACK( 0, 0 ),
+    /*  GETVAR   */   PACK( 0, 0 ), /* will be handled specially */
+    /*  GETDATA  */   PACK( 0, 1 ),
     /*  INS_$93  */   PACK( 0, 0 ),
     /*  INS_$94  */   PACK( 0, 0 ),
     /*  INS_$95  */   PACK( 0, 0 ),
@@ -1065,8 +1074,13 @@
     "7 INS_$8F",
 
     "7 INS_$90",
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    "6 GETVAR",
+    "7 GETDATA",
+#else
     "7 INS_$91",
     "7 INS_$92",
+#endif
     "7 INS_$93",
     "7 INS_$94",
     "7 INS_$95",
@@ -1603,7 +1617,7 @@
 
     range = &exc->codeRangeTable[aRange - 1];
 
-    if ( range->base == NULL )     /* invalid coderange */
+    if ( !range->base )     /* invalid coderange */
     {
       exc->error = FT_THROW( Invalid_CodeRange );
       return FAILURE;
@@ -1646,7 +1660,7 @@
   /*    zone     :: The affected glyph zone.                               */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    See `ttinterp.h' for details on backwards compatibility mode.      */
+  /*    See `ttinterp.h' for details on backward compatibility mode.       */
   /*    `Touches' the point.                                               */
   /*                                                                       */
   static void
@@ -1666,7 +1680,10 @@
       if ( SUBPIXEL_HINTING_INFINALITY                            &&
            ( !exc->ignore_x_mode                                ||
              ( exc->sph_tweak_flags & SPH_TWEAK_ALLOW_X_DMOVE ) ) )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
       else
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
@@ -1674,13 +1691,19 @@
       /* Exception to the post-IUP curfew: Allow the x component of */
       /* diagonal moves, but only post-IUP.  DejaVu tries to adjust */
       /* diagonal stems like on `Z' and `z' post-IUP.               */
-      if ( SUBPIXEL_HINTING_MINIMAL && !exc->backwards_compatibility )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+      if ( SUBPIXEL_HINTING_MINIMAL && !exc->backward_compatibility )
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
       else
 #endif
 
       if ( NO_SUBPIXEL_HINTING )
-        zone->cur[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].x = ADD_LONG( zone->cur[point].x,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
 
       zone->tags[point] |= FT_CURVE_TAG_TOUCH_X;
     }
@@ -1690,12 +1713,15 @@
     if ( v != 0 )
     {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      if ( !( SUBPIXEL_HINTING_MINIMAL     &&
-              exc->backwards_compatibility &&
-              exc->iupx_called             &&
-              exc->iupy_called             ) )
+      if ( !( SUBPIXEL_HINTING_MINIMAL    &&
+              exc->backward_compatibility &&
+              exc->iupx_called            &&
+              exc->iupy_called            ) )
 #endif
-        zone->cur[point].y += FT_MulDiv( distance, v, exc->F_dot_P );
+        zone->cur[point].y = ADD_LONG( zone->cur[point].y,
+                                       FT_MulDiv( distance,
+                                                  v,
+                                                  exc->F_dot_P ) );
 
       zone->tags[point] |= FT_CURVE_TAG_TOUCH_Y;
     }
@@ -1731,12 +1757,18 @@
     v = exc->GS.freeVector.x;
 
     if ( v != 0 )
-      zone->org[point].x += FT_MulDiv( distance, v, exc->F_dot_P );
+      zone->org[point].x = ADD_LONG( zone->org[point].x,
+                                     FT_MulDiv( distance,
+                                                v,
+                                                exc->F_dot_P ) );
 
     v = exc->GS.freeVector.y;
 
     if ( v != 0 )
-      zone->org[point].y += FT_MulDiv( distance, v, exc->F_dot_P );
+      zone->org[point].y = ADD_LONG( zone->org[point].y,
+                                     FT_MulDiv( distance,
+                                                v,
+                                                exc->F_dot_P ) );
   }
 
 
@@ -1746,7 +1778,7 @@
   /*                                                                       */
   /*   The following versions are used whenever both vectors are both      */
   /*   along one of the coordinate unit vectors, i.e. in 90% of the cases. */
-  /*   See `ttinterp.h' for details on backwards compatibility mode.       */
+  /*   See `ttinterp.h' for details on backward compatibility mode.        */
   /*                                                                       */
   /*************************************************************************/
 
@@ -1759,18 +1791,18 @@
   {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     if ( SUBPIXEL_HINTING_INFINALITY && !exc->ignore_x_mode )
-      zone->cur[point].x += distance;
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
     else
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    if ( SUBPIXEL_HINTING_MINIMAL && !exc->backwards_compatibility )
-      zone->cur[point].x += distance;
+    if ( SUBPIXEL_HINTING_MINIMAL && !exc->backward_compatibility )
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
     else
 #endif
 
     if ( NO_SUBPIXEL_HINTING )
-      zone->cur[point].x += distance;
+      zone->cur[point].x = ADD_LONG( zone->cur[point].x, distance );
 
     zone->tags[point]  |= FT_CURVE_TAG_TOUCH_X;
   }
@@ -1786,10 +1818,10 @@
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
     if ( !( SUBPIXEL_HINTING_MINIMAL             &&
-            exc->backwards_compatibility         &&
+            exc->backward_compatibility          &&
             exc->iupx_called && exc->iupy_called ) )
 #endif
-      zone->cur[point].y += distance;
+      zone->cur[point].y = ADD_LONG( zone->cur[point].y, distance );
 
     zone->tags[point] |= FT_CURVE_TAG_TOUCH_Y;
   }
@@ -1813,7 +1845,7 @@
   {
     FT_UNUSED( exc );
 
-    zone->org[point].x += distance;
+    zone->org[point].x = ADD_LONG( zone->org[point].x, distance );
   }
 
 
@@ -1825,7 +1857,7 @@
   {
     FT_UNUSED( exc );
 
-    zone->org[point].y += distance;
+    zone->org[point].y = ADD_LONG( zone->org[point].y, distance );
   }
 
 
@@ -1863,13 +1895,13 @@
 
     if ( distance >= 0 )
     {
-      val = distance + compensation;
+      val = ADD_LONG( distance, compensation );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = distance - compensation;
+      val = SUB_LONG( distance, compensation );
       if ( val > 0 )
         val = 0;
     }
@@ -1905,13 +1937,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_ROUND( distance + compensation );
+      val = FT_PIX_ROUND_LONG( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_ROUND( compensation - distance );
+      val = NEG_LONG( FT_PIX_ROUND_LONG( SUB_LONG( compensation,
+                                                   distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -1948,13 +1981,16 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_FLOOR( distance + compensation ) + 32;
+      val = ADD_LONG( FT_PIX_FLOOR( ADD_LONG( distance, compensation ) ),
+                      32 );
       if ( val < 0 )
         val = 32;
     }
     else
     {
-      val = -( FT_PIX_FLOOR( compensation - distance ) + 32 );
+      val = NEG_LONG( ADD_LONG( FT_PIX_FLOOR( SUB_LONG( compensation,
+                                                        distance ) ),
+                                32 ) );
       if ( val > 0 )
         val = -32;
     }
@@ -1991,13 +2027,13 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_FLOOR( distance + compensation );
+      val = FT_PIX_FLOOR( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_FLOOR( compensation - distance );
+      val = NEG_LONG( FT_PIX_FLOOR( SUB_LONG( compensation, distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2034,13 +2070,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PIX_CEIL( distance + compensation );
+      val = FT_PIX_CEIL_LONG( ADD_LONG( distance, compensation ) );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PIX_CEIL( compensation - distance );
+      val = NEG_LONG( FT_PIX_CEIL_LONG( SUB_LONG( compensation,
+                                                  distance ) ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2077,13 +2114,14 @@
 
     if ( distance >= 0 )
     {
-      val = FT_PAD_ROUND( distance + compensation, 32 );
+      val = FT_PAD_ROUND_LONG( ADD_LONG( distance, compensation ), 32 );
       if ( val < 0 )
         val = 0;
     }
     else
     {
-      val = -FT_PAD_ROUND( compensation - distance, 32 );
+      val = NEG_LONG( FT_PAD_ROUND_LONG( SUB_LONG( compensation, distance ),
+                                         32 ) );
       if ( val > 0 )
         val = 0;
     }
@@ -2124,7 +2162,8 @@
 
     if ( distance >= 0 )
     {
-      val = ( distance - exc->phase + exc->threshold + compensation ) &
+      val = ADD_LONG( distance,
+                      exc->threshold - exc->phase + compensation ) &
               -exc->period;
       val += exc->phase;
       if ( val < 0 )
@@ -2132,8 +2171,9 @@
     }
     else
     {
-      val = -( ( exc->threshold - exc->phase - distance + compensation ) &
-               -exc->period );
+      val = NEG_LONG( SUB_LONG( exc->threshold - exc->phase + compensation,
+                                distance ) &
+                        -exc->period );
       val -= exc->phase;
       if ( val > 0 )
         val = -exc->phase;
@@ -2173,7 +2213,8 @@
 
     if ( distance >= 0 )
     {
-      val = ( ( distance - exc->phase + exc->threshold + compensation ) /
+      val = ( ADD_LONG( distance,
+                        exc->threshold - exc->phase + compensation ) /
                 exc->period ) * exc->period;
       val += exc->phase;
       if ( val < 0 )
@@ -2181,8 +2222,9 @@
     }
     else
     {
-      val = -( ( ( exc->threshold - exc->phase - distance + compensation ) /
-                   exc->period ) * exc->period );
+      val = NEG_LONG( ( SUB_LONG( exc->threshold - exc->phase + compensation,
+                                  distance ) /
+                          exc->period ) * exc->period );
       val -= exc->phase;
       if ( val > 0 )
         val = -exc->phase;
@@ -2574,13 +2616,20 @@
   Ins_MPS( TT_ExecContext  exc,
            FT_Long*        args )
   {
-    /* Note: The point size should be irrelevant in a given font program; */
-    /*       we thus decide to return only the PPEM value.                */
-#if 0
-    args[0] = exc->metrics.pointSize;
-#else
-    args[0] = exc->func_cur_ppem( exc );
-#endif
+    if ( NO_SUBPIXEL_HINTING )
+    {
+      /* Microsoft's GDI bytecode interpreter always returns value 12; */
+      /* we return the current PPEM value instead.                     */
+      args[0] = exc->func_cur_ppem( exc );
+    }
+    else
+    {
+      /* A possible practical application of the MPS instruction is to   */
+      /* implement optical scaling and similar features, which should be */
+      /* based on perceptual attributes, thus independent of the         */
+      /* resolution.                                                     */
+      args[0] = exc->pointSize;
+    }
   }
 
 
@@ -2809,7 +2858,7 @@
   static void
   Ins_ADD( FT_Long*  args )
   {
-    args[0] += args[1];
+    args[0] = ADD_LONG( args[0], args[1] );
   }
 
 
@@ -2822,7 +2871,7 @@
   static void
   Ins_SUB( FT_Long*  args )
   {
-    args[0] -= args[1];
+    args[0] = SUB_LONG( args[0], args[1] );
   }
 
 
@@ -2865,7 +2914,8 @@
   static void
   Ins_ABS( FT_Long*  args )
   {
-    args[0] = FT_ABS( args[0] );
+    if ( args[0] < 0 )
+      args[0] = NEG_LONG( args[0] );
   }
 
 
@@ -2873,12 +2923,12 @@
   /*                                                                       */
   /* NEG[]:        NEGate                                                  */
   /* Opcode range: 0x65                                                    */
-  /* Stack: f26.6 --> f26.6                                                */
+  /* Stack:        f26.6 --> f26.6                                         */
   /*                                                                       */
   static void
   Ins_NEG( FT_Long*  args )
   {
-    args[0] = -args[0];
+    args[0] = NEG_LONG( args[0] );
   }
 
 
@@ -3113,7 +3163,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* MAX[]:        MAXimum                                                 */
-  /* Opcode range: 0x68                                                    */
+  /* Opcode range: 0x8B                                                    */
   /* Stack:        int32? int32? --> int32                                 */
   /*                                                                       */
   static void
@@ -3127,7 +3177,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* MIN[]:        MINimum                                                 */
-  /* Opcode range: 0x69                                                    */
+  /* Opcode range: 0x8C                                                    */
   /* Stack:        int32? int32? --> int32                                 */
   /*                                                                       */
   static void
@@ -3371,13 +3421,27 @@
             FT_Long*        args )
   {
     if ( args[0] == 0 && exc->args == 0 )
+    {
       exc->error = FT_THROW( Bad_Argument );
+      return;
+    }
+
     exc->IP += args[0];
     if ( exc->IP < 0                                             ||
          ( exc->callTop > 0                                    &&
            exc->IP > exc->callStack[exc->callTop - 1].Def->end ) )
+    {
       exc->error = FT_THROW( Bad_Argument );
+      return;
+    }
+
     exc->step_ins = FALSE;
+
+    if ( args[0] < 0 )
+    {
+      if ( ++exc->neg_jump_counter > exc->neg_jump_counter_max )
+        exc->error = FT_THROW( Execution_Too_Long );
+    }
   }
 
 
@@ -3532,6 +3596,13 @@
     FT_UShort  i;
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
+
+    /* FDEF is only allowed in `prep' or `fpgm' */
+    if ( exc->curRange == tt_coderange_glyph )
+    {
+      exc->error = FT_THROW( DEF_In_Glyf_Bytecode );
+      return;
+    }
 
     /* some font programs are broken enough to redefine functions! */
     /* We will then parse the current table.                       */
@@ -3932,6 +4003,10 @@
       Ins_Goto_CodeRange( exc, def->range, def->start );
 
       exc->step_ins = FALSE;
+
+      exc->loopcall_counter += (FT_ULong)args[0];
+      if ( exc->loopcall_counter > exc->loopcall_counter_max )
+        exc->error = FT_THROW( Execution_Too_Long );
     }
 
     return;
@@ -3954,6 +4029,13 @@
     TT_DefRecord*  def;
     TT_DefRecord*  limit;
 
+
+    /* we enable IDEF only in `prep' or `fpgm' */
+    if ( exc->curRange == tt_coderange_glyph )
+    {
+      exc->error = FT_THROW( DEF_In_Glyf_Bytecode );
+      return;
+    }
 
     /*  First of all, look for the same function in our table */
 
@@ -4002,6 +4084,7 @@
         exc->error = FT_THROW( Nested_DEFS );
         return;
       case 0x2D:   /* ENDF */
+        def->end = exc->IP;
         return;
       }
     }
@@ -4161,8 +4244,8 @@
     p1 = exc->zp1.cur + aIdx2;
     p2 = exc->zp2.cur + aIdx1;
 
-    A = p1->x - p2->x;
-    B = p1->y - p2->y;
+    A = SUB_LONG( p1->x, p2->x );
+    B = SUB_LONG( p1->y, p2->y );
 
     /* If p1 == p2, SPvTL and SFvTL behave the same as */
     /* SPvTCA[X] and SFvTCA[X], respectively.          */
@@ -4177,9 +4260,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, Vec );
@@ -4485,7 +4568,7 @@
   /*                                                                       */
   /* FLIPOFF[]:    Set auto-FLIP to OFF                                    */
   /* Opcode range: 0x4E                                                    */
-  /* Stack: -->                                                            */
+  /* Stack:        -->                                                     */
   /*                                                                       */
   static void
   Ins_FLIPOFF( TT_ExecContext  exc )
@@ -4720,7 +4803,7 @@
 
     K = FAST_PROJECT( &exc->zp2.cur[L] );
 
-    exc->func_move( exc, &exc->zp2, L, args[1] - K );
+    exc->func_move( exc, &exc->zp2, L, SUB_LONG( args[1], K ) );
 
     /* UNDOCUMENTED!  The MS rasterizer does that with */
     /* twilight points (confirmed by Greg Hitchcock)   */
@@ -4844,12 +4927,12 @@
     }
 
     {
-      FT_Vector* v1 = exc->zp1.org + p2;
-      FT_Vector* v2 = exc->zp2.org + p1;
+      FT_Vector*  v1 = exc->zp1.org + p2;
+      FT_Vector*  v2 = exc->zp2.org + p1;
 
 
-      A = v1->x - v2->x;
-      B = v1->y - v2->y;
+      A = SUB_LONG( v1->x, v2->x );
+      B = SUB_LONG( v1->y, v2->y );
 
       /* If v1 == v2, SDPvTL behaves the same as */
       /* SVTCA[X], respectively.                 */
@@ -4865,9 +4948,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, &exc->GS.dualVector );
@@ -4877,8 +4960,8 @@
       FT_Vector*  v2 = exc->zp2.cur + p1;
 
 
-      A = v1->x - v2->x;
-      B = v1->y - v2->y;
+      A = SUB_LONG( v1->x, v2->x );
+      B = SUB_LONG( v1->y, v2->y );
 
       if ( A == 0 && B == 0 )
       {
@@ -4889,9 +4972,9 @@
 
     if ( ( opcode & 1 ) != 0 )
     {
-      C =  B;   /* counter clockwise rotation */
-      B =  A;
-      A = -C;
+      C = B;   /* counter clockwise rotation */
+      B = A;
+      A = NEG_LONG( C );
     }
 
     Normalize( A, B, &exc->GS.projVector );
@@ -5076,11 +5159,11 @@
 #endif
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      /* Native ClearType fonts sign a waiver that turns off all backwards */
+      /* Native ClearType fonts sign a waiver that turns off all backward  */
       /* compatibility hacks and lets them program points to the grid like */
       /* it's 1996.  They might sign a waiver for just one glyph, though.  */
       if ( SUBPIXEL_HINTING_MINIMAL )
-        exc->backwards_compatibility = !FT_BOOL( L == 4 );
+        exc->backward_compatibility = !FT_BOOL( L == 4 );
 #endif
     }
   }
@@ -5137,14 +5220,14 @@
   /*                                                                       */
   /* SCANTYPE[]:   SCAN TYPE                                               */
   /* Opcode range: 0x8D                                                    */
-  /* Stack:        uint32? -->                                             */
+  /* Stack:        uint16 -->                                              */
   /*                                                                       */
   static void
   Ins_SCANTYPE( TT_ExecContext  exc,
                 FT_Long*        args )
   {
     if ( args[0] >= 0 )
-      exc->GS.scan_type = (FT_Int)args[0];
+      exc->GS.scan_type = (FT_Int)args[0] & 0xFFFF;
   }
 
 
@@ -5168,11 +5251,11 @@
 
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* See `ttinterp.h' for details on backwards compatibility mode. */
-    if ( SUBPIXEL_HINTING_MINIMAL     &&
-         exc->backwards_compatibility &&
-         exc->iupx_called             &&
-         exc->iupy_called             )
+    /* See `ttinterp.h' for details on backward compatibility mode. */
+    if ( SUBPIXEL_HINTING_MINIMAL    &&
+         exc->backward_compatibility &&
+         exc->iupx_called            &&
+         exc->iupy_called            )
       goto Fail;
 #endif
 
@@ -5223,11 +5306,11 @@
 
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* See `ttinterp.h' for details on backwards compatibility mode. */
-    if ( SUBPIXEL_HINTING_MINIMAL     &&
-         exc->backwards_compatibility &&
-         exc->iupx_called             &&
-         exc->iupy_called             )
+    /* See `ttinterp.h' for details on backward compatibility mode. */
+    if ( SUBPIXEL_HINTING_MINIMAL    &&
+         exc->backward_compatibility &&
+         exc->iupx_called            &&
+         exc->iupy_called            )
       return;
 #endif
 
@@ -5261,11 +5344,11 @@
 
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* See `ttinterp.h' for details on backwards compatibility mode. */
-    if ( SUBPIXEL_HINTING_MINIMAL     &&
-         exc->backwards_compatibility &&
-         exc->iupx_called             &&
-         exc->iupy_called             )
+    /* See `ttinterp.h' for details on backward compatibility mode. */
+    if ( SUBPIXEL_HINTING_MINIMAL    &&
+         exc->backward_compatibility &&
+         exc->iupx_called            &&
+         exc->iupy_called            )
       return;
 #endif
 
@@ -5328,7 +5411,7 @@
   }
 
 
-  /* See `ttinterp.h' for details on backwards compatibility mode. */
+  /* See `ttinterp.h' for details on backward compatibility mode. */
   static void
   Move_Zp2_Point( TT_ExecContext  exc,
                   FT_UShort       point,
@@ -5339,10 +5422,10 @@
     if ( exc->GS.freeVector.x != 0 )
     {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      if ( !( SUBPIXEL_HINTING_MINIMAL     &&
-              exc->backwards_compatibility ) )
+      if ( !( SUBPIXEL_HINTING_MINIMAL    &&
+              exc->backward_compatibility ) )
 #endif
-        exc->zp2.cur[point].x += dx;
+        exc->zp2.cur[point].x = ADD_LONG( exc->zp2.cur[point].x, dx );
 
       if ( touch )
         exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_X;
@@ -5351,12 +5434,12 @@
     if ( exc->GS.freeVector.y != 0 )
     {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      if ( !( SUBPIXEL_HINTING_MINIMAL     &&
-              exc->backwards_compatibility &&
-              exc->iupx_called             &&
-              exc->iupy_called             ) )
+      if ( !( SUBPIXEL_HINTING_MINIMAL    &&
+              exc->backward_compatibility &&
+              exc->iupx_called            &&
+              exc->iupy_called            ) )
 #endif
-        exc->zp2.cur[point].y += dy;
+        exc->zp2.cur[point].y = ADD_LONG( exc->zp2.cur[point].y, dy );
 
       if ( touch )
         exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_Y;
@@ -5541,9 +5624,9 @@
     FT_Int      B1, B2;
 #endif
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    FT_Bool     in_twilight = exc->GS.gep0 == 0 || \
-                              exc->GS.gep1 == 0 || \
-                              exc->GS.gep2 == 0;
+    FT_Bool     in_twilight = FT_BOOL( exc->GS.gep0 == 0 ||
+                                       exc->GS.gep1 == 0 ||
+                                       exc->GS.gep2 == 0 );
 #endif
 
 
@@ -5651,14 +5734,14 @@
       else
 #endif
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      if ( SUBPIXEL_HINTING_MINIMAL     &&
-           exc->backwards_compatibility )
+      if ( SUBPIXEL_HINTING_MINIMAL    &&
+           exc->backward_compatibility )
       {
         /* Special case: allow SHPIX to move points in the twilight zone.  */
         /* Otherwise, treat SHPIX the same as DELTAP.  Unbreaks various    */
         /* fonts such as older versions of Rokkitt and DTL Argo T Light    */
-        /* that would glitch severly after calling ALIGNRP after a blocked */
-        /* SHPIX.                                                          */
+        /* that would glitch severely after calling ALIGNRP after a        */
+        /* blocked SHPIX.                                                  */
         if ( in_twilight                                                ||
              ( !( exc->iupx_called && exc->iupy_called )              &&
                ( ( exc->is_composite && exc->GS.freeVector.y != 0 ) ||
@@ -5731,14 +5814,17 @@
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     /* subpixel hinting - make MSIRP respect CVT cut-in; */
-    if ( SUBPIXEL_HINTING_INFINALITY                         &&
-         exc->ignore_x_mode                                  &&
-         exc->GS.freeVector.x != 0                           &&
-         FT_ABS( distance - args[1] ) >= control_value_cutin )
+    if ( SUBPIXEL_HINTING_INFINALITY                                    &&
+         exc->ignore_x_mode                                             &&
+         exc->GS.freeVector.x != 0                                      &&
+         FT_ABS( SUB_LONG( distance, args[1] ) ) >= control_value_cutin )
       distance = args[1];
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
-    exc->func_move( exc, &exc->zp1, point, args[1] - distance );
+    exc->func_move( exc,
+                    &exc->zp1,
+                    point,
+                    SUB_LONG( args[1], distance ) );
 
     exc->GS.rp1 = exc->GS.rp0;
     exc->GS.rp2 = point;
@@ -5977,8 +6063,10 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( vec1->x - vec2->x, exc->metrics.x_scale );
-        vec.y = FT_MulFix( vec1->y - vec2->y, exc->metrics.y_scale );
+        vec.x = FT_MulFix( SUB_LONG( vec1->x, vec2->x ),
+                           exc->metrics.x_scale );
+        vec.y = FT_MulFix( SUB_LONG( vec1->y, vec2->y ),
+                           exc->metrics.y_scale );
 
         org_dist = FAST_DUALPROJ( &vec );
       }
@@ -6031,8 +6119,8 @@
       }
       else
       {
-        if ( distance > -minimum_distance )
-          distance = -minimum_distance;
+        if ( distance > NEG_LONG( minimum_distance ) )
+          distance = NEG_LONG( minimum_distance );
       }
     }
 
@@ -6040,7 +6128,7 @@
 
     org_dist = PROJECT( exc->zp1.cur + point, exc->zp0.cur + exc->GS.rp0 );
 
-    exc->func_move( exc, &exc->zp1, point, distance - org_dist );
+    exc->func_move( exc, &exc->zp1, point, SUB_LONG( distance, org_dist ) );
 
   Fail:
     exc->GS.rp1 = exc->GS.rp0;
@@ -6088,7 +6176,6 @@
          exc->GS.freeVector.x != 0                          &&
          !( exc->sph_tweak_flags & SPH_TWEAK_NORMAL_ROUND ) )
       control_value_cutin = minimum_distance = 0;
-    else
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
     /* XXX: UNDOCUMENTED! cvt[-1] = 0 always */
@@ -6216,8 +6303,8 @@
       }
       else
       {
-        if ( distance > -minimum_distance )
-          distance = -minimum_distance;
+        if ( distance > NEG_LONG( minimum_distance ) )
+          distance = NEG_LONG( minimum_distance );
       }
     }
 
@@ -6241,7 +6328,10 @@
     }
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
-    exc->func_move( exc, &exc->zp1, point, distance - cur_dist );
+    exc->func_move( exc,
+                    &exc->zp1,
+                    point,
+                    SUB_LONG( distance, cur_dist ) );
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     if ( SUBPIXEL_HINTING_INFINALITY )
@@ -6265,7 +6355,10 @@
       }
 
       if ( reverse_move )
-        exc->func_move( exc, &exc->zp1, point, -( distance - cur_dist ) );
+        exc->func_move( exc,
+                        &exc->zp1,
+                        point,
+                        SUB_LONG( cur_dist, distance ) );
     }
 
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
@@ -6331,7 +6424,7 @@
         distance = PROJECT( exc->zp1.cur + point,
                             exc->zp0.cur + exc->GS.rp0 );
 
-        exc->func_move( exc, &exc->zp1, point, -distance );
+        exc->func_move( exc, &exc->zp1, point, NEG_LONG( distance ) );
       }
 
       exc->GS.loop--;
@@ -6388,19 +6481,19 @@
 
     /* Cramer's rule */
 
-    dbx = exc->zp0.cur[b1].x - exc->zp0.cur[b0].x;
-    dby = exc->zp0.cur[b1].y - exc->zp0.cur[b0].y;
+    dbx = SUB_LONG( exc->zp0.cur[b1].x, exc->zp0.cur[b0].x );
+    dby = SUB_LONG( exc->zp0.cur[b1].y, exc->zp0.cur[b0].y );
 
-    dax = exc->zp1.cur[a1].x - exc->zp1.cur[a0].x;
-    day = exc->zp1.cur[a1].y - exc->zp1.cur[a0].y;
+    dax = SUB_LONG( exc->zp1.cur[a1].x, exc->zp1.cur[a0].x );
+    day = SUB_LONG( exc->zp1.cur[a1].y, exc->zp1.cur[a0].y );
 
-    dx = exc->zp0.cur[b0].x - exc->zp1.cur[a0].x;
-    dy = exc->zp0.cur[b0].y - exc->zp1.cur[a0].y;
+    dx = SUB_LONG( exc->zp0.cur[b0].x, exc->zp1.cur[a0].x );
+    dy = SUB_LONG( exc->zp0.cur[b0].y, exc->zp1.cur[a0].y );
 
-    discriminant = FT_MulDiv( dax, -dby, 0x40 ) +
-                   FT_MulDiv( day, dbx, 0x40 );
-    dotproduct   = FT_MulDiv( dax, dbx, 0x40 ) +
-                   FT_MulDiv( day, dby, 0x40 );
+    discriminant = ADD_LONG( FT_MulDiv( dax, NEG_LONG( dby ), 0x40 ),
+                             FT_MulDiv( day, dbx, 0x40 ) );
+    dotproduct   = ADD_LONG( FT_MulDiv( dax, dbx, 0x40 ),
+                             FT_MulDiv( day, dby, 0x40 ) );
 
     /* The discriminant above is actually a cross product of vectors     */
     /* da and db. Together with the dot product, they can be used as     */
@@ -6410,30 +6503,29 @@
     /*       discriminant = |da||db|sin(angle)     .                     */
     /* We use these equations to reject grazing intersections by         */
     /* thresholding abs(tan(angle)) at 1/19, corresponding to 3 degrees. */
-    if ( 19 * FT_ABS( discriminant ) > FT_ABS( dotproduct ) )
+    if ( MUL_LONG( 19, FT_ABS( discriminant ) ) > FT_ABS( dotproduct ) )
     {
-      val = FT_MulDiv( dx, -dby, 0x40 ) + FT_MulDiv( dy, dbx, 0x40 );
+      val = ADD_LONG( FT_MulDiv( dx, NEG_LONG( dby ), 0x40 ),
+                      FT_MulDiv( dy, dbx, 0x40 ) );
 
       R.x = FT_MulDiv( val, dax, discriminant );
       R.y = FT_MulDiv( val, day, discriminant );
 
-      /* XXX: Block in backwards_compatibility and/or post-IUP? */
-      exc->zp2.cur[point].x = exc->zp1.cur[a0].x + R.x;
-      exc->zp2.cur[point].y = exc->zp1.cur[a0].y + R.y;
+      /* XXX: Block in backward_compatibility and/or post-IUP? */
+      exc->zp2.cur[point].x = ADD_LONG( exc->zp1.cur[a0].x, R.x );
+      exc->zp2.cur[point].y = ADD_LONG( exc->zp1.cur[a0].y, R.y );
     }
     else
     {
       /* else, take the middle of the middles of A and B */
 
-      /* XXX: Block in backwards_compatibility and/or post-IUP? */
-      exc->zp2.cur[point].x = ( exc->zp1.cur[a0].x +
-                                exc->zp1.cur[a1].x +
-                                exc->zp0.cur[b0].x +
-                                exc->zp0.cur[b1].x ) / 4;
-      exc->zp2.cur[point].y = ( exc->zp1.cur[a0].y +
-                                exc->zp1.cur[a1].y +
-                                exc->zp0.cur[b0].y +
-                                exc->zp0.cur[b1].y ) / 4;
+      /* XXX: Block in backward_compatibility and/or post-IUP? */
+      exc->zp2.cur[point].x =
+        ADD_LONG( ADD_LONG( exc->zp1.cur[a0].x, exc->zp1.cur[a1].x ),
+                  ADD_LONG( exc->zp0.cur[b0].x, exc->zp0.cur[b1].x ) ) / 4;
+      exc->zp2.cur[point].y =
+        ADD_LONG( ADD_LONG( exc->zp1.cur[a0].y, exc->zp1.cur[a1].y ),
+                  ADD_LONG( exc->zp0.cur[b0].y, exc->zp0.cur[b1].y ) ) / 4;
     }
 
     exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_BOTH;
@@ -6468,7 +6560,7 @@
     distance = PROJECT( exc->zp0.cur + p2, exc->zp1.cur + p1 ) / 2;
 
     exc->func_move( exc, &exc->zp1, p1, distance );
-    exc->func_move( exc, &exc->zp0, p2, -distance );
+    exc->func_move( exc, &exc->zp0, p2, NEG_LONG( distance ) );
   }
 
 
@@ -6502,7 +6594,9 @@
      * Otherwise, by definition, the value of exc->twilight.orus[n] is (0,0),
      * for every n.
      */
-    twilight = exc->GS.gep0 == 0 || exc->GS.gep1 == 0 || exc->GS.gep2 == 0;
+    twilight = ( exc->GS.gep0 == 0 ||
+                 exc->GS.gep1 == 0 ||
+                 exc->GS.gep2 == 0 );
 
     if ( BOUNDS( exc->GS.rp1, exc->zp0.n_points ) )
     {
@@ -6539,9 +6633,11 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( exc->zp1.orus[exc->GS.rp2].x - orus_base->x,
+        vec.x = FT_MulFix( SUB_LONG( exc->zp1.orus[exc->GS.rp2].x,
+                                     orus_base->x ),
                            exc->metrics.x_scale );
-        vec.y = FT_MulFix( exc->zp1.orus[exc->GS.rp2].y - orus_base->y,
+        vec.y = FT_MulFix( SUB_LONG( exc->zp1.orus[exc->GS.rp2].y,
+                                     orus_base->y ),
                            exc->metrics.y_scale );
 
         old_range = FAST_DUALPROJ( &vec );
@@ -6550,7 +6646,7 @@
       cur_range = PROJECT( &exc->zp1.cur[exc->GS.rp2], cur_base );
     }
 
-    for ( ; exc->GS.loop > 0; --exc->GS.loop )
+    for ( ; exc->GS.loop > 0; exc->GS.loop-- )
     {
       FT_UInt     point = (FT_UInt)exc->stack[--exc->args];
       FT_F26Dot6  org_dist, cur_dist, new_dist;
@@ -6576,9 +6672,11 @@
         FT_Vector  vec;
 
 
-        vec.x = FT_MulFix( exc->zp2.orus[point].x - orus_base->x,
+        vec.x = FT_MulFix( SUB_LONG( exc->zp2.orus[point].x,
+                                     orus_base->x ),
                            exc->metrics.x_scale );
-        vec.y = FT_MulFix( exc->zp2.orus[point].y - orus_base->y,
+        vec.y = FT_MulFix( SUB_LONG( exc->zp2.orus[point].y,
+                                     orus_base->y ),
                            exc->metrics.y_scale );
 
         org_dist = FAST_DUALPROJ( &vec );
@@ -6617,7 +6715,7 @@
       exc->func_move( exc,
                       &exc->zp2,
                       (FT_UShort)point,
-                      new_dist - cur_dist );
+                      SUB_LONG( new_dist, cur_dist ) );
     }
 
   Fail:
@@ -6682,14 +6780,14 @@
     FT_F26Dot6  dx;
 
 
-    dx = worker->curs[p].x - worker->orgs[p].x;
+    dx = SUB_LONG( worker->curs[p].x, worker->orgs[p].x );
     if ( dx != 0 )
     {
       for ( i = p1; i < p; i++ )
-        worker->curs[i].x += dx;
+        worker->curs[i].x = ADD_LONG( worker->curs[i].x, dx );
 
       for ( i = p + 1; i <= p2; i++ )
-        worker->curs[i].x += dx;
+        worker->curs[i].x = ADD_LONG( worker->curs[i].x, dx );
     }
   }
 
@@ -6734,8 +6832,8 @@
     org2   = worker->orgs[ref2].x;
     cur1   = worker->curs[ref1].x;
     cur2   = worker->curs[ref2].x;
-    delta1 = cur1 - org1;
-    delta2 = cur2 - org2;
+    delta1 = SUB_LONG( cur1, org1 );
+    delta2 = SUB_LONG( cur2, org2 );
 
     if ( cur1 == cur2 || orus1 == orus2 )
     {
@@ -6747,10 +6845,10 @@
 
 
         if ( x <= org1 )
-          x += delta1;
+          x = ADD_LONG( x, delta1 );
 
         else if ( x >= org2 )
-          x += delta2;
+          x = ADD_LONG( x, delta2 );
 
         else
           x = cur1;
@@ -6771,20 +6869,23 @@
 
 
         if ( x <= org1 )
-          x += delta1;
+          x = ADD_LONG( x, delta1 );
 
         else if ( x >= org2 )
-          x += delta2;
+          x = ADD_LONG( x, delta2 );
 
         else
         {
           if ( !scale_valid )
           {
             scale_valid = 1;
-            scale       = FT_DivFix( cur2 - cur1, orus2 - orus1 );
+            scale       = FT_DivFix( SUB_LONG( cur2, cur1 ),
+                                     SUB_LONG( orus2, orus1 ) );
           }
 
-          x = cur1 + FT_MulFix( worker->orus[i].x - orus1, scale );
+          x = ADD_LONG( cur1,
+                        FT_MulFix( SUB_LONG( worker->orus[i].x, orus1 ),
+                                   scale ) );
         }
         worker->curs[i].x = x;
       }
@@ -6815,11 +6916,11 @@
 
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* See `ttinterp.h' for details on backwards compatibility mode. */
+    /* See `ttinterp.h' for details on backward compatibility mode.  */
     /* Allow IUP until it has been called on both axes.  Immediately */
     /* return on subsequent ones.                                    */
-    if ( SUBPIXEL_HINTING_MINIMAL     &&
-         exc->backwards_compatibility )
+    if ( SUBPIXEL_HINTING_MINIMAL    &&
+         exc->backward_compatibility )
     {
       if ( exc->iupx_called && exc->iupy_called )
         return;
@@ -7061,10 +7162,10 @@
           {
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-            /* See `ttinterp.h' for details on backwards compatibility */
-            /* mode.                                                   */
-            if ( SUBPIXEL_HINTING_MINIMAL     &&
-                 exc->backwards_compatibility )
+            /* See `ttinterp.h' for details on backward compatibility */
+            /* mode.                                                  */
+            if ( SUBPIXEL_HINTING_MINIMAL    &&
+                 exc->backward_compatibility )
             {
               if ( !( exc->iupx_called && exc->iupy_called )              &&
                    ( ( exc->is_composite && exc->GS.freeVector.y != 0 ) ||
@@ -7208,7 +7309,7 @@
     {
       if ( exc->ignore_x_mode )
       {
-        /* if in ClearType backwards compatibility mode,        */
+        /* if in ClearType backward compatibility mode,         */
         /* we sometimes change the TrueType version dynamically */
         K = exc->rasterizer_version;
         FT_TRACE6(( "Setting rasterizer version %d\n",
@@ -7228,7 +7329,7 @@
     /* Return Bit(s): 8             */
     /*                              */
     if ( ( args[0] & 2 ) != 0 && exc->tt_metrics.rotated )
-      K |= 0x80;
+      K |= 1 << 8;
 
     /********************************/
     /* GLYPH STRETCHED              */
@@ -7236,7 +7337,18 @@
     /* Return Bit(s): 9             */
     /*                              */
     if ( ( args[0] & 4 ) != 0 && exc->tt_metrics.stretched )
-      K |= 1 << 8;
+      K |= 1 << 9;
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+    /********************************/
+    /* VARIATION GLYPH              */
+    /* Selector Bit:  3             */
+    /* Return Bit(s): 10            */
+    /*                              */
+    /* XXX: UNDOCUMENTED!           */
+    if ( (args[0] & 8 ) != 0 && exc->face->blend )
+      K |= 1 << 10;
+#endif
 
     /********************************/
     /* BI-LEVEL HINTING AND         */
@@ -7248,7 +7360,11 @@
       K |= 1 << 12;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    if ( SUBPIXEL_HINTING_MINIMAL )
+    /* Toggle the following flags only outside of monochrome mode.      */
+    /* Otherwise, instructions may behave weirdly and rendering results */
+    /* may differ between v35 and v40 mode, e.g., in `Times New Roman   */
+    /* Bold Italic'. */
+    if ( SUBPIXEL_HINTING_MINIMAL && exc->subpixel_hinting_lean )
     {
       /********************************/
       /* HINTING FOR SUBPIXEL         */
@@ -7283,7 +7399,7 @@
       /*                              */
       /* The only smoothing method FreeType supports unless someone sets */
       /* FT_LOAD_TARGET_MONO.                                            */
-      if ( ( args[0] & 2048 ) != 0 )
+      if ( ( args[0] & 2048 ) != 0 && exc->subpixel_hinting_lean )
         K |= 1 << 18;
 
       /********************************/
@@ -7380,6 +7496,57 @@
   }
 
 
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* GETVARIATION[]: get normalized variation (blend) coordinates          */
+  /* Opcode range: 0x91                                                    */
+  /* Stack:        --> f2.14...                                            */
+  /*                                                                       */
+  /* XXX: UNDOCUMENTED!  There is no official documentation from Apple for */
+  /*      this bytecode instruction.  Active only if a font has GX         */
+  /*      variation axes.                                                  */
+  /*                                                                       */
+  static void
+  Ins_GETVARIATION( TT_ExecContext  exc,
+                    FT_Long*        args )
+  {
+    FT_UInt    num_axes = exc->face->blend->num_axis;
+    FT_Fixed*  coords   = exc->face->blend->normalizedcoords;
+
+    FT_UInt  i;
+
+
+    if ( BOUNDS( num_axes, exc->stackSize + 1 - exc->top ) )
+    {
+      exc->error = FT_THROW( Stack_Overflow );
+      return;
+    }
+
+    for ( i = 0; i < num_axes; i++ )
+      args[i] = coords[i] >> 2; /* convert 16.16 to 2.14 format */
+  }
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* GETDATA[]:    no idea what this is good for                           */
+  /* Opcode range: 0x92                                                    */
+  /* Stack:        --> 17                                                  */
+  /*                                                                       */
+  /* XXX: UNDOCUMENTED!  There is no documentation from Apple for this     */
+  /*      very weird bytecode instruction.                                 */
+  /*                                                                       */
+  static void
+  Ins_GETDATA( FT_Long*  args )
+  {
+    args[0] = 17;
+  }
+
+#endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
+
+
   static void
   Ins_UNKNOWN( TT_ExecContext  exc )
   {
@@ -7453,7 +7620,8 @@
   FT_EXPORT_DEF( FT_Error )
   TT_RunIns( TT_ExecContext  exc )
   {
-    FT_Long    ins_counter = 0;  /* executed instructions counter */
+    FT_ULong   ins_counter = 0;  /* executed instructions counter */
+    FT_ULong   num_twilight_points;
     FT_UShort  i;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
@@ -7475,19 +7643,80 @@
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    /* Toggle backwards compatibility according to what font says, except  */
-    /* when it's a `tricky' font that heavily relies on the interpreter to */
-    /* render glyphs correctly, e.g. DFKai-SB.  Backwards compatibility    */
-    /* hacks may break it.                                                 */
+    /*
+     *  Toggle backward compatibility according to what font wants, except
+     *  when
+     *
+     *  1) we have a `tricky' font that heavily relies on the interpreter to
+     *     render glyphs correctly, for example DFKai-SB, or
+     *  2) FT_RENDER_MODE_MONO (i.e, monochome rendering) is requested.
+     *
+     *  In those cases, backward compatibility needs to be turned off to get
+     *  correct rendering.  The rendering is then completely up to the
+     *  font's programming.
+     *
+     */
     if ( SUBPIXEL_HINTING_MINIMAL          &&
+         exc->subpixel_hinting_lean        &&
          !FT_IS_TRICKY( &exc->face->root ) )
-      exc->backwards_compatibility = !( exc->GS.instruct_control & 4 );
+      exc->backward_compatibility = !( exc->GS.instruct_control & 4 );
     else
-      exc->backwards_compatibility = FALSE;
+      exc->backward_compatibility = FALSE;
 
     exc->iupx_called = FALSE;
     exc->iupy_called = FALSE;
 #endif
+
+    /* We restrict the number of twilight points to a reasonable,     */
+    /* heuristic value to avoid slow execution of malformed bytecode. */
+    num_twilight_points = FT_MAX( 30,
+                                  2 * ( exc->pts.n_points + exc->cvtSize ) );
+    if ( exc->twilight.n_points > num_twilight_points )
+    {
+      if ( num_twilight_points > 0xFFFFU )
+        num_twilight_points = 0xFFFFU;
+
+      FT_TRACE5(( "TT_RunIns: Resetting number of twilight points\n"
+                  "           from %d to the more reasonable value %d\n",
+                  exc->twilight.n_points,
+                  num_twilight_points ));
+      exc->twilight.n_points = (FT_UShort)num_twilight_points;
+    }
+
+    /* Set up loop detectors.  We restrict the number of LOOPCALL loops */
+    /* and the number of JMPR, JROT, and JROF calls with a negative     */
+    /* argument to values that depend on various parameters like the    */
+    /* size of the CVT table or the number of points in the current     */
+    /* glyph (if applicable).                                           */
+    /*                                                                  */
+    /* The idea is that in real-world bytecode you either iterate over  */
+    /* all CVT entries (in the `prep' table), or over all points (or    */
+    /* contours, in the `glyf' table) of a glyph, and such iterations   */
+    /* don't happen very often.                                         */
+    exc->loopcall_counter = 0;
+    exc->neg_jump_counter = 0;
+
+    /* The maximum values are heuristic. */
+    if ( exc->pts.n_points )
+      exc->loopcall_counter_max = FT_MAX( 50,
+                                          10 * exc->pts.n_points ) +
+                                  FT_MAX( 50,
+                                          exc->cvtSize / 10 );
+    else
+      exc->loopcall_counter_max = 300 + 8 * exc->cvtSize;
+
+    /* as a protection against an unreasonable number of CVT entries  */
+    /* we assume at most 100 control values per glyph for the counter */
+    if ( exc->loopcall_counter_max >
+         100 * (FT_ULong)exc->face->root.num_glyphs )
+      exc->loopcall_counter_max = 100 * (FT_ULong)exc->face->root.num_glyphs;
+
+    FT_TRACE5(( "TT_RunIns: Limiting total number of loops in LOOPCALL"
+                " to %d\n", exc->loopcall_counter_max ));
+
+    exc->neg_jump_counter_max = exc->loopcall_counter_max;
+    FT_TRACE5(( "TT_RunIns: Limiting total number of backward jumps"
+                " to %d\n", exc->neg_jump_counter_max ));
 
     /* set PPEM and CVT functions */
     exc->tt_metrics.ratio = 0;
@@ -7566,7 +7795,21 @@
         exc->args = 0;
       }
 
-      exc->new_top = exc->args + ( Pop_Push_Count[exc->opcode] & 15 );
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+      if ( exc->opcode == 0x91 )
+      {
+        /* this is very special: GETVARIATION returns */
+        /* a variable number of arguments             */
+
+        /* it is the job of the application to `activate' GX handling, */
+        /* this is, calling any of the GX API functions on the current */
+        /* font to select a variation instance                         */
+        if ( exc->face->blend )
+          exc->new_top = exc->args + exc->face->blend->num_axis;
+      }
+      else
+#endif
+        exc->new_top = exc->args + ( Pop_Push_Count[exc->opcode] & 15 );
 
       /* `new_top' is the new top of the stack, after the instruction's */
       /* execution.  `top' will be set to `new_top' after the `switch'  */
@@ -7759,7 +8002,7 @@
           Ins_ALIGNPTS( exc, args );
           break;
 
-        case 0x28:  /* ???? */
+        case 0x28:  /* RAW */
           Ins_UNKNOWN( exc );
           break;
 
@@ -8111,9 +8354,32 @@
           Ins_INSTCTRL( exc, args );
           break;
 
-        case 0x8F:
+        case 0x8F:  /* ADJUST */
+        case 0x90:  /* ADJUST */
           Ins_UNKNOWN( exc );
           break;
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+        case 0x91:
+          /* it is the job of the application to `activate' GX handling, */
+          /* this is, calling any of the GX API functions on the current */
+          /* font to select a variation instance                         */
+          if ( exc->face->blend )
+            Ins_GETVARIATION( exc, args );
+          else
+            Ins_UNKNOWN( exc );
+          break;
+
+        case 0x92:
+          /* there is at least one MS font (LaoUI.ttf version 5.01) that */
+          /* uses IDEFs for 0x91 and 0x92; for this reason we activate   */
+          /* GETDATA for GX fonts only, similar to GETVARIATION          */
+          if ( exc->face->blend )
+            Ins_GETDATA( args );
+          else
+            Ins_UNKNOWN( exc );
+          break;
+#endif
 
         default:
           if ( opcode >= 0xE0 )
@@ -8212,29 +8478,25 @@
     } while ( !exc->instruction_trap );
 
   LNo_Error_:
+    FT_TRACE4(( "  %d instructions executed\n", ins_counter ));
     return FT_Err_Ok;
 
   LErrorCodeOverflow_:
     exc->error = FT_THROW( Code_Overflow );
 
   LErrorLabel_:
-    /* If any errors have occurred, function tables may be broken. */
-    /* Force a re-execution of `prep' and `fpgm' tables if no      */
-    /* bytecode debugger is run.                                   */
-    if ( exc->error                          &&
-         !exc->instruction_trap              &&
-         exc->curRange == tt_coderange_glyph )
-    {
+    if ( exc->error && !exc->instruction_trap )
       FT_TRACE1(( "  The interpreter returned error 0x%x\n", exc->error ));
-      exc->size->bytecode_ready = -1;
-      exc->size->cvt_ready      = -1;
-    }
 
     return exc->error;
   }
 
+#else /* !TT_USE_BYTECODE_INTERPRETER */
 
-#endif /* TT_USE_BYTECODE_INTERPRETER */
+  /* ANSI C doesn't like empty source files */
+  typedef int  _tt_interp_dummy;
+
+#endif /* !TT_USE_BYTECODE_INTERPRETER */
 
 
 /* END */

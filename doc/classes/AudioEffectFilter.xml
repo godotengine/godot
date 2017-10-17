@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_cutoff" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_db" qualifiers="const">
+			<return type="int" enum="AudioEffectFilter.FilterDB">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_gain" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_resonance" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_cutoff">
+			<return type="void">
+			</return>
+			<argument index="0" name="freq" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_db">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int" enum="AudioEffectFilter.FilterDB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gain">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_resonance">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
+		</member>
+		<member name="dB" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
+		</member>
+		<member name="gain" type="float" setter="set_gain" getter="get_gain">
+		</member>
+		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
+		</member>
+	</members>
+	<constants>
+		<constant name="FILTER_6DB" value="0">
+		</constant>
+		<constant name="FILTER_12DB" value="1">
+		</constant>
+		<constant name="FILTER_18DB" value="2">
+		</constant>
+		<constant name="FILTER_24DB" value="3">
+		</constant>
+	</constants>
+</class>

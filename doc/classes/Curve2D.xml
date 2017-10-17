@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Curve2D" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Describes a Bezier curve in 2D space.
+	</brief_description>
+	<description>
+		This class describes a Bezier curve in 2D space. It is mainly used to give a shape to a [Path2D], but can be manually sampled for other purposes.
+		It keeps a cache of precalculated points along the curve, to speed further calculations up.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="in" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="2" name="out" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="3" name="at_position" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a point to a curve, at "position", with control points "in" and "out".
+				If "at_position" is given, the point is inserted before the point number "at_position", moving that point (and every point after) after the inserted point. If "at_position" is not given, or is an illegal value (at_position &lt;0 or at_position &gt;= [method get_point_count]), the point will be appended at the end of the point list.
+			</description>
+		</method>
+		<method name="clear_points">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bake_interval" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the distance between two adjacent cached points.
+			</description>
+		</method>
+		<method name="get_baked_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the total length of the curve, based on the cached points. Given enough density (see [method set_bake_interval]), it should be approximate enough.
+			</description>
+		</method>
+		<method name="get_baked_points" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<description>
+				Returns the cache of points as a [PoolVector2Array].
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of points describing the curve.
+			</description>
+		</method>
+		<method name="get_point_in" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
+			</description>
+		</method>
+		<method name="get_point_out" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
+			</description>
+		</method>
+		<method name="get_point_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the position of the vertex "idx". If the index is out of bounds, the function sends an error to the console, and returns (0, 0).
+			</description>
+		</method>
+		<method name="interpolate" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Returns the position between the vertex "idx" and the vertex "idx"+1, where "t" controls if the point is the first vertex (t = 0.0), the last vertex (t = 1.0), or in between. Values of "t" outside the range (0.0 &gt;= t  &lt;=1) give strange, but predictable results.
+				If "idx" is out of bounds it is truncated to the first or last vertex, and "t" is ignored. If the curve has no points, the function sends an error to the console, and returns (0, 0).
+			</description>
+		</method>
+		<method name="interpolate_baked" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<argument index="1" name="cubic" type="bool" default="false">
+			</argument>
+			<description>
+				Returns a point within the curve at position "offset", where "offset" is measured as a pixel distance along the curve.
+				To do that, it finds the two cached points where the "offset" lies between, then interpolates the values. This interpolation is cubic if "cubic" is set to true, or linear if set to false.
+				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
+			</description>
+		</method>
+		<method name="interpolatef" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="fofs" type="float">
+			</argument>
+			<description>
+				Returns the position at the vertex "fofs". It calls [method interpolate] using the integer part of fofs as "idx", and its fractional part as "t".
+			</description>
+		</method>
+		<method name="remove_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Deletes the point "idx" from the curve. Sends an error to the console if "idx" is out of bounds.
+			</description>
+		</method>
+		<method name="set_bake_interval">
+			<return type="void">
+			</return>
+			<argument index="0" name="distance" type="float">
+			</argument>
+			<description>
+				Sets the distance in pixels between two adjacent cached points. Changing it forces the cache to be recomputed the next time a xxx_baked_xxx function is called. The less distance, the more points the cache will have, and the more memory it will consume, so use with care.
+			</description>
+		</method>
+		<method name="set_point_in">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Sets the position of the control point leading to the vertex "idx". If the index is out of bounds, the function sends an error to the console.
+			</description>
+		</method>
+		<method name="set_point_out">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Sets the position of the control point leading out of the vertex "idx". If the index is out of bounds, the function sends an error to the console.
+			</description>
+		</method>
+		<method name="set_point_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+				Sets the position for the vertex "idx". If the index is out of bounds, the function sends an error to the console.
+			</description>
+		</method>
+		<method name="tessellate" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="max_stages" type="int" default="5">
+			</argument>
+			<argument index="1" name="tolerance_degrees" type="float" default="4">
+			</argument>
+			<description>
+				Returns a list of points along the curve, with a curvature controlled point density. That is, the curvier parts will have more points than the straighter parts.
+				This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
+				"max_stages" controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
+				"tolerance_degrees" controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data">
+		</member>
+		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

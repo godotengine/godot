@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Plane" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Plane in hessian form.
+	</brief_description>
+	<description>
+		Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<argument index="2" name="c" type="float">
+			</argument>
+			<argument index="3" name="d" type="float">
+			</argument>
+			<description>
+				Creates a plane from the three parameters "a", "b", "c" and "d".
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="v1" type="Vector3">
+			</argument>
+			<argument index="1" name="v2" type="Vector3">
+			</argument>
+			<argument index="2" name="v3" type="Vector3">
+			</argument>
+			<description>
+				Creates a plane from three points.
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<argument index="1" name="d" type="float">
+			</argument>
+			<description>
+				Creates a plane from the normal and the plane's distance to the origin.
+			</description>
+		</method>
+		<method name="center">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the center of the plane.
+			</description>
+		</method>
+		<method name="distance_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<description>
+				Returns the shortest distance from the plane to the position "point".
+			</description>
+		</method>
+		<method name="get_any_point">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns a point on the plane.
+			</description>
+		</method>
+		<method name="has_point">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="epsilon" type="float" default="0.00001">
+			</argument>
+			<description>
+				Returns true if "point" is inside the plane (by a very minimum threshold).
+			</description>
+		</method>
+		<method name="intersect_3">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Plane">
+			</argument>
+			<argument index="1" name="c" type="Plane">
+			</argument>
+			<description>
+				Returns the intersection point of the three planes "b", "c" and this plane. If no intersection is found null is returned.
+			</description>
+		</method>
+		<method name="intersects_ray">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<description>
+				Returns the intersection point of a ray consisting of the position "from" and the direction normal "dir" with this plane. If no intersection is found null is returned.
+			</description>
+		</method>
+		<method name="intersects_segment">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="begin" type="Vector3">
+			</argument>
+			<argument index="1" name="end" type="Vector3">
+			</argument>
+			<description>
+				Returns the intersection point of a segment from position "begin" to position "end" with this plane. If no intersection is found null is returned.
+			</description>
+		</method>
+		<method name="is_point_over">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<description>
+				Returns true if "point" is located above the plane.
+			</description>
+		</method>
+		<method name="normalized">
+			<return type="Plane">
+			</return>
+			<description>
+				Returns a copy of the plane, normalized.
+			</description>
+		</method>
+		<method name="project">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<description>
+				Returns the orthogonal projection of point "p" into a point in the plane.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="d" type="float" setter="" getter="">
+		</member>
+		<member name="normal" type="Vector3" setter="" getter="">
+		</member>
+		<member name="x" type="float" setter="" getter="">
+		</member>
+		<member name="y" type="float" setter="" getter="">
+		</member>
+		<member name="z" type="float" setter="" getter="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

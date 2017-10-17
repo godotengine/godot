@@ -37,7 +37,66 @@
 #include <arm_neon.h>
 #include "../pitch.h"
 
-#if !defined(FIXED_POINT)
+#if defined(FIXED_POINT)
+void xcorr_kernel_neon_fixed(const opus_val16 * x, const opus_val16 * y, opus_val32 sum[4], int len)
+{
+   int j;
+   int32x4_t a = vld1q_s32(sum);
+   /* Load y[0...3] */
+   /* This requires len>0 to always be valid (which we assert in the C code). */
+   int16x4_t y0 = vld1_s16(y);
+   y += 4;
+
+   for (j = 0; j + 8 <= len; j += 8)
+   {
+      /* Load x[0...7] */
+      int16x8_t xx = vld1q_s16(x);
+      int16x4_t x0 = vget_low_s16(xx);
+      int16x4_t x4 = vget_high_s16(xx);
+      /* Load y[4...11] */
+      int16x8_t yy = vld1q_s16(y);
+      int16x4_t y4 = vget_low_s16(yy);
+      int16x4_t y8 = vget_high_s16(yy);
+      int32x4_t a0 = vmlal_lane_s16(a, y0, x0, 0);
+      int32x4_t a1 = vmlal_lane_s16(a0, y4, x4, 0);
+
+      int16x4_t y1 = vext_s16(y0, y4, 1);
+      int16x4_t y5 = vext_s16(y4, y8, 1);
+      int32x4_t a2 = vmlal_lane_s16(a1, y1, x0, 1);
+      int32x4_t a3 = vmlal_lane_s16(a2, y5, x4, 1);
+
+      int16x4_t y2 = vext_s16(y0, y4, 2);
+      int16x4_t y6 = vext_s16(y4, y8, 2);
+      int32x4_t a4 = vmlal_lane_s16(a3, y2, x0, 2);
+      int32x4_t a5 = vmlal_lane_s16(a4, y6, x4, 2);
+
+      int16x4_t y3 = vext_s16(y0, y4, 3);
+      int16x4_t y7 = vext_s16(y4, y8, 3);
+      int32x4_t a6 = vmlal_lane_s16(a5, y3, x0, 3);
+      int32x4_t a7 = vmlal_lane_s16(a6, y7, x4, 3);
+
+      y0 = y8;
+      a = a7;
+      x += 8;
+      y += 8;
+   }
+
+   for (; j < len; j++)
+   {
+      int16x4_t x0 = vld1_dup_s16(x);  /* load next x */
+      int32x4_t a0 = vmlal_s16(a, y0, x0);
+
+      int16x4_t y4 = vld1_dup_s16(y);  /* load next y */
+      y0 = vext_s16(y0, y4, 1);
+      a = a0;
+      x++;
+      y++;
+   }
+
+   vst1q_s32(sum, a);
+}
+
+#else
 /*
  * Function: xcorr_kernel_neon_float
  * ---------------------------------

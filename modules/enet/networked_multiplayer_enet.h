@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +43,8 @@ public:
 		COMPRESS_NONE,
 		COMPRESS_RANGE_CODER,
 		COMPRESS_FASTLZ,
-		COMPRESS_ZLIB
+		COMPRESS_ZLIB,
+		COMPRESS_ZSTD
 	};
 
 private:
@@ -100,7 +102,7 @@ private:
 	static void enet_compressor_destroy(void *context);
 	void _setup_compressor();
 
-	enet_uint32 bind_ip;
+	IP_Address bind_ip;
 
 protected:
 	static void _bind_methods();
@@ -111,7 +113,7 @@ public:
 
 	virtual int get_packet_peer() const;
 
-	Error create_server(int p_port, int p_max_peers = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
+	Error create_server(int p_port, int p_max_clients = 32, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 	Error create_client(const IP_Address &p_ip, int p_port, int p_in_bandwidth = 0, int p_out_bandwidth = 0);
 
 	void close_connection();

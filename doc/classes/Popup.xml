@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Popup" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base container control for popups and dialogs.
+	</brief_description>
+	<description>
+		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_exclusive" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the popup will hide other popups when shown on the screen.
+			</description>
+		</method>
+		<method name="popup">
+			<return type="void">
+			</return>
+			<argument index="0" name="bounds" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+				Popup (show the control in modal form).
+			</description>
+		</method>
+		<method name="popup_centered">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+				Popup (show the control in modal form) in the center of the screen, at the current size, or at a size determined by "size".
+			</description>
+		</method>
+		<method name="popup_centered_minsize">
+			<return type="void">
+			</return>
+			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+				Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
+			</description>
+		</method>
+		<method name="popup_centered_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float" default="0.75">
+			</argument>
+			<description>
+				Popup (show the control in modal form) in the center of the screen, scaled at a ratio of size of the screen.
+			</description>
+		</method>
+		<method name="set_exclusive">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Make the popup hide other popups when shown on the screen.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive">
+		</member>
+	</members>
+	<signals>
+		<signal name="about_to_show">
+			<description>
+				This signal is emitted when a popup is about to be shown. (often used in [PopupMenu] for clearing the list of options and creating a new one according to the current context).
+			</description>
+		</signal>
+		<signal name="popup_hide">
+			<description>
+				This signal is emitted when a popup is hidden.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_POST_POPUP" value="80" enum="">
+			Notification sent right after the popup is shown.
+		</constant>
+		<constant name="NOTIFICATION_POPUP_HIDE" value="81" enum="">
+			Notification sent right after the popup is hidden.
+		</constant>
+	</constants>
+</class>

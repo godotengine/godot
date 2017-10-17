@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ProximityGroup" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		General purpose proximity-detection node.
+	</brief_description>
+	<description>
+		General purpose proximity-detection node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="broadcast">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="parameters" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_grid_radius" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_dispatch_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_grid_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_group_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="grid_radius" type="Vector3" setter="set_grid_radius" getter="get_grid_radius">
+		</member>
+	</members>
+	<signals>
+		<signal name="broadcast">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="parameters" type="Array">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

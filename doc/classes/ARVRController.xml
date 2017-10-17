@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ARVRController" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A spatial node representing a spatially tracked controller.
+	</brief_description>
+	<description>
+		This is a helper spatial node that is linked to the tracking of controllers. It also offers several handy pass throughs to the state of buttons and such on the controllers.
+		Controllers are linked by their id. You can create controller nodes before the controllers are available. Say your game always uses two controllers (one for each hand) you can predefine the controllers with id 1 and 2 and they will become active as soon as the controllers are identified. If you expect additional controllers to be used you should react to the signals and add ARVRController nodes to your scene.
+		The position of the controller node is automatically updated by the ARVR Server. This makes this node ideal to add child  nodes to visualise the controller.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_controller_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the controller id currently assigned to this node.
+			</description>
+		</method>
+		<method name="get_controller_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				If active, returns the name of the associated controller if provided by the AR/VR SDK used.
+			</description>
+		</method>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_is_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the controller bound to this node is currently active and being tracked.
+			</description>
+		</method>
+		<method name="get_joystick_axis" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="axis" type="int">
+			</argument>
+			<description>
+				Returns the value of the given axis for things like triggers, touchpads, etc. that are embedded into the controller.
+			</description>
+		</method>
+		<method name="get_joystick_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the ID of the joystick object bound to this. Every controller tracked by the ARVR Server that has buttons and axis will also be registered as a joystick within Godot. This means that all the normal joystick tracking and input mapping will work for buttons and axis found on the AR/VR controllers. This ID is purely offered as information so you can link up the controller with its joystick entry.
+			</description>
+		</method>
+		<method name="is_button_pressed" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="button" type="int">
+			</argument>
+			<description>
+				Is the given button currently pressed?
+			</description>
+		</method>
+		<method name="set_controller_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="controller_id" type="int">
+			</argument>
+			<description>
+				Changes the id that identifies the controller bound to this node. The first controller that the ARVR Server detects will have id 1, the second id 2, the third id 3, etc. When a controller is turned off that slot is freed ensuring that controllers will keep the same id while it is turned on even when controllers with lower ids are turned off.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="controller_id" type="int" setter="set_controller_id" getter="get_controller_id">
+		</member>
+	</members>
+	<signals>
+		<signal name="button_pressed">
+			<argument index="0" name="button" type="int">
+			</argument>
+			<description>
+				When a button on this controller is pressed, this signal is given.
+			</description>
+		</signal>
+		<signal name="button_release">
+			<argument index="0" name="button" type="int">
+			</argument>
+			<description>
+				When a button on this controller is released, this signal is given.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

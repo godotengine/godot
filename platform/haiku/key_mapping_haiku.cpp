@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,7 +83,7 @@ static _HaikuTranslatePair _fn_to_keycode[] = {
 static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_BACKSPACE, B_BACKSPACE },
 	{ KEY_TAB, B_TAB },
-	{ KEY_RETURN, B_RETURN },
+	{ KEY_ENTER, B_RETURN },
 	{ KEY_CAPSLOCK, B_CAPS_LOCK },
 	{ KEY_ESCAPE, B_ESCAPE },
 	{ KEY_SPACE, B_SPACE },

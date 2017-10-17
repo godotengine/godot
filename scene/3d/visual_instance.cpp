@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +29,6 @@
 /*************************************************************************/
 #include "visual_instance.h"
 
-#include "room_instance.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
 #include "skeleton.h"
@@ -53,32 +53,9 @@ void VisualInstance::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			// CHECK ROOM
-			Spatial *parent = get_parent_spatial();
-			Room *room = NULL;
-			bool is_geom = cast_to<GeometryInstance>();
-
-			/*	while(parent) {
-
-				room = parent->cast_to<Room>();
-				if (room)
-					break;
-
-				if (is_geom && parent->cast_to<BakedLightSampler>()) {
-					VS::get_singleton()->instance_geometry_set_baked_light_sampler(get_instance(),parent->cast_to<BakedLightSampler>()->get_instance());
-					break;
-				}
-
-				parent=parent->get_parent_spatial();
-			}*/
-
-			if (room) {
-
-				VisualServer::get_singleton()->instance_set_room(instance, room->get_instance());
-			}
 			// CHECK SKELETON => moving skeleton attaching logic to MeshInstance
 			/*
-			Skeleton *skeleton=get_parent()?get_parent()->cast_to<Skeleton>():NULL;
+			Skeleton *skeleton=Object::cast_to<Skeleton>(get_parent());
 			if (skeleton)
 				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/
@@ -95,7 +72,6 @@ void VisualInstance::_notification(int p_what) {
 		case NOTIFICATION_EXIT_WORLD: {
 
 			VisualServer::get_singleton()->instance_set_scenario(instance, RID());
-			VisualServer::get_singleton()->instance_set_room(instance, RID());
 			VisualServer::get_singleton()->instance_attach_skeleton(instance, RID());
 			//VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
@@ -148,7 +124,7 @@ void VisualInstance::set_base(const RID &p_base) {
 VisualInstance::VisualInstance() {
 
 	instance = VisualServer::get_singleton()->instance_create();
-	VisualServer::get_singleton()->instance_attach_object_instance_ID(instance, get_instance_ID());
+	VisualServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
 	layers = 1;
 	set_notify_transform(true);
 }
@@ -230,14 +206,6 @@ void GeometryInstance::_notification(int p_what) {
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	if (p_flag == FLAG_CAST_SHADOW) {
-		if (p_value == true) {
-			set_cast_shadows_setting(SHADOW_CASTING_SETTING_ON);
-		} else {
-			set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
-		}
-	}
-
 	if (flags[p_flag] == p_value)
 		return;
 
@@ -250,14 +218,6 @@ void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 bool GeometryInstance::get_flag(Flags p_flag) const {
 
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-
-	if (p_flag == FLAG_CAST_SHADOW) {
-		if (shadow_casting_setting == SHADOW_CASTING_SETTING_OFF) {
-			return false;
-		} else {
-			return true;
-		}
-	}
 
 	return flags[p_flag];
 }
@@ -315,13 +275,9 @@ void GeometryInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance::get_aabb);
 
 	ADD_GROUP("Geometry", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0"), "set_extra_cull_margin", "get_extra_cull_margin");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_as_billboard"), "set_flag", "get_flag", FLAG_BILLBOARD);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_as_y_billboard"), "set_flag", "get_flag", FLAG_BILLBOARD_FIX_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_depth_scale"), "set_flag", "get_flag", FLAG_DEPH_SCALE);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "visible_in_all_rooms"), "set_flag", "get_flag", FLAG_VISIBLE_IN_ALL_ROOMS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_flag", "get_flag", FLAG_USE_BAKED_LIGHT);
 
 	ADD_GROUP("LOD", "lod_");
@@ -332,17 +288,13 @@ void GeometryInstance::_bind_methods() {
 
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
-	BIND_CONSTANT(FLAG_CAST_SHADOW);
-	BIND_CONSTANT(FLAG_BILLBOARD);
-	BIND_CONSTANT(FLAG_BILLBOARD_FIX_Y);
-	BIND_CONSTANT(FLAG_DEPH_SCALE);
-	BIND_CONSTANT(FLAG_VISIBLE_IN_ALL_ROOMS);
-	BIND_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
+	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
+	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 
-	BIND_CONSTANT(SHADOW_CASTING_SETTING_OFF);
-	BIND_CONSTANT(SHADOW_CASTING_SETTING_ON);
-	BIND_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
-	BIND_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+	BIND_ENUM_CONSTANT(FLAG_USE_BAKED_LIGHT);
+	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
 GeometryInstance::GeometryInstance() {
@@ -354,8 +306,6 @@ GeometryInstance::GeometryInstance() {
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = false;
 	}
-
-	flags[FLAG_CAST_SHADOW] = true;
 
 	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin = 0;

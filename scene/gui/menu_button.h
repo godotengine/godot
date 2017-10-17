@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,11 +43,11 @@ class MenuButton : public Button {
 	PopupMenu *popup;
 	virtual void pressed();
 
-	void _unhandled_key_input(InputEvent p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 
 protected:
 	static void _bind_methods();

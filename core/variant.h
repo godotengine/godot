@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,19 +39,15 @@
 #include "dictionary.h"
 #include "dvector.h"
 #include "face3.h"
-#include "image.h"
 #include "io/ip_address.h"
 #include "math_2d.h"
 #include "matrix3.h"
-#include "os/input_event.h"
-#include "os/power.h"
-#include "path_db.h"
+#include "node_path.h"
 #include "plane.h"
 #include "quat.h"
 #include "rect3.h"
 #include "ref_ptr.h"
 #include "rid.h"
-#include "simple_type.h"
 #include "transform.h"
 #include "ustring.h"
 #include "vector3.h"
@@ -73,6 +70,7 @@ typedef PoolVector<Color> PoolColorArray;
 
 class Variant {
 public:
+	// If this changes the table in variant_op must be updated
 	enum Type {
 
 		NIL,
@@ -91,26 +89,24 @@ public:
 		TRANSFORM2D,
 		PLANE,
 		QUAT, // 10
-		RECT3, //sorry naming convention fail :( not like it's used often
+		RECT3,
 		BASIS,
 		TRANSFORM,
 
 		// misc types
 		COLOR,
-		IMAGE, // 15
-		NODE_PATH,
+		NODE_PATH, // 15
 		_RID,
 		OBJECT,
-		INPUT_EVENT,
-		DICTIONARY, // 20
-		ARRAY,
+		DICTIONARY,
+		ARRAY, // 20
 
 		// arrays
 		POOL_BYTE_ARRAY,
 		POOL_INT_ARRAY,
 		POOL_REAL_ARRAY,
-		POOL_STRING_ARRAY, // 25
-		POOL_VECTOR2_ARRAY,
+		POOL_STRING_ARRAY,
+		POOL_VECTOR2_ARRAY, // 25
 		POOL_VECTOR3_ARRAY,
 		POOL_COLOR_ARRAY,
 
@@ -144,8 +140,6 @@ private:
 		Basis *_basis;
 		Transform *_transform;
 		RefPtr *_resource;
-		InputEvent *_input_event;
-		Image *_image;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data;
@@ -158,15 +152,6 @@ public:
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
-
-	template <class T>
-	static Type get_type_for() {
-
-		GetSimpleType<T> t;
-		Variant v(t.type);
-		Type r = v.get_type();
-		return r;
-	}
 
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const { return type == INT || type == REAL; };
@@ -206,11 +191,10 @@ public:
 	operator Transform2D() const;
 
 	operator Color() const;
-	operator Image() const;
 	operator NodePath() const;
 	operator RefPtr() const;
 	operator RID() const;
-	operator InputEvent() const;
+
 	operator Object *() const;
 	operator Node *() const;
 	operator Control *() const;
@@ -275,12 +259,10 @@ public:
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform &p_transform);
 	Variant(const Color &p_color);
-	Variant(const Image &p_image);
 	Variant(const NodePath &p_path);
 	Variant(const RefPtr &p_resource);
 	Variant(const RID &p_rid);
 	Variant(const Object *p_object);
-	Variant(const InputEvent &p_input_event);
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
@@ -307,6 +289,7 @@ public:
 
 	Variant(const IP_Address &p_address);
 
+	// If this changes the table in variant_op must be updated
 	enum Operator {
 
 		//comparation
@@ -318,7 +301,7 @@ public:
 		OP_GREATER_EQUAL,
 		//mathematic
 		OP_ADD,
-		OP_SUBSTRACT,
+		OP_SUBTRACT,
 		OP_MULTIPLY,
 		OP_DIVIDE,
 		OP_NEGATE,
@@ -385,6 +368,7 @@ public:
 	static Vector<Variant> get_method_default_arguments(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = NULL);
 	static Vector<StringName> get_method_argument_names(Variant::Type p_type, const StringName &p_method);
+	static bool is_method_const(Variant::Type p_type, const StringName &p_method);
 
 	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = NULL);
 	Variant get_named(const StringName &p_index, bool *r_valid = NULL) const;
@@ -407,7 +391,7 @@ public:
 	uint32_t hash() const;
 
 	bool hash_compare(const Variant &p_variant) const;
-	bool booleanize(bool &valid) const;
+	bool booleanize() const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);

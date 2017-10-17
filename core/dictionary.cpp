@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -199,14 +200,23 @@ uint32_t Dictionary::hash() const {
 
 Array Dictionary::keys() const {
 
-	Array karr;
-	karr.resize(size());
-	const Variant *K = NULL;
-	int idx = 0;
-	while ((K = next(K))) {
-		karr[idx++] = (*K);
+	Array varr;
+	varr.resize(size());
+	if (_p->variant_map.empty())
+		return varr;
+
+	int count = _p->variant_map.size();
+	const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **)alloca(count * sizeof(HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *));
+	_p->variant_map.get_key_value_ptr_array(pairs);
+
+	SortArray<const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *, DictionaryPrivateSort> sort;
+	sort.sort(pairs, count);
+
+	for (int i = 0; i < count; i++) {
+		varr[i] = pairs[i]->key;
 	}
-	return karr;
+
+	return varr;
 }
 
 Array Dictionary::values() const {

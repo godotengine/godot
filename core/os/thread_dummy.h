@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@ class ThreadDummy : public Thread {
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
-	virtual ID get_ID() const { return 0; };
+	virtual ID get_id() const { return 0; };
 
 	static void make_default();
 };

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshDataTool" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="commit_to_surface">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mesh" type="ArrayMesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_from_surface">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="mesh" type="ArrayMesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_faces" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_edge_vertex" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vertex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_face_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_face_edge" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="edge" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_face_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_face_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_face_vertex" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vertex" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_bones" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_edges" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_faces" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_meta" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_tangent" qualifiers="const">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_uv" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_uv2" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_vertex_weights" qualifiers="const">
+			<return type="PoolRealArray">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_edge_meta">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="meta" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_face_meta">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="meta" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vertex" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_bones">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="bones" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_meta">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="meta" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="normal" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tangent" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="uv" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="uv2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertex_weights">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="weights" type="PoolRealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="World" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class that has everything pertaining to a world.
+	</brief_description>
+	<description>
+		Class that has everything pertaining to a world. A physics space, a visual scenario and a sound space. Spatial nodes register their resources into the current world.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_direct_space_state">
+			<return type="PhysicsDirectSpaceState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_environment" qualifiers="const">
+			<return type="Environment">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fallback_environment" qualifiers="const">
+			<return type="Environment">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scenario" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_space" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="Environment">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fallback_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="Environment">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+		</member>
+		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SurfaceTool" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Helper tool to create geometry.
+	</brief_description>
+	<description>
+		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
+		[codeblock]
+		var st = SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		st.add_color(Color(1, 0, 0))
+		st.add_uv(Vector2(0, 0))
+		st.add_vertex(Vector3(0, 0, 0))
+		[/codeblock]
+		The [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
+		It is very important that vertex attributes are passed [b]before[/b] the call to [method add_vertex], failure to do this will result in an error when committing the vertex information to a mesh.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_bones">
+			<return type="void">
+			</return>
+			<argument index="0" name="bones" type="PoolIntArray">
+			</argument>
+			<description>
+				Add an array of bones for the next Vertex to use.
+			</description>
+		</method>
+		<method name="add_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Specify a [Color] for the next Vertex to use.
+			</description>
+		</method>
+		<method name="add_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Adds an index to index array if you are using indexed Vertices. Does not need to be called before adding Vertex.
+			</description>
+		</method>
+		<method name="add_normal">
+			<return type="void">
+			</return>
+			<argument index="0" name="normal" type="Vector3">
+			</argument>
+			<description>
+				Specify a normal for the next Vertex to use.
+			</description>
+		</method>
+		<method name="add_smooth_group">
+			<return type="void">
+			</return>
+			<argument index="0" name="smooth" type="bool">
+			</argument>
+			<description>
+				Specify whether current Vertex (if using only Vertex arrays) or current index (if also using index arrays) should utilize smooth normals for normal calculation.
+			</description>
+		</method>
+		<method name="add_tangent">
+			<return type="void">
+			</return>
+			<argument index="0" name="tangent" type="Plane">
+			</argument>
+			<description>
+				Specify a Tangent for the next Vertex to use.
+			</description>
+		</method>
+		<method name="add_to_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_triangle_fan">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertexes" type="PoolVector3Array">
+			</argument>
+			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )">
+			</argument>
+			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )">
+			</argument>
+			<argument index="5" name="tangents" type="Array" default="[  ]">
+			</argument>
+			<description>
+				Insert a triangle fan made of array data into [Mesh] being constructed.
+			</description>
+		</method>
+		<method name="add_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv" type="Vector2">
+			</argument>
+			<description>
+				Specify UV Coordinate for next Vertex to use.
+			</description>
+		</method>
+		<method name="add_uv2">
+			<return type="void">
+			</return>
+			<argument index="0" name="uv2" type="Vector2">
+			</argument>
+			<description>
+				Specify an optional second set of UV coordinates for next Vertex to use.
+			</description>
+		</method>
+		<method name="add_vertex">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertex" type="Vector3">
+			</argument>
+			<description>
+				Specify position of current Vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
+			</description>
+		</method>
+		<method name="add_weights">
+			<return type="void">
+			</return>
+			<argument index="0" name="weights" type="PoolRealArray">
+			</argument>
+			<description>
+				Specify weight value for next Vertex to use.
+			</description>
+		</method>
+		<method name="append_from">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="transform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="begin">
+			<return type="void">
+			</return>
+			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
+			</argument>
+			<description>
+				Called before adding any Vertices. Takes the primitive type as an argument (e.g. Mesh.PRIMITIVE_TRIANGLES).
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear all information passed into the surface tool so far.
+			</description>
+		</method>
+		<method name="commit">
+			<return type="ArrayMesh">
+			</return>
+			<argument index="0" name="existing" type="ArrayMesh" default="null">
+			</argument>
+			<description>
+				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
+			</description>
+		</method>
+		<method name="create_from">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing" type="Mesh">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="deindex">
+			<return type="void">
+			</return>
+			<description>
+				Removes index array by expanding Vertex array.
+			</description>
+		</method>
+		<method name="generate_normals">
+			<return type="void">
+			</return>
+			<description>
+				Generates normals from Vertices so you do not have to do it manually.
+			</description>
+		</method>
+		<method name="generate_tangents">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="index">
+			<return type="void">
+			</return>
+			<description>
+				Shrinks Vertex array by creating an index array. Avoids reusing Vertices.
+			</description>
+		</method>
+		<method name="set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+				Sets [Material] to be used by the [Mesh] you are constructing.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

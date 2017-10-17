@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +29,7 @@
 /*************************************************************************/
 #include "animation_player.h"
 
+#include "engine.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 
@@ -190,7 +192,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_fixed_process(false);
+				set_physics_process(false);
 				set_process(false);
 			}
 			//_set_process(false);
@@ -198,25 +200,26 @@ void AnimationPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (!get_tree()->is_editor_hint() && animation_set.has(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
 				set_autoplay(""); //this line is the fix for autoplay issues with animatio
+				_animation_process(0);
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (animation_process_mode == ANIMATION_PROCESS_FIXED)
+			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
 				break;
 
 			if (processing)
 				_animation_process(get_process_delta_time());
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (animation_process_mode == ANIMATION_PROCESS_IDLE)
 				break;
 
 			if (processing)
-				_animation_process(get_fixed_process_delta_time());
+				_animation_process(get_physics_process_delta_time());
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -245,12 +248,12 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
 		}
 		ERR_CONTINUE(!child); // couldn't find the child node
-		uint32_t id = resource.is_valid() ? resource->get_instance_ID() : child->get_instance_ID();
+		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
-		if (a->track_get_path(i).get_property() && child->cast_to<Skeleton>()) {
+		if (a->track_get_path(i).get_property() && Object::cast_to<Skeleton>(child)) {
 
-			bone_idx = child->cast_to<Skeleton>()->find_bone(a->track_get_path(i).get_property());
+			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(a->track_get_path(i).get_property());
 			if (bone_idx == -1) {
 
 				continue;
@@ -277,14 +280,14 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 			p_anim->node_cache[i]->path = a->track_get_path(i);
 			p_anim->node_cache[i]->node = child;
 			p_anim->node_cache[i]->resource = resource;
-			p_anim->node_cache[i]->node_2d = child->cast_to<Node2D>();
+			p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
 			if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
 				// special cases and caches for transform tracks
 
 				// cache spatial
-				p_anim->node_cache[i]->spatial = child->cast_to<Spatial>();
+				p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
 				// cache skeleton
-				p_anim->node_cache[i]->skeleton = child->cast_to<Skeleton>();
+				p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
 				if (p_anim->node_cache[i]->skeleton) {
 
 					StringName bone_name = a->track_get_path(i).get_property();
@@ -342,7 +345,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
 	Animation *a = p_anim->animation.operator->();
-	bool can_call = is_inside_tree() && !get_tree()->is_editor_hint();
+	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
@@ -431,7 +434,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								pa->object->set(pa->prop, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
-									ERR_PRINTS("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid");
+									ERR_PRINTS("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -439,7 +442,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 								if (value.get_type() != Variant::VECTOR2) {
-									ERR_PRINTS("Position key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()");
+									ERR_PRINTS("Position key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2(). Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 								static_cast<Node2D *>(pa->object)->set_position(value);
@@ -447,7 +450,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
 								if (value.is_num()) {
-									ERR_PRINTS("Rotation key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not numerical");
+									ERR_PRINTS("Rotation key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not numerical. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -456,7 +459,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 							case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
 								if (value.get_type() != Variant::VECTOR2) {
-									ERR_PRINTS("Scale key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()");
+									ERR_PRINTS("Scale key at time " + rtos(p_time) + " in Animation Track '" + String(pa->owner->path) + "' not of type Vector2()." + a->get_name() + "' at node '" + get_path() + "'.");
 								}
 #endif
 
@@ -526,12 +529,12 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 		if (&cd == &playback.current) {
 
-			if (!backwards && cd.pos < len && next_pos == len /*&& playback.blend.empty()*/) {
+			if (!backwards && cd.pos <= len && next_pos == len /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
 
-			if (backwards && cd.pos > 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
+			if (backwards && cd.pos >= 0 && next_pos == 0 /*&& playback.blend.empty()*/) {
 				//playback finished
 				end_notify = true;
 			}
@@ -605,16 +608,6 @@ void AnimationPlayer::_animation_update_transforms() {
 
 		ERR_CONTINUE(pa->accum_pass != accum_pass);
 
-#if 1
-		/*		switch(pa->special) {
-
-
-			case SP_NONE: pa->object->set(pa->prop,pa->value_accum); break; //you are not speshul
-			case SP_NODE2D_POS: static_cast<Node2D*>(pa->object)->set_pos(pa->value_accum); break;
-			case SP_NODE2D_ROT: static_cast<Node2D*>(pa->object)->set_rot(Math::deg2rad(pa->value_accum)); break;
-			case SP_NODE2D_SCALE: static_cast<Node2D*>(pa->object)->set_scale(pa->value_accum); break;
-		}*/
-
 		switch (pa->special) {
 
 			case SP_NONE: {
@@ -622,7 +615,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				pa->object->set(pa->prop, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					ERR_PRINTS("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
+					ERR_PRINTS("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");
 				}
 #endif
 
@@ -630,7 +623,7 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_POS: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.get_type() != Variant::VECTOR2) {
-					ERR_PRINTS("Position key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
+					ERR_PRINTS("Position key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
 				}
 #endif
 				static_cast<Node2D *>(pa->object)->set_position(pa->value_accum);
@@ -638,7 +631,7 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_ROT: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.is_num()) {
-					ERR_PRINTS("Rotation key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not numerical");
+					ERR_PRINTS("Rotation key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not numerical");
 				}
 #endif
 
@@ -647,25 +640,19 @@ void AnimationPlayer::_animation_update_transforms() {
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
 				if (pa->value_accum.get_type() != Variant::VECTOR2) {
-					ERR_PRINTS("Scale key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
+					ERR_PRINTS("Scale key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "' not of type Vector2()");
 				}
 #endif
 
 				static_cast<Node2D *>(pa->object)->set_scale(pa->value_accum);
 			} break;
 		}
-#else
-
-		pa->object->set(pa->prop, pa->value_accum);
-#endif
 	}
 
 	cache_update_prop_size = 0;
 }
 
 void AnimationPlayer::_animation_process(float p_delta) {
-
-	//bool any_active=false;
 
 	if (playback.current.from) {
 
@@ -953,7 +940,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 
 	emit_signal(SceneStringNames::get_singleton()->animation_started, c.assigned);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return; // no next in this case
 
 	StringName next = animation_get_next(p_name);
@@ -1058,7 +1045,7 @@ bool AnimationPlayer::is_valid() const {
 	return (playback.current.from);
 }
 
-float AnimationPlayer::get_current_animation_pos() const {
+float AnimationPlayer::get_current_animation_position() const {
 
 	ERR_FAIL_COND_V(!playback.current.from, 0);
 	return playback.current.pos;
@@ -1153,7 +1140,7 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 
 	switch (animation_process_mode) {
 
-		case ANIMATION_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 
@@ -1213,11 +1200,11 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationPlayer::_node_removed);
 	ClassDB::bind_method(D_METHOD("_animation_changed"), &AnimationPlayer::_animation_changed);
 
-	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation:Animation"), &AnimationPlayer::add_animation);
+	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "name"), &AnimationPlayer::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "name", "newname"), &AnimationPlayer::rename_animation);
 	ClassDB::bind_method(D_METHOD("has_animation", "name"), &AnimationPlayer::has_animation);
-	ClassDB::bind_method(D_METHOD("get_animation:Animation", "name"), &AnimationPlayer::get_animation);
+	ClassDB::bind_method(D_METHOD("get_animation", "name"), &AnimationPlayer::get_animation);
 	ClassDB::bind_method(D_METHOD("get_animation_list"), &AnimationPlayer::_get_animation_list);
 
 	ClassDB::bind_method(D_METHOD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
@@ -1251,22 +1238,22 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root", "path"), &AnimationPlayer::set_root);
 	ClassDB::bind_method(D_METHOD("get_root"), &AnimationPlayer::get_root);
 
-	ClassDB::bind_method(D_METHOD("seek", "pos_sec", "update"), &AnimationPlayer::seek, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_pos"), &AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(D_METHOD("seek", "seconds", "update"), &AnimationPlayer::seek, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_position"), &AnimationPlayer::get_current_animation_position);
 
-	ClassDB::bind_method(D_METHOD("find_animation", "animation:Animation"), &AnimationPlayer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationPlayer::find_animation);
 
 	ClassDB::bind_method(D_METHOD("clear_caches"), &AnimationPlayer::clear_caches);
 
 	ClassDB::bind_method(D_METHOD("set_animation_process_mode", "mode"), &AnimationPlayer::set_animation_process_mode);
 	ClassDB::bind_method(D_METHOD("get_animation_process_mode"), &AnimationPlayer::get_animation_process_mode);
 
-	ClassDB::bind_method(D_METHOD("get_current_animation_pos"), &AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
-	ADD_GROUP("Playback", "playback_");
+	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
@@ -1275,8 +1262,8 @@ void AnimationPlayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING, "name")));
 
-	BIND_CONSTANT(ANIMATION_PROCESS_FIXED);
-	BIND_CONSTANT(ANIMATION_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 }
 
 AnimationPlayer::AnimationPlayer() {

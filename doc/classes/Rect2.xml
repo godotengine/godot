@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Rect2" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		2D Axis-aligned bounding box.
+	</brief_description>
+	<description>
+		Rect2 provides an 2D Axis-Aligned Bounding Box. It consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="size" type="Vector2">
+			</argument>
+			<description>
+				Construct a [Rect2] by position and size.
+			</description>
+		</method>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="width" type="float">
+			</argument>
+			<argument index="3" name="height" type="float">
+			</argument>
+			<description>
+				Construct a [Rect2] by x, y, width and height.
+			</description>
+		</method>
+		<method name="clip">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="b" type="Rect2">
+			</argument>
+			<description>
+				Returns the intersection of this [Rect2] and b.
+			</description>
+		</method>
+		<method name="encloses">
+			<return type="bool">
+			</return>
+			<argument index="0" name="b" type="Rect2">
+			</argument>
+			<description>
+				Returns true if this [Rect2] completely encloses another one.
+			</description>
+		</method>
+		<method name="expand">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Return this [Rect2] expanded to include a given point.
+			</description>
+		</method>
+		<method name="get_area">
+			<return type="float">
+			</return>
+			<description>
+				Get the area of the [Rect2].
+			</description>
+		</method>
+		<method name="grow">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="by" type="float">
+			</argument>
+			<description>
+				Return a copy of the [Rect2] grown a given amount of units towards all the sides.
+			</description>
+		</method>
+		<method name="grow_individual">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="left" type="float">
+			</argument>
+			<argument index="1" name="top" type="float">
+			</argument>
+			<argument index="2" name="right" type="float">
+			</argument>
+			<argument index="3" name=" bottom" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="grow_margin">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="margin" type="int">
+			</argument>
+			<argument index="1" name="by" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_no_area">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the [Rect2] is flat or empty.
+			</description>
+		</method>
+		<method name="has_point">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Return true if the [Rect2] contains a point.
+			</description>
+		</method>
+		<method name="intersects">
+			<return type="bool">
+			</return>
+			<argument index="0" name="b" type="Rect2">
+			</argument>
+			<description>
+				Return true if the [Rect2] overlaps with another.
+			</description>
+		</method>
+		<method name="merge">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="b" type="Rect2">
+			</argument>
+			<description>
+				Combine this [Rect2] with another, a larger one is returned that contains both.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="end" type="Vector2" setter="" getter="">
+			Ending corner.
+		</member>
+		<member name="position" type="Vector2" setter="" getter="">
+			Position (starting corner).
+		</member>
+		<member name="size" type="Vector2" setter="" getter="">
+			Size from position to end.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -5,6 +5,9 @@ charset = utf-8
 end_of_line = lf
 indent_style = tab
 
+[*.{cpp,hpp,c,h,mm}]
+trim_trailing_whitespace = true
+
 [.travis.yml]
 indent_style = space
 indent_size = 2

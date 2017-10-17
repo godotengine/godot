@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +54,7 @@ class EditorFileSystemDirectory : public Object {
 		StringName type;
 		uint64_t modified_time;
 		uint64_t import_modified_time;
+		bool import_valid;
 		Vector<String> deps;
 		bool verified; //used for checking changes
 	};
@@ -82,6 +84,7 @@ public:
 	String get_file_path(int p_idx) const;
 	StringName get_file_type(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
+	bool get_file_import_is_valid(int p_idx) const;
 
 	EditorFileSystemDirectory *get_parent();
 
@@ -136,6 +139,11 @@ class EditorFileSystem : public Node {
 
 	void _scan_filesystem();
 
+	Set<String> late_added_files; //keep track of files that were added, these will be re-scanned
+	Set<String> late_update_files;
+
+	void _save_late_updated_files();
+
 	EditorFileSystemDirectory *filesystem;
 
 	static EditorFileSystem *singleton;
@@ -147,6 +155,7 @@ class EditorFileSystem : public Node {
 		uint64_t modification_time;
 		uint64_t import_modification_time;
 		Vector<String> deps;
+		bool import_valid;
 	};
 
 	HashMap<String, FileCache> file_cache;
@@ -167,7 +176,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
-	int md_count;
+	void _delete_internal_files(String p_file);
 
 	Set<String> valid_extensions;
 	Set<String> import_extensions;
@@ -194,6 +203,16 @@ class EditorFileSystem : public Node {
 	bool _check_missing_imported_files(const String &p_path);
 
 	bool reimport_on_missing_imported_files;
+
+	Vector<String> _get_dependencies(const String &p_path);
+
+	struct ImportFile {
+		String path;
+		int order;
+		bool operator<(const ImportFile &p_if) const {
+			return order < p_if.order;
+		}
+	};
 
 protected:
 	void _notification(int p_what);

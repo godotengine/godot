@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OptionButton" inherits="Button" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Button control that provides selectable options when pressed.
+	</brief_description>
+	<description>
+		OptionButton is a type button that provides a selectable list of items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_icon_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="int">
+			</argument>
+			<description>
+				Add an item, with a "texture" icon, text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<description>
+				Add an item, with text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
+			</description>
+		</method>
+		<method name="add_separator">
+			<return type="void">
+			</return>
+			<description>
+				Add a separator to the list of items. Separators help to group items. Separator also takes up an index and is appended at the end.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear all the items in the [OptionButton].
+			</description>
+		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of items in the OptionButton.
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the icon of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the ID of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the text of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_selected" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the current item index
+			</description>
+		</method>
+		<method name="get_selected_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selected_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="select">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Select an item by index and make it the current item.
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+				Set the icon of an item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Set the ID of an item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="metadata" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Set the text of an item at index "idx".
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="items" type="Array" setter="_set_items" getter="_get_items">
+		</member>
+		<member name="selected" type="int" setter="_select_int" getter="get_selected">
+		</member>
+	</members>
+	<signals>
+		<signal name="item_selected">
+			<argument index="0" name="ID" type="int">
+			</argument>
+			<description>
+				This signal is emitted when the current item was changed by the user. ID of the item selected is passed as argument (if no IDs were added, ID will be just the item index).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="arrow" type="Texture">
+		</theme_item>
+		<theme_item name="arrow_margin" type="int">
+		</theme_item>
+		<theme_item name="disabled" type="StyleBox">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="font_color_pressed" type="Color">
+		</theme_item>
+		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="pressed" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

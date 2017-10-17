@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +33,9 @@
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioPlayer : public Node {
+class AudioStreamPlayer : public Node {
 
-	GDCLASS(AudioPlayer, Node)
+	GDCLASS(AudioStreamPlayer, Node)
 
 public:
 	enum MixTarget {
@@ -59,7 +60,7 @@ private:
 	MixTarget mix_target;
 
 	void _mix_audio();
-	static void _mix_audios(void *self) { reinterpret_cast<AudioPlayer *>(self)->_mix_audio(); }
+	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer *>(self)->_mix_audio(); }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -82,7 +83,7 @@ public:
 	void seek(float p_seconds);
 	void stop();
 	bool is_playing() const;
-	float get_pos();
+	float get_playback_position();
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
@@ -93,9 +94,9 @@ public:
 	void set_mix_target(MixTarget p_target);
 	MixTarget get_mix_target() const;
 
-	AudioPlayer();
-	~AudioPlayer();
+	AudioStreamPlayer();
+	~AudioStreamPlayer();
 };
 
-VARIANT_ENUM_CAST(AudioPlayer::MixTarget)
+VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
 #endif // AUDIOPLAYER_H

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GIProbeData" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_dynamic_data" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_dynamic_range" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_propagation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_to_cell_xform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_compressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_interior" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bounds">
+			<return type="void">
+			</return>
+			<argument index="0" name="bounds" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="cell_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_compress">
+			<return type="void">
+			</return>
+			<argument index="0" name="compress" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_dynamic_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="dynamic_data" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_dynamic_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="dynamic_range" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="interior" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_normal_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_propagation">
+			<return type="void">
+			</return>
+			<argument index="0" name="propagation" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_to_cell_xform">
+			<return type="void">
+			</return>
+			<argument index="0" name="to_cell_xform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
+		</member>
+		<member name="bounds" type="Rect3" setter="set_bounds" getter="get_bounds">
+		</member>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size">
+		</member>
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
+		</member>
+		<member name="dynamic_data" type="PoolIntArray" setter="set_dynamic_data" getter="get_dynamic_data">
+		</member>
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
+		</member>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
+		</member>
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
+		</member>
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
+		</member>
+		<member name="to_cell_xform" type="Transform" setter="set_to_cell_xform" getter="get_to_cell_xform">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

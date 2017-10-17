@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +30,23 @@
 
 /*
 Adapted to Godot from the Bullet library.
-See corresponding header file for licensing info.
+*/
+
+/*
+Bullet Continuous Collision Detection and Physics Library
+ConeTwistJointSW is Copyright (c) 2007 Starbreeze Studios
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the use of this software.
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
+subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+
+Written by: Marcus Hennix
 */
 
 #include "cone_twist_joint_sw.h"
@@ -83,6 +100,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_biasFactor = 0.3f;
 	m_relaxationFactor = 1.0f;
 
+	m_angularOnly = false;
 	m_solveTwistLimit = false;
 	m_solveSwingLimit = false;
 
@@ -92,7 +110,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW *rbA, BodySW *rbB, const Transform &rb
 	m_appliedImpulse = 0;
 }
 
-bool ConeTwistJointSW::setup(real_t p_step) {
+bool ConeTwistJointSW::setup(real_t p_timestep) {
 	m_appliedImpulse = real_t(0.);
 
 	//set bias, sign, clear accumulator
@@ -219,7 +237,7 @@ bool ConeTwistJointSW::setup(real_t p_step) {
 	return true;
 }
 
-void ConeTwistJointSW::solve(real_t timeStep) {
+void ConeTwistJointSW::solve(real_t p_timestep) {
 
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
@@ -243,7 +261,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 			rel_vel = normal.dot(vel);
 			//positional error (zeroth order error)
 			real_t depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal
-			real_t impulse = depth * tau / timeStep * jacDiagABInv - rel_vel * jacDiagABInv;
+			real_t impulse = depth * tau / p_timestep * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
 			A->apply_impulse(pivotAInW - A->get_transform().origin, impulse_vector);
@@ -258,7 +276,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 
 		// solve swing limit
 		if (m_solveSwingLimit) {
-			real_t amplitude = ((angVelB - angVelA).dot(m_swingAxis) * m_relaxationFactor * m_relaxationFactor + m_swingCorrection * (real_t(1.) / timeStep) * m_biasFactor);
+			real_t amplitude = ((angVelB - angVelA).dot(m_swingAxis) * m_relaxationFactor * m_relaxationFactor + m_swingCorrection * (real_t(1.) / p_timestep) * m_biasFactor);
 			real_t impulseMag = amplitude * m_kSwing;
 
 			// Clamp the accumulated impulse
@@ -274,7 +292,7 @@ void ConeTwistJointSW::solve(real_t timeStep) {
 
 		// solve twist limit
 		if (m_solveTwistLimit) {
-			real_t amplitude = ((angVelB - angVelA).dot(m_twistAxis) * m_relaxationFactor * m_relaxationFactor + m_twistCorrection * (real_t(1.) / timeStep) * m_biasFactor);
+			real_t amplitude = ((angVelB - angVelA).dot(m_twistAxis) * m_relaxationFactor * m_relaxationFactor + m_twistCorrection * (real_t(1.) / p_timestep) * m_biasFactor);
 			real_t impulseMag = amplitude * m_kTwist;
 
 			// Clamp the accumulated impulse

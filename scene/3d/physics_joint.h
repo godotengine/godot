@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -320,73 +321,4 @@ public:
 VARIANT_ENUM_CAST(Generic6DOFJoint::Param);
 VARIANT_ENUM_CAST(Generic6DOFJoint::Flag);
 
-#if 0
-class PhysicsJoint : public Spatial {
-
-	GDCLASS(PhysicsJoint,Spatial);
-	OBJ_CATEGORY("3D Physics Nodes");
-
-	NodePath body_A;
-	NodePath body_B;
-	bool active;
-	bool no_collision;
-
-
-	RID indicator_instance;
-
-	RID _get_visual_instance_rid() const;
-protected:
-
-	RID joint;
-	RID indicator;
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-	virtual RID create(PhysicsBody*A,PhysicsBody*B)=0;
-	virtual void _update_indicator()=0;
-
-	void _disconnect();
-	void _connect();
-public:
-
-	void set_body_A(const NodePath& p_path);
-	void set_body_B(const NodePath& p_path);
-	NodePath get_body_A() const;
-	NodePath get_body_B() const;
-
-	void set_active(bool p_active);
-	bool is_active() const;
-
-	void set_disable_collision(bool p_active);
-	bool has_disable_collision() const;
-
-	void reconnect();
-
-	RID get_rid();
-
-	PhysicsJoint();
-	~PhysicsJoint();
-};
-
-
-
-class PhysicsJointPin : public PhysicsJoint {
-
-	GDCLASS( PhysicsJointPin, PhysicsJoint );
-
-protected:
-
-	virtual void _update_indicator();
-	virtual RID create(PhysicsBody*A,PhysicsBody*B);
-public:
-
-
-	PhysicsJointPin();
-};
-
 #endif // PHYSICS_JOINT_H
-#endif

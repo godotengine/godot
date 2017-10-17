@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,15 +48,23 @@ public:
 	real_t length() const;
 	void normalize();
 	Quat normalized() const;
+	bool is_normalized() const;
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat &q) const;
-	void set_euler(const Vector3 &p_euler);
-	Vector3 get_euler() const;
+
+	void set_euler_xyz(const Vector3 &p_euler);
+	Vector3 get_euler_xyz() const;
+	void set_euler_yxz(const Vector3 &p_euler);
+	Vector3 get_euler_yxz() const;
+
+	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
+	Vector3 get_euler() const { return get_euler_yxz(); };
+
 	Quat slerp(const Quat &q, const real_t &t) const;
 	Quat slerpni(const Quat &q, const real_t &t) const;
 	Quat cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const;
 
-	_FORCE_INLINE_ void get_axis_and_angle(Vector3 &r_axis, real_t &r_angle) const {
+	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		r_axis.x = x / Math::sqrt(1 - w * w);
 		r_axis.y = y / Math::sqrt(1 - w * w);

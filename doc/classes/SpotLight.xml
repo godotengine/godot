@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpotLight" inherits="Light" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Spotlight [Light], such as a reflector spotlight or a lantern.
+	</brief_description>
+	<description>
+		A SpotLight light is a type of [Light] node that emits lights in a specific direction, in the shape of a cone. The light is attenuated through the distance and this attenuation can be configured by changing the energy, radius and attenuation parameters of [Light]. TODO: Image of a spotlight.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="spot_angle" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="spot_angle_attenuation" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="spot_attenuation" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="spot_range" type="float" setter="set_param" getter="get_param">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScript" inherits="Script" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A script implemented in the GDScript programming language.
+	</brief_description>
+	<description>
+		A script implemented in the GDScript programming language. The script exends the functionality of all objects that instance it.
+		[method new] creates a new instance of the script. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_as_byte_code" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Returns byte code for the script source code.
+			</description>
+		</method>
+		<method name="new" qualifiers="vararg">
+			<return type="Object">
+			</return>
+			<description>
+				Returns a new instance of the script.
+				For example:
+				[codeblock]
+				var MyClass = load("myclass.gd")
+				var instance = MyClass.new()
+				assert(instance.get_script() == MyClass)
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

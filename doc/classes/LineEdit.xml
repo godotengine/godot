@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LineEdit" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Control that provides single line string editing.
+	</brief_description>
+	<description>
+		LineEdit provides a single line string editor, used for text fields.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="append_at_cursor">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Append text at cursor, scrolling the [LineEdit] when needed.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear the [LineEdit] text.
+			</description>
+		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets whether the line edit caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Gets the line edit caret blink speed.
+			</description>
+		</method>
+		<method name="cursor_set_blink_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the line edit caret to blink.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+				Set the line edit caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
+		<method name="get_align" qualifiers="const">
+			<return type="int" enum="LineEdit.Align">
+			</return>
+			<description>
+				Return the align mode of the [LineEdit].
+			</description>
+		</method>
+		<method name="get_cursor_position" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the cursor position inside the [LineEdit].
+			</description>
+		</method>
+		<method name="get_expand_to_text_length" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_length" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the maximum amount of characters the [LineEdit] can edit. If 0 is returned, no limit exists.
+			</description>
+		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu">
+			</return>
+			<description>
+				Return the [PopupMenu] of this [LineEdit].
+			</description>
+		</method>
+		<method name="get_placeholder" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the placeholder text.
+			</description>
+		</method>
+		<method name="get_placeholder_alpha" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return transparency of the placeholder text.
+			</description>
+		</method>
+		<method name="get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the text in the [LineEdit].
+			</description>
+		</method>
+		<method name="is_editable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return the [i]editable[/i] status of the [LineEdit] (see [method set_editable]).
+			</description>
+		</method>
+		<method name="is_secret" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return the [i]secret[/i] status of the [LineEdit] (see [method set_secret]).
+			</description>
+		</method>
+		<method name="menu_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="option" type="int">
+			</argument>
+			<description>
+				Execute a given action as defined in the MENU_* enum.
+			</description>
+		</method>
+		<method name="select">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="int" default="0">
+			</argument>
+			<argument index="1" name="to" type="int" default="-1">
+			</argument>
+			<description>
+				Select the text inside [LineEdit] by the given character positions. [code]from[/code] is default to the beginning. [code]to[/code] is default to the end.
+				[codeblock]
+				select()     # select all
+				select(5)    # select from the fifth character to the end.
+				select(2, 5) # select from the second to the fifth character.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="select_all">
+			<return type="void">
+			</return>
+			<description>
+				Select the whole string.
+			</description>
+		</method>
+		<method name="set_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="LineEdit.Align">
+			</argument>
+			<description>
+				Set text alignment of the [LineEdit].
+			</description>
+		</method>
+		<method name="set_cursor_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="int">
+			</argument>
+			<description>
+				Set the cursor position inside the [LineEdit], causing it to scroll if needed.
+			</description>
+		</method>
+		<method name="set_editable">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the [i]editable[/i] status of the [LineEdit]. When disabled, existing text can't be modified and new text can't be added.
+			</description>
+		</method>
+		<method name="set_expand_to_text_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_max_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="chars" type="int">
+			</argument>
+			<description>
+				Set the maximum amount of characters the [LineEdit] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
+			</description>
+		</method>
+		<method name="set_placeholder">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Set the placeholder text.
+			</description>
+		</method>
+		<method name="set_placeholder_alpha">
+			<return type="void">
+			</return>
+			<argument index="0" name="alpha" type="float">
+			</argument>
+			<description>
+				Set transparency of the placeholder text.
+			</description>
+		</method>
+		<method name="set_secret">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the [i]secret[/i] status of the [LineEdit]. When enabled, every character is displayed as "*".
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Set the text in the [LineEdit], clearing the existing one and the selection.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
+		</member>
+		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
+		</member>
+		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+		</member>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
+		</member>
+		<member name="expand_to_len" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
+		</member>
+		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length">
+		</member>
+		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha">
+		</member>
+		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder">
+		</member>
+		<member name="secret" type="bool" setter="set_secret" getter="is_secret">
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+		</member>
+	</members>
+	<signals>
+		<signal name="text_changed">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				When the text changes, this signal is emitted.
+			</description>
+		</signal>
+		<signal name="text_entered">
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				This signal is emitted when the user presses KEY_ENTER on the [LineEdit]. This signal is often used as an alternate confirmation mechanism in dialogs.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ALIGN_LEFT" value="0">
+			Align left.
+		</constant>
+		<constant name="ALIGN_CENTER" value="1">
+			Align center.
+		</constant>
+		<constant name="ALIGN_RIGHT" value="2">
+			Align right.
+		</constant>
+		<constant name="ALIGN_FILL" value="3">
+			Align fill.
+		</constant>
+		<constant name="MENU_CUT" value="0">
+			Cut (Copy and clear).
+		</constant>
+		<constant name="MENU_COPY" value="1">
+			Copy the selected text.
+		</constant>
+		<constant name="MENU_PASTE" value="2">
+			Paste the clipboard text over the selected text.
+		</constant>
+		<constant name="MENU_CLEAR" value="3">
+			Clear the text.
+		</constant>
+		<constant name="MENU_SELECT_ALL" value="4">
+			Select all text.
+		</constant>
+		<constant name="MENU_UNDO" value="5">
+			Undo an action.
+		</constant>
+		<constant name="MENU_MAX" value="6">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="cursor_color" type="Color">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_selected" type="Color">
+		</theme_item>
+		<theme_item name="minimum_spaces" type="int">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="read_only" type="StyleBox">
+		</theme_item>
+		<theme_item name="selection_color" type="Color">
+		</theme_item>
+	</theme_items>
+</class>

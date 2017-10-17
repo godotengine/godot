@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,12 +68,12 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 		return true;
 	}
 
-	if (String(p_name).begins_with("input/")) {
+	if (String(p_name).begins_with("input_")) {
 
-		int idx = String(p_name).get_slice("/", 1).to_int();
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int();
 		ERR_FAIL_INDEX_V(idx, inputs.size(), false);
 
-		String what = String(p_name).get_slice("/", 2);
+		String what = String(p_name).get_slice("/", 1);
 
 		if (what == "type") {
 
@@ -114,12 +115,12 @@ bool VisualScriptExpression::_get(const StringName &p_name, Variant &r_ret) cons
 		return true;
 	}
 
-	if (String(p_name).begins_with("input/")) {
+	if (String(p_name).begins_with("input_")) {
 
-		int idx = String(p_name).get_slice("/", 1).to_int();
+		int idx = String(p_name).get_slicec('_', 1).get_slicec('/', 0).to_int();
 		ERR_FAIL_INDEX_V(idx, inputs.size(), false);
 
-		String what = String(p_name).get_slice("/", 2);
+		String what = String(p_name).get_slice("/", 1);
 
 		if (what == "type") {
 
@@ -150,8 +151,8 @@ void VisualScriptExpression::_get_property_list(List<PropertyInfo> *p_list) cons
 
 	for (int i = 0; i < inputs.size(); i++) {
 
-		p_list->push_back(PropertyInfo(Variant::INT, "input/" + itos(i) + "/type", PROPERTY_HINT_ENUM, argt));
-		p_list->push_back(PropertyInfo(Variant::STRING, "input/" + itos(i) + "/name"));
+		p_list->push_back(PropertyInfo(Variant::INT, "input_" + itos(i) + "/type", PROPERTY_HINT_ENUM, argt));
+		p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name"));
 	}
 }
 
@@ -584,7 +585,6 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 								r_token.type = TK_BASIC_TYPE;
 								r_token.value = i;
 								return OK;
-								break;
 							}
 						}
 
@@ -831,7 +831,6 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_BUILTIN_FUNC: {
 				//builtin function
 
-				Variant::Type bt = Variant::Type(int(tk.value));
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
@@ -1024,7 +1023,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_OP_OR: op = Variant::OP_OR; break;
 			case TK_OP_NOT: op = Variant::OP_NOT; break;
 			case TK_OP_ADD: op = Variant::OP_ADD; break;
-			case TK_OP_SUB: op = Variant::OP_SUBSTRACT; break;
+			case TK_OP_SUB: op = Variant::OP_SUBTRACT; break;
 			case TK_OP_MUL: op = Variant::OP_MULTIPLY; break;
 			case TK_OP_DIV: op = Variant::OP_DIVIDE; break;
 			case TK_OP_MOD: op = Variant::OP_MODULE; break;
@@ -1086,7 +1085,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				case Variant::OP_MODULE: priority = 2; break;
 
 				case Variant::OP_ADD: priority = 3; break;
-				case Variant::OP_SUBSTRACT: priority = 3; break;
+				case Variant::OP_SUBTRACT: priority = 3; break;
 
 				case Variant::OP_SHIFT_LEFT: priority = 4; break;
 				case Variant::OP_SHIFT_RIGHT: priority = 4; break;
@@ -1179,8 +1178,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			if (expression[next_op + 1].is_op) {
 				// this is not invalid and can really appear
 				// but it becomes invalid anyway because no binary op
-				// can be followed by an unary op in a valid combination,
-				// due to how precedence works, unaries will always dissapear first
+				// can be followed by a unary op in a valid combination,
+				// due to how precedence works, unaries will always disappear first
 
 				_set_error("Unexpected two consecutive operators.");
 				return NULL;

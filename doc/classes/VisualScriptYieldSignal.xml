@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptYieldSignal" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_base_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_base_type" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_call_mode" qualifiers="const">
+			<return type="int" enum="VisualScriptYieldSignal.CallMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_signal" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="base_path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_base_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="base_type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_call_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="VisualScriptYieldSignal.CallMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_signal">
+			<return type="void">
+			</return>
+			<argument index="0" name="signal" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">
+		</member>
+		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptYieldSignal.CallMode">
+		</member>
+		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
+		</member>
+		<member name="signal" type="String" setter="set_signal" getter="get_signal">
+		</member>
+	</members>
+	<constants>
+		<constant name="CALL_MODE_SELF" value="0">
+		</constant>
+		<constant name="CALL_MODE_NODE_PATH" value="1">
+		</constant>
+		<constant name="CALL_MODE_INSTANCE" value="2">
+		</constant>
+	</constants>
+</class>

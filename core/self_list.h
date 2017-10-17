@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,6 +50,25 @@ public:
 			if (_first)
 				_first->_prev = p_elem;
 			_first = p_elem;
+		}
+		void add_last(SelfList<T> *p_elem) {
+
+			ERR_FAIL_COND(p_elem->_root);
+
+			if (!_first) {
+				add(p_elem);
+				return;
+			}
+
+			SelfList<T> *e = _first;
+
+			while (e->next()) {
+				e = e->next();
+			}
+
+			e->_next = p_elem;
+			p_elem->_prev = e->_next;
+			p_elem->_root = this;
 		}
 
 		void remove(SelfList<T> *p_elem) {

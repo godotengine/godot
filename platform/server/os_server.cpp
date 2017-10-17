@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,12 +62,7 @@ void OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
-	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}
+	AudioDriverManager::initialize(p_audio_driver);
 
 	sample_manager = memnew(SampleManagerMallocSW);
 	audio_server = memnew(AudioServerSW(sample_manager));
@@ -142,7 +138,7 @@ int OS_Server::get_mouse_button_state() const {
 	return 0;
 }
 
-Point2 OS_Server::get_mouse_pos() const {
+Point2 OS_Server::get_mouse_position() const {
 
 	return Point2();
 }
@@ -199,7 +195,7 @@ void OS_Server::move_window_to_foreground() {
 void OS_Server::set_cursor_shape(CursorShape p_shape) {
 }
 
-PowerState OS_Server::get_power_state() {
+OS::PowerState OS_Server::get_power_state() {
 	return power_manager->get_power_state();
 }
 
@@ -231,7 +227,6 @@ void OS_Server::run() {
 
 OS_Server::OS_Server() {
 
-	AudioDriverManager::add_driver(&driver_dummy);
 	//adriver here
 	grab = false;
 };

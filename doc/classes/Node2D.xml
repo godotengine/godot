@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Node2D" inherits="CanvasItem" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A 2D game object, parent of all 2D related nodes. Has a position, rotation, scale and Z-index.
+	</brief_description>
+	<description>
+		A 2D game object, with a position, rotation and scale. All 2D physics nodes and sprites inherit from Node2D. Use Node2D as a parent node to move, scale and rotate children in a 2D project. Also gives control on the node's render order.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="apply_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="Vector2">
+			</argument>
+			<description>
+				Multiplies the current scale by the 'ratio' vector.
+			</description>
+		</method>
+		<method name="edit_set_pivot">
+			<return type="void">
+			</return>
+			<argument index="0" name="pivot" type="Vector2">
+			</argument>
+			<description>
+				Set the pivot position of the 2D node to 'pivot' value. Only some Node2Ds implement this method.
+			</description>
+		</method>
+		<method name="get_angle_to" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Returns the angle between the node and the 'point' in radians.
+			</description>
+		</method>
+		<method name="get_global_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the node's global position.
+			</description>
+		</method>
+		<method name="get_global_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the node's global rotation in radians.
+			</description>
+		</method>
+		<method name="get_global_rotation_in_degrees" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the node's global rotation in degrees.
+			</description>
+		</method>
+		<method name="get_global_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the node's global scale.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the node's position.
+			</description>
+		</method>
+		<method name="get_relative_transform_to_parent" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="parent" type="Node">
+			</argument>
+			<description>
+				Returns the [Transform2D] relative to this node's parent.
+			</description>
+		</method>
+		<method name="get_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the node's rotation in radians.
+			</description>
+		</method>
+		<method name="get_rotation_in_degrees" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the node's rotation in degrees.
+			</description>
+		</method>
+		<method name="get_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the node's scale.
+			</description>
+		</method>
+		<method name="get_z" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the node's Z-index.
+			</description>
+		</method>
+		<method name="global_translate">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+				Adds the 'offset' vector to the node's global position.
+			</description>
+		</method>
+		<method name="is_z_relative" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if this node's Z-index is relative to its parent's. Else, returns false.
+			</description>
+		</method>
+		<method name="look_at">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+				Rotates the node so it points towards the 'point'.
+			</description>
+		</method>
+		<method name="move_local_x">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<argument index="1" name="scaled" type="bool" default="false">
+			</argument>
+			<description>
+				Apply a local translation on the node's X axis based on the process's 'delta'. If 'scaled' is false, normalizes the movement.
+			</description>
+		</method>
+		<method name="move_local_y">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<argument index="1" name="scaled" type="bool" default="false">
+			</argument>
+			<description>
+				Apply a local translation on the node's Y axis based on the process's 'delta'. If 'scaled' is false, normalizes the movement.
+			</description>
+		</method>
+		<method name="rotate">
+			<return type="void">
+			</return>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+				Apply a rotation to the node, in radians, starting from its current rotation.
+			</description>
+		</method>
+		<method name="set_global_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Set the node's global position.
+			</description>
+		</method>
+		<method name="set_global_rotation">
+			<return type="void">
+			</return>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+				Set the node's global rotation in radians.
+			</description>
+		</method>
+		<method name="set_global_rotation_in_degrees">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+				Set the node's global rotation in degrees.
+			</description>
+		</method>
+		<method name="set_global_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the node's global scale.
+			</description>
+		</method>
+		<method name="set_global_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="Transform2D">
+			</argument>
+			<description>
+				Set the node's global [Transform2D].
+			</description>
+		</method>
+		<method name="set_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+				Set the node's position.
+			</description>
+		</method>
+		<method name="set_rotation">
+			<return type="void">
+			</return>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+				Set the node's rotation in radians.
+			</description>
+		</method>
+		<method name="set_rotation_in_degrees">
+			<return type="void">
+			</return>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+				Set the node's rotation in degrees.
+			</description>
+		</method>
+		<method name="set_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the node's scale.
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="Transform2D">
+			</argument>
+			<description>
+				Set the node's local [Transform2D].
+			</description>
+		</method>
+		<method name="set_z">
+			<return type="void">
+			</return>
+			<argument index="0" name="z" type="int">
+			</argument>
+			<description>
+				Set the node's Z-index.
+			</description>
+		</method>
+		<method name="set_z_as_relative">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Make the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
+			</description>
+		</method>
+		<method name="to_global" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="local_point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="to_local" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="global_point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="translate">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+				Translate the node locally by the 'offset' vector, starting from its current local position.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
+			Global position.
+		</member>
+		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
+			Global rotation in radians.
+		</member>
+		<member name="global_rotation_deg" type="float" setter="set_global_rotation_in_degrees" getter="get_global_rotation_in_degrees">
+			Global rotation in degrees.
+		</member>
+		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
+			Global scale.
+		</member>
+		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
+			Global [Transform2D].
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position">
+			Position, relative to the node's parent.
+		</member>
+		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation">
+			Rotation in radians.
+		</member>
+		<member name="rotation_deg" type="float" setter="set_rotation_in_degrees" getter="get_rotation_in_degrees">
+			Rotation in degrees.
+		</member>
+		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale">
+			Rotation in degrees.
+		</member>
+		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
+			Local [Transform2D].
+		</member>
+		<member name="z" type="int" setter="set_z" getter="get_z">
+			Z-index. Controls the order in which the nodes render. A node with a higher Z-index will display in front of others.
+		</member>
+		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative">
+			Make the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

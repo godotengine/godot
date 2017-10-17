@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,56 +31,117 @@
 #define CURVE_H
 
 #include "resource.h"
-#if 0
-class Curve2D : public Resource {
 
-	GDCLASS(Curve2D,Resource);
+// y(x) curve
+class Curve : public Resource {
+	GDCLASS(Curve, Resource)
+public:
+	static const int MIN_X = 0.f;
+	static const int MAX_X = 1.f;
 
-	struct Point {
+	static const char *SIGNAL_RANGE_CHANGED;
 
-		Vector2 in;
-		Vector2 out;
-		Vector2 pos;
+	enum TangentMode {
+		TANGENT_FREE = 0,
+		TANGENT_LINEAR,
+		TANGENT_MODE_COUNT
 	};
 
+	struct Point {
+		Vector2 pos;
+		real_t left_tangent;
+		real_t right_tangent;
+		TangentMode left_mode;
+		TangentMode right_mode;
 
-	Vector<Point> points;
+		Point() {
+			left_tangent = 0;
+			right_tangent = 0;
+			left_mode = TANGENT_FREE;
+			right_mode = TANGENT_FREE;
+		}
+
+		Point(Vector2 p_pos,
+				real_t p_left = 0,
+				real_t p_right = 0,
+				TangentMode p_left_mode = TANGENT_FREE,
+				TangentMode p_right_mode = TANGENT_FREE) {
+
+			pos = p_pos;
+			left_tangent = p_left;
+			right_tangent = p_right;
+			left_mode = p_left_mode;
+			right_mode = p_right_mode;
+		}
+	};
+
+	Curve();
+
+	int get_point_count() const { return _points.size(); }
+
+	int add_point(Vector2 p_pos,
+			real_t left_tangent = 0,
+			real_t right_tangent = 0,
+			TangentMode left_mode = TANGENT_FREE,
+			TangentMode right_mode = TANGENT_FREE);
+
+	void remove_point(int p_index);
+	void clear_points();
+
+	int get_index(real_t offset) const;
+
+	void set_point_value(int p_index, real_t pos);
+	int set_point_offset(int p_index, float offset);
+	Vector2 get_point_position(int p_index) const;
+
+	Point get_point(int p_index) const;
+
+	float get_min_value() const { return _min_value; }
+	void set_min_value(float p_min);
+
+	float get_max_value() const { return _max_value; }
+	void set_max_value(float p_max);
+
+	real_t interpolate(real_t offset) const;
+	real_t interpolate_local_nocheck(int index, real_t local_offset) const;
+
+	void clean_dupes();
+
+	void set_point_left_tangent(int i, real_t tangent);
+	void set_point_right_tangent(int i, real_t tangent);
+	void set_point_left_mode(int i, TangentMode p_mode);
+	void set_point_right_mode(int i, TangentMode p_mode);
+
+	real_t get_point_left_tangent(int i) const;
+	real_t get_point_right_tangent(int i) const;
+	TangentMode get_point_left_mode(int i) const;
+	TangentMode get_point_right_mode(int i) const;
+
+	void update_auto_tangents(int i);
+
+	Array get_data() const;
+	void set_data(Array input);
+
+	void bake();
+	int get_bake_resolution() const { return _bake_resolution; }
+	void set_bake_resolution(int p_resolution);
+	real_t interpolate_baked(real_t offset);
 
 protected:
-
 	static void _bind_methods();
 
-	void set_points_in(const Vector2Array& p_points_in);
-	void set_points_out(const Vector2Array& p_points_out);
-	void set_points_pos(const Vector2Array& p_points_pos);
+private:
+	void mark_dirty();
 
-	Vector2Array get_points_in() const;
-	Vector2Array get_points_out() const;
-	Vector2Array get_points_pos() const;
-
-public:
-
-
-	int get_point_count() const;
-	void add_point(const Vector2& p_pos, const Vector2& p_in=Vector2(), const Vector2& p_out=Vector2());
-	void set_point_pos(int p_index, const Vector2& p_pos);
-	Vector2 get_point_pos(int p_index) const;
-	void set_point_in(int p_index, const Vector2& p_in);
-	Vector2 get_point_in(int p_index) const;
-	void set_point_out(int p_index, const Vector2& p_out);
-	Vector2 get_point_out(int p_index) const;
-	void remove_point(int p_index);
-
-	Vector2 interpolate(int p_index, float p_offset) const;
-	Vector2 interpolatef(real_t p_findex) const;
-	PoolVector<Point2> bake(int p_subdivs=10) const;
-	void advance(real_t p_distance,int &r_index, real_t &r_pos) const;
-	void get_approx_position_from_offset(real_t p_offset,int &r_index, real_t &r_pos,int p_subdivs=16) const;
-
-	Curve2D();
+	Vector<Point> _points;
+	bool _baked_cache_dirty;
+	Vector<real_t> _baked_cache;
+	int _bake_resolution;
+	float _min_value;
+	float _max_value;
 };
 
-#endif
+VARIANT_ENUM_CAST(Curve::TangentMode)
 
 class Curve2D : public Resource {
 
@@ -118,8 +180,8 @@ protected:
 public:
 	int get_point_count() const;
 	void add_point(const Vector2 &p_pos, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
-	void set_point_pos(int p_index, const Vector2 &p_pos);
-	Vector2 get_point_pos(int p_index) const;
+	void set_point_position(int p_index, const Vector2 &p_pos);
+	Vector2 get_point_position(int p_index) const;
 	void set_point_in(int p_index, const Vector2 &p_in);
 	Vector2 get_point_in(int p_index) const;
 	void set_point_out(int p_index, const Vector2 &p_out);
@@ -130,14 +192,14 @@ public:
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
 
-	void set_bake_interval(float p_distance);
+	void set_bake_interval(float p_tolerance);
 	float get_bake_interval() const;
 
 	float get_baked_length() const;
 	Vector2 interpolate_baked(float p_offset, bool p_cubic = false) const;
-	PoolVector2Array get_baked_points() const; //useful for going thru
+	PoolVector2Array get_baked_points() const; //useful for going through
 
-	PoolVector2Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector2Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve2D();
 };
@@ -183,8 +245,8 @@ protected:
 public:
 	int get_point_count() const;
 	void add_point(const Vector3 &p_pos, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
-	void set_point_pos(int p_index, const Vector3 &p_pos);
-	Vector3 get_point_pos(int p_index) const;
+	void set_point_position(int p_index, const Vector3 &p_pos);
+	Vector3 get_point_position(int p_index) const;
 	void set_point_tilt(int p_index, float p_tilt);
 	float get_point_tilt(int p_index) const;
 	void set_point_in(int p_index, const Vector3 &p_in);
@@ -197,16 +259,16 @@ public:
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
 
-	void set_bake_interval(float p_distance);
+	void set_bake_interval(float p_tolerance);
 	float get_bake_interval() const;
 
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	float interpolate_baked_tilt(float p_offset) const;
-	PoolVector3Array get_baked_points() const; //useful for going thru
-	PoolRealArray get_baked_tilts() const; //useful for going thru
+	PoolVector3Array get_baked_points() const; //useful for going through
+	PoolRealArray get_baked_tilts() const; //useful for going through
 
-	PoolVector3Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
+	PoolVector3Array tessellate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve3D();
 };

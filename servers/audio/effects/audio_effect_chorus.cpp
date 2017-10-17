@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,8 +77,8 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		uint64_t local_cycles = cycles[vc];
 		uint64_t increment = llrint(cycles_to_mix / (double)p_frame_count * (double)(1 << AudioEffectChorus::CYCLES_FRAC));
 
-		//check the LFO doesnt read ahead of the write pos
-		if ((((int)max_depth_frames) + 10) > delay_frames) { //10 as some threshold to avoid precision stuff
+		//check the LFO doesn't read ahead of the write pos
+		if ((((unsigned int)max_depth_frames) + 10) > delay_frames) { //10 as some threshold to avoid precision stuff
 			delay_frames += (int)max_depth_frames - delay_frames;
 			delay_frames += 10; //threshold to avoid precision stuff
 		}
@@ -181,9 +182,8 @@ Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 
 void AudioEffectChorus::set_voice_count(int p_voices) {
 
-	ERR_FAIL_COND(p_voices < 1 || p_voices >= MAX_VOICES);
+	ERR_FAIL_COND(p_voices < 1 || p_voices > MAX_VOICES);
 	voice_count = p_voices;
-	_change_notify();
 }
 
 int AudioEffectChorus::get_voice_count() const {

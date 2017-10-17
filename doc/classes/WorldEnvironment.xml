@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WorldEnvironment" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Sets environment properties for the entire scene
+	</brief_description>
+	<description>
+		The [WorldEnvironment] node can be added to a scene in order to set default [Environment] variables for the scene. The [WorldEnvironment] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [WorldEnvironment] may be instanced in a given scene at a time. The [WorldEnvironment] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_environment" qualifiers="const">
+			<return type="Environment">
+			</return>
+			<description>
+				Return the [Environment] currently bound.
+			</description>
+		</method>
+		<method name="set_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="Environment">
+			</argument>
+			<description>
+				Set the currently bound [Environment] to the one specified.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

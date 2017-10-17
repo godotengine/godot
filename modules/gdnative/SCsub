@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+
+Import('env')
+
+gdn_env = env.Clone()
+
+gdn_env.add_source_files(env.modules_sources, "gd_native_library_editor.cpp")
+gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
+gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
+gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
+gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
+
+gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
+
+SConscript("nativearvr/SCsub")
+
+def _spaced(e):
+    return e if e[-1] == '*' else e + ' '
+
+def _build_gdnative_api_struct_header(api):
+    out = [
+        '/* THIS FILE IS GENERATED DO NOT EDIT */',
+        '#ifndef GODOT_GDNATIVE_API_STRUCT_H',
+        '#define GODOT_GDNATIVE_API_STRUCT_H',
+        '',
+        '#include <gdnative/gdnative.h>',
+        '#include <nativearvr/godot_nativearvr.h>',
+        '#include <nativescript/godot_nativescript.h>',
+        '',
+        '#define GDNATIVE_API_INIT(options) do { extern const godot_gdnative_api_struct *_gdnative_wrapper_api_struct; _gdnative_wrapper_api_struct = options->api_struct; } while (0)',
+        '',
+        '#ifdef __cplusplus',
+        'extern "C" {',
+        '#endif',
+        '',
+        'typedef struct godot_gdnative_api_struct {',
+        '\tvoid *next;',
+        '\tconst char *version;',
+    ]
+
+    for funcdef in api['api']:
+        args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
+        out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
+
+    out += [
+        '} godot_gdnative_api_struct;',
+        '',
+        '#ifdef __cplusplus',
+        '}',
+        '#endif',
+        '',
+        '#endif // GODOT_GDNATIVE_API_STRUCT_H',
+        ''
+    ]
+    return '\n'.join(out)
+
+def _build_gdnative_api_struct_source(api):
+    out = [
+        '/* THIS FILE IS GENERATED DO NOT EDIT */',
+        '',
+        '#include <gdnative_api_struct.gen.h>',
+        '',
+        'const char *_gdnative_api_version = "%s";' % api['version'],
+        'extern const godot_gdnative_api_struct api_struct = {',
+        '\tNULL,',
+        '\t_gdnative_api_version,',
+    ]
+
+    for funcdef in api['api']:
+        out.append('\t%s,' % funcdef['name'])
+    out.append('};\n')
+
+    return '\n'.join(out)
+
+def build_gdnative_api_struct(target, source, env):
+    import json
+    from collections import OrderedDict
+
+    with open(source[0].path, 'r') as fd:
+        api = json.load(fd)
+
+    header, source = target
+    with open(header.path, 'w') as fd:
+        fd.write(_build_gdnative_api_struct_header(api))
+    with open(source.path, 'w') as fd:
+        fd.write(_build_gdnative_api_struct_source(api))
+
+_, gensource = gdn_env.Command(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+                               'gdnative_api.json', build_gdnative_api_struct)
+gdn_env.add_source_files(env.modules_sources, [gensource])
+
+env.use_ptrcall = True
+
+
+def _build_gdnative_wrapper_code(api):
+    out = [
+        '/* THIS FILE IS GENERATED DO NOT EDIT */',
+        '',
+        '#include <gdnative/gdnative.h>',
+        '#include <nativescript/godot_nativescript.h>',
+        '',
+        '#include <gdnative_api_struct.gen.h>',
+        '',
+        'godot_gdnative_api_struct *_gdnative_wrapper_api_struct = 0;',
+        '',
+        '#ifdef __cplusplus',
+        'extern "C" {',
+        '#endif',
+        ''
+    ]
+
+    for funcdef in api['api']:
+        args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
+        out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
+
+        args = ', '.join(['%s' % n for t, n in funcdef['arguments']])
+
+        return_line = '\treturn ' if funcdef['return_type'] != 'void' else '\t'
+        return_line += '_gdnative_wrapper_api_struct->' + funcdef['name'] + '(' + args + ');'
+
+        out.append(return_line)
+        out.append('}')
+        out.append('')
+
+    out += [
+        '#ifdef __cplusplus',
+        '}',
+        '#endif'
+    ]
+
+    return '\n'.join(out)
+
+
+def build_gdnative_wrapper_code(target, source, env):
+    import json
+    with open(source[0].path, 'r') as fd:
+        api = json.load(fd)
+
+    wrapper_file = target[0]
+    with open(wrapper_file.path, 'w') as fd:
+        fd.write(_build_gdnative_wrapper_code(api))
+
+
+
+if ARGUMENTS.get('gdnative_wrapper', False):
+    #build wrapper code
+    gensource, = gdn_env.Command('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', build_gdnative_wrapper_code)
+
+    gd_wrapper_env = env.Clone()
+    gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
+
+    # I think this doesn't work on MSVC yet...
+    gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
+
+    gd_wrapper_env.Library("#bin/gdnative_wrapper_code", [gensource])

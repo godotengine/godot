@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
@@ -130,7 +131,12 @@ void SplitContainer::_resort() {
 
 		if (ratiomode) {
 
-			middle_sep = ms_first[axis] + available / 2;
+			int first_ratio = first->get_stretch_ratio();
+			int second_ratio = second->get_stretch_ratio();
+
+			float ratio = float(first_ratio) / (first_ratio + second_ratio);
+
+			middle_sep = ms_first[axis] + available * ratio;
 
 		} else if (expand_first_mode) {
 
@@ -143,12 +149,17 @@ void SplitContainer::_resort() {
 
 	} else if (ratiomode) {
 
-		if (expand_ofs < -(available / 2))
-			expand_ofs = -(available / 2);
-		else if (expand_ofs > (available / 2))
-			expand_ofs = (available / 2);
+		int first_ratio = first->get_stretch_ratio();
+		int second_ratio = second->get_stretch_ratio();
 
-		middle_sep = ms_first[axis] + available / 2 + expand_ofs;
+		float ratio = float(first_ratio) / (first_ratio + second_ratio);
+
+		if (expand_ofs < -(available * ratio))
+			expand_ofs = -(available * ratio);
+		else if (expand_ofs > (available * (1.0 - ratio)))
+			expand_ofs = (available * (1.0 - ratio));
+
+		middle_sep = ms_first[axis] + available * ratio + expand_ofs;
 
 	} else if (expand_first_mode) {
 
@@ -185,7 +196,7 @@ void SplitContainer::_resort() {
 	}
 
 	update();
-	_change_notify("split/offset");
+	_change_notify("split_offset");
 }
 
 Size2 SplitContainer::get_minimum_size() const {
@@ -269,32 +280,32 @@ void SplitContainer::_notification(int p_what) {
 	}
 }
 
-void SplitContainer::_gui_input(const InputEvent &p_event) {
+void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility != DRAGGER_VISIBLE)
 		return;
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		const InputEventMouseButton &mb = p_event.mouse_button;
+	if (mb.is_valid()) {
 
-		if (mb.button_index == BUTTON_LEFT) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
 
-			if (mb.pressed) {
+			if (mb->is_pressed()) {
 				int sep = get_constant("separation");
 
 				if (vertical) {
 
-					if (mb.y > middle_sep && mb.y < middle_sep + sep) {
+					if (mb->get_position().y > middle_sep && mb->get_position().y < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb.y;
+						drag_from = mb->get_position().y;
 						drag_ofs = expand_ofs;
 					}
 				} else {
 
-					if (mb.x > middle_sep && mb.x < middle_sep + sep) {
+					if (mb->get_position().x > middle_sep && mb->get_position().x < middle_sep + sep) {
 						dragging = true;
-						drag_from = mb.x;
+						drag_from = mb->get_position().x;
 						drag_ofs = expand_ofs;
 					}
 				}
@@ -305,13 +316,13 @@ void SplitContainer::_gui_input(const InputEvent &p_event) {
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
 
-		const InputEventMouseMotion &mm = p_event.mouse_motion;
+	if (mm.is_valid()) {
 
 		if (dragging) {
 
-			expand_ofs = drag_ofs + ((vertical ? mm.y : mm.x) - drag_from);
+			expand_ofs = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
 			queue_sort();
 			emit_signal("dragged", get_split_offset());
 		}
@@ -399,9 +410,9 @@ void SplitContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden & Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
 
-	BIND_CONSTANT(DRAGGER_VISIBLE);
-	BIND_CONSTANT(DRAGGER_HIDDEN);
-	BIND_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
+	BIND_ENUM_CONSTANT(DRAGGER_VISIBLE);
+	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);
+	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
 }
 
 SplitContainer::SplitContainer(bool p_vertical) {

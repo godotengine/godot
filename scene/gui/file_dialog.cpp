@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,21 +61,20 @@ void FileDialog::_notification(int p_what) {
 	}
 }
 
-void FileDialog::_unhandled_input(const InputEvent &p_event) {
+void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::KEY && is_window_modal_on_top()) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && is_window_modal_on_top()) {
 
-		const InputEventKey &k = p_event.key;
-
-		if (k.pressed) {
+		if (k->is_pressed()) {
 
 			bool handled = true;
 
-			switch (k.scancode) {
+			switch (k->get_scancode()) {
 
 				case KEY_H: {
 
-					if (k.mod.command) {
+					if (k->get_command()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
 						handled = false;
@@ -115,6 +115,9 @@ Vector<String> FileDialog::get_selected_files() const {
 void FileDialog::update_dir() {
 
 	dir->set_text(dir_access->get_current_dir());
+	if (drives->is_visible()) {
+		drives->select(dir_access->get_current_drive());
+	}
 }
 
 void FileDialog::_dir_entered(String p_dir) {
@@ -183,8 +186,8 @@ void FileDialog::_action_pressed() {
 		String path = dir_access->get_current_dir();
 
 		path = path.replace("\\", "/");
-
-		if (TreeItem *item = tree->get_selected()) {
+		TreeItem *item = tree->get_selected();
+		if (item) {
 			Dictionary d = item->get_metadata(0);
 			if (d["dir"]) {
 				path = path.plus_file(d["name"]);
@@ -335,8 +338,8 @@ void FileDialog::update_file_list() {
 		dirs.push_back("..");
 	}
 
-	dirs.sort_custom<NoCaseComparator>();
-	files.sort_custom<NoCaseComparator>();
+	dirs.sort_custom<NaturalNoCaseComparator>();
+	files.sort_custom<NaturalNoCaseComparator>();
 
 	while (!dirs.empty()) {
 		String &dir_name = dirs.front()->get();
@@ -464,7 +467,7 @@ void FileDialog::update_filters() {
 		String flt = filters[i].get_slice(";", 0).strip_edges();
 		String desc = filters[i].get_slice(";", 1).strip_edges();
 		if (desc.length())
-			filter->add_item(String(XL_MESSAGE(desc)) + " ( " + flt + " )");
+			filter->add_item(String(tr(desc)) + " ( " + flt + " )");
 		else
 			filter->add_item("( " + flt + " )");
 	}
@@ -666,7 +669,6 @@ void FileDialog::_update_drives() {
 		drives->show();
 
 		for (int i = 0; i < dir_access->get_drive_count(); i++) {
-			String d = dir_access->get_drive(i);
 			drives->add_item(dir_access->get_drive(i));
 		}
 
@@ -701,7 +703,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_path", "path"), &FileDialog::set_current_path);
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &FileDialog::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &FileDialog::get_mode);
-	ClassDB::bind_method(D_METHOD("get_vbox:VBoxContainer"), &FileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_vbox"), &FileDialog::get_vbox);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &FileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
@@ -718,16 +720,15 @@ void FileDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("files_selected", PropertyInfo(Variant::POOL_STRING_ARRAY, "paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected", PropertyInfo(Variant::STRING, "dir")));
 
-	BIND_CONSTANT(MODE_OPEN_FILE);
-	BIND_CONSTANT(MODE_OPEN_FILES);
-	BIND_CONSTANT(MODE_OPEN_DIR);
-	BIND_CONSTANT(MODE_OPEN_ANY);
+	BIND_ENUM_CONSTANT(MODE_OPEN_FILE);
+	BIND_ENUM_CONSTANT(MODE_OPEN_FILES);
+	BIND_ENUM_CONSTANT(MODE_OPEN_DIR);
+	BIND_ENUM_CONSTANT(MODE_OPEN_ANY);
+	BIND_ENUM_CONSTANT(MODE_SAVE_FILE);
 
-	BIND_CONSTANT(MODE_SAVE_FILE);
-
-	BIND_CONSTANT(ACCESS_RESOURCES);
-	BIND_CONSTANT(ACCESS_USERDATA);
-	BIND_CONSTANT(ACCESS_FILESYSTEM);
+	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
+	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
+	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
@@ -850,9 +851,9 @@ void LineEditFileChooser::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_browse"), &LineEditFileChooser::_browse);
 	ClassDB::bind_method(D_METHOD("_chosen"), &LineEditFileChooser::_chosen);
-	ClassDB::bind_method(D_METHOD("get_button:Button"), &LineEditFileChooser::get_button);
-	ClassDB::bind_method(D_METHOD("get_line_edit:LineEdit"), &LineEditFileChooser::get_line_edit);
-	ClassDB::bind_method(D_METHOD("get_file_dialog:FileDialog"), &LineEditFileChooser::get_file_dialog);
+	ClassDB::bind_method(D_METHOD("get_button"), &LineEditFileChooser::get_button);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &LineEditFileChooser::get_line_edit);
+	ClassDB::bind_method(D_METHOD("get_file_dialog"), &LineEditFileChooser::get_file_dialog);
 }
 
 void LineEditFileChooser::_chosen(const String &p_text) {

@@ -59,16 +59,15 @@
 
 #include <ctype.h>
 #include <e_os.h>
+// -- GODOT start --
+#include <openssl/opensslconf.h>
+// -- GODOT end --
 #include "o_str.h"
 
 #if !defined(OPENSSL_IMPLEMENTS_strncasecmp) && \
     !defined(OPENSSL_SYSNAME_WIN32) && !defined(OPENSSL_SYSNAME_WINCE) && \
     !defined(NETWARE_CLIB)
-#ifdef _WIN32
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+# include <strings.h>
 #endif
 
 int OPENSSL_strncasecmp(const char *str1, const char *str2, size_t n)

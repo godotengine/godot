@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +118,7 @@ public:
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_RETURN,
+		TK_CF_DISCARD,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
 		TK_CURLY_BRACKET_OPEN,
@@ -130,6 +132,9 @@ public:
 		TK_PERIOD,
 		TK_UNIFORM,
 		TK_VARYING,
+		TK_ARG_IN,
+		TK_ARG_OUT,
+		TK_ARG_INOUT,
 		TK_RENDER_MODE,
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
@@ -139,6 +144,7 @@ public:
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
 		TK_EOF,
@@ -227,6 +233,7 @@ public:
 		OP_POST_DECREMENT,
 		OP_CALL,
 		OP_CONSTRUCT,
+		OP_INDEX,
 		OP_MAX
 	};
 
@@ -238,7 +245,15 @@ public:
 		FLOW_OP_DO,
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
-		FLOW_OP_CONTINUE
+		FLOW_OP_CONTINUE,
+		FLOW_OP_DISCARD
+
+	};
+
+	enum ArgumentQualifier {
+		ARGUMENT_QUALIFIER_IN,
+		ARGUMENT_QUALIFIER_OUT,
+		ARGUMENT_QUALIFIER_INOUT,
 
 	};
 
@@ -251,6 +266,7 @@ public:
 			TYPE_FUNCTION,
 			TYPE_BLOCK,
 			TYPE_VARIABLE,
+			TYPE_VARIABLE_DECLARATION,
 			TYPE_CONSTANT,
 			TYPE_OPERATOR,
 			TYPE_CONTROL_FLOW,
@@ -300,6 +316,25 @@ public:
 		}
 	};
 
+	struct VariableDeclarationNode : public Node {
+
+		DataPrecision precision;
+		DataType datatype;
+
+		struct Declaration {
+
+			StringName name;
+			Node *initializer;
+		};
+
+		Vector<Declaration> declarations;
+		virtual DataType get_datatype() const { return datatype; }
+
+		VariableDeclarationNode() {
+			type = TYPE_VARIABLE_DECLARATION;
+		}
+	};
+
 	struct ConstantNode : public Node {
 
 		DataType datatype;
@@ -331,10 +366,12 @@ public:
 
 		Map<StringName, Variable> variables;
 		List<Node *> statements;
+		bool single_statement;
 		BlockNode() {
 			type = TYPE_BLOCK;
 			parent_block = NULL;
 			parent_function = NULL;
+			single_statement = false;
 		}
 	};
 
@@ -363,6 +400,7 @@ public:
 
 		struct Argument {
 
+			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
 			DataPrecision precision;
@@ -373,10 +411,12 @@ public:
 		DataPrecision return_precision;
 		Vector<Argument> arguments;
 		BlockNode *body;
+		bool can_discard;
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			return_precision = PRECISION_DEFAULT;
+			can_discard = false;
 		}
 	};
 
@@ -485,6 +525,11 @@ public:
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
+	struct FunctionInfo {
+		Map<StringName, DataType> built_ins;
+		bool can_discard;
+	};
+
 private:
 	struct KeyWord {
 		TokenType token;
@@ -577,14 +622,16 @@ private:
 
 	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
-	Error _parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
+	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 
 	void clear();
-	Error compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
-	Error complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, List<String> *r_options, String &r_call_hint);
+
+	static String get_shader_type(const String &p_code);
+	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

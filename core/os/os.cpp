@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +30,9 @@
 #include "os.h"
 
 #include "dir_access.h"
-#include "global_config.h"
 #include "input.h"
 #include "os/file_access.h"
+#include "project_settings.h"
 
 #include <stdarg.h>
 
@@ -61,19 +62,20 @@ void OS::debug_break(){
 	// something
 };
 
-void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
-	const char *err_type;
-	switch (p_type) {
-		case ERR_ERROR: err_type = "**ERROR**"; break;
-		case ERR_WARNING: err_type = "**WARNING**"; break;
-		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
-		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
+void OS::_set_logger(Logger *p_logger) {
+	if (_logger) {
+		memdelete(_logger);
 	}
+	_logger = p_logger;
+}
 
-	if (p_rationale && *p_rationale)
-		print("%s: %s\n ", err_type, p_rationale);
-	print("%s: At: %s:%i:%s() - %s\n", err_type, p_file, p_line, p_function, p_code);
+void OS::initialize_logger() {
+	_set_logger(memnew(StdLogger));
+}
+
+void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
+
+	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
@@ -81,17 +83,16 @@ void OS::print(const char *p_format, ...) {
 	va_list argp;
 	va_start(argp, p_format);
 
-	vprint(p_format, argp);
+	_logger->logv(p_format, argp, false);
 
 	va_end(argp);
 };
 
 void OS::printerr(const char *p_format, ...) {
-
 	va_list argp;
 	va_start(argp, p_format);
 
-	vprint(p_format, argp, true);
+	_logger->logv(p_format, argp, true);
 
 	va_end(argp);
 };
@@ -128,7 +129,7 @@ String OS::get_executable_path() const {
 	return _execpath;
 }
 
-int OS::get_process_ID() const {
+int OS::get_process_id() const {
 
 	return -1;
 };
@@ -170,11 +171,11 @@ static FileAccess *_OSPRF = NULL;
 
 static void _OS_printres(Object *p_obj) {
 
-	Resource *res = p_obj->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_obj);
 	if (!res)
 		return;
 
-	String str = itos(res->get_instance_ID()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
+	String str = itos(res->get_instance_id()) + String(res->get_class()) + ":" + String(res->get_name()) + " - " + res->get_path();
 	if (_OSPRF)
 		_OSPRF->store_line(str);
 	else
@@ -190,6 +191,10 @@ void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_scr
 }
 
 void OS::hide_virtual_keyboard() {
+}
+
+int OS::get_virtual_keyboard_height() const {
+	return 0;
 }
 
 void OS::print_all_resources(String p_to_file) {
@@ -259,7 +264,7 @@ String OS::get_locale() const {
 
 String OS::get_resource_dir() const {
 
-	return GlobalConfig::get_singleton()->get_resource_path();
+	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 String OS::get_system_dir(SystemDir p_dir) const {
@@ -268,7 +273,7 @@ String OS::get_system_dir(SystemDir p_dir) const {
 }
 
 String OS::get_safe_application_name() const {
-	String an = GlobalConfig::get_singleton()->get("application/name");
+	String an = ProjectSettings::get_singleton()->get("application/config/name");
 	Vector<String> invalid_char = String("\\ / : * ? \" < > |").split(" ");
 	for (int i = 0; i < invalid_char.size(); i++) {
 		an = an.replace(invalid_char[i], "-");
@@ -388,7 +393,7 @@ void OS::_ensure_data_dir() {
 	memdelete(da);
 }
 
-void OS::set_icon(const Image &p_icon) {
+void OS::set_icon(const Ref<Image> &p_icon) {
 }
 
 String OS::get_model_name() const {
@@ -411,7 +416,7 @@ void OS::make_rendering_thread() {
 void OS::swap_buffers() {
 }
 
-String OS::get_unique_ID() const {
+String OS::get_unique_id() const {
 
 	ERR_FAIL_V("");
 }
@@ -483,7 +488,7 @@ bool OS::is_vsync_enabled() const {
 	return true;
 }
 
-PowerState OS::get_power_state() {
+OS::PowerState OS::get_power_state() {
 	return POWERSTATE_UNKNOWN;
 }
 int OS::get_power_seconds_left() {
@@ -493,7 +498,38 @@ int OS::get_power_percent_left() {
 	return -1;
 }
 
+bool OS::has_feature(const String &p_feature) {
+
+	if (p_feature == get_name())
+		return true;
+#ifdef DEBUG_ENABLED
+	if (p_feature == "debug")
+		return true;
+#else
+	if (p_feature == "release")
+		return true;
+#endif
+
+	if (sizeof(void *) == 8 && p_feature == "64") {
+		return true;
+	}
+	if (sizeof(void *) == 4 && p_feature == "32") {
+		return true;
+	}
+
+	if (_check_internal_feature_support(p_feature))
+		return true;
+
+	return false;
+}
+
+void *OS::get_stack_bottom() const {
+	return _stack_bottom;
+}
+
 OS::OS() {
+	void *volatile stack_bottom;
+
 	last_error = NULL;
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
@@ -505,11 +541,14 @@ OS::OS() {
 
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
-	_allow_hidpi = true;
-	Math::seed(1234567);
+	_allow_hidpi = false;
+	_stack_bottom = (void *)(&stack_bottom);
+
+	_logger = NULL;
+	_set_logger(memnew(StdLogger));
 }
 
 OS::~OS() {
-
+	memdelete(_logger);
 	singleton = NULL;
 }

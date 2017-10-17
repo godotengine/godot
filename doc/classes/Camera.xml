@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Camera" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Camera node, displays from a point of view.
+	</brief_description>
+	<description>
+		Camera is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the Camera will register in the global viewport. In other words, a Camera just provides [i]3D[/i] display capabilities to a [Viewport], and, without one, a scene registered in that [Viewport] (or higher viewports) can't be displayed.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear_current">
+			<return type="void">
+			</return>
+			<description>
+				If this is the current Camera, remove it from being current. If it is inside the node tree, request to make the next Camera current, if any.
+			</description>
+		</method>
+		<method name="get_camera_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+				Get the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
+			</description>
+		</method>
+		<method name="get_cull_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the culling mask, describing which 3D render layers are rendered by this Camera.
+			</description>
+		</method>
+		<method name="get_doppler_tracking" qualifiers="const">
+			<return type="int" enum="Camera.DopplerTracking">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_environment" qualifiers="const">
+			<return type="Environment">
+			</return>
+			<description>
+				Returns the [Environment] used by this Camera.
+			</description>
+		</method>
+		<method name="get_fov" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the [i]FOV[/i] Y angle in degrees (FOV means Field of View).
+			</description>
+		</method>
+		<method name="get_h_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the horizontal (X) offset of the Camera viewport.
+			</description>
+		</method>
+		<method name="get_keep_aspect_mode" qualifiers="const">
+			<return type="int" enum="Camera.KeepAspect">
+			</return>
+			<description>
+				Returns the current mode for keeping the aspect ratio. See [code]KEEP_*[/code] constants.
+			</description>
+		</method>
+		<method name="get_projection" qualifiers="const">
+			<return type="int" enum="Camera.Projection">
+			</return>
+			<description>
+				Returns the Camera's projection. See PROJECTION_* constants.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the vertical (Y) offset of the Camera viewport.
+			</description>
+		</method>
+		<method name="get_zfar" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the far clip plane in world space units.
+			</description>
+		</method>
+		<method name="get_znear" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the near clip plane in world space units.
+			</description>
+		</method>
+		<method name="is_current" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the Camera is the current one in the [Viewport], or plans to become current (if outside the scene tree).
+			</description>
+		</method>
+		<method name="is_position_behind" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="world_point" type="Vector3">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the given position is behind the Camera.
+			</description>
+		</method>
+		<method name="make_current">
+			<return type="void">
+			</return>
+			<description>
+				Make this camera the current Camera for the [Viewport] (see class description). If the Camera Node is outside the scene tree, it will attempt to become current once it's added.
+			</description>
+		</method>
+		<method name="project_local_ray_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="project_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+				Returns how a 2D coordinate in the Viewport rectangle maps to a 3D point in worldspace.
+			</description>
+		</method>
+		<method name="project_ray_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+				Returns a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+			</description>
+		</method>
+		<method name="project_ray_origin" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="screen_point" type="Vector2">
+			</argument>
+			<description>
+				Returns a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
+			</description>
+		</method>
+		<method name="set_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="mask" type="int">
+			</argument>
+			<description>
+				Sets the cull mask, describing which 3D render layers are rendered by this Camera.
+			</description>
+		</method>
+		<method name="set_doppler_tracking">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Camera.DopplerTracking">
+			</argument>
+			<description>
+				Changes Doppler effect tracking. See [code]DOPPLER_*[/code] constants.
+			</description>
+		</method>
+		<method name="set_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="Environment">
+			</argument>
+			<description>
+				Sets the [Environment] to use for this Camera.
+			</description>
+		</method>
+		<method name="set_h_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="float">
+			</argument>
+			<description>
+				Sets the horizontal (X) offset of the Camera viewport.
+			</description>
+		</method>
+		<method name="set_keep_aspect_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="Camera.KeepAspect">
+			</argument>
+			<description>
+				Sets the mode for keeping the aspect ratio. See [code]KEEP_*[/code] constants.
+			</description>
+		</method>
+		<method name="set_orthogonal">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="float">
+			</argument>
+			<argument index="1" name="z_near" type="float">
+			</argument>
+			<argument index="2" name="z_far" type="float">
+			</argument>
+			<description>
+				Set the camera projection to orthogonal mode, by specifying a width and the [i]near[/i] and [i]far[/i] clip planes in worldspace units. (As a hint, 2D games often use this projection, with values specified in pixels)
+			</description>
+		</method>
+		<method name="set_perspective">
+			<return type="void">
+			</return>
+			<argument index="0" name="fov" type="float">
+			</argument>
+			<argument index="1" name="z_near" type="float">
+			</argument>
+			<argument index="2" name="z_far" type="float">
+			</argument>
+			<description>
+				Set the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
+			</description>
+		</method>
+		<method name="set_v_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="float">
+			</argument>
+			<description>
+				Sets the vertical (Y) offset of the Camera viewport.
+			</description>
+		</method>
+		<method name="unproject_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="world_point" type="Vector3">
+			</argument>
+			<description>
+				Returns how a 3D point in worldspace maps to a 2D coordinate in the [Viewport] rectangle.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PROJECTION_PERSPECTIVE" value="0">
+			Perspective Projection (object's size on the screen becomes smaller when far away).
+		</constant>
+		<constant name="PROJECTION_ORTHOGONAL" value="1">
+			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+		</constant>
+		<constant name="KEEP_WIDTH" value="0">
+			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's width by changing the height. Height is [code]sizey[/code] for orthographic projection, [code]fovy[/code] for perspective projection.
+		</constant>
+		<constant name="KEEP_HEIGHT" value="1">
+			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's height by changing the width. Width is [code]sizex[/code] for orthographic projection, [code]fovx[/code] for perspective projection.
+		</constant>
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+			Disable Doppler effect simulation (default).
+		</constant>
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+			Simulate Doppler effect by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+		</constant>
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+			Simulate Doppler effect by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
+		</constant>
+	</constants>
+</class>

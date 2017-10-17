@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,11 +39,11 @@ class ScrollBar : public Range {
 
 	GDCLASS(ScrollBar, Range);
 
-	enum HiliteStatus {
-		HILITE_NONE,
-		HILITE_DECR,
-		HILITE_RANGE,
-		HILITE_INCR,
+	enum HighlightStatus {
+		HIGHLIGHT_NONE,
+		HIGHLIGHT_DECR,
+		HIGHLIGHT_RANGE,
+		HIGHLIGHT_INCR,
 	};
 
 	static bool focus_by_default;
@@ -51,7 +52,7 @@ class ScrollBar : public Range {
 	Size2 size;
 	float custom_step;
 
-	HiliteStatus hilite;
+	HighlightStatus highlight;
 
 	struct Drag {
 
@@ -82,10 +83,14 @@ class ScrollBar : public Range {
 	bool drag_slave_touching_deaccel;
 	bool click_handled;
 
-	void _drag_slave_exit();
-	void _drag_slave_input(const InputEvent &p_input);
+	bool scrolling;
+	double target_scroll;
+	bool smooth_scroll_enabled;
 
-	void _gui_input(InputEvent p_event);
+	void _drag_slave_exit();
+	void _drag_slave_input(const Ref<InputEvent> &p_input);
+
+	void _gui_input(Ref<InputEvent> p_event);
 
 protected:
 	void _notification(int p_what);
@@ -98,6 +103,9 @@ public:
 
 	void set_drag_slave(const NodePath &p_path);
 	NodePath get_drag_slave() const;
+
+	void set_smooth_scroll_enabled(bool p_enable);
+	bool is_smooth_scroll_enabled() const;
 
 	virtual Size2 get_minimum_size() const;
 	ScrollBar(Orientation p_orientation = VERTICAL);

@@ -19,8 +19,19 @@ void main() {
 precision highp float;
 precision highp int;
 
+#ifdef USE_SOURCE_PANORAMA
+uniform sampler2D source_panorama; //texunit:0
+#endif
 
+#ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
+uniform sampler2DArray source_dual_paraboloid_array; //texunit:0
+uniform int source_array_index;
+#endif
+
+#if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
 uniform samplerCube source_cube; //texunit:0
+#endif
+
 uniform int face_id;
 uniform float roughness;
 in highp vec2 uv_interp;
@@ -165,6 +176,43 @@ vec2 Hammersley(uint i, uint N) {
 
 uniform bool z_flip;
 
+#ifdef USE_SOURCE_PANORAMA
+
+vec4 texturePanorama(vec3 normal,sampler2D pano ) {
+
+	vec2 st = vec2(
+		atan(normal.x, normal.z),
+		acos(normal.y)
+	);
+
+	if(st.x < 0.0)
+		st.x += M_PI*2.0;
+
+	st/=vec2(M_PI*2.0,M_PI);
+
+	return textureLod(pano,st,0.0);
+
+}
+
+#endif
+
+#ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
+
+
+vec4 textureDualParaboloidArray(vec3 normal) {
+
+	vec3 norm = normalize(normal);
+	norm.xy/=1.0+abs(norm.z);
+	norm.xy=norm.xy * vec2(0.5,0.25) + vec2(0.5,0.25);
+	if (norm.z<0.0) {
+		norm.y=0.5-norm.y+0.5;
+	}
+	return textureLod(source_dual_paraboloid_array, vec3(norm.xy, float(source_array_index) ), 0.0);
+
+}
+
+#endif
+
 void main() {
 
 #ifdef USE_DUAL_PARABOLOID
@@ -173,9 +221,8 @@ void main() {
 	N.z = 0.5 - 0.5*((N.x * N.x) + (N.y * N.y));
 	N = normalize(N);
 
-	if (!z_flip) {
+	if (z_flip) {
 		N.y=-N.y; //y is flipped to improve blending between both sides
-	} else {
 		N.z=-N.z;
 	}
 
@@ -188,7 +235,24 @@ void main() {
 
 #ifdef USE_DIRECT_WRITE
 
+#ifdef USE_SOURCE_PANORAMA
+
+	frag_color=vec4(texturePanorama(N,source_panorama).rgb,1.0);
+#endif
+
+#ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
+
+	frag_color=vec4(textureDualParaboloidArray(N).rgb,1.0);
+#endif
+
+#if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
+
+	N.y=-N.y;
 	frag_color=vec4(texture(N,source_cube).rgb,1.0);
+#endif
+
+
+
 
 #else
 
@@ -204,7 +268,19 @@ void main() {
 		float ndotl = clamp(dot(N, L),0.0,1.0);
 
 		if (ndotl>0.0) {
+#ifdef USE_SOURCE_PANORAMA
+			sum.rgb += texturePanorama(H,source_panorama).rgb *ndotl;
+#endif
+
+#ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
+
+			sum.rgb += textureDualParaboloidArray(H).rgb *ndotl;
+#endif
+
+#if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
+			H.y=-H.y;
 			sum.rgb += textureLod(source_cube, H, 0.0).rgb *ndotl;
+#endif
 			sum.a += ndotl;
 		}
 	}

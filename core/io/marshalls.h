@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +32,10 @@
 
 #include "typedefs.h"
 
+#include "reference.h"
 #include "variant.h"
-
 /**
-  * Miscelaneous helpers for marshalling data types, and encoding
+  * Miscellaneous helpers for marshalling data types, and encoding
   * in an endian independent way
   */
 
@@ -182,7 +183,22 @@ static inline double decode_double(const uint8_t *p_arr) {
 	return md.d;
 }
 
-Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = NULL);
-Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len);
+class EncodedObjectAsID : public Reference {
+	GDCLASS(EncodedObjectAsID, Reference);
+
+	ObjectID id;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_object_id(ObjectID p_id);
+	ObjectID get_object_id() const;
+
+	EncodedObjectAsID();
+};
+
+Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = NULL, bool p_allow_objects = true);
+Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_object_as_id = false);
 
 #endif

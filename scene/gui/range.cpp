@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +34,7 @@ void Range::_value_changed_notify() {
 	_value_changed(shared->val);
 	emit_signal("value_changed", shared->val);
 	update();
-	_change_notify("range/value");
+	_change_notify("value");
 }
 
 void Range::Shared::emit_value_changed() {
@@ -87,26 +88,26 @@ void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
 
-	shared->emit_changed("range/min");
+	shared->emit_changed("min");
 }
 void Range::set_max(double p_max) {
 
 	shared->max = p_max;
 	set_value(shared->val);
 
-	shared->emit_changed("range/max");
+	shared->emit_changed("max");
 }
 void Range::set_step(double p_step) {
 
 	shared->step = p_step;
-	shared->emit_changed("range/step");
+	shared->emit_changed("step");
 }
 void Range::set_page(double p_page) {
 
 	shared->page = p_page;
 	set_value(shared->val);
 
-	shared->emit_changed("range/page");
+	shared->emit_changed("page");
 }
 
 double Range::get_value() const {
@@ -169,7 +170,7 @@ double Range::get_as_ratio() const {
 
 void Range::_share(Node *p_range) {
 
-	Range *r = p_range->cast_to<Range>();
+	Range *r = Object::cast_to<Range>(p_range);
 	ERR_FAIL_COND(!r);
 	share(r);
 }
@@ -207,10 +208,12 @@ void Range::_ref_shared(Shared *p_shared) {
 
 void Range::_unref_shared() {
 
-	shared->owners.erase(this);
-	if (shared->owners.size() == 0) {
-		memdelete(shared);
-		shared = NULL;
+	if (shared) {
+		shared->owners.erase(this);
+		if (shared->owners.size() == 0) {
+			memdelete(shared);
+			shared = NULL;
+		}
 	}
 }
 
@@ -272,8 +275,8 @@ Range::Range() {
 	shared = memnew(Shared);
 	shared->min = 0;
 	shared->max = 100;
-	shared->val =
-			shared->step = 1;
+	shared->val = 0;
+	shared->step = 1;
 	shared->page = 0;
 	shared->owners.insert(this);
 	shared->exp_ratio = false;

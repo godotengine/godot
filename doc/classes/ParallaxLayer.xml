@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ParallaxLayer" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A parallax scrolling layer to be used with [ParallaxBackground].
+	</brief_description>
+	<description>
+		A ParallaxLayer must be the child of a [ParallaxBackground] node. All child nodes will be affected by the parallax scrolling of this layer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_mirroring" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the mirroring of the ParallaxLayer.
+			</description>
+		</method>
+		<method name="get_motion_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_motion_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the motion scale of the ParallaxLayer.
+			</description>
+		</method>
+		<method name="set_mirroring">
+			<return type="void">
+			</return>
+			<argument index="0" name="mirror" type="Vector2">
+			</argument>
+			<description>
+				Set the mirroring of the ParallaxLayer. If an axis is set to 0 then that axis will have no mirroring.
+			</description>
+		</method>
+		<method name="set_motion_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_motion_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the motion scale of the ParallaxLayer. If an axis is set to 0 then it will not move at all, it will stick with the camera.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring">
+		</member>
+		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset">
+		</member>
+		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

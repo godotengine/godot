@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType bbox computation (body).                                    */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used        */
@@ -423,12 +423,15 @@
   }
 
 
-  FT_DEFINE_OUTLINE_FUNCS(bbox_interface,
-    (FT_Outline_MoveTo_Func) BBox_Move_To,
-    (FT_Outline_LineTo_Func) BBox_Line_To,
-    (FT_Outline_ConicTo_Func)BBox_Conic_To,
-    (FT_Outline_CubicTo_Func)BBox_Cubic_To,
-    0, 0
+  FT_DEFINE_OUTLINE_FUNCS(
+    bbox_interface,
+
+    (FT_Outline_MoveTo_Func) BBox_Move_To,   /* move_to  */
+    (FT_Outline_LineTo_Func) BBox_Line_To,   /* line_to  */
+    (FT_Outline_ConicTo_Func)BBox_Conic_To,  /* conic_to */
+    (FT_Outline_CubicTo_Func)BBox_Cubic_To,  /* cubic_to */
+    0,                                       /* shift    */
+    0                                        /* delta    */
   )
 
 
@@ -457,6 +460,7 @@
     {
       abbox->xMin = abbox->xMax = 0;
       abbox->yMin = abbox->yMax = 0;
+
       return 0;
     }
 
@@ -468,10 +472,10 @@
 
     for ( n = 0; n < outline->n_points; n++ )
     {
-      FT_UPDATE_BBOX( vec, cbox);
+      FT_UPDATE_BBOX( vec, cbox );
 
       if ( FT_CURVE_TAG( outline->tags[n] ) == FT_CURVE_TAG_ON )
-        FT_UPDATE_BBOX( vec, bbox);
+        FT_UPDATE_BBOX( vec, bbox );
 
       vec++;
     }
@@ -487,8 +491,10 @@
       TBBox_Rec  user;
 
 #ifdef FT_CONFIG_OPTION_PIC
-      FT_Outline_Funcs bbox_interface;
-      Init_Class_bbox_interface(&bbox_interface);
+      FT_Outline_Funcs  bbox_interface;
+
+
+      Init_Class_bbox_interface( &bbox_interface );
 #endif
 
       user.bbox = bbox;

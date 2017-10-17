@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,60 +88,50 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
 		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
 
-		for (int i=0;i<count;i++){
-			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
-		}
+		mView.queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				for (int i = 0; i < count; ++i) {
+					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+				}
+			}
+		});
 	}
 
 	@Override
 	public void onTextChanged(final CharSequence pCharSequence, final int start, final int before, final int count) {
 		//Log.d(TAG, "onTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",before: " + before);
 
-		for (int i=start;i<start+count;i++){
-			int ch = pCharSequence.charAt(i);
-			GodotLib.key(0, ch, true);
-			GodotLib.key(0, ch, false);
-		}
-
+		mView.queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				for (int i = start; i < start + count; ++i) {
+					final int ch = pCharSequence.charAt(i);
+					GodotLib.key(0, ch, true);
+					GodotLib.key(0, ch, false);
+				}
+			}
+		});
 	}
 
 	@Override
 	public boolean onEditorAction(final TextView pTextView, final int pActionID, final KeyEvent pKeyEvent) {
 		if (this.mEdit == pTextView && this.isFullScreenEdit()) {
-			// user press the action button, delete all old text and insert new text
-			for (int i = this.mOriginText.length(); i > 0; i--) {
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
-				/*
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "deleteBackward");
+			final String characters = pKeyEvent.getCharacters();
+
+			mView.queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					for (int i = 0; i < characters.length(); i++) {
+						final int ch = characters.codePointAt(i);
+						GodotLib.key(0, ch, true);
+						GodotLib.key(0, ch, false);
+					}
 				}
-				*/
-			}
-			String text = pTextView.getText().toString();
-
-			/* If user input nothing, translate "\n" to engine. */
-			if (text.compareTo("") == 0) {
-				text = "\n";
-			}
-
-			if ('\n' != text.charAt(text.length() - 1)) {
-				text += '\n';
-			}
-
-			for(int i = 0; i < text.length(); i++) {
-				int ch = text.codePointAt(i);
-				GodotLib.key(0, ch, true);
-				GodotLib.key(0, ch, false);
-			}
-			/*
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "insertText(" + insertText + ")");
-			}
-			*/
+			});
 		}
-		
+
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			this.mView.requestFocus();
 		}

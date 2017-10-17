@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +30,7 @@
 #include "shader.h"
 #include "os/file_access.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"
 #include "texture.h"
 
@@ -38,6 +40,16 @@ Shader::Mode Shader::get_mode() const {
 }
 
 void Shader::set_code(const String &p_code) {
+
+	String type = ShaderLanguage::get_shader_type(p_code);
+
+	if (type == "canvas_item") {
+		mode = MODE_CANVAS_ITEM;
+	} else if (type == "particles") {
+		mode = MODE_PARTICLES;
+	} else {
+		mode = MODE_SPATIAL;
+	}
 
 	VisualServer::get_singleton()->shader_set_code(shader, p_code);
 	params_cache_dirty = true;
@@ -114,8 +126,8 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
-	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture:Texture"), &Shader::set_default_texture_param);
-	ClassDB::bind_method(D_METHOD("get_default_texture_param:Texture", "param"), &Shader::get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture"), &Shader::set_default_texture_param);
+	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
@@ -123,15 +135,15 @@ void Shader::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
 
-	BIND_CONSTANT(MODE_SPATIAL);
-	BIND_CONSTANT(MODE_CANVAS_ITEM);
-	BIND_CONSTANT(MODE_PARTICLES);
+	BIND_ENUM_CONSTANT(MODE_SPATIAL);
+	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);
+	BIND_ENUM_CONSTANT(MODE_PARTICLES);
 }
 
-Shader::Shader(Mode p_mode) {
+Shader::Shader() {
 
-	mode = p_mode;
-	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
+	mode = MODE_SPATIAL;
+	shader = VisualServer::get_singleton()->shader_create();
 	params_cache_dirty = true;
 }
 

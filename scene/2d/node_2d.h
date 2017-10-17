@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +49,7 @@ class Node2D : public CanvasItem {
 	void _update_transform();
 
 	// Deprecated, should be removed in a future version.
-	void _set_rotd(float p_angle);
+	void _set_rotd(float p_degrees);
 	float _get_rotd() const;
 
 	void _update_xform_values();
@@ -77,7 +78,7 @@ public:
 	void move_y(float p_delta, bool p_scaled = false);
 	void translate(const Vector2 &p_amount);
 	void global_translate(const Vector2 &p_amount);
-	void scale(const Size2 &p_amount);
+	void apply_scale(const Size2 &p_amount);
 
 	Point2 get_position() const;
 	float get_rotation() const;
@@ -102,6 +103,9 @@ public:
 
 	void look_at(const Vector2 &p_pos);
 	float get_angle_to(const Vector2 &p_pos) const;
+
+	Point2 to_local(Point2 p_global) const;
+	Point2 to_global(Point2 p_local) const;
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;

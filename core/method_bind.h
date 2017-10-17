@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +43,8 @@
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
 #endif
+
+#include "type_info.h"
 
 enum MethodFlags {
 
@@ -86,12 +89,10 @@ struct VariantCaster<const T &> {
 #define _VC(m_idx) \
 	(VariantCaster<P##m_idx>::cast((m_idx - 1) >= p_arg_count ? get_default_argument(m_idx - 1) : *p_args[m_idx - 1]))
 
-//SIMPLE_NUMERIC_TYPE is used to avoid a warning on Variant::get_type_for
-
 #ifdef PTRCALL_ENABLED
 
 #define VARIANT_ENUM_CAST(m_enum)                                            \
-	SIMPLE_NUMERIC_TYPE(m_enum);                                             \
+	MAKE_ENUM_TYPE_INFO(m_enum)                                              \
 	template <>                                                              \
 	struct VariantCaster<m_enum> {                                           \
                                                                              \
@@ -112,7 +113,7 @@ struct VariantCaster<const T &> {
 #else
 
 #define VARIANT_ENUM_CAST(m_enum)                                     \
-	SIMPLE_NUMERIC_TYPE(m_enum);                                      \
+	MAKE_ENUM_TYPE_INFO(m_enum)                                       \
 	template <>                                                       \
 	struct VariantCaster<m_enum> {                                    \
                                                                       \
@@ -122,6 +123,9 @@ struct VariantCaster<const T &> {
 	};
 
 #endif
+
+// Object enum casts must go here
+VARIANT_ENUM_CAST(Object::ConnectFlags);
 
 #define CHECK_ARG(m_arg)                                                            \
 	if ((m_arg - 1) < p_arg_count) {                                                \
@@ -145,15 +149,36 @@ struct VariantCaster<const T &> {
 // some helpers
 
 VARIANT_ENUM_CAST(Vector3::Axis);
-VARIANT_ENUM_CAST(Image::Format);
+
 VARIANT_ENUM_CAST(Error);
-VARIANT_ENUM_CAST(wchar_t);
 VARIANT_ENUM_CAST(Margin);
+VARIANT_ENUM_CAST(Corner);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HAlign);
+VARIANT_ENUM_CAST(VAlign);
+VARIANT_ENUM_CAST(PropertyHint);
+VARIANT_ENUM_CAST(PropertyUsageFlags);
+VARIANT_ENUM_CAST(MethodFlags);
 VARIANT_ENUM_CAST(Variant::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
-VARIANT_ENUM_CAST(InputEvent::Type);
+
+template <>
+struct VariantCaster<wchar_t> {
+	static _FORCE_INLINE_ wchar_t cast(const Variant &p_variant) {
+		return (wchar_t)p_variant.operator int();
+	}
+};
+#ifdef PTRCALL_ENABLED
+template <>
+struct PtrToArg<wchar_t> {
+	_FORCE_INLINE_ static wchar_t convert(const void *p_ptr) {
+		return wchar_t(*reinterpret_cast<const int *>(p_ptr));
+	}
+	_FORCE_INLINE_ static void encode(wchar_t p_val, const void *p_ptr) {
+		*(int *)p_ptr = p_val;
+	}
+};
+#endif
 
 class MethodBind {
 
@@ -163,21 +188,22 @@ class MethodBind {
 	Vector<Variant> default_arguments;
 	int default_argument_count;
 	int argument_count;
-#ifdef DEBUG_METHODS_ENABLED
-	Vector<StringName> arg_names;
-	Variant::Type *argument_types;
-	StringName ret_type;
-#endif
+
 	bool _const;
 	bool _returns;
 
 protected:
+#ifdef DEBUG_METHODS_ENABLED
+	Variant::Type *argument_types;
+	Vector<StringName> arg_names;
+#endif
 	void _set_const(bool p_const);
 	void _set_returns(bool p_returns);
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const = 0;
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
 	void _generate_argument_types(int p_count);
-	void set_argument_types(Variant::Type *p_types) { argument_types = p_types; }
+
 #endif
 	void set_argument_count(int p_count) { argument_count = p_count; }
 
@@ -207,9 +233,6 @@ public:
 
 #ifdef DEBUG_METHODS_ENABLED
 
-	_FORCE_INLINE_ void set_return_type(const StringName &p_type) { ret_type = p_type; }
-	_FORCE_INLINE_ StringName get_return_type() const { return ret_type; }
-
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 
 		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
@@ -217,9 +240,11 @@ public:
 	}
 
 	PropertyInfo get_argument_info(int p_argument) const;
+	PropertyInfo get_return_info() const;
 
-	void set_argument_names(const Vector<StringName> &p_names);
+	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, cant be inferred otherwise
 	Vector<StringName> get_argument_names() const;
+
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -227,28 +252,6 @@ public:
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
-#if 0
-	_FORCE_INLINE_ Variant call_safe(const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
-
-		r_error.error=Variant::CallError::CALL_OK;
-		check_call( p_args, &errorarg );
-		if (!err)
-			return call(p_object, VARIANT_ARG_PASS );
-
-		VARIANT_ARGPTRS
-		String errstr;
-		String methodname = get_instance_type()+"::"+name;
-		if (err==CALL_ERROR_ARGUMENT_TYPE) {
-			errstr="Invalid Argument to call: '"+methodname+"'. Cannot convert argument "+itos(errorarg+1)+" from "+Variant::get_type_name(get_argument_type(errorarg))+" to "+Variant::get_type_name(argptr[errorarg]->get_type())+".";
-		}
-		if (err==CALL_ERROR_EXTRA_ARGUMENT) {
-			errstr="Invalid call. Member function '"+methodname+"' takes "+itos(get_argument_count())+" argument, but argument "+itos(errorarg+1)+" was received.";
-		}
-
-		ERR_PRINT(errstr.ascii().get_data());
-		return Variant();
-	}
-#endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) = 0;
 
 #ifdef PTRCALL_ENABLED
@@ -275,18 +278,42 @@ public:
 
 protected:
 	NativeCall call_method;
+#ifdef DEBUG_METHODS_ENABLED
 
+	MethodInfo arguments;
+
+#endif
 public:
-	virtual Variant::Type _gen_argument_type(int p_arg) const {
+#ifdef DEBUG_METHODS_ENABLED
 
+	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
+
+		if (p_arg < 0) {
+			return arguments.return_val;
+		} else if (p_arg < arguments.arguments.size()) {
+			return arguments.arguments[p_arg];
+		} else {
+			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
+		}
+	}
+
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
+		return _gen_argument_type_info(p_arg).type;
+	}
+
+#else
+
+	virtual Variant::Type _gen_argument_type(int p_arg) const {
 		return Variant::NIL;
 	}
 
+#endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Variant::CallError &r_error) {
 
 		T *instance = static_cast<T *>(p_object);
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
 	}
+
 	void set_method_info(const MethodInfo &p_info) {
 
 		set_argument_count(p_info.arguments.size());
@@ -305,7 +332,9 @@ public:
 
 			set_argument_names(names);
 		}
-		set_argument_types(at);
+		argument_types = at;
+		arguments = p_info;
+		arguments.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 #endif
 	}
 
@@ -340,9 +369,9 @@ MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, i
 
 // tale of an amazing hack.. //
 
-// if you declare an nonexistent class..
+// if you declare a nonexistent class..
 class __UnexistingClass;
 
-#include "method_bind.inc"
+#include "method_bind.gen.inc"
 
 #endif

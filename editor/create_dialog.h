@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,8 +41,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#if 1
-
 class CreateDialog : public ConfirmationDialog {
 
 	GDCLASS(CreateDialog, ConfirmationDialog)
@@ -54,7 +53,7 @@ class CreateDialog : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 	String base_type;
-
+	String preferred_search_result_type;
 	EditorHelpBit *help_bit;
 
 	void _item_selected();
@@ -70,10 +69,12 @@ class CreateDialog : public ConfirmationDialog {
 	void _history_activated();
 	void _favorite_activated();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
+
+	Ref<Texture> _get_editor_icon(const String &p_type) const;
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 
@@ -92,47 +93,12 @@ public:
 	void set_base_type(const String &p_base);
 	String get_base_type() const;
 
-	void popup(bool p_dontclear);
+	void set_preferred_search_result_type(const String &p_preferred_type);
+	String get_preferred_search_result_type();
+
+	void popup_create(bool p_dontclear);
 
 	CreateDialog();
 };
-
-#else
-
-//old create dialog, disabled
-
-class CreateDialog : public ConfirmationDialog {
-
-	GDCLASS(CreateDialog, ConfirmationDialog);
-
-	Tree *tree;
-	Button *create;
-	Button *cancel;
-	LineEdit *filter;
-
-	void update_tree();
-	void _create();
-	void _cancel();
-	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem
-																					  *p_root);
-
-	String base;
-	void _text_changed(String p_text);
-	virtual void _post_popup() { tree->grab_focus(); }
-
-protected:
-	static void _bind_methods();
-	void _notification(int p_what);
-
-public:
-	Object *instance_selected();
-
-	void set_base_type(const String &p_base);
-	String get_base_type() const;
-	CreateDialog();
-	~CreateDialog();
-};
-
-#endif
 
 #endif

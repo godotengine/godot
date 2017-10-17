@@ -192,7 +192,8 @@ static const ASN1_STRING_TABLE tbl_standard[] = {
     {NID_name, 1, ub_name, DIRSTRING_TYPE, 0},
     {NID_dnQualifier, -1, -1, B_ASN1_PRINTABLESTRING, STABLE_NO_MASK},
     {NID_domainComponent, 1, -1, B_ASN1_IA5STRING, STABLE_NO_MASK},
-    {NID_ms_csp_name, -1, -1, B_ASN1_BMPSTRING, STABLE_NO_MASK}
+    {NID_ms_csp_name, -1, -1, B_ASN1_BMPSTRING, STABLE_NO_MASK},
+    {NID_jurisdictionCountryName, 2, 2, B_ASN1_PRINTABLESTRING, STABLE_NO_MASK}
 };
 
 static int sk_table_cmp(const ASN1_STRING_TABLE *const *a,
@@ -250,6 +251,7 @@ int ASN1_STRING_TABLE_add(int nid,
         }
         tmp->flags = flags | STABLE_FLAGS_MALLOC;
         tmp->nid = nid;
+        tmp->minsize = tmp->maxsize = -1;
         new_nid = 1;
     } else
         tmp->flags = (tmp->flags & STABLE_FLAGS_MALLOC) | flags;

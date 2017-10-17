@@ -209,7 +209,7 @@ void comb_filter_const_c(opus_val32 *y, opus_val32 *x, int T, int N,
 #endif
 
 #ifndef OVERRIDE_COMB_FILTER_CONST
-# define comb_filter_const(y, x, T, N, g10, g11, g12, arch)		\
+# define comb_filter_const(y, x, T, N, g10, g11, g12, arch) \
     ((void)(arch),comb_filter_const_c(y, x, T, N, g10, g11, g12))
 #endif
 

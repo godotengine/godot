@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +31,10 @@
 #define OS_H
 
 #include "engine.h"
+#include "image.h"
+#include "io/logger.h"
 #include "list.h"
 #include "os/main_loop.h"
-#include "power.h"
 #include "ustring.h"
 #include "vector.h"
 #include <stdarg.h>
@@ -58,7 +60,24 @@ class OS {
 
 	char *last_error;
 
+	void *_stack_bottom;
+
+	Logger *_logger;
+
+protected:
+	void _set_logger(Logger *p_logger);
+
 public:
+	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+
+	enum PowerState {
+		POWERSTATE_UNKNOWN, /**< cannot determine power status */
+		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
+		POWERSTATE_NO_BATTERY, /**< Plugged in, no battery available */
+		POWERSTATE_CHARGING, /**< Plugged in, charging battery */
+		POWERSTATE_CHARGED /**< Plugged in, battery charged */
+	};
+
 	enum RenderThreadMode {
 
 		RENDER_THREAD_UNSAFE,
@@ -95,6 +114,7 @@ protected:
 	virtual int get_audio_driver_count() const = 0;
 	virtual const char *get_audio_driver_name(int p_driver) const = 0;
 
+	virtual void initialize_logger();
 	virtual void initialize_core() = 0;
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
 
@@ -107,24 +127,17 @@ protected:
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
 	void _ensure_data_dir();
+	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
 
-	enum ErrorType {
-		ERR_ERROR,
-		ERR_WARNING,
-		ERR_SCRIPT,
-		ERR_SHADER
-	};
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
+	void print(const char *p_format, ...);
+	void printerr(const char *p_format, ...);
 
-	virtual void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
-
-	virtual void print(const char *p_format, ...);
-	virtual void printerr(const char *p_format, ...);
-	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false) = 0;
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
 
@@ -142,8 +155,8 @@ public:
 	virtual void set_mouse_mode(MouseMode p_mode);
 	virtual MouseMode get_mouse_mode() const;
 
-	virtual void warp_mouse_pos(const Point2 &p_to) {}
-	virtual Point2 get_mouse_pos() const = 0;
+	virtual void warp_mouse_position(const Point2 &p_to) {}
+	virtual Point2 get_mouse_position() const = 0;
 	virtual int get_mouse_button_state() const = 0;
 	virtual void set_window_title(const String &p_title) = 0;
 
@@ -157,9 +170,9 @@ public:
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
 	virtual void set_current_screen(int p_screen) {}
-	virtual Point2 get_screen_position(int p_screen = 0) const { return Point2(); }
-	virtual Size2 get_screen_size(int p_screen = 0) const { return get_window_size(); }
-	virtual int get_screen_dpi(int p_screen = 0) const { return 72; }
+	virtual Point2 get_screen_position(int p_screen = -1) const { return Point2(); }
+	virtual Size2 get_screen_size(int p_screen = -1) const { return get_window_size(); }
+	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
 	virtual Size2 get_window_size() const = 0;
@@ -177,6 +190,13 @@ public:
 	virtual void set_borderless_window(int p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }
 
+	virtual void set_ime_position(const Point2 &p_pos) {}
+	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle) { return ERR_UNAVAILABLE; }
+	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }
+
 	virtual void set_keep_screen_on(bool p_enabled);
 	virtual bool is_keep_screen_on() const;
 	virtual void set_low_processor_usage_mode(bool p_enabled);
@@ -184,9 +204,9 @@ public:
 
 	virtual String get_installed_templates_path() const { return ""; }
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
-	virtual int get_process_ID() const;
+	virtual int get_process_id() const;
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
@@ -263,7 +283,12 @@ public:
 
 	virtual bool can_draw() const = 0;
 
+	virtual bool is_userfs_persistent() const { return true; }
+
 	bool is_stdout_verbose() const;
+
+	virtual void disable_crash_handler() {}
+	virtual bool is_disable_crash_handler() const { return false; }
 
 	enum CursorShape {
 		CURSOR_ARROW,
@@ -290,6 +315,9 @@ public:
 	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
 	virtual void hide_virtual_keyboard();
 
+	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
+	virtual int get_virtual_keyboard_height() const;
+
 	virtual void set_cursor_shape(CursorShape p_shape) = 0;
 
 	virtual bool get_swap_ok_cancel() { return false; }
@@ -310,6 +338,8 @@ public:
 	String get_safe_application_name() const;
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
+
+	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,
@@ -352,14 +382,14 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
-	virtual void set_icon(const Image &p_icon);
+	virtual void set_icon(const Ref<Image> &p_icon);
 
 	virtual int get_exit_code() const;
 	virtual void set_exit_code(int p_code);
 
 	virtual int get_processor_count() const;
 
-	virtual String get_unique_ID() const;
+	virtual String get_unique_id() const;
 
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;
@@ -396,15 +426,24 @@ public:
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	virtual bool check_feature_support(const String &p_feature) = 0;
+	bool has_feature(const String &p_feature);
+
+	/**
+	 * Returns the stack bottom of the main thread of the application.
+	 * This may be of use when integrating languages with garbage collectors that
+	 * need to check whether a pointer is on the stack.
+	 */
+	virtual void *get_stack_bottom() const;
 
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();
 	virtual ~OS();
 };
+
+VARIANT_ENUM_CAST(OS::PowerState);
 
 #endif

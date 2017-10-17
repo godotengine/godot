@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +37,7 @@
 class Animation : public Resource {
 
 	GDCLASS(Animation, Resource);
-	RES_BASE_EXTENSION("anm");
+	RES_BASE_EXTENSION("anim");
 
 public:
 	enum TrackType {
@@ -211,7 +212,7 @@ private:
 	}
 
 	bool _transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err, float p_alowed_angular_err, float p_max_optimizable_angle, const Vector3 &p_norm);
-	void _transform_track_optimize(int p_idx, float p_allowed_err = 0.05, float p_alowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
+	void _transform_track_optimize(int p_idx, float p_allowed_linear_err = 0.05, float p_allowed_angular_err = 0.01, float p_max_optimizable_angle = Math_PI * 0.125);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -244,7 +245,7 @@ public:
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
 	void track_remove_key(int p_track, int p_idx);
-	void track_remove_key_at_pos(int p_track, float p_pos);
+	void track_remove_key_at_position(int p_track, float p_pos);
 	int track_get_key_count(int p_track) const;
 	Variant track_get_key_value(int p_track, int p_key_idx) const;
 	float track_get_key_time(int p_track, int p_key_idx) const;

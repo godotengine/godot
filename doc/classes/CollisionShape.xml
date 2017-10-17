@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionShape" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Node that represents collision shape data in 3D space.
+	</brief_description>
+	<description>
+		Editor facility for creating and editing collision shapes in 3D space. You can use this node to represent all sorts of collision shapes, for example, add this to an [Area] to give it a detection shape, or add it to a [PhysicsBody] to give create solid object. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method get_shape] to get the actual shape.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_shape" qualifiers="const">
+			<return type="Shape">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_convex_from_brothers">
+			<return type="void">
+			</return>
+			<description>
+				Sets the collision shape's shape to the addition of all its convexed [MeshInstance] siblings geometry.
+			</description>
+		</method>
+		<method name="resource_changed">
+			<return type="void">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				If this method exists within a script it will be called whenever the shape resource has been modified.
+			</description>
+		</method>
+		<method name="set_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="Shape">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
+			A disabled collision shape has no effect in the world.
+		</member>
+		<member name="shape" type="Shape" setter="set_shape" getter="get_shape">
+			The actual shape owned by this collision shape.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

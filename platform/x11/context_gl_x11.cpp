@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +30,7 @@
 #include "context_gl_x11.h"
 
 #ifdef X11_ENABLED
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED)
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -82,13 +83,24 @@ static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 	return 0;
 }
 
-Error ContextGL_X11::initialize() {
+static void set_class_hint(Display *p_display, Window p_window) {
+	XClassHint *classHint;
 
-	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
+	/* set the name and class hints for the window manager to use */
+	classHint = XAllocClassHint();
+	if (classHint) {
+		classHint->res_name = (char *)"Godot_Engine";
+		classHint->res_class = (char *)"Godot";
+	}
+	XSetClassHint(p_display, p_window, classHint);
+	XFree(classHint);
+}
+
+Error ContextGL_X11::initialize() {
 
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
-	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
+	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 
 	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);
 
@@ -126,6 +138,7 @@ Error ContextGL_X11::initialize() {
 	*/
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
+	set_class_hint(x11_display, x11_window);
 	XMapWindow(x11_display, x11_window);
 	//};
 
@@ -150,8 +163,6 @@ Error ContextGL_X11::initialize() {
 
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);
-
-	print_line("ALL IS GOOD");
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 

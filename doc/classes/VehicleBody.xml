@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VehicleBody" inherits="PhysicsBody" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_brake" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_engine_force" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_friction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the VehicleBody's velocity vector. To get the absolute speed in scalar value, get the length of the return vector in pixels/second. Example:
+				[codeblock]
+				# vehicle is an instance of VehicleBody
+				var speed = vehicle.get_linear_velocity().length()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_mass" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_steering" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the steering angle (in radians).
+			</description>
+		</method>
+		<method name="set_brake">
+			<return type="void">
+			</return>
+			<argument index="0" name="brake" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_engine_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="engine_force" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_friction">
+			<return type="void">
+			</return>
+			<argument index="0" name="friction" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_mass">
+			<return type="void">
+			</return>
+			<argument index="0" name="mass" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_steering">
+			<return type="void">
+			</return>
+			<argument index="0" name="steering" type="float">
+			</argument>
+			<description>
+				Set the steering angle (in radians).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="brake" type="float" setter="set_brake" getter="get_brake">
+		</member>
+		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force">
+		</member>
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass">
+		</member>
+		<member name="steering" type="float" setter="set_steering" getter="get_steering">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

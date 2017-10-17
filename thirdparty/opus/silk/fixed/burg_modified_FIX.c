@@ -150,8 +150,11 @@ void silk_burg_modified_c(
                     C_first_row[ k ] = silk_MLA( C_first_row[ k ], x1, x_ptr[ n - k - 1 ]            ); /* Q( -rshifts ) */
                     C_last_row[ k ]  = silk_MLA( C_last_row[ k ],  x2, x_ptr[ subfr_length - n + k ] ); /* Q( -rshifts ) */
                     Atmp1 = silk_RSHIFT_ROUND( Af_QA[ k ], QA - 17 );                                   /* Q17 */
-                    tmp1 = silk_MLA( tmp1, x_ptr[ n - k - 1 ],            Atmp1 );                      /* Q17 */
-                    tmp2 = silk_MLA( tmp2, x_ptr[ subfr_length - n + k ], Atmp1 );                      /* Q17 */
+                    /* We sometimes have get overflows in the multiplications (even beyond +/- 2^32),
+                       but they cancel each other and the real result seems to always fit in a 32-bit
+                       signed integer. This was determined experimentally, not theoretically (unfortunately). */
+                    tmp1 = silk_MLA_ovflw( tmp1, x_ptr[ n - k - 1 ],            Atmp1 );                      /* Q17 */
+                    tmp2 = silk_MLA_ovflw( tmp2, x_ptr[ subfr_length - n + k ], Atmp1 );                      /* Q17 */
                 }
                 tmp1 = -tmp1;                                                                           /* Q17 */
                 tmp2 = -tmp2;                                                                           /* Q17 */
@@ -200,12 +203,14 @@ void silk_burg_modified_c(
             /* Max prediction gain exceeded; set reflection coefficient such that max prediction gain is exactly hit */
             tmp2 = ( (opus_int32)1 << 30 ) - silk_DIV32_varQ( minInvGain_Q30, invGain_Q30, 30 );            /* Q30 */
             rc_Q31 = silk_SQRT_APPROX( tmp2 );                                                  /* Q15 */
-            /* Newton-Raphson iteration */
-            rc_Q31 = silk_RSHIFT32( rc_Q31 + silk_DIV32( tmp2, rc_Q31 ), 1 );                   /* Q15 */
-            rc_Q31 = silk_LSHIFT32( rc_Q31, 16 );                                               /* Q31 */
-            if( num < 0 ) {
-                /* Ensure adjusted reflection coefficients has the original sign */
-                rc_Q31 = -rc_Q31;
+            if( rc_Q31 > 0 ) {
+                /* Newton-Raphson iteration */
+                rc_Q31 = silk_RSHIFT32( rc_Q31 + silk_DIV32( tmp2, rc_Q31 ), 1 );                       /* Q15 */
+                rc_Q31 = silk_LSHIFT32( rc_Q31, 16 );                                                   /* Q31 */
+                if( num < 0 ) {
+                    /* Ensure adjusted reflection coefficients has the original sign */
+                    rc_Q31 = -rc_Q31;
+                }
             }
             invGain_Q30 = minInvGain_Q30;
             reached_max_gain = 1;

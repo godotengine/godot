@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,18 +39,22 @@ class Engine {
 
 	friend class Main;
 
-	String _custom_level;
 	uint64_t frames_drawn;
 	uint32_t _frame_delay;
+	uint64_t _frame_ticks;
+	float _frame_step;
 
 	int ips;
 	float _fps;
 	int _target_fps;
 	float _time_scale;
 	bool _pixel_snap;
-	uint64_t _fixed_frames;
+	uint64_t _physics_frames;
+
 	uint64_t _idle_frames;
-	bool _in_fixed;
+	bool _in_physics;
+
+	bool editor_hint;
 
 	static Engine *singleton;
 
@@ -64,13 +69,13 @@ public:
 
 	virtual float get_frames_per_second() const { return _fps; }
 
-	String get_custom_level() const { return _custom_level; }
-
 	uint64_t get_frames_drawn();
 
-	uint64_t get_fixed_frames() const { return _fixed_frames; }
+	uint64_t get_physics_frames() const { return _physics_frames; }
 	uint64_t get_idle_frames() const { return _idle_frames; }
-	bool is_in_fixed_frame() const { return _in_fixed; }
+	bool is_in_physics_frame() const { return _in_physics; }
+	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
+	float get_idle_frame_step() const { return _frame_step; }
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
@@ -79,6 +84,14 @@ public:
 	uint32_t get_frame_delay() const;
 
 	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
+
+#ifdef TOOLS_ENABLED
+	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
+	_FORCE_INLINE_ bool is_editor_hint() const { return editor_hint; }
+#else
+	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
+	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
+#endif
 
 	Dictionary get_version_info() const;
 

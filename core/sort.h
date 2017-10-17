@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +46,7 @@ class SortArray {
 
 	enum {
 
-		INTROSORT_TRESHOLD = 16
+		INTROSORT_THRESHOLD = 16
 	};
 
 public:
@@ -179,7 +180,7 @@ public:
 
 	inline void introsort(int p_first, int p_last, T *p_array, int p_max_depth) const {
 
-		while (p_last - p_first > INTROSORT_TRESHOLD) {
+		while (p_last - p_first > INTROSORT_THRESHOLD) {
 
 			if (p_max_depth == 0) {
 				partial_sort(p_first, p_last, p_last, p_array);
@@ -272,9 +273,9 @@ public:
 
 	inline void final_insertion_sort(int p_first, int p_last, T *p_array) const {
 
-		if (p_last - p_first > INTROSORT_TRESHOLD) {
-			insertion_sort(p_first, p_first + INTROSORT_TRESHOLD, p_array);
-			unguarded_insertion_sort(p_first + INTROSORT_TRESHOLD, p_last, p_array);
+		if (p_last - p_first > INTROSORT_THRESHOLD) {
+			insertion_sort(p_first, p_first + INTROSORT_THRESHOLD, p_array);
+			unguarded_insertion_sort(p_first + INTROSORT_THRESHOLD, p_last, p_array);
 		} else {
 
 			insertion_sort(p_first, p_last, p_array);

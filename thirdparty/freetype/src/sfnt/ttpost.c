@@ -5,7 +5,7 @@
 /*    PostScript name table processing for TrueType and OpenType fonts     */
 /*    (body).                                                              */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -29,6 +29,10 @@
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_STREAM_H
 #include FT_TRUETYPE_TAGS_H
+
+
+#ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
+
 #include "ttpost.h"
 
 #include "sferrors.h"
@@ -321,12 +325,13 @@
     FT_UNUSED( post_limit );
 
 
-    /* UNDOCUMENTED!  This value appears only in the Apple TT specs. */
     if ( FT_READ_USHORT( num_glyphs ) )
       goto Exit;
 
     /* check the number of glyphs */
-    if ( num_glyphs > face->max_profile.numGlyphs || num_glyphs > 258 )
+    if ( num_glyphs > face->max_profile.numGlyphs ||
+         num_glyphs > 258                         ||
+         num_glyphs < 1                           )
     {
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
@@ -402,7 +407,7 @@
     /* now read postscript table */
     if ( format == 0x00020000L )
       error = load_format_20( face, stream, post_limit );
-    else if ( format == 0x00028000L )
+    else if ( format == 0x00025000L )
       error = load_format_25( face, stream, post_limit );
     else
       error = FT_THROW( Invalid_File_Format );
@@ -441,7 +446,7 @@
         FT_FREE( table->glyph_names );
         table->num_names = 0;
       }
-      else if ( format == 0x00028000L )
+      else if ( format == 0x00025000L )
       {
         TT_Post_25  table = &names->names.format_25;
 
@@ -537,7 +542,7 @@
           *PSname = (FT_String*)table->glyph_names[name_index - 258];
       }
     }
-    else if ( format == 0x00028000L )
+    else if ( format == 0x00025000L )
     {
       TT_Post_25  table = &names->names.format_25;
 
@@ -558,6 +563,13 @@
   End:
     return FT_Err_Ok;
   }
+
+#else /* !TT_CONFIG_OPTION_POSTSCRIPT_NAMES */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _tt_post_dummy;
+
+#endif /* !TT_CONFIG_OPTION_POSTSCRIPT_NAMES */
 
 
 /* END */

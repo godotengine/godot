@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +56,12 @@ class ScriptEditorDebugger : public Control {
 
 	GDCLASS(ScriptEditorDebugger, Control);
 
+	enum MessageType {
+		MESSAGE_ERROR,
+		MESSAGE_WARNING,
+		MESSAGE_SUCCESS,
+	};
+
 	AcceptDialog *msgdialog;
 
 	Button *debugger_button;
@@ -83,10 +90,12 @@ class ScriptEditorDebugger : public Control {
 	int last_error_count;
 
 	bool hide_on_stop;
+	bool enable_external_editor;
+	Ref<Script> stack_script;
 
 	TabContainer *tabs;
 
-	LineEdit *reason;
+	Label *reason;
 	ScriptEditorDebuggerVariables *variables;
 
 	Button *step;
@@ -141,6 +150,7 @@ class ScriptEditorDebugger : public Control {
 	void _scene_tree_selected();
 	void _scene_tree_request();
 	void _parse_message(const String &p_msg, const Array &p_data);
+	void _set_reason_text(const String &p_reason, MessageType p_type);
 	void _scene_tree_property_select_object(ObjectID p_object);
 	void _scene_tree_property_value_edited(const String &p_prop, const Variant &p_value);
 
@@ -199,6 +209,11 @@ public:
 	void update_live_edit_root();
 
 	void set_hide_on_stop(bool p_hide);
+
+	bool get_debug_with_external_editor() const;
+	void set_debug_with_external_editor(bool p_enabled);
+
+	Ref<Script> get_dump_stack_script() const;
 
 	void set_tool_button(Button *p_tb) { debugger_button = p_tb; }
 

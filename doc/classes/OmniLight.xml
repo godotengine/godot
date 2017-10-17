@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OmniLight" inherits="Light" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		OmniDirectional Light, such as a light bulb or a candle.
+	</brief_description>
+	<description>
+		An OmniDirectional light is a type of [Light] node that emits lights in all directions. The light is attenuated through the distance and this attenuation can be configured by changing the energy, radius and attenuation parameters of [Light].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_shadow_detail" qualifiers="const">
+			<return type="int" enum="OmniLight.ShadowDetail">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_mode" qualifiers="const">
+			<return type="int" enum="OmniLight.ShadowMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_detail">
+			<return type="void">
+			</return>
+			<argument index="0" name="detail" type="int" enum="OmniLight.ShadowDetail">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="OmniLight.ShadowMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="omni_range" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="omni_shadow_detail" type="int" setter="set_shadow_detail" getter="get_shadow_detail" enum="OmniLight.ShadowDetail">
+		</member>
+		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight.ShadowMode">
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_DUAL_PARABOLOID" value="0">
+		</constant>
+		<constant name="SHADOW_CUBE" value="1">
+		</constant>
+		<constant name="SHADOW_DETAIL_VERTICAL" value="0">
+		</constant>
+		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1">
+		</constant>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +41,9 @@
 
 class ThreadAndroid : public Thread {
 
+	static pthread_key_t thread_id_key;
+	static ID next_thread_id;
+
 	pthread_t pthread;
 	pthread_attr_t pthread_attr;
 	ThreadCreateCallback callback;
@@ -51,7 +55,7 @@ class ThreadAndroid : public Thread {
 	static void *thread_callback(void *userdata);
 
 	static Thread *create_func_jandroid(ThreadCreateCallback p_callback, void *, const Settings &);
-	static ID get_thread_ID_func_jandroid();
+	static ID get_thread_id_func_jandroid();
 	static void wait_to_finish_func_jandroid(Thread *p_thread);
 
 	static void _thread_destroyed(void *value);
@@ -61,7 +65,7 @@ class ThreadAndroid : public Thread {
 	static JavaVM *java_vm;
 
 public:
-	virtual ID get_ID() const;
+	virtual ID get_id() const;
 
 	static void make_default(JavaVM *p_java_vm);
 	static void setup_thread();

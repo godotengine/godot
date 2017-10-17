@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SplitContainer" inherits="Container" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Container for splitting and adjusting.
+	</brief_description>
+	<description>
+		Container for splitting two controls vertically or horizontally, with a grabber that allows adjusting the split offset or ratio.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_dragger_visibility" qualifiers="const">
+			<return type="int" enum="SplitContainer.DraggerVisibility">
+			</return>
+			<description>
+				Return visibility of the split dragger (one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
+			</description>
+		</method>
+		<method name="get_split_offset" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the split offset.
+			</description>
+		</method>
+		<method name="is_collapsed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the split is collapsed.
+			</description>
+		</method>
+		<method name="set_collapsed">
+			<return type="void">
+			</return>
+			<argument index="0" name="collapsed" type="bool">
+			</argument>
+			<description>
+				Set if the split must be collapsed.
+			</description>
+		</method>
+		<method name="set_dragger_visibility">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="SplitContainer.DraggerVisibility">
+			</argument>
+			<description>
+				Set visibility of the split dragger ([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
+			</description>
+		</method>
+		<method name="set_split_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="int">
+			</argument>
+			<description>
+				Set the split offset.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed">
+		</member>
+		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility">
+		</member>
+		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset">
+		</member>
+	</members>
+	<signals>
+		<signal name="dragged">
+			<argument index="0" name="offset" type="int">
+			</argument>
+			<description>
+				Emitted when the dragger is dragged by user.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DRAGGER_VISIBLE" value="0">
+			The split dragger is visible.
+		</constant>
+		<constant name="DRAGGER_HIDDEN" value="1">
+			The split dragger is invisible.
+		</constant>
+		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+			The split dragger is invisible and collapsed.
+		</constant>
+	</constants>
+</class>

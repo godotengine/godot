@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBox" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for drawing stylized boxes for the UI.
+	</brief_description>
+	<description>
+		StyleBox is [Resource] that provides an abstract base class for drawing stylized boxes for the UI. StyleBoxes are used for drawing the styles of buttons, line edit backgrounds, tree backgrounds, etc. and also for testing a transparency mask for pointer signals. If mask test fails on a StyleBox assigned as mask to a control, clicks and motion signals will go through it to the one below.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="draw" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas_item" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_default_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+				Return the default offset of the margin "margin" (see MARGIN_* enum) of a StyleBox, Controls that draw styleboxes with context inside need to know the margin, so the border of the stylebox is not occluded.
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+				Return the offset of margin "margin" (see MARGIN_* enum).
+			</description>
+		</method>
+		<method name="get_minimum_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the minimum size that this stylebox can be shrunk to.
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the "offset" of a stylebox, this is a helper function, like writing [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
+			</description>
+		</method>
+		<method name="set_default_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="offset" type="float">
+			</argument>
+			<description>
+				Set the default offset "offset" of the margin "margin" (see MARGIN_* enum) for a StyleBox, Controls that draw styleboxes with context inside need to know the margin, so the border of the stylebox is not occluded.
+			</description>
+		</method>
+		<method name="test_mask" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+				Test a position in a rectangle, return whether it passes the mask test.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="content_margin_bottom" type="float" setter="set_default_margin" getter="get_default_margin">
+		</member>
+		<member name="content_margin_left" type="float" setter="set_default_margin" getter="get_default_margin">
+		</member>
+		<member name="content_margin_right" type="float" setter="set_default_margin" getter="get_default_margin">
+		</member>
+		<member name="content_margin_top" type="float" setter="set_default_margin" getter="get_default_margin">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Resource" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for all resources.
+	</brief_description>
+	<description>
+		Resource is the base class for all resource types. Resources are primarily data containers. They are reference counted and freed when no longer in use. They are also loaded only once from disk, and further attempts to load the resource will return the same reference (all this in contrast to a [Node], which is not reference counted and can be instanced from disk as many times as desired). Resources can be saved externally on disk or bundled into another object, such as a [Node] or another resource.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_setup_local_to_scene" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="subresources" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_local_scene" qualifiers="const">
+			<return type="Node">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the name of the resources, any name is valid (it doesn't have to be unique). Name is for descriptive purposes only.
+			</description>
+		</method>
+		<method name="get_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return the RID of the resource (or an empty RID). Many resources (such as [Texture], [Mesh], etc) are high level abstractions of resources stored in a server, so this function will return the original RID.
+			</description>
+		</method>
+		<method name="is_local_to_scene" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_local_to_scene">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Set the name of the resources, any name is valid (it doesn't have to be unique). Name is for descriptive purposes only.
+			</description>
+		</method>
+		<method name="set_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else. Fails if another [Resource] already has path "path".
+			</description>
+		</method>
+		<method name="setup_local_to_scene">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="take_over_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Set the path of the resource. Differs from set_path(), if another [Resource] exists with "path" it over-takes it, instead of failing.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene">
+		</member>
+		<member name="resource_name" type="String" setter="set_name" getter="get_name">
+		</member>
+		<member name="resource_path" type="String" setter="set_path" getter="get_path">
+		</member>
+	</members>
+	<signals>
+		<signal name="changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

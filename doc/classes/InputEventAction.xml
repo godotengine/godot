@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventAction" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Input event type for actions.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_action" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_action">
+			<return type="void">
+			</return>
+			<argument index="0" name="action" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pressed">
+			<return type="void">
+			</return>
+			<argument index="0" name="pressed" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action" type="String" setter="set_action" getter="get_action">
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

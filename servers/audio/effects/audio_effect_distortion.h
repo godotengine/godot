@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,16 +71,16 @@ public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_pre_gain(float pre_gain);
+	void set_pre_gain(float p_pre_gain);
 	float get_pre_gain() const;
 
-	void set_keep_hf_hz(float keep_hf_hz);
+	void set_keep_hf_hz(float p_keep_hf_hz);
 	float get_keep_hf_hz() const;
 
-	void set_drive(float drive);
+	void set_drive(float p_drive);
 	float get_drive() const;
 
-	void set_post_gain(float post_gain);
+	void set_post_gain(float p_post_gain);
 	float get_post_gain() const;
 
 	AudioEffectDistortion();

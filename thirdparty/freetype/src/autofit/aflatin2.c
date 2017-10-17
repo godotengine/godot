@@ -9,7 +9,7 @@
 /*                                                                         */
 /*    Auto-fitter hinting routines for latin writing system (body).        */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -22,6 +22,9 @@
 
 
 #include FT_ADVANCES_H
+
+
+#ifdef FT_OPTION_AUTOFIT2
 
 #include "afglobal.h"
 #include "aflatin.h"
@@ -1303,7 +1306,7 @@
                                 seg->serif->edge         &&
                                 seg->serif->edge != edge );
 
-          if ( ( seg->link && seg->link->edge != NULL ) || is_serif )
+          if ( ( seg->link && seg->link->edge ) || is_serif )
           {
             AF_Edge     edge2;
             AF_Segment  seg2;
@@ -1555,20 +1558,20 @@
       other_flags |= AF_LATIN_HINTS_VERT_SNAP;
 
     /*
-     *  We adjust stems to full pixels only if we don't use the `light' mode.
+     *  We adjust stems to full pixels unless in `light' or `lcd' mode.
      */
-    if ( mode != FT_RENDER_MODE_LIGHT )
+    if ( mode != FT_RENDER_MODE_LIGHT && mode != FT_RENDER_MODE_LCD )
       other_flags |= AF_LATIN_HINTS_STEM_ADJUST;
 
     if ( mode == FT_RENDER_MODE_MONO )
       other_flags |= AF_LATIN_HINTS_MONO;
 
     /*
-     *  In `light' hinting mode we disable horizontal hinting completely.
+     *  In `light' or `lcd' mode we disable horizontal hinting completely.
      *  We also do it if the face is italic.
      */
-    if ( mode == FT_RENDER_MODE_LIGHT                      ||
-         ( face->style_flags & FT_STYLE_FLAG_ITALIC ) != 0 )
+    if ( mode == FT_RENDER_MODE_LIGHT || mode == FT_RENDER_MODE_LCD ||
+         ( face->style_flags & FT_STYLE_FLAG_ITALIC ) != 0          )
       scaler_flags |= AF_SCALER_FLAG_NO_HORIZONTAL;
 
 #ifdef AF_CONFIG_OPTION_USE_WARPER
@@ -2337,13 +2340,7 @@
       goto Exit;
 
     /* analyze glyph outline */
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    if ( ( metrics->root.scaler.render_mode == FT_RENDER_MODE_LIGHT &&
-           AF_HINTS_DO_WARP( hints )                                ) ||
-         AF_HINTS_DO_HORIZONTAL( hints )                              )
-#else
     if ( AF_HINTS_DO_HORIZONTAL( hints ) )
-#endif
     {
       error = af_latin2_hints_detect_features( hints, AF_DIMENSION_HORZ );
       if ( error )
@@ -2363,9 +2360,9 @@
     for ( dim = 0; dim < AF_DIMENSION_MAX; dim++ )
     {
 #ifdef AF_CONFIG_OPTION_USE_WARPER
-      if ( dim == AF_DIMENSION_HORZ                                 &&
-           metrics->root.scaler.render_mode == FT_RENDER_MODE_LIGHT &&
-           AF_HINTS_DO_WARP( hints )                                )
+      if ( dim == AF_DIMENSION_HORZ                                  &&
+           metrics->root.scaler.render_mode == FT_RENDER_MODE_NORMAL &&
+           AF_HINTS_DO_WARP( hints )                                 )
       {
         AF_WarperRec  warper;
         FT_Fixed      scale;
@@ -2410,14 +2407,21 @@
 
     sizeof ( AF_LatinMetricsRec ),
 
-    (AF_WritingSystem_InitMetricsFunc) af_latin2_metrics_init,
-    (AF_WritingSystem_ScaleMetricsFunc)af_latin2_metrics_scale,
-    (AF_WritingSystem_DoneMetricsFunc) NULL,
-    (AF_WritingSystem_GetStdWidthsFunc)af_latin2_get_standard_widths,
+    (AF_WritingSystem_InitMetricsFunc) af_latin2_metrics_init,        /* style_metrics_init    */
+    (AF_WritingSystem_ScaleMetricsFunc)af_latin2_metrics_scale,       /* style_metrics_scale   */
+    (AF_WritingSystem_DoneMetricsFunc) NULL,                          /* style_metrics_done    */
+    (AF_WritingSystem_GetStdWidthsFunc)af_latin2_get_standard_widths, /* style_metrics_getstdw */
 
-    (AF_WritingSystem_InitHintsFunc)   af_latin2_hints_init,
-    (AF_WritingSystem_ApplyHintsFunc)  af_latin2_hints_apply
+    (AF_WritingSystem_InitHintsFunc)   af_latin2_hints_init,          /* style_hints_init      */
+    (AF_WritingSystem_ApplyHintsFunc)  af_latin2_hints_apply          /* style_hints_apply     */
   )
+
+#else /* !FT_OPTION_AUTOFIT2 */
+
+  /* ANSI C doesn't like empty source files */
+  typedef int  _af_latin2_dummy;
+
+#endif /* !FT_OPTION_AUTOFIT2 */
 
 
 /* END */

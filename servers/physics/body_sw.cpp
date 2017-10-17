@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -494,7 +495,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		Vector3 axis;
 		real_t angle;
 
-		rot.get_axis_and_angle(axis, angle);
+		rot.get_axis_angle(axis, angle);
 		axis.normalize();
 		angular_velocity = axis.normalized() * (angle / p_step);
 
@@ -503,7 +504,7 @@ void BodySW::integrate_forces(real_t p_step) {
 
 	} else {
 		if (!omit_force_integration && !first_integration) {
-			//overriden by direct state query
+			//overridden by direct state query
 
 			Vector3 force = gravity * mass;
 			force += applied_force;
@@ -637,7 +638,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	Vector3 axis;
 	real_t angle;
 
-	rot.get_axis_and_angle(axis,angle);
+	rot.get_axis_angle(axis,angle);
 	axis.normalize();
 	angular_velocity=axis.normalized() * (angle/p_step);
 	linear_velocity = (p_xform.origin - get_transform().origin)/p_step;
@@ -705,7 +706,7 @@ bool BodySW::sleep_test(real_t p_step) {
 	else if (!can_sleep)
 		return false;
 
-	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_treshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_treshold() * get_space()->get_body_linear_velocity_sleep_treshold()) {
+	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
 
 		still_time += p_step;
 
@@ -756,7 +757,8 @@ BodySW::BodySW()
 
 	contact_count = 0;
 	gravity_scale = 1.0;
-
+	linear_damp = -1;
+	angular_damp = -1;
 	area_angular_damp = 0;
 	area_linear_damp = 0;
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +58,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 
 	double final_cutoff = (cutoff > sr_limit) ? sr_limit : cutoff;
 	if (final_cutoff < 1) //avoid crapness
-		final_cutoff = 1; //dont allow less than this
+		final_cutoff = 1; //don't allow less than this
 
 	double omega = 2.0 * Math_PI * final_cutoff / sampling_rate;
 
@@ -241,28 +242,49 @@ AudioFilterSW::Processor::Processor() {
 	set_filter(NULL);
 }
 
-void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter) {
+void AudioFilterSW::Processor::set_filter(AudioFilterSW *p_filter, bool p_clear_history) {
 
-	ha1 = ha2 = hb1 = hb2 = 0;
+	if (p_clear_history) {
+		ha1 = ha2 = hb1 = hb2 = 0;
+	}
 	filter = p_filter;
 }
 
-void AudioFilterSW::Processor::update_coeffs() {
+void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
 
 	if (!filter)
 		return;
 
-	filter->prepare_coefficients(&coeffs);
+	if (p_interp_buffer_len) { //interpolate
+		Coeffs old_coeffs = coeffs;
+		filter->prepare_coefficients(&coeffs);
+		incr_coeffs.a1 = (coeffs.a1 - old_coeffs.a1) / p_interp_buffer_len;
+		incr_coeffs.a2 = (coeffs.a2 - old_coeffs.a2) / p_interp_buffer_len;
+		incr_coeffs.b0 = (coeffs.b0 - old_coeffs.b0) / p_interp_buffer_len;
+		incr_coeffs.b1 = (coeffs.b1 - old_coeffs.b1) / p_interp_buffer_len;
+		incr_coeffs.b2 = (coeffs.b2 - old_coeffs.b2) / p_interp_buffer_len;
+		coeffs = old_coeffs;
+	} else {
+		filter->prepare_coefficients(&coeffs);
+	}
 }
 
-void AudioFilterSW::Processor::process(float *p_samples, int p_amount, int p_stride) {
+void AudioFilterSW::Processor::process(float *p_samples, int p_amount, int p_stride, bool p_interpolate) {
 
 	if (!filter)
 		return;
 
-	for (int i = 0; i < p_amount; i++) {
+	if (p_interpolate) {
+		for (int i = 0; i < p_amount; i++) {
 
-		process_one(*p_samples);
-		p_samples += p_stride;
+			process_one_interp(*p_samples);
+			p_samples += p_stride;
+		}
+	} else {
+		for (int i = 0; i < p_amount; i++) {
+
+			process_one(*p_samples);
+			p_samples += p_stride;
+		}
 	}
 }

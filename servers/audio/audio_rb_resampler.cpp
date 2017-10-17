@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,60 +173,23 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 	}
 
 	int todo = MIN(((int64_t(rb_todo) << MIX_FRAC_BITS) / increment) + 1, p_frames);
-#if 0
-	if (int(src_mix_rate)==target_mix_rate) {
 
-
-		if (channels==6) {
-
-			for(int i=0;i<p_frames;i++) {
-
-				int from = ((rb_read_pos+i)&rb_mask)*6;
-				int to = i*6;
-
-				p_dest[from+0]=int32_t(rb[to+0])<<16;
-				p_dest[from+1]=int32_t(rb[to+1])<<16;
-				p_dest[from+2]=int32_t(rb[to+2])<<16;
-				p_dest[from+3]=int32_t(rb[to+3])<<16;
-				p_dest[from+4]=int32_t(rb[to+4])<<16;
-				p_dest[from+5]=int32_t(rb[to+5])<<16;
-			}
-
-		} else {
-			int len=p_frames*channels;
-			int from=rb_read_pos*channels;
-			int mask=0;
-			switch(channels) {
-				case 1: mask=rb_len-1; break;
-				case 2: mask=(rb_len*2)-1; break;
-				case 4: mask=(rb_len*4)-1; break;
-			}
-
-			for(int i=0;i<len;i++) {
-
-				p_dest[i]=int32_t(rb[(from+i)&mask])<<16;
-			}
-		}
-
-		rb_read_pos = (rb_read_pos+p_frames)&rb_mask;
-	} else
-#endif
 	{
 
-		uint32_t read = 0;
+		int read = 0;
 		switch (channels) {
 			case 1: read = _resample<1>(p_dest, todo, increment); break;
 			case 2: read = _resample<2>(p_dest, todo, increment); break;
 			case 4: read = _resample<4>(p_dest, todo, increment); break;
 			case 6: read = _resample<6>(p_dest, todo, increment); break;
 		}
-#if 1
+
 		//end of stream, fadeout
 		int remaining = p_frames - todo;
 		if (remaining && todo > 0) {
 
 			//print_line("fadeout");
-			for (int c = 0; c < channels; c++) {
+			for (uint32_t c = 0; c < channels; c++) {
 
 				for (int i = 0; i < todo; i++) {
 
@@ -237,25 +201,8 @@ bool AudioRBResampler::mix(int32_t *p_dest, int p_frames) {
 			}
 		}
 
-#else
-		int remaining = p_frames - todo;
-		if (remaining && todo > 0) {
-
-			for (int c = 0; c < channels; c++) {
-
-				int32_t from = p_dest[(todo - 1) * channels + c] >> 8;
-
-				for (int i = 0; i < remaining; i++) {
-
-					uint32_t mul = (remaining - i) * 256 / remaining;
-					p_dest[(todo + i) * channels + c] = from * mul;
-				}
-			}
-		}
-#endif
-
 		//zero out what remains there to avoid glitches
-		for (int i = todo * channels; i < int(p_frames) * channels; i++) {
+		for (uint32_t i = todo * channels; i < int(p_frames) * channels; i++) {
 
 			p_dest[i] = 0;
 		}
@@ -303,7 +250,7 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	rb_write_pos = 0;
 
 	//avoid maybe strange noises upon load
-	for (int i = 0; i < (rb_len * channels); i++) {
+	for (unsigned int i = 0; i < (rb_len * channels); i++) {
 
 		rb[i] = 0;
 		read_buf[i] = 0;

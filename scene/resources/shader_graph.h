@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +30,7 @@
 #ifndef SHADER_GRAPH_H
 #define SHADER_GRAPH_H
 
+// FIXME: Needs to be ported to the new 3.0 shader API
 #if 0
 #include "map.h"
 #include "scene/resources/shader.h"
@@ -36,7 +38,7 @@
 class ShaderGraph : public Shader {
 
 	GDCLASS( ShaderGraph, Shader );
-	RES_BASE_EXTENSION("sgp");
+	RES_BASE_EXTENSION("vshader");
 
 public:
 
@@ -193,8 +195,8 @@ public:
 
 	void node_add(ShaderType p_type, NodeType p_node_type, int p_id);
 	void node_remove(ShaderType p_which,int p_id);
-	void node_set_pos(ShaderType p_which,int p_id,const Point2& p_pos);
-	Point2 node_get_pos(ShaderType p_which,int p_id) const;
+	void node_set_position(ShaderType p_which,int p_id,const Point2& p_pos);
+	Point2 node_get_position(ShaderType p_which,int p_id) const;
 
 	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 	NodeType node_get_type(ShaderType p_which,int p_id) const;

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +56,7 @@ void AnimationTreePlayer::_set_process(bool p_process, bool p_force) {
 
 	switch (animation_process_mode) {
 
-		case ANIMATION_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 
@@ -91,7 +92,7 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 		Dictionary node = nodes[i];
 
 		StringName id = node.get_valid("id");
-		Point2 pos = node.get_valid("pos");
+		Point2 pos = node.get_valid("position");
 
 		NodeType nt = NODE_MAX;
 		String type = node.get_valid("type");
@@ -121,7 +122,7 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 
 		if (nt != NODE_OUTPUT)
 			add_node(nt, id);
-		node_set_pos(id, pos);
+		node_set_position(id, pos);
 
 		switch (nt) {
 			case NODE_OUTPUT: {
@@ -244,7 +245,7 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 		Dictionary node;
 		node["id"] = E->key();
-		node["pos"] = n->pos;
+		node["position"] = n->pos;
 
 		switch (n->type) {
 			case NODE_OUTPUT: node["type"] = "output"; break;
@@ -404,7 +405,7 @@ void AnimationTreePlayer::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_fixed_process_internal(false);
+				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
 		} break;
@@ -415,19 +416,19 @@ void AnimationTreePlayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (animation_process_mode == ANIMATION_PROCESS_FIXED)
+			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
 				break;
 
 			if (processing)
 				_process_animation(get_process_delta_time());
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (animation_process_mode == ANIMATION_PROCESS_IDLE)
 				break;
 
 			if (processing)
-				_process_animation(get_fixed_process_delta_time());
+				_process_animation(get_physics_process_delta_time());
 		} break;
 	}
 }
@@ -1155,6 +1156,7 @@ void AnimationTreePlayer::transition_node_set_xfade_time(const StringName &p_nod
 }
 
 void AnimationTreePlayer::TransitionNode::set_current(int p_current) {
+
 	ERR_FAIL_INDEX(p_current, inputs.size());
 
 	if (current == p_current)
@@ -1174,7 +1176,7 @@ void AnimationTreePlayer::transition_node_set_current(const StringName &p_node, 
 	n->set_current(p_current);
 }
 
-void AnimationTreePlayer::node_set_pos(const StringName &p_node, const Vector2 &p_pos) {
+void AnimationTreePlayer::node_set_position(const StringName &p_node, const Vector2 &p_pos) {
 
 	ERR_FAIL_COND(!node_map.has(p_node));
 	node_map[p_node]->pos = p_pos;
@@ -1185,7 +1187,7 @@ AnimationTreePlayer::NodeType AnimationTreePlayer::node_get_type(const StringNam
 	ERR_FAIL_COND_V(!node_map.has(p_node), NODE_OUTPUT);
 	return node_map[p_node]->type;
 }
-Point2 AnimationTreePlayer::node_get_pos(const StringName &p_node) const {
+Point2 AnimationTreePlayer::node_get_position(const StringName &p_node) const {
 
 	ERR_FAIL_COND_V(!node_map.has(p_node), Point2());
 	return node_map[p_node]->pos;
@@ -1480,14 +1482,14 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 		return NULL;
 	}
 
-	ObjectID id = child->get_instance_ID();
+	ObjectID id = child->get_instance_id();
 	StringName property;
 	int bone_idx = -1;
 
 	if (p_path.get_property()) {
 
-		if (child->cast_to<Skeleton>())
-			bone_idx = child->cast_to<Skeleton>()->find_bone(p_path.get_property());
+		if (Object::cast_to<Skeleton>(child))
+			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(p_path.get_property());
 		if (bone_idx == -1)
 			property = p_path.get_property();
 	}
@@ -1502,8 +1504,8 @@ AnimationTreePlayer::Track *AnimationTreePlayer::_find_track(const NodePath &p_p
 		Track tr;
 		tr.id = id;
 		tr.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
-		tr.skeleton = child->cast_to<Skeleton>();
-		tr.spatial = child->cast_to<Spatial>();
+		tr.skeleton = Object::cast_to<Skeleton>(child);
+		tr.spatial = Object::cast_to<Spatial>(child);
 		tr.bone_idx = bone_idx;
 		tr.property = property;
 
@@ -1643,7 +1645,7 @@ void AnimationTreePlayer::_update_sources() {
 		ERR_FAIL_COND(!m);
 	}
 
-	AnimationPlayer *ap = m->cast_to<AnimationPlayer>();
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(m);
 
 	if (!ap) {
 
@@ -1708,8 +1710,8 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("node_get_input_count", "id"), &AnimationTreePlayer::node_get_input_count);
 	ClassDB::bind_method(D_METHOD("node_get_input_source", "id", "idx"), &AnimationTreePlayer::node_get_input_source);
 
-	ClassDB::bind_method(D_METHOD("animation_node_set_animation", "id", "animation:Animation"), &AnimationTreePlayer::animation_node_set_animation);
-	ClassDB::bind_method(D_METHOD("animation_node_get_animation:Animation", "id"), &AnimationTreePlayer::animation_node_get_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_set_animation", "id", "animation"), &AnimationTreePlayer::animation_node_set_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_get_animation", "id"), &AnimationTreePlayer::animation_node_get_animation);
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_master_animation", "id", "source"), &AnimationTreePlayer::animation_node_set_master_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_master_animation", "id"), &AnimationTreePlayer::animation_node_get_master_animation);
@@ -1750,7 +1752,7 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("timescale_node_set_scale", "id", "scale"), &AnimationTreePlayer::timescale_node_set_scale);
 	ClassDB::bind_method(D_METHOD("timescale_node_get_scale", "id"), &AnimationTreePlayer::timescale_node_get_scale);
 
-	ClassDB::bind_method(D_METHOD("timeseek_node_seek", "id", "pos_sec"), &AnimationTreePlayer::timeseek_node_seek);
+	ClassDB::bind_method(D_METHOD("timeseek_node_seek", "id", "seconds"), &AnimationTreePlayer::timeseek_node_seek);
 
 	ClassDB::bind_method(D_METHOD("transition_node_set_input_count", "id", "count"), &AnimationTreePlayer::transition_node_set_input_count);
 	ClassDB::bind_method(D_METHOD("transition_node_get_input_count", "id"), &AnimationTreePlayer::transition_node_get_input_count);
@@ -1765,8 +1767,8 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("transition_node_set_current", "id", "input_idx"), &AnimationTreePlayer::transition_node_set_current);
 	ClassDB::bind_method(D_METHOD("transition_node_get_current", "id"), &AnimationTreePlayer::transition_node_get_current);
 
-	ClassDB::bind_method(D_METHOD("node_set_pos", "id", "screen_pos"), &AnimationTreePlayer::node_set_pos);
-	ClassDB::bind_method(D_METHOD("node_get_pos", "id"), &AnimationTreePlayer::node_get_pos);
+	ClassDB::bind_method(D_METHOD("node_set_position", "id", "screen_position"), &AnimationTreePlayer::node_set_position);
+	ClassDB::bind_method(D_METHOD("node_get_position", "id"), &AnimationTreePlayer::node_get_position);
 
 	ClassDB::bind_method(D_METHOD("remove_node", "id"), &AnimationTreePlayer::remove_node);
 	ClassDB::bind_method(D_METHOD("connect_nodes", "id", "dst_id", "dst_input_idx"), &AnimationTreePlayer::connect_nodes);
@@ -1796,16 +1798,19 @@ void AnimationTreePlayer::_bind_methods() {
 	ADD_GROUP("Playback", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 
-	BIND_CONSTANT(NODE_OUTPUT);
-	BIND_CONSTANT(NODE_ANIMATION);
-	BIND_CONSTANT(NODE_ONESHOT);
-	BIND_CONSTANT(NODE_MIX);
-	BIND_CONSTANT(NODE_BLEND2);
-	BIND_CONSTANT(NODE_BLEND3);
-	BIND_CONSTANT(NODE_BLEND4);
-	BIND_CONSTANT(NODE_TIMESCALE);
-	BIND_CONSTANT(NODE_TIMESEEK);
-	BIND_CONSTANT(NODE_TRANSITION);
+	BIND_ENUM_CONSTANT(NODE_OUTPUT);
+	BIND_ENUM_CONSTANT(NODE_ANIMATION);
+	BIND_ENUM_CONSTANT(NODE_ONESHOT);
+	BIND_ENUM_CONSTANT(NODE_MIX);
+	BIND_ENUM_CONSTANT(NODE_BLEND2);
+	BIND_ENUM_CONSTANT(NODE_BLEND3);
+	BIND_ENUM_CONSTANT(NODE_BLEND4);
+	BIND_ENUM_CONSTANT(NODE_TIMESCALE);
+	BIND_ENUM_CONSTANT(NODE_TIMESEEK);
+	BIND_ENUM_CONSTANT(NODE_TRANSITION);
+
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 }
 
 AnimationTreePlayer::AnimationTreePlayer() {

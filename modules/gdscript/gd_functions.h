@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +62,8 @@ public:
 		MATH_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
+		MATH_INVERSE_LERP,
+		MATH_RANGE_LERP,
 		MATH_DECTIME,
 		MATH_RANDOMIZE,
 		MATH_RAND,
@@ -104,6 +107,7 @@ public:
 		COLORN,
 		PRINT_STACK,
 		INSTANCE_FROM_ID,
+		LEN,
 		FUNC_MAX
 
 	};

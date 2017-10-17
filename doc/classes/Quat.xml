@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Quat" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Quaternion.
+	</brief_description>
+	<description>
+		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between two rotations. Multiplying quaternions also cheaply reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<argument index="3" name="w" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="angle" type="float">
+			</argument>
+			<description>
+				Returns a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="from" type="Basis">
+			</argument>
+			<description>
+				Returns the rotation matrix corresponding to the given quaternion.
+			</description>
+		</method>
+		<method name="cubic_slerp">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="b" type="Quat">
+			</argument>
+			<argument index="1" name="pre_a" type="Quat">
+			</argument>
+			<argument index="2" name="post_b" type="Quat">
+			</argument>
+			<argument index="3" name="t" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="dot">
+			<return type="float">
+			</return>
+			<argument index="0" name="b" type="Quat">
+			</argument>
+			<description>
+				Returns the dot product of two quaternions.
+			</description>
+		</method>
+		<method name="inverse">
+			<return type="Quat">
+			</return>
+			<description>
+				Returns the inverse of the quaternion.
+			</description>
+		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the quaternion is normalized or not.
+			</description>
+		</method>
+		<method name="length">
+			<return type="float">
+			</return>
+			<description>
+				Returns the length of the quaternion.
+			</description>
+		</method>
+		<method name="length_squared">
+			<return type="float">
+			</return>
+			<description>
+				Returns the length of the quaternion, squared.
+			</description>
+		</method>
+		<method name="normalized">
+			<return type="Quat">
+			</return>
+			<description>
+				Returns a copy of the quaternion, normalized to unit length.
+			</description>
+		</method>
+		<method name="slerp">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="b" type="Quat">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Perform a spherical-linear interpolation with another quaternion.
+			</description>
+		</method>
+		<method name="slerpni">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="b" type="Quat">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="xform">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="v" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="w" type="float" setter="" getter="">
+		</member>
+		<member name="x" type="float" setter="" getter="">
+		</member>
+		<member name="y" type="float" setter="" getter="">
+		</member>
+		<member name="z" type="float" setter="" getter="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

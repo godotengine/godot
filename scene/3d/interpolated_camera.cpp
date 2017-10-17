@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,13 +29,15 @@
 /*************************************************************************/
 #include "interpolated_camera.h"
 
+#include "engine.h"
+
 void InterpolatedCamera::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (get_tree()->is_editor_hint() && enabled)
-				set_fixed_process(false);
+			if (Engine::get_singleton()->is_editor_hint() && enabled)
+				set_physics_process(false);
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -43,7 +46,7 @@ void InterpolatedCamera::_notification(int p_what) {
 				break;
 			if (has_node(target)) {
 
-				Spatial *node = get_node(target)->cast_to<Spatial>();
+				Spatial *node = Object::cast_to<Spatial>(get_node(target));
 				if (!node)
 					break;
 
@@ -52,9 +55,9 @@ void InterpolatedCamera::_notification(int p_what) {
 				Transform local_transform = get_global_transform();
 				local_transform = local_transform.interpolate_with(target_xform, delta);
 				set_global_transform(local_transform);
+				Camera *cam = Object::cast_to<Camera>(node);
+				if (cam) {
 
-				if (node->cast_to<Camera>()) {
-					Camera *cam = node->cast_to<Camera>();
 					if (cam->get_projection() == get_projection()) {
 
 						float new_near = Math::lerp(get_znear(), cam->get_znear(), delta);
@@ -80,7 +83,7 @@ void InterpolatedCamera::_notification(int p_what) {
 void InterpolatedCamera::_set_target(const Object *p_target) {
 
 	ERR_FAIL_NULL(p_target);
-	set_target(p_target->cast_to<Spatial>());
+	set_target(Object::cast_to<Spatial>(p_target));
 }
 
 void InterpolatedCamera::set_target(const Spatial *p_target) {
@@ -105,7 +108,7 @@ void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
 		return;
 	enabled = p_enable;
 	if (p_enable) {
-		if (is_inside_tree() && get_tree()->is_editor_hint())
+		if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 			return;
 		set_process(true);
 	} else
@@ -131,7 +134,7 @@ void InterpolatedCamera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_path", "target_path"), &InterpolatedCamera::set_target_path);
 	ClassDB::bind_method(D_METHOD("get_target_path"), &InterpolatedCamera::get_target_path);
-	ClassDB::bind_method(D_METHOD("set_target", "target:Camera"), &InterpolatedCamera::_set_target);
+	ClassDB::bind_method(D_METHOD("set_target", "target"), &InterpolatedCamera::_set_target);
 
 	ClassDB::bind_method(D_METHOD("set_speed", "speed"), &InterpolatedCamera::set_speed);
 	ClassDB::bind_method(D_METHOD("get_speed"), &InterpolatedCamera::get_speed);

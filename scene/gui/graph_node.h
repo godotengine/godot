@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +68,7 @@ private:
 	bool show_close;
 	Vector2 offset;
 	bool comment;
-	bool resizeable;
+	bool resizable;
 
 	bool resizing;
 	Vector2 resizing_from;
@@ -98,10 +99,8 @@ private:
 
 	Overlay overlay;
 
-	bool has_point(const Point2 &p_point) const;
-
 protected:
-	void _gui_input(const InputEvent &p_ev);
+	void _gui_input(const Ref<InputEvent> &p_ev);
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -110,6 +109,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	bool has_point(const Point2 &p_point) const;
+
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left = Ref<Texture>(), const Ref<Texture> &p_custom_right = Ref<Texture>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
@@ -137,10 +138,10 @@ public:
 
 	int get_connection_input_count();
 	int get_connection_output_count();
-	Vector2 get_connection_input_pos(int p_idx);
+	Vector2 get_connection_input_position(int p_idx);
 	int get_connection_input_type(int p_idx);
 	Color get_connection_input_color(int p_idx);
-	Vector2 get_connection_output_pos(int p_idx);
+	Vector2 get_connection_output_position(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
 
@@ -150,8 +151,8 @@ public:
 	void set_comment(bool p_enable);
 	bool is_comment() const;
 
-	void set_resizeable(bool p_enable);
-	bool is_resizeable() const;
+	void set_resizable(bool p_enable);
+	bool is_resizable() const;
 
 	virtual Size2 get_minimum_size() const;
 

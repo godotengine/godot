@@ -31,6 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "main.h"
 #include "stack_alloc.h"
+#include "NSQ.h"
+
 
 typedef struct {
     opus_int32 sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ];
@@ -106,7 +108,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
     opus_int            warping_Q16,            /* I                                        */
     opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
     opus_int            *smpl_buf_idx,          /* I    Index to newest samples in buffers  */
-    opus_int            decisionDelay           /* I                                        */
+    opus_int            decisionDelay,          /* I                                        */
+    int                 arch                    /* I                                        */
 );
 
 void silk_NSQ_del_dec_c(
@@ -260,7 +263,7 @@ void silk_NSQ_del_dec_c(
         silk_noise_shape_quantizer_del_dec( NSQ, psDelDec, psIndices->signalType, x_sc_Q10, pulses, pxq, sLTP_Q15,
             delayedGain_Q10, A_Q12, B_Q14, AR_shp_Q13, lag, HarmShapeFIRPacked_Q14, Tilt_Q14[ k ], LF_shp_Q14[ k ],
             Gains_Q16[ k ], Lambda_Q10, offset_Q10, psEncC->subfr_length, subfr++, psEncC->shapingLPCOrder,
-            psEncC->predictLPCOrder, psEncC->warping_Q16, psEncC->nStatesDelayedDecision, &smpl_buf_idx, decisionDelay );
+            psEncC->predictLPCOrder, psEncC->warping_Q16, psEncC->nStatesDelayedDecision, &smpl_buf_idx, decisionDelay, psEncC->arch );
 
         x_Q3   += psEncC->subfr_length;
         pulses += psEncC->subfr_length;
@@ -333,7 +336,8 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
     opus_int            warping_Q16,            /* I                                        */
     opus_int            nStatesDelayedDecision, /* I    Number of states in decision tree   */
     opus_int            *smpl_buf_idx,          /* I    Index to newest samples in buffers  */
-    opus_int            decisionDelay           /* I                                        */
+    opus_int            decisionDelay,          /* I                                        */
+    int                 arch                    /* I                                        */
 )
 {
     opus_int     i, j, k, Winner_ind, RDmin_ind, RDmax_ind, last_smple_idx;
@@ -343,6 +347,10 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
     opus_int32   q1_Q0, q1_Q10, q2_Q10, exc_Q14, LPC_exc_Q14, xq_Q14, Gain_Q10;
     opus_int32   tmp1, tmp2, sLF_AR_shp_Q14;
     opus_int32   *pred_lag_ptr, *shp_lag_ptr, *psLPC_Q14;
+#ifdef silk_short_prediction_create_arch_coef
+    opus_int32   a_Q12_arch[MAX_LPC_ORDER];
+#endif
+
     VARDECL( NSQ_sample_pair, psSampleState );
     NSQ_del_dec_struct *psDD;
     NSQ_sample_struct  *psSS;
@@ -354,6 +362,10 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
     shp_lag_ptr  = &NSQ->sLTP_shp_Q14[ NSQ->sLTP_shp_buf_idx - lag + HARM_SHAPE_FIR_TAPS / 2 ];
     pred_lag_ptr = &sLTP_Q15[ NSQ->sLTP_buf_idx - lag + LTP_ORDER / 2 ];
     Gain_Q10     = silk_RSHIFT( Gain_Q16, 6 );
+
+#ifdef silk_short_prediction_create_arch_coef
+    silk_short_prediction_create_arch_coef(a_Q12_arch, a_Q12, predictLPCOrder);
+#endif
 
     for( i = 0; i < length; i++ ) {
         /* Perform common calculations used in all states */
@@ -398,27 +410,7 @@ static OPUS_INLINE void silk_noise_shape_quantizer_del_dec(
             /* Pointer used in short term prediction and shaping */
             psLPC_Q14 = &psDD->sLPC_Q14[ NSQ_LPC_BUF_LENGTH - 1 + i ];
             /* Short-term prediction */
-            silk_assert( predictLPCOrder == 10 || predictLPCOrder == 16 );
-            /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
-            LPC_pred_Q14 = silk_RSHIFT( predictLPCOrder, 1 );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[  0 ], a_Q12[ 0 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -1 ], a_Q12[ 1 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -2 ], a_Q12[ 2 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -3 ], a_Q12[ 3 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -4 ], a_Q12[ 4 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -5 ], a_Q12[ 5 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -6 ], a_Q12[ 6 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -7 ], a_Q12[ 7 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -8 ], a_Q12[ 8 ] );
-            LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -9 ], a_Q12[ 9 ] );
-            if( predictLPCOrder == 16 ) {
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -10 ], a_Q12[ 10 ] );
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -11 ], a_Q12[ 11 ] );
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -12 ], a_Q12[ 12 ] );
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -13 ], a_Q12[ 13 ] );
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -14 ], a_Q12[ 14 ] );
-                LPC_pred_Q14 = silk_SMLAWB( LPC_pred_Q14, psLPC_Q14[ -15 ], a_Q12[ 15 ] );
-            }
+            LPC_pred_Q14 = silk_noise_shape_quantizer_short_prediction(psLPC_Q14, a_Q12, a_Q12_arch, predictLPCOrder, arch);
             LPC_pred_Q14 = silk_LSHIFT( LPC_pred_Q14, 4 );                              /* Q10 -> Q14 */
 
             /* Noise shape feedback */

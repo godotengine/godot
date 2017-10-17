@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,24 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_uwp.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
+#include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "main/main.h"
-#include "os/memory_pool_dynamic_static.h"
-#include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-#include "thread_uwp.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
-#include "drivers/unix/ip_unix.h"
-#include "global_config.h"
 #include "io/marshalls.h"
-#include "os/memory_pool_dynamic_prealloc.h"
+#include "main/main.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
+#include "platform/windows/windows_terminal_logger.h"
+#include "project_settings.h"
+#include "servers/audio_server.h"
+#include "servers/visual/visual_server_raster.h"
+#include "thread_uwp.h"
 
 #include <ppltasks.h>
 #include <wrl.h>
@@ -148,9 +148,6 @@ const char *OSUWP::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static = NULL;
-static MemoryPoolDynamic *mempool_dynamic = NULL;
-
 void OSUWP::initialize_core() {
 
 	last_button_state = 0;
@@ -160,31 +157,18 @@ void OSUWP::initialize_core() {
 	ThreadUWP::make_default();
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
+	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
-	//FileAccessBufferedFA<FileAccessWindows>::make_default();
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	//TCPServerWinsock::make_default();
-	//StreamPeerWinsock::make_default();
-
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
-
-	mempool_static = new MemoryPoolStaticMalloc;
-#if 1
-	mempool_dynamic = memnew(MemoryPoolDynamicStatic);
-#else
-#define DYNPOOL_SIZE 4 * 1024 * 1024
-	void *buffer = malloc(DYNPOOL_SIZE);
-	mempool_dynamic = memnew(MemoryPoolDynamicPrealloc(buffer, DYNPOOL_SIZE));
-
-#endif
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
@@ -197,6 +181,13 @@ void OSUWP::initialize_core() {
 	IP_Unix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
+}
+
+void OSUWP::initialize_logger() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(WindowsTerminalLogger));
+	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 bool OSUWP::can_draw() const {
@@ -258,13 +249,18 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 	set_video_mode(vm);
 
 	gl_context->make_current();
-	rasterizer = memnew(RasterizerGLES2);
 
-	visual_server = memnew(VisualServerRaster(rasterizer));
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
+
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering? Or remove?
+	/*
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
+	*/
 
 	//
 	physics_server = memnew(PhysicsServerSW);
@@ -280,14 +276,9 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 	joypad = ref new JoypadUWP(input);
 	joypad->register_events();
 
-	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::initialize(p_audio_driver);
 
-	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}
-
-	power_manager = memnew(PowerWinRT);
+	power_manager = memnew(PowerUWP);
 
 	managed_object->update_clipboard();
 
@@ -322,7 +313,7 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 
-	set_keep_screen_on(GLOBAL_DEF("display/keep_screen_on", true));
+	set_keep_screen_on(GLOBAL_DEF("display/window/keep_screen_on", true));
 }
 
 void OSUWP::set_clipboard(const String &p_text) {
@@ -342,19 +333,9 @@ String OSUWP::get_clipboard() const {
 		return "";
 };
 
-void OSUWP::input_event(InputEvent &p_event) {
-
-	p_event.ID = ++last_id;
+void OSUWP::input_event(const Ref<InputEvent> &p_event) {
 
 	input->parse_input_event(p_event);
-
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index > 3) {
-
-		//send release for mouse wheel
-		p_event.mouse_button.pressed = false;
-		p_event.ID = ++last_id;
-		input->parse_input_event(p_event);
-	}
 };
 
 void OSUWP::delete_main_loop() {
@@ -383,14 +364,6 @@ void OSUWP::finalize() {
 	if (gl_context)
 		memdelete(gl_context);
 #endif
-	if (rasterizer)
-		memdelete(rasterizer);
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
 
 	memdelete(input);
 
@@ -402,38 +375,9 @@ void OSUWP::finalize() {
 
 	joypad = nullptr;
 }
+
 void OSUWP::finalize_core() {
-
-	if (mempool_dynamic)
-		memdelete(mempool_dynamic);
-	delete mempool_static;
 }
-
-void OSUWP::vprint(const char *p_format, va_list p_list, bool p_stderr) {
-
-	char buf[16384 + 1];
-	int len = vsnprintf(buf, 16384, p_format, p_list);
-	if (len <= 0)
-		return;
-	buf[len] = 0;
-
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
-	if (wlen < 0)
-		return;
-
-	wchar_t *wbuf = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
-	wbuf[wlen] = 0;
-
-	if (p_stderr)
-		fwprintf(stderr, L"%s", wbuf);
-	else
-		wprintf(L"%s", wbuf);
-
-	free(wbuf);
-
-	fflush(stdout);
-};
 
 void OSUWP::alert(const String &p_alert, const String &p_title) {
 
@@ -534,7 +478,7 @@ OSUWP::MouseMode OSUWP::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-Point2 OSUWP::get_mouse_pos() const {
+Point2 OSUWP::get_mouse_position() const {
 
 	return Point2(old_x, old_y);
 }
@@ -556,30 +500,6 @@ OS::VideoMode OSUWP::get_video_mode(int p_screen) const {
 	return video_mode;
 }
 void OSUWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-}
-
-void OSUWP::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
-
-	const char *err_details;
-	if (p_rationale && p_rationale[0])
-		err_details = p_rationale;
-	else
-		err_details = p_code;
-
-	switch (p_type) {
-		case ERR_ERROR:
-			print("ERROR: %s: %s\n", p_function, err_details);
-			print("   At: %s:%i\n", p_file, p_line);
-			break;
-		case ERR_WARNING:
-			print("WARNING: %s: %s\n", p_function, err_details);
-			print("     At: %s:%i\n", p_file, p_line);
-			break;
-		case ERR_SCRIPT:
-			print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
-			print("          At: %s:%i\n", p_file, p_line);
-			break;
-	}
 }
 
 String OSUWP::get_name() {
@@ -680,7 +600,7 @@ uint64_t OSUWP::get_ticks_usec() const {
 
 void OSUWP::process_events() {
 
-	last_id = joypad->process_controllers(last_id);
+	joypad->process_controllers();
 	process_key_events();
 }
 
@@ -689,16 +609,18 @@ void OSUWP::process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 
 		KeyEvent &kev = key_event_buffer[i];
-		InputEvent iev;
 
-		iev.type = InputEvent::KEY;
-		iev.key.mod = kev.mod_state;
-		iev.key.echo = kev.echo;
-		iev.key.scancode = kev.scancode;
-		iev.key.unicode = kev.unicode;
-		iev.key.pressed = kev.pressed;
+		Ref<InputEventKey> key_event;
+		key_event.instance();
+		key_event->set_alt(kev.alt);
+		key_event->set_shift(kev.shift);
+		key_event->set_control(kev.control);
+		key_event->set_echo(kev.echo);
+		key_event->set_scancode(kev.scancode);
+		key_event->set_unicode(kev.unicode);
+		key_event->set_pressed(kev.pressed);
 
-		input_event(iev);
+		input_event(key_event);
 	}
 	key_event_pos = 0;
 }
@@ -752,7 +674,7 @@ void OSUWP::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-Error OSUWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode) {
+Error OSUWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
 
 	return FAILED;
 };
@@ -772,7 +694,7 @@ String OSUWP::get_executable_path() const {
 	return "";
 }
 
-void OSUWP::set_icon(const Image &p_icon) {
+void OSUWP::set_icon(const Ref<Image> &p_icon) {
 }
 
 bool OSUWP::has_environment(const String &p_var) const {
@@ -882,15 +804,19 @@ String OSUWP::get_data_dir() const {
 	return String(data_folder->Path->Data()).replace("\\", "/");
 }
 
-PowerState OSWinrt::get_power_state() {
+bool OSUWP::_check_internal_feature_support(const String &p_feature) {
+	return p_feature == "pc" || p_feature == "s3tc";
+}
+
+OS::PowerState OSUWP::get_power_state() {
 	return power_manager->get_power_state();
 }
 
-int OSWinrt::get_power_seconds_left() {
+int OSUWP::get_power_seconds_left() {
 	return power_manager->get_power_seconds_left();
 }
 
-int OSWinrt::get_power_percent_left() {
+int OSUWP::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
@@ -907,7 +833,6 @@ OSUWP::OSUWP() {
 
 	pressrc = 0;
 	old_invalid = true;
-	last_id = 0;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
 	stdo = fopen("stdout.txt", "wb");
@@ -923,6 +848,8 @@ OSUWP::OSUWP() {
 	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
 
 	AudioDriverManager::add_driver(&audio_driver);
+
+	_set_logger(memnew(WindowsTerminalLogger));
 }
 
 OSUWP::~OSUWP() {

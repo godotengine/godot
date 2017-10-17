@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="QuadMesh" inherits="PrimitiveMesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class representing a square mesh.
+	</brief_description>
+	<description>
+		Class representing a square mesh with size (2,2,0). Consider using a [PlaneMesh] if you require a differently sized plane.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

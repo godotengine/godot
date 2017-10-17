@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType CharMap cache (body)                                        */
 /*                                                                         */
-/*  Copyright 2000-2016 by                                                 */
+/*  Copyright 2000-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -201,15 +201,15 @@
   static
   const FTC_CacheClassRec  ftc_cmap_cache_class =
   {
-    ftc_cmap_node_new,
-    ftc_cmap_node_weight,
-    ftc_cmap_node_compare,
-    ftc_cmap_node_remove_faceid,
-    ftc_cmap_node_free,
+    ftc_cmap_node_new,           /* FTC_Node_NewFunc      node_new           */
+    ftc_cmap_node_weight,        /* FTC_Node_WeightFunc   node_weight        */
+    ftc_cmap_node_compare,       /* FTC_Node_CompareFunc  node_compare       */
+    ftc_cmap_node_remove_faceid, /* FTC_Node_CompareFunc  node_remove_faceid */
+    ftc_cmap_node_free,          /* FTC_Node_FreeFunc     node_free          */
 
     sizeof ( FTC_CacheRec ),
-    ftc_cache_init,
-    ftc_cache_done,
+    ftc_cache_init,              /* FTC_Cache_InitFunc    cache_init         */
+    ftc_cache_done,              /* FTC_Cache_DoneFunc    cache_done         */
   };
 
 

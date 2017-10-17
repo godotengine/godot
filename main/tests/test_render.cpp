@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,9 +64,9 @@ class TestMainLoop : public MainLoop {
 
 protected:
 public:
-	virtual void input_event(const InputEvent &p_event) {
+	virtual void input_event(const Ref<InputEvent> &p_event) {
 
-		if (p_event.type == InputEvent::KEY && p_event.key.pressed)
+		if (p_event->is_pressed())
 			quit = true;
 	}
 

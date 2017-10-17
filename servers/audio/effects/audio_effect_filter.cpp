@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,6 +159,11 @@ void AudioEffectFilter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "resonance", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_resonance", "get_resonance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gain", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dB", PROPERTY_HINT_ENUM, "6db,12db,18db,24db"), "set_db", "get_db");
+
+	BIND_ENUM_CONSTANT(FILTER_6DB);
+	BIND_ENUM_CONSTANT(FILTER_12DB);
+	BIND_ENUM_CONSTANT(FILTER_18DB);
+	BIND_ENUM_CONSTANT(FILTER_24DB);
 }
 
 AudioEffectFilter::AudioEffectFilter(AudioFilterSW::Mode p_mode) {

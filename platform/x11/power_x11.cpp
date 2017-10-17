@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,11 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/*
+Adapted from corresponding SDL 2.0 code.
+*/
+
+/*
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+
 #include "power_x11.h"
 
 #include <stdio.h>
 #include <unistd.h>
 
+#include "core/error_macros.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -145,25 +172,18 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 				charge = true;
 			}
 		} else if (String(key) == "remaining capacity") {
-			char *endptr = NULL;
-			//const int cvt = (int) strtol(val, &endptr, 10);
 			String sval = val;
 			const int cvt = sval.to_int();
-			if (*endptr == ' ') {
-				remaining = cvt;
-			}
+			remaining = cvt;
 		}
 	}
 
 	ptr = &info[0];
 	while (make_proc_acpi_key_val(&ptr, &key, &val)) {
 		if (String(key) == "design capacity") {
-			char *endptr = NULL;
 			String sval = val;
 			const int cvt = sval.to_int();
-			if (*endptr == ' ') {
-				maximum = cvt;
-			}
+			maximum = cvt;
 		}
 	}
 
@@ -232,12 +252,12 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 
 	this->nsecs_left = -1;
 	this->percent_left = -1;
-	this->power_state = POWERSTATE_UNKNOWN;
+	this->power_state = OS::POWERSTATE_UNKNOWN;
 
 	dirp->change_dir(proc_acpi_battery_path);
-	dirp->list_dir_begin();
+	Error err = dirp->list_dir_begin();
 
-	if (dirp == NULL) {
+	if (err != OK) {
 		return false; /* can't use this interface. */
 	} else {
 		node = dirp->get_next();
@@ -249,8 +269,8 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	}
 
 	dirp->change_dir(proc_acpi_ac_adapter_path);
-	dirp->list_dir_begin();
-	if (dirp == NULL) {
+	err = dirp->list_dir_begin();
+	if (err != OK) {
 		return false; /* can't use this interface. */
 	} else {
 		node = dirp->get_next();
@@ -262,13 +282,13 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	}
 
 	if (!have_battery) {
-		this->power_state = POWERSTATE_NO_BATTERY;
+		this->power_state = OS::POWERSTATE_NO_BATTERY;
 	} else if (charging) {
-		this->power_state = POWERSTATE_CHARGING;
+		this->power_state = OS::POWERSTATE_CHARGING;
 	} else if (have_ac) {
-		this->power_state = POWERSTATE_CHARGED;
+		this->power_state = OS::POWERSTATE_CHARGED;
 	} else {
-		this->power_state = POWERSTATE_ON_BATTERY;
+		this->power_state = OS::POWERSTATE_ON_BATTERY;
 	}
 
 	return true; /* definitive answer. */
@@ -380,17 +400,17 @@ bool PowerX11::GetPowerInfo_Linux_proc_apm() {
 	}
 
 	if (battery_flag == 0xFF) { /* unknown state */
-		this->power_state = POWERSTATE_UNKNOWN;
+		this->power_state = OS::POWERSTATE_UNKNOWN;
 	} else if (battery_flag & (1 << 7)) { /* no battery */
-		this->power_state = POWERSTATE_NO_BATTERY;
+		this->power_state = OS::POWERSTATE_NO_BATTERY;
 	} else if (battery_flag & (1 << 3)) { /* charging */
-		this->power_state = POWERSTATE_CHARGING;
+		this->power_state = OS::POWERSTATE_CHARGING;
 		need_details = true;
 	} else if (ac_status == 1) {
-		this->power_state = POWERSTATE_CHARGED; /* on AC, not charging. */
+		this->power_state = OS::POWERSTATE_CHARGED; /* on AC, not charging. */
 		need_details = true;
 	} else {
-		this->power_state = POWERSTATE_ON_BATTERY;
+		this->power_state = OS::POWERSTATE_ON_BATTERY;
 		need_details = true;
 	}
 
@@ -419,13 +439,13 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 
 	DirAccess *dirp = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	dirp->change_dir(base);
-	dirp->list_dir_begin();
+	Error err = dirp->list_dir_begin();
 
-	if (!dirp) {
+	if (err != OK) {
 		return false;
 	}
 
-	this->power_state = POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
+	this->power_state = OS::POWERSTATE_NO_BATTERY; /* assume we're just plugged in. */
 	this->nsecs_left = -1;
 	this->percent_left = -1;
 
@@ -434,7 +454,7 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 	while (name != "") {
 		bool choose = false;
 		char str[64];
-		PowerState st;
+		OS::PowerState st;
 		int secs;
 		int pct;
 
@@ -455,17 +475,17 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 
 		/* some drivers don't offer this, so if it's not explicitly reported assume it's present. */
 		if (read_power_file(base, name.utf8().get_data(), "present", str, sizeof(str)) && (String(str) == "0\n")) {
-			st = POWERSTATE_NO_BATTERY;
+			st = OS::POWERSTATE_NO_BATTERY;
 		} else if (!read_power_file(base, name.utf8().get_data(), "status", str, sizeof(str))) {
-			st = POWERSTATE_UNKNOWN; /* uh oh */
+			st = OS::POWERSTATE_UNKNOWN; /* uh oh */
 		} else if (String(str) == "Charging\n") {
-			st = POWERSTATE_CHARGING;
+			st = OS::POWERSTATE_CHARGING;
 		} else if (String(str) == "Discharging\n") {
-			st = POWERSTATE_ON_BATTERY;
+			st = OS::POWERSTATE_ON_BATTERY;
 		} else if ((String(str) == "Full\n") || (String(str) == "Not charging\n")) {
-			st = POWERSTATE_CHARGED;
+			st = OS::POWERSTATE_CHARGED;
 		} else {
-			st = POWERSTATE_UNKNOWN; /* uh oh */
+			st = OS::POWERSTATE_UNKNOWN; /* uh oh */
 		}
 
 		if (!read_power_file(base, name.utf8().get_data(), "capacity", str, sizeof(str))) {
@@ -523,17 +543,17 @@ bool PowerX11::UpdatePowerInfo() {
 }
 
 PowerX11::PowerX11()
-	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerX11::~PowerX11() {
 }
 
-PowerState PowerX11::get_power_state() {
+OS::PowerState PowerX11::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
-		return POWERSTATE_UNKNOWN;
+		return OS::POWERSTATE_UNKNOWN;
 	}
 }
 

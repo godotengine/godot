@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +48,7 @@ Variant FuncRef::call_func(const Variant **p_args, int p_argcount, Variant::Call
 void FuncRef::set_instance(Object *p_obj) {
 
 	ERR_FAIL_NULL(p_obj);
-	id = p_obj->get_instance_ID();
+	id = p_obj->get_instance_id();
 }
 void FuncRef::set_function(const StringName &p_func) {
 
@@ -60,7 +61,7 @@ void FuncRef::_bind_methods() {
 		MethodInfo mi;
 		mi.name = "call_func";
 		Vector<Variant> defargs;
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_func:Variant", &FuncRef::call_func, mi, defargs);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_func", &FuncRef::call_func, mi, defargs);
 	}
 
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);

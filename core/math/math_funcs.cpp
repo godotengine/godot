@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "math_funcs.h"
+
 #include "core/os/os.h"
 
-pcg32_random_t Math::default_pcg = { 1, PCG_DEFAULT_INC_64 };
+pcg32_random_t Math::default_pcg = { 12047754176567800795ULL, PCG_DEFAULT_INC_64 };
 
 #define PHI 0x9e3779b9
-
-#if 0
-static uint32_t Q[4096];
-#endif
 
 // TODO: we should eventually expose pcg.inc too
 uint32_t Math::rand_from_seed(uint64_t *seed) {
@@ -50,9 +48,7 @@ void Math::seed(uint64_t x) {
 }
 
 void Math::randomize() {
-
-	OS::Time time = OS::get_singleton()->get_time();
-	seed(OS::get_singleton()->get_ticks_usec() * (time.hour + 1) * (time.min + 1) * (time.sec + 1) * rand()); // TODO: can be simplified.
+	seed(OS::get_singleton()->get_ticks_usec() * default_pcg.state + PCG_DEFAULT_INC_64);
 }
 
 uint32_t Math::rand() {

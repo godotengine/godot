@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,9 +86,6 @@ RunSettingsDialog::RunSettingsDialog() {
 	arguments->set_editable(false);
 
 	get_ok()->set_text(TTR("Close"));
-	//get_cancel()->set_text("Close");
-
-	arguments->set_text("-l $scene");
 
 	set_title(TTR("Scene Run Settings"));
 }

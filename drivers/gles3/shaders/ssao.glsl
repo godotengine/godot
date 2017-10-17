@@ -11,8 +11,9 @@ void main() {
 
 [fragment]
 
+#define TWO_PI 6.283185307179586476925286766559
 
-#define NUM_SAMPLES (11)
+#define NUM_SAMPLES (15)
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower
 // miplevel to maintain reasonable spatial locality in the cache
@@ -25,8 +26,20 @@ void main() {
 
 // This is the number of turns around the circle that the spiral pattern makes.  This should be prime to prevent
 // taps from lining up.  This particular choice was tuned for NUM_SAMPLES == 9
-#define NUM_SPIRAL_TURNS (7)
 
+const int ROTATIONS[] = int[]( 1, 1, 2, 3, 2, 5, 2, 3, 2,
+3, 3, 5, 5, 3, 4, 7, 5, 5, 7,
+9, 8, 5, 5, 7, 7, 7, 8, 5, 8,
+11, 12, 7, 10, 13, 8, 11, 8, 7, 14,
+11, 11, 13, 12, 13, 19, 17, 13, 11, 18,
+19, 11, 11, 14, 17, 21, 15, 16, 17, 18,
+13, 17, 11, 17, 19, 18, 25, 18, 19, 19,
+29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
+31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
+19, 27, 21, 25, 39, 29, 17, 21, 27 );
+
+//#define NUM_SPIRAL_TURNS (7)
+const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES-1];
 
 uniform sampler2D source_depth; //texunit:0
 uniform highp usampler2D source_depth_mipmaps; //texunit:1
@@ -52,7 +65,12 @@ layout(location = 0) out float visibility;
 uniform vec4 proj_info;
 
 vec3 reconstructCSPosition(vec2 S, float z) {
-    return vec3((S.xy * proj_info.xy + proj_info.zw) * z, z);
+#ifdef USE_ORTHOGONAL_PROJECTION
+	return vec3((S.xy * proj_info.xy + proj_info.zw), z);
+#else
+	return vec3((S.xy * proj_info.xy + proj_info.zw) * z, z);
+
+#endif
 }
 
 vec3 getPosition(ivec2 ssP) {
@@ -60,7 +78,11 @@ vec3 getPosition(ivec2 ssP) {
     P.z = texelFetch(source_depth, ssP, 0).r;
 
     P.z = P.z * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+    P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
     P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+#endif
     P.z = -P.z;
 
     // Offset to pixel center
@@ -105,7 +127,12 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 		//read from depth buffer
 		P.z = texelFetch(source_depth, mipP, 0).r;
 		P.z = P.z * 2.0 - 1.0;
+#ifdef USE_ORTHOGONAL_PROJECTION
+		P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+#else
 		P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+
+#endif
 		P.z = -P.z;
 
 	} else {
@@ -193,7 +220,7 @@ void main() {
 
 
 	// Hash function used in the HPG12 AlchemyAO paper
-	float randomPatternRotationAngle = float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10);
+	float randomPatternRotationAngle = mod(float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10), TWO_PI);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -201,8 +228,11 @@ void main() {
 
 	// Choose the screen-space sample radius
 	// proportional to the projected area of the sphere
+#ifdef USE_ORTHOGONAL_PROJECTION
+	float ssDiskRadius = -proj_scale * radius;
+#else
 	float ssDiskRadius = -proj_scale * radius / C.z;
-
+#endif
 	float sum = 0.0;
 	for (int i = 0; i < NUM_SAMPLES; ++i) {
 		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius,i, randomPatternRotationAngle);
@@ -213,7 +243,7 @@ void main() {
 #ifdef ENABLE_RADIUS2
 
 	//go again for radius2
-	randomPatternRotationAngle = float((5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11);
+	randomPatternRotationAngle = mod(float((5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11), TWO_PI);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,29 +37,24 @@ void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
 	tileset = p_tileset;
 }
 
-void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_merge) {
+void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
-	if (!p_merge)
-		p_library->clear();
+	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-	for (int i = 0; i < scene->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
 
-		Node *child = scene->get_child(i);
-
-		if (!child->cast_to<Sprite>()) {
+		if (!Object::cast_to<Sprite>(child)) {
 			if (child->get_child_count() > 0) {
-				child = child->get_child(0);
-				if (!child->cast_to<Sprite>()) {
-					continue;
-				}
+				_import_node(child, p_library);
+			}
 
-			} else
-				continue;
+			continue;
 		}
 
-		Sprite *mi = child->cast_to<Sprite>();
+		Sprite *mi = Object::cast_to<Sprite>(child);
 		Ref<Texture> texture = mi->get_texture();
-		Ref<CanvasItemMaterial> material = mi->get_material();
+		Ref<Texture> normal_map = mi->get_normal_map();
+		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null())
 			continue;
@@ -72,6 +68,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 		}
 
 		p_library->tile_set_texture(id, texture);
+		p_library->tile_set_normal_map(id, normal_map);
 		p_library->tile_set_material(id, material);
 
 		p_library->tile_set_modulate(id, mi->get_modulate());
@@ -93,40 +90,53 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 			phys_offset += -s / 2;
 		}
 
-		Vector<Ref<Shape2D> > collisions;
+		Vector<TileSet::ShapeData> collisions;
 		Ref<NavigationPolygon> nav_poly;
 		Ref<OccluderPolygon2D> occluder;
+		bool found_collisions = false;
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 
 			Node *child2 = mi->get_child(j);
 
-			if (child2->cast_to<NavigationPolygonInstance>())
-				nav_poly = child2->cast_to<NavigationPolygonInstance>()->get_navigation_polygon();
+			if (Object::cast_to<NavigationPolygonInstance>(child2))
+				nav_poly = Object::cast_to<NavigationPolygonInstance>(child2)->get_navigation_polygon();
 
-			if (child2->cast_to<LightOccluder2D>())
-				occluder = child2->cast_to<LightOccluder2D>()->get_occluder_polygon();
+			if (Object::cast_to<LightOccluder2D>(child2))
+				occluder = Object::cast_to<LightOccluder2D>(child2)->get_occluder_polygon();
 
-			if (!child2->cast_to<StaticBody2D>())
+			if (!Object::cast_to<StaticBody2D>(child2))
 				continue;
-			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
-			int shape_count = sb->get_shape_count();
-			if (shape_count == 0)
-				continue;
-			for (int shape_index = 0; shape_index < shape_count; ++shape_index) {
-				Ref<Shape2D> collision = sb->get_shape(shape_index);
-				if (collision.is_valid()) {
-					collisions.push_back(collision);
+
+			found_collisions = true;
+
+			StaticBody2D *sb = Object::cast_to<StaticBody2D>(child2);
+
+			List<uint32_t> shapes;
+			sb->get_shape_owners(&shapes);
+
+			for (List<uint32_t>::Element *E = shapes.front(); E; E = E->next()) {
+				if (sb->is_shape_owner_disabled(E->get())) continue;
+
+				Transform2D shape_transform = sb->shape_owner_get_transform(E->get());
+				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
+
+				shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
+
+				for (int k = 0; k < sb->shape_owner_get_shape_count(E->get()); k++) {
+
+					Ref<Shape2D> shape = sb->shape_owner_get_shape(E->get(), k);
+					TileSet::ShapeData shape_data;
+					shape_data.shape = shape;
+					shape_data.shape_transform = shape_transform;
+					shape_data.one_way_collision = one_way;
+					collisions.push_back(shape_data);
 				}
 			}
 		}
 
-		if (collisions.size()) {
-
+		if (found_collisions) {
 			p_library->tile_set_shapes(id, collisions);
-			p_library->tile_set_shape_offset(id, -phys_offset);
-		} else {
-			p_library->tile_set_shape_offset(id, Vector2());
 		}
 
 		p_library->tile_set_texture_offset(id, mi->get_offset());
@@ -135,6 +145,14 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 		p_library->tile_set_occluder_offset(id, -phys_offset);
 		p_library->tile_set_navigation_polygon_offset(id, -phys_offset);
 	}
+}
+
+void TileSetEditor::_import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge) {
+
+	if (!p_merge)
+		p_library->clear();
+
+	_import_node(p_scene, p_library);
 }
 
 void TileSetEditor::_menu_confirm() {
@@ -220,11 +238,11 @@ void TileSetEditor::_bind_methods() {
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	Panel *panel = memnew(Panel);
-	panel->set_area_as_parent_rect();
+	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	add_child(panel);
 	MenuButton *options = memnew(MenuButton);
 	panel->add_child(options);
-	options->set_pos(Point2(1, 1));
+	options->set_position(Point2(1, 1));
 	options->set_text("Theme");
 	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	options->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);
@@ -250,8 +268,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 void TileSetEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<TileSet>()) {
-		tileset_editor->edit(p_node->cast_to<TileSet>());
+	if (Object::cast_to<TileSet>(p_node)) {
+		tileset_editor->edit(Object::cast_to<TileSet>(p_node));
 		tileset_editor->show();
 	} else
 		tileset_editor->hide();
@@ -275,8 +293,7 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	tileset_editor = memnew(TileSetEditor(p_node));
 
 	p_node->get_viewport()->add_child(tileset_editor);
-	tileset_editor->set_area_as_parent_rect();
-	tileset_editor->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	tileset_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	tileset_editor->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_BEGIN);
 	tileset_editor->set_end(Point2(0, 22));
 	tileset_editor->hide();

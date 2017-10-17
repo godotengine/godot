@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DampedSpringJoint2D" inherits="Joint2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Damped spring constraint for 2D physics.
+	</brief_description>
+	<description>
+		Damped spring constraint for 2D physics. This resembles a spring joint that always wants to go back to a given length.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_damping" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+			</description>
+		</method>
+		<method name="get_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the maximum length of the spring joint.
+			</description>
+		</method>
+		<method name="get_rest_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+			</description>
+		</method>
+		<method name="get_stiffness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+			</description>
+		</method>
+		<method name="set_damping">
+			<return type="void">
+			</return>
+			<argument index="0" name="damping" type="float">
+			</argument>
+			<description>
+				Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+			</description>
+		</method>
+		<method name="set_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+				Set the maximum length of the spring joint.
+			</description>
+		</method>
+		<method name="set_rest_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="rest_length" type="float">
+			</argument>
+			<description>
+				Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+			</description>
+		</method>
+		<method name="set_stiffness">
+			<return type="void">
+			</return>
+			<argument index="0" name="stiffness" type="float">
+			</argument>
+			<description>
+				Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="damping" type="float" setter="set_damping" getter="get_damping">
+		</member>
+		<member name="length" type="float" setter="set_length" getter="get_length">
+		</member>
+		<member name="rest_length" type="float" setter="set_rest_length" getter="get_rest_length">
+		</member>
+		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

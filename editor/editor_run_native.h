@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,14 +37,14 @@ class EditorRunNative : public HBoxContainer {
 
 	GDCLASS(EditorRunNative, BoxContainer);
 
-	Map<StringName, MenuButton *> menus;
+	Map<int, MenuButton *> menus;
 	bool first;
 	bool deploy_dumb;
 	bool deploy_debug_remote;
 	bool debug_collisions;
 	bool debug_navigation;
 
-	void _run_native(int p_idx, const String &p_platform);
+	void _run_native(int p_idx, int p_platform);
 
 protected:
 	static void _bind_methods();

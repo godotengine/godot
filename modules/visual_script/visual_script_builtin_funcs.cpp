@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,6 +65,8 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"decimals",
 	"stepify",
 	"lerp",
+	"inverse_lerp",
+	"range_lerp",
 	"dectime",
 	"randomize",
 	"randi",
@@ -193,9 +196,12 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case COLORN:
 			return 2;
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
 		case MATH_DECTIME:
 		case LOGIC_CLAMP:
 			return 3;
+		case MATH_RANGE_LERP:
+			return 5;
 		case FUNC_MAX: {
 		}
 	}
@@ -296,7 +302,26 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::REAL, "to");
 			else
 				return PropertyInfo(Variant::REAL, "weight");
-
+		} break;
+		case MATH_INVERSE_LERP: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "from");
+			else if (p_idx == 1)
+				return PropertyInfo(Variant::REAL, "to");
+			else
+				return PropertyInfo(Variant::REAL, "value");
+		} break;
+		case MATH_RANGE_LERP: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "value");
+			else if (p_idx == 1)
+				return PropertyInfo(Variant::REAL, "istart");
+			else if (p_idx == 2)
+				return PropertyInfo(Variant::REAL, "istop");
+			else if (p_idx == 3)
+				return PropertyInfo(Variant::REAL, "ostart");
+			else
+				return PropertyInfo(Variant::REAL, "ostop");
 		} break;
 		case MATH_DECTIME: {
 			if (p_idx == 0)
@@ -494,6 +519,8 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		} break;
 		case MATH_STEPIFY:
 		case MATH_LERP:
+		case MATH_INVERSE_LERP:
+		case MATH_RANGE_LERP:
 		case MATH_DECTIME: {
 			t = Variant::REAL;
 
@@ -794,6 +821,22 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
+		case VisualScriptBuiltinFunc::MATH_INVERSE_LERP: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::inverse_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_RANGE_LERP: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			VALIDATE_ARG_NUM(3);
+			VALIDATE_ARG_NUM(4);
+			*r_return = Math::range_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2], (double)*p_inputs[3], (double)*p_inputs[4]);
+		} break;
 		case VisualScriptBuiltinFunc::MATH_DECTIME: {
 
 			VALIDATE_ARG_NUM(0);
@@ -914,7 +957,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 
 			VALIDATE_ARG_NUM(0);
 			int64_t num = *p_inputs[0];
-			*r_return = nearest_power_of_2(num);
+			*r_return = next_power_of_2(num);
 		} break;
 		case VisualScriptBuiltinFunc::OBJ_WEAKREF: {
 
@@ -1174,6 +1217,67 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 		cc += func_name[i];
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, cc), "set_func", "get_func");
+
+	BIND_ENUM_CONSTANT(MATH_SIN);
+	BIND_ENUM_CONSTANT(MATH_COS);
+	BIND_ENUM_CONSTANT(MATH_TAN);
+	BIND_ENUM_CONSTANT(MATH_SINH);
+	BIND_ENUM_CONSTANT(MATH_COSH);
+	BIND_ENUM_CONSTANT(MATH_TANH);
+	BIND_ENUM_CONSTANT(MATH_ASIN);
+	BIND_ENUM_CONSTANT(MATH_ACOS);
+	BIND_ENUM_CONSTANT(MATH_ATAN);
+	BIND_ENUM_CONSTANT(MATH_ATAN2);
+	BIND_ENUM_CONSTANT(MATH_SQRT);
+	BIND_ENUM_CONSTANT(MATH_FMOD);
+	BIND_ENUM_CONSTANT(MATH_FPOSMOD);
+	BIND_ENUM_CONSTANT(MATH_FLOOR);
+	BIND_ENUM_CONSTANT(MATH_CEIL);
+	BIND_ENUM_CONSTANT(MATH_ROUND);
+	BIND_ENUM_CONSTANT(MATH_ABS);
+	BIND_ENUM_CONSTANT(MATH_SIGN);
+	BIND_ENUM_CONSTANT(MATH_POW);
+	BIND_ENUM_CONSTANT(MATH_LOG);
+	BIND_ENUM_CONSTANT(MATH_EXP);
+	BIND_ENUM_CONSTANT(MATH_ISNAN);
+	BIND_ENUM_CONSTANT(MATH_ISINF);
+	BIND_ENUM_CONSTANT(MATH_EASE);
+	BIND_ENUM_CONSTANT(MATH_DECIMALS);
+	BIND_ENUM_CONSTANT(MATH_STEPIFY);
+	BIND_ENUM_CONSTANT(MATH_LERP);
+	BIND_ENUM_CONSTANT(MATH_INVERSE_LERP);
+	BIND_ENUM_CONSTANT(MATH_RANGE_LERP);
+	BIND_ENUM_CONSTANT(MATH_DECTIME);
+	BIND_ENUM_CONSTANT(MATH_RANDOMIZE);
+	BIND_ENUM_CONSTANT(MATH_RAND);
+	BIND_ENUM_CONSTANT(MATH_RANDF);
+	BIND_ENUM_CONSTANT(MATH_RANDOM);
+	BIND_ENUM_CONSTANT(MATH_SEED);
+	BIND_ENUM_CONSTANT(MATH_RANDSEED);
+	BIND_ENUM_CONSTANT(MATH_DEG2RAD);
+	BIND_ENUM_CONSTANT(MATH_RAD2DEG);
+	BIND_ENUM_CONSTANT(MATH_LINEAR2DB);
+	BIND_ENUM_CONSTANT(MATH_DB2LINEAR);
+	BIND_ENUM_CONSTANT(LOGIC_MAX);
+	BIND_ENUM_CONSTANT(LOGIC_MIN);
+	BIND_ENUM_CONSTANT(LOGIC_CLAMP);
+	BIND_ENUM_CONSTANT(LOGIC_NEAREST_PO2);
+	BIND_ENUM_CONSTANT(OBJ_WEAKREF);
+	BIND_ENUM_CONSTANT(FUNC_FUNCREF);
+	BIND_ENUM_CONSTANT(TYPE_CONVERT);
+	BIND_ENUM_CONSTANT(TYPE_OF);
+	BIND_ENUM_CONSTANT(TYPE_EXISTS);
+	BIND_ENUM_CONSTANT(TEXT_CHAR);
+	BIND_ENUM_CONSTANT(TEXT_STR);
+	BIND_ENUM_CONSTANT(TEXT_PRINT);
+	BIND_ENUM_CONSTANT(TEXT_PRINTERR);
+	BIND_ENUM_CONSTANT(TEXT_PRINTRAW);
+	BIND_ENUM_CONSTANT(VAR_TO_STR);
+	BIND_ENUM_CONSTANT(STR_TO_VAR);
+	BIND_ENUM_CONSTANT(VAR_TO_BYTES);
+	BIND_ENUM_CONSTANT(BYTES_TO_VAR);
+	BIND_ENUM_CONSTANT(COLORN);
+	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
 
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {
@@ -1222,6 +1326,8 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/decimals", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECIMALS>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/range_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANGE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/dectime", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DECTIME>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/randomize", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANDOMIZE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rand", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAND>);

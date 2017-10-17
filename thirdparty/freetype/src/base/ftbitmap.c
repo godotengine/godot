@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility functions for bitmaps (body).                       */
 /*                                                                         */
-/*  Copyright 2004-2016 by                                                 */
+/*  Copyright 2004-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -76,7 +76,7 @@
     source_pitch_sign = source->pitch < 0 ? -1 : 1;
     target_pitch_sign = target->pitch < 0 ? -1 : 1;
 
-    if ( source->buffer == NULL )
+    if ( !source->buffer )
     {
       *target = *source;
       if ( source_pitch_sign != target_pitch_sign )
@@ -226,7 +226,7 @@
     }
 
     /* otherwise allocate new buffer */
-    if ( FT_QALLOC_MULT( buffer, new_pitch, bitmap->rows + ypixels ) )
+    if ( FT_QALLOC_MULT( buffer, bitmap->rows + ypixels, new_pitch ) )
       return error;
 
     /* new rows get added at the top of the bitmap, */
@@ -534,8 +534,7 @@
              (FT_ULong)target->rows > FT_ULONG_MAX / (FT_ULong)target_pitch )
           return FT_THROW( Invalid_Argument );
 
-        if ( target->rows * (FT_ULong)target_pitch > old_size              &&
-             FT_QREALLOC( target->buffer,
+        if ( FT_QREALLOC( target->buffer,
                           old_size, target->rows * (FT_UInt)target_pitch ) )
           return error;
 

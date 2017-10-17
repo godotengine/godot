@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Shape2D" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for all 2D Shapes.
+	</brief_description>
+	<description>
+		Base class for all 2D Shapes. All 2D shape types inherit from this.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="collide">
+			<return type="bool">
+			</return>
+			<argument index="0" name="local_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_xform" type="Transform2D">
+			</argument>
+			<description>
+				Return whether this shape is colliding with another.
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+			</description>
+		</method>
+		<method name="collide_and_get_contacts">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="local_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_xform" type="Transform2D">
+			</argument>
+			<description>
+				Return a list of the points where this shape touches another. If there are no collisions, the list is empty.
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the shape to check collisions with ([code]with_shape[/code]), and the transformation matrix of that shape ([code]shape_xform[/code]).
+			</description>
+		</method>
+		<method name="collide_with_motion">
+			<return type="bool">
+			</return>
+			<argument index="0" name="local_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="local_motion" type="Vector2">
+			</argument>
+			<argument index="2" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="3" name="shape_xform" type="Transform2D">
+			</argument>
+			<argument index="4" name="shape_motion" type="Vector2">
+			</argument>
+			<description>
+				Return whether this shape would collide with another, if a given movement was applied.
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+			</description>
+		</method>
+		<method name="collide_with_motion_and_get_contacts">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="local_xform" type="Transform2D">
+			</argument>
+			<argument index="1" name="local_motion" type="Vector2">
+			</argument>
+			<argument index="2" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="3" name="shape_xform" type="Transform2D">
+			</argument>
+			<argument index="4" name="shape_motion" type="Vector2">
+			</argument>
+			<description>
+				Return a list of the points where this shape would touch another, if a given movement was applied. If there are no collisions, the list is empty.
+				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
+			</description>
+		</method>
+		<method name="get_custom_solver_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the custom solver bias.
+			</description>
+		</method>
+		<method name="set_custom_solver_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="float">
+			</argument>
+			<description>
+				Use a custom solver bias. No need to change this unless you really know what you are doing.
+				The solver bias is a factor controlling how much two objects "rebound" off each other, when colliding, to avoid them getting into each other because of numerical imprecision.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,8 +1,8 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -237,6 +237,11 @@ png_write_info(png_structrp png_ptr, png_const_inforp info_ptr)
       png_write_bKGD(png_ptr, &(info_ptr->background), info_ptr->color_type);
 #endif
 
+#ifdef PNG_WRITE_eXIf_SUPPORTED
+   if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
+      png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+#endif
+
 #ifdef PNG_WRITE_hIST_SUPPORTED
    if ((info_ptr->valid & PNG_INFO_hIST) != 0)
       png_write_hIST(png_ptr, info_ptr->hist, info_ptr->num_palette);
@@ -432,6 +437,12 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
          }
       }
 #endif
+
+#ifdef PNG_WRITE_eXIf_SUPPORTED
+   if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
+      png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+#endif
+
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
       write_unknown_chunks(png_ptr, info_ptr, PNG_AFTER_IDAT);
 #endif
@@ -1007,8 +1018,8 @@ png_set_filter(png_structrp png_ptr, int method, int filters)
          case 5:
          case 6:
          case 7: png_app_error(png_ptr, "Unknown row filter for method 0");
-            /* FALL THROUGH */
 #endif /* WRITE_FILTER */
+            /* FALLTHROUGH */
          case PNG_FILTER_VALUE_NONE:
             png_ptr->do_filter = PNG_FILTER_NONE; break;
 
@@ -1875,7 +1886,7 @@ png_image_set_PLTE(png_image_write_control *display)
                tRNS[i] = entry[afirst ? 0 : 3];
                if (tRNS[i] < 255)
                   num_trans = i+1;
-               /* FALL THROUGH */
+               /* FALLTHROUGH */
             case 3:
                palette[i].blue = entry[afirst + (2 ^ bgr)];
                palette[i].green = entry[afirst + 1];
@@ -1886,7 +1897,7 @@ png_image_set_PLTE(png_image_write_control *display)
                tRNS[i] = entry[1 ^ afirst];
                if (tRNS[i] < 255)
                   num_trans = i+1;
-               /* FALL THROUGH */
+               /* FALLTHROUGH */
             case 1:
                palette[i].blue = palette[i].red = palette[i].green =
                   entry[afirst];
@@ -1929,7 +1940,7 @@ png_image_write_main(png_voidp argument)
    int colormap = (format & PNG_FORMAT_FLAG_COLORMAP);
    int linear = !colormap && (format & PNG_FORMAT_FLAG_LINEAR); /* input */
    int alpha = !colormap && (format & PNG_FORMAT_FLAG_ALPHA);
-   int write_16bit = linear && !colormap && (display->convert_to_8bit == 0);
+   int write_16bit = linear && (display->convert_to_8bit == 0);
 
 #   ifdef PNG_BENIGN_ERRORS_SUPPORTED
       /* Make sure we error out on any bad situation */

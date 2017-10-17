@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +42,7 @@ class PropertySelector : public ConfirmationDialog {
 
 	void _update_search();
 
-	void _sbox_input(const InputEvent &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
@@ -51,10 +52,10 @@ class PropertySelector : public ConfirmationDialog {
 	bool properties;
 	String selected;
 	Variant::Type type;
-	InputEvent::Type event_type;
 	String base_type;
 	ObjectID script;
 	Object *instance;
+	bool virtuals_only;
 
 	void _item_selected();
 
@@ -63,14 +64,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	void select_method_from_base_type(const String &p_base, const String &p_current = "");
+	void select_method_from_base_type(const String &p_base, const String &p_current = "", bool p_virtuals_only = false);
 	void select_method_from_script(const Ref<Script> &p_script, const String &p_current = "");
 	void select_method_from_basic_type(Variant::Type p_type, const String &p_current = "");
 	void select_method_from_instance(Object *p_instance, const String &p_current = "");
 
 	void select_property_from_base_type(const String &p_base, const String &p_current = "");
 	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
-	void select_property_from_basic_type(Variant::Type p_type, InputEvent::Type p_event_type, const String &p_current = "");
+	void select_property_from_basic_type(Variant::Type p_type, const String &p_current = "");
 	void select_property_from_instance(Object *p_instance, const String &p_current = "");
 
 	PropertySelector();

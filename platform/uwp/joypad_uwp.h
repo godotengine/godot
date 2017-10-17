@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +38,7 @@ ref class JoypadUWP sealed {
 	/* clang-format off */
 internal:
 	void register_events();
-	uint32_t process_controllers(uint32_t p_last_id);
+	void process_controllers();
 	/* clang-format on */
 
 	JoypadUWP();
@@ -61,11 +62,17 @@ private:
 		int id;
 		bool connected;
 		ControllerType type;
+		float ff_timestamp;
+		float ff_end_timestamp;
+		bool vibrating;
 
 		ControllerDevice() {
 			id = -1;
 			connected = false;
 			type = ControllerType::GAMEPAD_CONTROLLER;
+			ff_timestamp = 0.0f;
+			ff_end_timestamp = 0.0f;
+			vibrating = false;
 		}
 	};
 
@@ -77,6 +84,8 @@ private:
 	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 
 	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
+	void joypad_vibration_start(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(int p_device, uint64_t p_timestamp);
 };
 
 #endif

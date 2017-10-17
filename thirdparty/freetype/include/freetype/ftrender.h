@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType renderer modules public interface (specification).          */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -75,6 +75,7 @@ FT_BEGIN_HEADER
   {
     FT_Long                 glyph_size;
     FT_Glyph_Format         glyph_format;
+
     FT_Glyph_InitFunc       glyph_init;
     FT_Glyph_DoneFunc       glyph_done;
     FT_Glyph_CopyFunc       glyph_copy;

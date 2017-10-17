@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourcePreloader" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Resource Preloader Node.
+	</brief_description>
+	<description>
+		Resource Preloader Node. This node is used to preload sub-resources inside a scene, so when the scene is loaded all the resources are ready to use and be retrieved from here.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_resource">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="resource" type="Resource">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_resource" qualifiers="const">
+			<return type="Resource">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return the resource given a text-id.
+			</description>
+		</method>
+		<method name="get_resource_list" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return the list of resources inside the preloader.
+			</description>
+		</method>
+		<method name="has_resource" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return true if the preloader has a given resource.
+			</description>
+		</method>
+		<method name="remove_resource">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Remove a resource from the preloader by text id.
+			</description>
+		</method>
+		<method name="rename_resource">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="newname" type="String">
+			</argument>
+			<description>
+				Rename a resource inside the preloader, from a text-id to a new text-id.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resources" type="Array" setter="_set_resources" getter="_get_resources">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,18 +141,18 @@ class TextEdit : public Control {
 		const Vector<ColorRegion> *color_regions;
 		mutable Vector<Line> text;
 		Ref<Font> font;
-		int tab_size;
+		int indent_size;
 
 		void _update_line_cache(int p_line) const;
 
 	public:
-		void set_tab_size(int p_tab_size);
+		void set_indent_size(int p_indent_size);
 		void set_font(const Ref<Font> &p_font);
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
 		int get_max_width() const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line);
-		void set(int p_line, const String &p_string);
+		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text[p_line].breakpoint = p_breakpoint; }
@@ -162,7 +163,7 @@ class TextEdit : public Control {
 		void clear();
 		void clear_caches();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
-		Text() { tab_size = 4; }
+		Text() { indent_size = 4; }
 	};
 
 	struct TextOperation {
@@ -183,6 +184,9 @@ class TextEdit : public Control {
 		bool chain_backward;
 	};
 
+	String ime_text;
+	Point2 ime_selection;
+
 	TextOperation current_op;
 
 	List<TextOperation> undo_stack;
@@ -201,6 +205,7 @@ class TextEdit : public Control {
 	Vector<String> completion_strings;
 	Vector<String> completion_options;
 	bool completion_active;
+	bool completion_forced;
 	String completion_current;
 	String completion_base;
 	int completion_index;
@@ -220,7 +225,9 @@ class TextEdit : public Control {
 	int max_chars;
 	bool readonly;
 	bool syntax_coloring;
-	int tab_size;
+	bool indent_using_spaces;
+	int indent_size;
+	String space_indent;
 
 	Timer *caret_blink_timer;
 	bool caret_blink_enabled;
@@ -231,6 +238,7 @@ class TextEdit : public Control {
 	bool setting_row;
 	bool wrap;
 	bool draw_tabs;
+	bool override_selected_font_color;
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
 	bool undo_enabled;
@@ -250,9 +258,14 @@ class TextEdit : public Control {
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
+	bool smooth_scroll_enabled;
+	bool scrolling;
+	float target_v_scroll;
+	float v_scroll_speed;
+
 	bool raised_from_completion;
 
-	String hilighted_word;
+	String highlighted_word;
 
 	uint64_t last_dblclk;
 
@@ -282,12 +295,13 @@ class TextEdit : public Control {
 
 	int get_char_count();
 
-	int get_char_pos_for(int p_px, String p_pos) const;
-	int get_column_x_offset(int p_column, String p_pos);
+	int get_char_pos_for(int p_px, String p_str) const;
+	int get_column_x_offset(int p_char, String p_str);
 
 	void adjust_viewport_to_cursor();
 	void _scroll_moved(double);
 	void _update_scrollbars();
+	void _v_scroll_input();
 	void _click_selection_held();
 
 	void _pre_shift_selection();
@@ -295,6 +309,8 @@ class TextEdit : public Control {
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
+
+	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
@@ -312,7 +328,7 @@ class TextEdit : public Control {
 
 	/* super internal api, undo/redo builds on it */
 
-	void _base_insert_text(int p_line, int p_column, const String &p_text, int &r_end_line, int &r_end_column);
+	void _base_insert_text(int p_line, int p_char, const String &p_text, int &r_end_line, int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 
@@ -331,10 +347,10 @@ class TextEdit : public Control {
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	void _insert_text(int p_line, int p_column, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
+	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = NULL, int *r_end_char = NULL);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void _insert_text_at_cursor(const String &p_text);
-	void _gui_input(const InputEvent &p_input);
+	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
 	void _consume_pair_symbol(CharType ch);
@@ -370,6 +386,8 @@ public:
 
 	void begin_complex_operation();
 	void end_complex_operation();
+
+	bool is_insert_text_operation();
 
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String &p_text);
@@ -460,9 +478,13 @@ public:
 	void redo();
 	void clear_undo_history();
 
-	void set_tab_size(const int p_size);
+	void set_indent_using_spaces(const bool p_use_spaces);
+	bool is_indent_using_spaces() const;
+	void set_indent_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
+	void set_override_selected_font_color(bool p_override_selected_font_color);
+	bool is_overriding_selected_font_color() const;
 
 	void set_insert_mode(bool p_enabled);
 	bool is_insert_mode() const;
@@ -476,6 +498,12 @@ public:
 
 	int get_h_scroll() const;
 	void set_h_scroll(int p_scroll);
+
+	void set_smooth_scroll_enabled(bool p_enable);
+	bool is_smooth_scroll_enabled() const;
+
+	void set_v_scroll_speed(float p_speed);
+	float get_v_scroll_speed() const;
 
 	uint32_t get_version() const;
 	uint32_t get_saved_version() const;
@@ -500,7 +528,7 @@ public:
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 
 	void set_completion(bool p_enabled, const Vector<String> &p_prefixes);
-	void code_complete(const Vector<String> &p_strings);
+	void code_complete(const Vector<String> &p_strings, bool p_forced = false);
 	void set_code_hint(const String &p_hint);
 	void query_code_comple();
 
@@ -517,5 +545,8 @@ public:
 	TextEdit();
 	~TextEdit();
 };
+
+VARIANT_ENUM_CAST(TextEdit::MenuItems);
+VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 
 #endif // TEXT_EDIT_H

@@ -1,9 +1,11 @@
 buildscript {
 	repositories {
 		jcenter()
+		$$GRADLE_REPOSITORY_URLS$$
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:2.1.0'
+		classpath 'com.android.tools.build:gradle:2.3.3'
+		$$GRADLE_CLASSPATH$$
 	}
 }
 
@@ -11,6 +13,7 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
+    	jcenter()
 	mavenCentral()
 	$$GRADLE_REPOSITORY_URLS$$
     }
@@ -29,7 +32,7 @@ android {
 	}
 
 	compileSdkVersion 23
-	buildToolsVersion "23.0.3"
+	buildToolsVersion "26.0.1"
 	useLibrary 'org.apache.http.legacy'
 
 	packagingOptions {
@@ -37,8 +40,6 @@ android {
 		exclude 'META-INF/NOTICE'
 	}
 	defaultConfig {
-		minSdkVersion 14
-		targetSdkVersion 23
 		$$GRADLE_DEFAULT_CONFIG$$
 	}
 	// Both signing and zip-aligning will be done at export time
@@ -54,19 +55,15 @@ android {
 			]
 			res.srcDirs = [
 				'res'
-				$$GRADLE_RES_DIRS$$  
+				$$GRADLE_RES_DIRS$$
 			]
-		//            libs.srcDirs = ['libs']
 			aidl.srcDirs = [
 				'aidl'
-				$$GRADLE_AIDL_DIRS$$   
+				$$GRADLE_AIDL_DIRS$$
 			]
 			assets.srcDirs = [
 				'assets'
 				$$GRADLE_ASSET_DIRS$$
-			]
-			jniLibs.srcDirs = [
-				$$GRADLE_JNI_DIRS$$
 			]
 		}
 		debug.jniLibs.srcDirs = [
@@ -83,3 +80,5 @@ android {
 		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
 	}
 }
+
+$$GRADLE_PLUGINS$$

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector3" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Vector class, which performs basic 3D vector math operations.
+	</brief_description>
+	<description>
+		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Vector3">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<description>
+				Returns a Vector3 with the given components.
+			</description>
+		</method>
+		<method name="abs">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="angle_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="bounce">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="n" type="Vector3">
+			</argument>
+			<description>
+				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="ceil">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns a new vector with all components rounded up.
+			</description>
+		</method>
+		<method name="cross">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the cross product with b.
+			</description>
+		</method>
+		<method name="cubic_interpolate">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<argument index="1" name="pre_a" type="Vector3">
+			</argument>
+			<argument index="2" name="post_b" type="Vector3">
+			</argument>
+			<argument index="3" name="t" type="float">
+			</argument>
+			<description>
+				Perform a cubic interpolation between vectors pre_a, a, b, post_b (a is current), by the given amount (t).
+			</description>
+		</method>
+		<method name="distance_squared_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the squared distance (distance minus the last square root) to b. Prefer this function over distance_to if you need to sort vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the distance to b.
+			</description>
+		</method>
+		<method name="dot">
+			<return type="float">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the dot product with b.
+			</description>
+		</method>
+		<method name="floor">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns a new vector with all components rounded down.
+			</description>
+		</method>
+		<method name="inverse">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the inverse of the vector. This is the same as Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )
+			</description>
+		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the vector is normalized or not.
+			</description>
+		</method>
+		<method name="length">
+			<return type="float">
+			</return>
+			<description>
+				Return the length of the vector.
+			</description>
+		</method>
+		<method name="length_squared">
+			<return type="float">
+			</return>
+			<description>
+				Return the length of the vector, squared. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
+			</description>
+		</method>
+		<method name="linear_interpolate">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Linearly interpolates the vector to a given one (b), by the given amount (t).
+			</description>
+		</method>
+		<method name="max_axis">
+			<return type="int">
+			</return>
+			<description>
+				Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the largest.
+			</description>
+		</method>
+		<method name="min_axis">
+			<return type="int">
+			</return>
+			<description>
+				Returns AXIS_X, AXIS_Y or AXIS_Z depending on which axis is the smallest.
+			</description>
+		</method>
+		<method name="normalized">
+			<return type="Vector3">
+			</return>
+			<description>
+				Return a copy of the normalized vector to unit length. This is the same as v / v.length().
+			</description>
+		</method>
+		<method name="outer">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the outer product with b.
+			</description>
+		</method>
+		<method name="reflect">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="n" type="Vector3">
+			</argument>
+			<description>
+				Reflects the vector along the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="rotated">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Rotates the vector around some axis by phi radians. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="slide">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="n" type="Vector3">
+			</argument>
+			<description>
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="snapped">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="by" type="float">
+			</argument>
+			<description>
+				Return a copy of the vector, snapped to the lowest neared multiple.
+			</description>
+		</method>
+		<method name="to_diagonal_matrix">
+			<return type="Basis">
+			</return>
+			<description>
+				Return a diagonal matrix with the vector as main diagonal.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="float" setter="" getter="">
+			X component of the vector.
+		</member>
+		<member name="y" type="float" setter="" getter="">
+			Y component of the vector.
+		</member>
+		<member name="z" type="float" setter="" getter="">
+			Z component of the vector.
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0" enum="">
+			Enumerated value for the X axis. Returned by functions like max_axis or min_axis.
+		</constant>
+		<constant name="AXIS_Y" value="1" enum="">
+			Enumerated value for the Y axis.
+		</constant>
+		<constant name="AXIS_Z" value="2" enum="">
+			Enumerated value for the Z axis.
+		</constant>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +89,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text("Error opening package file, not in zip format.");
+		error->set_text(TTR("Error opening package file, not in zip format."));
 		return;
 	}
 
@@ -99,7 +100,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
 		String name = fname;
 		files_sorted.insert(name);
@@ -112,13 +113,13 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 		extension_guess["png"] = get_icon("Texture", "EditorIcons");
 		extension_guess["jpg"] = get_icon("Texture", "EditorIcons");
 		extension_guess["tex"] = get_icon("Texture", "EditorIcons");
-		extension_guess["atex"] = get_icon("Texture", "EditorIcons");
+		extension_guess["atlastex"] = get_icon("Texture", "EditorIcons");
 		extension_guess["dds"] = get_icon("Texture", "EditorIcons");
 		extension_guess["scn"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["xml"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["xscn"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["mtl"] = get_icon("Material", "EditorIcons");
+		extension_guess["material"] = get_icon("Material", "EditorIcons");
 		extension_guess["shd"] = get_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = get_icon("GDScript", "EditorIcons");
 	}
@@ -183,6 +184,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			dir_map[path] = ti;
 			ti->set_text(0, path.get_file() + "/");
 			ti->set_icon(0, get_icon("folder", "FileDialog"));
+			ti->set_metadata(0, String());
 		} else {
 			String file = path.get_file();
 			String extension = file.get_extension().to_lower();
@@ -195,7 +197,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 			String res_path = "res://" + path;
 			if (FileAccess::exists(res_path)) {
-				ti->set_custom_color(0, Color(1, 0.3, 0.2));
+				ti->set_custom_color(0, get_color("error_color", "Editor"));
 				ti->set_tooltip(0, res_path + " (Already Exists)");
 				ti->set_checked(0, false);
 			} else {
@@ -219,7 +221,7 @@ void EditorAssetInstaller::ok_pressed() {
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text("Error opening package file, not in zip format.");
+		error->set_text(TTR("Error opening package file, not in zip format."));
 		return;
 	}
 
@@ -227,7 +229,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 	Vector<String> failed_files;
 
-	ProgressDialog::get_singleton()->add_task("uncompress", "Uncompressing Assets", status_map.size());
+	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), status_map.size());
 
 	int idx = 0;
 	while (ret == UNZ_OK) {
@@ -302,8 +304,9 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
 		if (EditorNode::get_singleton() != NULL)
-			EditorNode::get_singleton()->show_warning("Package Installed Successfully!", "Success!");
+			EditorNode::get_singleton()->show_warning(TTR("Package Installed Successfully!"), TTR("Success!"));
 	}
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void EditorAssetInstaller::_bind_methods() {
@@ -322,8 +325,8 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-	get_ok()->set_text("Install");
-	set_title("Package Installer");
+	get_ok()->set_text(TTR("Install"));
+	set_title(TTR("Package Installer"));
 
 	updating = false;
 

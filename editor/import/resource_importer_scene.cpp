@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +33,15 @@
 #include "io/resource_saver.h"
 #include "scene/resources/packed_scene.h"
 
-#include "scene/3d/body_shape.h"
+#include "scene/3d/collision_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
@@ -103,13 +106,30 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 		}
 	}
 
+	if (p_option == "materials/keep_on_reimport" && int(p_options["materials/storage"]) == 0) {
+		return false;
+	}
+
 	return true;
 }
 
 int ResourceImporterScene::get_preset_count() const {
-	return 0;
+	return PRESET_MAX;
 }
 String ResourceImporterScene::get_preset_name(int p_idx) const {
+
+	switch (p_idx) {
+		case PRESET_SINGLE_SCENE: return TTR("Import as Single Scene");
+		case PRESET_SEPARATE_ANIMATIONS: return TTR("Import with Separate Animations");
+		case PRESET_SEPARATE_MATERIALS: return TTR("Import with Separate Materials");
+		case PRESET_SEPARATE_MESHES: return TTR("Import with Separate Objects");
+		case PRESET_SEPARATE_MESHES_AND_MATERIALS: return TTR("Import with Separate Objects+Materials");
+		case PRESET_SEPARATE_MESHES_AND_ANIMATIONS: return TTR("Import with Separate Objects+Animations");
+		case PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS: return TTR("Import with Separate Materials+Animations");
+		case PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS: return TTR("Import with Separate Objects+Materials+Animations");
+		case PRESET_MULTIPLE_SCENES: return TTR("Import as Multiple Scenes");
+		case PRESET_MULTIPLE_SCENES_AND_MATERIALS: return TTR("Import as Multiple Scenes+Materials");
+	}
 
 	return "";
 }
@@ -136,7 +156,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return p_what;
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, Ref<Shape> > &collision_map) {
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map) {
 
 	// children first..
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -158,69 +178,38 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		return NULL;
 	}
 
-	if (p_node->cast_to<MeshInstance>()) {
+	if (Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
-		bool bb = false;
-
-		if ((_teststr(name, "bb"))) {
-			bb = true;
-		} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(), "bb"))) {
-			bb = true;
-		}
-
-		if (bb) {
-			mi->set_flag(GeometryInstance::FLAG_BILLBOARD, true);
-			if (mi->get_mesh().is_valid()) {
-
-				Ref<Mesh> m = mi->get_mesh();
-				for (int i = 0; i < m->get_surface_count(); i++) {
-
-					Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
-					if (fm.is_valid()) {
-						//fm->set_flag(Material::FLAG_UNSHADED,true);
-						//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-						//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-					}
-				}
-			}
-		}
-	}
-
-	if (p_node->cast_to<MeshInstance>()) {
-
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-
-		Ref<Mesh> m = mi->get_mesh();
+		Ref<ArrayMesh> m = mi->get_mesh();
 
 		if (m.is_valid()) {
 
 			for (int i = 0; i < m->get_surface_count(); i++) {
 
-				Ref<FixedSpatialMaterial> mat = m->surface_get_material(i);
+				Ref<SpatialMaterial> mat = m->surface_get_material(i);
 				if (!mat.is_valid())
 					continue;
 
 				if (_teststr(mat->get_name(), "alpha")) {
 
-					mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 					mat->set_name(_fixstr(mat->get_name(), "alpha"));
 				}
 				if (_teststr(mat->get_name(), "vcol")) {
 
-					mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+					mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}
 		}
 	}
 
-	if (p_node->cast_to<AnimationPlayer>()) {
+	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		//remove animations referencing non-importable nodes
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		List<StringName> anims;
 		ap->get_animation_list(&anims);
@@ -243,140 +232,31 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		}
 	}
 
-	if (p_node->cast_to<MeshInstance>()) {
-
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-
-		String str;
-
-		if ((_teststr(name, "imp"))) {
-			str = name;
-		} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(), "imp"))) {
-			str = mi->get_mesh()->get_name();
-		}
-
-		if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
-			MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
-			String d = str.substr(str.find("imp") + 3, str.length());
-			if (d != "") {
-				if ((d[0] < '0' || d[0] > '9'))
-					d = d.substr(1, d.length());
-				if (d.length() && d[0] >= '0' && d[0] <= '9') {
-					float dist = d.to_double();
-					mi->set_flag(GeometryInstance::FLAG_BILLBOARD, true);
-					mi->set_flag(GeometryInstance::FLAG_BILLBOARD_FIX_Y, true);
-					//mi->set_draw_range_begin(dist);
-					//mi->set_draw_range_end(100000);
-
-					//mip->set_draw_range_begin(0);
-					//mip->set_draw_range_end(dist);
-
-					if (mi->get_mesh().is_valid()) {
-
-						Ref<Mesh> m = mi->get_mesh();
-						for (int i = 0; i < m->get_surface_count(); i++) {
-
-							Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
-							if (fm.is_valid()) {
-								//fm->set_flag(Material::FLAG_UNSHADED,true);
-								//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-								//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-#if 0
-    if (p_flags&SCENE_FLAG_CREATE_LODS && p_node->cast_to<MeshInstance>()) {
-
-	MeshInstance *mi = p_node->cast_to<MeshInstance>();
-
-	String str;
-
-	if ((_teststr(name,"lod"))) {
-	    str=name;
-	} else if (mi->get_mesh().is_valid() && (_teststr(mi->get_mesh()->get_name(),"lod"))) {
-	    str=mi->get_mesh()->get_name();
-
-	}
-
-
-	if (p_node->get_parent() && p_node->get_parent()->cast_to<MeshInstance>()) {
-	    MeshInstance *mi = p_node->cast_to<MeshInstance>();
-	    MeshInstance *mip = p_node->get_parent()->cast_to<MeshInstance>();
-	    String d=str.substr(str.find("lod")+3,str.length());
-	    if (d!="") {
-		if ((d[0]<'0' || d[0]>'9'))
-		    d=d.substr(1,d.length());
-		if (d.length() && d[0]>='0' && d[0]<='9') {
-		    float dist = d.to_double();
-		  ///  mi->set_draw_range_begin(dist);
-		  //  mi->set_draw_range_end(100000);
-
-		  //  mip->set_draw_range_begin(0);
-		  //  mip->set_draw_range_end(dist);
-
-		    /*if (mi->get_mesh().is_valid()) {
-
-			Ref<Mesh> m = mi->get_mesh();
-			for(int i=0;i<m->get_surface_count();i++) {
-
-			    Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
-			    if (fm.is_valid()) {
-				fm->set_flag(Material::FLAG_UNSHADED,true);
-				fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-				fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-				fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-			    }
-			}
-		    }*/
-		}
-	    }
-	}
-    }
-
-
-	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && p_node->cast_to<MeshInstance>()) {
-
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-
-		String str=name;
-		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
-		//mi->set_baked_light_texture_id(layer);
-	}
-#endif
 	if (_teststr(name, "colonly")) {
 
 		if (isroot)
 			return p_node;
-
-		if (p_node->cast_to<MeshInstance>()) {
-			MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		if (mi) {
 			Node *col = mi->create_trimesh_collision_node();
 			ERR_FAIL_COND_V(!col, NULL);
 
 			col->set_name(_fixstr(name, "colonly"));
-			col->cast_to<Spatial>()->set_transform(mi->get_transform());
+			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 			p_node->replace_by(col);
 			memdelete(p_node);
 			p_node = col;
 
-			StaticBody *sb = col->cast_to<StaticBody>();
-			CollisionShape *colshape = memnew(CollisionShape);
-			colshape->set_shape(sb->get_shape(0));
+			StaticBody *sb = Object::cast_to<StaticBody>(col);
+			CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
 			colshape->set_name("shape");
-			sb->add_child(colshape);
 			colshape->set_owner(p_node->get_owner());
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
 			print_line(empty_draw_type);
 			StaticBody *sb = memnew(StaticBody);
 			sb->set_name(_fixstr(name, "colonly"));
-			sb->cast_to<Spatial>()->set_transform(p_node->cast_to<Spatial>()->get_transform());
+			Object::cast_to<Spatial>(sb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
 			CollisionShape *colshape = memnew(CollisionShape);
@@ -390,7 +270,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
 				colshape->set_name("RayShape");
-				sb->cast_to<Spatial>()->rotate_x(Math_PI / 2);
+				Object::cast_to<Spatial>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
 				PlaneShape *planeShape = memnew(PlaneShape);
 				colshape->set_shape(planeShape);
@@ -405,13 +285,13 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "rigid") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
 		// get mesh instance and bounding box
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		Rect3 aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
@@ -422,12 +302,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		// remove node name postfix
 		col->set_name(_fixstr(name, "rigid"));
 		// get mesh instance xform matrix to the rigid body collision node
-		col->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 		// save original node by duplicating it into a new instance and correcting the name
 		Node *mesh = p_node->duplicate();
 		mesh->set_name(_fixstr(name, "rigid"));
 		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		mesh->cast_to<Spatial>()->set_transform(Transform(Basis()));
+		Object::cast_to<Spatial>(mesh)->set_transform(Transform(Basis()));
 		// reparent the new mesh node to the rigid body collision node
 		p_node->add_child(mesh);
 		mesh->set_owner(p_node->get_owner());
@@ -437,7 +317,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		p_node = col;
 
 		// create an alias for the rigid body collision node
-		RigidBody *rb = col->cast_to<RigidBody>();
+		RigidBody *rb = Object::cast_to<RigidBody>(col);
 		// create a new Box collision shape and set the right extents
 		Ref<BoxShape> shape = memnew(BoxShape);
 		shape->set_extents(aabb.get_size() * 0.5);
@@ -448,9 +328,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		rb->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 
-	} else if (_teststr(name, "col") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "col") && Object::cast_to<MeshInstance>(p_node)) {
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		mi->set_name(_fixstr(name, "col"));
 		Node *col = mi->create_trimesh_collision_node();
@@ -459,22 +339,21 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		col->set_name("col");
 		p_node->add_child(col);
 
-		StaticBody *sb = col->cast_to<StaticBody>();
-		CollisionShape *colshape = memnew(CollisionShape);
-		colshape->set_shape(sb->get_shape(0));
+		StaticBody *sb = Object::cast_to<StaticBody>(col);
+		CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
 		colshape->set_name("shape");
 		col->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 		sb->set_owner(p_node->get_owner());
 
-	} else if (_teststr(name, "navmesh") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mi->get_mesh();
 		ERR_FAIL_COND_V(mesh.is_null(), NULL);
 		NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
 
@@ -482,7 +361,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 		nmesh->create_from_mesh(mesh);
 		nmi->set_navigation_mesh(nmesh);
-		nmi->cast_to<Spatial>()->set_transform(mi->get_transform());
+		Object::cast_to<Spatial>(nmi)->set_transform(mi->get_transform());
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node = nmi;
@@ -492,7 +371,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleBody *bv = memnew(VehicleBody);
 		String n = _fixstr(p_node->get_name(), "vehicle");
 		bv->set_name(n);
@@ -512,7 +391,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = p_node->cast_to<Spatial>();
+		Spatial *s = Object::cast_to<Spatial>(p_node);
 		VehicleWheel *bv = memnew(VehicleWheel);
 		String n = _fixstr(p_node->get_name(), "wheel");
 		bv->set_name(n);
@@ -525,13 +404,13 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		s->set_transform(Transform());
 
 		p_node = bv;
-
-	} else if (_teststr(name, "room") && p_node->cast_to<MeshInstance>()) {
+#if 0
+	} else if (_teststr(name, "room") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		BSP_Tree bsptree(faces);
@@ -554,7 +433,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		if (isroot)
 			return p_node;
 
-		Spatial *dummy = p_node->cast_to<Spatial>();
+		Spatial *dummy = Object::cast_to<Spatial>(p_node);
 		ERR_FAIL_COND_V(!dummy, NULL);
 
 		Room *room = memnew(Room);
@@ -567,12 +446,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		//room->compute_room_from_subtree();
 
-	} else if (_teststr(name, "portal") && p_node->cast_to<MeshInstance>()) {
+	} else if (_teststr(name, "portal") && Object::cast_to<MeshInstance>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		ERR_FAIL_COND_V(faces.size() == 0, NULL);
@@ -591,7 +470,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			for (int i = 0; i < 3; i++) {
 
-				Vector3 v = f.vertex[i].snapped(0.01);
+				Vector3 v = f.vertex[i].snapped(Vector3(0.01, 0.01, 0.01));
 				if (!points.has(v)) {
 					points.insert(v);
 					center += v;
@@ -645,14 +524,14 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		p_node->replace_by(portal);
 		memdelete(p_node);
 		p_node = portal;
-
-	} else if (p_node->cast_to<MeshInstance>()) {
+#endif
+	} else if (Object::cast_to<MeshInstance>(p_node)) {
 
 		//last attempt, maybe collision insde the mesh data
 
-		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
-		Ref<Mesh> mesh = mi->get_mesh();
+		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
 			if (_teststr(mesh->get_name(), "col")) {
@@ -669,38 +548,6 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 					if (!shape.is_null())
 						collision_map[mesh] = shape;
 				}
-
-				if (!shape.is_null()) {
-#if 0
-					StaticBody* static_body = memnew( StaticBody );
-					ERR_FAIL_COND_V(!static_body,NULL);
-					static_body->set_name( String(mesh->get_name()) + "_col" );
-					shape->set_name(static_body->get_name());
-					static_body->add_shape(shape);
-
-					mi->add_child(static_body);
-					if (mi->get_owner())
-						static_body->set_owner( mi->get_owner() );
-#endif
-				}
-			}
-
-			for (int i = 0; i < mesh->get_surface_count(); i++) {
-
-				Ref<FixedSpatialMaterial> fm = mesh->surface_get_material(i);
-				if (fm.is_valid()) {
-					String name = fm->get_name();
-					/*	if (_teststr(name,"alpha")) {
-						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-						name=_fixstr(name,"alpha");
-					}
-
-					if (_teststr(name,"vcol")) {
-						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
-						name=_fixstr(name,"vcol");
-					}*/
-					fm->set_name(name);
-				}
 			}
 		}
 	}
@@ -715,7 +562,7 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	if (!anim->has_animation("default"))
@@ -834,7 +681,7 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 		return;
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	Vector<String> strings = p_text.split("\n");
@@ -941,7 +788,7 @@ void ResourceImporterScene::_optimize_animations(Node *scene, float p_max_lin_er
 		return;
 	Node *n = scene->get_node(String("AnimationPlayer"));
 	ERR_FAIL_COND(!n);
-	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
 
 	List<StringName> anim_names;
@@ -969,9 +816,32 @@ static String _make_extname(const String &p_str) {
 	return ext_name;
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<Mesh>, Ref<Mesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
+
+	print_line("node: " + String(p_node->get_name()));
+
+	if (p_make_animations) {
+		if (Object::cast_to<AnimationPlayer>(p_node)) {
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+
+			List<StringName> anims;
+			ap->get_animation_list(&anims);
+			for (List<StringName>::Element *E = anims.front(); E; E = E->next()) {
+
+				Ref<Animation> anim = ap->get_animation(E->get());
+				ERR_CONTINUE(anim.is_null());
+
+				if (!p_animations.has(anim)) {
+
+					String ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
+					ResourceSaver::save(ext_name, anim, ResourceSaver::FLAG_CHANGE_PATH);
+					p_animations[anim] = anim;
+				}
+			}
+		}
+	}
 
 	p_node->get_property_list(&pi);
 
@@ -980,12 +850,13 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 		if (E->get().type == Variant::OBJECT) {
 
 			Ref<Material> mat = p_node->get(E->get().name);
+
 			if (p_make_materials && mat.is_valid() && mat->get_name() != "") {
 
 				if (!p_materials.has(mat)) {
 
-					String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".mtl";
-					if (FileAccess::exists(ext_name)) {
+					String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+					if (p_keep_materials && FileAccess::exists(ext_name)) {
 						//if exists, use it
 						Ref<Material> existing = ResourceLoader::load(ext_name);
 						p_materials[mat] = existing;
@@ -1002,7 +873,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 				}
 			} else {
 
-				Ref<Mesh> mesh = p_node->get(E->get().name);
+				Ref<ArrayMesh> mesh = p_node->get(E->get().name);
 
 				if (mesh.is_valid()) {
 
@@ -1012,17 +883,12 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 						if (!p_meshes.has(mesh)) {
 
-							String ext_name = p_base_path + "." + _make_extname(mesh->get_name()) + ".msh";
-							if (FileAccess::exists(ext_name)) {
-								//if exists, use it
-								Ref<Mesh> existing = ResourceLoader::load(ext_name);
-								p_meshes[mesh] = existing;
-							} else {
+							//meshes are always overwritten, keeping them is not practical
+							String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
 
-								ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-								p_meshes[mesh] = mesh;
-								mesh_just_added = true;
-							}
+							ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
+							p_meshes[mesh] = mesh;
+							mesh_just_added = true;
 						}
 					}
 
@@ -1037,7 +903,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 								if (!p_materials.has(mat)) {
 
-									String ext_name = p_base_path + "." + _make_extname(mat->get_name()) + ".mtl";
+									String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+									;
 									if (FileAccess::exists(ext_name)) {
 										//if exists, use it
 										Ref<Material> existing = ResourceLoader::load(ext_name);
@@ -1056,7 +923,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 							}
 
 							if (!p_make_meshes) {
-								p_meshes[mesh] = Ref<Mesh>(); //save it anyway, so it won't be checked again
+								p_meshes[mesh] = Ref<ArrayMesh>(); //save it anyway, so it won't be checked again
 							}
 						}
 					}
@@ -1067,7 +934,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		_make_external_resources(p_node->get_child(i), p_base_path, p_make_materials, p_make_meshes, p_materials, p_meshes);
+		_make_external_resources(p_node->get_child(i), p_base_path, p_make_animations, p_make_materials, p_keep_materials, p_make_meshes, p_animations, p_materials, p_meshes);
 	}
 }
 
@@ -1087,15 +954,24 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 		script_ext_hint += "*." + E->get();
 	}
 
+	bool materials_out = p_preset == PRESET_SEPARATE_MATERIALS || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS || p_preset == PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
+	bool meshes_out = p_preset == PRESET_SEPARATE_MESHES || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS || p_preset == PRESET_SEPARATE_MESHES_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
+	bool scenes_out = p_preset == PRESET_MULTIPLE_SCENES || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS;
+	bool animations_out = p_preset == PRESET_SEPARATE_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Bult-In,Files"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/compress"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "geometry/ensure_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "geometry/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out ? true : false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), animations_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_linear_error"), 0.05));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_angular_error"), 0.01));
@@ -1107,6 +983,18 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/clip_" + itos(i + 1) + "/start_frame"), 0));
 		r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/clip_" + itos(i + 1) + "/end_frame"), 0));
 		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/clip_" + itos(i + 1) + "/loops"), false));
+	}
+}
+
+void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner) {
+
+	if (p_node != p_new_owner && p_node->get_owner() == p_scene) {
+		p_node->set_owner(p_new_owner);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *n = p_node->get_child(i);
+		_replace_owner(n, p_scene, p_new_owner);
 	}
 }
 
@@ -1149,7 +1037,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (bool(p_options["animation/import"]))
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
 
-	if (bool(p_options["geometry/ensure_tangents"]))
+	if (bool(p_options["meshes/ensure_tangents"]))
 		import_flags |= EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 
 	if (int(p_options["materials/location"]) == 0)
@@ -1165,10 +1053,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String root_type = p_options["nodes/root_type"];
 
 	if (scene->get_class() != root_type) {
-		Object *base = ClassDB::instance(root_type);
-		Node *base_node = NULL;
-		if (base)
-			base_node = base->cast_to<Node>();
+		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
 
 		if (base_node) {
 
@@ -1189,7 +1074,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_angerr = p_options["animation/optimizer/max_angular_error"];
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
 
-	Map<Ref<Mesh>, Ref<Shape> > collision_map;
+	Map<Ref<ArrayMesh>, Ref<Shape> > collision_map;
 
 	scene = _fix_node(scene, scene, collision_map);
 
@@ -1222,13 +1107,34 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		_filter_tracks(scene, animation_filter);
 	}
 
+	bool external_animations = int(p_options["animation/storage"]) == 1;
 	bool external_materials = p_options["materials/storage"];
-	bool external_meshes = p_options["geometry/storage"];
+	bool external_meshes = p_options["meshes/storage"];
+	bool external_scenes = int(p_options["nodes/storage"]) == 1;
 
-	if (external_materials || external_meshes) {
+	String base_path = p_source_file.get_base_dir();
+
+	if (external_animations || external_materials || external_meshes || external_scenes) {
+
+		if (bool(p_options["external_files/store_in_subdir"])) {
+			String subdir_name = p_source_file.get_file().get_basename();
+			DirAccess *da = DirAccess::open(base_path);
+			print_line("at path " + da->get_current_dir() + " making " + subdir_name);
+			Error err = da->make_dir(subdir_name);
+			memdelete(da);
+			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
+			base_path = base_path.plus_file(subdir_name);
+		}
+	}
+
+	if (external_animations || external_materials || external_meshes) {
+		Map<Ref<Animation>, Ref<Animation> > anim_map;
 		Map<Ref<Material>, Ref<Material> > mat_map;
-		Map<Ref<Mesh>, Ref<Mesh> > mesh_map;
-		_make_external_resources(scene, p_source_file.get_basename(), external_materials, external_meshes, mat_map, mesh_map);
+		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
+
+		bool keep_materials = bool(p_options["materials/keep_on_reimport"]);
+
+		_make_external_resources(scene, base_path, external_animations, external_materials, keep_materials, external_meshes, anim_map, mat_map, mesh_map);
 	}
 
 	progress.step(TTR("Running Custom Script.."), 2);
@@ -1237,7 +1143,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (post_import_script_path != "") {
-		post_import_script_path = post_import_script_path; // FIXME: is there a good reason for this?
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
@@ -1263,14 +1168,38 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	progress.step(TTR("Saving.."), 104);
 
+	if (external_scenes) {
+		//save sub-scenes as instances!
+		for (int i = 0; i < scene->get_child_count(); i++) {
+			Node *child = scene->get_child(i);
+			if (child->get_owner() != scene)
+				continue; //not a real child probably created by scene type (ig, a scrollbar)
+			_replace_owner(child, scene, child);
+
+			String cn = String(child->get_name()).strip_edges().replace(".", "_").replace(":", "_");
+			if (cn == String()) {
+				cn = "ChildNode" + itos(i);
+			}
+			String path = base_path.plus_file(cn + ".scn");
+			child->set_filename(path);
+
+			Ref<PackedScene> packer = memnew(PackedScene);
+			packer->pack(child);
+			err = ResourceSaver::save(path, packer); //do not take over, let the changed files reload themselves
+			ERR_FAIL_COND_V(err != OK, err);
+		}
+	}
+
 	Ref<PackedScene> packer = memnew(PackedScene);
 	packer->pack(scene);
 	print_line("SAVING TO: " + p_save_path + ".scn");
 	err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
+	ERR_FAIL_COND_V(err != OK, err);
 
 	memdelete(scene);
 
-	EditorNode::get_singleton()->reload_scene(p_source_file);
+	//this is not the time to reimport, wait until import process is done, import file is saved, etc.
+	//EditorNode::get_singleton()->reload_scene(p_source_file);
 
 	return OK;
 }

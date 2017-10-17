@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +29,20 @@
 /*************************************************************************/
 #include "thread_jandroid.h"
 
+#include "core/safe_refcount.h"
 #include "os/memory.h"
 #include "script_language.h"
 
-Thread::ID ThreadAndroid::get_ID() const {
+static pthread_key_t _create_thread_id_key() {
+	pthread_key_t key;
+	pthread_key_create(&key, NULL);
+	return key;
+}
+
+pthread_key_t ThreadAndroid::thread_id_key = _create_thread_id_key();
+Thread::ID ThreadAndroid::next_thread_id = 0;
+
+Thread::ID ThreadAndroid::get_id() const {
 
 	return id;
 }
@@ -46,7 +57,8 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 	ThreadAndroid *t = reinterpret_cast<ThreadAndroid *>(userdata);
 	setup_thread();
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
-	t->id = (ID)pthread_self();
+	t->id = atomic_increment(&next_thread_id);
+	pthread_setspecific(thread_id_key, (void *)t->id);
 	t->callback(t->user);
 	ScriptServer::thread_exit();
 	return NULL;
@@ -65,9 +77,9 @@ Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, voi
 	return tr;
 }
 
-Thread::ID ThreadAndroid::get_thread_ID_func_jandroid() {
+Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
 
-	return (ID)pthread_self();
+	return (ID)pthread_getspecific(thread_id_key);
 }
 
 void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
@@ -106,7 +118,7 @@ void ThreadAndroid::make_default(JavaVM *p_java_vm) {
 
 	java_vm = p_java_vm;
 	create_func = create_func_jandroid;
-	get_thread_ID_func = get_thread_ID_func_jandroid;
+	get_thread_id_func = get_thread_id_func_jandroid;
 	wait_to_finish_func = wait_to_finish_func_jandroid;
 	pthread_key_create(&jvm_key, _thread_destroyed);
 	setup_thread();

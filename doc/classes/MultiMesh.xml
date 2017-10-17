@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiMesh" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Provides high performance mesh instancing.
+	</brief_description>
+	<description>
+		MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
+		For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
+		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
+		Since instances may have any behavior, the Rect3 used for visibility must be provided by the user.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+				Return the visibility Rect3.
+			</description>
+		</method>
+		<method name="get_color_format" qualifiers="const">
+			<return type="int" enum="MultiMesh.ColorFormat">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_instance_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<description>
+				Get the color of a specific instance.
+			</description>
+		</method>
+		<method name="get_instance_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of instances that is going to be drawn.
+			</description>
+		</method>
+		<method name="get_instance_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<description>
+				Return the transform of a specific instance.
+			</description>
+		</method>
+		<method name="get_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<description>
+				Return the [Mesh] resource drawn as multiple instances.
+			</description>
+		</method>
+		<method name="get_transform_format" qualifiers="const">
+			<return type="int" enum="MultiMesh.TransformFormat">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_color_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="format" type="int" enum="MultiMesh.ColorFormat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_instance_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Set the color of a specific instance.
+			</description>
+		</method>
+		<method name="set_instance_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="count" type="int">
+			</argument>
+			<description>
+				Set the amount of instances that is going to be drawn. Changing this number will erase all the existing instance transform and color data.
+			</description>
+		</method>
+		<method name="set_instance_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<argument index="1" name="transform" type="Transform">
+			</argument>
+			<description>
+				Set the transform for a specific instance.
+			</description>
+		</method>
+		<method name="set_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<description>
+				Set the [Mesh] resource to be drawn in multiple instances.
+			</description>
+		</method>
+		<method name="set_transform_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="format" type="int" enum="MultiMesh.TransformFormat">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_array" type="PoolColorArray" setter="_set_color_array" getter="_get_color_array">
+		</member>
+		<member name="color_format" type="int" setter="set_color_format" getter="get_color_format" enum="MultiMesh.ColorFormat">
+		</member>
+		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="transform_array" type="PoolVector3Array" setter="_set_transform_array" getter="_get_transform_array">
+		</member>
+		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
+		</member>
+	</members>
+	<constants>
+		<constant name="TRANSFORM_2D" value="0">
+		</constant>
+		<constant name="TRANSFORM_3D" value="1">
+		</constant>
+		<constant name="COLOR_NONE" value="0">
+		</constant>
+		<constant name="COLOR_8BIT" value="1">
+		</constant>
+		<constant name="COLOR_FLOAT" value="2">
+		</constant>
+	</constants>
+</class>

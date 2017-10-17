@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +48,8 @@ class PacketPeer : public Reference {
 
 	mutable Error last_get_error;
 
+	bool allow_object_decoding;
+
 public:
 	virtual int get_available_packet_count() const = 0;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const = 0; ///< buffer is GONE after next get_packet
@@ -62,6 +65,9 @@ public:
 	virtual Error get_var(Variant &r_variant) const;
 	virtual Error put_var(const Variant &p_packet);
 
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
+
 	PacketPeer();
 	~PacketPeer() {}
 };
@@ -74,7 +80,8 @@ class PacketPeerStream : public PacketPeer {
 
 	mutable Ref<StreamPeer> peer;
 	mutable RingBuffer<uint8_t> ring_buffer;
-	mutable Vector<uint8_t> temp_buffer;
+	mutable Vector<uint8_t> input_buffer;
+	mutable Vector<uint8_t> output_buffer;
 
 	Error _poll_buffer() const;
 
@@ -91,6 +98,9 @@ public:
 
 	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	void set_input_buffer_max_size(int p_max_size);
+	int get_input_buffer_max_size() const;
+	void set_output_buffer_max_size(int p_max_size);
+	int get_output_buffer_max_size() const;
 	PacketPeerStream();
 };
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +69,7 @@ RID RefPtr::get_rid() const {
 	Ref<Reference> *ref = reinterpret_cast<Ref<Reference> *>(&data[0]);
 	if (ref->is_null())
 		return RID();
-	Resource *res = (*ref)->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(ref->ptr());
 	if (res)
 		return res->get_rid();
 	return RID();

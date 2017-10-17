@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SphereMesh" inherits="PrimitiveMesh" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Class representing a spherical [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a spherical [PrimitiveMesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_height" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_is_hemisphere" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radial_segments" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rings" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_is_hemisphere">
+			<return type="void">
+			</return>
+			<argument index="0" name="is_hemisphere" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radial_segments">
+			<return type="void">
+			</return>
+			<argument index="0" name="radial_segments" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rings">
+			<return type="void">
+			</return>
+			<argument index="0" name="rings" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height">
+			Full height of the sphere. Defaults to 2.0.
+		</member>
+		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere">
+			Determines whether a full sphere or a hemisphere is created. Attention: To get a regular hemisphere the height and radius of the sphere have to equal. Defaults to false.
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
+			Number of radial segments on the sphere. Defaults to 64.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+			Radius of sphere. Defaults to 1.0.
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings">
+			Number of segments along the height of the sphere. Defaults to 32.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_access_network.h"
-#include "global_config.h"
 #include "io/ip.h"
 #include "marshalls.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());
@@ -86,6 +87,8 @@ void FileAccessNetworkClient::_thread_func() {
 
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
 		Error err = sem->wait();
+		if (err != OK)
+			ERR_PRINT("sem->wait() failed");
 		DEBUG_TIME("sem_unlock");
 		//DEBUG_PRINT("semwait returned "+itos(werr));
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
@@ -243,14 +246,14 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 	memdelete(sem);
 }
 
-void FileAccessNetwork::_set_block(size_t p_offset, const Vector<uint8_t> &p_block) {
+void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
 
 	int page = p_offset / page_size;
 	ERR_FAIL_INDEX(page, pages.size());
 	if (page < pages.size() - 1) {
 		ERR_FAIL_COND(p_block.size() != page_size);
 	} else {
-		ERR_FAIL_COND((p_block.size() != (total_size % page_size)));
+		ERR_FAIL_COND((p_block.size() != (int)(total_size % page_size)));
 	}
 
 	buffer_mutex->lock();
@@ -347,7 +350,7 @@ void FileAccessNetwork::seek_end(int64_t p_position) {
 
 	seek(total_size + p_position);
 }
-size_t FileAccessNetwork::get_pos() const {
+size_t FileAccessNetwork::get_position() const {
 
 	ERR_FAIL_COND_V(!opened, 0);
 	return pos;
@@ -451,6 +454,10 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 Error FileAccessNetwork::get_error() const {
 
 	return pos == total_size ? ERR_FILE_EOF : OK;
+}
+
+void FileAccessNetwork::flush() {
+	ERR_FAIL();
 }
 
 void FileAccessNetwork::store_8(uint8_t p_dest) {

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TCP_Server" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		TCP Server.
+	</brief_description>
+	<description>
+		TCP Server class. Listens to connections on a port and returns a [StreamPeerTCP] when got a connection.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_connection_available" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if a connection is available for taking.
+			</description>
+		</method>
+		<method name="listen">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
+			</argument>
+			<description>
+				Listen on the "port" binding to "bind_address".
+				If "bind_address" is set as "*" (default), the server will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the server will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the server will only listen on the interface with that addresses (or fail if no interface with the given address exists).
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void">
+			</return>
+			<description>
+				Stop listening.
+			</description>
+		</method>
+		<method name="take_connection">
+			<return type="StreamPeerTCP">
+			</return>
+			<description>
+				If a connection is available, return a StreamPeerTCP with the connection/
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

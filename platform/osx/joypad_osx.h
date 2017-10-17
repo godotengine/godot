@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  joypad_osx.h                                                     */
+/*  joypad_osx.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,7 +111,7 @@ private:
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
 public:
-	uint32_t process_joypads(uint32_t p_last_id);
+	void process_joypads();
 
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
 	void _device_removed(int p_id);

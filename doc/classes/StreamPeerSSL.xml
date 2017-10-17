@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerSSL" inherits="StreamPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		SSL Stream peer.
+	</brief_description>
+	<description>
+		SSL Stream peer. This object can be used to connect to SSL servers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="accept_stream">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="stream" type="StreamPeer">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="connect_to_stream">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="stream" type="StreamPeer">
+			</argument>
+			<argument index="1" name="validate_certs" type="bool" default="false">
+			</argument>
+			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
+			</description>
+		</method>
+		<method name="disconnect_from_stream">
+			<return type="void">
+			</return>
+			<description>
+				Disconnect from host.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerSSL.Status">
+			</return>
+			<description>
+				Return the status of the connection, one of STATUS_* enum.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_DISCONNECTED" value="0">
+			A status representing a [StreamPeerSSL] that is disconnected.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="1">
+			A status representing a [StreamPeerSSL] that is connected to a host.
+		</constant>
+		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
+			An errot status that shows the peer did not present a SSL certificate and validation was requested.
+		</constant>
+		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3">
+			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
+		</constant>
+	</constants>
+</class>

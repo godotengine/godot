@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,14 +51,15 @@ bool StreamPeerSSL::is_available() {
 
 void StreamPeerSSL::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("accept_stream:Error", "stream:StreamPeer"), &StreamPeerSSL::accept_stream);
-	ClassDB::bind_method(D_METHOD("connect_to_stream:Error", "stream:StreamPeer", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("accept_stream", "stream"), &StreamPeerSSL::accept_stream);
+	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
 	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
-	BIND_CONSTANT(STATUS_DISCONNECTED);
-	BIND_CONSTANT(STATUS_CONNECTED);
-	BIND_CONSTANT(STATUS_ERROR_NO_CERTIFICATE);
-	BIND_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
+
+	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_ERROR_NO_CERTIFICATE);
+	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
 }
 
 StreamPeerSSL::StreamPeerSSL() {

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType OpenType driver component (body only).                      */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,13 +17,13 @@
 
 
 #define FT_MAKE_OPTION_SINGLE_OBJECT
-
 #include <ft2build.h>
-#include "cidparse.c"
+
+#include "cidgload.c"
 #include "cidload.c"
 #include "cidobjs.c"
+#include "cidparse.c"
 #include "cidriver.c"
-#include "cidgload.c"
 
 
 /* END */

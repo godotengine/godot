@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +32,8 @@
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
-#include "global_config.h"
 #include "main/performance.h"
+#include "project_settings.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
@@ -89,11 +90,13 @@ public:
 		return "";
 	}
 
-	void add_property(const String &p_name, const Variant &p_value) {
+	void add_property(const String &p_name, const Variant &p_value, const PropertyHint &p_hint, const String p_hint_string) {
 
 		PropertyInfo pinfo;
 		pinfo.name = p_name;
 		pinfo.type = p_value.get_type();
+		pinfo.hint = p_hint;
+		pinfo.hint_string = p_hint_string;
 		props.push_back(pinfo);
 		values[p_name] = p_value;
 	}
@@ -212,7 +215,7 @@ void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 
 		return;
 	}
-	TreeItem *item = obj->cast_to<TreeItem>();
+	TreeItem *item = Object::cast_to<TreeItem>(obj);
 
 	if (!item)
 		return;
@@ -303,8 +306,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String error = p_data[1];
 		step->set_disabled(!can_continue);
 		next->set_disabled(!can_continue);
-		reason->set_text(error);
-		reason->set_tooltip(error);
+		_set_reason_text(error, MESSAGE_ERROR);
 		breaked = true;
 		dobreak->set_disabled(true);
 		docontinue->set_disabled(false);
@@ -369,7 +371,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			if (has_icon(p_data[i + 2], "EditorIcons"))
 				it->set_icon(0, get_icon(p_data[i + 2], "EditorIcons"));
 			it->set_metadata(0, id);
+
 			if (id == inspected_object_id) {
+				TreeItem *cti = it->get_parent(); //ensure selected is always uncollapsed
+				while (cti) {
+					cti->set_collapsed(false);
+					cti = cti->get_parent();
+				}
 				it->select(0);
 			}
 
@@ -382,6 +390,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					it->set_collapsed(true);
 				}
 			}
+
 			lv[level] = it;
 		}
 		updating_scene_tree = false;
@@ -436,6 +445,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		inspected_object->last_edited_id = id;
 
+		tabs->set_current_tab(inspect_info->get_index());
 		inspect_properties->edit(inspected_object);
 
 	} else if (p_msg == "message:video_mem") {
@@ -498,13 +508,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			String n = p_data[ofs + i * 2 + 0];
 			Variant v = p_data[ofs + i * 2 + 1];
+			PropertyHint h = PROPERTY_HINT_NONE;
+			String hs = String();
 
 			if (n.begins_with("*")) {
 
 				n = n.substr(1, n.length());
+				h = PROPERTY_HINT_OBJECT_ID;
+				String s = v;
+				s = s.replace("[", "");
+				hs = s.get_slice(":", 0);
+				v = s.get_slice(":", 1).to_int();
 			}
 
-			variables->add_property("members/" + n, v);
+			variables->add_property("members/" + n, v, h, hs);
 		}
 		ofs += mcount * 2;
 
@@ -515,13 +532,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			String n = p_data[ofs + i * 2 + 0];
 			Variant v = p_data[ofs + i * 2 + 1];
+			PropertyHint h = PROPERTY_HINT_NONE;
+			String hs = String();
 
 			if (n.begins_with("*")) {
 
 				n = n.substr(1, n.length());
+				h = PROPERTY_HINT_OBJECT_ID;
+				String s = v;
+				s = s.replace("[", "");
+				hs = s.get_slice(":", 0);
+				v = s.get_slice(":", 1).to_int();
 			}
 
-			variables->add_property("locals/" + n, v);
+			variables->add_property("locals/" + n, v, h, hs);
 		}
 
 		variables->update();
@@ -616,7 +640,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
-		print_line("SIG: " + String(Variant(p_data)));
 		profiler_signature[p_data[1]] = p_data[0];
 
 	} else if (p_msg == "profile_frame" || p_msg == "profile_total") {
@@ -626,8 +649,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		metric.frame_number = p_data[0];
 		metric.frame_time = p_data[1];
 		metric.idle_time = p_data[2];
-		metric.fixed_time = p_data[3];
-		metric.fixed_frame_time = p_data[4];
+		metric.physics_time = p_data[3];
+		metric.physics_frame_time = p_data[4];
 		int frame_data_amount = p_data[6];
 		int frame_function_amount = p_data[7];
 
@@ -641,9 +664,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			item.calls = 1;
 			item.line = 0;
 			item.name = "Fixed Time";
-			item.total = metric.fixed_time;
+			item.total = metric.physics_time;
 			item.self = item.total;
-			item.signature = "fixed_time";
+			item.signature = "physics_time";
 
 			frame_time.items.push_back(item);
 
@@ -655,9 +678,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			frame_time.items.push_back(item);
 
 			item.name = "Fixed Frame Time";
-			item.total = metric.fixed_frame_time;
+			item.total = metric.physics_frame_time;
 			item.self = item.total;
-			item.signature = "fixed_frame_time";
+			item.signature = "physics_frame_time";
 
 			frame_time.items.push_back(item);
 
@@ -737,6 +760,21 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 	}
 }
 
+void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
+	switch (p_type) {
+		case MESSAGE_ERROR:
+			reason->add_color_override("font_color", get_color("error_color", "Editor"));
+			break;
+		case MESSAGE_WARNING:
+			reason->add_color_override("font_color", get_color("warning_color", "Editor"));
+			break;
+		default:
+			reason->add_color_override("font_color", get_color("success_color", "Editor"));
+	}
+	reason->set_text(p_reason);
+	reason->set_tooltip(p_reason);
+}
+
 void ScriptEditorDebugger::_performance_select(Object *, int, bool) {
 
 	perf_draw->update();
@@ -751,14 +789,17 @@ void ScriptEditorDebugger::_performance_draw() {
 			which.push_back(i);
 	}
 
-	if (which.empty())
-		return;
-
-	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
 	Ref<Font> graph_font = get_font("font", "TextEdit");
 
+	if (which.empty()) {
+		perf_draw->draw_string(graph_font, Point2(0, graph_font->get_ascent()), TTR("Pick one or more items from the list to display the graph."), get_color("font_color", "Label"), perf_draw->get_size().x);
+		return;
+	}
+
+	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
-	int rows = (which.size() + 1) / cols;
+	int rows = Math::ceil((float)which.size() / cols);
 	if (which.size() == 1)
 		rows = 1;
 
@@ -769,19 +810,20 @@ void ScriptEditorDebugger::_performance_draw() {
 
 		Point2i p(i % cols, i / cols);
 		Rect2i r(p * s, s);
-		r.pos += Point2(margin, margin);
+		r.position += Point2(margin, margin);
 		r.size -= Point2(margin, margin) * 2.0;
 		perf_draw->draw_style_box(graph_sb, r);
-		r.pos += graph_sb->get_offset();
+		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
 		int pi = which[i];
-		Color c = Color(0.7, 0.9, 0.5);
+		Color c = get_color("success_color", "Editor");
 		c.set_hsv(Math::fmod(c.get_h() + pi * 0.7654, 1), c.get_s(), c.get_v());
+		//c = c.linear_interpolate(get_color("base_color", "Editor"), 0.9);
 
 		c.a = 0.8;
-		perf_draw->draw_string(graph_font, r.pos + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
+		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
 		c.a = 0.6;
-		perf_draw->draw_string(graph_font, r.pos + Point2(graph_font->get_char_size('X').width, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
+		perf_draw->draw_string(graph_font, r.position + Point2(graph_font->get_char_size('X').width, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
 
 		float spacing = point_sep / float(cols);
 		float from = r.size.width;
@@ -798,7 +840,7 @@ void ScriptEditorDebugger::_performance_draw() {
 
 			c.a = 0.7;
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.pos + Point2(from, h), r.pos + Point2(from + spacing, prev), c, 2.0);
+				perf_draw->draw_line(r.position + Point2(from, h), r.position + Point2(from + spacing, prev), c, 2.0);
 			prev = h;
 			E = E->next();
 			from -= spacing;
@@ -826,6 +868,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_list->connect("item_selected", this, "_error_selected");
 			error_stack->connect("item_selected", this, "_error_stack_selected");
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+
+			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -894,8 +938,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
-					reason->set_text(TTR("Child Process Connected"));
-					reason->set_tooltip(TTR("Child Process Connected"));
+					_set_reason_text(TTR("Child Process Connected"), MESSAGE_SUCCESS);
 					profiler->clear();
 
 					inspect_scene_tree->clear();
@@ -998,6 +1041,13 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			}
 
 		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+			tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
+			tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
+			tabs->set_margin(MARGIN_LEFT, -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+			tabs->set_margin(MARGIN_RIGHT, EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
+		} break;
 	}
 }
 
@@ -1009,14 +1059,17 @@ void ScriptEditorDebugger::start() {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
-	uint16_t port = GLOBAL_GET("network/debug/remote_port");
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
 		perf_max[i] = 0;
 	}
 
-	server->listen(port);
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+	if (server->listen(remote_port) != OK) {
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), true);
+		return;
+	}
 	set_process(true);
 }
 
@@ -1105,8 +1158,9 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 
 	Dictionary d = ti->get_metadata(0);
 
-	Ref<Script> s = ResourceLoader::load(d["file"]);
-	emit_signal("goto_script_line", s, int(d["line"]) - 1);
+	stack_script = ResourceLoader::load(d["file"]);
+	emit_signal("goto_script_line", stack_script, int(d["line"]) - 1);
+	stack_script.unref();
 
 	ERR_FAIL_COND(connection.is_null());
 	ERR_FAIL_COND(!connection->is_connected_to_host());
@@ -1172,7 +1226,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
 		return;
 
-	Node *node = p_base->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(p_base);
 
 	VARIANT_ARGPTRS
 
@@ -1200,7 +1254,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		return;
 	}
 
-	Resource *res = p_base->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
 
@@ -1228,7 +1282,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
 		return;
 
-	Node *node = p_base->cast_to<Node>();
+	Node *node = Object::cast_to<Node>(p_base);
 
 	if (node) {
 
@@ -1259,7 +1313,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		return;
 	}
 
-	Resource *res = p_base->cast_to<Resource>();
+	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
 
@@ -1490,6 +1544,21 @@ void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 	hide_on_stop = p_hide;
 }
 
+bool ScriptEditorDebugger::get_debug_with_external_editor() const {
+
+	return enable_external_editor;
+}
+
+void ScriptEditorDebugger::set_debug_with_external_editor(bool p_enabled) {
+
+	enable_external_editor = p_enabled;
+}
+
+Ref<Script> ScriptEditorDebugger::get_dump_stack_script() const {
+
+	return stack_script;
+}
+
 void ScriptEditorDebugger::_paused() {
 
 	ERR_FAIL_COND(connection.is_null());
@@ -1547,11 +1616,18 @@ void ScriptEditorDebugger::_bind_methods() {
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
+	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
 	editor = p_editor;
 
 	tabs = memnew(TabContainer);
-	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
-	tabs->set_area_as_parent_rect();
+	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
+	tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
+	tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
+
+	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	tabs->set_margin(MARGIN_LEFT, -editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
+	tabs->set_margin(MARGIN_RIGHT, editor->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 	add_child(tabs);
 
 	{ //debugger
@@ -1563,39 +1639,34 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 
-		reason = memnew(LineEdit);
+		reason = memnew(Label);
 		reason->set_text("");
-		reason->set_editable(false);
 		hbc->add_child(reason);
-		reason->add_color_override("font_color", Color(1, 0.4, 0.0, 0.8));
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
-		//reason->set_clip_text(true);
 
 		hbc->add_child(memnew(VSeparator));
 
-		step = memnew(Button);
+		step = memnew(ToolButton);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->connect("pressed", this, "debug_step");
 
-		next = memnew(Button);
+		next = memnew(ToolButton);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->connect("pressed", this, "debug_next");
 
 		hbc->add_child(memnew(VSeparator));
 
-		dobreak = memnew(Button);
+		dobreak = memnew(ToolButton);
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->connect("pressed", this, "debug_break");
 
-		docontinue = memnew(Button);
+		docontinue = memnew(ToolButton);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->connect("pressed", this, "debug_continue");
-
-		//hbc->add_child( memnew( VSeparator) );
 
 		back = memnew(Button);
 		hbc->add_child(back);
@@ -1624,8 +1695,9 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->hide_top_label();
 		inspector->get_scene_tree()->set_column_title(0, TTR("Variable"));
-		inspector->set_capitalize_paths(false);
+		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
+		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
 		sc->add_child(inspector);
 
 		server = TCP_Server::create_ref();
@@ -1637,10 +1709,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		breaked = false;
 
 		tabs->add_child(dbg);
-		//tabs->move_child(vbc,0);
-
-		hbc = memnew(HBoxContainer);
-		vbc->add_child(hbc);
 	}
 
 	{ //errors
@@ -1763,12 +1831,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_total->set_editable(false);
 		vmem_total->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
-		vmem_refresh = memnew(Button);
+		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");
 
-		MarginContainer *vmmc = memnew(MarginContainer);
+		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
 		vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1796,30 +1864,31 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ // misc
-		VBoxContainer *info_left = memnew(VBoxContainer);
-		info_left->set_h_size_flags(SIZE_EXPAND_FILL);
+		GridContainer *info_left = memnew(GridContainer);
+		info_left->set_columns(2);
 		info_left->set_name(TTR("Misc"));
 		tabs->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control:"), clicked_ctrl);
+		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
+		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
+		info_left->add_child(clicked_ctrl);
 		clicked_ctrl_type = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control Type:"), clicked_ctrl_type);
+		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
+		info_left->add_child(clicked_ctrl_type);
 
 		live_edit_root = memnew(LineEdit);
+		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		{
 			HBoxContainer *lehb = memnew(HBoxContainer);
 			Label *l = memnew(Label(TTR("Live Edit Root:")));
-			lehb->add_child(l);
-			l->set_h_size_flags(SIZE_EXPAND_FILL);
+			info_left->add_child(l);
+			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTR("Set From Tree")));
 			lehb->add_child(le_set);
 			le_clear = memnew(Button(TTR("Clear")));
 			lehb->add_child(le_clear);
 			info_left->add_child(lehb);
-			MarginContainer *mc = memnew(MarginContainer);
-			mc->add_child(live_edit_root);
-			info_left->add_child(mc);
 			le_set->set_disabled(true);
 			le_clear->set_disabled(true);
 		}
@@ -1834,6 +1903,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	last_path_id = false;
 	error_count = 0;
 	hide_on_stop = true;
+	enable_external_editor = false;
 	last_error_count = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");

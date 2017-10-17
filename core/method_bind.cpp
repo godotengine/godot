@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,27 +36,16 @@
 #ifdef DEBUG_METHODS_ENABLED
 PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
-	if (p_argument >= 0) {
+	ERR_FAIL_INDEX_V(p_argument, get_argument_count(), PropertyInfo());
 
-		String name = (p_argument < arg_names.size()) ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
-		PropertyInfo pi(get_argument_type(p_argument), name);
-		if ((pi.type == Variant::OBJECT) && name.find(":") != -1) {
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = name.get_slicec(':', 1);
-			pi.name = name.get_slicec(':', 0);
-		}
-		return pi;
+	PropertyInfo info = _gen_argument_type_info(p_argument);
+	info.name = p_argument < arg_names.size() ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+	return info;
+}
 
-	} else {
+PropertyInfo MethodBind::get_return_info() const {
 
-		Variant::Type at = get_argument_type(-1);
-		if (at == Variant::OBJECT && ret_type)
-			return PropertyInfo(at, "ret", PROPERTY_HINT_RESOURCE_TYPE, ret_type);
-		else
-			return PropertyInfo(at, "ret");
-	}
-
-	return PropertyInfo();
+	return _gen_argument_type_info(-1);
 }
 
 #endif
@@ -97,12 +87,15 @@ void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 void MethodBind::_generate_argument_types(int p_count) {
 
 	set_argument_count(p_count);
+
 	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
-	argt[0] = _gen_argument_type(-1);
+	argt[0] = _gen_argument_type(-1); // return type
+
 	for (int i = 0; i < p_count; i++) {
 		argt[i + 1] = _gen_argument_type(i);
 	}
-	set_argument_types(argt);
+
+	argument_types = argt;
 }
 
 #endif

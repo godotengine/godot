@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +30,15 @@
 #include "texture_editor_plugin.h"
 
 #include "editor/editor_settings.h"
-#include "global_config.h"
 #include "io/resource_loader.h"
+#include "project_settings.h"
 
-void TextureEditor::_gui_input(InputEvent p_event) {
+void TextureEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void TextureEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_FIXED_PROCESS) {
+	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -60,16 +61,30 @@ void TextureEditor::_notification(int p_what) {
 			tex_height = texture->get_height() * tex_width / texture->get_width();
 		}
 
+		// Prevent the texture from being unpreviewable after the rescale, so that we can still see something
+		if (tex_height <= 0)
+			tex_height = 1;
+		if (tex_width <= 0)
+			tex_width = 1;
+
 		int ofs_x = (size.width - tex_width) / 2;
 		int ofs_y = (size.height - tex_height) / 2;
+
+		if (Object::cast_to<CurveTexture>(*texture)) {
+			// In the case of CurveTextures we know they are 1 in height, so fill the preview to see the gradient
+			ofs_y = 0;
+			tex_height = size.height;
+		}
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 
 		Ref<Font> font = get_font("font", "Label");
 
 		String format;
-		if (texture->cast_to<ImageTexture>()) {
-			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
+		if (Object::cast_to<ImageTexture>(*texture)) {
+			format = Image::get_format_name(Object::cast_to<ImageTexture>(*texture)->get_format());
+		} else if (Object::cast_to<StreamTexture>(*texture)) {
+			format = Image::get_format_name(Object::cast_to<StreamTexture>(*texture)->get_format());
 		} else {
 			format = texture->get_class();
 		}
@@ -87,14 +102,24 @@ void TextureEditor::_notification(int p_what) {
 	}
 }
 
+void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+
+	if (!is_visible())
+		return;
+	update();
+}
+
 void TextureEditor::edit(Ref<Texture> p_texture) {
+
+	if (!texture.is_null())
+		texture->remove_change_receptor(this);
 
 	texture = p_texture;
 
-	if (!texture.is_null())
+	if (!texture.is_null()) {
+		texture->add_change_receptor(this);
 		update();
-	else {
-
+	} else {
 		hide();
 	}
 }
@@ -111,7 +136,7 @@ TextureEditor::TextureEditor() {
 
 void TextureEditorPlugin::edit(Object *p_object) {
 
-	Texture *s = p_object->cast_to<Texture>();
+	Texture *s = Object::cast_to<Texture>(p_object);
 	if (!s)
 		return;
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +55,7 @@ private:
 	real_t angular_damp;
 	real_t linear_damp;
 	uint32_t collision_mask;
-	uint32_t layer_mask;
+	uint32_t collision_layer;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -125,6 +126,16 @@ private:
 	Map<ObjectID, AreaState> area_map;
 	void _clear_monitoring();
 
+	bool audio_bus_override;
+	StringName audio_bus;
+
+	bool use_reverb_bus;
+	StringName reverb_bus;
+	float reverb_amount;
+	float reverb_uniformity;
+
+	void _validate_property(PropertyInfo &property) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -163,20 +174,38 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_layer_mask(uint32_t p_mask);
-	uint32_t get_layer_mask() const;
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	void set_layer_mask_bit(int p_bit, bool p_value);
-	bool get_layer_mask_bit(int p_bit) const;
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
 
 	Array get_overlapping_bodies() const;
 	Array get_overlapping_areas() const; //function for script
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
+
+	void set_audio_bus_override(bool p_override);
+	bool is_overriding_audio_bus() const;
+
+	void set_audio_bus(const StringName &p_audio_bus);
+	StringName get_audio_bus() const;
+
+	void set_use_reverb_bus(bool p_enable);
+	bool is_using_reverb_bus() const;
+
+	void set_reverb_bus(const StringName &p_audio_bus);
+	StringName get_reverb_bus() const;
+
+	void set_reverb_amount(float p_amount);
+	float get_reverb_amount() const;
+
+	void set_reverb_uniformity(float p_uniformity);
+	float get_reverb_uniformity() const;
 
 	Area();
 	~Area();

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +32,12 @@
 #include "print_string.h"
 #include "translation.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
+// WindowDialog
+
 void WindowDialog::_post_popup() {
 
 	drag_type = DRAG_NONE; // just in case
@@ -38,25 +45,38 @@ void WindowDialog::_post_popup() {
 
 void WindowDialog::_fix_size() {
 
-	// Perhaps this should be called when the viewport resizes aswell or windows go out of bounds...
+	// Perhaps this should be called when the viewport resizes as well or windows go out of bounds...
 
 	// Ensure the whole window is visible.
-	Point2i pos = get_global_pos();
+	Point2i pos = get_global_position();
 	Size2i size = get_size();
 	Size2i viewport_size = get_viewport_rect().size;
 
 	// Windows require additional padding to keep the window chrome visible.
 	Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
-	float top = panel->get_margin(MARGIN_TOP);
-	float left = panel->get_margin(MARGIN_LEFT);
-	float bottom = panel->get_margin(MARGIN_BOTTOM);
-	float right = panel->get_margin(MARGIN_RIGHT);
+	float top = 0;
+	float left = 0;
+	float bottom = 0;
+	float right = 0;
+	// Check validity, because the theme could contain a different type of StyleBox
+	if (panel->get_class() == "StyleBoxTexture") {
+		Ref<StyleBoxTexture> panel_texture = Object::cast_to<StyleBoxTexture>(*panel);
+		top = panel_texture->get_expand_margin_size(MARGIN_TOP);
+		left = panel_texture->get_expand_margin_size(MARGIN_LEFT);
+		bottom = panel_texture->get_expand_margin_size(MARGIN_BOTTOM);
+		right = panel_texture->get_expand_margin_size(MARGIN_RIGHT);
+	} else if (panel->get_class() == "StyleBoxFlat") {
+		Ref<StyleBoxFlat> panel_flat = Object::cast_to<StyleBoxFlat>(*panel);
+		top = panel_flat->get_expand_margin_size(MARGIN_TOP);
+		left = panel_flat->get_expand_margin_size(MARGIN_LEFT);
+		bottom = panel_flat->get_expand_margin_size(MARGIN_BOTTOM);
+		right = panel_flat->get_expand_margin_size(MARGIN_RIGHT);
+	}
 
 	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
 	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
-	set_global_pos(pos);
+	set_global_position(pos);
 
-	// Also resize the window to fit if a resize should be possible at all.
 	if (resizable) {
 		size.x = MIN(size.x, viewport_size.x - left - right);
 		size.y = MIN(size.y, viewport_size.y - top - bottom);
@@ -69,45 +89,49 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 	Rect2 r(Point2(), get_size());
 
 	// Enlarge upwards for title bar.
-	int titlebar_height = get_constant("titlebar_height", "WindowDialog");
-	r.pos.y -= titlebar_height;
-	r.size.y += titlebar_height;
+	int title_height = get_constant("title_height", "WindowDialog");
+	r.position.y -= title_height;
+	r.size.y += title_height;
 
 	// Inflate by the resizable border thickness.
 	if (resizable) {
 		int scaleborder_size = get_constant("scaleborder_size", "WindowDialog");
-		r.pos.x -= scaleborder_size;
+		r.position.x -= scaleborder_size;
 		r.size.width += scaleborder_size * 2;
-		r.pos.y -= scaleborder_size;
+		r.position.y -= scaleborder_size;
 		r.size.height += scaleborder_size * 2;
 	}
 
 	return r.has_point(p_point);
 }
 
-void WindowDialog::_gui_input(const InputEvent &p_event) {
+void WindowDialog::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_LEFT) {
+	Ref<InputEventMouseButton> mb = p_event;
 
-		if (p_event.mouse_button.pressed) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+
+		if (mb->is_pressed()) {
 			// Begin a possible dragging operation.
-			drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
+			drag_type = _drag_hit_test(Point2(mb->get_position().x, mb->get_position().y));
 			if (drag_type != DRAG_NONE)
-				drag_offset = get_global_mouse_pos() - get_pos();
-			drag_offset_far = get_pos() + get_size() - get_global_mouse_pos();
-		} else if (drag_type != DRAG_NONE && !p_event.mouse_button.pressed) {
+				drag_offset = get_global_mouse_position() - get_position();
+			drag_offset_far = get_position() + get_size() - get_global_mouse_position();
+		} else if (drag_type != DRAG_NONE && !mb->is_pressed()) {
 			// End a dragging operation.
 			drag_type = DRAG_NONE;
 		}
 	}
 
-	if (p_event.type == InputEvent::MOUSE_MOTION) {
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid()) {
 
 		if (drag_type == DRAG_NONE) {
 			// Update the cursor while moving along the borders.
 			CursorShape cursor = CURSOR_ARROW;
 			if (resizable) {
-				int preview_drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
+				int preview_drag_type = _drag_hit_test(Point2(mm->get_position().x, mm->get_position().y));
 				switch (preview_drag_type) {
 					case DRAG_RESIZE_TOP:
 					case DRAG_RESIZE_BOTTOM:
@@ -131,35 +155,35 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 				set_default_cursor_shape(cursor);
 		} else {
 			// Update while in a dragging operation.
-			Point2 global_pos = get_global_mouse_pos();
+			Point2 global_pos = get_global_mouse_position();
 			global_pos.y = MAX(global_pos.y, 0); // Ensure title bar stays visible.
 
 			Rect2 rect = get_rect();
 			Size2 min_size = get_minimum_size();
 
 			if (drag_type == DRAG_MOVE) {
-				rect.pos = global_pos - drag_offset;
+				rect.position = global_pos - drag_offset;
 			} else {
 				if (drag_type & DRAG_RESIZE_TOP) {
-					int bottom = rect.pos.y + rect.size.height;
+					int bottom = rect.position.y + rect.size.height;
 					int max_y = bottom - min_size.height;
-					rect.pos.y = MIN(global_pos.y - drag_offset.y, max_y);
-					rect.size.height = bottom - rect.pos.y;
+					rect.position.y = MIN(global_pos.y - drag_offset.y, max_y);
+					rect.size.height = bottom - rect.position.y;
 				} else if (drag_type & DRAG_RESIZE_BOTTOM) {
-					rect.size.height = global_pos.y - rect.pos.y + drag_offset_far.y;
+					rect.size.height = global_pos.y - rect.position.y + drag_offset_far.y;
 				}
 				if (drag_type & DRAG_RESIZE_LEFT) {
-					int right = rect.pos.x + rect.size.width;
+					int right = rect.position.x + rect.size.width;
 					int max_x = right - min_size.width;
-					rect.pos.x = MIN(global_pos.x - drag_offset.x, max_x);
-					rect.size.width = right - rect.pos.x;
+					rect.position.x = MIN(global_pos.x - drag_offset.x, max_x);
+					rect.size.width = right - rect.position.x;
 				} else if (drag_type & DRAG_RESIZE_RIGHT) {
-					rect.size.width = global_pos.x - rect.pos.x + drag_offset_far.x;
+					rect.size.width = global_pos.x - rect.position.x + drag_offset_far.x;
 				}
 			}
 
 			set_size(rect.size);
-			set_pos(rect.pos);
+			set_position(rect.position);
 		}
 	}
 }
@@ -168,28 +192,30 @@ void WindowDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
 			RID canvas = get_canvas_item();
+
+			// Draw the background.
+			Ref<StyleBox> panel = get_stylebox("panel");
 			Size2 size = get_size();
+			panel->draw(canvas, Rect2(0, 0, size.x, size.y));
 
-			Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
-			panel->draw(canvas, Rect2(Point2(), size));
-
-			int title_height = get_constant("title_height", "WindowDialog");
+			// Draw the title bar text.
+			Ref<Font> title_font = get_font("title_font", "WindowDialog");
 			Color title_color = get_color("title_color", "WindowDialog");
-			Ref<Font> font = get_font("title_font", "WindowDialog");
-			int ofs = (size.width - font->get_string_size(title).width) / 2;
-			draw_string(font, Point2(ofs, -title_height + font->get_ascent()), title, title_color, size.width - panel->get_minimum_size().width);
-
+			int title_height = get_constant("title_height", "WindowDialog");
+			int font_height = title_font->get_height() - title_font->get_descent() * 2;
+			int x = (size.x - title_font->get_string_size(title).x) / 2;
+			int y = (-title_height + font_height) / 2;
+			title_font->draw(canvas, Point2(x, y), title, title_color, size.x - panel->get_minimum_size().x);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			close_button->set_normal_texture(get_icon("close", "WindowDialog"));
 			close_button->set_pressed_texture(get_icon("close", "WindowDialog"));
-			close_button->set_hover_texture(get_icon("close_hilite", "WindowDialog"));
+			close_button->set_hover_texture(get_icon("close_highlight", "WindowDialog"));
 			close_button->set_anchor(MARGIN_LEFT, ANCHOR_END);
-			close_button->set_begin(Point2(get_constant("close_h_ofs", "WindowDialog"), -get_constant("close_v_ofs", "WindowDialog")));
+			close_button->set_begin(Point2(-get_constant("close_h_ofs", "WindowDialog"), -get_constant("close_v_ofs", "WindowDialog")));
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
@@ -199,6 +225,16 @@ void WindowDialog::_notification(int p_what) {
 					set_default_cursor_shape(CURSOR_ARROW);
 			}
 		} break;
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_POST_POPUP: {
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+				EditorNode::get_singleton()->dim_editor(true);
+		} break;
+		case NOTIFICATION_POPUP_HIDE: {
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+				EditorNode::get_singleton()->dim_editor(false);
+		} break;
+#endif
 	}
 }
 
@@ -212,12 +248,12 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 	int drag_type = DRAG_NONE;
 
 	if (resizable) {
-		int titlebar_height = get_constant("titlebar_height", "WindowDialog");
+		int title_height = get_constant("title_height", "WindowDialog");
 		int scaleborder_size = get_constant("scaleborder_size", "WindowDialog");
 
 		Rect2 rect = get_rect();
 
-		if (pos.y < (-titlebar_height + scaleborder_size))
+		if (pos.y < (-title_height + scaleborder_size))
 			drag_type = DRAG_RESIZE_TOP;
 		else if (pos.y >= (rect.size.height - scaleborder_size))
 			drag_type = DRAG_RESIZE_BOTTOM;
@@ -235,7 +271,7 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 void WindowDialog::set_title(const String &p_title) {
 
-	title = XL_MESSAGE(p_title);
+	title = tr(p_title);
 	update();
 }
 String WindowDialog::get_title() const {
@@ -272,7 +308,7 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &WindowDialog::set_resizable);
 	ClassDB::bind_method(D_METHOD("get_resizable"), &WindowDialog::get_resizable);
 	ClassDB::bind_method(D_METHOD("_closed"), &WindowDialog::_closed);
-	ClassDB::bind_method(D_METHOD("get_close_button:TextureButton"), &WindowDialog::get_close_button);
+	ClassDB::bind_method(D_METHOD("get_close_button"), &WindowDialog::get_close_button);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "window_title", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_resizable", "get_resizable");
@@ -290,6 +326,8 @@ WindowDialog::WindowDialog() {
 
 WindowDialog::~WindowDialog() {
 }
+
+// PopupDialog
 
 void PopupDialog::_notification(int p_what) {
 
@@ -319,6 +357,9 @@ void AcceptDialog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
+	} else if (p_what == NOTIFICATION_READY) {
+
+		_update_child_rects();
 	} else if (p_what == NOTIFICATION_RESIZED) {
 
 		_update_child_rects();
@@ -383,21 +424,21 @@ void AcceptDialog::_update_child_rects() {
 	Vector2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height);
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 
 		if (c == hbc || c == label || c == get_close_button() || c->is_set_as_toplevel())
 			continue;
 
-		c->set_pos(cpos);
+		c->set_position(cpos);
 		c->set_size(csize);
 	}
 
 	cpos.y += csize.y + margin;
 	csize.y = hminsize.y;
 
-	hbc->set_pos(cpos);
+	hbc->set_position(cpos);
 	hbc->set_size(csize);
 }
 
@@ -407,7 +448,7 @@ Size2 AcceptDialog::get_minimum_size() const {
 	Size2 minsize = label->get_combined_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 
@@ -474,10 +515,10 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
 	ClassDB::bind_method(D_METHOD("get_hide_on_ok"), &AcceptDialog::get_hide_on_ok);
-	ClassDB::bind_method(D_METHOD("add_button:Button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("add_cancel:Button", "name"), &AcceptDialog::add_cancel);
+	ClassDB::bind_method(D_METHOD("add_button", "text", "right", "action"), &AcceptDialog::add_button, DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_cancel", "name"), &AcceptDialog::add_cancel);
 	ClassDB::bind_method(D_METHOD("_builtin_text_entered"), &AcceptDialog::_builtin_text_entered);
-	ClassDB::bind_method(D_METHOD("register_text_enter:LineEdit", "line_edit"), &AcceptDialog::register_text_enter);
+	ClassDB::bind_method(D_METHOD("register_text_enter", "line_edit"), &AcceptDialog::register_text_enter);
 	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
@@ -505,7 +546,7 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_RIGHT, ANCHOR_END);
 	label->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
-	label->set_end(Point2(margin, button_margin + 10));
+	label->set_end(Point2(-margin, -button_margin - 10));
 	//label->set_autowrap(true);
 	add_child(label);
 
@@ -528,9 +569,11 @@ AcceptDialog::AcceptDialog() {
 AcceptDialog::~AcceptDialog() {
 }
 
+// ConfirmationDialog
+
 void ConfirmationDialog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_cancel:Button"), &ConfirmationDialog::get_cancel);
+	ClassDB::bind_method(D_METHOD("get_cancel"), &ConfirmationDialog::get_cancel);
 }
 
 Button *ConfirmationDialog::get_cancel() {
@@ -541,5 +584,8 @@ Button *ConfirmationDialog::get_cancel() {
 ConfirmationDialog::ConfirmationDialog() {
 
 	set_title(RTR("Please Confirm..."));
+#ifdef TOOLS_ENABLED
+	set_custom_minimum_size(Size2(200, 70) * EDSCALE);
+#endif
 	cancel = add_cancel();
 }

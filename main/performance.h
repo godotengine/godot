@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,14 +43,14 @@ class Performance : public Object {
 	static void _bind_methods();
 
 	float _process_time;
-	float _fixed_process_time;
+	float _physics_process_time;
 
 public:
 	enum Monitor {
 
 		TIME_FPS,
 		TIME_PROCESS,
-		TIME_FIXED_PROCESS,
+		TIME_PHYSICS_PROCESS,
 		MEMORY_STATIC,
 		MEMORY_DYNAMIC,
 		MEMORY_STATIC_MAX,
@@ -82,7 +83,7 @@ public:
 	String get_monitor_name(Monitor p_monitor) const;
 
 	void set_process_time(float p_pt);
-	void set_fixed_process_time(float p_pt);
+	void set_physics_process_time(float p_pt);
 
 	static Performance *get_singleton() { return singleton; }
 

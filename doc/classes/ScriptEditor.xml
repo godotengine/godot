@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptEditor" inherits="PanelContainer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_current_script">
+			<return type="Script">
+			</return>
+			<description>
+				Returns a [Script] that is currently active in editor.
+			</description>
+		</method>
+		<method name="get_open_scripts" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="editor_script_changed">
+			<argument index="0" name="script" type="Object">
+			</argument>
+			<description>
+				Emitted when user changed active script. Argument is a freshly activated [Script].
+			</description>
+		</signal>
+		<signal name="script_close">
+			<argument index="0" name="script" type="Object">
+			</argument>
+			<description>
+				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

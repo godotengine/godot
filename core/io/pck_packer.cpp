@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +119,7 @@ Error PCKPacker::flush(bool p_verbose) {
 	for (int i = 0; i < files.size(); i++) {
 
 		file->store_pascal_string(files[i].path);
-		files[i].offset_offset = file->get_pos();
+		files[i].offset_offset = file->get_position();
 		file->store_64(0); // offset
 		file->store_64(files[i].size); // size
 
@@ -129,10 +130,10 @@ Error PCKPacker::flush(bool p_verbose) {
 		file->store_32(0);
 	};
 
-	uint64_t ofs = file->get_pos();
+	uint64_t ofs = file->get_position();
 	ofs = _align(ofs, alignment);
 
-	_pad(file, ofs - file->get_pos());
+	_pad(file, ofs - file->get_position());
 
 	const uint32_t buf_max = 65536;
 	uint8_t *buf = memnew_arr(uint8_t, buf_max);
@@ -149,7 +150,7 @@ Error PCKPacker::flush(bool p_verbose) {
 			to_write -= read;
 		};
 
-		uint64_t pos = file->get_pos();
+		uint64_t pos = file->get_position();
 		file->seek(files[i].offset_offset); // go back to store the file's offset
 		file->store_64(ofs);
 		file->seek(pos);
@@ -172,6 +173,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		printf("\n");
 
 	file->close();
+	memdelete(buf);
 
 	return OK;
 };

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +31,7 @@
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
 //#include "servers/spatial_sound_2d_server.h"
-#include "global_config.h"
-#include "global_config.h"
+#include "project_settings.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/main/viewport.h"
@@ -96,9 +96,9 @@ struct SpatialIndexer2D {
 
 	void _notifier_update_cells(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect, bool p_add) {
 
-		Point2i begin = p_rect.pos;
+		Point2i begin = p_rect.position;
 		begin /= cell_size;
-		Point2i end = p_rect.pos + p_rect.size;
+		Point2i end = p_rect.position + p_rect.size;
 		end /= cell_size;
 		for (int i = begin.x; i <= end.x; i++) {
 
@@ -219,9 +219,9 @@ struct SpatialIndexer2D {
 
 		for (Map<Viewport *, ViewportData>::Element *E = viewports.front(); E; E = E->next()) {
 
-			Point2i begin = E->get().rect.pos;
+			Point2i begin = E->get().rect.position;
 			begin /= cell_size;
-			Point2i end = E->get().rect.pos + E->get().rect.size;
+			Point2i end = E->get().rect.position + E->get().rect.size;
 			end /= cell_size;
 			pass++;
 			List<VisibilityNotifier2D *> added;
@@ -359,18 +359,19 @@ RID World2D::get_space() {
 	return space;
 }
 
-RID World2D::get_sound_space() {
+void World2D::get_viewport_list(List<Viewport *> *r_viewports) {
 
-	return sound_space;
+	for (Map<Viewport *, SpatialIndexer2D::ViewportData>::Element *E = indexer->viewports.front(); E; E = E->next()) {
+		r_viewports->push_back(E->key());
+	}
 }
 
 void World2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_canvas"), &World2D::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_space"), &World2D::get_space);
-	ClassDB::bind_method(D_METHOD("get_sound_space"), &World2D::get_sound_space);
 
-	ClassDB::bind_method(D_METHOD("get_direct_space_state:Physics2DDirectSpaceState"), &World2D::get_direct_space_state);
+	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World2D::get_direct_space_state);
 }
 
 Physics2DDirectSpaceState *World2D::get_direct_space_state() {

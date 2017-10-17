@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +31,7 @@
 #define SPATIAL_H
 
 #include "scene/main/node.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -46,6 +47,7 @@ public:
 	virtual void clear() = 0;
 	virtual void redraw() = 0;
 	virtual void free() = 0;
+	virtual bool can_draw() const = 0;
 
 	SpatialGizmo();
 };
@@ -94,7 +96,6 @@ class Spatial : public Node {
 		Ref<SpatialGizmo> gizmo;
 		bool gizmo_disabled;
 		bool gizmo_dirty;
-		Transform import_transform;
 #endif
 
 	} data;
@@ -171,7 +172,10 @@ public:
 	void global_translate(const Vector3 &p_offset);
 
 	void look_at(const Vector3 &p_target, const Vector3 &p_up_normal);
-	void look_at_from_pos(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up_normal);
+	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up_normal);
+
+	Vector3 to_local(Vector3 p_global) const;
+	Vector3 to_global(Vector3 p_local) const;
 
 	void set_notify_transform(bool p_enable);
 	bool is_transform_notification_enabled() const;
@@ -187,11 +191,6 @@ public:
 	void show();
 	void hide();
 	bool is_visible_in_tree() const;
-
-#ifdef TOOLS_ENABLED
-	void set_import_transform(const Transform &p_transform);
-	Transform get_import_transform() const;
-#endif
 
 	Spatial();
 	~Spatial();

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +29,9 @@
 /*************************************************************************/
 #include "translation.h"
 
-#include "global_config.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
+#include "project_settings.h"
 
 static const char *locale_list[] = {
 	"aa", //  Afar
@@ -869,6 +870,10 @@ void Translation::set_locale(const String &p_locale) {
 	} else {
 		locale = univ_locale;
 	}
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text) {
@@ -918,9 +923,8 @@ void Translation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
-Translation::Translation() {
-
-	locale = "en";
+Translation::Translation()
+	: locale("en") {
 }
 
 ///////////////////////////////////////////////
@@ -944,6 +948,8 @@ void TranslationServer::set_locale(const String &p_locale) {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
+
+	ResourceLoader::reload_translation_remaps();
 }
 
 String TranslationServer::get_locale() const {
@@ -1046,8 +1052,8 @@ TranslationServer *TranslationServer::singleton = NULL;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 
-	if (GlobalConfig::get_singleton()->has(p_from)) {
-		PoolVector<String> translations = GlobalConfig::get_singleton()->get(p_from);
+	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
+		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
 		int tcount = translations.size();
 
@@ -1084,11 +1090,11 @@ void TranslationServer::setup() {
 		int idx = 0;
 		while (locale_list[idx]) {
 			if (idx > 0)
-				options += ", ";
+				options += ",";
 			options += locale_list[idx];
 			idx++;
 		}
-		GlobalConfig::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
+		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
 	//load translations
@@ -1118,8 +1124,8 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("translate", "message"), &TranslationServer::translate);
 
-	ClassDB::bind_method(D_METHOD("add_translation", "translation:Translation"), &TranslationServer::add_translation);
-	ClassDB::bind_method(D_METHOD("remove_translation", "translation:Translation"), &TranslationServer::remove_translation);
+	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
+	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 }
@@ -1137,9 +1143,8 @@ void TranslationServer::load_translations() {
 	}
 }
 
-TranslationServer::TranslationServer() {
-
+TranslationServer::TranslationServer()
+	: locale("en"),
+	  enabled(true) {
 	singleton = this;
-	locale = "en";
-	enabled = true;
 }

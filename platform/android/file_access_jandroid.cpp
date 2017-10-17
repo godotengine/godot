@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,7 +106,7 @@ void FileAccessJAndroid::seek_end(int64_t p_position) {
 	seek(get_len());
 }
 
-size_t FileAccessJAndroid::get_pos() const {
+size_t FileAccessJAndroid::get_position() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V(!is_open(), 0);
@@ -154,6 +155,9 @@ Error FileAccessJAndroid::get_error() const {
 	if (eof_reached())
 		return ERR_FILE_EOF;
 	return OK;
+}
+
+void FileAccessJAndroid::flush() {
 }
 
 void FileAccessJAndroid::store_8(uint8_t p_dest) {

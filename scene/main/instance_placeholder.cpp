@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -122,7 +123,7 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 void InstancePlaceholder::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("replace_by_instance", "custom_scene:PackedScene"), &InstancePlaceholder::replace_by_instance, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("replace_by_instance", "custom_scene"), &InstancePlaceholder::replace_by_instance, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
 }
 

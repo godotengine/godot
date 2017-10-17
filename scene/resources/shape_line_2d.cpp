@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +76,7 @@ Rect2 LineShape2D::get_rect() const {
 	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
 	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	Rect2 rect;
-	rect.pos = l1[0];
+	rect.position = l1[0];
 	rect.expand_to(l1[1]);
 	rect.expand_to(l2[0]);
 	rect.expand_to(l2[1]);

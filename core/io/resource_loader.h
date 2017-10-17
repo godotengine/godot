@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,6 +49,7 @@ public:
 	virtual Error poll() = 0;
 	virtual int get_stage() const = 0;
 	virtual int get_stage_count() const = 0;
+	virtual void set_translation_remapped(bool p_remapped) = 0;
 	virtual Error wait();
 
 	ResourceInteractiveLoader() {}
@@ -55,7 +57,7 @@ public:
 
 class ResourceFormatLoader {
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, Error *r_error = NULL);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -64,6 +66,8 @@ public:
 	virtual String get_resource_type(const String &p_path) const = 0;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map) { return OK; }
+	virtual bool is_import_valid(const String &p_path) const { return true; }
+	virtual int get_import_order(const String &p_path) const { return 0; }
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -86,6 +90,16 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
+	static HashMap<String, Vector<String> > translation_remaps;
+
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	friend class Resource;
+
+	static SelfList<Resource>::List remapped_list;
+
+	friend class ResourceFormatImporter;
+	//internal load function
+	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error);
 
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
@@ -96,6 +110,8 @@ public:
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
+	static bool is_import_valid(const String &p_path);
+	static int get_import_order(const String &p_path);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 
@@ -117,6 +133,13 @@ public:
 
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }
 	static bool get_abort_on_missing_resources() { return abort_on_missing_resource; }
+
+	static String path_remap(const String &p_path);
+	static String import_remap(const String &p_path);
+
+	static void reload_translation_remaps();
+	static void load_translation_remaps();
+	static void clear_translation_remaps();
 };
 
 #endif

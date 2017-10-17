@@ -46,7 +46,7 @@
 #include <intrin.h>
 static _inline void cpuid(unsigned int CPUInfo[4], unsigned int InfoType)
 {
-	__cpuid((int*)CPUInfo, InfoType);
+    __cpuid((int*)CPUInfo, InfoType);
 }
 
 #else

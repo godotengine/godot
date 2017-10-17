@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasItemMaterial" inherits="Material" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_blend_mode" qualifiers="const">
+			<return type="int" enum="CanvasItemMaterial.BlendMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_light_mode" qualifiers="const">
+			<return type="int" enum="CanvasItemMaterial.LightMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="blend_mode" type="int" enum="CanvasItemMaterial.BlendMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_light_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light_mode" type="int" enum="CanvasItemMaterial.LightMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode">
+		</member>
+		<member name="light_mode" type="int" setter="set_light_mode" getter="get_light_mode" enum="CanvasItemMaterial.LightMode">
+		</member>
+	</members>
+	<constants>
+		<constant name="BLEND_MODE_MIX" value="0">
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1">
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2">
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3">
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+		</constant>
+		<constant name="LIGHT_MODE_NORMAL" value="0">
+		</constant>
+		<constant name="LIGHT_MODE_UNSHADED" value="1">
+		</constant>
+		<constant name="LIGHT_MODE_LIGHT_ONLY" value="2">
+		</constant>
+	</constants>
+</class>

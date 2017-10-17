@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,15 +63,16 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		int index = popup->get_item_count();
 		popup->add_icon_item(icon, E->get().name.capitalize(), objects.size());
 		popup->set_item_h_offset(index, p_depth * 10 * EDSCALE);
-		objects.push_back(obj->get_instance_ID());
+		objects.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
 	}
 }
 
-void EditorPath::_gui_input(const InputEvent &p_event) {
+void EditorPath::_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index == BUTTON_LEFT && p_event.mouse_button.pressed) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
 		Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
 		if (!obj)
@@ -79,7 +81,7 @@ void EditorPath::_gui_input(const InputEvent &p_event) {
 		objects.clear();
 		popup->clear();
 		_add_children_to_popup(obj);
-		popup->set_pos(get_global_pos() + Vector2(0, get_size().height));
+		popup->set_position(get_global_position() + Vector2(0, get_size().height));
 		popup->set_size(Size2(get_size().width, 1));
 		popup->popup();
 	}
@@ -137,9 +139,9 @@ void EditorPath::_notification(int p_what) {
 					if (left < 0)
 						continue;
 					String name;
-					if (obj->cast_to<Resource>()) {
+					if (Object::cast_to<Resource>(obj)) {
 
-						Resource *r = obj->cast_to<Resource>();
+						Resource *r = Object::cast_to<Resource>(obj);
 						if (r->get_path().is_resource_file())
 							name = r->get_path().get_file();
 						else
@@ -147,18 +149,18 @@ void EditorPath::_notification(int p_what) {
 
 						if (name == "")
 							name = r->get_class();
-					} else if (obj->cast_to<Node>()) {
+					} else if (Object::cast_to<Node>(obj)) {
 
-						name = obj->cast_to<Node>()->get_name();
-					} else if (obj->cast_to<Resource>() && obj->cast_to<Resource>()->get_name() != "") {
-						name = obj->cast_to<Resource>()->get_name();
+						name = Object::cast_to<Node>(obj)->get_name();
+					} else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "") {
+						name = Object::cast_to<Resource>(obj)->get_name();
 					} else {
 						name = obj->get_class();
 					}
 
 					set_tooltip(obj->get_class());
 
-					label_font->draw(ci, Point2i(ofs, (size.height - label_font->get_height()) / 2 + label_font->get_ascent()), name, Color(1, 1, 1), left);
+					label_font->draw(ci, Point2i(ofs, (size.height - label_font->get_height()) / 2 + label_font->get_ascent()), name, get_color("font_color", "Label"), left);
 				} else {
 					//add arrow
 

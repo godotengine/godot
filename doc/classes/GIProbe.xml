@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GIProbe" inherits="VisualInstance" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="bake">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_node" type="Node" default="null">
+			</argument>
+			<argument index="1" name="create_visual_debug" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="debug_bake">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_dynamic_range" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_extents" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_probe_data" qualifiers="const">
+			<return type="GIProbeData">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_propagation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subdiv" qualifiers="const">
+			<return type="int" enum="GIProbe.Subdiv">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_compressed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_interior" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_compress">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_dynamic_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="max" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_extents">
+			<return type="void">
+			</return>
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_interior">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_normal_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_probe_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="data" type="GIProbeData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_propagation">
+			<return type="void">
+			</return>
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subdiv">
+			<return type="void">
+			</return>
+			<argument index="0" name="subdiv" type="int" enum="GIProbe.Subdiv">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
+		</member>
+		<member name="compress" type="bool" setter="set_compress" getter="is_compressed">
+		</member>
+		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
+		</member>
+		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range">
+		</member>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		</member>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents">
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior">
+		</member>
+		<member name="normal_bias" type="float" setter="set_normal_bias" getter="get_normal_bias">
+		</member>
+		<member name="propagation" type="float" setter="set_propagation" getter="get_propagation">
+		</member>
+		<member name="subdiv" type="int" setter="set_subdiv" getter="get_subdiv" enum="GIProbe.Subdiv">
+		</member>
+	</members>
+	<constants>
+		<constant name="SUBDIV_64" value="0">
+		</constant>
+		<constant name="SUBDIV_128" value="1">
+		</constant>
+		<constant name="SUBDIV_256" value="2">
+		</constant>
+		<constant name="SUBDIV_MAX" value="4">
+		</constant>
+	</constants>
+</class>

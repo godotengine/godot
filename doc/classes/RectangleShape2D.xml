@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RectangleShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Rectangle shape for 2D collisions.
+	</brief_description>
+	<description>
+		Rectangle shape for 2D collisions. This shape is useful for modeling box-like 2D objects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_extents" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the half extents, the actual width and height of this shape is twice the half extents.
+			</description>
+		</method>
+		<method name="set_extents">
+			<return type="void">
+			</return>
+			<argument index="0" name="extents" type="Vector2">
+			</argument>
+			<description>
+				Set the half extents, the actual width and height of this shape is twice the half extents.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents">
+			The rectangle's half extents. The width and height of this shape is twice the half extents.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

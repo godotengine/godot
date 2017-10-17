@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptGlobalConstant" inherits="VisualScriptNode" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_global_constant">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_global_constant">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="constant" type="int" setter="set_global_constant" getter="get_global_constant">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

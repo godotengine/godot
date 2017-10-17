@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +35,11 @@
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
-#include "shaders/blend_shape.glsl.h"
-#include "shaders/canvas.glsl.h"
-#include "shaders/copy.glsl.h"
-#include "shaders/cubemap_filter.glsl.h"
-#include "shaders/particles.glsl.h"
+#include "shaders/blend_shape.glsl.gen.h"
+#include "shaders/canvas.glsl.gen.h"
+#include "shaders/copy.glsl.gen.h"
+#include "shaders/cubemap_filter.glsl.gen.h"
+#include "shaders/particles.glsl.gen.h"
 
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
@@ -46,6 +47,8 @@ class RasterizerSceneGLES3;
 #define _TEXTURE_SRGB_DECODE_EXT 0x8A48
 #define _DECODE_EXT 0x8A49
 #define _SKIP_DECODE_EXT 0x8A4A
+
+void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type);
 
 class RasterizerStorageGLES3 : public RasterizerStorage {
 public:
@@ -60,14 +63,13 @@ public:
 
 	struct Config {
 
-		RenderArchitecture render_arch;
-
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
 		bool use_anisotropic_filter;
 
 		bool s3tc_supported;
 		bool latc_supported;
+		bool rgtc_supported;
 		bool bptc_supported;
 		bool etc_supported;
 		bool etc2_supported;
@@ -84,9 +86,16 @@ public:
 		int max_texture_image_units;
 		int max_texture_size;
 
+		bool generate_wireframes;
+
+		bool use_texture_array_environment;
+
 		Set<String> extensions;
 
 		bool keep_original_textures;
+
+		bool no_depth_prepass;
+		bool force_vertex_shading;
 	} config;
 
 	mutable struct Shaders {
@@ -124,12 +133,33 @@ public:
 	struct Info {
 
 		uint64_t texture_mem;
+		uint64_t vertex_mem;
 
-		uint32_t render_object_count;
-		uint32_t render_material_switch_count;
-		uint32_t render_surface_switch_count;
-		uint32_t render_shader_rebind_count;
-		uint32_t render_vertices_count;
+		struct Render {
+			uint32_t object_count;
+			uint32_t draw_call_count;
+			uint32_t material_switch_count;
+			uint32_t surface_switch_count;
+			uint32_t shader_rebind_count;
+			uint32_t vertices_count;
+
+			void reset() {
+				object_count = 0;
+				draw_call_count = 0;
+				material_switch_count = 0;
+				surface_switch_count = 0;
+				shader_rebind_count = 0;
+				vertices_count = 0;
+			}
+		} render, render_final, snap;
+
+		Info() {
+
+			texture_mem = 0;
+			vertex_mem = 0;
+			render.reset();
+			render_final.reset();
+		}
 
 	} info;
 
@@ -239,13 +269,16 @@ public:
 
 		RenderTarget *render_target;
 
-		Image images[6];
+		Ref<Image> images[6];
 
 		VisualServer::TextureDetectCallback detect_3d;
 		void *detect_3d_ud;
 
 		VisualServer::TextureDetectCallback detect_srgb;
 		void *detect_srgb_ud;
+
+		VisualServer::TextureDetectCallback detect_normal;
+		void *detect_normal_ud;
 
 		Texture() {
 
@@ -266,6 +299,8 @@ public:
 			detect_3d_ud = NULL;
 			detect_srgb = NULL;
 			detect_srgb_ud = NULL;
+			detect_normal = NULL;
+			detect_normal_ud = NULL;
 		}
 
 		~Texture() {
@@ -279,15 +314,16 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Image _get_gl_image_and_format(const Image &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_type, bool &r_compressed, bool &srgb);
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool &srgb);
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);
-	virtual void texture_set_data(RID p_texture, const Image &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT);
-	virtual Image texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const;
+	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT);
+	virtual Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const;
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags);
 	virtual uint32_t texture_get_flags(RID p_texture) const;
 	virtual Image::Format texture_get_format(RID p_texture) const;
+	virtual uint32_t texture_get_texid(RID p_texture) const;
 	virtual uint32_t texture_get_width(RID p_texture) const;
 	virtual uint32_t texture_get_height(RID p_texture) const;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height);
@@ -305,20 +341,21 @@ public:
 
 	virtual void texture_set_detect_3d_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_srgb_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
+	virtual void texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 
-	/* SKYBOX API */
+	/* SKY API */
 
-	struct SkyBox : public RID_Data {
+	struct Sky : public RID_Data {
 
-		RID cubemap;
+		RID panorama;
 		GLuint radiance;
 		int radiance_size;
 	};
 
-	mutable RID_Owner<SkyBox> skybox_owner;
+	mutable RID_Owner<Sky> sky_owner;
 
-	virtual RID skybox_create();
-	virtual void skybox_set_texture(RID p_skybox, RID p_cube_map, int p_radiance_size);
+	virtual RID sky_create();
+	virtual void sky_set_texture(RID p_sky, RID p_panorama, int p_radiance_size);
 
 	/* SHADER API */
 
@@ -371,6 +408,9 @@ public:
 			};
 
 			int light_mode;
+			bool uses_screen_texture;
+			bool uses_screen_uv;
+			bool uses_time;
 
 		} canvas_item;
 
@@ -403,11 +443,16 @@ public:
 			int cull_mode;
 
 			bool uses_alpha;
+			bool uses_alpha_scissor;
 			bool unshaded;
-			bool ontop;
+			bool no_depth_test;
 			bool uses_vertex;
 			bool uses_discard;
 			bool uses_sss;
+			bool uses_screen_texture;
+			bool uses_time;
+			bool writes_modelview_or_projection;
+			bool uses_vertex_lighting;
 
 		} spatial;
 
@@ -422,6 +467,7 @@ public:
 			: dirty_list(this) {
 
 			shader = NULL;
+			ubo_size = 0;
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
@@ -433,10 +479,7 @@ public:
 
 	mutable RID_Owner<Shader> shader_owner;
 
-	virtual RID shader_create(VS::ShaderMode p_mode = VS::SHADER_SPATIAL);
-
-	virtual void shader_set_mode(RID p_shader, VS::ShaderMode p_mode);
-	virtual VS::ShaderMode shader_get_mode(RID p_shader) const;
+	virtual RID shader_create();
 
 	virtual void shader_set_code(RID p_shader, const String &p_code);
 	virtual String shader_get_code(RID p_shader) const;
@@ -461,6 +504,9 @@ public:
 		SelfList<Material> dirty_list;
 		Vector<RID> textures;
 		float line_width;
+		int render_priority;
+
+		RID next_pass;
 
 		uint32_t index;
 		uint64_t last_pass;
@@ -480,13 +526,14 @@ public:
 			ubo_id = 0;
 			ubo_size = 0;
 			last_pass = 0;
+			render_priority = 0;
 		}
 	};
 
 	mutable SelfList<Material>::List _material_dirty_list;
 	void _material_make_dirty(Material *p_material) const;
-	void _material_add_geometry(RID p_material, Geometry *p_instantiable);
-	void _material_remove_geometry(RID p_material, Geometry *p_instantiable);
+	void _material_add_geometry(RID p_material, Geometry *p_geometry);
+	void _material_remove_geometry(RID p_material, Geometry *p_geometry);
 
 	mutable RID_Owner<Material> material_owner;
 
@@ -499,12 +546,15 @@ public:
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const;
 
 	virtual void material_set_line_width(RID p_material, float p_width);
+	virtual void material_set_next_pass(RID p_material, RID p_next_material);
 
 	virtual bool material_is_animated(RID p_material);
 	virtual bool material_casts_shadows(RID p_material);
 
 	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance);
+
+	virtual void material_set_render_priority(RID p_material, int priority);
 
 	void _update_material(Material *material);
 
@@ -537,6 +587,11 @@ public:
 		GLuint vertex_id;
 		GLuint index_id;
 
+		GLuint index_wireframe_id;
+		GLuint array_wireframe_id;
+		GLuint instancing_array_wireframe_id;
+		int index_wireframe_len;
+
 		Vector<Rect3> skeleton_bone_aabb;
 		Vector<bool> skeleton_bone_used;
 
@@ -567,6 +622,8 @@ public:
 			mesh->update_multimeshes();
 		}
 
+		int total_data_size;
+
 		Surface() {
 
 			array_byte_size = 0;
@@ -581,6 +638,13 @@ public:
 			primitive = VS::PRIMITIVE_POINTS;
 			index_array_len = 0;
 			active = false;
+
+			total_data_size = 0;
+
+			index_wireframe_id = 0;
+			array_wireframe_id = 0;
+			instancing_array_wireframe_id = 0;
+			index_wireframe_len = 0;
 		}
 
 		~Surface() {
@@ -769,18 +833,19 @@ public:
 	/* SKELETON API */
 
 	struct Skeleton : RID_Data {
-		int size;
 		bool use_2d;
-		Vector<float> bones; //4x3 or 4x2 depending on what is needed
-		GLuint ubo;
+		int size;
+		Vector<float> skel_texture;
+		GLuint texture;
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances; //instances using skeleton
 
 		Skeleton()
 			: update_list(this) {
 			size = 0;
+
 			use_2d = false;
-			ubo = 0;
+			texture = 0;
 		}
 	};
 
@@ -809,10 +874,12 @@ public:
 		RID projector;
 		bool shadow;
 		bool negative;
+		bool reverse_cull;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
 		VS::LightDirectionalShadowMode directional_shadow_mode;
+		VS::LightDirectionalShadowDepthRangeMode directional_range_mode;
 		bool directional_blend_splits;
 		uint64_t version;
 	};
@@ -828,6 +895,7 @@ public:
 	virtual void light_set_projector(RID p_light, RID p_texture);
 	virtual void light_set_negative(RID p_light, bool p_enable);
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
+	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -838,6 +906,9 @@ public:
 
 	virtual VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
 	virtual VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
+
+	virtual void light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode);
+	virtual VS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const;
 
 	virtual bool light_has_shadow(RID p_light) const;
 
@@ -892,23 +963,6 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const;
 
-	/* ROOM API */
-
-	virtual RID room_create();
-	virtual void room_add_bounds(RID p_room, const PoolVector<Vector2> &p_convex_polygon, float p_height, const Transform &p_transform);
-	virtual void room_clear_bounds(RID p_room);
-
-	/* PORTAL API */
-
-	// portals are only (x/y) points, forming a convex shape, which its clockwise
-	// order points outside. (z is 0);
-
-	virtual RID portal_create();
-	virtual void portal_set_shape(RID p_portal, const Vector<Point2> &p_shape);
-	virtual void portal_set_enabled(RID p_portal, bool p_enabled);
-	virtual void portal_set_disable_distance(RID p_portal, float p_distance);
-	virtual void portal_set_disabled_color(RID p_portal, const Color &p_color);
-
 	/* GI PROBE API */
 
 	struct GIProbe : public Instantiable {
@@ -920,6 +974,7 @@ public:
 		int dynamic_range;
 		float energy;
 		float bias;
+		float normal_bias;
 		float propagation;
 		bool interior;
 		bool compress;
@@ -954,6 +1009,9 @@ public:
 	virtual void gi_probe_set_bias(RID p_probe, float p_range);
 	virtual float gi_probe_get_bias(RID p_probe) const;
 
+	virtual void gi_probe_set_normal_bias(RID p_probe, float p_range);
+	virtual float gi_probe_get_normal_bias(RID p_probe) const;
+
 	virtual void gi_probe_set_propagation(RID p_probe, float p_range);
 	virtual float gi_probe_get_propagation(RID p_probe) const;
 
@@ -986,71 +1044,97 @@ public:
 
 	/* PARTICLES */
 
-	struct Particles : public Instantiable {
+	struct Particles : public GeometryOwner {
 
+		bool inactive;
+		float inactive_time;
 		bool emitting;
+		bool one_shot;
 		int amount;
 		float lifetime;
 		float pre_process_time;
 		float explosiveness;
 		float randomness;
+		bool restart_request;
 		Rect3 custom_aabb;
-		Vector3 gravity;
 		bool use_local_coords;
 		RID process_material;
 
-		VS::ParticlesEmissionShape emission_shape;
-		float emission_sphere_radius;
-		Vector3 emission_box_extents;
-		PoolVector<Vector3> emission_points;
-		GLuint emission_point_texture;
-
 		VS::ParticlesDrawOrder draw_order;
-		struct DrawPass {
-			RID mesh;
-			RID material;
-		};
 
-		Vector<DrawPass> draw_passes;
-
-		Rect3 computed_aabb;
+		Vector<RID> draw_passes;
 
 		GLuint particle_buffers[2];
+		GLuint particle_vaos[2];
+
+		GLuint particle_buffer_histories[2];
+		GLuint particle_vao_histories[2];
+		bool particle_valid_histories[2];
+		bool histories_enabled;
 
 		SelfList<Particles> particle_element;
 
 		float phase;
 		float prev_phase;
 		uint64_t prev_ticks;
+		uint32_t random_seed;
 
-		Transform origin;
+		uint32_t cycle_number;
+
+		float speed_scale;
+
+		int fixed_fps;
+		bool fractional_delta;
+		float frame_remainder;
+
+		bool clear;
+
+		Transform emission_transform;
 
 		Particles()
 			: particle_element(this) {
+			cycle_number = 0;
 			emitting = false;
+			one_shot = false;
 			amount = 0;
 			lifetime = 1.0;
 			pre_process_time = 0.0;
 			explosiveness = 0.0;
 			randomness = 0.0;
 			use_local_coords = true;
+			fixed_fps = 0;
+			fractional_delta = false;
+			frame_remainder = 0;
+			histories_enabled = false;
+			speed_scale = 1.0;
+			random_seed = 0;
+
+			restart_request = false;
+
+			custom_aabb = Rect3(Vector3(-4, -4, -4), Vector3(8, 8, 8));
 
 			draw_order = VS::PARTICLES_DRAW_ORDER_INDEX;
-			emission_shape = VS::PARTICLES_EMSSION_POINT;
-			emission_sphere_radius = 1.0;
-			emission_box_extents = Vector3(1, 1, 1);
-			emission_point_texture = 0;
 			particle_buffers[0] = 0;
 			particle_buffers[1] = 0;
 
 			prev_ticks = 0;
 
+			clear = true;
+			inactive = true;
+			inactive_time = false;
+
 			glGenBuffers(2, particle_buffers);
+			glGenVertexArrays(2, particle_vaos);
 		}
 
 		~Particles() {
 
 			glDeleteBuffers(2, particle_buffers);
+			glDeleteVertexArrays(2, particle_vaos);
+			if (histories_enabled) {
+				glDeleteBuffers(2, particle_buffer_histories);
+				glDeleteVertexArrays(2, particle_vao_histories);
+			}
 		}
 	};
 
@@ -1065,26 +1149,34 @@ public:
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting);
 	virtual void particles_set_amount(RID p_particles, int p_amount);
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime);
+	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot);
 	virtual void particles_set_pre_process_time(RID p_particles, float p_time);
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio);
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio);
 	virtual void particles_set_custom_aabb(RID p_particles, const Rect3 &p_aabb);
-	virtual void particles_set_gravity(RID p_particles, const Vector3 &p_gravity);
+	virtual void particles_set_speed_scale(RID p_particles, float p_scale);
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	virtual void particles_set_process_material(RID p_particles, RID p_material);
-
-	virtual void particles_set_emission_shape(RID p_particles, VS::ParticlesEmissionShape p_shape);
-	virtual void particles_set_emission_sphere_radius(RID p_particles, float p_radius);
-	virtual void particles_set_emission_box_extents(RID p_particles, const Vector3 &p_extents);
-	virtual void particles_set_emission_points(RID p_particles, const PoolVector<Vector3> &p_points);
+	virtual void particles_set_fixed_fps(RID p_particles, int p_fps);
+	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable);
+	virtual void particles_restart(RID p_particles);
 
 	virtual void particles_set_draw_order(RID p_particles, VS::ParticlesDrawOrder p_order);
 
-	virtual void particles_set_draw_passes(RID p_particles, int p_count);
-	virtual void particles_set_draw_pass_material(RID p_particles, int p_pass, RID p_material);
+	virtual void particles_set_draw_passes(RID p_particles, int p_passes);
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh);
 
+	virtual void particles_request_process(RID p_particles);
 	virtual Rect3 particles_get_current_aabb(RID p_particles);
+	virtual Rect3 particles_get_aabb(RID p_particles) const;
+
+	virtual void _particles_update_histories(Particles *particles);
+
+	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
+	void _particles_process(Particles *p_particles, float p_delta);
+
+	virtual int particles_get_draw_passes(RID p_particles) const;
+	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
 
 	/* INSTANCE */
 
@@ -1103,12 +1195,15 @@ public:
 		GLuint depth;
 
 		struct Buffers {
+
+			bool active;
+			bool effects_active;
 			GLuint fbo;
 			GLuint depth;
 			GLuint specular;
 			GLuint diffuse;
 			GLuint normal_rough;
-			GLuint motion_sss;
+			GLuint sss;
 
 			GLuint effect_fbo;
 			GLuint effect;
@@ -1186,11 +1281,13 @@ public:
 			buffers.fbo = 0;
 			used_in_frame = false;
 
-			flags[RENDER_TARGET_VFLIP] = false;
-			flags[RENDER_TARGET_TRANSPARENT] = false;
-			flags[RENDER_TARGET_NO_3D] = false;
+			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
+				flags[i] = false;
+			}
 			flags[RENDER_TARGET_HDR] = true;
-			flags[RENDER_TARGET_NO_SAMPLING] = false;
+
+			buffers.active = false;
+			buffers.effects_active = false;
 
 			last_exposure_tick = 0;
 		}
@@ -1206,7 +1303,8 @@ public:
 	virtual RID render_target_get_texture(RID p_render_target) const;
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
-	virtual bool render_target_renedered_in_frame(RID p_render_target);
+	virtual bool render_target_was_used(RID p_render_target);
+	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 
 	/* CANVAS SHADOW */
@@ -1228,6 +1326,7 @@ public:
 
 	struct CanvasOccluder : public RID_Data {
 
+		GLuint array_id; // 0 means, unconfigured
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
 		PoolVector<Vector2> lines;
@@ -1254,6 +1353,7 @@ public:
 		float delta;
 		uint64_t prev_tick;
 		uint64_t count;
+
 	} frame;
 
 	void initialize();
@@ -1262,6 +1362,14 @@ public:
 	virtual bool has_os_feature(const String &p_feature) const;
 
 	virtual void update_dirty_resources();
+
+	virtual void set_debug_generate_wireframes(bool p_generate);
+
+	virtual void render_info_begin_capture();
+	virtual void render_info_end_capture();
+	virtual int get_captured_render_info(VS::RenderInfo p_info);
+
+	virtual int get_render_info(VS::RenderInfo p_info);
 
 	RasterizerStorageGLES3();
 };

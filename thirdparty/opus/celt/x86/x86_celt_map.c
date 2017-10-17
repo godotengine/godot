@@ -72,7 +72,7 @@ void (*const XCORR_KERNEL_IMPL[OPUS_ARCHMASK + 1])(
 #endif
 
 #if (defined(OPUS_X86_MAY_HAVE_SSE4_1) && !defined(OPUS_X86_PRESUME_SSE4_1)) ||  \
-	(!defined(OPUS_X86_MAY_HAVE_SSE_4_1) && defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_SSE2))
+ (!defined(OPUS_X86_MAY_HAVE_SSE_4_1) && defined(OPUS_X86_MAY_HAVE_SSE2) && !defined(OPUS_X86_PRESUME_SSE2))
 
 opus_val32 (*const CELT_INNER_PROD_IMPL[OPUS_ARCHMASK + 1])(
          const opus_val16 *x,

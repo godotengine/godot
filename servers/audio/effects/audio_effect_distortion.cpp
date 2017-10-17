@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -174,6 +175,12 @@ void AudioEffectDistortion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20000,1"), "set_keep_hf_hz", "get_keep_hf_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
+
+	BIND_ENUM_CONSTANT(MODE_CLIP);
+	BIND_ENUM_CONSTANT(MODE_ATAN);
+	BIND_ENUM_CONSTANT(MODE_LOFI);
+	BIND_ENUM_CONSTANT(MODE_OVERDRIVE);
+	BIND_ENUM_CONSTANT(MODE_WAVESHAPE);
 }
 
 AudioEffectDistortion::AudioEffectDistortion() {

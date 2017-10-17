@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +29,12 @@
 /*************************************************************************/
 #include "visibility_notifier_2d.h"
 
+#include "engine.h"
 #include "particles_2d.h"
 #include "scene/2d/animated_sprite.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/scene_string_names.h"
+#include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
@@ -40,7 +42,7 @@ void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return;
 
 	if (viewports.size() == 1) {
@@ -56,7 +58,7 @@ void VisibilityNotifier2D::_exit_viewport(Viewport *p_viewport) {
 	ERR_FAIL_COND(!viewports.has(p_viewport));
 	viewports.erase(p_viewport);
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		return;
 
 	emit_signal(SceneStringNames::get_singleton()->viewport_exited, p_viewport);
@@ -72,7 +74,7 @@ void VisibilityNotifier2D::set_rect(const Rect2 &p_rect) {
 	rect = p_rect;
 	if (is_inside_tree()) {
 		get_world_2d()->_update_notifier(this, get_global_transform().xform(rect));
-		if (get_tree()->is_editor_hint()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
 			update();
 			item_rect_changed();
 		}
@@ -106,7 +108,7 @@ void VisibilityNotifier2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (get_tree()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
 
 				draw_rect(rect, Color(1, 0.5, 1, 0.2));
 			}
@@ -152,8 +154,8 @@ void VisibilityEnabler2D::_screen_enter() {
 		_change_node_state(E->key(), true);
 	}
 
-	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-		get_parent()->set_fixed_process(true);
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+		get_parent()->set_physics_process(true);
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 		get_parent()->set_process(true);
 
@@ -167,8 +169,8 @@ void VisibilityEnabler2D::_screen_exit() {
 		_change_node_state(E->key(), false);
 	}
 
-	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-		get_parent()->set_fixed_process(false);
+	if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+		get_parent()->set_physics_process(false);
 	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 		get_parent()->set_process(false);
 
@@ -182,7 +184,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	if (enabler[ENABLER_FREEZE_BODIES]) {
 
-		RigidBody2D *rb2d = p_node->cast_to<RigidBody2D>();
+		RigidBody2D *rb2d = Object::cast_to<RigidBody2D>(p_node);
 		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_CHARACTER || (rb2d->get_mode() == RigidBody2D::MODE_RIGID && !rb2d->is_able_to_sleep())))) {
 
 			add = true;
@@ -192,7 +194,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
 
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 		if (ap) {
 			add = true;
 		}
@@ -200,7 +202,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	if (enabler[ENABLER_PAUSE_ANIMATED_SPRITES]) {
 
-		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 		if (as) {
 			add = true;
 		}
@@ -208,7 +210,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 
 	if (enabler[ENABLER_PAUSE_PARTICLES]) {
 
-		Particles2D *ps = p_node->cast_to<Particles2D>();
+		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
 		if (ps) {
 			add = true;
 		}
@@ -234,7 +236,7 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		Node *from = this;
@@ -244,15 +246,15 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		_find_nodes(from);
 
-		if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
-			get_parent()->set_fixed_process(false);
+		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
+			get_parent()->set_physics_process(false);
 		if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
 			get_parent()->set_process(false);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		if (get_tree()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint())
 			return;
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
@@ -271,7 +273,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 	ERR_FAIL_COND(!nodes.has(p_node));
 
 	{
-		RigidBody2D *rb = p_node->cast_to<RigidBody2D>();
+		RigidBody2D *rb = Object::cast_to<RigidBody2D>(p_node);
 		if (rb) {
 
 			rb->set_sleeping(!p_enabled);
@@ -279,7 +281,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 	}
 
 	{
-		AnimationPlayer *ap = p_node->cast_to<AnimationPlayer>();
+		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
 		if (ap) {
 
@@ -287,7 +289,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 		}
 	}
 	{
-		AnimatedSprite *as = p_node->cast_to<AnimatedSprite>();
+		AnimatedSprite *as = Object::cast_to<AnimatedSprite>(p_node);
 
 		if (as) {
 
@@ -299,7 +301,7 @@ void VisibilityEnabler2D::_change_node_state(Node *p_node, bool p_enabled) {
 	}
 
 	{
-		Particles2D *ps = p_node->cast_to<Particles2D>();
+		Particles2D *ps = Object::cast_to<Particles2D>(p_node);
 
 		if (ps) {
 
@@ -337,15 +339,15 @@ void VisibilityEnabler2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "pause_particles"), "set_enabler", "is_enabler_enabled", ENABLER_PAUSE_PARTICLES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "pause_animated_sprites"), "set_enabler", "is_enabler_enabled", ENABLER_PAUSE_ANIMATED_SPRITES);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PROCESS);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_FIXED_PROCESS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "physics_process_parent"), "set_enabler", "is_enabler_enabled", ENABLER_PARENT_PHYSICS_PROCESS);
 
-	BIND_CONSTANT(ENABLER_FREEZE_BODIES);
-	BIND_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
-	BIND_CONSTANT(ENABLER_PAUSE_PARTICLES);
-	BIND_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
-	BIND_CONSTANT(ENABLER_PARENT_PROCESS);
-	BIND_CONSTANT(ENABLER_PARENT_FIXED_PROCESS);
-	BIND_CONSTANT(ENABLER_MAX);
+	BIND_ENUM_CONSTANT(ENABLER_FREEZE_BODIES);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATIONS);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_PARTICLES);
+	BIND_ENUM_CONSTANT(ENABLER_PAUSE_ANIMATED_SPRITES);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_PROCESS);
+	BIND_ENUM_CONSTANT(ENABLER_PARENT_PHYSICS_PROCESS);
+	BIND_ENUM_CONSTANT(ENABLER_MAX);
 }
 
 void VisibilityEnabler2D::set_enabler(Enabler p_enabler, bool p_enable) {
@@ -364,7 +366,7 @@ VisibilityEnabler2D::VisibilityEnabler2D() {
 	for (int i = 0; i < ENABLER_MAX; i++)
 		enabler[i] = true;
 	enabler[ENABLER_PARENT_PROCESS] = false;
-	enabler[ENABLER_PARENT_FIXED_PROCESS] = false;
+	enabler[ENABLER_PARENT_PHYSICS_PROCESS] = false;
 
 	visible = false;
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ViewportTexture" inherits="Texture" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_viewport_path_in_scene" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_viewport_path_in_scene">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

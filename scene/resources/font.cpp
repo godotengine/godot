@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +40,7 @@ void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, f
 		return;
 	}
 
-	float ofs;
+	float ofs = 0.f;
 	switch (p_align) {
 		case HALIGN_LEFT: {
 			ofs = 0;
@@ -49,6 +50,9 @@ void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, f
 		} break;
 		case HALIGN_RIGHT: {
 			ofs = p_width - length;
+		} break;
+		default: {
+			ERR_PRINT("Unknown halignment type");
 		} break;
 	}
 	draw(p_canvas_item, p_pos + Point2(ofs, 0), p_text, p_modulate, p_width);
@@ -76,13 +80,13 @@ void Font::update_changes() {
 
 void Font::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "pos", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_ascent"), &Font::get_ascent);
 	ClassDB::bind_method(D_METHOD("get_descent"), &Font::get_descent);
 	ClassDB::bind_method(D_METHOD("get_height"), &Font::get_height);
 	ClassDB::bind_method(D_METHOD("is_distance_field_hint"), &Font::is_distance_field_hint);
 	ClassDB::bind_method(D_METHOD("get_string_size", "string"), &Font::get_string_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "position", "char", "next", "modulate"), &Font::draw_char, DEFVAL(-1), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("update_changes"), &Font::update_changes);
 }
 
@@ -119,8 +123,8 @@ PoolVector<int> BitmapFont::_get_chars() const {
 		const Character *c = char_map.getptr(*key);
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
-		chars.push_back(c->rect.pos.x);
-		chars.push_back(c->rect.pos.y);
+		chars.push_back(c->rect.position.x);
+		chars.push_back(c->rect.position.y);
 
 		chars.push_back(c->rect.size.x);
 		chars.push_back(c->rect.size.y);
@@ -178,14 +182,14 @@ Vector<Variant> BitmapFont::_get_textures() const {
 	return rtextures;
 }
 
-Error BitmapFont::create_from_fnt(const String &p_string) {
+Error BitmapFont::create_from_fnt(const String &p_file) {
 	//fnt format used by angelcode bmfont
 	//http://www.angelcode.com/products/bmfont/
 
-	FileAccess *f = FileAccess::open(p_string, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_file, FileAccess::READ);
 
 	if (!f) {
-		ERR_EXPLAIN("Can't open font: " + p_string);
+		ERR_EXPLAIN("Can't open font: " + p_file);
 		ERR_FAIL_V(ERR_FILE_NOT_FOUND);
 	}
 
@@ -254,7 +258,7 @@ Error BitmapFont::create_from_fnt(const String &p_string) {
 			if (keys.has("file")) {
 
 				String file = keys["file"];
-				file = p_string.get_base_dir() + "/" + file;
+				file = p_file.get_base_dir() + "/" + file;
 				Ref<Texture> tex = ResourceLoader::load(file);
 				if (tex.is_null()) {
 					ERR_PRINT("Can't load font texture!");
@@ -271,9 +275,9 @@ Error BitmapFont::create_from_fnt(const String &p_string) {
 			Rect2 rect;
 
 			if (keys.has("x"))
-				rect.pos.x = keys["x"].to_int();
+				rect.position.x = keys["x"].to_int();
 			if (keys.has("y"))
-				rect.pos.y = keys["y"].to_int();
+				rect.position.y = keys["y"].to_int();
 			if (keys.has("width"))
 				rect.size.width = keys["width"].to_int();
 			if (keys.has("height"))
@@ -505,7 +509,7 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 	cpos.y += c->v_align;
 	ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 	if (c->texture_idx != -1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
 
 	return get_char_size(p_char, p_next).width;
 }
@@ -548,11 +552,11 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_kerning_pair", "char_a", "char_b", "kerning"), &BitmapFont::add_kerning_pair);
 	ClassDB::bind_method(D_METHOD("get_kerning_pair", "char_a", "char_b"), &BitmapFont::get_kerning_pair);
 
-	ClassDB::bind_method(D_METHOD("add_texture", "texture:Texture"), &BitmapFont::add_texture);
+	ClassDB::bind_method(D_METHOD("add_texture", "texture"), &BitmapFont::add_texture);
 	ClassDB::bind_method(D_METHOD("add_char", "character", "texture", "rect", "align", "advance"), &BitmapFont::add_char, DEFVAL(Point2()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_texture_count"), &BitmapFont::get_texture_count);
-	ClassDB::bind_method(D_METHOD("get_texture:Texture", "idx"), &BitmapFont::get_texture);
+	ClassDB::bind_method(D_METHOD("get_texture", "idx"), &BitmapFont::get_texture);
 
 	ClassDB::bind_method(D_METHOD("get_char_size", "char", "next"), &BitmapFont::get_char_size, DEFVAL(0));
 

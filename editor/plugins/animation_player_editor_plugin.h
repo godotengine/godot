@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,7 +85,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *remove_anim;
 	MenuButton *tool_anim;
 	ToolButton *pin;
-	Button *nodename;
 	SpinBox *frame;
 	LineEdit *scale;
 	LineEdit *name;
@@ -155,10 +155,10 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 
 	void _animation_key_editor_seek(float p_pos, bool p_drag);
-	void _animation_key_editor_anim_len_changed(float p_new);
+	void _animation_key_editor_anim_len_changed(float p_len);
 	void _animation_key_editor_anim_step_changed(float p_len);
 
-	void _unhandled_key_input(const InputEvent &p_ev);
+	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 	void _animation_tool_menu(int p_option);
 	void _animation_save_menu(int p_option);
 
@@ -166,7 +166,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
@@ -198,8 +198,8 @@ public:
 
 	virtual String get_name() const { return "Anim"; }
 	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
+	virtual void edit(Object *p_object);
+	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);

@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  joypad.h                                                           */
+/*  joypad.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +54,7 @@ public:
 	~JoypadWindows();
 
 	void probe_joypads();
-	unsigned int process_joypads(unsigned int p_last_id);
+	void process_joypads();
 
 private:
 	enum {
@@ -130,7 +131,7 @@ private:
 	void load_xinput();
 	void unload_xinput();
 
-	unsigned int post_hat(unsigned int p_last_id, int p_device, DWORD p_dpad);
+	void post_hat(int p_device, DWORD p_dpad);
 
 	bool have_device(const GUID &p_guid);
 	bool is_xinput_device(const GUID *p_guid);

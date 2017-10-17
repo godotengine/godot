@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "joints_2d.h"
+
+#include "engine.h"
 #include "physics_body_2d.h"
 #include "servers/physics_2d_server.h"
 
@@ -151,7 +154,7 @@ void PinJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -169,8 +172,8 @@ RID PinJoint2D::_configure_joint() {
 	if (!node_a && !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a ? node_a->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
-	PhysicsBody2D *body_b = node_b ? node_b->cast_to<PhysicsBody2D>() : (PhysicsBody2D *)NULL;
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a && !body_b)
 		return RID();
@@ -226,7 +229,7 @@ void GrooveJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -246,8 +249,8 @@ RID GrooveJoint2D::_configure_joint() {
 	if (!node_a || !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a->cast_to<PhysicsBody2D>();
-	PhysicsBody2D *body_b = node_b->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a || !body_b)
 		return RID();
@@ -316,7 +319,7 @@ void DampedSpringJoint2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
 			}
 
@@ -335,8 +338,8 @@ RID DampedSpringJoint2D::_configure_joint() {
 	if (!node_a || !node_b)
 		return RID();
 
-	PhysicsBody2D *body_a = node_a->cast_to<PhysicsBody2D>();
-	PhysicsBody2D *body_b = node_b->cast_to<PhysicsBody2D>();
+	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
+	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
 	if (!body_a || !body_b)
 		return RID();

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Light" inherits="VisualInstance" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Provides a base class for different kinds of light nodes.
+	</brief_description>
+	<description>
+		Light is the abstract base class for light nodes, so it shouldn't be used directly (It can't be instanced). Other types of light nodes inherit from it. Light contains the common variables and parameters used for lighting.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cull_mask" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="Light.Param">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shadow_reverse_cull_face" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_shadow" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_editor_only" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_negative" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="cull_mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_editor_only">
+			<return type="void">
+			</return>
+			<argument index="0" name="editor_only" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_negative">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="Light.Param">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="shadow_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shadow_reverse_cull_face">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
+		</member>
+		<member name="light_color" type="Color" setter="set_color" getter="get_color">
+		</member>
+		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
+		</member>
+		<member name="light_energy" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative">
+		</member>
+		<member name="light_specular" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
+		</member>
+		<member name="shadow_contact" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow">
+		</member>
+		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face">
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_ENERGY" value="0">
+		</constant>
+		<constant name="PARAM_SPECULAR" value="1">
+		</constant>
+		<constant name="PARAM_RANGE" value="2">
+		</constant>
+		<constant name="PARAM_ATTENUATION" value="3">
+		</constant>
+		<constant name="PARAM_SPOT_ANGLE" value="4">
+		</constant>
+		<constant name="PARAM_SPOT_ATTENUATION" value="5">
+		</constant>
+		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="6">
+		</constant>
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="7">
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="8">
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="9">
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="10">
+		</constant>
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="11">
+		</constant>
+		<constant name="PARAM_SHADOW_BIAS" value="12">
+		</constant>
+		<constant name="PARAM_MAX" value="14">
+		</constant>
+	</constants>
+</class>

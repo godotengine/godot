@@ -5,7 +5,7 @@
 /*    Load the basic TrueType tables, i.e., tables that can be either in   */
 /*    TTF or OTF fonts (body).                                             */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -679,7 +679,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
-  /*    tt_face_load_max_profile                                           */
+  /*    tt_face_load_maxp                                                  */
   /*                                                                       */
   /* <Description>                                                         */
   /*    Loads the maximum profile into a face object.                      */
@@ -775,15 +775,6 @@
 
         maxProfile->maxTwilightPoints = 0xFFFFU - 4;
       }
-
-      /* we arbitrarily limit recursion to avoid stack exhaustion */
-      if ( maxProfile->maxComponentDepth > 100 )
-      {
-        FT_TRACE0(( "tt_face_load_maxp:"
-                    " abnormally large component depth (%d) set to 100\n",
-                    maxProfile->maxComponentDepth ));
-        maxProfile->maxComponentDepth = 100;
-      }
     }
 
     FT_TRACE3(( "numGlyphs: %u\n", maxProfile->numGlyphs ));
@@ -817,7 +808,6 @@
     FT_Memory     memory = stream->memory;
     FT_ULong      table_pos, table_len;
     FT_ULong      storage_start, storage_limit;
-    FT_UInt       count;
     TT_NameTable  table;
 
     static const FT_Frame_Field  name_table_fields[] =
@@ -835,13 +825,24 @@
     static const FT_Frame_Field  name_record_fields[] =
     {
 #undef  FT_STRUCTURE
-#define FT_STRUCTURE  TT_NameEntryRec
+#define FT_STRUCTURE  TT_NameRec
 
       /* no FT_FRAME_START */
         FT_FRAME_USHORT( platformID ),
         FT_FRAME_USHORT( encodingID ),
         FT_FRAME_USHORT( languageID ),
         FT_FRAME_USHORT( nameID ),
+        FT_FRAME_USHORT( stringLength ),
+        FT_FRAME_USHORT( stringOffset ),
+      FT_FRAME_END
+    };
+
+    static const FT_Frame_Field  langTag_record_fields[] =
+    {
+#undef  FT_STRUCTURE
+#define FT_STRUCTURE  TT_LangTagRec
+
+      /* no FT_FRAME_START */
         FT_FRAME_USHORT( stringLength ),
         FT_FRAME_USHORT( stringOffset ),
       FT_FRAME_END
@@ -857,18 +858,17 @@
 
     table_pos = FT_STREAM_POS();
 
-
     if ( FT_STREAM_READ_FIELDS( name_table_fields, table ) )
       goto Exit;
 
-    /* Some popular Asian fonts have an invalid `storageOffset' value   */
-    /* (it should be at least "6 + 12*num_names").  However, the string */
-    /* offsets, computed as "storageOffset + entry->stringOffset", are  */
-    /* valid pointers within the name table...                          */
-    /*                                                                  */
-    /* We thus can't check `storageOffset' right now.                   */
-    /*                                                                  */
-    storage_start = table_pos + 6 + 12*table->numNameRecords;
+    /* Some popular Asian fonts have an invalid `storageOffset' value (it */
+    /* should be at least `6 + 12*numNameRecords').  However, the string  */
+    /* offsets, computed as `storageOffset + entry->stringOffset', are    */
+    /* valid pointers within the name table...                            */
+    /*                                                                    */
+    /* We thus can't check `storageOffset' right now.                     */
+    /*                                                                    */
+    storage_start = table_pos + 6 + 12 * table->numNameRecords;
     storage_limit = table_pos + table_len;
 
     if ( storage_start > storage_limit )
@@ -878,18 +878,56 @@
       goto Exit;
     }
 
-    /* Allocate the array of name records. */
-    count                 = table->numNameRecords;
-    table->numNameRecords = 0;
+    /* `name' format 1 contains additional language tag records, */
+    /* which we load first                                       */
+    if ( table->format == 1 )
+    {
+      if ( FT_STREAM_SEEK( storage_start )            ||
+           FT_READ_USHORT( table->numLangTagRecords ) )
+        goto Exit;
 
-    if ( FT_NEW_ARRAY( table->names, count ) ||
-         FT_FRAME_ENTER( count * 12 )        )
+      storage_start += 2 + 4 * table->numLangTagRecords;
+
+      /* allocate language tag records array */
+      if ( FT_NEW_ARRAY( table->langTags, table->numLangTagRecords ) ||
+           FT_FRAME_ENTER( table->numLangTagRecords * 4 )            )
+        goto Exit;
+
+      /* load language tags */
+      {
+        TT_LangTag  entry = table->langTags;
+        TT_LangTag  limit = entry + table->numLangTagRecords;
+
+
+        for ( ; entry < limit; entry++ )
+        {
+          (void)FT_STREAM_READ_FIELDS( langTag_record_fields, entry );
+
+          /* check that the langTag string is within the table */
+          entry->stringOffset += table_pos + table->storageOffset;
+          if ( entry->stringOffset                       < storage_start ||
+               entry->stringOffset + entry->stringLength > storage_limit )
+          {
+            /* invalid entry; ignore it */
+            entry->stringLength = 0;
+          }
+        }
+      }
+
+      FT_FRAME_EXIT();
+
+      (void)FT_STREAM_SEEK( table_pos + 6 );
+    }
+
+    /* allocate name records array */
+    if ( FT_NEW_ARRAY( table->names, table->numNameRecords ) ||
+         FT_FRAME_ENTER( table->numNameRecords * 12 )        )
       goto Exit;
 
-    /* Load the name records and determine how much storage is needed */
-    /* to hold the strings themselves.                                */
+    /* load name records */
     {
-      TT_NameEntryRec*  entry = table->names;
+      TT_Name  entry = table->names;
+      FT_UInt  count = table->numNameRecords;
 
 
       for ( ; count > 0; count-- )
@@ -906,22 +944,37 @@
         if ( entry->stringOffset                       < storage_start ||
              entry->stringOffset + entry->stringLength > storage_limit )
         {
-          /* invalid entry - ignore it */
-          entry->stringOffset = 0;
-          entry->stringLength = 0;
+          /* invalid entry; ignore it */
           continue;
+        }
+
+        /* assure that we have a valid language tag ID, and   */
+        /* that the corresponding langTag entry is valid, too */
+        if ( table->format == 1 && entry->languageID >= 0x8000U )
+        {
+          if ( entry->languageID - 0x8000U >= table->numLangTagRecords    ||
+               !table->langTags[entry->languageID - 0x8000U].stringLength )
+          {
+            /* invalid entry; ignore it */
+            continue;
+          }
         }
 
         entry++;
       }
 
-      table->numNameRecords = (FT_UInt)( entry - table->names );
+      /* reduce array size to the actually used elements */
+      count = (FT_UInt)( entry - table->names );
+      (void)FT_RENEW_ARRAY( table->names,
+                            table->numNameRecords,
+                            count );
+      table->numNameRecords = count;
     }
 
     FT_FRAME_EXIT();
 
     /* everything went well, update face->num_names */
-    face->num_names = (FT_UShort) table->numNameRecords;
+    face->num_names = (FT_UShort)table->numNameRecords;
 
   Exit:
     return error;
@@ -931,7 +984,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
-  /*    tt_face_free_names                                                 */
+  /*    tt_face_free_name                                                  */
   /*                                                                       */
   /* <Description>                                                         */
   /*    Frees the name records.                                            */
@@ -944,25 +997,36 @@
   {
     FT_Memory     memory = face->root.driver->root.memory;
     TT_NameTable  table  = &face->name_table;
-    TT_NameEntry  entry  = table->names;
-    FT_UInt       count  = table->numNameRecords;
 
 
     if ( table->names )
     {
-      for ( ; count > 0; count--, entry++ )
-      {
-        FT_FREE( entry->string );
-        entry->stringLength = 0;
-      }
+      TT_Name  entry = table->names;
+      TT_Name  limit = entry + table->numNameRecords;
 
-      /* free strings table */
+
+      for ( ; entry < limit; entry++ )
+        FT_FREE( entry->string );
+
       FT_FREE( table->names );
     }
 
-    table->numNameRecords = 0;
-    table->format         = 0;
-    table->storageOffset  = 0;
+    if ( table->langTags )
+    {
+      TT_LangTag  entry = table->langTags;
+      TT_LangTag  limit = entry + table->numLangTagRecords;
+
+
+      for ( ; entry < limit; entry++ )
+        FT_FREE( entry->string );
+
+      FT_FREE( table->langTags );
+    }
+
+    table->numNameRecords    = 0;
+    table->numLangTagRecords = 0;
+    table->format            = 0;
+    table->storageOffset     = 0;
   }
 
 
@@ -1193,8 +1257,8 @@
 #define FT_STRUCTURE  TT_Postscript
 
       FT_FRAME_START( 32 ),
-        FT_FRAME_ULONG( FormatType ),
-        FT_FRAME_ULONG( italicAngle ),
+        FT_FRAME_LONG ( FormatType ),
+        FT_FRAME_LONG ( italicAngle ),
         FT_FRAME_SHORT( underlinePosition ),
         FT_FRAME_SHORT( underlineThickness ),
         FT_FRAME_ULONG( isFixedPitch ),

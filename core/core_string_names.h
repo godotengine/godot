@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,8 +37,6 @@ class CoreStringNames {
 	friend void register_core_types();
 	friend void unregister_core_types();
 
-	static CoreStringNames *singleton;
-
 	static void create() { singleton = memnew(CoreStringNames); }
 	static void free() {
 		memdelete(singleton);
@@ -48,6 +47,8 @@ class CoreStringNames {
 
 public:
 	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
+
+	static CoreStringNames *singleton;
 
 	StringName _free;
 	StringName changed;
@@ -60,6 +61,33 @@ public:
 	StringName _iter_next;
 	StringName _iter_get;
 	StringName get_rid;
+#ifdef TOOLS_ENABLED
+	StringName _sections_unfolded;
+#endif
+	StringName _custom_features;
+
+	StringName x;
+	StringName y;
+	StringName z;
+	StringName w;
+	StringName r;
+	StringName g;
+	StringName b;
+	StringName a;
+	StringName position;
+	StringName size;
+	StringName end;
+	StringName basis;
+	StringName origin;
+	StringName normal;
+	StringName d;
+	StringName h;
+	StringName s;
+	StringName v;
+	StringName r8;
+	StringName g8;
+	StringName b8;
+	StringName a8;
 };
 
 #endif // SCENE_STRING_NAMES_H

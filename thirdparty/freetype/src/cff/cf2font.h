@@ -42,6 +42,7 @@
 
 #include "cf2ft.h"
 #include "cf2blues.h"
+#include "cffload.h"
 
 
 FT_BEGIN_HEADER
@@ -63,6 +64,7 @@ FT_BEGIN_HEADER
     FT_Memory  memory;
     FT_Error   error;     /* shared error for this instance */
 
+    FT_Bool             isCFF2;
     CF2_RenderingFlags  renderingFlags;
 
     /* variables that depend on Transform:  */
@@ -73,6 +75,12 @@ FT_BEGIN_HEADER
     CF2_Matrix  innerTransform;    /* for hinting; erect, scaled       */
     CF2_Matrix  outerTransform;    /* post hinting; includes rotations */
     CF2_Fixed   ppem;              /* transform-dependent              */
+
+    /* variation data */
+    CFF_BlendRec  blend;            /* cached charstring blend vector  */
+    CF2_UInt      vsindex;          /* current vsindex                 */
+    CF2_UInt      lenNDV;           /* current length NDV or zero      */
+    FT_Fixed*     NDV;              /* ptr to current NDV or NULL      */
 
     CF2_Int  unitsPerEm;
 

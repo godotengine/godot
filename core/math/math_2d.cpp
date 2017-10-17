@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +60,11 @@ Vector2 Vector2::normalized() const {
 	Vector2 v = *this;
 	v.normalize();
 	return v;
+}
+
+bool Vector2::is_normalized() const {
+	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
+	return Math::is_equal_approx(length_squared(), 1.0);
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
@@ -199,33 +205,6 @@ Vector2 Vector2::clamped(real_t p_len) const {
 	return v;
 }
 
-Vector2 Vector2::cubic_interpolate_soft(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
-#if 0
-	k[0] = ((*this) (vi[0] + 1, vi[1], vi[2])) - ((*this) (vi[0],
-	vi[1],vi[2])); //fk = a0
-	k[1] = (((*this) (vi[0] + 1, vi[1], vi[2])) - ((*this) ((int) (v(0) -
-	1), vi[1],vi[2])))*0.5; //dk = a1
-	k[2] = (((*this) ((int) (v(0) + 2), vi[1], vi[2])) - ((*this) (vi[0],
-	vi[1],vi[2])))*0.5; //dk+1
-	k[3] = k[0]*3 - k[1]*2 - k[2];//a2
-	k[4] = k[1] + k[2] - k[0]*2;//a3
-
-	//ip = a3(t-tk)³ + a2(t-tk)² + a1(t-tk) + a0
-	//
-	//a3 = dk + dk+1 - Dk
-	//a2 = 3Dk - 2dk - dk+1
-	//a1 = dk
-	//a0 = fk
-	//
-	//dk = (fk+1 - fk-1)*0.5
-	//Dk = (fk+1 - fk)
-
-	real_t dk =
-#endif
-
-	return Vector2();
-}
-
 Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const {
 
 	Vector2 p0 = p_pre_a;
@@ -274,13 +253,23 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 */
 }
 
-Vector2 Vector2::slide(const Vector2 &p_vec) const {
-
-	return p_vec - *this * this->dot(p_vec);
+// slide returns the component of the vector along the given plane, specified by its normal vector.
+Vector2 Vector2::slide(const Vector2 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector2());
+#endif
+	return *this - p_normal * this->dot(p_normal);
 }
-Vector2 Vector2::reflect(const Vector2 &p_vec) const {
 
-	return p_vec - *this * this->dot(p_vec) * 2.0;
+Vector2 Vector2::bounce(const Vector2 &p_normal) const {
+	return -reflect(p_normal);
+}
+
+Vector2 Vector2::reflect(const Vector2 &p_normal) const {
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector2());
+#endif
+	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }
 
 bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos, Point2 *r_normal) const {
@@ -292,7 +281,7 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 	for (int i = 0; i < 2; i++) {
 		real_t seg_from = p_from[i];
 		real_t seg_to = p_to[i];
-		real_t box_begin = pos[i];
+		real_t box_begin = position[i];
 		real_t box_end = box_begin + size[i];
 		real_t cmin, cmax;
 		real_t csign;
@@ -424,7 +413,9 @@ Transform2D Transform2D::inverse() const {
 void Transform2D::affine_invert() {
 
 	real_t det = basis_determinant();
+#ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
+#endif
 	real_t idet = 1.0 / det;
 
 	SWAP(elements[0][0], elements[1][1]);
@@ -449,7 +440,7 @@ real_t Transform2D::get_rotation() const {
 	real_t det = basis_determinant();
 	Transform2D m = orthonormalized();
 	if (det < 0) {
-		m.scale_basis(Size2(-1, -1));
+		m.scale_basis(Size2(1, -1)); // convention to separate rotation and reflection for 2D is to absorb a flip along y into scaling.
 	}
 	return Math::atan2(m[0].y, m[0].x);
 }
@@ -477,7 +468,7 @@ Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 
 Size2 Transform2D::get_scale() const {
 	real_t det_sign = basis_determinant() > 0 ? 1 : -1;
-	return det_sign * Size2(elements[0].length(), elements[1].length());
+	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
 void Transform2D::scale(const Size2 &p_scale) {

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +35,9 @@
 
 #ifdef WINDOWS_ENABLED
 #include <stdio.h>
-#include <windows.h>
 #include <winsock2.h>
+// Needs to be included after winsocks2.h
+#include <windows.h>
 #include <ws2tcpip.h>
 #ifndef UWP_ENABLED
 #if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 4)
@@ -75,7 +77,7 @@ static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
 	if (p_addr->sa_family == AF_INET) {
 		struct sockaddr_in *addr = (struct sockaddr_in *)p_addr;
 		ip.set_ipv4((uint8_t *)&(addr->sin_addr));
-	} else {
+	} else if (p_addr->sa_family == AF_INET6) {
 		struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)p_addr;
 		ip.set_ipv6(addr6->sin6_addr.s6_addr);
 	};
@@ -98,6 +100,7 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 		hints.ai_family = AF_UNSPEC;
 		hints.ai_flags = AI_ADDRCONFIG;
 	};
+	hints.ai_flags &= !AI_NUMERICHOST;
 
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
@@ -178,14 +181,15 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 				SOCKADDR_IN *ipv4 = reinterpret_cast<SOCKADDR_IN *>(address->Address.lpSockaddr);
 
 				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
-			} else { // ipv6
+				r_addresses->push_back(ip);
+
+			} else if (address->Address.lpSockaddr->sa_family == AF_INET6) { // ipv6
 
 				SOCKADDR_IN6 *ipv6 = reinterpret_cast<SOCKADDR_IN6 *>(address->Address.lpSockaddr);
 
 				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
+				r_addresses->push_back(ip);
 			};
-
-			r_addresses->push_back(ip);
 
 			address = address->Next;
 		};
@@ -203,11 +207,17 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 	struct ifaddrs *ifAddrStruct = NULL;
 	struct ifaddrs *ifa = NULL;
+	int family;
 
 	getifaddrs(&ifAddrStruct);
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
+			continue;
+
+		family = ifa->ifa_addr->sa_family;
+
+		if (family != AF_INET && family != AF_INET6)
 			continue;
 
 		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);

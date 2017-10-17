@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +66,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	EditorLineEditFileChooser *autoload_add_path;
 	LineEdit *autoload_add_name;
 
-	bool _autoload_name_is_valid(const String &p_string, String *r_error = NULL);
+	bool _autoload_name_is_valid(const String &p_name, String *r_error = NULL);
 
 	void _autoload_add();
 	void _autoload_selected();
@@ -73,9 +74,9 @@ class EditorAutoloadSettings : public VBoxContainer {
 	void _autoload_button_pressed(Object *p_item, int p_column, int p_button);
 	void _autoload_file_callback(const String &p_path);
 
-	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
-	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control);
 
 protected:
 	void _notification(int p_what);

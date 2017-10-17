@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Nil" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolRealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Basis">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Plane">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Nil">
+			<argument index="0" name="from" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

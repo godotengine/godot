@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +96,7 @@ public:
 		TK_PR_FUNCTION,
 		TK_PR_CLASS,
 		TK_PR_EXTENDS,
+		TK_PR_IS,
 		TK_PR_ONREADY,
 		TK_PR_TOOL,
 		TK_PR_STATIC,
@@ -146,6 +148,9 @@ protected:
 
 public:
 	static const char *get_token_name(Token p_token);
+
+	bool is_token_literal(int p_offset = 0, bool variable_safe = false) const;
+	StringName get_token_literal(int p_offset = 0) const;
 
 	virtual const Variant &get_token_constant(int p_offset = 0) const = 0;
 	virtual Token get_token(int p_offset = 0) const = 0;

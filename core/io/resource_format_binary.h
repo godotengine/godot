@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +36,7 @@
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
+	bool translation_remapped;
 	String local_path;
 	String res_path;
 	String type;
@@ -42,8 +44,6 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	FileAccess *f;
 
-	bool endian_swap;
-	bool use_real64;
 	uint64_t importmd_ofs;
 
 	Vector<char> str_buf;
@@ -54,19 +54,19 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	StringName _get_string();
 
-	struct ExtResoucre {
+	struct ExtResource {
 		String path;
 		String type;
 	};
 
-	Vector<ExtResoucre> external_resources;
+	Vector<ExtResource> external_resources;
 
-	struct IntResoucre {
+	struct IntResource {
 		String path;
 		uint64_t offset;
 	};
 
-	Vector<IntResoucre> internal_resources;
+	Vector<IntResource> internal_resources;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
@@ -86,6 +86,7 @@ public:
 	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
+	virtual void set_translation_remapped(bool p_remapped);
 
 	void set_remaps(const Map<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(FileAccess *p_f);
@@ -98,7 +99,7 @@ public:
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, Error *r_error = NULL);
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;

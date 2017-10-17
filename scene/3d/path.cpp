@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,32 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path.h"
+
+#include "engine.h"
 #include "scene/scene_string_names.h"
 
 void Path::_notification(int p_what) {
-#if 0
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_scene() && get_scene()->is_editor_hint()) {
-		//draw the curve!!
-
-		for(int i=0;i<curve->get_point_count();i++) {
-
-			Vector2 prev_p=curve->get_point_pos(i);
-
-			for(int j=1;j<=8;j++) {
-
-				real_t frac = j/8.0;
-				Vector2 p = curve->interpolate(i,frac);
-				draw_line(prev_p,p,Color(0.5,0.6,1.0,0.7),2);
-				prev_p=p;
-			}
-		}
-	}
-#endif
 }
 
 void Path::_curve_changed() {
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		update_gizmo();
 }
 
@@ -77,8 +62,8 @@ Ref<Curve3D> Path::get_curve() const {
 
 void Path::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve3D"), &Path::set_curve);
-	ClassDB::bind_method(D_METHOD("get_curve:Curve3D", "curve"), &Path::get_curve);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Path::get_curve);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve", "get_curve");
@@ -107,40 +92,58 @@ void PathFollow::_update_transform() {
 	Vector3 pos = c->interpolate_baked(o, cubic);
 	Transform t = get_transform();
 
+	t.origin = pos;
+	Vector3 pos_offset = Vector3(h_offset, v_offset, 0);
+
 	if (rotation_mode != ROTATION_NONE) {
+		// perform parallel transport
+		//
+		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
+		// for a discussion about why not Frenet frame.
 
-		Vector3 n = (c->interpolate_baked(o + lookahead, cubic) - pos).normalized();
+		Vector3 t_prev = pos - c->interpolate_baked(o - lookahead, cubic);
+		Vector3 t_cur = c->interpolate_baked(o + lookahead, cubic) - pos;
 
-		if (rotation_mode == ROTATION_Y) {
+		Vector3 axis = t_prev.cross(t_cur);
+		float dot = t_prev.normalized().dot(t_cur.normalized());
+		float angle = Math::acos(CLAMP(dot, -1, 1));
 
-			n.y = 0;
-			n.normalize();
-		}
-
-		if (n.length() < CMP_EPSILON) { //nothing, use previous
-			n = -t.get_basis().get_axis(2).normalized();
-		}
-
-		Vector3 up = Vector3(0, 1, 0);
-
-		if (rotation_mode == ROTATION_XYZ) {
-
-			float tilt = c->interpolate_baked_tilt(o);
-			if (tilt != 0) {
-
-				Basis rot(-n, tilt); //remember.. lookat will be znegative.. znegative!! we abide by opengl clan.
-				up = rot.xform(up);
+		if (axis.length() > CMP_EPSILON && angle > CMP_EPSILON) {
+			if (rotation_mode == ROTATION_Y) {
+				// assuming we're referring to global Y-axis. is this correct?
+				axis.x = 0;
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are OK
 			}
+
+			t.rotate_basis(axis.normalized(), angle);
 		}
 
-		t.set_look_at(pos, pos + n, up);
+		// do the additional tilting
+		float tilt_angle = c->interpolate_baked_tilt(o);
+		Vector3 tilt_axis = t_cur; // is this correct??
 
+		if (tilt_axis.length() > CMP_EPSILON && tilt_angle > CMP_EPSILON) {
+			if (rotation_mode == ROTATION_Y) {
+				tilt_axis.x = 0;
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XY) {
+				tilt_axis.z = 0;
+			} else if (rotation_mode == ROTATION_XYZ) {
+				// all components are OK
+			}
+
+			t.rotate_basis(tilt_axis.normalized(), tilt_angle);
+		}
+
+		t.translate(pos_offset);
 	} else {
-
-		t.origin = pos;
+		t.origin += pos_offset;
 	}
 
-	t.origin += t.basis.get_axis(0) * h_offset + t.basis.get_axis(1) * v_offset;
 	set_transform(t);
 }
 
@@ -152,8 +155,7 @@ void PathFollow::_notification(int p_what) {
 
 			Node *parent = get_parent();
 			if (parent) {
-
-				path = parent->cast_to<Path>();
+				path = Object::cast_to<Path>(parent);
 				if (path) {
 					_update_transform();
 				}
@@ -262,10 +264,10 @@ void PathFollow::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow::has_loop);
 
-	BIND_CONSTANT(ROTATION_NONE);
-	BIND_CONSTANT(ROTATION_Y);
-	BIND_CONSTANT(ROTATION_XY);
-	BIND_CONSTANT(ROTATION_XYZ);
+	BIND_ENUM_CONSTANT(ROTATION_NONE);
+	BIND_ENUM_CONSTANT(ROTATION_Y);
+	BIND_ENUM_CONSTANT(ROTATION_XY);
+	BIND_ENUM_CONSTANT(ROTATION_XYZ);
 }
 
 void PathFollow::set_offset(float p_offset) {

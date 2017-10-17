@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +38,15 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Mesh : public Resource {
 
+class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
-	RES_BASE_EXTENSION("msh");
+
+	mutable Ref<TriangleMesh> triangle_mesh; //cached
+protected:
+	void _clear_triangle_mesh() const;
+
+	static void _bind_methods();
 
 public:
 	enum {
@@ -110,11 +116,41 @@ public:
 		BLEND_SHAPE_MODE_RELATIVE = VS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
+	virtual int get_surface_count() const = 0;
+	virtual int surface_get_array_len(int p_idx) const = 0;
+	virtual int surface_get_array_index_len(int p_idx) const = 0;
+	virtual Array surface_get_arrays(int p_surface) const = 0;
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
+	virtual uint32_t surface_get_format(int p_idx) const = 0;
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
+	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
+	virtual int get_blend_shape_count() const = 0;
+	virtual StringName get_blend_shape_name(int p_index) const = 0;
+
+	PoolVector<Face3> get_faces() const;
+	Ref<TriangleMesh> generate_triangle_mesh() const;
+
+	Ref<Shape> create_trimesh_shape() const;
+	Ref<Shape> create_convex_shape() const;
+
+	Ref<Mesh> create_outline(float p_margin) const;
+
+	virtual Rect3 get_aabb() const = 0;
+
+	Mesh();
+};
+
+class ArrayMesh : public Mesh {
+
+	GDCLASS(ArrayMesh, Mesh);
+	RES_BASE_EXTENSION("mesh");
+
 private:
 	struct Surface {
 		String name;
 		Rect3 aabb;
 		Ref<Material> material;
+		bool is_2d;
 	};
 	Vector<Surface> surfaces;
 	RID mesh;
@@ -123,11 +159,11 @@ private:
 	Vector<StringName> blend_shapes;
 	Rect3 custom_aabb;
 
-	mutable Ref<TriangleMesh> triangle_mesh;
-
 	void _recompute_aabb();
 
 protected:
+	virtual bool _is_generated() const { return false; }
+
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -139,7 +175,7 @@ public:
 	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const Rect3 &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<Rect3> &p_bone_aabbs = Vector<Rect3>());
 
 	Array surface_get_arrays(int p_surface) const;
-	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
+	Array surface_get_blend_shape_arrays(int p_surface) const;
 
 	void add_blend_shape(const StringName &p_name);
 	int get_blend_shape_count() const;
@@ -152,7 +188,7 @@ public:
 	int get_surface_count() const;
 	void surface_remove(int p_idx);
 
-	void surface_set_custom_aabb(int p_surface, const Rect3 &p_aabb); //only recognized by driver
+	void surface_set_custom_aabb(int p_idx, const Rect3 &p_aabb); //only recognized by driver
 
 	int surface_get_array_len(int p_idx) const;
 	int surface_get_array_index_len(int p_idx) const;
@@ -174,22 +210,16 @@ public:
 	Rect3 get_aabb() const;
 	virtual RID get_rid() const;
 
-	Ref<Shape> create_trimesh_shape() const;
-	Ref<Shape> create_convex_shape() const;
-
-	Ref<Mesh> create_outline(float p_margin) const;
-
 	void center_geometry();
 	void regen_normalmaps();
 
-	PoolVector<Face3> get_faces() const;
-	Ref<TriangleMesh> generate_triangle_mesh() const;
-	Mesh();
+	ArrayMesh();
 
-	~Mesh();
+	~ArrayMesh();
 };
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);
+VARIANT_ENUM_CAST(Mesh::ArrayFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
 

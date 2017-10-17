@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedScene" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+		TODO: explain ownership, and that node does not need to own itself
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="can_instance" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_state">
+			<return type="SceneState">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="instance" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pack">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="Node">
+			</argument>
+			<description>
+				Pack will ignore any sub-nodes not owned by given node. See [method Node.set_owner].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene">
+		</member>
+	</members>
+	<constants>
+		<constant name="GEN_EDIT_STATE_DISABLED" value="0">
+		</constant>
+		<constant name="GEN_EDIT_STATE_INSTANCE" value="1">
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN" value="2">
+		</constant>
+	</constants>
+</class>

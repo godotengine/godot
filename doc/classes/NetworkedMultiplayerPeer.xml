@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NetworkedMultiplayerPeer" inherits="PacketPeer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_connection_status" qualifiers="const">
+			<return type="int" enum="NetworkedMultiplayerPeer.ConnectionStatus">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_packet_peer" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_refusing_new_connections" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this [NetworkedMultiplayerPeer] is refusing new connections.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_refuse_new_connections">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]endable[/code] is true, this [NetworkedMultiplayerPeer] will refuse new connections.
+			</description>
+		</method>
+		<method name="set_target_peer">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_transfer_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="connection_failed">
+			<description>
+				Emitted when failed to connect to server.
+			</description>
+		</signal>
+		<signal name="connection_succeeded">
+			<description>
+				Emitted when successfully connected to server.
+			</description>
+		</signal>
+		<signal name="peer_connected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Emitted by the server when a client is connected.
+			</description>
+		</signal>
+		<signal name="peer_disconnected">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Emitted by the server when a client is disconnected.
+			</description>
+		</signal>
+		<signal name="server_disconnected">
+			<description>
+				Emitted by clients when server is disconnected.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TRANSFER_MODE_UNRELIABLE" value="0">
+		</constant>
+		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1">
+		</constant>
+		<constant name="TRANSFER_MODE_RELIABLE" value="2">
+		</constant>
+		<constant name="CONNECTION_DISCONNECTED" value="0">
+		</constant>
+		<constant name="CONNECTION_CONNECTING" value="1">
+		</constant>
+		<constant name="CONNECTION_CONNECTED" value="2">
+		</constant>
+		<constant name="TARGET_PEER_BROADCAST" value="0" enum="">
+		</constant>
+		<constant name="TARGET_PEER_SERVER" value="1" enum="">
+		</constant>
+	</constants>
+</class>

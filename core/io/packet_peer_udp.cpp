@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +32,11 @@
 
 PacketPeerUDP *(*PacketPeerUDP::_create)() = NULL;
 
+void PacketPeerUDP::set_blocking_mode(bool p_enable) {
+
+	blocking = p_enable;
+}
+
 String PacketPeerUDP::_get_packet_ip() const {
 
 	return get_packet_address();
@@ -53,9 +59,9 @@ Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
 
 void PacketPeerUDP::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("listen:Error", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
 	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
-	ClassDB::bind_method(D_METHOD("wait:Error"), &PacketPeerUDP::wait);
+	ClassDB::bind_method(D_METHOD("wait"), &PacketPeerUDP::wait);
 	ClassDB::bind_method(D_METHOD("is_listening"), &PacketPeerUDP::is_listening);
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	//ClassDB::bind_method(D_METHOD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
@@ -78,4 +84,6 @@ PacketPeerUDP *PacketPeerUDP::create() {
 }
 
 PacketPeerUDP::PacketPeerUDP() {
+
+	blocking = true;
 }

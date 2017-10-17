@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +38,19 @@ class NinePatchRect : public Control {
 
 	GDCLASS(NinePatchRect, Control);
 
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
+
 	bool draw_center;
 	int margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
+
+	AxisStretchMode axis_h, axis_v;
 
 protected:
 	void _notification(int p_what);
@@ -57,10 +67,18 @@ public:
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_draw_center(bool p_enable);
-	bool get_draw_center() const;
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
+
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
+
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
 
 	NinePatchRect();
 	~NinePatchRect();
 };
+
+VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
 #endif // PATCH_9_FRAME_H

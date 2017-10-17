@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScrollContainer" inherits="Container" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A helper node for displaying scrollable elements (e.g. lists).
+	</brief_description>
+	<description>
+		A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.  You can set EXPAND on children size flags, so they will upscale to ScrollContainer size if ScrollContainer size is bigger (scroll is invisible for chosen dimension).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_h_scroll" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return current horizontal scroll value.
+			</description>
+		</method>
+		<method name="get_v_scroll" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return current vertical scroll value.
+			</description>
+		</method>
+		<method name="is_h_scroll_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if horizontal scroll is allowed.
+			</description>
+		</method>
+		<method name="is_v_scroll_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if vertical scroll is allowed.
+			</description>
+		</method>
+		<method name="set_enable_h_scroll">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set allows horizontal scroll.
+			</description>
+		</method>
+		<method name="set_enable_v_scroll">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set allows vertical scroll.
+			</description>
+		</method>
+		<method name="set_h_scroll">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Set horizontal scroll value.
+			</description>
+		</method>
+		<method name="set_v_scroll">
+			<return type="void">
+			</return>
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+				Set vertical scroll value.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="scroll_horizontal" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled">
+		</member>
+		<member name="scroll_vertical" type="bool" setter="set_enable_v_scroll" getter="is_v_scroll_enabled">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

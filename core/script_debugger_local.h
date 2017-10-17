@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +35,7 @@
 class ScriptDebuggerLocal : public ScriptDebugger {
 
 	bool profiling;
-	float frame_time, idle_time, fixed_time, fixed_frame_time;
+	float frame_time, idle_time, physics_time, physics_frame_time;
 	uint64_t idle_accum;
 
 	Vector<ScriptLanguage::ProfilingInfo> pinfo;
@@ -50,7 +51,7 @@ public:
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_fixed_time, float p_fixed_frame_time);
+	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
 
 	ScriptDebuggerLocal();
 };

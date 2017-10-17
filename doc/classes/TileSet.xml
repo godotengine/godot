@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSet" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Tile library for tilemaps.
+	</brief_description>
+	<description>
+		A TileSet is a library of tiles for a [TileMap]. It contains a list of tiles, each consisting of a sprite and optional collision shapes.
+		Tiles are referenced by a unique integer ID.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear all tiles.
+			</description>
+		</method>
+		<method name="create_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Create a new tile which will be referenced by the given ID.
+			</description>
+		</method>
+		<method name="find_tile_by_name" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Find the first tile matching the given name.
+			</description>
+		</method>
+		<method name="get_last_unused_tile_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the ID following the last currently used ID, useful when creating a new tile.
+			</description>
+		</method>
+		<method name="get_tiles_ids" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array of all currently used tile IDs.
+			</description>
+		</method>
+		<method name="remove_tile">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Remove the tile referenced by the given ID.
+			</description>
+		</method>
+		<method name="tile_add_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_transform" type="Transform2D">
+			</argument>
+			<argument index="3" name="one_way" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_light_occluder" qualifiers="const">
+			<return type="OccluderPolygon2D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the light occluder of the tile.
+			</description>
+		</method>
+		<method name="tile_get_material" qualifiers="const">
+			<return type="ShaderMaterial">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the material of the tile.
+			</description>
+		</method>
+		<method name="tile_get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the name of the tile.
+			</description>
+		</method>
+		<method name="tile_get_navigation_polygon" qualifiers="const">
+			<return type="NavigationPolygon">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the navigation polygon of the tile.
+			</description>
+		</method>
+		<method name="tile_get_navigation_polygon_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the offset of the tile's navigation polygon.
+			</description>
+		</method>
+		<method name="tile_get_normal_map" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_occluder_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the offset of the tile's light occluder.
+			</description>
+		</method>
+		<method name="tile_get_region" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the tile sub-region in the texture.
+			</description>
+		</method>
+		<method name="tile_get_shape" qualifiers="const">
+			<return type="Shape2D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shape_one_way" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shape_transform" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shapes" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the array of shapes of the tile.
+			</description>
+		</method>
+		<method name="tile_get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the texture of the tile.
+			</description>
+		</method>
+		<method name="tile_get_texture_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the texture offset of the tile.
+			</description>
+		</method>
+		<method name="tile_set_light_occluder">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
+			</argument>
+			<description>
+				Set a light occluder for the tile.
+			</description>
+		</method>
+		<method name="tile_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="material" type="ShaderMaterial">
+			</argument>
+			<description>
+				Set the material of the tile.
+			</description>
+		</method>
+		<method name="tile_set_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+				Set the name of the tile, for descriptive purposes.
+			</description>
+		</method>
+		<method name="tile_set_navigation_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
+			</argument>
+			<description>
+				Set a navigation polygon for the tile.
+			</description>
+		</method>
+		<method name="tile_set_navigation_polygon_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navigation_polygon_offset" type="Vector2">
+			</argument>
+			<description>
+				Set an offset for the tile's navigation polygon.
+			</description>
+		</method>
+		<method name="tile_set_normal_map">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="normal_map" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_set_occluder_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="occluder_offset" type="Vector2">
+			</argument>
+			<description>
+				Set an offset for the tile's light occluder.
+			</description>
+		</method>
+		<method name="tile_set_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="region" type="Rect2">
+			</argument>
+			<description>
+				Set the tile sub-region in the texture. This is common in texture atlases.
+			</description>
+		</method>
+		<method name="tile_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_set_shape_one_way">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="one_way" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_set_shape_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="shape_transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_set_shapes">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shapes" type="Array">
+			</argument>
+			<description>
+				Set an array of shapes for the tile, enabling physics to collide with it.
+			</description>
+		</method>
+		<method name="tile_set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+				Set the texture of the tile.
+			</description>
+		</method>
+		<method name="tile_set_texture_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="texture_offset" type="Vector2">
+			</argument>
+			<description>
+				Set the texture offset of the tile.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

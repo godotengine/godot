@@ -1,11 +1,12 @@
 /*************************************************************************/
-/*  immediate_geometry.h                                               */
+/*  immediate_geometry.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +38,7 @@ class ImmediateGeometry : public GeometryInstance {
 	GDCLASS(ImmediateGeometry, GeometryInstance);
 
 	RID im;
-	//a list of texures drawn need to be kept, to avoid references
+	//a list of textures drawn need to be kept, to avoid references
 	// in VisualServer from becoming invalid if the texture is no longer used
 	List<Ref<Texture> > cached_textures;
 	bool empty;
@@ -51,8 +52,8 @@ public:
 	void set_normal(const Vector3 &p_normal);
 	void set_tangent(const Plane &p_tangent);
 	void set_color(const Color &p_color);
-	void set_uv(const Vector2 &tex_uv);
-	void set_uv2(const Vector2 &tex_uv);
+	void set_uv(const Vector2 &p_uv);
+	void set_uv2(const Vector2 &p_uv2);
 
 	void add_vertex(const Vector3 &p_vertex);
 

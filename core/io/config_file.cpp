@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,8 +83,13 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 }
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
-	ERR_FAIL_COND_V(!values.has(p_section), p_default);
-	ERR_FAIL_COND_V(!values[p_section].has(p_key), p_default);
+	if (!values.has(p_section) || !values[p_section].has(p_key)) {
+		if (p_default.get_type() == Variant::NIL) {
+			ERR_EXPLAIN("Couldn't find the given section/key and no default was given");
+			ERR_FAIL_V(p_default);
+		}
+		return p_default;
+	}
 	return values[p_section][p_key];
 }
 
@@ -199,7 +205,7 @@ Error ConfigFile::load(const String &p_path) {
 void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_value", "section", "key", "value"), &ConfigFile::set_value);
-	ClassDB::bind_method(D_METHOD("get_value:Variant", "section", "key", "default"), &ConfigFile::get_value, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("get_value", "section", "key", "default"), &ConfigFile::get_value, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("has_section", "section"), &ConfigFile::has_section);
 	ClassDB::bind_method(D_METHOD("has_section_key", "section", "key"), &ConfigFile::has_section_key);
@@ -209,8 +215,8 @@ void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
 
-	ClassDB::bind_method(D_METHOD("load:Error", "path"), &ConfigFile::load);
-	ClassDB::bind_method(D_METHOD("save:Error", "path"), &ConfigFile::save);
+	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
+	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
 }
 
 ConfigFile::ConfigFile() {

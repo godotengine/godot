@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +31,9 @@
 #define MATH_FUNCS_H
 
 #include "math_defs.h"
-#include "pcg.h"
 #include "typedefs.h"
+
+#include "thirdparty/misc/pcg.h"
 
 #include <float.h>
 #include <math.h>
@@ -49,9 +51,7 @@ class Math {
 public:
 	Math() {} // useless to instance
 
-	enum {
-		RANDOM_MAX = 4294967295L
-	};
+	static const uint64_t RANDOM_MAX = 4294967295;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -104,12 +104,57 @@ public:
 	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
 	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
 
-	static _ALWAYS_INLINE_ bool is_nan(double p_val) { return (p_val != p_val); }
-	static _ALWAYS_INLINE_ bool is_nan(float p_val) { return (p_val != p_val); }
+	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
+#ifdef _MSC_VER
+		return _isnan(p_val);
+#elif defined(__GNUC__) && __GNUC__ < 6
+		union {
+			uint64_t u;
+			double f;
+		} ieee754;
+		ieee754.f = p_val;
+		// (unsigned)(0x7ff0000000000001 >> 32) : 0x7ff00000
+		return ((((unsigned)(ieee754.u >> 32) & 0x7fffffff) + ((unsigned)ieee754.u != 0)) > 0x7ff00000);
+#else
+		return isnan(p_val);
+#endif
+	}
+
+	static _ALWAYS_INLINE_ bool is_nan(float p_val) {
+#ifdef _MSC_VER
+		return _isnan(p_val);
+#elif defined(__GNUC__) && __GNUC__ < 6
+		union {
+			uint32_t u;
+			float f;
+		} ieee754;
+		ieee754.f = p_val;
+		// -----------------------------------
+		// (single-precision floating-point)
+		// NaN : s111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
+		//     : (> 0x7f800000)
+		// where,
+		//   s : sign
+		//   x : non-zero number
+		// -----------------------------------
+		return ((ieee754.u & 0x7fffffff) > 0x7f800000);
+#else
+		return isnan(p_val);
+#endif
+	}
 
 	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
+// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
+#elif defined(__GNUC__) && __GNUC__ < 6
+		union {
+			uint64_t u;
+			double f;
+		} ieee754;
+		ieee754.f = p_val;
+		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
+			   ((unsigned)ieee754.u == 0);
 #else
 		return isinf(p_val);
 #endif
@@ -118,6 +163,14 @@ public:
 	static _ALWAYS_INLINE_ bool is_inf(float p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
+// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
+#elif defined(__GNUC__) && __GNUC__ < 6
+		union {
+			uint32_t u;
+			float f;
+		} ieee754;
+		ieee754.f = p_val;
+		return (ieee754.u & 0x7fffffff) == 0x7f800000;
 #else
 		return isinf(p_val);
 #endif
@@ -136,8 +189,14 @@ public:
 	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * 180.0 / Math_PI; }
 	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * 180.0 / Math_PI; }
 
-	static _ALWAYS_INLINE_ double lerp(double a, double b, double c) { return a + (b - a) * c; }
-	static _ALWAYS_INLINE_ float lerp(float a, float b, float c) { return a + (b - a) * c; }
+	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
+	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+
+	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
+	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
+
+	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
+	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
@@ -156,7 +215,7 @@ public:
 
 	static uint32_t larger_prime(uint32_t p_val);
 
-	static void seed(uint64_t x = 0);
+	static void seed(uint64_t x);
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
@@ -167,7 +226,7 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool isequal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// TODO: Comparing floats for approximate-equality is non-trivial.
 		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
 		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
@@ -274,6 +333,10 @@ public:
 
 		u.u32 = halfbits_to_floatbits(*h);
 		return u.f32;
+	}
+
+	static _ALWAYS_INLINE_ float half_to_float(const uint16_t h) {
+		return halfptr_to_float(&h);
 	}
 
 	static _ALWAYS_INLINE_ uint16_t make_half_float(float f) {

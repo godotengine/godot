@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextEdit" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Multiline text editing control.
+	</brief_description>
+	<description>
+		TextEdit is meant for editing large, multiline text. It also has facilities for editing code, such as syntax highlighting support and multiple levels of undo/redo.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_color_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="begin_key" type="String">
+			</argument>
+			<argument index="1" name="end_key" type="String">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<argument index="3" name="line_only" type="bool" default="false">
+			</argument>
+			<description>
+				Add color region (given the delimiters) and its colors.
+			</description>
+		</method>
+		<method name="add_keyword_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="keyword" type="String">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Add a keyword and its color.
+			</description>
+		</method>
+		<method name="clear_colors">
+			<return type="void">
+			</return>
+			<description>
+				Clear all the syntax coloring information.
+			</description>
+		</method>
+		<method name="clear_undo_history">
+			<return type="void">
+			</return>
+			<description>
+				Clear the undo history.
+			</description>
+		</method>
+		<method name="copy">
+			<return type="void">
+			</return>
+			<description>
+				Copy the current selection.
+			</description>
+		</method>
+		<method name="cursor_get_blink_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets whether the text editor caret is blinking.
+			</description>
+		</method>
+		<method name="cursor_get_blink_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Gets the text editor caret blink speed.
+			</description>
+		</method>
+		<method name="cursor_get_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the column the editing cursor is at.
+			</description>
+		</method>
+		<method name="cursor_get_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the line the editing cursor is at.
+			</description>
+		</method>
+		<method name="cursor_is_block_mode" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Gets whether the text editor caret is in block mode.
+			</description>
+		</method>
+		<method name="cursor_set_blink_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the text editor caret to blink.
+			</description>
+		</method>
+		<method name="cursor_set_blink_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="blink_speed" type="float">
+			</argument>
+			<description>
+				Set the text editor caret blink speed. Cannot be less then or equal to 0.
+			</description>
+		</method>
+		<method name="cursor_set_block_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the text editor caret to block mode.
+			</description>
+		</method>
+		<method name="cursor_set_column">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cursor_set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="adjust_viewport" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cut">
+			<return type="void">
+			</return>
+			<description>
+				Cut the current selection.
+			</description>
+		</method>
+		<method name="get_line" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Return the text of a specific line.
+			</description>
+		</method>
+		<method name="get_line_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of total lines in the text.
+			</description>
+		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selection_from_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the selection begin column.
+			</description>
+		</method>
+		<method name="get_selection_from_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the selection begin line.
+			</description>
+		</method>
+		<method name="get_selection_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the text inside the selection.
+			</description>
+		</method>
+		<method name="get_selection_to_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the selection end column.
+			</description>
+		</method>
+		<method name="get_selection_to_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the selection end line.
+			</description>
+		</method>
+		<method name="get_text">
+			<return type="String">
+			</return>
+			<description>
+				Return the whole text.
+			</description>
+		</method>
+		<method name="get_v_scroll_speed" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_word_under_cursor" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="insert_text_at_cursor">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Insert a given text at the cursor position.
+			</description>
+		</method>
+		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if highlight all occurrences is enabled.
+			</description>
+		</method>
+		<method name="is_selection_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the selection is active.
+			</description>
+		</method>
+		<method name="is_show_line_numbers_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if line numbers are enabled.
+			</description>
+		</method>
+		<method name="is_smooth_scroll_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_syntax_coloring_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the syntax coloring is enabled.
+			</description>
+		</method>
+		<method name="menu_option">
+			<return type="void">
+			</return>
+			<argument index="0" name="option" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="paste">
+			<return type="void">
+			</return>
+			<description>
+				Paste the current selection.
+			</description>
+		</method>
+		<method name="redo">
+			<return type="void">
+			</return>
+			<description>
+				Perform redo operation.
+			</description>
+		</method>
+		<method name="search" qualifiers="const">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="key" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<argument index="2" name="from_line" type="int">
+			</argument>
+			<argument index="3" name="from_column" type="int">
+			</argument>
+			<description>
+				Perform a search inside the text. Search flags can be specified in the SEARCH_* enum.
+			</description>
+		</method>
+		<method name="select">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_line" type="int">
+			</argument>
+			<argument index="1" name="from_column" type="int">
+			</argument>
+			<argument index="2" name="to_line" type="int">
+			</argument>
+			<argument index="3" name="to_column" type="int">
+			</argument>
+			<description>
+				Perform selection, from line/column to line/column.
+			</description>
+		</method>
+		<method name="select_all">
+			<return type="void">
+			</return>
+			<description>
+				Select all the text.
+			</description>
+		</method>
+		<method name="set_highlight_all_occurrences">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable highlighting all occurrences of the current selection.
+			</description>
+		</method>
+		<method name="set_max_chars">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+				Set the maximum amount of characters editable.
+			</description>
+		</method>
+		<method name="set_readonly">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set the text editor as read-only. Text can be displayed but not edited.
+			</description>
+		</method>
+		<method name="set_show_line_numbers">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable showing line numbers.
+			</description>
+		</method>
+		<method name="set_smooth_scroll_enable">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_syntax_coloring">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Set to enable the syntax coloring.
+			</description>
+		</method>
+		<method name="set_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Set the entire text.
+			</description>
+		</method>
+		<method name="set_v_scroll_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="speed" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_wrap">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Enable text wrapping when it goes beyond he edge of what is visible.
+			</description>
+		</method>
+		<method name="undo">
+			<return type="void">
+			</return>
+			<description>
+				Perform undo operation.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
+		</member>
+		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+		</member>
+		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
+		</member>
+		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
+		</member>
+		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
+		</member>
+		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
+		</member>
+		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled">
+		</member>
+		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
+		</member>
+	</members>
+	<signals>
+		<signal name="breakpoint_toggled">
+			<argument index="0" name="row" type="int">
+			</argument>
+			<description>
+				Emitted when a breakpoint is placed via the breakpoint gutter.
+			</description>
+		</signal>
+		<signal name="cursor_changed">
+			<description>
+				Emitted when the cursor changes.
+			</description>
+		</signal>
+		<signal name="request_completion">
+			<description>
+			</description>
+		</signal>
+		<signal name="symbol_lookup">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<argument index="1" name="row" type="int">
+			</argument>
+			<argument index="2" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="text_changed">
+			<description>
+				Emitted when the text changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SEARCH_MATCH_CASE" value="1">
+			Match case when searching.
+		</constant>
+		<constant name="SEARCH_WHOLE_WORDS" value="2">
+			Match whole words when searching.
+		</constant>
+		<constant name="SEARCH_BACKWARDS" value="4">
+			Search from end to beginning.
+		</constant>
+		<constant name="MENU_CUT" value="0">
+		</constant>
+		<constant name="MENU_COPY" value="1">
+		</constant>
+		<constant name="MENU_PASTE" value="2">
+		</constant>
+		<constant name="MENU_CLEAR" value="3">
+		</constant>
+		<constant name="MENU_SELECT_ALL" value="4">
+		</constant>
+		<constant name="MENU_UNDO" value="5">
+		</constant>
+		<constant name="MENU_MAX" value="6">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="background_color" type="Color">
+		</theme_item>
+		<theme_item name="brace_mismatch_color" type="Color">
+		</theme_item>
+		<theme_item name="breakpoint_color" type="Color">
+		</theme_item>
+		<theme_item name="caret_background_color" type="Color">
+		</theme_item>
+		<theme_item name="caret_color" type="Color">
+		</theme_item>
+		<theme_item name="completion" type="StyleBox">
+		</theme_item>
+		<theme_item name="completion_background_color" type="Color">
+		</theme_item>
+		<theme_item name="completion_existing_color" type="Color">
+		</theme_item>
+		<theme_item name="completion_font_color" type="Color">
+		</theme_item>
+		<theme_item name="completion_lines" type="int">
+		</theme_item>
+		<theme_item name="completion_max_width" type="int">
+		</theme_item>
+		<theme_item name="completion_scroll_color" type="Color">
+		</theme_item>
+		<theme_item name="completion_scroll_width" type="int">
+		</theme_item>
+		<theme_item name="completion_selected_color" type="Color">
+		</theme_item>
+		<theme_item name="current_line_color" type="Color">
+		</theme_item>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_selected" type="Color">
+		</theme_item>
+		<theme_item name="function_color" type="Color">
+		</theme_item>
+		<theme_item name="line_number_color" type="Color">
+		</theme_item>
+		<theme_item name="line_spacing" type="int">
+		</theme_item>
+		<theme_item name="mark_color" type="Color">
+		</theme_item>
+		<theme_item name="member_variable_color" type="Color">
+		</theme_item>
+		<theme_item name="normal" type="StyleBox">
+		</theme_item>
+		<theme_item name="number_color" type="Color">
+		</theme_item>
+		<theme_item name="selection_color" type="Color">
+		</theme_item>
+		<theme_item name="symbol_color" type="Color">
+		</theme_item>
+		<theme_item name="tab" type="Texture">
+		</theme_item>
+		<theme_item name="word_highlighted_color" type="Color">
+		</theme_item>
+	</theme_items>
+</class>

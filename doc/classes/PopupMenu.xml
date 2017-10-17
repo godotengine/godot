@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PopupMenu" inherits="Popup" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		PopupMenu displays a list of options.
+	</brief_description>
+	<description>
+		PopupMenu is the typical Control that displays a list of options. They are popular in toolbars or context menus.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Add a new checkable item with text "label". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="add_check_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_icon_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Add a new checkable item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator. If no id is provided, one will be
+				created from the index. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="add_icon_check_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_icon_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Add a new item with text "label" and icon "texture". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_icon_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Add a new item with text "label". An id can optionally be provided, as well as an accelerator keybinding. If no id is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_separator">
+			<return type="void">
+			</return>
+			<description>
+				Add a separator between items. Separators also occupy an index.
+			</description>
+		</method>
+		<method name="add_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="1" name="id" type="int" default="-1">
+			</argument>
+			<argument index="2" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_submenu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="submenu" type="String">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<description>
+				Adds an item with a submenu. The submenu is the name of a child PopupMenu node that would be shown when the item is clicked. An id can optionally be provided, but if is isn't provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Clear the popup menu, in effect removing all items.
+			</description>
+		</method>
+		<method name="get_item_accelerator" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+			</description>
+		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of items.
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the icon of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the id of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Find and return the index of the item containing a given id.
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the metadata of an item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="get_item_shortcut" qualifiers="const">
+			<return type="ShortCut">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_item_submenu" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the submenu name of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the text of the item at index "idx".
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_hide_on_checkable_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on checkable item selection.
+			</description>
+		</method>
+		<method name="is_hide_on_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
+			</description>
+		</method>
+		<method name="is_item_checkable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="is_item_checked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return the checkstate status of the item at index "idx".
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return whether the item at index "idx" is disabled. When it is disabled it can't be selected, or its action invoked.
+			</description>
+		</method>
+		<method name="is_item_separator" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Return whether the item is a seperator. If it is, it would be displayed as a line.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
+			</description>
+		</method>
+		<method name="set_hide_on_checkable_item_selection">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether or not the PopupMenu will hide on checkable item selection.
+			</description>
+		</method>
+		<method name="set_hide_on_item_selection">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether or not the PopupMenu will hide on item selection.
+			</description>
+		</method>
+		<method name="set_item_accelerator">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="accel" type="int">
+			</argument>
+			<description>
+				Set the accelerator of the item at index "idx". Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+			</description>
+		</method>
+		<method name="set_item_as_checkable">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Set whether the item at index "idx" has a checkbox. Note that checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="set_item_as_separator">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				Mark the item at index "idx" as a seperator, which means that it would be displayed as a mere line.
+			</description>
+		</method>
+		<method name="set_item_checked">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="checked" type="bool">
+			</argument>
+			<description>
+				Set the checkstate status of the item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+				Sets whether the item at index "idx" is disabled or not. When it is disabled it can't be selected, or its action invoked.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="icon" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="id" type="int">
+			</argument>
+			<description>
+				Set the id of the item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="metadata" type="Variant">
+			</argument>
+			<description>
+				Sets the metadata of an item, which might be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="set_item_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="global" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_submenu">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="submenu" type="String">
+			</argument>
+			<description>
+				Sets the submenu of the item at index "idx". The submenu is the name of a child PopupMenu node that would be shown when the item is clicked.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+				Set the text of the item at index "idx".
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="tooltip" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="toggle_item_checked">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection">
+		</member>
+		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection">
+		</member>
+		<member name="items" type="Array" setter="_set_items" getter="_get_items">
+		</member>
+	</members>
+	<signals>
+		<signal name="id_pressed">
+			<argument index="0" name="ID" type="int">
+			</argument>
+			<description>
+				This event is emitted when an item of some id is pressed or its accelerator is activated.
+			</description>
+		</signal>
+		<signal name="index_pressed">
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				This event is emitted when an item of some index is pressed or its accelerator is activated.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+	<theme_items>
+		<theme_item name="checked" type="Texture">
+		</theme_item>
+		<theme_item name="font" type="Font">
+		</theme_item>
+		<theme_item name="font_color" type="Color">
+		</theme_item>
+		<theme_item name="font_color_accel" type="Color">
+		</theme_item>
+		<theme_item name="font_color_disabled" type="Color">
+		</theme_item>
+		<theme_item name="font_color_hover" type="Color">
+		</theme_item>
+		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="panel_disabled" type="StyleBox">
+		</theme_item>
+		<theme_item name="separator" type="StyleBox">
+		</theme_item>
+		<theme_item name="submenu" type="Texture">
+		</theme_item>
+		<theme_item name="unchecked" type="Texture">
+		</theme_item>
+		<theme_item name="vseparation" type="int">
+		</theme_item>
+	</theme_items>
+</class>

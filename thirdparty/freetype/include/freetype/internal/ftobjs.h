@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType private base classes (specification).                   */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -36,6 +36,7 @@
 #include FT_INTERNAL_AUTOHINT_H
 #include FT_INTERNAL_SERVICE_H
 #include FT_INTERNAL_PIC_H
+#include FT_INTERNAL_CALC_H
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
 #include FT_INCREMENTAL_H
@@ -85,12 +86,28 @@ FT_BEGIN_HEADER
 
   /* we use FT_TYPEOF to suppress signedness compilation warnings */
 #define FT_PAD_FLOOR( x, n )  ( (x) & ~FT_TYPEOF( x )( (n)-1 ) )
-#define FT_PAD_ROUND( x, n )  FT_PAD_FLOOR( (x) + ((n)/2), n )
-#define FT_PAD_CEIL( x, n )   FT_PAD_FLOOR( (x) + ((n)-1), n )
+#define FT_PAD_ROUND( x, n )  FT_PAD_FLOOR( (x) + (n)/2, n )
+#define FT_PAD_CEIL( x, n )   FT_PAD_FLOOR( (x) + (n)-1, n )
 
 #define FT_PIX_FLOOR( x )     ( (x) & ~FT_TYPEOF( x )63 )
 #define FT_PIX_ROUND( x )     FT_PIX_FLOOR( (x) + 32 )
 #define FT_PIX_CEIL( x )      FT_PIX_FLOOR( (x) + 63 )
+
+  /* specialized versions (for signed values)                   */
+  /* that don't produce run-time errors due to integer overflow */
+#define FT_PAD_ROUND_LONG( x, n )  FT_PAD_FLOOR( ADD_LONG( (x), (n) / 2 ), \
+                                                 n )
+#define FT_PAD_CEIL_LONG( x, n )   FT_PAD_FLOOR( ADD_LONG( (x), (n) - 1 ), \
+                                                 n )
+#define FT_PIX_ROUND_LONG( x )     FT_PIX_FLOOR( ADD_LONG( (x), 32 ) )
+#define FT_PIX_CEIL_LONG( x )      FT_PIX_FLOOR( ADD_LONG( (x), 63 ) )
+
+#define FT_PAD_ROUND_INT32( x, n )  FT_PAD_FLOOR( ADD_INT32( (x), (n) / 2 ), \
+                                                  n )
+#define FT_PAD_CEIL_INT32( x, n )   FT_PAD_FLOOR( ADD_INT32( (x), (n) - 1 ), \
+                                                  n )
+#define FT_PIX_ROUND_INT32( x )     FT_PIX_FLOOR( ADD_INT32( (x), 32 ) )
+#define FT_PIX_CEIL_INT32( x )      FT_PIX_FLOOR( ADD_INT32( (x), 63 ) )
 
 
   /*
@@ -193,6 +210,7 @@ FT_BEGIN_HEADER
   typedef struct  FT_CMap_ClassRec_
   {
     FT_ULong               size;
+
     FT_CMap_InitFunc       init;
     FT_CMap_DoneFunc       done;
     FT_CMap_CharIndexFunc  char_index;
@@ -341,6 +359,20 @@ FT_BEGIN_HEADER
   /*      this data when first opened.  This field exists only if          */
   /*      @FT_CONFIG_OPTION_INCREMENTAL is defined.                        */
   /*                                                                       */
+  /*    no_stem_darkening ::                                               */
+  /*      Overrides the module-level default, see @stem-darkening[cff],    */
+  /*      for example.  FALSE and TRUE toggle stem darkening on and off,   */
+  /*      respectively, value~-1 means to use the module/driver default.   */
+  /*                                                                       */
+  /*    random_seed ::                                                     */
+  /*      If positive, override the seed value for the CFF `random'        */
+  /*      operator.  Value~0 means to use the font's value.  Value~-1      */
+  /*      means to use the CFF driver's default.                           */
+  /*                                                                       */
+  /*    lcd_weights ::                                                     */
+  /*      Overrides the library default with custom weights for the 5-tap  */
+  /*      FIR filter.  `{0, 0, 0, 0, 0}' means to use the library default. */
+  /*                                                                       */
   /*    refcount ::                                                        */
   /*      A counter initialized to~1 at the time an @FT_Face structure is  */
   /*      created.  @FT_Reference_Face increments this counter, and        */
@@ -349,9 +381,9 @@ FT_BEGIN_HEADER
   /*                                                                       */
   typedef struct  FT_Face_InternalRec_
   {
-    FT_Matrix           transform_matrix;
-    FT_Vector           transform_delta;
-    FT_Int              transform_flags;
+    FT_Matrix  transform_matrix;
+    FT_Vector  transform_delta;
+    FT_Int     transform_flags;
 
     FT_ServiceCacheRec  services;
 
@@ -359,7 +391,13 @@ FT_BEGIN_HEADER
     FT_Incremental_InterfaceRec*  incremental_interface;
 #endif
 
-    FT_Int              refcount;
+    FT_Char              no_stem_darkening;
+    FT_Int32             random_seed;
+#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+    FT_LcdFiveTapFilter  lcd_weights;  /* preset or custom filter weights */
+#endif
+
+    FT_Int  refcount;
 
   } FT_Face_InternalRec;
 
@@ -412,8 +450,6 @@ FT_BEGIN_HEADER
   } FT_GlyphSlot_InternalRec;
 
 
-#if 0
-
   /*************************************************************************/
   /*                                                                       */
   /* <Struct>                                                              */
@@ -421,17 +457,25 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    This structure contains the internal fields of each FT_Size        */
-  /*    object.  Currently, it's empty.                                    */
+  /*    object.                                                            */
+  /*                                                                       */
+  /* <Fields>                                                              */
+  /*    module_data      :: Data specific to a driver module.              */
+  /*                                                                       */
+  /*    autohint_mode    :: The used auto-hinting mode.                    */
+  /*                                                                       */
+  /*    autohint_metrics :: Metrics used by the auto-hinter.               */
   /*                                                                       */
   /*************************************************************************/
 
   typedef struct  FT_Size_InternalRec_
   {
-    /* empty */
+    void*  module_data;
+
+    FT_Render_Mode   autohint_mode;
+    FT_Size_Metrics  autohint_metrics;
 
   } FT_Size_InternalRec;
-
-#endif
 
 
   /*************************************************************************/
@@ -530,7 +574,16 @@ FT_BEGIN_HEADER
 
   FT_BASE( FT_Pointer )
   ft_module_get_service( FT_Module    module,
-                         const char*  service_id );
+                         const char*  service_id,
+                         FT_Bool      global );
+
+#ifdef FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
+  FT_BASE( FT_Error )
+  ft_property_string_set( FT_Library        library,
+                          const FT_String*  module_name,
+                          const FT_String*  property_name,
+                          FT_String*        value );
+#endif
 
   /* */
 
@@ -765,12 +818,19 @@ FT_BEGIN_HEADER
 
   /* This hook is used by the TrueType debugger.  It must be set to an */
   /* alternate truetype bytecode interpreter function.                 */
-#define FT_DEBUG_HOOK_TRUETYPE            0
+#define FT_DEBUG_HOOK_TRUETYPE  0
 
 
   typedef void  (*FT_Bitmap_LcdFilterFunc)( FT_Bitmap*      bitmap,
                                             FT_Render_Mode  render_mode,
-                                            FT_Library      library );
+                                            FT_Byte*        weights );
+
+
+  /* This is the default LCD filter, an in-place, 5-tap FIR filter. */
+  FT_BASE( void )
+  ft_lcd_filter_fir( FT_Bitmap*           bitmap,
+                     FT_Render_Mode       mode,
+                     FT_LcdFiveTapFilter  weights );
 
 
   /*************************************************************************/
@@ -811,20 +871,15 @@ FT_BEGIN_HEADER
   /*                        handle to the current renderer for the         */
   /*                        FT_GLYPH_FORMAT_OUTLINE format.                */
   /*                                                                       */
-  /*    auto_hinter      :: XXX                                            */
+  /*    auto_hinter      :: The auto-hinter module interface.              */
   /*                                                                       */
-  /*    raster_pool      :: The raster object's render pool.  This can     */
-  /*                        ideally be changed dynamically at run-time.    */
-  /*                                                                       */
-  /*    raster_pool_size :: The size of the render pool in bytes.          */
-  /*                                                                       */
-  /*    debug_hooks      :: XXX                                            */
+  /*    debug_hooks      :: An array of four function pointers that allow  */
+  /*                        debuggers to hook into a font format's         */
+  /*                        interpreter.  Currently, only the TrueType     */
+  /*                        bytecode debugger uses this.                   */
   /*                                                                       */
   /*    lcd_filter       :: If subpixel rendering is activated, the        */
   /*                        selected LCD filter mode.                      */
-  /*                                                                       */
-  /*    lcd_extra        :: If subpixel rendering is activated, the number */
-  /*                        of extra pixels needed for the LCD filter.     */
   /*                                                                       */
   /*    lcd_weights      :: If subpixel rendering is activated, the LCD    */
   /*                        filter weights, if any.                        */
@@ -857,16 +912,11 @@ FT_BEGIN_HEADER
     FT_Renderer        cur_renderer;     /* current outline renderer */
     FT_Module          auto_hinter;
 
-    FT_Byte*           raster_pool;      /* scan-line conversion */
-                                         /* render pool          */
-    FT_ULong           raster_pool_size; /* size of render pool in bytes */
-
     FT_DebugHook_Func  debug_hooks[4];
 
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
     FT_LcdFilter             lcd_filter;
-    FT_Int                   lcd_extra;        /* number of extra pixels */
-    FT_Byte                  lcd_weights[7];   /* filter weights, if any */
+    FT_LcdFiveTapFilter      lcd_weights;      /* filter weights, if any */
     FT_Bitmap_LcdFilterFunc  lcd_filter_func;  /* filtering callback     */
 #endif
 

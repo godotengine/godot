@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT common tables validation (body).                      */
 /*                                                                         */
-/*  Copyright 2004-2016 by                                                 */
+/*  Copyright 2004-2017 by                                                 */
 /*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
@@ -454,7 +454,7 @@
   }
 
 
-  /* ================= Segment Single Format 2 Loolup Table ============== */
+  /* ================= Segment Single Format 2 Lookup Table ============== */
   /*
    * Apple spec says:
    *
@@ -789,7 +789,7 @@
       FT_INVALID_FORMAT;
 
     func = fmt_funcs_table[format];
-    if ( func == NULL )
+    if ( !func )
       FT_INVALID_FORMAT;
 
     func( p, limit, gxvalid );
@@ -972,7 +972,7 @@
       FT_UShort  i;
 
 
-      ft_memset( nGlyphInClass, 0, 256 );
+      FT_MEM_ZERO( nGlyphInClass, 256 );
 
 
       for ( i = 0; i < nGlyphs; i++ )
@@ -1161,7 +1161,7 @@
         break;
       }
 
-      if ( NULL != gxvalid->statetable.entry_validate_func )
+      if ( gxvalid->statetable.entry_validate_func )
         gxvalid->statetable.entry_validate_func( state,
                                                  flags,
                                                  &glyphOffset,
@@ -1244,10 +1244,10 @@
     if ( stateSize > 0xFF )
       FT_INVALID_DATA;
 
-    if ( gxvalid->statetable.optdata_load_func != NULL )
+    if ( gxvalid->statetable.optdata_load_func )
       gxvalid->statetable.optdata_load_func( p, limit, gxvalid );
 
-    if ( gxvalid->statetable.subtable_setup_func != NULL)
+    if ( gxvalid->statetable.subtable_setup_func )
       setup_func = gxvalid->statetable.subtable_setup_func;
     else
       setup_func = gxv_StateTable_subtable_setup;
@@ -1534,7 +1534,7 @@
         goto Exit;
       }
 
-      if ( NULL != gxvalid->xstatetable.entry_validate_func )
+      if ( gxvalid->xstatetable.entry_validate_func )
         gxvalid->xstatetable.entry_validate_func( state,
                                                   flags,
                                                   &glyphOffset,
@@ -1591,10 +1591,10 @@
 
     GXV_TRACE(( "StateTable Subtables\n" ));
 
-    if ( gxvalid->xstatetable.optdata_load_func != NULL )
+    if ( gxvalid->xstatetable.optdata_load_func )
       gxvalid->xstatetable.optdata_load_func( p, limit, gxvalid );
 
-    if ( gxvalid->xstatetable.subtable_setup_func != NULL )
+    if ( gxvalid->xstatetable.subtable_setup_func )
       setup_func = gxvalid->xstatetable.subtable_setup_func;
     else
       setup_func = gxv_XStateTable_subtable_setup;

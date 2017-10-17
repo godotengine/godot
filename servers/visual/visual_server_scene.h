@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +36,9 @@
 #include "geometry.h"
 #include "octree.h"
 #include "os/semaphore.h"
-#include "os/semaphore.h"
 #include "os/thread.h"
 #include "self_list.h"
+#include "servers/arvr/arvr_interface.h"
 
 class VisualServerScene {
 public:
@@ -53,6 +54,8 @@ public:
 	uint64_t render_pass;
 
 	static VisualServerScene *singleton;
+
+// FIXME: Kept as reference for future implementation
 #if 0
 	struct Portal {
 
@@ -117,7 +120,7 @@ public:
 		Camera() {
 
 			visible_layers = 0xFFFFFFFF;
-			fov = 60;
+			fov = 65;
 			type = PERSPECTIVE;
 			znear = 0.1;
 			zfar = 100;
@@ -135,38 +138,6 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
-
-	/*
-
-	struct RoomInfo {
-
-		Transform affine_inverse;
-		Room *room;
-		List<Instance*> owned_geometry_instances;
-		List<Instance*> owned_portal_instances;
-		List<Instance*> owned_room_instances;
-		List<Instance*> owned_light_instances; //not used, but just for the sake of it
-		Set<Instance*> disconnected_child_portals;
-		Set<Instance*> owned_autoroom_geometry;
-		uint64_t last_visited_pass;
-		RoomInfo() { last_visited_pass=0; }
-
-	};
-
-	struct InstancePortal {
-
-		Portal *portal;
-		Set<Instance*> candidate_set;
-		Instance *connected;
-		uint64_t last_visited_pass;
-
-		Plane plane_cache;
-		Vector<Vector3> transformed_point_cache;
-
-
-		PortalInfo() { connected=NULL; last_visited_pass=0;}
-	};
-*/
 
 	/* SCENARIO API */
 
@@ -235,10 +206,6 @@ public:
 		float lod_end_hysteresis;
 		RID lod_instance;
 
-		Instance *room;
-		SelfList<Instance> room_item;
-		bool visible_in_all_rooms;
-
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
 
@@ -262,7 +229,7 @@ public:
 		}
 
 		Instance()
-			: scenario_item(this), update_item(this), room_item(this) {
+			: scenario_item(this), update_item(this) {
 
 			octree_id = 0;
 			scenario = NULL;
@@ -279,9 +246,6 @@ public:
 			lod_end = 0;
 			lod_begin_hysteresis = 0;
 			lod_end_hysteresis = 0;
-
-			room = NULL;
-			visible_in_all_rooms = false;
 
 			last_render_pass = 0;
 			last_frame_pass = 0;
@@ -395,6 +359,7 @@ public:
 			float attenuation;
 			float spot_angle;
 			float spot_attenuation;
+			bool visible;
 
 			bool operator==(const LightCache &p_cache) {
 
@@ -405,7 +370,8 @@ public:
 						radius == p_cache.radius &&
 						attenuation == p_cache.attenuation &&
 						spot_angle == p_cache.spot_angle &&
-						spot_attenuation == p_cache.spot_attenuation);
+						spot_attenuation == p_cache.spot_attenuation &&
+						visible == p_cache.visible);
 			}
 
 			LightCache() {
@@ -416,6 +382,7 @@ public:
 				attenuation = 1.0;
 				spot_angle = 1.0;
 				spot_attenuation = 1.0;
+				visible = true;
 			}
 		};
 
@@ -488,14 +455,13 @@ public:
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario); // from can be mesh, light, poly, area and portal so far.
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
-	virtual void instance_attach_object_instance_ID(RID p_instance, ObjectID p_ID);
+	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_ID);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 
 	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton);
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled);
-	virtual void instance_set_room(RID p_instance, RID p_room);
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin);
 
@@ -518,8 +484,10 @@ public:
 	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
 
 	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void render_empty_scene(RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
+	void render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
 
 	//probes
@@ -564,7 +532,7 @@ public:
 	_FORCE_INLINE_ uint32_t _gi_bake_find_cell(const GIProbeDataCell *cells, int x, int y, int z, int p_cell_subdiv);
 	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell *p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, float p_propagate);
 	void _bake_gi_probe_light(const GIProbeDataHeader *header, const GIProbeDataCell *cells, InstanceGIProbeData::LocalData *local_data, const uint32_t *leaves, int p_leaf_count, const InstanceGIProbeData::LightCache &light_cache, int p_sign);
-	void _bake_gi_probe(Instance *p_probe);
+	void _bake_gi_probe(Instance *p_gi_probe);
 	bool _check_gi_probe(Instance *p_gi_probe);
 	void _setup_gi_probe(Instance *p_instance);
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "body_pair_sw.h"
+
 #include "collision_solver_sw.h"
 #include "os/os.h"
 #include "space_sw.h"
@@ -213,6 +215,11 @@ bool BodyPairSW::setup(real_t p_step) {
 		return false;
 	}
 
+	if (A->is_shape_set_as_disabled(shape_A) || B->is_shape_set_as_disabled(shape_B)) {
+		collided = false;
+		return false;
+	}
+
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
 	validate_contacts();
@@ -290,17 +297,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
-// contact query reporting...
-#if 0
-		if (A->get_body_type() == PhysicsServer::BODY_CHARACTER)
-			static_cast<CharacterBodySW*>(A)->report_character_contact( global_A, global_B, B );
-		if (B->get_body_type() == PhysicsServer::BODY_CHARACTER)
-			static_cast<CharacterBodySW*>(B)->report_character_contact( global_B, global_A, A );
-		if (A->has_contact_query())
-			A->report_contact( global_A, global_B, B );
-		if (B->has_contact_query())
-			B->report_contact( global_B, global_A, A );
-#endif
+		// contact query reporting...
 
 		if (A->can_report_contacts()) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
@@ -312,12 +309,6 @@ bool BodyPairSW::setup(real_t p_step) {
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
 		}
 
-		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC)) {
-			c.active = false;
-			collided = false;
-			continue;
-		}
-
 		c.active = true;
 
 		// Precompute normal mass, tangent mass, and bias.
@@ -327,18 +318,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		kNormal += c.normal.dot(inertia_A.cross(c.rA)) + c.normal.dot(inertia_B.cross(c.rB));
 		c.mass_normal = 1.0f / kNormal;
 
-#if 1
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
-
-#else
-		if (depth > max_penetration) {
-			c.bias = (depth - max_penetration) * (1.0 / (p_step * (1.0 / RELAXATION_TIMESTEPS)));
-		} else {
-			real_t approach = -0.1 * (depth - max_penetration) / (CMP_EPSILON + max_penetration);
-			approach = CLAMP(approach, CMP_EPSILON, 1.0);
-			c.bias = approach * (depth - max_penetration) * (1.0 / p_step);
-		}
-#endif
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;

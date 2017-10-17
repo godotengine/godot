@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector2" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Vector used for 2D Math.
+	</brief_description>
+	<description>
+		2-element structure that can be used to represent positions in 2d-space, or any other pair of numeric values.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Vector2">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Constructs a new Vector2 from the given x and y.
+			</description>
+		</method>
+		<method name="abs">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="angle">
+			<return type="float">
+			</return>
+			<description>
+				Returns the result of atan2 when called with the Vector's x and y as parameters (Math::atan2(x,y)).
+				Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
+			</description>
+		</method>
+		<method name="angle_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Returns the angle in radians between the two vectors.
+			</description>
+		</method>
+		<method name="angle_to_point">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Returns the angle in radians between the line connecting the two points and the x coordinate.
+			</description>
+		</method>
+		<method name="aspect">
+			<return type="float">
+			</return>
+			<description>
+				Returns the ratio of X to Y.
+			</description>
+		</method>
+		<method name="bounce">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="n" type="Vector2">
+			</argument>
+			<description>
+				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="clamped">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="length" type="float">
+			</argument>
+			<description>
+				Returns the vector with a maximum length.
+			</description>
+		</method>
+		<method name="cubic_interpolate">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<argument index="1" name="pre_a" type="Vector2">
+			</argument>
+			<argument index="2" name="post_b" type="Vector2">
+			</argument>
+			<argument index="3" name="t" type="float">
+			</argument>
+			<description>
+				Cubicly interpolates between this Vector and "b", using "pre_a" and "post_b" as handles, and returning the result at position "t".
+			</description>
+		</method>
+		<method name="distance_squared_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Returns the squared distance to vector "b". Prefer this function over "distance_to" if you need to sort vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<description>
+				Returns the distance to vector "b".
+			</description>
+		</method>
+		<method name="dot">
+			<return type="float">
+			</return>
+			<argument index="0" name="with" type="Vector2">
+			</argument>
+			<description>
+				Returns the dot product with vector "b".
+			</description>
+		</method>
+		<method name="floor">
+			<return type="Vector2">
+			</return>
+			<description>
+				Remove the fractional part of x and y.
+			</description>
+		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the vector is normalized or not.
+			</description>
+		</method>
+		<method name="length">
+			<return type="float">
+			</return>
+			<description>
+				Returns the length of the vector.
+			</description>
+		</method>
+		<method name="length_squared">
+			<return type="float">
+			</return>
+			<description>
+				Returns the squared length of the vector. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
+			</description>
+		</method>
+		<method name="linear_interpolate">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<argument index="1" name="t" type="float">
+			</argument>
+			<description>
+				Returns the result of the linear interpolation between this vector and "b", by amount "t".
+			</description>
+		</method>
+		<method name="normalized">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns a normalized vector to unit length.
+			</description>
+		</method>
+		<method name="reflect">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="n" type="Vector2">
+			</argument>
+			<description>
+				Reflects the vector along the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="rotated">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="phi" type="float">
+			</argument>
+			<description>
+				Rotates the vector by "phi" radians.
+			</description>
+		</method>
+		<method name="slide">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="n" type="Vector2">
+			</argument>
+			<description>
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
+			</description>
+		</method>
+		<method name="snapped">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="by" type="Vector2">
+			</argument>
+			<description>
+				Snaps the vector to a grid with the given size.
+			</description>
+		</method>
+		<method name="tangent">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns a perpendicular vector.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="float" setter="" getter="">
+			X component of the vector.
+		</member>
+		<member name="y" type="float" setter="" getter="">
+			Y component of the vector.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

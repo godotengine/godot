@@ -58,7 +58,7 @@
                      FT_Error*     error,
                      size_t        sizeItem )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     /* initialize the structure */
     arrstack->memory    = memory;
@@ -78,7 +78,7 @@
     FT_Memory  memory = arrstack->memory;     /* for FT_FREE */
 
 
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     arrstack->allocated = 0;
     arrstack->count     = 0;
@@ -95,7 +95,7 @@
   cf2_arrstack_setNumElements( CF2_ArrStack  arrstack,
                                size_t        numElements )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     {
       FT_Error   error  = FT_Err_Ok;        /* for FT_REALLOC */
@@ -140,7 +140,7 @@
   cf2_arrstack_setCount( CF2_ArrStack  arrstack,
                          size_t        numElements )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     if ( numElements > arrstack->allocated )
     {
@@ -157,7 +157,7 @@
   FT_LOCAL_DEF( void )
   cf2_arrstack_clear( CF2_ArrStack  arrstack )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     arrstack->count = 0;
   }
@@ -167,7 +167,7 @@
   FT_LOCAL_DEF( size_t )
   cf2_arrstack_size( const CF2_ArrStack  arrstack )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     return arrstack->count;
   }
@@ -176,7 +176,7 @@
   FT_LOCAL_DEF( void* )
   cf2_arrstack_getBuffer( const CF2_ArrStack  arrstack )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     return arrstack->ptr;
   }
@@ -190,7 +190,7 @@
     void*  newPtr;
 
 
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     if ( idx >= arrstack->count )
     {
@@ -212,7 +212,7 @@
   cf2_arrstack_push( CF2_ArrStack  arrstack,
                      const void*   ptr )
   {
-    FT_ASSERT( arrstack != NULL );
+    FT_ASSERT( arrstack );
 
     if ( arrstack->count == arrstack->allocated )
     {
@@ -225,7 +225,7 @@
       }
     }
 
-    FT_ASSERT( ptr != NULL );
+    FT_ASSERT( ptr );
 
     {
       size_t  offset = arrstack->count * arrstack->sizeItem;

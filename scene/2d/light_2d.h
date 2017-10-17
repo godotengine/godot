@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +48,7 @@ public:
 		SHADOW_FILTER_NONE,
 		SHADOW_FILTER_PCF3,
 		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF7,
 		SHADOW_FILTER_PCF9,
 		SHADOW_FILTER_PCF13,
 	};
@@ -68,6 +70,7 @@ private:
 	int item_mask;
 	int item_shadow_mask;
 	int shadow_buffer_size;
+	float shadow_smooth;
 	float shadow_gradient_length;
 	Mode mode;
 	Ref<Texture> texture;
@@ -144,6 +147,9 @@ public:
 
 	void set_shadow_color(const Color &p_shadow_color);
 	Color get_shadow_color() const;
+
+	void set_shadow_smooth(float p_amount);
+	float get_shadow_smooth() const;
 
 	virtual Rect2 get_item_rect() const;
 

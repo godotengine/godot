@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Objects manager (specification).                                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -278,13 +278,16 @@ FT_BEGIN_HEADER
 
     /* we have our own copy of metrics so that we can modify */
     /* it without affecting auto-hinting (when used)         */
-    FT_Size_Metrics    metrics;
+    FT_Size_Metrics*   metrics;        /* for the current rendering mode */
+    FT_Size_Metrics    hinted_metrics; /* for the hinted rendering mode  */
 
     TT_Size_Metrics    ttmetrics;
 
     FT_ULong           strike_index;      /* 0xFFFFFFFF to indicate invalid */
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
+
+    FT_Long            point_size;    /* for the `MPS' bytecode instruction */
 
     FT_UInt            num_function_defs; /* number of function definitions */
     FT_UInt            max_function_defs;
@@ -387,7 +390,8 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
   FT_LOCAL( FT_Error )
-  tt_size_reset( TT_Size  size );
+  tt_size_reset( TT_Size  size,
+                 FT_Bool  only_height );
 
 
   /*************************************************************************/

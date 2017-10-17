@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,10 +217,9 @@ static void joypad_added_callback(void *ctx, IOReturn res, void *sender, IOHIDDe
 }
 
 static bool is_joypad(IOHIDDeviceRef p_device_ref) {
-	CFTypeRef refCF = NULL;
 	int usage_page = 0;
 	int usage = 0;
-	refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDPrimaryUsagePageKey));
+	CFTypeRef refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDPrimaryUsagePageKey));
 	if (refCF) {
 		CFNumberGetValue((CFNumberRef)refCF, kCFNumberSInt32Type, &usage_page);
 	}
@@ -288,13 +288,11 @@ static String _hex_str(uint8_t p_byte) {
 
 bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 
-	CFTypeRef refCF = NULL;
-
 	p_joy->device_ref = p_device_ref;
 	/* get device name */
 	String name;
 	char c_name[256];
-	refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDProductKey));
+	CFTypeRef refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDProductKey));
 	if (!refCF) {
 		refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDManufacturerKey));
 	}
@@ -333,8 +331,7 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy) {
 		input->joy_connection_changed(id, true, name, guid);
 	}
 
-	CFArrayRef array = NULL;
-	array = IOHIDDeviceCopyMatchingElements(p_device_ref, NULL, kIOHIDOptionsTypeNone);
+	CFArrayRef array = IOHIDDeviceCopyMatchingElements(p_device_ref, NULL, kIOHIDOptionsTypeNone);
 	if (array) {
 		p_joy->add_hid_elements(array);
 		CFRelease(array);
@@ -458,7 +455,7 @@ static const InputDefault::JoyAxis axis_correct(int p_value, int p_min, int p_ma
 	return jx;
 }
 
-uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
+void JoypadOSX::process_joypads() {
 	poll_joypads();
 
 	for (int i = 0; i < device_list.size(); i++) {
@@ -467,17 +464,17 @@ uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
 		for (int j = 0; j < joy.axis_elements.size(); j++) {
 			rec_element &elem = joy.axis_elements[j];
 			int value = joy.get_hid_element_state(&elem);
-			p_last_id = input->joy_axis(p_last_id, joy.id, j, axis_correct(value, elem.min, elem.max));
+			input->joy_axis(joy.id, j, axis_correct(value, elem.min, elem.max));
 		}
 		for (int j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements[j]);
-			p_last_id = input->joy_button(p_last_id, joy.id, j, (value >= 1));
+			input->joy_button(joy.id, j, (value >= 1));
 		}
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements[j];
 			int value = joy.get_hid_element_state(&elem);
 			int hat_value = process_hat_value(elem.min, elem.max, value);
-			p_last_id = input->joy_hat(p_last_id, joy.id, hat_value);
+			input->joy_hat(joy.id, hat_value);
 		}
 
 		if (joy.ffservice) {
@@ -494,7 +491,6 @@ uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
 			}
 		}
 	}
-	return p_last_id;
 }
 
 void JoypadOSX::joypad_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp) {

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Mutex" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A synchronization Mutex.
+	</brief_description>
+	<description>
+		A synchronization Mutex. Element used in multi-threadding. Basically a binary [Semaphore]. Guarantees that only one thread has this lock, can be used to protect a critical section.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="lock">
+			<return type="void">
+			</return>
+			<description>
+				Lock this [Mutex], blocks until it is unlocked by the current owner.
+			</description>
+		</method>
+		<method name="try_lock">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Try locking this [Mutex], does not block. Returns [OK] on success else [ERR_BUSY].
+			</description>
+		</method>
+		<method name="unlock">
+			<return type="void">
+			</return>
+			<description>
+				Unlock this [Mutex], leaving it to others threads.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +30,7 @@
 #ifdef FREETYPE_ENABLED
 #include "dynamic_font.h"
 #include "os/file_access.h"
+#include "os/os.h"
 
 bool DynamicFontData::CacheID::operator<(CacheID right) const {
 
@@ -41,10 +43,10 @@ bool DynamicFontData::CacheID::operator<(CacheID right) const {
 	return false;
 }
 
-Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_id) {
+Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_cache_id) {
 
-	if (size_cache.has(p_id)) {
-		return Ref<DynamicFontAtSize>(size_cache[p_id]);
+	if (size_cache.has(p_cache_id)) {
+		return Ref<DynamicFontAtSize>(size_cache[p_cache_id]);
 	}
 
 	Ref<DynamicFontAtSize> dfas;
@@ -53,8 +55,8 @@ Ref<DynamicFontAtSize> DynamicFontData::_get_dynamic_font_at_size(CacheID p_id) 
 
 	dfas->font = Ref<DynamicFontData>(this);
 
-	size_cache[p_id] = dfas.ptr();
-	dfas->id = p_id;
+	size_cache[p_cache_id] = dfas.ptr();
+	dfas->id = p_cache_id;
 	dfas->_load();
 
 	return dfas;
@@ -98,6 +100,7 @@ DynamicFontData::~DynamicFontData() {
 }
 
 ////////////////////
+HashMap<String, Vector<uint8_t> > DynamicFontAtSize::_fontdata;
 
 Error DynamicFontAtSize::_load() {
 
@@ -106,7 +109,29 @@ Error DynamicFontAtSize::_load() {
 	ERR_EXPLAIN(TTR("Error initializing FreeType."));
 	ERR_FAIL_COND_V(error != 0, ERR_CANT_CREATE);
 
-	if (font->font_path != String()) {
+	// FT_OPEN_STREAM is extremely slow only on Android.
+	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == NULL && font->font_path != String()) {
+		// cache font only once for each font->font_path
+		if (_fontdata.has(font->font_path)) {
+
+			font->set_font_ptr(_fontdata[font->font_path].ptr(), _fontdata[font->font_path].size());
+
+		} else {
+
+			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
+			ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+
+			size_t len = f->get_len();
+			_fontdata[font->font_path] = Vector<uint8_t>();
+			Vector<uint8_t> &fontdata = _fontdata[font->font_path];
+			fontdata.resize(len);
+			f->get_buffer(fontdata.ptr(), len);
+			font->set_font_ptr(fontdata.ptr(), len);
+			f->close();
+		}
+	}
+
+	if (font->font_mem == NULL && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
@@ -313,7 +338,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 			cpos.y += ch->v_align;
 			ERR_FAIL_COND_V(ch->texture_idx < -1 || ch->texture_idx >= fb->textures.size(), 0);
 			if (ch->texture_idx != -1)
-				VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), fb->textures[ch->texture_idx].texture->get_rid(), ch->rect, p_modulate);
+				VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), fb->textures[ch->texture_idx].texture->get_rid(), ch->rect, p_modulate, false, RID(), false);
 			advance = ch->advance;
 			used_fallback = true;
 			break;
@@ -335,7 +360,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharT
 		cpos.y += c->v_align;
 		ERR_FAIL_COND_V(c->texture_idx < -1 || c->texture_idx >= textures.size(), 0);
 		if (c->texture_idx != -1)
-			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate);
+			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx].texture->get_rid(), c->rect, p_modulate, false, RID(), false);
 		advance = c->advance;
 		//textures[c->texture_idx].texture->draw(p_canvas_item,Vector2());
 	}
@@ -372,7 +397,7 @@ unsigned long DynamicFontAtSize::_ft_stream_io(FT_Stream stream, unsigned long o
 
 	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
 
-	if (f->get_pos() != offset) {
+	if (f->get_position() != offset) {
 		f->seek(offset);
 	}
 
@@ -499,7 +524,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		if (mh > texsize)
 			texsize = mh; //special case, adapt to it?
 
-		texsize = nearest_power_of_2(texsize);
+		texsize = next_power_of_2(texsize);
 
 		texsize = MIN(texsize, 4096);
 
@@ -535,8 +560,23 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 				int ofs = ((i + tex_y + rect_margin) * tex.texture_size + j + tex_x + rect_margin) * 2;
 				ERR_FAIL_COND(ofs >= tex.imgdata.size());
-				wr[ofs + 0] = 255; //grayscale as 1
-				wr[ofs + 1] = slot->bitmap.buffer[i * slot->bitmap.width + j];
+				switch (slot->bitmap.pixel_mode) {
+					case FT_PIXEL_MODE_MONO: {
+						int byte = i * slot->bitmap.pitch + (j >> 3);
+						int bit = 1 << (7 - (j % 8));
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = slot->bitmap.buffer[byte] & bit ? 255 : 0;
+					} break;
+					case FT_PIXEL_MODE_GRAY:
+						wr[ofs + 0] = 255; //grayscale as 1
+						wr[ofs + 1] = slot->bitmap.buffer[i * slot->bitmap.pitch + j];
+						break;
+						// TODO: FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_BGRA
+					default:
+						ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(slot->bitmap.pixel_mode));
+						ERR_FAIL();
+						break;
+				}
 			}
 		}
 	}
@@ -544,7 +584,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	//blit to image and texture
 	{
 
-		Image img(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata);
+		Ref<Image> img = memnew(Image(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata));
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();
@@ -836,8 +876,8 @@ void DynamicFont::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void DynamicFont::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_font_data", "data:DynamicFontData"), &DynamicFont::set_font_data);
-	ClassDB::bind_method(D_METHOD("get_font_data:DynamicFontData"), &DynamicFont::get_font_data);
+	ClassDB::bind_method(D_METHOD("set_font_data", "data"), &DynamicFont::set_font_data);
+	ClassDB::bind_method(D_METHOD("get_font_data"), &DynamicFont::get_font_data);
 
 	ClassDB::bind_method(D_METHOD("set_size", "data"), &DynamicFont::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &DynamicFont::get_size);
@@ -849,9 +889,9 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spacing", "type", "value"), &DynamicFont::set_spacing);
 	ClassDB::bind_method(D_METHOD("get_spacing", "type"), &DynamicFont::get_spacing);
 
-	ClassDB::bind_method(D_METHOD("add_fallback", "data:DynamicFontData"), &DynamicFont::add_fallback);
-	ClassDB::bind_method(D_METHOD("set_fallback", "idx", "data:DynamicFontData"), &DynamicFont::set_fallback);
-	ClassDB::bind_method(D_METHOD("get_fallback:DynamicFontData", "idx"), &DynamicFont::get_fallback);
+	ClassDB::bind_method(D_METHOD("add_fallback", "data"), &DynamicFont::add_fallback);
+	ClassDB::bind_method(D_METHOD("set_fallback", "idx", "data"), &DynamicFont::set_fallback);
+	ClassDB::bind_method(D_METHOD("get_fallback", "idx"), &DynamicFont::get_fallback);
 	ClassDB::bind_method(D_METHOD("remove_fallback", "idx"), &DynamicFont::remove_fallback);
 	ClassDB::bind_method(D_METHOD("get_fallback_count"), &DynamicFont::get_fallback_count);
 
@@ -867,10 +907,10 @@ void DynamicFont::_bind_methods() {
 	ADD_GROUP("Font", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font_data", PROPERTY_HINT_RESOURCE_TYPE, "DynamicFontData"), "set_font_data", "get_font_data");
 
-	BIND_CONSTANT(SPACING_TOP);
-	BIND_CONSTANT(SPACING_BOTTOM);
-	BIND_CONSTANT(SPACING_CHAR);
-	BIND_CONSTANT(SPACING_SPACE);
+	BIND_ENUM_CONSTANT(SPACING_TOP);
+	BIND_ENUM_CONSTANT(SPACING_BOTTOM);
+	BIND_ENUM_CONSTANT(SPACING_CHAR);
+	BIND_ENUM_CONSTANT(SPACING_SPACE);
 }
 
 DynamicFont::DynamicFont() {

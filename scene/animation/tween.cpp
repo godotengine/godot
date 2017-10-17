@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tween.h"
-#include "method_bind_ext.inc"
+#include "method_bind_ext.gen.inc"
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
 
@@ -151,7 +152,7 @@ void Tween::_notification(int p_what) {
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
-				set_fixed_process_internal(false);
+				set_physics_process_internal(false);
 				set_process_internal(false);
 			}
 		} break;
@@ -159,19 +160,19 @@ void Tween::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (tween_process_mode == TWEEN_PROCESS_FIXED)
+			if (tween_process_mode == TWEEN_PROCESS_PHYSICS)
 				break;
 
 			if (processing)
 				_tween_process(get_process_delta_time());
 		} break;
-		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (tween_process_mode == TWEEN_PROCESS_IDLE)
 				break;
 
 			if (processing)
-				_tween_process(get_fixed_process_delta_time());
+				_tween_process(get_physics_process_delta_time());
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
@@ -223,25 +224,25 @@ void Tween::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_tween_process_mode", "get_tween_process_mode");
 
-	BIND_CONSTANT(TWEEN_PROCESS_FIXED);
-	BIND_CONSTANT(TWEEN_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(TWEEN_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(TWEEN_PROCESS_IDLE);
 
-	BIND_CONSTANT(TRANS_LINEAR);
-	BIND_CONSTANT(TRANS_SINE);
-	BIND_CONSTANT(TRANS_QUINT);
-	BIND_CONSTANT(TRANS_QUART);
-	BIND_CONSTANT(TRANS_QUAD);
-	BIND_CONSTANT(TRANS_EXPO);
-	BIND_CONSTANT(TRANS_ELASTIC);
-	BIND_CONSTANT(TRANS_CUBIC);
-	BIND_CONSTANT(TRANS_CIRC);
-	BIND_CONSTANT(TRANS_BOUNCE);
-	BIND_CONSTANT(TRANS_BACK);
+	BIND_ENUM_CONSTANT(TRANS_LINEAR);
+	BIND_ENUM_CONSTANT(TRANS_SINE);
+	BIND_ENUM_CONSTANT(TRANS_QUINT);
+	BIND_ENUM_CONSTANT(TRANS_QUART);
+	BIND_ENUM_CONSTANT(TRANS_QUAD);
+	BIND_ENUM_CONSTANT(TRANS_EXPO);
+	BIND_ENUM_CONSTANT(TRANS_ELASTIC);
+	BIND_ENUM_CONSTANT(TRANS_CUBIC);
+	BIND_ENUM_CONSTANT(TRANS_CIRC);
+	BIND_ENUM_CONSTANT(TRANS_BOUNCE);
+	BIND_ENUM_CONSTANT(TRANS_BACK);
 
-	BIND_CONSTANT(EASE_IN);
-	BIND_CONSTANT(EASE_OUT);
-	BIND_CONSTANT(EASE_IN_OUT);
-	BIND_CONSTANT(EASE_OUT_IN);
+	BIND_ENUM_CONSTANT(EASE_IN);
+	BIND_ENUM_CONSTANT(EASE_OUT);
+	BIND_ENUM_CONSTANT(EASE_IN_OUT);
+	BIND_ENUM_CONSTANT(EASE_OUT_IN);
 }
 
 Variant &Tween::_get_initial_val(InterpolateData &p_data) {
@@ -420,9 +421,9 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 			Rect3 d = delta_val;
 			Rect3 r;
 
-			APPLY_EQUATION(pos.x);
-			APPLY_EQUATION(pos.y);
-			APPLY_EQUATION(pos.z);
+			APPLY_EQUATION(position.x);
+			APPLY_EQUATION(position.y);
+			APPLY_EQUATION(position.z);
 			APPLY_EQUATION(size.x);
 			APPLY_EQUATION(size.y);
 			APPLY_EQUATION(size.z);
@@ -559,12 +560,16 @@ void Tween::_tween_process(float p_delta) {
 
 		switch (data.type) {
 			case INTER_PROPERTY:
-			case INTER_METHOD:
-				break;
+			case INTER_METHOD: {
+				Variant result = _run_equation(data);
+				emit_signal("tween_step", object, data.key, data.elapsed, result);
+				_apply_tween_value(data, result);
+				if (data.finish)
+					_apply_tween_value(data, data.final_val);
+			} break;
+
 			case INTER_CALLBACK:
 				if (data.finish) {
-
-					Variant::CallError error;
 					if (data.call_deferred) {
 
 						switch (data.args) {
@@ -587,8 +592,8 @@ void Tween::_tween_process(float p_delta) {
 								object->call_deferred(data.key, data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]);
 								break;
 						}
-
 					} else {
+						Variant::CallError error;
 						Variant *arg[5] = {
 							&data.arg[0],
 							&data.arg[1],
@@ -598,16 +603,9 @@ void Tween::_tween_process(float p_delta) {
 						};
 						object->call(data.key, (const Variant **)arg, data.args, error);
 					}
-					if (!repeat)
-						call_deferred("_remove", object, data.key, true);
 				}
-				continue;
+				break;
 		}
-
-		Variant result = _run_equation(data);
-		emit_signal("tween_step", object, data.key, data.elapsed, result);
-
-		_apply_tween_value(data, result);
 
 		if (data.finish) {
 			emit_signal("tween_completed", object, data.key);
@@ -644,7 +642,7 @@ void Tween::_set_process(bool p_process, bool p_force) {
 
 	switch (tween_process_mode) {
 
-		case TWEEN_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case TWEEN_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case TWEEN_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 
@@ -961,7 +959,7 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 		case Variant::RECT3: {
 			Rect3 i = initial_val;
 			Rect3 f = final_val;
-			delta_val = Rect3(f.pos - i.pos, f.size - i.size);
+			delta_val = Rect3(f.position - i.position, f.size - i.size);
 		} break;
 		case Variant::TRANSFORM: {
 			Transform i = initial_val;
@@ -1022,7 +1020,7 @@ bool Tween::interpolate_property(Object *p_object, String p_property, Variant p_
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
 	data.initial_val = p_initial_val;
 	data.final_val = p_final_val;
@@ -1064,7 +1062,7 @@ bool Tween::interpolate_method(Object *p_object, String p_method, Variant p_init
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
 	data.initial_val = p_initial_val;
 	data.final_val = p_final_val;
@@ -1101,7 +1099,7 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 	data.call_deferred = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_callback;
 	data.duration = p_duration;
 	data.delay = 0;
@@ -1153,7 +1151,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	data.call_deferred = true;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_callback;
 	data.duration = p_duration;
 	data.delay = 0;
@@ -1220,10 +1218,10 @@ bool Tween::follow_property(Object *p_object, String p_property, Variant p_initi
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
 	data.initial_val = p_initial_val;
-	data.target_id = p_target->get_instance_ID();
+	data.target_id = p_target->get_instance_id();
 	data.target_key = p_target_property;
 	data.duration = p_duration;
 	data.trans_type = p_trans_type;
@@ -1270,10 +1268,10 @@ bool Tween::follow_method(Object *p_object, String p_method, Variant p_initial_v
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
 	data.initial_val = p_initial_val;
-	data.target_id = p_target->get_instance_ID();
+	data.target_id = p_target->get_instance_id();
 	data.target_key = p_target_method;
 	data.duration = p_duration;
 	data.trans_type = p_trans_type;
@@ -1319,9 +1317,9 @@ bool Tween::targeting_property(Object *p_object, String p_property, Object *p_in
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_property;
-	data.target_id = p_initial->get_instance_ID();
+	data.target_id = p_initial->get_instance_id();
 	data.target_key = p_initial_property;
 	data.initial_val = initial_val;
 	data.final_val = p_final_val;
@@ -1373,9 +1371,9 @@ bool Tween::targeting_method(Object *p_object, String p_method, Object *p_initia
 	data.finish = false;
 	data.elapsed = 0;
 
-	data.id = p_object->get_instance_ID();
+	data.id = p_object->get_instance_id();
 	data.key = p_method;
-	data.target_id = p_initial->get_instance_ID();
+	data.target_id = p_initial->get_instance_id();
 	data.target_key = p_initial_method;
 	data.initial_val = initial_val;
 	data.final_val = p_final_val;

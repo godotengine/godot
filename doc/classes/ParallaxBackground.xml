@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ParallaxBackground" inherits="CanvasLayer" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		A node used to create a parallax scrolling background.
+	</brief_description>
+	<description>
+		A ParallaxBackground will use one or more [ParallaxLayer] nodes to create a parallax scrolling background. Each [ParallaxLayer] can be set to move at different speeds relative to the camera movement, this can be used to create an illusion of depth in a 2D game.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_limit_begin" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the beginning limit.
+			</description>
+		</method>
+		<method name="get_limit_end" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the ending limit.
+			</description>
+		</method>
+		<method name="get_scroll_base_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the base offset.
+			</description>
+		</method>
+		<method name="get_scroll_base_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the base motion scale.
+			</description>
+		</method>
+		<method name="get_scroll_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_ignore_camera_zoom">
+			<return type="bool">
+			</return>
+			<description>
+				Return ignoring camera zoom.
+			</description>
+		</method>
+		<method name="set_ignore_camera_zoom">
+			<return type="void">
+			</return>
+			<argument index="0" name="ignore" type="bool">
+			</argument>
+			<description>
+				Set to true for all child [ParallaxLayer] nodes to not be affected by the zoom level of the camera.
+			</description>
+		</method>
+		<method name="set_limit_begin">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+				Set the left and top limits in pixels for scrolling to begin. If the camera is outside of this limit the background will not continue to scroll. If an axis is greater than or equal to the corresponding axis of limit_end, then it will not limit scrolling for that axis.
+			</description>
+		</method>
+		<method name="set_limit_end">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+				Set the right and bottom limits in pixels for scrolling to end. If the camera is outside of this limit the background will not continue to scroll. If an axis is less than or equal to the corresponding axis of limit_begin, then it will not limit scrolling for that axis.
+			</description>
+		</method>
+		<method name="set_scroll_base_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+				Set the base offset in pixels of all children [ParallaxLayer] nodes.
+			</description>
+		</method>
+		<method name="set_scroll_base_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the base motion scale of all children [ParallaxLayer] nodes.
+			</description>
+		</method>
+		<method name="set_scroll_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset">
+		</member>
+		<member name="scroll_base_scale" type="Vector2" setter="set_scroll_base_scale" getter="get_scroll_base_scale">
+		</member>
+		<member name="scroll_ignore_camera_zoom" type="bool" setter="set_ignore_camera_zoom" getter="is_ignore_camera_zoom">
+		</member>
+		<member name="scroll_limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin">
+		</member>
+		<member name="scroll_limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end">
+		</member>
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

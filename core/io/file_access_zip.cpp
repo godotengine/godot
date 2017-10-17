@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +65,7 @@ static uLong godot_write(voidpf opaque, voidpf stream, const void *buf, uLong si
 static long godot_tell(voidpf opaque, voidpf stream) {
 
 	FileAccess *f = (FileAccess *)opaque;
-	return f->get_pos();
+	return f->get_position();
 };
 
 static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
@@ -75,7 +76,7 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 	switch (origin) {
 
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = f->get_pos() + offset;
+			pos = f->get_position() + offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
 			pos = f->get_len() + offset;
@@ -149,8 +150,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
 	ERR_FAIL_COND_V(!pkg, NULL);
 	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
-	ERR_FAIL_COND_V(unz_err != UNZ_OK, NULL);
-	if (unzOpenCurrentFile(pkg) != UNZ_OK) {
+	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
 
 		unzClose(pkg);
 		ERR_FAIL_V(NULL);
@@ -159,15 +159,15 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	return pkg;
 };
 
-bool ZipArchive::try_open_pack(const String &p_name) {
+bool ZipArchive::try_open_pack(const String &p_path) {
 
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
-	if (p_name.get_extension().nocasecmp_to("zip") != 0 && p_name.get_extension().nocasecmp_to("pcz") != 0)
+	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
 		return false;
 
 	zlib_filefunc_def io;
 
-	FileAccess *f = FileAccess::open(p_name, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f)
 		return false;
 	io.opaque = f;
@@ -180,7 +180,7 @@ bool ZipArchive::try_open_pack(const String &p_name) {
 	io.zclose_file = godot_close;
 	io.zerror_file = godot_testerror;
 
-	unzFile zfile = unzOpen2(p_name.utf8().get_data(), &io);
+	unzFile zfile = unzOpen2(p_path.utf8().get_data(), &io);
 	ERR_FAIL_COND_V(!zfile, false);
 
 	unz_global_info64 gi;
@@ -188,7 +188,7 @@ bool ZipArchive::try_open_pack(const String &p_name) {
 	ERR_FAIL_COND_V(err != UNZ_OK, false);
 
 	Package pkg;
-	pkg.filename = p_name;
+	pkg.filename = p_path;
 	pkg.zfile = zfile;
 	packages.push_back(pkg);
 	int pkg_num = packages.size() - 1;
@@ -209,7 +209,7 @@ bool ZipArchive::try_open_pack(const String &p_name) {
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_name, fname, 1, 0, md5, this);
+		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this);
 		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
 
 		if ((i + 1) < gi.number_entry) {
@@ -301,7 +301,7 @@ void FileAccessZip::seek_end(int64_t p_position) {
 	unzSeekCurrentFile(zfile, get_len() + p_position);
 };
 
-size_t FileAccessZip::get_pos() const {
+size_t FileAccessZip::get_position() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);
@@ -352,6 +352,11 @@ Error FileAccessZip::get_error() const {
 
 	return OK;
 };
+
+void FileAccessZip::flush() {
+
+	ERR_FAIL();
+}
 
 void FileAccessZip::store_8(uint8_t p_dest) {
 

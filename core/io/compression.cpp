@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +29,13 @@
 /*************************************************************************/
 #include "compression.h"
 #include "os/copymem.h"
-#include "zlib.h"
-
-#include "fastlz.h"
+#include "project_settings.h"
 #include "zip_io.h"
+
+#include "thirdparty/misc/fastlz.h"
+
+#include <zlib.h>
+#include <zstd.h>
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 
@@ -48,22 +52,22 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 			}
 
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int err = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+			int level = p_mode == MODE_DEFLATE ? zlib_level : gzip_level;
+			int err = deflateInit2(&strm, level, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
 			if (err != Z_OK)
 				return -1;
 
 			strm.avail_in = p_src_size;
 			int aout = deflateBound(&strm, p_src_size);
-			/*if (aout>p_src_size) {
-				deflateEnd(&strm);
-				return -1;
-			}*/
 			strm.avail_out = aout;
 			strm.next_in = (Bytef *)p_src;
 			strm.next_out = p_dst;
@@ -72,6 +76,11 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 			deflateEnd(&strm);
 			return aout;
 
+		} break;
+		case MODE_ZSTD: {
+
+			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
+			return ZSTD_compress(p_dst, max_dst_size, p_src, p_src_size, zstd_level);
 		} break;
 	}
 
@@ -89,18 +98,25 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 			return ss;
 
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
-			int err = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+			int err = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
 			if (err != Z_OK)
 				return -1;
 			int aout = deflateBound(&strm, p_src_size);
 			deflateEnd(&strm);
 			return aout;
+		} break;
+		case MODE_ZSTD: {
+
+			return ZSTD_compressBound(p_src_size);
 		} break;
 	}
 
@@ -123,7 +139,10 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			}
 			return ret_size;
 		} break;
-		case MODE_DEFLATE: {
+		case MODE_DEFLATE:
+		case MODE_GZIP: {
+
+			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
 			strm.zalloc = zipio_alloc;
@@ -131,7 +150,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			strm.opaque = Z_NULL;
 			strm.avail_in = 0;
 			strm.next_in = Z_NULL;
-			int err = inflateInit(&strm);
+			int err = inflateInit2(&strm, window_bits);
 			ERR_FAIL_COND_V(err != Z_OK, -1);
 
 			strm.avail_in = p_src_size;
@@ -145,7 +164,15 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			ERR_FAIL_COND_V(err != Z_STREAM_END, -1);
 			return total;
 		} break;
+		case MODE_ZSTD: {
+
+			return ZSTD_decompress(p_dst, p_dst_max_size, p_src, p_src_size);
+		} break;
 	}
 
 	ERR_FAIL_V(-1);
 }
+
+int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
+int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
+int Compression::zstd_level = 3;

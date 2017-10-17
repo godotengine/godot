@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,6 +41,7 @@ public:
 	enum DrawFlags {
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
+		FLAG_DOUBLE_SIDED,
 		FLAG_MAX
 
 	};
@@ -117,7 +119,7 @@ public:
 	void set_pixel_size(float p_amount);
 	float get_pixel_size() const;
 
-	void set_axis(Vector3::Axis p_amount);
+	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
 
 	void set_draw_flag(DrawFlags p_flag, bool p_enable);
@@ -178,37 +180,6 @@ public:
 	Sprite3D();
 	//~Sprite3D();
 };
-
-#if 0
-class AnimatedSprite3D : public SpriteBase3D {
-
-	GDCLASS(AnimatedSprite3D,SpriteBase3D);
-	Ref<SpriteFrames> frames;
-
-
-	StringName animation;
-	int frame;
-
-protected:
-	virtual void _draw();
-	static void _bind_methods();
-public:
-
-
-
-	void set_sprite_frames(const Ref<SpriteFrames>& p_sprite_frames);
-	Ref<SpriteFrames> get_sprite_frames() const;
-
-	void set_frame(int p_frame);
-	int get_frame() const;
-
-
-	virtual Rect2 get_item_rect() const;
-
-	AnimatedSprite3D();
-	//~AnimatedSprite3D();
-};
-#endif
 
 class AnimatedSprite3D : public SpriteBase3D {
 

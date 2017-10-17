@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,6 +183,9 @@ private:
 	void _update_quadrant_transform();
 	void _recompute_rect_cache();
 
+	void _update_all_items_material_state();
+	_FORCE_INLINE_ void _update_item_material_state(const RID &p_canvas_item);
+
 	_FORCE_INLINE_ int _get_quadrant_size() const;
 
 	void _set_tile_data(const PoolVector<int> &p_data);
@@ -232,6 +236,12 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;
 
@@ -263,12 +273,17 @@ public:
 	bool is_y_sort_mode_enabled() const;
 
 	Array get_used_cells() const;
+	Array get_used_cells_by_id(int p_id) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
 	virtual void set_light_mask(int p_light_mask);
+
+	virtual void set_material(const Ref<Material> &p_material);
+
+	virtual void set_use_parent_material(bool p_use_parent_material);
 
 	void clear();
 

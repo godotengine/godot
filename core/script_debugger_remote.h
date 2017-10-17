@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +54,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Vector<ScriptLanguage::ProfilingInfo *> profile_info_ptrs;
 
 	Map<StringName, int> profiler_function_signature_map;
-	float frame_time, idle_time, fixed_time, fixed_frame_time;
+	float frame_time, idle_time, physics_time, physics_frame_time;
 
 	bool profiling;
 	int max_frame_functions;
@@ -125,6 +126,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	Vector<FrameData> profile_frame_data;
 
+	void _put_variable(const String &p_name, const Variant &p_variable);
+
 public:
 	struct ResourceUsage {
 
@@ -158,7 +161,7 @@ public:
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_fixed_time, float p_fixed_frame_time);
+	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

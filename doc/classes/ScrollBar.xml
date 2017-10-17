@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScrollBar" inherits="Range" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base class for scroll bars.
+	</brief_description>
+	<description>
+		Scrollbars are a [Range] based [Control], that display a draggable area (the size of the page). Horizontal ([HScrollBar]) and Vertical ([VScrollBar]) versions are available.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_custom_step" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_step">
+			<return type="void">
+			</return>
+			<argument index="0" name="step" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step">
+		</member>
+	</members>
+	<signals>
+		<signal name="scrolling">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

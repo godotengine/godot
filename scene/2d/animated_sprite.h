@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +47,8 @@ class SpriteFrames : public Resource {
 			loop = true;
 			speed = 5;
 		}
+
+		StringName normal_name;
 	};
 
 	Map<StringName, Anim> animations;
@@ -86,6 +89,20 @@ public:
 			return Ref<Texture>();
 
 		return E->get().frames[p_idx];
+	}
+
+	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
+
+		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+		ERR_FAIL_COND_V(!E, Ref<Texture>());
+		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
+
+		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
+
+		if (!EN || p_idx >= EN->get().frames.size())
+			return Ref<Texture>();
+
+		return EN->get().frames[p_idx];
 	}
 
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture> &p_frame) {

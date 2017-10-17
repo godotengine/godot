@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventScreenDrag" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Input event type for screen drag events.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_relative" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_speed" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_relative">
+			<return type="void">
+			</return>
+			<argument index="0" name="relative" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_speed">
+			<return type="void">
+			</return>
+			<argument index="0" name="speed" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="index" type="int" setter="set_index" getter="get_index">
+			Drag event index in the case of a multi-drag event.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position">
+			Position of the drag event.
+		</member>
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative">
+			Position of the drag event relative to its start position.
+		</member>
+		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed">
+			Speed of the drag event.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

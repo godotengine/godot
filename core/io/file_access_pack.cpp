@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -139,17 +140,17 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	if (magic != 0x43504447) {
 		//maybe at he end.... self contained exe
 		f->seek_end();
-		f->seek(f->get_pos() - 4);
+		f->seek(f->get_position() - 4);
 		magic = f->get_32();
 		if (magic != 0x43504447) {
 
 			memdelete(f);
 			return false;
 		}
-		f->seek(f->get_pos() - 12);
+		f->seek(f->get_position() - 12);
 
 		uint64_t ds = f->get_64();
-		f->seek(f->get_pos() - ds - 8);
+		f->seek(f->get_position() - ds - 8);
 
 		magic = f->get_32();
 		if (magic != 0x43504447) {
@@ -165,9 +166,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t ver_rev = f->get_32();
 
 	ERR_EXPLAIN("Pack version unsupported: " + itos(version));
-	ERR_FAIL_COND_V(version != PACK_VERSION, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(version != PACK_VERSION, false);
 	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + "." + itos(ver_rev));
-	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -235,7 +236,7 @@ void FileAccessPack::seek_end(int64_t p_position) {
 
 	seek(pf.size + p_position);
 }
-size_t FileAccessPack::get_pos() const {
+size_t FileAccessPack::get_position() const {
 
 	return pos;
 }
@@ -292,6 +293,11 @@ Error FileAccessPack::get_error() const {
 	return OK;
 }
 
+void FileAccessPack::flush() {
+
+	ERR_FAIL();
+}
+
 void FileAccessPack::store_8(uint8_t p_dest) {
 
 	ERR_FAIL();
@@ -307,10 +313,9 @@ bool FileAccessPack::file_exists(const String &p_name) {
 	return false;
 }
 
-FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) {
-
-	pf = p_file;
-	f = FileAccess::open(pf.pack, FileAccess::READ);
+FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file)
+	: pf(p_file),
+	  f(FileAccess::open(pf.pack, FileAccess::READ)) {
 	if (!f) {
 		ERR_EXPLAIN("Can't open pack-referenced file: " + String(pf.pack));
 		ERR_FAIL_COND(!f);
@@ -439,13 +444,12 @@ Error DirAccessPack::change_dir(String p_dir) {
 
 String DirAccessPack::get_current_dir() {
 
-	String p;
 	PackedData::PackedDir *pd = current;
-	while (pd->parent) {
+	String p = current->name;
 
-		if (pd != current)
-			p = "/" + p;
-		p = p + pd->name;
+	while (pd->parent) {
+		pd = pd->parent;
+		p = pd->name + "/" + p;
 	}
 
 	return "res://" + p;

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +43,7 @@ void Container::add_child_notify(Node *p_child) {
 
 	Control::add_child_notify(p_child);
 
-	Control *control = p_child->cast_to<Control>();
+	Control *control = Object::cast_to<Control>(p_child);
 	if (!control)
 		return;
 
@@ -56,7 +57,7 @@ void Container::move_child_notify(Node *p_child) {
 
 	Control::move_child_notify(p_child);
 
-	if (!p_child->cast_to<Control>())
+	if (!Object::cast_to<Control>(p_child))
 		return;
 
 	queue_sort();
@@ -66,7 +67,7 @@ void Container::remove_child_notify(Node *p_child) {
 
 	Control::remove_child_notify(p_child);
 
-	Control *control = p_child->cast_to<Control>();
+	Control *control = Object::cast_to<Control>(p_child);
 	if (!control)
 		return;
 
@@ -94,19 +95,31 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	Rect2 r = p_rect;
 
 	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
-		r.size.x = minsize.x;
-		r.pos.x += Math::floor((p_rect.size.x - minsize.x) / 2);
+		r.size.x = minsize.width;
+		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
+			r.position.x += p_rect.size.width - minsize.width;
+		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
+			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
+		} else {
+			r.position.x += 0;
+		}
 	}
 
 	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
 		r.size.y = minsize.y;
-		r.pos.y += Math::floor((p_rect.size.y - minsize.y) / 2);
+		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
+			r.position.y += p_rect.size.height - minsize.height;
+		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
+			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
+		} else {
+			r.position.y += 0;
+		}
 	}
 
 	for (int i = 0; i < 4; i++)
 		p_child->set_anchor(Margin(i), ANCHOR_BEGIN);
 
-	p_child->set_pos(r.pos);
+	p_child->set_position(r.position);
 	p_child->set_size(r.size);
 	p_child->set_rotation(0);
 	p_child->set_scale(Vector2(1, 1));
@@ -155,7 +168,7 @@ void Container::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
 
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
-	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child:Control", "rect"), &Container::fit_child_in_rect);
+	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
 
 	BIND_CONSTANT(NOTIFICATION_SORT_CHILDREN);
 	ADD_SIGNAL(MethodInfo("sort_children"));

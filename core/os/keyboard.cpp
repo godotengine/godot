@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,8 +42,8 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_TAB                           ,"Tab"},
 		{KEY_BACKTAB                       ,"BackTab"},
 		{KEY_BACKSPACE                     ,"BackSpace"},
-		{KEY_RETURN                        ,"Return"},
 		{KEY_ENTER                         ,"Enter"},
+		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_INSERT                        ,"Insert"},
 		{KEY_DELETE                        ,"Delete"},
 		{KEY_PAUSE                         ,"Pause"},
@@ -80,7 +81,6 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_F14                           ,"F14"},
 		{KEY_F15                           ,"F15"},
 		{KEY_F16                           ,"F16"},
-		{KEY_KP_ENTER                      ,"Kp Enter"},
 		{KEY_KP_MULTIPLY                   ,"Kp Multiply"},
 		{KEY_KP_DIVIDE                     ,"Kp Divide"},
 		{KEY_KP_SUBTRACT                   ,"Kp Subtract"},
@@ -294,8 +294,8 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_TAB:
 		case KEY_BACKTAB:
 		case KEY_BACKSPACE:
-		case KEY_RETURN:
 		case KEY_ENTER:
+		case KEY_KP_ENTER:
 		case KEY_INSERT:
 		case KEY_DELETE:
 		case KEY_PAUSE:
@@ -333,7 +333,6 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_F14:
 		case KEY_F15:
 		case KEY_F16:
-		case KEY_KP_ENTER:
 		case KEY_SUPER_L:
 		case KEY_SUPER_R:
 		case KEY_MENU:

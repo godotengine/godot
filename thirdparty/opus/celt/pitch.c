@@ -412,6 +412,41 @@ void pitch_search(const opus_val16 * OPUS_RESTRICT x_lp, opus_val16 * OPUS_RESTR
    RESTORE_STACK;
 }
 
+#ifdef FIXED_POINT
+static opus_val16 compute_pitch_gain(opus_val32 xy, opus_val32 xx, opus_val32 yy)
+{
+   opus_val32 x2y2;
+   int sx, sy, shift;
+   opus_val32 g;
+   opus_val16 den;
+   if (xy == 0 || xx == 0 || yy == 0)
+      return 0;
+   sx = celt_ilog2(xx)-14;
+   sy = celt_ilog2(yy)-14;
+   shift = sx + sy;
+   x2y2 = MULT16_16_Q14(VSHR32(xx, sx), VSHR32(yy, sy));
+   if (shift & 1) {
+      if (x2y2 < 32768)
+      {
+         x2y2 <<= 1;
+         shift--;
+      } else {
+         x2y2 >>= 1;
+         shift++;
+      }
+   }
+   den = celt_rsqrt_norm(x2y2);
+   g = MULT16_32_Q15(den, xy);
+   g = VSHR32(g, (shift>>1)-1);
+   return EXTRACT16(MIN32(g, Q15ONE));
+}
+#else
+static opus_val16 compute_pitch_gain(opus_val32 xy, opus_val32 xx, opus_val32 yy)
+{
+   return xy/celt_sqrt(1+xx*yy);
+}
+#endif
+
 static const int second_check[16] = {0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2};
 opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
       int N, int *T0_, int prev_period, opus_val16 prev_gain, int arch)
@@ -450,18 +485,7 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
    yy = yy_lookup[T0];
    best_xy = xy;
    best_yy = yy;
-#ifdef FIXED_POINT
-      {
-         opus_val32 x2y2;
-         int sh, t;
-         x2y2 = 1+HALF32(MULT32_32_Q31(xx,yy));
-         sh = celt_ilog2(x2y2)>>1;
-         t = VSHR32(x2y2, 2*(sh-7));
-         g = g0 = VSHR32(MULT16_32_Q15(celt_rsqrt_norm(t), xy),sh+1);
-      }
-#else
-      g = g0 = xy/celt_sqrt(1+xx*yy);
-#endif
+   g = g0 = compute_pitch_gain(xy, xx, yy);
    /* Look for any pitch at T/k */
    for (k=2;k<=15;k++)
    {
@@ -484,24 +508,13 @@ opus_val16 remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
          T1b = celt_udiv(2*second_check[k]*T0+k, 2*k);
       }
       dual_inner_prod(x, &x[-T1], &x[-T1b], N, &xy, &xy2, arch);
-      xy += xy2;
-      yy = yy_lookup[T1] + yy_lookup[T1b];
-#ifdef FIXED_POINT
-      {
-         opus_val32 x2y2;
-         int sh, t;
-         x2y2 = 1+MULT32_32_Q31(xx,yy);
-         sh = celt_ilog2(x2y2)>>1;
-         t = VSHR32(x2y2, 2*(sh-7));
-         g1 = VSHR32(MULT16_32_Q15(celt_rsqrt_norm(t), xy),sh+1);
-      }
-#else
-      g1 = xy/celt_sqrt(1+2.f*xx*1.f*yy);
-#endif
+      xy = HALF32(xy + xy2);
+      yy = HALF32(yy_lookup[T1] + yy_lookup[T1b]);
+      g1 = compute_pitch_gain(xy, xx, yy);
       if (abs(T1-prev_period)<=1)
          cont = prev_gain;
       else if (abs(T1-prev_period)<=2 && 5*k*k < T0)
-         cont = HALF32(prev_gain);
+         cont = HALF16(prev_gain);
       else
          cont = 0;
       thresh = MAX16(QCONST16(.3f,15), MULT16_16_Q15(QCONST16(.7f,15),g0)-cont);

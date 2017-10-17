@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server.h"
-#include "global_config.h"
-#include "method_bind_ext.inc"
+
+#include "method_bind_ext.gen.inc"
+#include "project_settings.h"
 
 VisualServer *VisualServer::singleton = NULL;
 VisualServer *(*VisualServer::create_func)() = NULL;
@@ -36,25 +38,6 @@ VisualServer *(*VisualServer::create_func)() = NULL;
 VisualServer *VisualServer::get_singleton() {
 
 	return singleton;
-}
-
-PoolVector<String> VisualServer::_shader_get_param_list(RID p_shader) const {
-
-	//remove at some point
-
-	PoolVector<String> pl;
-
-#if 0
-	List<StringName> params;
-	shader_get_param_list(p_shader,&params);
-
-
-	for(List<StringName>::Element *E=params.front();E;E=E->next()) {
-
-		pl.push_back(E->get());
-	}
-#endif
-	return pl;
 }
 
 VisualServer *VisualServer::create() {
@@ -67,10 +50,11 @@ VisualServer *VisualServer::create() {
 	return NULL;
 }
 
-RID VisualServer::texture_create_from_image(const Image &p_image, uint32_t p_flags) {
+RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
+	ERR_FAIL_COND_V(!p_image.is_valid(), RID());
 	RID texture = texture_create();
-	texture_allocate(texture, p_image.get_width(), p_image.get_height(), p_image.get_format(), p_flags); //if it has mipmaps, use, else generate
+	texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags); //if it has mipmaps, use, else generate
 	ERR_FAIL_COND_V(!texture.is_valid(), texture);
 
 	texture_set_data(texture, p_image);
@@ -119,12 +103,12 @@ RID VisualServer::get_test_texture() {
 		}
 	}
 
-	Image data(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data);
+	Ref<Image> data = memnew(Image(TEST_TEXTURE_SIZE, TEST_TEXTURE_SIZE, false, Image::FORMAT_RGB8, test_data));
 
 	test_texture = texture_create_from_image(data);
 
 	return test_texture;
-};
+}
 
 void VisualServer::_free_internal_rids() {
 
@@ -134,11 +118,6 @@ void VisualServer::_free_internal_rids() {
 		free(white_texture);
 	if (test_material.is_valid())
 		free(test_material);
-
-	for (int i = 0; i < 16; i++) {
-		if (material_2d[i].is_valid())
-			free(material_2d[i]);
-	}
 }
 
 RID VisualServer::_make_test_cube() {
@@ -282,35 +261,6 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 	return mesh;
 }
 
-RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_alpha, bool p_opaque_prepass) {
-
-	int version = 0;
-	if (p_shaded)
-		version = 1;
-	if (p_transparent)
-		version |= 2;
-	if (p_cut_alpha)
-		version |= 4;
-	if (p_opaque_prepass)
-		version |= 8;
-	if (material_2d[version].is_valid())
-		return material_2d[version];
-
-	//not valid, make
-
-	/*	material_2d[version]=fixed_material_create();
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_ALPHA,p_transparent);
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
-	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_DISCARD_ALPHA,p_cut_alpha);
-	material_set_flag(material_2d[version],MATERIAL_FLAG_UNSHADED,!p_shaded);
-	material_set_flag(material_2d[version],MATERIAL_FLAG_DOUBLE_SIDED,true);
-	material_set_depth_draw_mode(material_2d[version],p_opaque_prepass?MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA:MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
-	fixed_material_set_texture(material_2d[version],FIXED_MATERIAL_PARAM_DIFFUSE,get_white_texture());
-	//material cut alpha?*/
-
-	return material_2d[version];
-}
-
 RID VisualServer::get_white_texture() {
 
 	if (white_texture.is_valid())
@@ -323,12 +273,15 @@ RID VisualServer::get_white_texture() {
 		for (int i = 0; i < 16 * 3; i++)
 			w[i] = 255;
 	}
-	Image white(4, 4, 0, Image::FORMAT_RGB8, wt);
+	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
 	white_texture = texture_create();
 	texture_allocate(white_texture, 4, 4, Image::FORMAT_RGB8);
 	texture_set_data(white_texture, white);
 	return white_texture;
 }
+
+#define SMALL_VEC2 Vector2(0.00001, 0.00001)
+#define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
 
 Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, Rect3 &r_aabb, Vector<Rect3> r_bone_aabb) {
 
@@ -336,8 +289,6 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 	PoolVector<uint8_t>::Write iw;
 	if (r_index_array.size()) {
-		print_line("elements: " + itos(r_index_array.size()));
-
 		iw = r_index_array.write();
 	}
 
@@ -373,7 +324,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2());
+								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -389,7 +340,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], Vector2());
+								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -397,7 +348,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						}
 					}
 
-					r_aabb = Rect3(Vector3(aabb.pos.x, aabb.pos.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
+					r_aabb = Rect3(Vector3(aabb.position.x, aabb.position.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
 
 				} else {
 					PoolVector<Vector3> array = p_arrays[ai];
@@ -419,7 +370,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3());
+								aabb = Rect3(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -435,7 +386,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], Vector3());
+								aabb = Rect3(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -463,7 +414,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
 
-						uint8_t vector[4] = {
+						int8_t vector[4] = {
 							CLAMP(src[i].x * 127, -128, 127),
 							CLAMP(src[i].y * 127, -128, 127),
 							CLAMP(src[i].z * 127, -128, 127),
@@ -767,8 +718,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					if (bptr->size.x < 0) {
 						//first
-						bptr[idx] = Rect3();
-						bptr[idx].pos = v;
+						bptr[idx] = Rect3(v, SMALL_VEC3);
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);
@@ -1231,11 +1181,12 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				if (p_format & ARRAY_COMPRESS_NORMAL) {
 
 					PoolVector<Vector3>::Write w = arr.write();
+					const float multiplier = 1.f / 127.f;
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Vector3(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0);
+						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
+						w[j] = Vector3(float(v[0]) * multiplier, float(v[1]) * multiplier, float(v[2]) * multiplier);
 					}
 				} else {
 					PoolVector<Vector3>::Write w = arr.write();
@@ -1259,9 +1210,9 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 					for (int j = 0; j < p_vertex_len; j++) {
 
-						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
+						const int8_t *v = (const int8_t *)&r[j * total_elem_size + offsets[i]];
 						for (int k = 0; k < 4; k++) {
-							w[j * 4 + k] = float(v[k] / 255.0) * 2.0 - 1.0;
+							w[j * 4 + k] = float(v[k] / 127.0);
 						}
 					}
 				} else {
@@ -1291,7 +1242,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					for (int j = 0; j < p_vertex_len; j++) {
 
 						const uint8_t *v = (const uint8_t *)&r[j * total_elem_size + offsets[i]];
-						w[j] = Color(float(v[0] / 255.0) * 2.0 - 1.0, float(v[1] / 255.0) * 2.0 - 1.0, float(v[2] / 255.0) * 2.0 - 1.0, float(v[3] / 255.0) * 2.0 - 1.0);
+						w[j] = Color(float(v[0] / 255.0), float(v[1] / 255.0), float(v[2] / 255.0), float(v[3] / 255.0));
 					}
 				} else {
 					PoolVector<Color>::Write w = arr.write();
@@ -1469,17 +1420,43 @@ Array VisualServer::mesh_surface_get_arrays(RID p_mesh, int p_surface) const {
 	return _get_array_from_surface(format, vertex_data, vertex_len, index_data, index_len);
 }
 
+Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
+
+	Vector<PoolVector<uint8_t> > blend_shape_data = mesh_surface_get_blend_shapes(p_mesh, p_surface);
+	if (blend_shape_data.size() > 0) {
+		int vertex_len = mesh_surface_get_array_len(p_mesh, p_surface);
+
+		PoolVector<uint8_t> index_data = mesh_surface_get_index_array(p_mesh, p_surface);
+		int index_len = mesh_surface_get_array_index_len(p_mesh, p_surface);
+
+		uint32_t format = mesh_surface_get_format(p_mesh, p_surface);
+
+		Array blend_shape_array;
+		blend_shape_array.resize(blend_shape_data.size());
+		for (int i = 0; i < blend_shape_data.size(); i++) {
+			blend_shape_array.set(i, _get_array_from_surface(format, blend_shape_data[i], vertex_len, index_data, index_len));
+		}
+
+		return blend_shape_array;
+	} else {
+		return Array();
+	}
+}
+
 void VisualServer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
+	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw);
+	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "where", "method", "userdata"), &VisualServer::request_frame_drawn_callback);
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
-	ClassDB::bind_method(D_METHOD("texture_create_from_image"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
 	//ClassDB::bind_method(D_METHOD("texture_allocate"),&VisualServer::texture_allocate,DEFVAL( TEXTURE_FLAGS_DEFAULT ) );
 	//ClassDB::bind_method(D_METHOD("texture_set_data"),&VisualServer::texture_blit_rect,DEFVAL( CUBEMAP_LEFT ) );
 	//ClassDB::bind_method(D_METHOD("texture_get_rect"),&VisualServer::texture_get_rect );
-	ClassDB::bind_method(D_METHOD("texture_set_flags"), &VisualServer::texture_set_flags);
-	ClassDB::bind_method(D_METHOD("texture_get_flags"), &VisualServer::texture_get_flags);
-	ClassDB::bind_method(D_METHOD("texture_get_width"), &VisualServer::texture_get_width);
-	ClassDB::bind_method(D_METHOD("texture_get_height"), &VisualServer::texture_get_height);
+	ClassDB::bind_method(D_METHOD("texture_set_flags", "texture", "flags"), &VisualServer::texture_set_flags);
+	ClassDB::bind_method(D_METHOD("texture_get_flags", "texture"), &VisualServer::texture_get_flags);
+	ClassDB::bind_method(D_METHOD("texture_get_width", "texture"), &VisualServer::texture_get_width);
+	ClassDB::bind_method(D_METHOD("texture_get_height", "texture"), &VisualServer::texture_get_height);
 
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
 }
@@ -1497,7 +1474,6 @@ void VisualServer::_camera_set_orthogonal(RID p_camera, float p_size, float p_z_
 
 void VisualServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data) {
 
-#if 1
 	PoolVector<Vector3> vertices;
 	PoolVector<Vector3> normals;
 
@@ -1522,24 +1498,6 @@ void VisualServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::M
 	d[ARRAY_VERTEX] = vertices;
 	d[ARRAY_NORMAL] = normals;
 	mesh_add_surface_from_arrays(p_mesh, PRIMITIVE_TRIANGLES, d);
-
-#else
-
-	PoolVector<Vector3> vertices;
-
-	for (int i = 0; i < p_mesh_data.edges.size(); i++) {
-
-		const Geometry::MeshData::Edge &f = p_mesh_data.edges[i];
-		vertices.push_back(p_mesh_data.vertices[f.a]);
-		vertices.push_back(p_mesh_data.vertices[f.b]);
-	}
-
-	Array d;
-	d.resize(VS::ARRAY_MAX);
-	d[ARRAY_VERTEX] = vertices;
-	mesh_add_surface(p_mesh, PRIMITIVE_LINES, d);
-
-#endif
 }
 
 void VisualServer::mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes) {
@@ -1564,6 +1522,39 @@ VisualServer::VisualServer() {
 
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
+	GLOBAL_DEF("rendering/vram_compression/import_s3tc", true);
+	GLOBAL_DEF("rendering/vram_compression/import_etc", false);
+	GLOBAL_DEF("rendering/vram_compression/import_etc2", true);
+	GLOBAL_DEF("rendering/vram_compression/import_pvrtc", false);
+
+	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
+	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/size", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/size", PROPERTY_HINT_RANGE, "256,16384"));
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_0_subdiv", 1);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_1_subdiv", 2);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_2_subdiv", 3);
+	GLOBAL_DEF("rendering/quality/shadow_atlas/quadrant_3_subdiv", 4);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_0_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_0_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_1_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_1_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_2_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_2_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadow_atlas/quadrant_3_subdiv", PropertyInfo(Variant::INT, "rendering/quality/shadow_atlas/quadrant_3_subdiv", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"));
+
+	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
+	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
+
+	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
+	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
+	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx", true);
+	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx.mobile", false);
+
+	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
+	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
+
+	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
+	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno");
 }
 
 VisualServer::~VisualServer() {

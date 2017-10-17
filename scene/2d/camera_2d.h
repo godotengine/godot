@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,6 +79,10 @@ protected:
 
 	void _set_old_smoothing(float p_enable);
 
+	bool screen_drawing_enabled;
+	bool limit_drawing_enabled;
+	bool margin_drawing_enabled;
+
 protected:
 	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
@@ -132,10 +137,19 @@ public:
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;
 
-	Vector2 get_camera_pos() const;
+	Vector2 get_camera_position() const;
 	void force_update_scroll();
 	void reset_smoothing();
 	void align();
+
+	void set_screen_drawing_enabled(bool enable);
+	bool is_screen_drawing_enabled() const;
+
+	void set_limit_drawing_enabled(bool enable);
+	bool is_limit_drawing_enabled() const;
+
+	void set_margin_drawing_enabled(bool enable);
+	bool is_margin_drawing_enabled() const;
 
 	Camera2D();
 };

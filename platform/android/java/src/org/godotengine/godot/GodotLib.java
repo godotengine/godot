@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +37,7 @@ public class GodotLib {
      public static GodotIO io;
 
      static {
-	 System.loadLibrary("godot_android");
+       System.loadLibrary("godot_android");
      }
 
     /**
@@ -44,10 +45,11 @@ public class GodotLib {
      * @param height the current view height
      */
 
-     public static native void initialize(Godot p_instance,boolean need_reload_hook,String[] p_cmdline,Object p_asset_manager);
+     public static native void initialize(Godot p_instance,boolean need_reload_hook,Object p_asset_manager, boolean use_apk_expansion);
+		 public static native void setup(String[] p_cmdline);
      public static native void resize(int width, int height,boolean reload);
      public static native void newcontext(boolean p_32_bits);
-     public static native void quit();
+     public static native void back();
      public static native void step();
      public static native void touch(int what,int pointer,int howmany, int[] arr);
      public static native void accelerometer(float x, float y, float z);
@@ -66,5 +68,7 @@ public class GodotLib {
      public static native String getGlobal(String p_key);
 	public static native void callobject(int p_ID, String p_method, Object[] p_params);
 	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
+
+	public static native void setVirtualKeyboardHeight(int p_height);
 
 }

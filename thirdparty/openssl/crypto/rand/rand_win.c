@@ -118,10 +118,10 @@
 # ifndef _WIN32_WINNT
 #  define _WIN32_WINNT 0x0400
 # endif
-#ifndef UWP_ENABLED
+#ifndef UWP_ENABLED // -- GODOT --
 # include <wincrypt.h>
 # include <tlhelp32.h>
-#endif
+#endif // -- GODOT --
 
 /*
  * Limit the time spent walking through the heap, processes, threads and
@@ -163,7 +163,7 @@ typedef struct tagCURSORINFO {
 #  define CURSOR_SHOWING     0x00000001
 # endif                         /* CURSOR_SHOWING */
 
-# if !defined(OPENSSL_SYS_WINCE) && !defined(UWP_ENABLED)
+# if !defined(OPENSSL_SYS_WINCE) && !defined(UWP_ENABLED) // -- GODOT --
 typedef BOOL(WINAPI *CRYPTACQUIRECONTEXTW) (HCRYPTPROV *, LPCWSTR, LPCWSTR,
                                             DWORD, DWORD);
 typedef BOOL(WINAPI *CRYPTGENRANDOM) (HCRYPTPROV, DWORD, BYTE *);
@@ -198,7 +198,7 @@ typedef NET_API_STATUS(NET_API_FUNCTION *NETFREE) (LPBYTE);
 #  endif                        /* 1 */
 # endif                         /* !OPENSSL_SYS_WINCE */
 
-#if !defined(UWP_ENABLED)
+#if !defined(UWP_ENABLED) // -- GODOT --
 int RAND_poll(void)
 {
     MEMORYSTATUS m;
@@ -583,7 +583,7 @@ int RAND_poll(void)
     return (1);
 }
 
-#endif // UWP_ENABLED
+#endif // UWP_ENABLED // -- GODOT --
 
 int RAND_event(UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -687,7 +687,7 @@ static void readtimer(void)
 
 static void readscreen(void)
 {
-# if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN) && !defined(UWP_ENABLED)
+# if !defined(OPENSSL_SYS_WINCE) && !defined(OPENSSL_SYS_WIN32_CYGWIN) && !defined(UWP_ENABLED) // -- GODOT --
     HDC hScrDC;                 /* screen DC */
     HBITMAP hBitmap;            /* handle for our bitmap */
     BITMAP bm;                  /* bitmap properties */

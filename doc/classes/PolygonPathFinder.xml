@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PolygonPathFinder" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="find_path">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_intersections" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_penalty" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_point_inside" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_penalty">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="penalty" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="setup">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="connections" type="PoolIntArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

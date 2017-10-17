@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +33,7 @@
 
 #include "os/memory.h"
 
-Thread::ID ThreadWindows::get_ID() const {
+Thread::ID ThreadWindows::get_id() const {
 
 	return id;
 }
@@ -71,7 +72,7 @@ Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void
 
 	return tr;
 }
-Thread::ID ThreadWindows::get_thread_ID_func_windows() {
+Thread::ID ThreadWindows::get_thread_id_func_windows() {
 
 	return (ID)GetCurrentThreadId(); //must implement
 }
@@ -87,7 +88,7 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 void ThreadWindows::make_default() {
 
 	create_func = create_func_windows;
-	get_thread_ID_func = get_thread_ID_func_windows;
+	get_thread_id_func = get_thread_id_func_windows;
 	wait_to_finish_func = wait_to_finish_func_windows;
 }
 

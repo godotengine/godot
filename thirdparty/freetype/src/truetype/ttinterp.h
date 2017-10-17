@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType bytecode interpreter (specification).                       */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -170,6 +170,7 @@ FT_BEGIN_HEADER
                        pts,
                        twilight;
 
+    FT_Long            pointSize;  /* in 26.6 format */
     FT_Size_Metrics    metrics;
     TT_Size_Metrics    tt_metrics; /* size metrics */
 
@@ -252,23 +253,38 @@ FT_BEGIN_HEADER
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
     /*
-     * Modern TrueType fonts are usually rendered through Microsoft's
-     * collection of rendering techniques called ClearType (e.g., subpixel
-     * rendering and subpixel hinting).  When ClearType was introduced, most
-     * fonts were not ready.  Microsoft decided to implement a backwards
-     * compatibility mode that employed several simple to complicated
-     * assumptions and tricks that modified the interpretation of the
-     * bytecode contained in these fonts to make them look ClearType-y
-     * somehow.  Most (web)fonts that were released since then have come to
-     * rely on these hacks to render correctly, even some of Microsoft's
-     * flagship ClearType fonts (Calibri, Cambria, Segoe UI).
+     * FreeType supports ClearType-like hinting of TrueType fonts through
+     * the version 40 interpreter.  This is achieved through several hacks
+     * in the base (v35) interpreter, as detailed below.
      *
-     * The minimal subpixel hinting code (interpreter version 40) employs a
-     * small list of font-agnostic hacks to bludgeon non-native-ClearType
-     * fonts (except tricky ones[1]) into submission.  It will not try to
-     * toggle hacks for specific fonts for performance and complexity
-     * reasons.  The focus is on modern (web)fonts rather than legacy fonts
-     * that were made for black-and-white rendering.
+     * ClearType is an umbrella term for several rendering techniques
+     * employed by Microsoft's various GUI and rendering toolkit
+     * implementations, most importantly: subpixel rendering for using the
+     * RGB subpixels of LCDs to approximately triple the perceived
+     * resolution on the x-axis and subpixel hinting for positioning stems
+     * on subpixel borders.  TrueType programming is explicit, i.e., fonts
+     * must be programmed to take advantage of ClearType's possibilities.
+     *
+     * When ClearType was introduced, it seemed unlikely that all fonts
+     * would be reprogrammed, so Microsoft decided to implement a backward
+     * compatibility mode.  It employs several simple to complicated
+     * assumptions and tricks, many of them font-dependent, that modify the
+     * interpretation of the bytecode contained in these fonts to retrofit
+     * them into a ClearType-y look.  The quality of the results varies.
+     * Most (web)fonts that were released since then have come to rely on
+     * these hacks to render correctly, even some of Microsoft's flagship
+     * fonts (e.g., Calibri, Cambria, Segoe UI).
+     *
+     * FreeType's minimal subpixel hinting code (interpreter version 40)
+     * employs a small list of font-agnostic hacks loosely based on the
+     * public information available on Microsoft's compatibility mode[2].
+     * The focus is on modern (web)fonts rather than legacy fonts that were
+     * made for monochrome rendering.  It will not match ClearType rendering
+     * exactly.  Unlike the `Infinality' code (interpreter version 38) that
+     * came before, it will not try to toggle hacks for specific fonts for
+     * performance and complexity reasons.  It will fall back to version 35
+     * behavior for tricky fonts[1] or when monochrome rendering is
+     * requested.
      *
      * Major hacks
      *
@@ -315,12 +331,12 @@ FT_BEGIN_HEADER
      * very specific patterns (`superhinting') for pre-ClearType-displays,
      * the worse the results.
      *
-     * Microsoft defines a way to turn off backwards compatibility and
+     * Microsoft defines a way to turn off backward compatibility and
      * interpret instructions as before (called `native ClearType')[2][3].
      * The font designer then regains full control and is responsible for
      * making the font work correctly with ClearType without any
      * hand-holding by the interpreter or rasterizer[4].  The v40
-     * interpreter assumes backwards compatibility by default, which can be
+     * interpreter assumes backward compatibility by default, which can be
      * turned off the same way by executing the following in the control
      * program (cf. `Ins_INSTCTRL').
      *
@@ -330,7 +346,7 @@ FT_BEGIN_HEADER
      * [1] Tricky fonts as FreeType defines them rely on the bytecode
      *     interpreter to display correctly.  Hacks can interfere with them,
      *     so they get treated like native ClearType fonts (v40 with
-     *     backwards compatibility turned off).  Cf. `TT_RunIns'.
+     *     backward compatibility turned off).  Cf. `TT_RunIns'.
      *
      * [2] Proposed by Microsoft's Greg Hitchcock in
      *     https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
@@ -346,7 +362,8 @@ FT_BEGIN_HEADER
      *
      */
 
-    /* Using v40 implies subpixel hinting.  Used to detect interpreter */
+    /* Using v40 implies subpixel hinting, unless FT_RENDER_MODE_MONO has been
+     * requested.  Used to detect interpreter */
     /* version switches.  `_lean' to differentiate from the Infinality */
     /* `subpixel_hinting', which is managed differently.               */
     FT_Bool            subpixel_hinting_lean;
@@ -356,10 +373,10 @@ FT_BEGIN_HEADER
     /* is managed differently.                                            */
     FT_Bool            vertical_lcd_lean;
 
-    /* Default to backwards compatibility mode in v40 interpreter.  If  */
+    /* Default to backward compatibility mode in v40 interpreter.  If   */
     /* this is false, it implies the interpreter is in v35 or in native */
     /* ClearType mode.                                                  */
-    FT_Bool            backwards_compatibility;
+    FT_Bool            backward_compatibility;
 
     /* Useful for detecting and denying post-IUP trickery that is usually */
     /* used to fix pixel patterns (`superhinting').                       */
@@ -406,6 +423,14 @@ FT_BEGIN_HEADER
                                               /* special functions         */
 
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY */
+
+    /* We maintain two counters (in addition to the instruction counter) */
+    /* that act as loop detectors for LOOPCALL and jump opcodes with     */
+    /* negative arguments.                                               */
+    FT_ULong           loopcall_counter;
+    FT_ULong           loopcall_counter_max;
+    FT_ULong           neg_jump_counter;
+    FT_ULong           neg_jump_counter_max;
 
   } TT_ExecContextRec;
 

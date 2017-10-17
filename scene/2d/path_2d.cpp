@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_2d.h"
+
+#include "engine.h"
 #include "scene/scene_string_names.h"
 
 void Path2D::_notification(int p_what) {
@@ -34,13 +37,13 @@ void Path2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
 		//draw the curve!!
 
-		if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
+		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
 			return;
 		}
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
-			Vector2 prev_p = curve->get_point_pos(i);
+			Vector2 prev_p = curve->get_point_position(i);
 
 			for (int j = 1; j <= 8; j++) {
 
@@ -55,7 +58,7 @@ void Path2D::_notification(int p_what) {
 
 void Path2D::_curve_changed() {
 
-	if (is_inside_tree() && get_tree()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 		update();
 }
 
@@ -81,8 +84,8 @@ Ref<Curve2D> Path2D::get_curve() const {
 
 void Path2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_curve", "curve:Curve2D"), &Path2D::set_curve);
-	ClassDB::bind_method(D_METHOD("get_curve:Curve2D", "curve"), &Path2D::get_curve);
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Path2D::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Path2D::get_curve);
 	ClassDB::bind_method(D_METHOD("_curve_changed"), &Path2D::_curve_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), "set_curve", "get_curve");
@@ -134,13 +137,9 @@ void PathFollow2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			Node *parent = get_parent();
-			if (parent) {
-
-				path = parent->cast_to<Path2D>();
-				if (path) {
-					_update_transform();
-				}
+			path = Object::cast_to<Path2D>(get_parent());
+			if (path) {
+				_update_transform();
 			}
 
 		} break;
@@ -228,7 +227,7 @@ String PathFollow2D::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
-	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {
+	if (!Object::cast_to<Path2D>(get_parent())) {
 		return TTR("PathFollow2D only works when set as a child of a Path2D node.");
 	}
 

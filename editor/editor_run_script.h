@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +30,8 @@
 #ifndef EDITOR_RUN_SCRIPT_H
 #define EDITOR_RUN_SCRIPT_H
 
+#include "editor_plugin.h"
 #include "reference.h"
-
 class EditorNode;
 class EditorScript : public Reference {
 
@@ -44,7 +45,7 @@ protected:
 public:
 	void add_root_node(Node *p_node);
 	Node *get_scene();
-
+	EditorInterface *get_editor_interface();
 	virtual void _run();
 
 	void set_editor(EditorNode *p_editor);

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@
 class StyleBox : public Resource {
 
 	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("sbx");
+	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
 	float margin[4];
 
@@ -76,12 +77,23 @@ class StyleBoxTexture : public StyleBox {
 
 	GDCLASS(StyleBoxTexture, StyleBox);
 
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
+
+private:
 	float expand_margin[4];
 	float margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
+	Ref<Texture> normal_map;
 	bool draw_center;
 	Color modulate;
+	AxisStretchMode axis_h;
+	AxisStretchMode axis_v;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
@@ -89,6 +101,8 @@ protected:
 
 public:
 	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size_all(float p_expand_margin_size);
+	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
 	void set_margin_size(Margin p_margin, float p_size);
@@ -100,9 +114,18 @@ public:
 	void set_texture(RES p_texture);
 	RES get_texture() const;
 
-	void set_draw_center(bool p_draw);
-	bool get_draw_center() const;
+	void set_normal_map(RES p_normal_map);
+	RES get_normal_map() const;
+
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
 	virtual Size2 get_center_size() const;
+
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
+
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
 
 	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
@@ -113,46 +136,130 @@ public:
 	~StyleBoxTexture();
 };
 
+VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
+
 class StyleBoxFlat : public StyleBox {
 
 	GDCLASS(StyleBoxFlat, StyleBox);
 
 	Color bg_color;
-	Color light_color;
-	Color dark_color;
+	Color shadow_color;
+	PoolVector<Color> border_color;
 
-	int border_size;
+	int border_width[4];
+	int expand_margin[4];
+	int corner_radius[4];
 
 	bool draw_center;
-	bool blend;
+	bool blend_border;
+	bool anti_aliased;
+
+	int corner_detail;
+	int shadow_size;
+	int aa_size;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
+	//Color
 	void set_bg_color(const Color &p_color);
-	void set_light_color(const Color &p_color);
-	void set_dark_color(const Color &p_color);
-
 	Color get_bg_color() const;
-	Color get_light_color() const;
-	Color get_dark_color() const;
 
-	void set_border_size(int p_size);
-	int get_border_size() const;
+	//Border Color
+	void set_border_color_all(const Color &p_color);
+	Color get_border_color_all() const;
+	void set_border_color(Margin p_border, const Color &p_color);
+	Color get_border_color(Margin p_border) const;
 
+	//BORDER
+	//width
+	void set_border_width_all(int p_size);
+	int get_border_width_min() const;
+
+	void set_border_width(Margin p_margin, int p_width);
+	int get_border_width(Margin p_margin) const;
+
+	//blend
 	void set_border_blend(bool p_blend);
 	bool get_border_blend() const;
 
-	void set_draw_center(bool p_draw);
-	bool get_draw_center() const;
+	//CORNER
+	void set_corner_radius_all(int radius);
+	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left);
+	int get_corner_radius_min() const;
+
+	void set_corner_radius(Corner p_corner, const int radius);
+	int get_corner_radius(Corner p_corner) const;
+
+	void set_corner_detail(const int &p_corner_detail);
+	int get_corner_detail() const;
+
+	//EXPANDS
+	void set_expand_margin_size(Margin p_expand_margin, float p_size);
+	void set_expand_margin_size_all(float p_expand_margin_size);
+	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
+	float get_expand_margin_size(Margin p_expand_margin) const;
+
+	//DRAW CENTER
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
+
+	//SHADOW
+	void set_shadow_color(const Color &p_color);
+	Color get_shadow_color() const;
+
+	void set_shadow_size(const int &p_size);
+	int get_shadow_size() const;
+
+	//ANTI_ALIASING
+	void set_anti_aliased(const bool &p_anti_aliased);
+	bool is_anti_aliased() const;
+	//tempAA
+	void set_aa_size(const int &p_aa_size);
+	int get_aa_size() const;
+
 	virtual Size2 get_center_size() const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	StyleBoxFlat();
 	~StyleBoxFlat();
+};
+
+// just used to draw lines.
+class StyleBoxLine : public StyleBox {
+
+	GDCLASS(StyleBoxLine, StyleBox);
+	Color color;
+	int thickness;
+	bool vertical;
+	float grow;
+
+protected:
+	virtual float get_style_margin(Margin p_margin) const;
+	static void _bind_methods();
+
+public:
+	void set_color(const Color &p_color);
+	Color get_color() const;
+
+	void set_thickness(int p_thickness);
+	int get_thickness() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
+
+	void set_grow(float p_grow);
+	float get_grow() const;
+
+	virtual Size2 get_center_size() const;
+
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
+
+	StyleBoxLine();
+	~StyleBoxLine();
 };
 
 #endif

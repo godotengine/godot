@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="bool" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		Boolean built-in type
+	</brief_description>
+	<description>
+		Boolean built-in type.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="bool">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<description>
+				Cast an [int] value to a boolean value, this method will return true if called with an integer value different to 0 and false in other case.
+			</description>
+		</method>
+		<method name="bool">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<description>
+				Cast a [float] value to a boolean value, this method will return true if called with a floating point value different to 0 and false in other case.
+			</description>
+		</method>
+		<method name="bool">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Cast a [String] value to a boolean value, this method will return true if called with a non empty string and false in other case. Examples: [code]bool('False')[/code] returns true, [code]bool('')[/code]. returns false
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

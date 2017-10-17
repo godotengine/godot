@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,12 +30,13 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
-#include "connections_dialog.h"
-#include "create_dialog.h"
-#include "editor_data.h"
-#include "editor_sub_scene.h"
-#include "groups_editor.h"
-#include "reparent_dialog.h"
+#include "editor/connections_dialog.h"
+#include "editor/create_dialog.h"
+#include "editor/editor_data.h"
+#include "editor/editor_sub_scene.h"
+#include "editor/groups_editor.h"
+#include "editor/reparent_dialog.h"
+#include "editor/script_create_dialog.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -44,7 +46,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
-#include "script_create_dialog.h"
+
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
@@ -56,8 +58,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_REPLACE,
-		TOOL_CONNECT,
-		TOOL_GROUP,
 		TOOL_ATTACH_SCRIPT,
 		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
@@ -69,8 +69,21 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
+		TOOL_SCENE_EDITABLE_CHILDREN,
+		TOOL_SCENE_USE_PLACEHOLDER,
+		TOOL_SCENE_CLEAR_INSTANCING,
+		TOOL_SCENE_OPEN,
+		TOOL_SCENE_CLEAR_INHERITANCE,
+		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
+		TOOL_SCENE_OPEN_INHERITED
 	};
+
+	enum {
+		EDIT_SUBRESOURCE_BASE = 100
+	};
+
+	Vector<ObjectID> subresources;
 
 	bool restore_script_editor_on_drag;
 
@@ -90,8 +103,6 @@ class SceneTreeDock : public VBoxContainer {
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
 
-	//GroupsEditor *groups_editor;
-	//ConnectionsDialog *connect_dialog;
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
@@ -105,6 +116,7 @@ class SceneTreeDock : public VBoxContainer {
 	TextureRect *filter_icon;
 
 	PopupMenu *menu;
+	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
 
@@ -113,11 +125,14 @@ class SceneTreeDock : public VBoxContainer {
 	Node *edited_scene;
 	EditorNode *editor;
 
+	void _add_children_to_popup(Object *p_obj, int p_depth);
+
 	Node *_duplicate(Node *p_node, Map<Node *, Node *> &duplimap);
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
+	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 
@@ -132,8 +147,8 @@ class SceneTreeDock : public VBoxContainer {
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
 	void _nodes_drag_begin();
-	void _input(InputEvent p_event);
-	void _unhandled_key_input(InputEvent p_event);
+	void _input(Ref<InputEvent> p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 
 	void _import_subscene();
 
@@ -171,7 +186,7 @@ public:
 
 	void import_subscene();
 	void set_edited_scene(Node *p_scene);
-	void instance(const String &p_path);
+	void instance(const String &p_file);
 	void instance_scenes(const Vector<String> &p_files, Node *p_parent = NULL);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath> > *p_renames);

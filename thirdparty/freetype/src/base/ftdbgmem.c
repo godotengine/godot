@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Memory debugger (body).                                              */
 /*                                                                         */
-/*  Copyright 2001-2016 by                                                 */
+/*  Copyright 2001-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -268,7 +268,7 @@
                       ft_mem_table_alloc(
                         table,
                         new_size * (FT_Long)sizeof ( FT_MemNode ) );
-      if ( new_buckets == NULL )
+      if ( !new_buckets )
         return;
 
       FT_ARRAY_ZERO( new_buckets, new_size );
@@ -309,7 +309,7 @@
 
 
     table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
-    if ( table == NULL )
+    if ( !table )
       goto Exit;
 
     FT_ZERO( table );
@@ -466,7 +466,7 @@
     for (;;)
     {
       node = *pnode;
-      if ( node == NULL )
+      if ( !node )
         break;
 
       if ( node->file_name == _ft_debug_file   &&
@@ -477,7 +477,7 @@
     }
 
     node = (FT_MemSource)ft_mem_table_alloc( table, sizeof ( *node ) );
-    if ( node == NULL )
+    if ( !node )
       ft_mem_debug_panic(
         "not enough memory to perform memory debugging\n" );
 
@@ -545,7 +545,7 @@
 
       /* we need to create a new node in this table */
       node = (FT_MemNode)ft_mem_table_alloc( table, sizeof ( *node ) );
-      if ( node == NULL )
+      if ( !node )
         ft_mem_debug_panic( "not enough memory to run memory tests" );
 
       node->address = address;
@@ -717,7 +717,7 @@
     FT_MemTable  table = (FT_MemTable)memory->user;
 
 
-    if ( block == NULL )
+    if ( !block )
       ft_mem_debug_panic( "trying to free NULL in (%s:%ld)",
                           FT_FILENAME( _ft_debug_file ),
                           _ft_debug_lineno );
@@ -755,7 +755,7 @@
 
     /* the following is valid according to ANSI C */
 #if 0
-    if ( block == NULL || cur_size == 0 )
+    if ( !block || !cur_size )
       ft_mem_debug_panic( "trying to reallocate NULL in (%s:%ld)",
                           file_name, line_no );
 #endif
@@ -799,7 +799,7 @@
       return NULL;
 
     new_block = (FT_Pointer)ft_mem_table_alloc( table, new_size );
-    if ( new_block == NULL )
+    if ( !new_block )
       return NULL;
 
     ft_mem_table_set( table, (FT_Byte*)new_block, new_size, delta );
@@ -840,9 +840,9 @@
         memory->free    = ft_mem_debug_free;
 
         p = getenv( "FT2_ALLOC_TOTAL_MAX" );
-        if ( p != NULL )
+        if ( p )
         {
-          FT_Long   total_max = ft_atol( p );
+          FT_Long  total_max = ft_strtol( p, NULL, 10 );
 
 
           if ( total_max > 0 )
@@ -853,9 +853,9 @@
         }
 
         p = getenv( "FT2_ALLOC_COUNT_MAX" );
-        if ( p != NULL )
+        if ( p )
         {
-          FT_Long  total_count = ft_atol( p );
+          FT_Long  total_count = ft_strtol( p, NULL, 10 );
 
 
           if ( total_count > 0 )
@@ -866,9 +866,9 @@
         }
 
         p = getenv( "FT2_KEEP_ALIVE" );
-        if ( p != NULL )
+        if ( p )
         {
-          FT_Long  keep_alive = ft_atol( p );
+          FT_Long  keep_alive = ft_strtol( p, NULL, 10 );
 
 
           if ( keep_alive > 0 )

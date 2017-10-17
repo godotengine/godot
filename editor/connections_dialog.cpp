@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,33 +113,7 @@ void ConnectDialog::_tree_node_selected() {
 		make_callback->hide();
 	else
 		make_callback->show();
-#if 0
-	List<MethodInfo> methods;
-	current->get_method_list(&methods);
-	for (List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
 
-		if (E->get().name.length() && E->get().name[0]=='_')
-			continue; // hidden method, not show!
-
-		if (ClassDB::has_method(node->get_type(),"Node") || ClassDB::has_method(node->get_type(),"Control",true))
-			continue; //avoid too much unnecesary stuff
-
-		String method=E->get().name+"(";
-		for(int i=0;i<E->get().arguments.size();i++) {
-
-			if (i!=0)
-				method+=", ";
-			method+=Variant::get_type_name(E->get().arguments[i].type);
-			if (E->get().arguments[i].name.length()) {
-				method+=" ";
-				method+=E->get().arguments[i].name;
-			}
-		}
-		method+=")";
-
-		//dst_method_list->get_popup()->add_item(method);
-	}
-#endif
 	dst_path->set_text(node->get_path_to(current));
 }
 
@@ -219,7 +194,7 @@ void ConnectDialog::_add_bind() {
 
 	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
 		return;
-	Variant::Type vt = (Variant::Type)type_list->get_item_ID(type_list->get_selected());
+	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
 
@@ -238,7 +213,6 @@ void ConnectDialog::_add_bind() {
 		case Variant::BASIS: value = Basis(); break;
 		case Variant::TRANSFORM: value = Transform(); break;
 		case Variant::COLOR: value = Color(); break;
-		case Variant::IMAGE: value = Image(); break;
 
 		default: { ERR_FAIL(); } break;
 	}
@@ -326,7 +300,6 @@ ConnectDialog::ConnectDialog() {
 	type_list->add_item("Transform", Variant::TRANSFORM);
 	//type_list->add_separator();
 	type_list->add_item("Color", Variant::COLOR);
-	type_list->add_item("Image", Variant::IMAGE);
 	type_list->select(0);
 
 	Button *add_bind = memnew(Button);
@@ -417,6 +390,10 @@ void ConnectionsDock::_notification(int p_what) {
 
 		//RID ci = get_canvas_item();
 		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+	}
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		update_tree();
 	}
 }
 
@@ -661,7 +638,7 @@ void ConnectionsDock::update_tree() {
 				if (!(c.flags & CONNECT_PERSIST))
 					continue;
 
-				Node *target = c.target->cast_to<Node>();
+				Node *target = Object::cast_to<Node>(c.target);
 				if (!target)
 					continue;
 
@@ -766,7 +743,7 @@ void ConnectionsDock::_something_activated() {
 
 		Ref<Script> script = c.target->get_script();
 
-		if (script.is_valid() && ScriptEditor::get_singleton()->script_go_to_method(script, c.method)) {
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
 			editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 		}
 	}
@@ -797,7 +774,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	connect_button = memnew(Button);
-	connect_button->set_text("Connect");
+	connect_button->set_text(TTR("Connect"));
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vbc->add_child(hb);
 	hb->add_spacer();

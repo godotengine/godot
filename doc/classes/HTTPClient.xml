@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HTTPClient" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Hyper-text transfer protocol client.
+	</brief_description>
+	<description>
+		Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification.
+		Can be reused to connect to different hosts and make many requests.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="close">
+			<return type="void">
+			</return>
+			<description>
+				Cloces the current connection, allows for reusal of [HTTPClient].
+			</description>
+		</method>
+		<method name="connect_to_host">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<argument index="2" name="use_ssl" type="bool" default="false">
+			</argument>
+			<argument index="3" name="verify_host" type="bool" default="true">
+			</argument>
+			<description>
+				Connect to a host. This needs to be done before any requests are sent.
+				The host should not have http:// prepended but will strip the protocol identifier if provided.
+				verify_host will check the SSL identity of the host if set to true.
+			</description>
+		</method>
+		<method name="get_connection" qualifiers="const">
+			<return type="StreamPeer">
+			</return>
+			<description>
+				Return current connection.
+			</description>
+		</method>
+		<method name="get_response_body_length" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the response's body length.
+			</description>
+		</method>
+		<method name="get_response_code" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the HTTP status code of the response.
+			</description>
+		</method>
+		<method name="get_response_headers">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Return the response headers.
+			</description>
+		</method>
+		<method name="get_response_headers_as_dictionary">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
+				Structure: ("key":"value1; value2")
+				Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="HTTPClient.Status">
+			</return>
+			<description>
+				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
+			</description>
+		</method>
+		<method name="has_response" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this [HTTPClient] has a response available.
+			</description>
+		</method>
+		<method name="is_blocking_mode_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether blocking mode is enabled.
+			</description>
+		</method>
+		<method name="is_response_chunked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Return whether this [HTTPClient] has a response that is chunked.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				This needs to be called in order to have any request processed. Check results with [method get_status]
+			</description>
+		</method>
+		<method name="query_string_from_dict">
+			<return type="String">
+			</return>
+			<argument index="0" name="fields" type="Dictionary">
+			</argument>
+			<description>
+				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
+				[codeblock]
+				var fields = {"username": "user", "password": "pass"}
+				String queryString = httpClient.query_string_from_dict(fields)
+				returns:= "username=user&amp;password=pass"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="read_response_body_chunk">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Reads one chunk from the response.
+			</description>
+		</method>
+		<method name="request">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
+			</argument>
+			<argument index="1" name="url" type="String">
+			</argument>
+			<argument index="2" name="headers" type="PoolStringArray">
+			</argument>
+			<argument index="3" name="body" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
+				Headers are HTTP request headers.
+				To create a POST request with query strings to push to the server, do:
+				[codeblock]
+				var fields = {"username" : "user", "password" : "pass"}
+				var queryString = httpClient.query_string_from_dict(fields)
+				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
+				var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="request_raw">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
+			</argument>
+			<argument index="1" name="url" type="String">
+			</argument>
+			<argument index="2" name="headers" type="PoolStringArray">
+			</argument>
+			<argument index="3" name="body" type="PoolByteArray">
+			</argument>
+			<description>
+				Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
+				Headers are HTTP request headers.
+				Sends body raw, as a byte array, does not encode it in any way.
+			</description>
+		</method>
+		<method name="send_body_data">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="body" type="PoolByteArray">
+			</argument>
+			<description>
+				Stub function
+			</description>
+		</method>
+		<method name="send_body_text">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="body" type="String">
+			</argument>
+			<description>
+				Stub function
+			</description>
+		</method>
+		<method name="set_blocking_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				If set to true, execution will block until all data is read from the response.
+			</description>
+		</method>
+		<method name="set_connection">
+			<return type="void">
+			</return>
+			<argument index="0" name="connection" type="StreamPeer">
+			</argument>
+			<description>
+				Set connection to use, for this client.
+			</description>
+		</method>
+		<method name="set_read_chunk_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="bytes" type="int">
+			</argument>
+			<description>
+				Sets the size of the buffer used and maximum bytes to read per iteration. see [method read_response_body_chunk]
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="METHOD_GET" value="0">
+		</constant>
+		<constant name="METHOD_HEAD" value="1">
+		</constant>
+		<constant name="METHOD_POST" value="2">
+		</constant>
+		<constant name="METHOD_PUT" value="3">
+		</constant>
+		<constant name="METHOD_DELETE" value="4">
+		</constant>
+		<constant name="METHOD_OPTIONS" value="5">
+		</constant>
+		<constant name="METHOD_TRACE" value="6">
+		</constant>
+		<constant name="METHOD_CONNECT" value="7">
+		</constant>
+		<constant name="METHOD_MAX" value="8">
+		</constant>
+		<constant name="STATUS_DISCONNECTED" value="0">
+		</constant>
+		<constant name="STATUS_RESOLVING" value="1">
+		</constant>
+		<constant name="STATUS_CANT_RESOLVE" value="2">
+		</constant>
+		<constant name="STATUS_CONNECTING" value="3">
+		</constant>
+		<constant name="STATUS_CANT_CONNECT" value="4">
+		</constant>
+		<constant name="STATUS_CONNECTED" value="5">
+		</constant>
+		<constant name="STATUS_REQUESTING" value="6">
+		</constant>
+		<constant name="STATUS_BODY" value="7">
+		</constant>
+		<constant name="STATUS_CONNECTION_ERROR" value="8">
+		</constant>
+		<constant name="STATUS_SSL_HANDSHAKE_ERROR" value="9">
+		</constant>
+		<constant name="RESPONSE_CONTINUE" value="100">
+		</constant>
+		<constant name="RESPONSE_SWITCHING_PROTOCOLS" value="101">
+		</constant>
+		<constant name="RESPONSE_PROCESSING" value="102">
+		</constant>
+		<constant name="RESPONSE_OK" value="200">
+		</constant>
+		<constant name="RESPONSE_CREATED" value="201">
+		</constant>
+		<constant name="RESPONSE_ACCEPTED" value="202">
+		</constant>
+		<constant name="RESPONSE_NON_AUTHORITATIVE_INFORMATION" value="203">
+		</constant>
+		<constant name="RESPONSE_NO_CONTENT" value="204">
+		</constant>
+		<constant name="RESPONSE_RESET_CONTENT" value="205">
+		</constant>
+		<constant name="RESPONSE_PARTIAL_CONTENT" value="206">
+		</constant>
+		<constant name="RESPONSE_MULTI_STATUS" value="207">
+		</constant>
+		<constant name="RESPONSE_IM_USED" value="226">
+		</constant>
+		<constant name="RESPONSE_MULTIPLE_CHOICES" value="300">
+		</constant>
+		<constant name="RESPONSE_MOVED_PERMANENTLY" value="301">
+		</constant>
+		<constant name="RESPONSE_FOUND" value="302">
+		</constant>
+		<constant name="RESPONSE_SEE_OTHER" value="303">
+		</constant>
+		<constant name="RESPONSE_NOT_MODIFIED" value="304">
+		</constant>
+		<constant name="RESPONSE_USE_PROXY" value="305">
+		</constant>
+		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307">
+		</constant>
+		<constant name="RESPONSE_BAD_REQUEST" value="400">
+		</constant>
+		<constant name="RESPONSE_UNAUTHORIZED" value="401">
+		</constant>
+		<constant name="RESPONSE_PAYMENT_REQUIRED" value="402">
+		</constant>
+		<constant name="RESPONSE_FORBIDDEN" value="403">
+		</constant>
+		<constant name="RESPONSE_NOT_FOUND" value="404">
+		</constant>
+		<constant name="RESPONSE_METHOD_NOT_ALLOWED" value="405">
+		</constant>
+		<constant name="RESPONSE_NOT_ACCEPTABLE" value="406">
+		</constant>
+		<constant name="RESPONSE_PROXY_AUTHENTICATION_REQUIRED" value="407">
+		</constant>
+		<constant name="RESPONSE_REQUEST_TIMEOUT" value="408">
+		</constant>
+		<constant name="RESPONSE_CONFLICT" value="409">
+		</constant>
+		<constant name="RESPONSE_GONE" value="410">
+		</constant>
+		<constant name="RESPONSE_LENGTH_REQUIRED" value="411">
+		</constant>
+		<constant name="RESPONSE_PRECONDITION_FAILED" value="412">
+		</constant>
+		<constant name="RESPONSE_REQUEST_ENTITY_TOO_LARGE" value="413">
+		</constant>
+		<constant name="RESPONSE_REQUEST_URI_TOO_LONG" value="414">
+		</constant>
+		<constant name="RESPONSE_UNSUPPORTED_MEDIA_TYPE" value="415">
+		</constant>
+		<constant name="RESPONSE_REQUESTED_RANGE_NOT_SATISFIABLE" value="416">
+		</constant>
+		<constant name="RESPONSE_EXPECTATION_FAILED" value="417">
+		</constant>
+		<constant name="RESPONSE_UNPROCESSABLE_ENTITY" value="422">
+		</constant>
+		<constant name="RESPONSE_LOCKED" value="423">
+		</constant>
+		<constant name="RESPONSE_FAILED_DEPENDENCY" value="424">
+		</constant>
+		<constant name="RESPONSE_UPGRADE_REQUIRED" value="426">
+		</constant>
+		<constant name="RESPONSE_INTERNAL_SERVER_ERROR" value="500">
+		</constant>
+		<constant name="RESPONSE_NOT_IMPLEMENTED" value="501">
+		</constant>
+		<constant name="RESPONSE_BAD_GATEWAY" value="502">
+		</constant>
+		<constant name="RESPONSE_SERVICE_UNAVAILABLE" value="503">
+		</constant>
+		<constant name="RESPONSE_GATEWAY_TIMEOUT" value="504">
+		</constant>
+		<constant name="RESPONSE_HTTP_VERSION_NOT_SUPPORTED" value="505">
+		</constant>
+		<constant name="RESPONSE_INSUFFICIENT_STORAGE" value="507">
+		</constant>
+		<constant name="RESPONSE_NOT_EXTENDED" value="510">
+		</constant>
+	</constants>
+</class>

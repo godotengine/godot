@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="YSort" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Sort all child nodes based on their Y positions.
+	</brief_description>
+	<description>
+		Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="is_sort_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the children nodes are being sorted.
+			</description>
+		</method>
+		<method name="set_sort_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set whether the children nodes are sorted or not. (default true)
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

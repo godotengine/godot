@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XK_Tab, KEY_TAB },
 	{ XK_ISO_Left_Tab, KEY_BACKTAB },
 	{ XK_BackSpace, KEY_BACKSPACE },
-	{ XK_Return, KEY_RETURN },
+	{ XK_Return, KEY_ENTER },
 	{ XK_Insert, KEY_INSERT },
 	{ XK_Delete, KEY_DELETE },
 	{ XK_Clear, KEY_DELETE },
@@ -77,7 +78,7 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XK_Help, KEY_HELP },
 	{ XK_KP_Space, KEY_SPACE },
 	{ XK_KP_Tab, KEY_TAB },
-	{ XK_KP_Enter, KEY_ENTER },
+	{ XK_KP_Enter, KEY_KP_ENTER },
 	{ XK_Home, KEY_HOME },
 	{ XK_Left, KEY_LEFT },
 	{ XK_Up, KEY_UP },
@@ -93,7 +94,6 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	//{ XK_KP_Separator,            KEY_COMMA   },
 	{ XK_KP_Decimal, KEY_KP_PERIOD },
 	{ XK_KP_Delete, KEY_KP_PERIOD },
-	{ XK_KP_Enter, KEY_KP_ENTER },
 	{ XK_KP_Multiply, KEY_KP_MULTIPLY },
 	{ XK_KP_Divide, KEY_KP_DIVIDE },
 	{ XK_KP_Subtract, KEY_KP_SUBTRACT },

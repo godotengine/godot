@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,16 +43,16 @@ void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_
 	block_size = p_block_size;
 }
 
-#define WRITE_FIT(m_bytes)                                     \
-	{                                                          \
-		if (write_pos + (m_bytes) > write_max) {               \
-			write_max = write_pos + (m_bytes);                 \
-		}                                                      \
-		if (write_max > write_buffer_size) {                   \
-			write_buffer_size = nearest_power_of_2(write_max); \
-			buffer.resize(write_buffer_size);                  \
-			write_ptr = buffer.ptr();                          \
-		}                                                      \
+#define WRITE_FIT(m_bytes)                                  \
+	{                                                       \
+		if (write_pos + (m_bytes) > write_max) {            \
+			write_max = write_pos + (m_bytes);              \
+		}                                                   \
+		if (write_max > write_buffer_size) {                \
+			write_buffer_size = next_power_of_2(write_max); \
+			buffer.resize(write_buffer_size);               \
+			write_ptr = buffer.ptr();                       \
+		}                                                   \
 	}
 
 Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
@@ -61,7 +62,7 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	block_size = f->get_32();
 	read_total = f->get_32();
 	int bc = (read_total / block_size) + 1;
-	int acc_ofs = f->get_pos() + bc * 4;
+	int acc_ofs = f->get_position() + bc * 4;
 	int max_bs = 0;
 	for (int i = 0; i < bc; i++) {
 
@@ -231,7 +232,7 @@ void FileAccessCompressed::seek_end(int64_t p_position) {
 		seek(read_total + p_position);
 	}
 }
-size_t FileAccessCompressed::get_pos() const {
+size_t FileAccessCompressed::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 	if (writing) {
@@ -337,6 +338,13 @@ Error FileAccessCompressed::get_error() const {
 	return read_eof ? ERR_FILE_EOF : OK;
 }
 
+void FileAccessCompressed::flush() {
+	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND(!writing);
+
+	// compressed files keep data in memory till close()
+}
+
 void FileAccessCompressed::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);
@@ -367,8 +375,7 @@ FileAccessCompressed::FileAccessCompressed() {
 
 	f = NULL;
 	magic = "GCMP";
-	block_size = 16384;
-	cmode = Compression::MODE_DEFLATE;
+	cmode = Compression::MODE_ZSTD;
 	writing = false;
 	write_ptr = 0;
 	write_buffer_size = 0;

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType font driver for Windows FNT/FON files                       */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*  Copyright 2003 Huw D M Davies for Codeweavers                          */
 /*  Copyright 2007 Dmitry Timoshkov for Codeweavers                        */
@@ -561,7 +561,7 @@
                   error = fnt_font_load( face->font, stream );
                   if ( error )
                   {
-                    FT_TRACE2(( "font #%lu load error %d\n",
+                    FT_TRACE2(( "font #%lu load error 0x%x\n",
                                 dir_entry2.name, error ));
                     goto Fail;
                   }
@@ -759,6 +759,14 @@
     if ( error )
       goto Fail;
 
+    /* sanity check */
+    if ( !face->font->header.pixel_height )
+    {
+      FT_TRACE2(( "invalid pixel height\n" ));
+      error = FT_THROW( Invalid_File_Format );
+      goto Fail;
+    }
+
     /* we now need to fill the root FT_Face fields */
     /* with relevant information                   */
     {
@@ -851,10 +859,6 @@
                              NULL );
         if ( error )
           goto Fail;
-
-        /* Select default charmap */
-        if ( root->num_charmaps )
-          root->charmap = root->charmaps[0];
       }
 
       /* set up remaining flags */
@@ -992,8 +996,6 @@
     FT_ULong    offset;
     FT_Bool     new_format;
 
-    FT_UNUSED( load_flags );
-
 
     if ( !face )
     {
@@ -1047,46 +1049,9 @@
       goto Exit;
     }
 
-    /* jump to glyph data */
-    p = font->fnt_frame + /* font->header.bits_offset */ + offset;
+    bitmap->rows       = font->header.pixel_height;
+    bitmap->pixel_mode = FT_PIXEL_MODE_MONO;
 
-    /* allocate and build bitmap */
-    {
-      FT_Memory  memory = FT_FACE_MEMORY( slot->face );
-      FT_UInt    pitch  = ( bitmap->width + 7 ) >> 3;
-      FT_Byte*   column;
-      FT_Byte*   write;
-
-
-      bitmap->pitch      = (int)pitch;
-      bitmap->rows       = font->header.pixel_height;
-      bitmap->pixel_mode = FT_PIXEL_MODE_MONO;
-
-      if ( offset + pitch * bitmap->rows > font->header.file_size )
-      {
-        FT_TRACE2(( "invalid bitmap width\n" ));
-        error = FT_THROW( Invalid_File_Format );
-        goto Exit;
-      }
-
-      /* note: since glyphs are stored in columns and not in rows we */
-      /*       can't use ft_glyphslot_set_bitmap                     */
-      if ( FT_ALLOC_MULT( bitmap->buffer, pitch, bitmap->rows ) )
-        goto Exit;
-
-      column = (FT_Byte*)bitmap->buffer;
-
-      for ( ; pitch > 0; pitch--, column++ )
-      {
-        FT_Byte*  limit = p + bitmap->rows;
-
-
-        for ( write = column; p < limit; p++, write += bitmap->pitch )
-          *write = *p;
-      }
-    }
-
-    slot->internal->flags = FT_GLYPH_OWN_BITMAP;
     slot->bitmap_left     = 0;
     slot->bitmap_top      = font->header.ascent;
     slot->format          = FT_GLYPH_FORMAT_BITMAP;
@@ -1100,6 +1065,48 @@
 
     ft_synthesize_vertical_metrics( &slot->metrics,
                                     (FT_Pos)( bitmap->rows << 6 ) );
+
+    if ( load_flags & FT_LOAD_BITMAP_METRICS_ONLY )
+      goto Exit;
+
+    /* jump to glyph data */
+    p = font->fnt_frame + /* font->header.bits_offset */ + offset;
+
+    /* allocate and build bitmap */
+    {
+      FT_Memory  memory = FT_FACE_MEMORY( slot->face );
+      FT_UInt    pitch  = ( bitmap->width + 7 ) >> 3;
+      FT_Byte*   column;
+      FT_Byte*   write;
+
+
+      bitmap->pitch = (int)pitch;
+      if ( !pitch                                                 ||
+           offset + pitch * bitmap->rows > font->header.file_size )
+      {
+        FT_TRACE2(( "invalid bitmap width\n" ));
+        error = FT_THROW( Invalid_File_Format );
+        goto Exit;
+      }
+
+      /* note: since glyphs are stored in columns and not in rows we */
+      /*       can't use ft_glyphslot_set_bitmap                     */
+      if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, pitch ) )
+        goto Exit;
+
+      column = (FT_Byte*)bitmap->buffer;
+
+      for ( ; pitch > 0; pitch--, column++ )
+      {
+        FT_Byte*  limit = p + bitmap->rows;
+
+
+        for ( write = column; p < limit; p++, write += bitmap->pitch )
+          *write = *p;
+      }
+
+      slot->internal->flags = FT_GLYPH_OWN_BITMAP;
+    }
 
   Exit:
     return error;
@@ -1161,10 +1168,10 @@
       0x10000L,
       0x20000L,
 
-      0,    /* module-specific interface */
+      NULL, /* module-specific interface */
 
-      0,                        /* FT_Module_Constructor  module_init   */
-      0,                        /* FT_Module_Destructor   module_done   */
+      NULL,                     /* FT_Module_Constructor  module_init   */
+      NULL,                     /* FT_Module_Destructor   module_done   */
       winfnt_get_service        /* FT_Module_Requester    get_interface */
     },
 
@@ -1174,16 +1181,16 @@
 
     FNT_Face_Init,              /* FT_Face_InitFunc  init_face */
     FNT_Face_Done,              /* FT_Face_DoneFunc  done_face */
-    0,                          /* FT_Size_InitFunc  init_size */
-    0,                          /* FT_Size_DoneFunc  done_size */
-    0,                          /* FT_Slot_InitFunc  init_slot */
-    0,                          /* FT_Slot_DoneFunc  done_slot */
+    NULL,                       /* FT_Size_InitFunc  init_size */
+    NULL,                       /* FT_Size_DoneFunc  done_size */
+    NULL,                       /* FT_Slot_InitFunc  init_slot */
+    NULL,                       /* FT_Slot_DoneFunc  done_slot */
 
     FNT_Load_Glyph,             /* FT_Slot_LoadFunc  load_glyph */
 
-    0,                          /* FT_Face_GetKerningFunc   get_kerning  */
-    0,                          /* FT_Face_AttachFunc       attach_file  */
-    0,                          /* FT_Face_GetAdvancesFunc  get_advances */
+    NULL,                       /* FT_Face_GetKerningFunc   get_kerning  */
+    NULL,                       /* FT_Face_AttachFunc       attach_file  */
+    NULL,                       /* FT_Face_GetAdvancesFunc  get_advances */
 
     FNT_Size_Request,           /* FT_Size_RequestFunc  request_size */
     FNT_Size_Select             /* FT_Size_SelectFunc   select_size  */

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType Glyph Loader (body).                                        */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -20,6 +20,7 @@
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_SFNT_H
+#include FT_INTERNAL_CALC_H
 #include FT_OUTLINE_H
 #include FT_CFF_DRIVER_H
 
@@ -278,11 +279,15 @@
 
       if ( hinting && size )
       {
-        CFF_Internal  internal = (CFF_Internal)size->root.internal;
+        FT_Size       ftsize   = FT_SIZE( size );
+        CFF_Internal  internal = (CFF_Internal)ftsize->internal->module_data;
 
 
-        builder->hints_globals = (void *)internal->topfont;
-        builder->hints_funcs   = glyph->root.internal->glyph_hints;
+        if ( internal )
+        {
+          builder->hints_globals = (void *)internal->topfont;
+          builder->hints_funcs   = glyph->root.internal->glyph_hints;
+        }
       }
     }
 
@@ -391,7 +396,7 @@
 
 
     /* clear everything */
-    FT_MEM_ZERO( decoder, sizeof ( *decoder ) );
+    FT_ZERO( decoder );
 
     /* initialize builder */
     cff_builder_init( &decoder->builder, face, size, slot, hinting );
@@ -440,7 +445,8 @@
 
       if ( builder->hints_funcs && size )
       {
-        CFF_Internal  internal = (CFF_Internal)size->root.internal;
+        FT_Size       ftsize   = FT_SIZE( size );
+        CFF_Internal  internal = (CFF_Internal)ftsize->internal->module_data;
 
 
         /* for CFFs without subfonts, this value has already been set */
@@ -457,7 +463,7 @@
     decoder->glyph_width   = sub->private_dict.default_width;
     decoder->nominal_width = sub->private_dict.nominal_width;
 
-    decoder->current_subfont = sub;     /* for Adobe's CFF handler */
+    decoder->current_subfont = sub;
 
   Exit:
     return error;
@@ -913,7 +919,6 @@
     FT_Byte*           limit;
     CFF_Builder*       builder = &decoder->builder;
     FT_Pos             x, y;
-    FT_Fixed           seed;
     FT_Fixed*          stack;
     FT_Int             charstring_type =
                          decoder->cff->top_font.font_dict.charstring_type;
@@ -928,15 +933,6 @@
     /* set default width */
     decoder->num_hints  = 0;
     decoder->read_width = 1;
-
-    /* compute random seed from stack address of parameter */
-    seed = (FT_Fixed)( ( (FT_Offset)(char*)&seed            ^
-                         (FT_Offset)(char*)&decoder         ^
-                         (FT_Offset)(char*)&charstring_base ) &
-                         FT_ULONG_MAX                         );
-    seed = ( seed ^ ( seed >> 10 ) ^ ( seed >> 20 ) ) & 0xFFFFL;
-    if ( seed == 0 )
-      seed = 0x7384;
 
     /* initialize the decoder */
     decoder->top  = decoder->stack;
@@ -1026,7 +1022,7 @@
         if ( !( val & 0xFFFFL ) )
           FT_TRACE4(( " %hd", (FT_Short)( (FT_UInt32)val >> 16 ) ));
         else
-          FT_TRACE4(( " %.2f", val / 65536.0 ));
+          FT_TRACE4(( " %.5f", val / 65536.0 ));
 #endif
 
       }
@@ -1455,8 +1451,8 @@
 
           cff_builder_close_contour( builder );
           builder->path_begun = 0;
-          x   += args[-2];
-          y   += args[-1];
+          x    = ADD_LONG( x, args[-2] );
+          y    = ADD_LONG( y, args[-1] );
           args = stack;
           break;
 
@@ -1465,7 +1461,7 @@
 
           cff_builder_close_contour( builder );
           builder->path_begun = 0;
-          y   += args[-1];
+          y    = ADD_LONG( y, args[-1] );
           args = stack;
           break;
 
@@ -1474,7 +1470,7 @@
 
           cff_builder_close_contour( builder );
           builder->path_begun = 0;
-          x   += args[-1];
+          x    = ADD_LONG( x, args[-1] );
           args = stack;
           break;
 
@@ -1491,8 +1487,8 @@
           args -= num_args & ~1;
           while ( args < decoder->top )
           {
-            x += args[0];
-            y += args[1];
+            x = ADD_LONG( x, args[0] );
+            y = ADD_LONG( y, args[1] );
             cff_builder_add_point( builder, x, y, 1 );
             args += 2;
           }
@@ -1524,9 +1520,9 @@
             while ( args < decoder->top )
             {
               if ( phase )
-                x += args[0];
+                x = ADD_LONG( x, args[0] );
               else
-                y += args[0];
+                y = ADD_LONG( y, args[0] );
 
               if ( cff_builder_add_point1( builder, x, y ) )
                 goto Fail;
@@ -1557,15 +1553,18 @@
             args -= nargs;
             while ( args < decoder->top )
             {
-              x += args[0];
-              y += args[1];
+              x = ADD_LONG( x, args[0] );
+              y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[2];
-              y += args[3];
+
+              x = ADD_LONG( x, args[2] );
+              y = ADD_LONG( y, args[3] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[4];
-              y += args[5];
+
+              x = ADD_LONG( x, args[4] );
+              y = ADD_LONG( y, args[5] );
               cff_builder_add_point( builder, x, y, 1 );
+
               args += 6;
             }
             args = stack;
@@ -1594,7 +1593,7 @@
 
             if ( nargs & 1 )
             {
-              x += args[0];
+              x = ADD_LONG( x, args[0] );
               args++;
               nargs--;
             }
@@ -1604,13 +1603,16 @@
 
             while ( args < decoder->top )
             {
-              y += args[0];
+              y = ADD_LONG( y, args[0] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[1];
-              y += args[2];
+
+              x = ADD_LONG( x, args[1] );
+              y = ADD_LONG( y, args[2] );
               cff_builder_add_point( builder, x, y, 0 );
-              y += args[3];
+
+              y = ADD_LONG( y, args[3] );
               cff_builder_add_point( builder, x, y, 1 );
+
               args += 4;
             }
             args = stack;
@@ -1638,7 +1640,7 @@
             args -= nargs;
             if ( nargs & 1 )
             {
-              y += args[0];
+              y = ADD_LONG( y, args[0] );
               args++;
               nargs--;
             }
@@ -1648,13 +1650,16 @@
 
             while ( args < decoder->top )
             {
-              x += args[0];
+              x = ADD_LONG( x, args[0] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[1];
-              y += args[2];
+
+              x = ADD_LONG( x, args[1] );
+              y = ADD_LONG( y, args[2] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[3];
+
+              x = ADD_LONG( x, args[3] );
               cff_builder_add_point( builder, x, y, 1 );
+
               args += 4;
             }
             args = stack;
@@ -1693,26 +1698,30 @@
               nargs -= 4;
               if ( phase )
               {
-                x += args[0];
+                x = ADD_LONG( x, args[0] );
                 cff_builder_add_point( builder, x, y, 0 );
-                x += args[1];
-                y += args[2];
+
+                x = ADD_LONG( x, args[1] );
+                y = ADD_LONG( y, args[2] );
                 cff_builder_add_point( builder, x, y, 0 );
-                y += args[3];
+
+                y = ADD_LONG( y, args[3] );
                 if ( nargs == 1 )
-                  x += args[4];
+                  x = ADD_LONG( x, args[4] );
                 cff_builder_add_point( builder, x, y, 1 );
               }
               else
               {
-                y += args[0];
+                y = ADD_LONG( y, args[0] );
                 cff_builder_add_point( builder, x, y, 0 );
-                x += args[1];
-                y += args[2];
+
+                x = ADD_LONG( x, args[1] );
+                y = ADD_LONG( y, args[2] );
                 cff_builder_add_point( builder, x, y, 0 );
-                x += args[3];
+
+                x = ADD_LONG( x, args[3] );
                 if ( nargs == 1 )
-                  y += args[4];
+                  y = ADD_LONG( y, args[4] );
                 cff_builder_add_point( builder, x, y, 1 );
               }
               args  += 4;
@@ -1745,23 +1754,27 @@
             /* first, add the line segments */
             while ( num_lines > 0 )
             {
-              x += args[0];
-              y += args[1];
+              x = ADD_LONG( x, args[0] );
+              y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y, 1 );
+
               args += 2;
               num_lines--;
             }
 
             /* then the curve */
-            x += args[0];
-            y += args[1];
+            x = ADD_LONG( x, args[0] );
+            y = ADD_LONG( y, args[1] );
             cff_builder_add_point( builder, x, y, 0 );
-            x += args[2];
-            y += args[3];
+
+            x = ADD_LONG( x, args[2] );
+            y = ADD_LONG( y, args[3] );
             cff_builder_add_point( builder, x, y, 0 );
-            x += args[4];
-            y += args[5];
+
+            x = ADD_LONG( x, args[4] );
+            y = ADD_LONG( y, args[5] );
             cff_builder_add_point( builder, x, y, 1 );
+
             args = stack;
           }
           break;
@@ -1790,23 +1803,27 @@
             /* first, add the curves */
             while ( num_curves > 0 )
             {
-              x += args[0];
-              y += args[1];
+              x = ADD_LONG( x, args[0] );
+              y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[2];
-              y += args[3];
+
+              x = ADD_LONG( x, args[2] );
+              y = ADD_LONG( y, args[3] );
               cff_builder_add_point( builder, x, y, 0 );
-              x += args[4];
-              y += args[5];
+
+              x = ADD_LONG( x, args[4] );
+              y = ADD_LONG( y, args[5] );
               cff_builder_add_point( builder, x, y, 1 );
+
               args += 6;
               num_curves--;
             }
 
             /* then the final line */
-            x += args[0];
-            y += args[1];
+            x = ADD_LONG( x, args[0] );
+            y = ADD_LONG( y, args[1] );
             cff_builder_add_point( builder, x, y, 1 );
+
             args = stack;
           }
           break;
@@ -1829,33 +1846,33 @@
             start_y = y;
 
             /* first control point */
-            x += args[0];
-            y += args[1];
+            x = ADD_LONG( x, args[0] );
+            y = ADD_LONG( y, args[1] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* second control point */
-            x += args[2];
-            y += args[3];
+            x = ADD_LONG( x, args[2] );
+            y = ADD_LONG( y, args[3] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* join point; on curve, with y-value the same as the last */
             /* control point's y-value                                 */
-            x += args[4];
+            x = ADD_LONG( x, args[4] );
             cff_builder_add_point( builder, x, y, 1 );
 
             /* third control point, with y-value the same as the join */
             /* point's y-value                                        */
-            x += args[5];
+            x = ADD_LONG( x, args[5] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* fourth control point */
-            x += args[6];
-            y += args[7];
+            x = ADD_LONG( x, args[6] );
+            y = ADD_LONG( y, args[7] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* ending point, with y-value the same as the start   */
-            x += args[8];
-            y  = start_y;
+            x = ADD_LONG( x, args[8] );
+            y = start_y;
             cff_builder_add_point( builder, x, y, 1 );
 
             args = stack;
@@ -1878,32 +1895,32 @@
             start_y = y;
 
             /* first control point */
-            x += args[0];
+            x = ADD_LONG( x, args[0] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* second control point */
-            x += args[1];
-            y += args[2];
+            x = ADD_LONG( x, args[1] );
+            y = ADD_LONG( y, args[2] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* join point; on curve, with y-value the same as the last */
             /* control point's y-value                                 */
-            x += args[3];
+            x = ADD_LONG( x, args[3] );
             cff_builder_add_point( builder, x, y, 1 );
 
             /* third control point, with y-value the same as the join */
             /* point's y-value                                        */
-            x += args[4];
+            x = ADD_LONG( x, args[4] );
             cff_builder_add_point( builder, x, y, 0 );
 
             /* fourth control point */
-            x += args[5];
-            y  = start_y;
+            x = ADD_LONG( x, args[5] );
+            y = start_y;
             cff_builder_add_point( builder, x, y, 0 );
 
             /* ending point, with y-value the same as the start point's */
             /* y-value -- we don't add this point, though               */
-            x += args[6];
+            x = ADD_LONG( x, args[6] );
             cff_builder_add_point( builder, x, y, 1 );
 
             args = stack;
@@ -1939,8 +1956,8 @@
             /* grab up to the last argument */
             for ( count = 5; count > 0; count-- )
             {
-              dx += temp[0];
-              dy += temp[1];
+              dx    = ADD_LONG( dx, temp[0] );
+              dy    = ADD_LONG( dy, temp[1] );
               temp += 2;
             }
 
@@ -1954,8 +1971,8 @@
 
             for ( count = 5; count > 0; count-- )
             {
-              x += args[0];
-              y += args[1];
+              x = ADD_LONG( x, args[0] );
+              y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y,
                                      (FT_Bool)( count == 3 ) );
               args += 2;
@@ -1964,13 +1981,13 @@
             /* is last operand an x- or y-delta? */
             if ( horizontal )
             {
-              x += args[0];
-              y  = start_y;
+              x = ADD_LONG( x, args[0] );
+              y = start_y;
             }
             else
             {
-              x  = start_x;
-              y += args[0];
+              x = start_x;
+              y = ADD_LONG( y, args[0] );
             }
 
             cff_builder_add_point( builder, x, y, 1 );
@@ -1992,8 +2009,8 @@
 
             for ( count = 6; count > 0; count-- )
             {
-              x += args[0];
-              y += args[1];
+              x = ADD_LONG( x, args[0] );
+              y = ADD_LONG( y, args[1] );
               cff_builder_add_point( builder, x, y,
                                      (FT_Bool)( count == 4 || count == 1 ) );
               args += 2;
@@ -2071,21 +2088,26 @@
           FT_TRACE4(( " abs\n" ));
 
           if ( args[0] < 0 )
-            args[0] = -args[0];
+          {
+            if ( args[0] == FT_LONG_MIN )
+              args[0] = FT_LONG_MAX;
+            else
+              args[0] = -args[0];
+          }
           args++;
           break;
 
         case cff_op_add:
           FT_TRACE4(( " add\n" ));
 
-          args[0] += args[1];
+          args[0] = ADD_LONG( args[0], args[1] );
           args++;
           break;
 
         case cff_op_sub:
           FT_TRACE4(( " sub\n" ));
 
-          args[0] -= args[1];
+          args[0] = SUB_LONG( args[0], args[1] );
           args++;
           break;
 
@@ -2099,27 +2121,23 @@
         case cff_op_neg:
           FT_TRACE4(( " neg\n" ));
 
+          if ( args[0] == FT_LONG_MIN )
+            args[0] = FT_LONG_MAX;
           args[0] = -args[0];
           args++;
           break;
 
         case cff_op_random:
-          {
-            FT_Fixed  Rand;
+          FT_TRACE4(( " random\n" ));
 
+          /* only use the lower 16 bits of `random'  */
+          /* to generate a number in the range (0;1] */
+          args[0] = (FT_Fixed)
+                      ( ( decoder->current_subfont->random & 0xFFFF ) + 1 );
+          args++;
 
-            FT_TRACE4(( " rand\n" ));
-
-            Rand = seed;
-            if ( Rand >= 0x8000L )
-              Rand++;
-
-            args[0] = Rand;
-            seed    = FT_MulFix( seed, 0x10000L - seed );
-            if ( seed == 0 )
-              seed += 0x2873;
-            args++;
-          }
+          decoder->current_subfont->random =
+            cff_random( decoder->current_subfont->random );
           break;
 
         case cff_op_mul:
@@ -2361,12 +2379,13 @@
 
           FT_TRACE4(( " hsbw (invalid op)\n" ));
 
-          decoder->glyph_width = decoder->nominal_width + ( args[1] >> 16 );
+          decoder->glyph_width =
+            ADD_LONG( decoder->nominal_width, ( args[1] >> 16 ) );
 
           decoder->builder.left_bearing.x = args[0];
           decoder->builder.left_bearing.y = 0;
 
-          x    = decoder->builder.pos_x + args[0];
+          x    = ADD_LONG( decoder->builder.pos_x, args[0] );
           y    = decoder->builder.pos_y;
           args = stack;
           break;
@@ -2378,13 +2397,14 @@
 
           FT_TRACE4(( " sbw (invalid op)\n" ));
 
-          decoder->glyph_width = decoder->nominal_width + ( args[2] >> 16 );
+          decoder->glyph_width =
+            ADD_LONG( decoder->nominal_width, ( args[2] >> 16 ) );
 
           decoder->builder.left_bearing.x = args[0];
           decoder->builder.left_bearing.y = args[1];
 
-          x    = decoder->builder.pos_x + args[0];
-          y    = decoder->builder.pos_y + args[1];
+          x    = ADD_LONG( decoder->builder.pos_x, args[0] );
+          y    = ADD_LONG( decoder->builder.pos_y, args[1] );
           args = stack;
           break;
 
@@ -2395,8 +2415,8 @@
 
           FT_TRACE4(( " setcurrentpoint (invalid op)\n" ));
 
-          x    = decoder->builder.pos_x + args[0];
-          y    = decoder->builder.pos_y + args[1];
+          x    = ADD_LONG( decoder->builder.pos_x, args[0] );
+          y    = ADD_LONG( decoder->builder.pos_y, args[1] );
           args = stack;
           break;
 
@@ -2445,7 +2465,7 @@
 
         case cff_op_and:
           {
-            FT_Fixed  cond = args[0] && args[1];
+            FT_Fixed  cond = ( args[0] && args[1] );
 
 
             FT_TRACE4(( " and\n" ));
@@ -2457,7 +2477,7 @@
 
         case cff_op_or:
           {
-            FT_Fixed  cond = args[0] || args[1];
+            FT_Fixed  cond = ( args[0] || args[1] );
 
 
             FT_TRACE4(( " or\n" ));
@@ -2481,7 +2501,7 @@
 
         case cff_op_eq:
           {
-            FT_Fixed  cond = args[0] == args[1];
+            FT_Fixed  cond = ( args[0] == args[1] );
 
 
             FT_TRACE4(( " eq\n" ));
@@ -2942,6 +2962,7 @@
       cff_decoder_init( &decoder, face, size, glyph, hinting,
                         FT_LOAD_TARGET_MODE( load_flags ) );
 
+      /* this is for pure CFFs */
       if ( load_flags & FT_LOAD_ADVANCE_ONLY )
         decoder.width_only = TRUE;
 

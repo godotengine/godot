@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_graph.h"
+
 #include "scene/scene_string_names.h"
 
+// FIXME: Needs to be ported to the new 3.0 shader API
 #if 0
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 
@@ -169,8 +172,8 @@ void ShaderGraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("node_add","shader_type","node_type","id"),&ShaderGraph::node_add);
 	ClassDB::bind_method(D_METHOD("node_remove","shader_type","id"),&ShaderGraph::node_remove);
-	ClassDB::bind_method(D_METHOD("node_set_pos","shader_type","id","pos"),&ShaderGraph::node_set_pos);
-	ClassDB::bind_method(D_METHOD("node_get_pos","shader_type","id"),&ShaderGraph::node_get_pos);
+	ClassDB::bind_method(D_METHOD("node_set_position","shader_type","id","position"),&ShaderGraph::node_set_position);
+	ClassDB::bind_method(D_METHOD("node_get_position","shader_type","id"),&ShaderGraph::node_get_position);
 
 	ClassDB::bind_method(D_METHOD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
 
@@ -237,11 +240,11 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xform_input_node_set_value","shader_type","id","value"),&ShaderGraph::xform_input_node_set_value);
 	ClassDB::bind_method(D_METHOD("xform_input_node_get_value","shader_type","id"),&ShaderGraph::xform_input_node_get_value);
 
-	ClassDB::bind_method(D_METHOD("texture_input_node_set_value","shader_type","id","value:Texture"),&ShaderGraph::texture_input_node_set_value);
-	ClassDB::bind_method(D_METHOD("texture_input_node_get_value:Texture","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_set_value","shader_type","id","value"),&ShaderGraph::texture_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_get_value","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
 
-	ClassDB::bind_method(D_METHOD("cubemap_input_node_set_value","shader_type","id","value:CubeMap"),&ShaderGraph::cubemap_input_node_set_value);
-	ClassDB::bind_method(D_METHOD("cubemap_input_node_get_value:CubeMap","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_set_value","shader_type","id","value"),&ShaderGraph::cubemap_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_get_value","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
 
 	ClassDB::bind_method(D_METHOD("comment_node_set_text","shader_type","id","text"),&ShaderGraph::comment_node_set_text);
 	ClassDB::bind_method(D_METHOD("comment_node_get_text","shader_type","id"),&ShaderGraph::comment_node_get_text);
@@ -253,7 +256,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("curve_map_node_set_points","shader_type","id","points"),&ShaderGraph::curve_map_node_set_points);
 	ClassDB::bind_method(D_METHOD("curve_map_node_get_points","shader_type","id"),&ShaderGraph::curve_map_node_get_points);
 
-	ClassDB::bind_method(D_METHOD("connect_node:Error","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
+	ClassDB::bind_method(D_METHOD("connect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
 	ClassDB::bind_method(D_METHOD("is_node_connected","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::is_node_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::disconnect_node);
 	ClassDB::bind_method(D_METHOD("get_node_connections","shader_type"),&ShaderGraph::_get_connections);
@@ -261,7 +264,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear","shader_type"),&ShaderGraph::clear);
 
 	ClassDB::bind_method(D_METHOD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
-	ClassDB::bind_method(D_METHOD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
+	ClassDB::bind_method(D_METHOD("node_get_state","shader_type","id"),&ShaderGraph::node_get_state);
 
 	ClassDB::bind_method(D_METHOD("_set_data"),&ShaderGraph::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"),&ShaderGraph::_get_data);
@@ -271,204 +274,131 @@ void ShaderGraph::_bind_methods() {
 	//void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
 
-	BIND_CONSTANT( NODE_INPUT ); // all inputs (shader type dependent)
-	BIND_CONSTANT( NODE_SCALAR_CONST ); //scalar constant
-	BIND_CONSTANT( NODE_VEC_CONST ); //vec3 constant
-	BIND_CONSTANT( NODE_RGB_CONST ); //rgb constant (shows a color picker instead)
-	BIND_CONSTANT( NODE_XFORM_CONST ); // 4x4 matrix constant
-	BIND_CONSTANT( NODE_TIME ); // time in seconds
-	BIND_CONSTANT( NODE_SCREEN_TEX ); // screen texture sampler (takes UV) (only usable in fragment shader)
-	BIND_CONSTANT( NODE_SCALAR_OP ); // scalar vs scalar op (mul ); add ); div ); etc)
-	BIND_CONSTANT( NODE_VEC_OP ); // vec3 vs vec3 op (mul );ad );div );crossprod );etc)
-	BIND_CONSTANT( NODE_VEC_SCALAR_OP ); // vec3 vs scalar op (mul ); add ); div ); etc)
-	BIND_CONSTANT( NODE_RGB_OP ); // vec3 vs vec3 rgb op (with scalar amount) ); like brighten ); darken ); burn ); dodge ); multiply ); etc.
-	BIND_CONSTANT( NODE_XFORM_MULT ); // mat4 x mat4
-	BIND_CONSTANT( NODE_XFORM_VEC_MULT ); // mat4 x vec3 mult (with no-translation option)
-	BIND_CONSTANT( NODE_XFORM_VEC_INV_MULT ); // mat4 x vec3 inverse mult (with no-translation option)
-	BIND_CONSTANT( NODE_SCALAR_FUNC ); // scalar function (sin ); cos ); etc)
-	BIND_CONSTANT( NODE_VEC_FUNC ); // vector function (normalize ); negate ); reciprocal ); rgb2hsv ); hsv2rgb ); etc ); etc)
-	BIND_CONSTANT( NODE_VEC_LEN ); // vec3 length
-	BIND_CONSTANT( NODE_DOT_PROD ); // vec3 . vec3 (dot product -> scalar output)
-	BIND_CONSTANT( NODE_VEC_TO_SCALAR ); // 1 vec3 input ); 3 scalar outputs
-	BIND_CONSTANT( NODE_SCALAR_TO_VEC ); // 3 scalar input ); 1 vec3 output
-	BIND_CONSTANT( NODE_VEC_TO_XFORM ); // 3 vec input ); 1 xform output
-	BIND_CONSTANT( NODE_XFORM_TO_VEC ); // 3 vec input ); 1 xform output
-	BIND_CONSTANT( NODE_SCALAR_INTERP ); // scalar interpolation (with optional curve)
-	BIND_CONSTANT( NODE_VEC_INTERP ); // vec3 interpolation  (with optional curve)
-	BIND_CONSTANT( NODE_COLOR_RAMP );
-	BIND_CONSTANT( NODE_CURVE_MAP );
-	BIND_CONSTANT( NODE_SCALAR_INPUT ); // scalar uniform (assignable in material)
-	BIND_CONSTANT( NODE_VEC_INPUT ); // vec3 uniform (assignable in material)
-	BIND_CONSTANT( NODE_RGB_INPUT ); // color uniform (assignable in material)
-	BIND_CONSTANT( NODE_XFORM_INPUT ); // mat4 uniform (assignable in material)
-	BIND_CONSTANT( NODE_TEXTURE_INPUT ); // texture input (assignable in material)
-	BIND_CONSTANT( NODE_CUBEMAP_INPUT ); // cubemap input (assignable in material)
-	BIND_CONSTANT( NODE_DEFAULT_TEXTURE );
-	BIND_CONSTANT( NODE_OUTPUT ); // output (shader type dependent)
-	BIND_CONSTANT( NODE_COMMENT ); // comment
-	BIND_CONSTANT( NODE_TYPE_MAX );
+	BIND_ENUM_CONSTANT( NODE_INPUT ); // all inputs (shader type dependent)
+	BIND_ENUM_CONSTANT( NODE_SCALAR_CONST ); //scalar constant
+	BIND_ENUM_CONSTANT( NODE_VEC_CONST ); //vec3 constant
+	BIND_ENUM_CONSTANT( NODE_RGB_CONST ); //rgb constant (shows a color picker instead)
+	BIND_ENUM_CONSTANT( NODE_XFORM_CONST ); // 4x4 matrix constant
+	BIND_ENUM_CONSTANT( NODE_TIME ); // time in seconds
+	BIND_ENUM_CONSTANT( NODE_SCREEN_TEX ); // screen texture sampler (takes UV) (only usable in fragment shader)
+	BIND_ENUM_CONSTANT( NODE_SCALAR_OP ); // scalar vs scalar op (mul ); add ); div ); etc)
+	BIND_ENUM_CONSTANT( NODE_VEC_OP ); // vec3 vs vec3 op (mul );ad );div );crossprod );etc)
+	BIND_ENUM_CONSTANT( NODE_VEC_SCALAR_OP ); // vec3 vs scalar op (mul ); add ); div ); etc)
+	BIND_ENUM_CONSTANT( NODE_RGB_OP ); // vec3 vs vec3 rgb op (with scalar amount) ); like brighten ); darken ); burn ); dodge ); multiply ); etc.
+	BIND_ENUM_CONSTANT( NODE_XFORM_MULT ); // mat4 x mat4
+	BIND_ENUM_CONSTANT( NODE_XFORM_VEC_MULT ); // mat4 x vec3 mult (with no-translation option)
+	BIND_ENUM_CONSTANT( NODE_XFORM_VEC_INV_MULT ); // mat4 x vec3 inverse mult (with no-translation option)
+	BIND_ENUM_CONSTANT( NODE_SCALAR_FUNC ); // scalar function (sin ); cos ); etc)
+	BIND_ENUM_CONSTANT( NODE_VEC_FUNC ); // vector function (normalize ); negate ); reciprocal ); rgb2hsv ); hsv2rgb ); etc ); etc)
+	BIND_ENUM_CONSTANT( NODE_VEC_LEN ); // vec3 length
+	BIND_ENUM_CONSTANT( NODE_DOT_PROD ); // vec3 . vec3 (dot product -> scalar output)
+	BIND_ENUM_CONSTANT( NODE_VEC_TO_SCALAR ); // 1 vec3 input ); 3 scalar outputs
+	BIND_ENUM_CONSTANT( NODE_SCALAR_TO_VEC ); // 3 scalar input ); 1 vec3 output
+	BIND_ENUM_CONSTANT( NODE_VEC_TO_XFORM ); // 3 vec input ); 1 xform output
+	BIND_ENUM_CONSTANT( NODE_XFORM_TO_VEC ); // 3 vec input ); 1 xform output
+	BIND_ENUM_CONSTANT( NODE_SCALAR_INTERP ); // scalar interpolation (with optional curve)
+	BIND_ENUM_CONSTANT( NODE_VEC_INTERP ); // vec3 interpolation  (with optional curve)
+	BIND_ENUM_CONSTANT( NODE_COLOR_RAMP );
+	BIND_ENUM_CONSTANT( NODE_CURVE_MAP );
+	BIND_ENUM_CONSTANT( NODE_SCALAR_INPUT ); // scalar uniform (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_VEC_INPUT ); // vec3 uniform (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_RGB_INPUT ); // color uniform (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_XFORM_INPUT ); // mat4 uniform (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_TEXTURE_INPUT ); // texture input (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_CUBEMAP_INPUT ); // cubemap input (assignable in material)
+	BIND_ENUM_CONSTANT( NODE_DEFAULT_TEXTURE );
+	BIND_ENUM_CONSTANT( NODE_OUTPUT ); // output (shader type dependent)
+	BIND_ENUM_CONSTANT( NODE_COMMENT ); // comment
+	BIND_ENUM_CONSTANT( NODE_TYPE_MAX );
 
-	BIND_CONSTANT( SLOT_TYPE_SCALAR );
-	BIND_CONSTANT( SLOT_TYPE_VEC );
-	BIND_CONSTANT( SLOT_TYPE_XFORM );
-	BIND_CONSTANT( SLOT_TYPE_TEXTURE );
-	BIND_CONSTANT( SLOT_MAX );
+	BIND_ENUM_CONSTANT( SLOT_TYPE_SCALAR );
+	BIND_ENUM_CONSTANT( SLOT_TYPE_VEC );
+	BIND_ENUM_CONSTANT( SLOT_TYPE_XFORM );
+	BIND_ENUM_CONSTANT( SLOT_TYPE_TEXTURE );
+	BIND_ENUM_CONSTANT( SLOT_MAX );
 
-	BIND_CONSTANT( SHADER_TYPE_VERTEX );
-	BIND_CONSTANT( SHADER_TYPE_FRAGMENT );
-	BIND_CONSTANT( SHADER_TYPE_LIGHT );
-	BIND_CONSTANT( SHADER_TYPE_MAX );
+	BIND_ENUM_CONSTANT( SHADER_TYPE_VERTEX );
+	BIND_ENUM_CONSTANT( SHADER_TYPE_FRAGMENT );
+	BIND_ENUM_CONSTANT( SHADER_TYPE_LIGHT );
+	BIND_ENUM_CONSTANT( SHADER_TYPE_MAX );
 
 
-	BIND_CONSTANT( SLOT_IN );
-	BIND_CONSTANT( SLOT_OUT );
+	BIND_ENUM_CONSTANT( SLOT_IN );
+	BIND_ENUM_CONSTANT( SLOT_OUT );
 
-	BIND_CONSTANT( GRAPH_OK );
-	BIND_CONSTANT( GRAPH_ERROR_CYCLIC  );
-	BIND_CONSTANT( GRAPH_ERROR_MISSING_CONNECTIONS );
+	BIND_ENUM_CONSTANT( GRAPH_OK );
+	BIND_ENUM_CONSTANT( GRAPH_ERROR_CYCLIC  );
+	BIND_ENUM_CONSTANT( GRAPH_ERROR_MISSING_CONNECTIONS );
 
-	BIND_CONSTANT( SCALAR_OP_ADD );
-	BIND_CONSTANT( SCALAR_OP_SUB );
-	BIND_CONSTANT( SCALAR_OP_MUL );
-	BIND_CONSTANT( SCALAR_OP_DIV );
-	BIND_CONSTANT( SCALAR_OP_MOD );
-	BIND_CONSTANT( SCALAR_OP_POW );
-	BIND_CONSTANT( SCALAR_OP_MAX );
-	BIND_CONSTANT( SCALAR_OP_MIN );
-	BIND_CONSTANT( SCALAR_OP_ATAN2 );
-	BIND_CONSTANT( SCALAR_MAX_OP );
+	BIND_ENUM_CONSTANT( SCALAR_OP_ADD );
+	BIND_ENUM_CONSTANT( SCALAR_OP_SUB );
+	BIND_ENUM_CONSTANT( SCALAR_OP_MUL );
+	BIND_ENUM_CONSTANT( SCALAR_OP_DIV );
+	BIND_ENUM_CONSTANT( SCALAR_OP_MOD );
+	BIND_ENUM_CONSTANT( SCALAR_OP_POW );
+	BIND_ENUM_CONSTANT( SCALAR_OP_MAX );
+	BIND_ENUM_CONSTANT( SCALAR_OP_MIN );
+	BIND_ENUM_CONSTANT( SCALAR_OP_ATAN2 );
+	BIND_ENUM_CONSTANT( SCALAR_MAX_OP );
 
-	BIND_CONSTANT( VEC_OP_ADD );
-	BIND_CONSTANT( VEC_OP_SUB );
-	BIND_CONSTANT( VEC_OP_MUL );
-	BIND_CONSTANT( VEC_OP_DIV );
-	BIND_CONSTANT( VEC_OP_MOD );
-	BIND_CONSTANT( VEC_OP_POW );
-	BIND_CONSTANT( VEC_OP_MAX );
-	BIND_CONSTANT( VEC_OP_MIN );
-	BIND_CONSTANT( VEC_OP_CROSS );
-	BIND_CONSTANT( VEC_MAX_OP );
+	BIND_ENUM_CONSTANT( VEC_OP_ADD );
+	BIND_ENUM_CONSTANT( VEC_OP_SUB );
+	BIND_ENUM_CONSTANT( VEC_OP_MUL );
+	BIND_ENUM_CONSTANT( VEC_OP_DIV );
+	BIND_ENUM_CONSTANT( VEC_OP_MOD );
+	BIND_ENUM_CONSTANT( VEC_OP_POW );
+	BIND_ENUM_CONSTANT( VEC_OP_MAX );
+	BIND_ENUM_CONSTANT( VEC_OP_MIN );
+	BIND_ENUM_CONSTANT( VEC_OP_CROSS );
+	BIND_ENUM_CONSTANT( VEC_MAX_OP );
 
-	BIND_CONSTANT( VEC_SCALAR_OP_MUL );
-	BIND_CONSTANT( VEC_SCALAR_OP_DIV );
-	BIND_CONSTANT( VEC_SCALAR_OP_POW );
-	BIND_CONSTANT( VEC_SCALAR_MAX_OP );
+	BIND_ENUM_CONSTANT( VEC_SCALAR_OP_MUL );
+	BIND_ENUM_CONSTANT( VEC_SCALAR_OP_DIV );
+	BIND_ENUM_CONSTANT( VEC_SCALAR_OP_POW );
+	BIND_ENUM_CONSTANT( VEC_SCALAR_MAX_OP );
 
-	BIND_CONSTANT( RGB_OP_SCREEN );
-	BIND_CONSTANT( RGB_OP_DIFFERENCE );
-	BIND_CONSTANT( RGB_OP_DARKEN );
-	BIND_CONSTANT( RGB_OP_LIGHTEN );
-	BIND_CONSTANT( RGB_OP_OVERLAY );
-	BIND_CONSTANT( RGB_OP_DODGE );
-	BIND_CONSTANT( RGB_OP_BURN );
-	BIND_CONSTANT( RGB_OP_SOFT_LIGHT );
-	BIND_CONSTANT( RGB_OP_HARD_LIGHT );
-	BIND_CONSTANT( RGB_MAX_OP );
+	BIND_ENUM_CONSTANT( RGB_OP_SCREEN );
+	BIND_ENUM_CONSTANT( RGB_OP_DIFFERENCE );
+	BIND_ENUM_CONSTANT( RGB_OP_DARKEN );
+	BIND_ENUM_CONSTANT( RGB_OP_LIGHTEN );
+	BIND_ENUM_CONSTANT( RGB_OP_OVERLAY );
+	BIND_ENUM_CONSTANT( RGB_OP_DODGE );
+	BIND_ENUM_CONSTANT( RGB_OP_BURN );
+	BIND_ENUM_CONSTANT( RGB_OP_SOFT_LIGHT );
+	BIND_ENUM_CONSTANT( RGB_OP_HARD_LIGHT );
+	BIND_ENUM_CONSTANT( RGB_MAX_OP );
 
-	BIND_CONSTANT( SCALAR_FUNC_SIN );
-	BIND_CONSTANT( SCALAR_FUNC_COS );
-	BIND_CONSTANT( SCALAR_FUNC_TAN );
-	BIND_CONSTANT( SCALAR_FUNC_ASIN );
-	BIND_CONSTANT( SCALAR_FUNC_ACOS );
-	BIND_CONSTANT( SCALAR_FUNC_ATAN );
-	BIND_CONSTANT( SCALAR_FUNC_SINH );
-	BIND_CONSTANT( SCALAR_FUNC_COSH );
-	BIND_CONSTANT( SCALAR_FUNC_TANH );
-	BIND_CONSTANT( SCALAR_FUNC_LOG );
-	BIND_CONSTANT( SCALAR_FUNC_EXP );
-	BIND_CONSTANT( SCALAR_FUNC_SQRT );
-	BIND_CONSTANT( SCALAR_FUNC_ABS );
-	BIND_CONSTANT( SCALAR_FUNC_SIGN );
-	BIND_CONSTANT( SCALAR_FUNC_FLOOR );
-	BIND_CONSTANT( SCALAR_FUNC_ROUND );
-	BIND_CONSTANT( SCALAR_FUNC_CEIL );
-	BIND_CONSTANT( SCALAR_FUNC_FRAC );
-	BIND_CONSTANT( SCALAR_FUNC_SATURATE );
-	BIND_CONSTANT( SCALAR_FUNC_NEGATE );
-	BIND_CONSTANT( SCALAR_MAX_FUNC );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_SIN );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_COS );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_TAN );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_ASIN );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_ACOS );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_ATAN );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_SINH );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_COSH );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_TANH );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_LOG );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_EXP );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_SQRT );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_ABS );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_SIGN );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_FLOOR );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_ROUND );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_CEIL );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_FRAC );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_SATURATE );
+	BIND_ENUM_CONSTANT( SCALAR_FUNC_NEGATE );
+	BIND_ENUM_CONSTANT( SCALAR_MAX_FUNC );
 
-	BIND_CONSTANT( VEC_FUNC_NORMALIZE );
-	BIND_CONSTANT( VEC_FUNC_SATURATE );
-	BIND_CONSTANT( VEC_FUNC_NEGATE );
-	BIND_CONSTANT( VEC_FUNC_RECIPROCAL );
-	BIND_CONSTANT( VEC_FUNC_RGB2HSV );
-	BIND_CONSTANT( VEC_FUNC_HSV2RGB );
-	BIND_CONSTANT( VEC_MAX_FUNC );
+	BIND_ENUM_CONSTANT( VEC_FUNC_NORMALIZE );
+	BIND_ENUM_CONSTANT( VEC_FUNC_SATURATE );
+	BIND_ENUM_CONSTANT( VEC_FUNC_NEGATE );
+	BIND_ENUM_CONSTANT( VEC_FUNC_RECIPROCAL );
+	BIND_ENUM_CONSTANT( VEC_FUNC_RGB2HSV );
+	BIND_ENUM_CONSTANT( VEC_FUNC_HSV2RGB );
+	BIND_ENUM_CONSTANT( VEC_MAX_FUNC );
 
 	ADD_SIGNAL(MethodInfo("updated"));
-
-#if 0
-	ClassDB::bind_method(D_METHOD("node_add"),&ShaderGraph::node_add );
-	ClassDB::bind_method(D_METHOD("node_remove"),&ShaderGraph::node_remove );
-	ClassDB::bind_method(D_METHOD("node_set_param"),&ShaderGraph::node_set_param );
-	ClassDB::bind_method(D_METHOD("node_set_pos"),&ShaderGraph::node_set_pos );
-
-	ClassDB::bind_method(D_METHOD("node_get_pos"),&ShaderGraph::node_get_pos );
-	ClassDB::bind_method(D_METHOD("node_get_param"),&ShaderGraph::node_get_param);
-	ClassDB::bind_method(D_METHOD("node_get_type"),&ShaderGraph::node_get_type);
-
-	ClassDB::bind_method(D_METHOD("connect"),&ShaderGraph::connect );
-	ClassDB::bind_method(D_METHOD("disconnect"),&ShaderGraph::disconnect );
-
-	ClassDB::bind_method(D_METHOD("get_connections"),&ShaderGraph::_get_connections_helper );
-
-	ClassDB::bind_method(D_METHOD("clear"),&ShaderGraph::clear );
-
-	BIND_CONSTANT( NODE_IN ); ///< param 0: name
-	BIND_CONSTANT( NODE_OUT ); ///< param 0: name
-	BIND_CONSTANT( NODE_CONSTANT ); ///< param 0: value
-	BIND_CONSTANT( NODE_PARAMETER ); ///< param 0: name
-	BIND_CONSTANT( NODE_ADD );
-	BIND_CONSTANT( NODE_SUB );
-	BIND_CONSTANT( NODE_MUL );
-	BIND_CONSTANT( NODE_DIV );
-	BIND_CONSTANT( NODE_MOD );
-	BIND_CONSTANT( NODE_SIN );
-	BIND_CONSTANT( NODE_COS );
-	BIND_CONSTANT( NODE_TAN );
-	BIND_CONSTANT( NODE_ARCSIN );
-	BIND_CONSTANT( NODE_ARCCOS );
-	BIND_CONSTANT( NODE_ARCTAN );
-	BIND_CONSTANT( NODE_POW );
-	BIND_CONSTANT( NODE_LOG );
-	BIND_CONSTANT( NODE_MAX );
-	BIND_CONSTANT( NODE_MIN );
-	BIND_CONSTANT( NODE_COMPARE );
-	BIND_CONSTANT( NODE_TEXTURE ); ///< param  0: texture
-	BIND_CONSTANT( NODE_TIME ); ///< param  0: interval length
-	BIND_CONSTANT( NODE_NOISE );
-	BIND_CONSTANT( NODE_PASS );
-	BIND_CONSTANT( NODE_VEC_IN ); ///< param 0: name
-	BIND_CONSTANT( NODE_VEC_OUT ); ///< param 0: name
-	BIND_CONSTANT( NODE_VEC_CONSTANT ); ///< param  0: value
-	BIND_CONSTANT( NODE_VEC_PARAMETER ); ///< param  0: name
-	BIND_CONSTANT( NODE_VEC_ADD );
-	BIND_CONSTANT( NODE_VEC_SUB );
-	BIND_CONSTANT( NODE_VEC_MUL );
-	BIND_CONSTANT( NODE_VEC_DIV );
-	BIND_CONSTANT( NODE_VEC_MOD );
-	BIND_CONSTANT( NODE_VEC_CROSS );
-	BIND_CONSTANT( NODE_VEC_DOT );
-	BIND_CONSTANT( NODE_VEC_POW );
-	BIND_CONSTANT( NODE_VEC_NORMALIZE );
-	BIND_CONSTANT( NODE_VEC_TRANSFORM3 );
-	BIND_CONSTANT( NODE_VEC_TRANSFORM4 );
-	BIND_CONSTANT( NODE_VEC_COMPARE );
-	BIND_CONSTANT( NODE_VEC_TEXTURE_2D );
-	BIND_CONSTANT( NODE_VEC_TEXTURE_CUBE );
-	BIND_CONSTANT( NODE_VEC_NOISE );
-	BIND_CONSTANT( NODE_VEC_0 );
-	BIND_CONSTANT( NODE_VEC_1 );
-	BIND_CONSTANT( NODE_VEC_2 );
-	BIND_CONSTANT( NODE_VEC_BUILD );
-	BIND_CONSTANT( NODE_VEC_PASS );
-	BIND_CONSTANT( NODE_COLOR_CONSTANT );
-	BIND_CONSTANT( NODE_COLOR_PARAMETER );
-	BIND_CONSTANT( NODE_TEXTURE_PARAMETER );
-	BIND_CONSTANT( NODE_TEXTURE_2D_PARAMETER );
-	BIND_CONSTANT( NODE_TEXTURE_CUBE_PARAMETER );
-	BIND_CONSTANT( NODE_TYPE_MAX );
-#endif
 }
 
 
@@ -571,7 +501,7 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 	_request_update();
 }
 
-void ShaderGraph::node_set_pos(ShaderType p_type,int p_id, const Vector2& p_pos) {
+void ShaderGraph::node_set_position(ShaderType p_type,int p_id, const Vector2& p_pos) {
 	ERR_FAIL_INDEX(p_type,3);
 
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
@@ -579,7 +509,7 @@ void ShaderGraph::node_set_pos(ShaderType p_type,int p_id, const Vector2& p_pos)
 	_request_update();
 
 }
-Vector2 ShaderGraph::node_get_pos(ShaderType p_type,int p_id) const {
+Vector2 ShaderGraph::node_get_position(ShaderType p_type,int p_id) const {
 	ERR_FAIL_INDEX_V(p_type,3,Vector2());
 
 	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),Vector2());
@@ -1315,7 +1245,7 @@ Variant ShaderGraph::node_get_state(ShaderType p_type,int p_id) const {
 	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),Variant());
 	const Node& n = shader[p_type].node_map[p_id];
 	Dictionary s;
-	s["pos"]=n.pos;
+	s["position"]=n.pos;
 	s["param1"]=n.param1;
 	s["param2"]=n.param2;
 	Array keys;
@@ -1333,12 +1263,12 @@ void ShaderGraph::node_set_state(ShaderType p_type,int p_id,const Variant& p_sta
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	Dictionary d = p_state;
-	ERR_FAIL_COND(!d.has("pos"));
+	ERR_FAIL_COND(!d.has("position"));
 	ERR_FAIL_COND(!d.has("param1"));
 	ERR_FAIL_COND(!d.has("param2"));
 	ERR_FAIL_COND(!d.has("default_keys"));
 
-	n.pos=d["pos"];
+	n.pos=d["position"];
 	n.param1=d["param1"];
 	n.param2=d["param2"];
 	Array keys = d["default_keys"];
@@ -1469,6 +1399,7 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Position","POSITION","",SLOT_TYPE_VEC,SLOT_IN},
 	//canvas item fragment out
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
@@ -1489,6 +1420,7 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Position","POSITION","",SLOT_TYPE_VEC,SLOT_IN},
 	//canvas item light out
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightColor","LIGHT.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightAlpha","LIGHT.a","",SLOT_TYPE_SCALAR,SLOT_OUT},

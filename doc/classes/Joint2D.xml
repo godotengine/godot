@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Joint2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Base node for all joint constraints in 2D physics.
+	</brief_description>
+	<description>
+		Base node for all joint constraints in 2D physics. Joints take 2 bodies and apply a custom constraint.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_bias" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_exclude_nodes_from_collision" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_a" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+				Return the path to the A node for the joint.
+			</description>
+		</method>
+		<method name="get_node_b" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+				Return the path to the B node for the joint.
+			</description>
+		</method>
+		<method name="set_bias">
+			<return type="void">
+			</return>
+			<argument index="0" name="bias" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_exclude_nodes_from_collision">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_node_a">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="NodePath">
+			</argument>
+			<description>
+				Set the path to the A node for the joint. Must be of type [PhysicsBody2D].
+			</description>
+		</method>
+		<method name="set_node_b">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="NodePath">
+			</argument>
+			<description>
+				Set the path to the B node for the joint. Must be of type [PhysicsBody2D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias">
+		</member>
+		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">
+		</member>
+		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a">
+		</member>
+		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

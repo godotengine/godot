@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Basis" category="Built-In Types" version="3.0.alpha.custom_build">
+	<brief_description>
+		3x3 matrix datatype.
+	</brief_description>
+	<description>
+		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized. Almost always used as orthogonal basis for a [Transform].
+		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="Basis">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="from" type="Quat">
+			</argument>
+			<description>
+				Create a rotation matrix from the given quaternion.
+			</description>
+		</method>
+		<method name="Basis">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X-angle, Y-angle, Z-angle).
+			</description>
+		</method>
+		<method name="Basis">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Create a rotation matrix which rotates around the given axis by the specified angle. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="Basis">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="x_axis" type="Vector3">
+			</argument>
+			<argument index="1" name="y_axis" type="Vector3">
+			</argument>
+			<argument index="2" name="z_axis" type="Vector3">
+			</argument>
+			<description>
+				Create a matrix from 3 axis vectors.
+			</description>
+		</method>
+		<method name="determinant">
+			<return type="float">
+			</return>
+			<description>
+				Return the determinant of the matrix.
+			</description>
+		</method>
+		<method name="get_euler">
+			<return type="Vector3">
+			</return>
+			<description>
+				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+			</description>
+		</method>
+		<method name="get_orthogonal_index">
+			<return type="int">
+			</return>
+			<description>
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
+			</description>
+		</method>
+		<method name="get_scale">
+			<return type="Vector3">
+			</return>
+			<description>
+				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
+			</description>
+		</method>
+		<method name="inverse">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the inverse of the matrix.
+			</description>
+		</method>
+		<method name="orthonormalized">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
+			</description>
+		</method>
+		<method name="rotated">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Introduce an additional rotation around the given axis by phi (radians). Only relevant when the matrix is being used as a part of [Transform]. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="scaled">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
+			</description>
+		</method>
+		<method name="tdotx">
+			<return type="float">
+			</return>
+			<argument index="0" name="with" type="Vector3">
+			</argument>
+			<description>
+				Transposed dot product with the x axis of the matrix.
+			</description>
+		</method>
+		<method name="tdoty">
+			<return type="float">
+			</return>
+			<argument index="0" name="with" type="Vector3">
+			</argument>
+			<description>
+				Transposed dot product with the y axis of the matrix.
+			</description>
+		</method>
+		<method name="tdotz">
+			<return type="float">
+			</return>
+			<argument index="0" name="with" type="Vector3">
+			</argument>
+			<description>
+				Transposed dot product with the z axis of the matrix.
+			</description>
+		</method>
+		<method name="transposed">
+			<return type="Basis">
+			</return>
+			<description>
+				Return the transposed version of the matrix.
+			</description>
+		</method>
+		<method name="xform">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="v" type="Vector3">
+			</argument>
+			<description>
+				Return a vector transformed (multiplied) by the matrix.
+			</description>
+		</method>
+		<method name="xform_inv">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="v" type="Vector3">
+			</argument>
+			<description>
+				Return a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="Vector3" setter="" getter="">
+		</member>
+		<member name="y" type="Vector3" setter="" getter="">
+		</member>
+		<member name="z" type="Vector3" setter="" getter="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

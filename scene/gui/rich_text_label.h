@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,9 +217,11 @@ private:
 	int scroll_w;
 	bool updating_scroll;
 	int current_idx;
+	int visible_line_count;
 
 	int tab_size;
 	bool underline_meta;
+	bool override_selected_font_color;
 
 	Align default_align;
 
@@ -257,8 +260,9 @@ private:
 	Selection selection;
 
 	int visible_characters;
+	float percent_visible;
 
-	void _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
 
 	Ref<Font> _find_font(Item *p_item);
@@ -271,8 +275,10 @@ private:
 	void _update_scroll();
 	void _scroll_changed(double);
 
-	void _gui_input(InputEvent p_event);
+	void _gui_input(Ref<InputEvent> p_event);
 	Item *_get_next_item(Item *p_item, bool p_free = false);
+
+	Rect2 _get_text_rect();
 
 	bool use_bbcode;
 	String bbcode;
@@ -294,7 +300,7 @@ public:
 	void push_align(Align p_align);
 	void push_indent(int p_level);
 	void push_list(ListType p_list);
-	void push_meta(const Variant &p_data);
+	void push_meta(const Variant &p_meta);
 	void push_table(int p_columns);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	int get_current_table_column() const;
@@ -307,6 +313,9 @@ public:
 
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
+
+	void set_override_selected_font_color(bool p_override_selected_font_color);
+	bool is_overriding_selected_font_color() const;
 
 	void set_scroll_active(bool p_active);
 	bool is_scroll_active() const;
@@ -321,6 +330,7 @@ public:
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
+	int get_visible_line_count() const;
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 
@@ -339,9 +349,14 @@ public:
 	void set_bbcode(const String &p_bbcode);
 	String get_bbcode() const;
 
+	void set_text(const String &p_string);
+
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
+
+	void set_percent_visible(float p_percent);
+	float get_percent_visible() const;
 
 	RichTextLabel();
 	~RichTextLabel();

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +31,9 @@
 #define OS_WINDOWS_H
 
 #include "context_gl_win.h"
+#include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/wasapi/audio_driver_wasapi.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "power_windows.h"
@@ -67,7 +70,7 @@ class OS_Windows : public OS {
 
 	struct KeyEvent {
 
-		InputModifierState mod_state;
+		bool alt, shift, control, meta;
 		UINT uMsg;
 		WPARAM wParam;
 		LPARAM lParam;
@@ -83,7 +86,6 @@ class OS_Windows : public OS {
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	unsigned int last_id;
 #if defined(OPENGL_ENABLED)
 	ContextGL_Win *gl_context;
 #endif
@@ -123,6 +125,9 @@ class OS_Windows : public OS {
 
 	PowerWindows *power_manager;
 
+#ifdef WASAPI_ENABLED
+	AudioDriverWASAPI driver_wasapi;
+#endif
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
@@ -130,8 +135,12 @@ class OS_Windows : public OS {
 	AudioDriverXAudio2 driver_xaudio2;
 #endif
 
+	CrashHandler crash_handler;
+
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
+
+	void _update_window_style(bool repaint = true);
 
 	// functions used by main to initialize/deintialize the OS
 protected:
@@ -143,6 +152,7 @@ protected:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -162,36 +172,23 @@ protected:
 	};
 	Map<ProcessID, ProcessInfo> *process_map;
 
-	struct MonitorInfo {
-		HMONITOR hMonitor;
-		HDC hdcMonitor;
-		Rect2 rect;
-		int dpi;
-	};
-
 	bool pre_fs_valid;
 	RECT pre_fs_rect;
-	Vector<MonitorInfo> monitor_info;
 	bool maximized;
 	bool minimized;
 	bool borderless;
 
-	static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
-
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type);
-
-	virtual void vprint(const char *p_format, va_list p_list, bool p_stderr = false);
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	String get_stdin_string(bool p_block);
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
-	virtual void warp_mouse_pos(const Point2 &p_to);
-	virtual Point2 get_mouse_pos() const;
+	virtual void warp_mouse_position(const Point2 &p_to);
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
@@ -202,9 +199,9 @@ public:
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
-	virtual Point2 get_screen_position(int p_screen = 0) const;
-	virtual Size2 get_screen_size(int p_screen = 0) const;
-	virtual int get_screen_dpi(int p_screen = 0) const;
+	virtual Point2 get_screen_position(int p_screen = -1) const;
+	virtual Size2 get_screen_size(int p_screen = -1) const;
+	virtual int get_screen_dpi(int p_screen = -1) const;
 
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
@@ -223,6 +220,10 @@ public:
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
 
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle);
+	virtual Error close_dynamic_library(void *p_library_handle);
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
+
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name();
@@ -239,9 +240,9 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
 	virtual Error kill(const ProcessID &p_pid);
-	virtual int get_process_ID() const;
+	virtual int get_process_id() const;
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
@@ -250,7 +251,7 @@ public:
 	virtual String get_clipboard() const;
 
 	void set_cursor_shape(CursorShape p_shape);
-	void set_icon(const Image &p_icon);
+	void set_icon(const Ref<Image> &p_icon);
 
 	virtual String get_executable_path() const;
 
@@ -278,11 +279,16 @@ public:
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
 
-	virtual PowerState get_power_state();
+	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	virtual bool check_feature_support(const String &p_feature);
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
+
+	virtual Error move_to_trash(const String &p_path);
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

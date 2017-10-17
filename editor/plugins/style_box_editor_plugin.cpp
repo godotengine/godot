@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,23 +57,23 @@ StyleBoxEditor::StyleBoxEditor() {
 
 	panel = memnew(Panel);
 	add_child(panel);
-	panel->set_area_as_parent_rect();
+	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("StyleBox Preview:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	panel->add_child(l);
 
 	preview = memnew(Panel);
 	panel->add_child(preview);
-	preview->set_pos(Point2(50, 50));
+	preview->set_position(Point2(50, 50));
 	preview->set_size(Size2(200, 100));
 }
 
 void StyleBoxEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<StyleBox>()) {
-		stylebox_editor->edit(p_node->cast_to<StyleBox>());
+	if (Object::cast_to<StyleBox>(p_node)) {
+		stylebox_editor->edit(Object::cast_to<StyleBox>(p_node));
 		stylebox_editor->show();
 	} else
 		stylebox_editor->hide();

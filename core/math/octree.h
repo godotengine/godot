@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -350,7 +351,7 @@ private:
 	};
 
 	void _cull_convex(Octant *p_octant, _CullConvexData *p_cull);
-	void _cull_AABB(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
+	void _cull_aabb(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 	void _cull_segment(Octant *p_octant, const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 	void _cull_point(Octant *p_octant, const Vector3 &p_point, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask);
 
@@ -379,7 +380,7 @@ public:
 	int get_subindex(OctreeElementID p_id) const;
 
 	int cull_convex(const Vector<Plane> &p_convex, T **p_result_array, int p_result_max, uint32_t p_mask = 0xFFFFFFFF);
-	int cull_AABB(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
+	int cull_aabb(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
 	int cull_segment(const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
 
 	int cull_point(const Vector3 &p_point, T **p_result_array, int p_result_max, int *p_subindex_array = NULL, uint32_t p_mask = 0xFFFFFFFF);
@@ -482,11 +483,11 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 				aabb.size *= 0.5;
 
 				if (i & 1)
-					aabb.pos.x += aabb.size.x;
+					aabb.position.x += aabb.size.x;
 				if (i & 2)
-					aabb.pos.y += aabb.size.y;
+					aabb.position.y += aabb.size.y;
 				if (i & 4)
-					aabb.pos.z += aabb.size.z;
+					aabb.position.z += aabb.size.z;
 
 				if (aabb.intersects_inclusive(p_element->aabb)) {
 					/* if actually intersects, create the child */
@@ -543,11 +544,11 @@ void Octree<T, use_pairs, AL>::_ensure_valid_root(const Rect3 &p_aabb) {
 
 		while (!base.encloses(p_aabb)) {
 
-			if (ABS(base.pos.x + base.size.x) <= ABS(base.pos.x)) {
+			if (ABS(base.position.x + base.size.x) <= ABS(base.position.x)) {
 				/* grow towards positive */
 				base.size *= 2.0;
 			} else {
-				base.pos -= base.size;
+				base.position -= base.size;
 				base.size *= 2.0;
 			}
 		}
@@ -575,14 +576,14 @@ void Octree<T, use_pairs, AL>::_ensure_valid_root(const Rect3 &p_aabb) {
 			octant_count++;
 			root->parent = gp;
 
-			if (ABS(base.pos.x + base.size.x) <= ABS(base.pos.x)) {
+			if (ABS(base.position.x + base.size.x) <= ABS(base.position.x)) {
 				/* grow towards positive */
 				base.size *= 2.0;
 				gp->aabb = base;
 				gp->children[0] = root;
 				root->parent_index = 0;
 			} else {
-				base.pos -= base.size;
+				base.position -= base.size;
 				base.size *= 2.0;
 				gp->aabb = base;
 				gp->children[(1 << 0) | (1 << 1) | (1 << 2)] = root; // add at all-positive
@@ -796,9 +797,9 @@ OctreeElementID Octree<T, use_pairs, AL>::create(T *p_userdata, const Rect3 &p_a
 
 // check for AABB validity
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(p_aabb.pos.x > 1e15 || p_aabb.pos.x < -1e15, 0);
-	ERR_FAIL_COND_V(p_aabb.pos.y > 1e15 || p_aabb.pos.y < -1e15, 0);
-	ERR_FAIL_COND_V(p_aabb.pos.z > 1e15 || p_aabb.pos.z < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.x > 1e15 || p_aabb.position.x < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.y > 1e15 || p_aabb.position.y < -1e15, 0);
+	ERR_FAIL_COND_V(p_aabb.position.z > 1e15 || p_aabb.position.z < -1e15, 0);
 	ERR_FAIL_COND_V(p_aabb.size.x > 1e15 || p_aabb.size.x < 0.0, 0);
 	ERR_FAIL_COND_V(p_aabb.size.y > 1e15 || p_aabb.size.y < 0.0, 0);
 	ERR_FAIL_COND_V(p_aabb.size.z > 1e15 || p_aabb.size.z < 0.0, 0);
@@ -836,9 +837,9 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 
 #ifdef DEBUG_ENABLED
 	// check for AABB validity
-	ERR_FAIL_COND(p_aabb.pos.x > 1e15 || p_aabb.pos.x < -1e15);
-	ERR_FAIL_COND(p_aabb.pos.y > 1e15 || p_aabb.pos.y < -1e15);
-	ERR_FAIL_COND(p_aabb.pos.z > 1e15 || p_aabb.pos.z < -1e15);
+	ERR_FAIL_COND(p_aabb.position.x > 1e15 || p_aabb.position.x < -1e15);
+	ERR_FAIL_COND(p_aabb.position.y > 1e15 || p_aabb.position.y < -1e15);
+	ERR_FAIL_COND(p_aabb.position.z > 1e15 || p_aabb.position.z < -1e15);
 	ERR_FAIL_COND(p_aabb.size.x > 1e15 || p_aabb.size.x < 0.0);
 	ERR_FAIL_COND(p_aabb.size.y > 1e15 || p_aabb.size.y < 0.0);
 	ERR_FAIL_COND(p_aabb.size.z > 1e15 || p_aabb.size.z < 0.0);
@@ -849,28 +850,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 	typename ElementMap::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	Element &e = E->get();
-
-#if 0
-
-	pass++;
-	if (!e.aabb.has_no_surface()) {
-		_remove_element(&e);
-	}
-
-	e.aabb=p_aabb;
-
-	if (!e.aabb.has_no_surface()) {
-		_ensure_valid_root(p_aabb);
-
-		_insert_element(&e,root);
-		if (use_pairs)
-			_element_check_pairs(&e);
-
-	}
-
-	_optimize();
-
-#else
 
 	bool old_has_surf = !e.aabb.has_no_surface();
 	bool new_has_surf = !p_aabb.has_no_surface();
@@ -978,7 +957,6 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const Rect3 &p_aabb) {
 	}
 
 	_optimize();
-#endif
 }
 
 template <class T, bool use_pairs, class AL>
@@ -1094,7 +1072,7 @@ void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p
 }
 
 template <class T, bool use_pairs, class AL>
-void Octree<T, use_pairs, AL>::_cull_AABB(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const Rect3 &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (*p_result_idx == p_result_max)
 		return; //pointless
@@ -1159,7 +1137,7 @@ void Octree<T, use_pairs, AL>::_cull_AABB(Octant *p_octant, const Rect3 &p_aabb,
 	for (int i = 0; i < 8; i++) {
 
 		if (p_octant->children[i] && p_octant->children[i]->aabb.intersects_inclusive(p_aabb)) {
-			_cull_AABB(p_octant->children[i], p_aabb, p_result_array, p_result_idx, p_result_max, p_subindex_array, p_mask);
+			_cull_aabb(p_octant->children[i], p_aabb, p_result_array, p_result_idx, p_result_max, p_subindex_array, p_mask);
 		}
 	}
 }
@@ -1335,14 +1313,14 @@ int Octree<T, use_pairs, AL>::cull_convex(const Vector<Plane> &p_convex, T **p_r
 }
 
 template <class T, bool use_pairs, class AL>
-int Octree<T, use_pairs, AL>::cull_AABB(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+int Octree<T, use_pairs, AL>::cull_aabb(const Rect3 &p_aabb, T **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (!root)
 		return 0;
 
 	int result_count = 0;
 	pass++;
-	_cull_AABB(root, p_aabb, p_result_array, &result_count, p_result_max, p_subindex_array, p_mask);
+	_cull_aabb(root, p_aabb, p_result_array, &result_count, p_result_max, p_subindex_array, p_mask);
 
 	return result_count;
 }

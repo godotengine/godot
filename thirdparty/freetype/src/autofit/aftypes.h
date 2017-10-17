@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter types (specification only).                              */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003-2017 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -221,7 +221,7 @@ extern void*  _af_debug_hints;
   (*AF_WritingSystem_InitHintsFunc)( AF_GlyphHints    hints,
                                      AF_StyleMetrics  metrics );
 
-  typedef void
+  typedef FT_Error
   (*AF_WritingSystem_ApplyHintsFunc)( FT_UInt          glyph_index,
                                       AF_GlyphHints    hints,
                                       FT_Outline*      outline,
@@ -575,6 +575,7 @@ extern void*  _af_debug_hints;
           m_init,                                                         \
           m_scale,                                                        \
           m_done,                                                         \
+          m_stdw,                                                         \
           h_init,                                                         \
           h_apply )                                                       \
   FT_LOCAL_DEF( void )                                                    \

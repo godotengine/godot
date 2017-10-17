@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +54,7 @@ void BoxContainer::_resort() {
 	Map<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
@@ -98,14 +99,14 @@ void BoxContainer::_resort() {
 		elements exist */
 
 	bool has_stretched = false;
-	while (stretch_ratio_total > 0) { // first of all, dont even be here if no stretchable objects exist
+	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
 
 		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
 
 		for (int i = 0; i < get_child_count(); i++) {
 
-			Control *c = get_child(i)->cast_to<Control>();
+			Control *c = Object::cast_to<Control>(get_child(i));
 			if (!c || !c->is_visible_in_tree())
 				continue;
 			if (c->is_set_as_toplevel())
@@ -158,7 +159,7 @@ void BoxContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
@@ -210,7 +211,7 @@ Size2 BoxContainer::get_minimum_size() const {
 	bool first = true;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = get_child(i)->cast_to<Control>();
+		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
 		if (c->is_set_as_toplevel())
@@ -294,9 +295,9 @@ void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
 
-	BIND_CONSTANT(ALIGN_BEGIN);
-	BIND_CONSTANT(ALIGN_CENTER);
-	BIND_CONSTANT(ALIGN_END);
+	BIND_ENUM_CONSTANT(ALIGN_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGN_CENTER);
+	BIND_ENUM_CONSTANT(ALIGN_END);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
 }
@@ -307,6 +308,7 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	l->set_text(p_label);
 	add_child(l);
 	MarginContainer *mc = memnew(MarginContainer);
+	mc->add_constant_override("margin_left", 0);
 	mc->add_child(p_control);
 	add_child(mc);
 	if (p_expand)

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +56,7 @@ class ImageFormatLoader {
 	friend class ImageLoader;
 
 protected:
-	virtual Error load_image(Image *p_image, FileAccess *p_fileaccess) = 0;
+	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess, bool p_force_linear, float p_scale) = 0;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	bool recognize(const String &p_extension) const;
 
@@ -74,7 +75,7 @@ class ImageLoader {
 
 protected:
 public:
-	static Error load_image(String p_file, Image *p_image, FileAccess *p_custom = NULL);
+	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = NULL, bool p_force_linear = false, float p_scale = 1.0);
 	static void get_recognized_extensions(List<String> *p_extensions);
 	static bool recognize(const String &p_extension);
 

@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ void ThemeEditor::_propagate_redraw(Control *p_at) {
 	p_at->minimum_size_changed();
 	p_at->update();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
-		Control *a = p_at->get_child(i)->cast_to<Control>();
+		Control *a = Object::cast_to<Control>(p_at->get_child(i));
 		if (a)
 			_propagate_redraw(a);
 	}
@@ -103,7 +104,7 @@ struct _TECategory {
 
 		Ref<T> item;
 		StringName name;
-		bool operator<(const RefItem<T> &p) const { return item->get_instance_ID() < p.item->get_instance_ID(); }
+		bool operator<(const RefItem<T> &p) const { return item->get_instance_id() < p.item->get_instance_id(); }
 	};
 
 	template <class T>
@@ -492,11 +493,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	Ref<Theme> base_theme;
 
-	type_select->show();
-	type_select_label->show();
 	name_select_label->show();
-	name_edit->show();
-	name_menu->show();
+	name_hbc->show();
+	type_select_label->show();
+	type_select->show();
 
 	if (p_option == POPUP_ADD) { //add
 
@@ -514,11 +514,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme = Theme::get_default();
 
-		type_select->hide();
 		name_select_label->hide();
+		name_hbc->hide();
 		type_select_label->hide();
-		name_edit->hide();
-		name_menu->hide();
+		type_select->hide();
 
 	} else if (p_option == POPUP_REMOVE) {
 
@@ -530,17 +529,16 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	} else if (p_option == POPUP_CLASS_REMOVE) {
 
-		add_del_dialog->set_title("Remove All Items");
-		add_del_dialog->get_ok()->set_text("Remove All");
+		add_del_dialog->set_title(TTR("Remove All Items"));
+		add_del_dialog->get_ok()->set_text(TTR("Remove All"));
 		add_del_dialog->popup_centered(Size2(240, 85) * EDSCALE);
 
 		base_theme = Theme::get_default();
 
-		type_select->hide();
 		name_select_label->hide();
+		name_hbc->hide();
 		type_select_label->hide();
-		name_edit->hide();
-		name_menu->hide();
+		type_select->hide();
 	}
 	popup_mode = p_option;
 
@@ -609,7 +607,7 @@ ThemeEditor::ThemeEditor() {
 
 	scroll = memnew(ScrollContainer);
 	add_child(scroll);
-	scroll->set_area_as_parent_rect(3);
+	scroll->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 3);
 	scroll->set_margin(MARGIN_TOP, 30 * EDSCALE);
 	//scroll->set_enable_h_scroll(true);
 	scroll->set_enable_v_scroll(true);
@@ -623,7 +621,7 @@ ThemeEditor::ThemeEditor() {
 
 	main_vb = memnew(VBoxContainer);
 	panel->add_child(main_vb);
-	main_vb->set_area_as_parent_rect(4 * EDSCALE);
+	main_vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 4 * EDSCALE);
 
 	HBoxContainer *hb_menu = memnew(HBoxContainer);
 	main_vb->add_child(hb_menu);
@@ -639,7 +637,7 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"), POPUP_CREATE_EDITOR_EMPTY);
 
 	add_child(theme_menu);
-	theme_menu->set_pos(Vector2(3, 3) * EDSCALE);
+	theme_menu->set_position(Vector2(3, 3) * EDSCALE);
 	theme_menu->get_popup()->connect("id_pressed", this, "_theme_menu_cbk");
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
@@ -650,7 +648,7 @@ ThemeEditor::ThemeEditor() {
 	main_hb->add_child(first_vb);
 
 	//main_panel->add_child(panel);
-	//panel->set_area_as_parent_rect();
+	//panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	//panel->set_margin( MARGIN_TOP,20 );
 
 	first_vb->add_child(memnew(Label("Label")));
@@ -777,23 +775,23 @@ ThemeEditor::ThemeEditor() {
 
 	/*
 	test_h_scroll = memnew( HScrollBar );
-	test_h_scroll->set_pos( Point2( 25, 225 ) );
+	test_h_scroll->set_position( Point2( 25, 225 ) );
 	test_h_scroll->set_size( Point2( 150, 5 ) );
 	panel->add_child(test_h_scroll);
 
 	line_edit = memnew( LineEdit );
-	line_edit->set_pos( Point2( 25, 275 ) );
+	line_edit->set_position( Point2( 25, 275 ) );
 	line_edit->set_size( Point2( 150, 5 ) );
 	line_edit->set_text("Line Edit");
 	panel->add_child(line_edit);
 
 	test_v_scroll = memnew( VScrollBar );
-	test_v_scroll->set_pos( Point2( 200, 25 ) );
+	test_v_scroll->set_position( Point2( 200, 25 ) );
 	test_v_scroll->set_size( Point2( 5, 150 ) );
 	panel->add_child(test_v_scroll);
 
 	test_tree = memnew(Tree);
-	test_tree->set_pos( Point2( 300, 25 ) );
+	test_tree->set_position( Point2( 300, 25 ) );
 	test_tree->set_size( Point2( 200, 200 ) );
 	panel->add_child(test_tree);
 
@@ -817,7 +815,7 @@ ThemeEditor::ThemeEditor() {
 	item->set_range(0,2);
 
 	Button *fd_button= memnew( Button );
-	fd_button->set_pos(Point2(300,275));
+	fd_button->set_position(Point2(300,275));
 	fd_button->set_text("Open File Dialog");
 	panel->add_child(fd_button);
 
@@ -831,48 +829,46 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->hide();
 	add_child(add_del_dialog);
 
+	VBoxContainer *dialog_vbc = memnew(VBoxContainer);
+	add_del_dialog->add_child(dialog_vbc);
+
 	Label *l = memnew(Label);
-	l->set_pos(Point2(5, 5) * EDSCALE);
 	l->set_text(TTR("Type:"));
-	add_del_dialog->add_child(l);
-	dtype_select_label = l;
+	dialog_vbc->add_child(l);
+
+	type_hbc = memnew(HBoxContainer);
+	dialog_vbc->add_child(type_hbc);
 
 	type_edit = memnew(LineEdit);
-	type_edit->set_pos(Point2(5, 25) * EDSCALE);
-	type_edit->set_size(Point2(150, 5) * EDSCALE);
-	add_del_dialog->add_child(type_edit);
+	type_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_hbc->add_child(type_edit);
 	type_menu = memnew(MenuButton);
-	type_menu->set_pos(Point2(160, 25) * EDSCALE);
-	type_menu->set_size(Point2(30, 5) * EDSCALE);
 	type_menu->set_text("..");
-	add_del_dialog->add_child(type_menu);
+	type_hbc->add_child(type_menu);
 
 	type_menu->get_popup()->connect("id_pressed", this, "_type_menu_cbk");
 
 	l = memnew(Label);
-	l->set_pos(Point2(200, 5) * EDSCALE);
 	l->set_text(TTR("Name:"));
-	add_del_dialog->add_child(l);
+	dialog_vbc->add_child(l);
 	name_select_label = l;
 
-	name_edit = memnew(LineEdit);
-	name_edit->set_pos(Point2(200, 25) * EDSCALE);
-	name_edit->set_size(Point2(150, 5) * EDSCALE);
-	add_del_dialog->add_child(name_edit);
-	name_menu = memnew(MenuButton);
-	name_menu->set_pos(Point2(360, 25) * EDSCALE);
-	name_menu->set_size(Point2(30, 5) * EDSCALE);
-	name_menu->set_text("..");
+	name_hbc = memnew(HBoxContainer);
+	dialog_vbc->add_child(name_hbc);
 
-	add_del_dialog->add_child(name_menu);
+	name_edit = memnew(LineEdit);
+	name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	name_hbc->add_child(name_edit);
+	name_menu = memnew(MenuButton);
+	name_menu->set_text("..");
+	name_hbc->add_child(name_menu);
 
 	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
 	name_menu->get_popup()->connect("id_pressed", this, "_name_menu_cbk");
 
 	type_select_label = memnew(Label);
-	type_select_label->set_pos(Point2(400, 5) * EDSCALE);
 	type_select_label->set_text(TTR("Data Type:"));
-	add_del_dialog->add_child(type_select_label);
+	dialog_vbc->add_child(type_select_label);
 
 	type_select = memnew(OptionButton);
 	type_select->add_item(TTR("Icon"));
@@ -880,10 +876,8 @@ ThemeEditor::ThemeEditor() {
 	type_select->add_item(TTR("Font"));
 	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
-	type_select->set_pos(Point2(400, 25) * EDSCALE);
-	type_select->set_size(Point2(80, 5) * EDSCALE);
 
-	add_del_dialog->add_child(type_select);
+	dialog_vbc->add_child(type_select);
 
 	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
 
@@ -898,9 +892,9 @@ ThemeEditor::ThemeEditor() {
 
 void ThemeEditorPlugin::edit(Object *p_node) {
 
-	if (p_node && p_node->cast_to<Theme>()) {
+	if (Object::cast_to<Theme>(p_node)) {
 		theme_editor->show();
-		theme_editor->edit(p_node->cast_to<Theme>());
+		theme_editor->edit(Object::cast_to<Theme>(p_node));
 	} else {
 		theme_editor->edit(Ref<Theme>());
 		theme_editor->hide();

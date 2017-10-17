@@ -6,7 +6,7 @@ Import('env_modules')
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
-if (env['builtin_opus'] != 'no'):
+if env['builtin_opus']:
     thirdparty_dir = "#thirdparty/opus/"
 
     thirdparty_sources = [
@@ -209,7 +209,7 @@ if (env['builtin_opus'] != 'no'):
     env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     # also requires libogg
-    if (env['builtin_libogg'] != 'no'):
+    if env['builtin_libogg']:
         env_opus.Append(CPPPATH=["#thirdparty/libogg"])
 
 # Module files

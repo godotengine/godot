@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "http_request.h"
+
+#include "version.h"
 
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
@@ -544,19 +547,19 @@ void HTTPRequest::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::POOL_STRING_ARRAY, "headers"), PropertyInfo(Variant::POOL_BYTE_ARRAY, "body")));
 
-	BIND_CONSTANT(RESULT_SUCCESS);
-	//BIND_CONSTANT( RESULT_NO_BODY );
-	BIND_CONSTANT(RESULT_CHUNKED_BODY_SIZE_MISMATCH);
-	BIND_CONSTANT(RESULT_CANT_CONNECT);
-	BIND_CONSTANT(RESULT_CANT_RESOLVE);
-	BIND_CONSTANT(RESULT_CONNECTION_ERROR);
-	BIND_CONSTANT(RESULT_SSL_HANDSHAKE_ERROR);
-	BIND_CONSTANT(RESULT_NO_RESPONSE);
-	BIND_CONSTANT(RESULT_BODY_SIZE_LIMIT_EXCEEDED);
-	BIND_CONSTANT(RESULT_REQUEST_FAILED);
-	BIND_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
-	BIND_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
-	BIND_CONSTANT(RESULT_REDIRECT_LIMIT_REACHED);
+	BIND_ENUM_CONSTANT(RESULT_SUCCESS);
+	//BIND_ENUM_CONSTANT( RESULT_NO_BODY );
+	BIND_ENUM_CONSTANT(RESULT_CHUNKED_BODY_SIZE_MISMATCH);
+	BIND_ENUM_CONSTANT(RESULT_CANT_CONNECT);
+	BIND_ENUM_CONSTANT(RESULT_CANT_RESOLVE);
+	BIND_ENUM_CONSTANT(RESULT_CONNECTION_ERROR);
+	BIND_ENUM_CONSTANT(RESULT_SSL_HANDSHAKE_ERROR);
+	BIND_ENUM_CONSTANT(RESULT_NO_RESPONSE);
+	BIND_ENUM_CONSTANT(RESULT_BODY_SIZE_LIMIT_EXCEEDED);
+	BIND_ENUM_CONSTANT(RESULT_REQUEST_FAILED);
+	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
+	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
+	BIND_ENUM_CONSTANT(RESULT_REDIRECT_LIMIT_REACHED);
 }
 
 HTTPRequest::HTTPRequest() {

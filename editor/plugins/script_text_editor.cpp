@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,88 +69,158 @@ Ref<Script> ScriptTextEditor::get_edited_script() const {
 	return script;
 }
 
-bool ScriptTextEditor::goto_method(const String &p_method) {
-
-	Vector<String> functions = get_functions();
-
-	String method_search = p_method + ":";
-
-	for (int i = 0; i < functions.size(); i++) {
-		String function = functions[i];
-
-		if (function.begins_with(method_search)) {
-
-			int line = function.get_slice(":", 1).to_int();
-			goto_line(line - 1);
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void ScriptTextEditor::_load_theme_settings() {
 
 	TextEdit *text_edit = code_editor->get_text_edit();
 
 	text_edit->clear_colors();
 
-	/* keyword color */
-
-	text_edit->add_color_override("background_color", EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0)));
-	text_edit->add_color_override("completion_background_color", EDITOR_DEF("text_editor/highlighting/completion_background_color", Color(0, 0, 0, 0)));
-	text_edit->add_color_override("completion_selected_color", EDITOR_DEF("text_editor/highlighting/completion_selected_color", Color::html("434244")));
-	text_edit->add_color_override("completion_existing_color", EDITOR_DEF("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf")));
-	text_edit->add_color_override("completion_scroll_color", EDITOR_DEF("text_editor/highlighting/completion_scroll_color", Color::html("ffffff")));
-	text_edit->add_color_override("completion_font_color", EDITOR_DEF("text_editor/highlighting/completion_font_color", Color::html("aaaaaa")));
-	text_edit->add_color_override("font_color", EDITOR_DEF("text_editor/highlighting/text_color", Color(0, 0, 0)));
-	text_edit->add_color_override("line_number_color", EDITOR_DEF("text_editor/highlighting/line_number_color", Color(0, 0, 0)));
-	text_edit->add_color_override("caret_color", EDITOR_DEF("text_editor/highlighting/caret_color", Color(0, 0, 0)));
-	text_edit->add_color_override("caret_background_color", EDITOR_DEF("text_editor/highlighting/caret_background_color", Color(0, 0, 0)));
-	text_edit->add_color_override("font_selected_color", EDITOR_DEF("text_editor/highlighting/text_selected_color", Color(1, 1, 1)));
-	text_edit->add_color_override("selection_color", EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1)));
-	text_edit->add_color_override("brace_mismatch_color", EDITOR_DEF("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2)));
-	text_edit->add_color_override("current_line_color", EDITOR_DEF("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15)));
-	text_edit->add_color_override("line_length_guideline_color", EDITOR_DEF("text_editor/highlighting/line_length_guideline_color", Color(0, 0, 0)));
-	text_edit->add_color_override("word_highlighted_color", EDITOR_DEF("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15)));
-	text_edit->add_color_override("number_color", EDITOR_DEF("text_editor/highlighting/number_color", Color(0.9, 0.6, 0.0, 2)));
-	text_edit->add_color_override("function_color", EDITOR_DEF("text_editor/highlighting/function_color", Color(0.4, 0.6, 0.8)));
-	text_edit->add_color_override("member_variable_color", EDITOR_DEF("text_editor/highlighting/member_variable_color", Color(0.9, 0.3, 0.3)));
-	text_edit->add_color_override("mark_color", EDITOR_DEF("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4)));
-	text_edit->add_color_override("breakpoint_color", EDITOR_DEF("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2)));
-	text_edit->add_color_override("search_result_color", EDITOR_DEF("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1)));
-	text_edit->add_color_override("search_result_border_color", EDITOR_DEF("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1)));
-	text_edit->add_color_override("symbol_color", EDITOR_DEF("text_editor/highlighting/symbol_color", Color::hex(0x005291ff)));
-	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 4));
+	Color background_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
+	Color completion_background_color = EDITOR_DEF("text_editor/highlighting/completion_background_color", Color(0, 0, 0, 0));
+	Color completion_selected_color = EDITOR_DEF("text_editor/highlighting/completion_selected_color", Color::html("434244"));
+	Color completion_existing_color = EDITOR_DEF("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"));
+	Color completion_scroll_color = EDITOR_DEF("text_editor/highlighting/completion_scroll_color", Color::html("ffffff"));
+	Color completion_font_color = EDITOR_DEF("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"));
+	Color text_color = EDITOR_DEF("text_editor/highlighting/text_color", Color(0, 0, 0));
+	Color line_number_color = EDITOR_DEF("text_editor/highlighting/line_number_color", Color(0, 0, 0));
+	Color caret_color = EDITOR_DEF("text_editor/highlighting/caret_color", Color(0, 0, 0));
+	Color caret_background_color = EDITOR_DEF("text_editor/highlighting/caret_background_color", Color(0, 0, 0));
+	Color text_selected_color = EDITOR_DEF("text_editor/highlighting/text_selected_color", Color(1, 1, 1));
+	Color selection_color = EDITOR_DEF("text_editor/highlighting/selection_color", Color(0.2, 0.2, 1));
+	Color brace_mismatch_color = EDITOR_DEF("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
+	Color current_line_color = EDITOR_DEF("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
+	Color line_length_guideline_color = EDITOR_DEF("text_editor/highlighting/line_length_guideline_color", Color(0, 0, 0));
+	Color word_highlighted_color = EDITOR_DEF("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
+	Color number_color = EDITOR_DEF("text_editor/highlighting/number_color", Color(0.9, 0.6, 0.0, 2));
+	Color function_color = EDITOR_DEF("text_editor/highlighting/function_color", Color(0.4, 0.6, 0.8));
+	Color member_variable_color = EDITOR_DEF("text_editor/highlighting/member_variable_color", Color(0.9, 0.3, 0.3));
+	Color mark_color = EDITOR_DEF("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
+	Color breakpoint_color = EDITOR_DEF("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
+	Color search_result_color = EDITOR_DEF("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
+	Color search_result_border_color = EDITOR_DEF("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
+	Color symbol_color = EDITOR_DEF("text_editor/highlighting/symbol_color", Color::hex(0x005291ff));
 
 	Color keyword_color = EDITOR_DEF("text_editor/highlighting/keyword_color", Color(0.5, 0.0, 0.2));
+	Color basetype_color = EDITOR_DEF("text_editor/highlighting/base_type_color", Color(0.3, 0.3, 0.0));
+	Color type_color = EDITOR_DEF("text_editor/highlighting/engine_type_color", Color(0.0, 0.2, 0.4));
+	Color comment_color = EDITOR_DEF("text_editor/highlighting/comment_color", Color::hex(0x797e7eff));
+	Color string_color = EDITOR_DEF("text_editor/highlighting/string_color", Color::hex(0x6b6f00ff));
+
+	// Adapt
+	if (EditorSettings::get_singleton()->get("text_editor/theme/color_theme") == "Adaptive") {
+		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
+
+		symbol_color = tm->get_color("text_editor/theme/symbol_color", "Editor");
+		keyword_color = tm->get_color("text_editor/theme/keyword_color", "Editor");
+		basetype_color = tm->get_color("text_editor/theme/basetype_color", "Editor");
+		type_color = tm->get_color("text_editor/theme/type_color", "Editor");
+		comment_color = tm->get_color("text_editor/theme/comment_color", "Editor");
+		string_color = tm->get_color("text_editor/theme/string_color", "Editor");
+		background_color = tm->get_color("text_editor/theme/background_color", "Editor");
+		completion_background_color = tm->get_color("text_editor/theme/completion_background_color", "Editor");
+		completion_selected_color = tm->get_color("text_editor/theme/completion_selected_color", "Editor");
+		completion_existing_color = tm->get_color("text_editor/theme/completion_existing_color", "Editor");
+		completion_scroll_color = tm->get_color("text_editor/theme/completion_scroll_color", "Editor");
+		completion_font_color = tm->get_color("text_editor/theme/completion_font_color", "Editor");
+		text_color = tm->get_color("text_editor/theme/text_color", "Editor");
+		line_number_color = tm->get_color("text_editor/theme/line_number_color", "Editor");
+		caret_color = tm->get_color("text_editor/theme/caret_color", "Editor");
+		caret_background_color = tm->get_color("text_editor/theme/caret_background_color", "Editor");
+		text_selected_color = tm->get_color("text_editor/theme/text_selected_color", "Editor");
+		selection_color = tm->get_color("text_editor/theme/selection_color", "Editor");
+		brace_mismatch_color = tm->get_color("text_editor/theme/brace_mismatch_color", "Editor");
+		current_line_color = tm->get_color("text_editor/theme/current_line_color", "Editor");
+		line_length_guideline_color = tm->get_color("text_editor/theme/line_length_guideline_color", "Editor");
+		word_highlighted_color = tm->get_color("text_editor/theme/word_highlighted_color", "Editor");
+		number_color = tm->get_color("text_editor/theme/number_color", "Editor");
+		function_color = tm->get_color("text_editor/theme/function_color", "Editor");
+		member_variable_color = tm->get_color("text_editor/theme/member_variable_color", "Editor");
+		mark_color = tm->get_color("text_editor/theme/mark_color", "Editor");
+		breakpoint_color = tm->get_color("text_editor/theme/breakpoint_color", "Editor");
+		search_result_color = tm->get_color("text_editor/theme/search_result_color", "Editor");
+		search_result_border_color = tm->get_color("text_editor/theme/search_result_border_color", "Editor");
+	}
+
+	text_edit->add_color_override("background_color", background_color);
+	text_edit->add_color_override("completion_background_color", completion_background_color);
+	text_edit->add_color_override("completion_selected_color", completion_selected_color);
+	text_edit->add_color_override("completion_existing_color", completion_existing_color);
+	text_edit->add_color_override("completion_scroll_color", completion_scroll_color);
+	text_edit->add_color_override("completion_font_color", completion_font_color);
+	text_edit->add_color_override("font_color", text_color);
+	text_edit->add_color_override("line_number_color", line_number_color);
+	text_edit->add_color_override("caret_color", caret_color);
+	text_edit->add_color_override("caret_background_color", caret_background_color);
+	text_edit->add_color_override("font_selected_color", text_selected_color);
+	text_edit->add_color_override("selection_color", selection_color);
+	text_edit->add_color_override("brace_mismatch_color", brace_mismatch_color);
+	text_edit->add_color_override("current_line_color", current_line_color);
+	text_edit->add_color_override("line_length_guideline_color", line_length_guideline_color);
+	text_edit->add_color_override("word_highlighted_color", word_highlighted_color);
+	text_edit->add_color_override("number_color", number_color);
+	text_edit->add_color_override("function_color", function_color);
+	text_edit->add_color_override("member_variable_color", member_variable_color);
+	text_edit->add_color_override("mark_color", mark_color);
+	text_edit->add_color_override("breakpoint_color", breakpoint_color);
+	text_edit->add_color_override("search_result_color", search_result_color);
+	text_edit->add_color_override("search_result_border_color", search_result_border_color);
+	text_edit->add_color_override("symbol_color", symbol_color);
+
+	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 4));
+
+	colors_cache.symbol_color = symbol_color;
+	colors_cache.keyword_color = keyword_color;
+	colors_cache.basetype_color = basetype_color;
+	colors_cache.type_color = type_color;
+	colors_cache.comment_color = comment_color;
+	colors_cache.string_color = string_color;
+
+	theme_loaded = true;
+	if (!script.is_null())
+		_set_theme_for_script();
+}
+
+void ScriptTextEditor::_set_theme_for_script() {
+
+	if (!theme_loaded)
+		return;
+
+	TextEdit *text_edit = code_editor->get_text_edit();
 
 	List<String> keywords;
 	script->get_language()->get_reserved_words(&keywords);
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
 
-		text_edit->add_keyword_color(E->get(), keyword_color);
+		text_edit->add_keyword_color(E->get(), colors_cache.keyword_color);
 	}
 
 	//colorize core types
-	Color basetype_color = EDITOR_DEF("text_editor/highlighting/base_type_color", Color(0.3, 0.3, 0.0));
-
+	const Color basetype_color = colors_cache.basetype_color;
+	text_edit->add_keyword_color("String", basetype_color);
 	text_edit->add_keyword_color("Vector2", basetype_color);
-	text_edit->add_keyword_color("Vector3", basetype_color);
-	text_edit->add_keyword_color("Plane", basetype_color);
-	text_edit->add_keyword_color("Quat", basetype_color);
-	text_edit->add_keyword_color("AABB", basetype_color);
-	text_edit->add_keyword_color("Matrix3", basetype_color);
-	text_edit->add_keyword_color("Transform", basetype_color);
-	text_edit->add_keyword_color("Color", basetype_color);
-	text_edit->add_keyword_color("Image", basetype_color);
-	text_edit->add_keyword_color("InputEvent", basetype_color);
 	text_edit->add_keyword_color("Rect2", basetype_color);
+	text_edit->add_keyword_color("Transform2D", basetype_color);
+	text_edit->add_keyword_color("Vector3", basetype_color);
+	text_edit->add_keyword_color("Rect3", basetype_color);
+	text_edit->add_keyword_color("Basis", basetype_color);
+	text_edit->add_keyword_color("Plane", basetype_color);
+	text_edit->add_keyword_color("Transform", basetype_color);
+	text_edit->add_keyword_color("Quat", basetype_color);
+	text_edit->add_keyword_color("Color", basetype_color);
+	text_edit->add_keyword_color("Object", basetype_color);
 	text_edit->add_keyword_color("NodePath", basetype_color);
+	text_edit->add_keyword_color("RID", basetype_color);
+	text_edit->add_keyword_color("Dictionary", basetype_color);
+	text_edit->add_keyword_color("Array", basetype_color);
+	text_edit->add_keyword_color("PoolByteArray", basetype_color);
+	text_edit->add_keyword_color("PoolIntArray", basetype_color);
+	text_edit->add_keyword_color("PoolRealArray", basetype_color);
+	text_edit->add_keyword_color("PoolStringArray", basetype_color);
+	text_edit->add_keyword_color("PoolVector2Array", basetype_color);
+	text_edit->add_keyword_color("PoolVector3Array", basetype_color);
+	text_edit->add_keyword_color("PoolColorArray", basetype_color);
 
 	//colorize engine types
-	Color type_color = EDITOR_DEF("text_editor/highlighting/engine_type_color", Color(0.0, 0.2, 0.4));
-
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 
@@ -159,11 +230,10 @@ void ScriptTextEditor::_load_theme_settings() {
 		if (n.begins_with("_"))
 			n = n.substr(1, n.length());
 
-		text_edit->add_keyword_color(n, type_color);
+		text_edit->add_keyword_color(n, colors_cache.type_color);
 	}
 
 	//colorize comments
-	Color comment_color = EDITOR_DEF("text_editor/highlighting/comment_color", Color::hex(0x797e7eff));
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
 
@@ -173,11 +243,10 @@ void ScriptTextEditor::_load_theme_settings() {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
 
-		text_edit->add_color_region(beg, end, comment_color, end == "");
+		text_edit->add_color_region(beg, end, colors_cache.comment_color, end == "");
 	}
 
 	//colorize strings
-	Color string_color = EDITOR_DEF("text_editor/highlighting/string_color", Color::hex(0x6b6f00ff));
 	List<String> strings;
 	script->get_language()->get_string_delimiters(&strings);
 
@@ -186,7 +255,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		String string = E->get();
 		String beg = string.get_slice(" ", 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
-		text_edit->add_color_region(beg, end, string_color, end == "");
+		text_edit->add_color_region(beg, end, colors_cache.string_color, end == "");
 	}
 }
 
@@ -214,9 +283,10 @@ void ScriptTextEditor::reload_text() {
 
 void ScriptTextEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
-
-		//emit_signal("name_changed");
+	switch (p_what) {
+		case NOTIFICATION_READY:
+			_load_theme_settings();
+			break;
 	}
 }
 
@@ -238,6 +308,10 @@ void ScriptTextEditor::add_callback(const String &p_function, PoolStringArray p_
 	code_editor->get_text_edit()->cursor_set_column(1);
 }
 
+bool ScriptTextEditor::show_members_overview() {
+	return true;
+}
+
 void ScriptTextEditor::update_settings() {
 
 	code_editor->update_editor_settings();
@@ -252,11 +326,53 @@ Variant ScriptTextEditor::get_edit_state() {
 
 	Dictionary state;
 
-	state["scroll_pos"] = code_editor->get_text_edit()->get_v_scroll();
+	state["scroll_position"] = code_editor->get_text_edit()->get_v_scroll();
 	state["column"] = code_editor->get_text_edit()->cursor_get_column();
 	state["row"] = code_editor->get_text_edit()->cursor_get_line();
 
 	return state;
+}
+
+void ScriptTextEditor::_convert_case(CaseStyle p_case) {
+	TextEdit *te = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+	if (scr.is_null()) {
+		return;
+	}
+
+	if (te->is_selection_active()) {
+		te->begin_complex_operation();
+
+		int begin = te->get_selection_from_line();
+		int end = te->get_selection_to_line();
+		int begin_col = te->get_selection_from_column();
+		int end_col = te->get_selection_to_column();
+
+		for (int i = begin; i <= end; i++) {
+			String new_line = te->get_line(i);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = te->get_line(i).left(begin_col) + new_line.right(begin_col);
+			}
+			if (i == end) {
+				new_line = new_line.left(end_col) + te->get_line(i).right(end_col);
+			}
+			te->set_line(i, new_line);
+		}
+		te->end_complex_operation();
+	}
 }
 
 void ScriptTextEditor::trim_trailing_whitespace() {
@@ -289,13 +405,120 @@ void ScriptTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void ScriptTextEditor::convert_indent_to_spaces() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	String indent = "";
+
+	for (int i = 0; i < indent_size; i++) {
+		indent += " ";
+	}
+
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] == '\t') {
+				if (!changed_indentation) {
+					tx->begin_complex_operation();
+					changed_indentation = true;
+				}
+				if (cursor_line == i && cursor_column > j) {
+					cursor_column += indent_size - 1;
+				}
+				line = line.left(j) + indent + line.right(j + 1);
+			}
+			j++;
+		}
+		if (changed_indentation) {
+			tx->set_line(i, line);
+		}
+	}
+	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
+void ScriptTextEditor::convert_indent_to_tabs() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	indent_size -= 1;
+
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		int space_count = -1;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] != '\t') {
+				space_count++;
+
+				if (space_count == indent_size) {
+					if (!changed_indentation) {
+						tx->begin_complex_operation();
+						changed_indentation = true;
+					}
+					if (cursor_line == i && cursor_column > j) {
+						cursor_column -= indent_size;
+					}
+					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
+					j = 0;
+					space_count = -1;
+				}
+			} else {
+				space_count = -1;
+			}
+			j++;
+		}
+		if (changed_indentation) {
+			tx->set_line(i, line);
+		}
+	}
+	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
 void ScriptTextEditor::tag_saved_version() {
 
 	code_editor->get_text_edit()->tag_saved_version();
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->get_text_edit()->cursor_set_line(p_line);
+	code_editor->get_text_edit()->call_deferred("cursor_set_line", p_line);
 }
 
 void ScriptTextEditor::ensure_focus() {
@@ -306,9 +529,9 @@ void ScriptTextEditor::ensure_focus() {
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 
 	Dictionary state = p_state;
-	code_editor->get_text_edit()->set_v_scroll(state["scroll_pos"]);
 	code_editor->get_text_edit()->cursor_set_column(state["column"]);
 	code_editor->get_text_edit()->cursor_set_line(state["row"]);
+	code_editor->get_text_edit()->set_v_scroll(state["scroll_position"]);
 	code_editor->get_text_edit()->grab_focus();
 
 	//int scroll_pos;
@@ -327,7 +550,7 @@ String ScriptTextEditor::get_name() {
 	} else if (script->get_name() != "")
 		name = script->get_name();
 	else
-		name = script->get_class() + "(" + itos(script->get_instance_ID()) + ")";
+		name = script->get_class() + "(" + itos(script->get_instance_id()) + ")";
 
 	return name;
 }
@@ -347,14 +570,14 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 
 	script = p_script;
 
-	_load_theme_settings();
-
 	code_editor->get_text_edit()->set_text(script->get_source_code());
 	code_editor->get_text_edit()->clear_undo_history();
 	code_editor->get_text_edit()->tag_saved_version();
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+
+	_set_theme_for_script();
 }
 
 void ScriptTextEditor::_validate_script() {
@@ -391,6 +614,7 @@ void ScriptTextEditor::_validate_script() {
 	}
 
 	emit_signal("name_changed");
+	emit_signal("edited_script_changed");
 }
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
@@ -428,6 +652,8 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	if (!bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")))
 		return;
 
+	ERR_FAIL_COND(!get_tree());
+
 	Set<Ref<Script> > scripts;
 
 	Node *base = get_tree()->get_edited_scene_root();
@@ -461,13 +687,13 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options) {
+void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force) {
 
 	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
-	ste->_code_complete_script(p_code, r_options);
+	ste->_code_complete_script(p_code, r_options, r_force);
 }
 
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<String> *r_options) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, List<String> *r_options, bool &r_force) {
 
 	if (color_panel->is_visible_in_tree()) return;
 	Node *base = get_tree()->get_edited_scene_root();
@@ -475,8 +701,8 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<String> 
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path().get_base_dir(), base, r_options, hint);
-	if (hint != "") {
+	Error err = script->get_language()->complete_code(p_code, script->get_path().get_base_dir(), base, r_options, r_force, hint);
+	if (err == OK && hint != "") {
 		code_editor->get_text_edit()->set_code_hint(hint);
 	}
 }
@@ -503,7 +729,17 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path().get_base_dir(), base, result) == OK) {
+	if (p_symbol.is_resource_file()) {
+		List<String> scene_extensions;
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+
+		if (scene_extensions.find(p_symbol.get_extension())) {
+			EditorNode::get_singleton()->load_scene(p_symbol);
+		} else {
+			EditorNode::get_singleton()->load_resource(p_symbol);
+		}
+
+	} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path().get_base_dir(), base, result) == OK) {
 
 		_goto_line(p_row);
 
@@ -721,6 +957,21 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			//tx->deselect();
 
 		} break;
+		case EDIT_DELETE_LINE: {
+
+			TextEdit *tx = code_editor->get_text_edit();
+			Ref<Script> scr = get_edited_script();
+			if (scr.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			int line = tx->cursor_get_line();
+			tx->set_line(tx->cursor_get_line(), "");
+			tx->backspace_at_cursor();
+			tx->cursor_set_line(line);
+			tx->end_complex_operation();
+
+		} break;
 		case EDIT_CLONE_DOWN: {
 
 			TextEdit *tx = code_editor->get_text_edit();
@@ -775,13 +1026,26 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (tx->get_selection_to_column() == 0)
 					end -= 1;
 
+				// Check if all lines in the selected block are commented
+				bool is_commented = true;
+				for (int i = begin; i <= end; i++) {
+					if (!tx->get_line(i).begins_with("#")) {
+						is_commented = false;
+						break;
+					}
+				}
 				for (int i = begin; i <= end; i++) {
 					String line_text = tx->get_line(i);
 
-					if (line_text.begins_with("#"))
-						line_text = line_text.substr(1, line_text.length());
-					else
-						line_text = "#" + line_text;
+					if (line_text.strip_edges().empty()) {
+						line_text = "#";
+					} else {
+						if (is_commented) {
+							line_text = line_text.substr(1, line_text.length());
+						} else {
+							line_text = "#" + line_text;
+						}
+					}
 					tx->set_line(i, line_text);
 				}
 			} else {
@@ -811,25 +1075,50 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			Ref<Script> scr = get_edited_script();
 			if (scr.is_null())
 				return;
+
+			te->begin_complex_operation();
 			int begin, end;
 			if (te->is_selection_active()) {
 				begin = te->get_selection_from_line();
 				end = te->get_selection_to_line();
+				// ignore if the cursor is not past the first column
+				if (te->get_selection_to_column() == 0) {
+					end--;
+				}
 			} else {
 				begin = 0;
 				end = te->get_line_count() - 1;
 			}
 			scr->get_language()->auto_indent_code(text, begin, end);
-			te->set_text(text);
+			Vector<String> lines = text.split("\n");
+			for (int i = begin; i <= end; ++i) {
+				te->set_line(i, lines[i]);
+			}
+
+			te->end_complex_operation();
 
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
+		case EDIT_CONVERT_INDENT_TO_SPACES: {
+			convert_indent_to_spaces();
+		} break;
+		case EDIT_CONVERT_INDENT_TO_TABS: {
+			convert_indent_to_tabs();
+		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
 		} break;
-
+		case EDIT_TO_UPPERCASE: {
+			_convert_case(UPPER);
+		} break;
+		case EDIT_TO_LOWERCASE: {
+			_convert_case(LOWER);
+		} break;
+		case EDIT_CAPITALIZE: {
+			_convert_case(CAPITALIZE);
+		} break;
 		case SEARCH_FIND: {
 
 			code_editor->get_find_replace_bar()->popup_search();
@@ -948,6 +1237,10 @@ Control *ScriptTextEditor::get_edit_menu() {
 	return edit_hb;
 }
 
+void ScriptTextEditor::clear_edit_menu() {
+	memdelete(edit_hb);
+}
+
 void ScriptTextEditor::reload(bool p_soft) {
 
 	TextEdit *te = code_editor->get_text_edit();
@@ -1035,7 +1328,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 
 		if (res->get_path().is_resource_file()) {
-			EditorNode::get_singleton()->show_warning("Only resources from filesystem can be dropped.");
+			EditorNode::get_singleton()->show_warning(TTR("Only resources from filesystem can be dropped."));
 			return;
 		}
 
@@ -1087,15 +1380,18 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 }
 
-void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
-	if (ev.type == InputEvent::MOUSE_BUTTON) {
-		InputEventMouseButton mb = ev.mouse_button;
-		if (mb.button_index == BUTTON_RIGHT && !mb.pressed) {
+void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
+
+	Ref<InputEventMouseButton> mb = ev;
+
+	if (mb.is_valid()) {
+
+		if (mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
-			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_pos(), row, col);
-			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_pos();
+			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
+			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
 			if (have_color) {
@@ -1123,9 +1419,7 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
 						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
-					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
-					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height + 10);
-					color_panel->set_size(ms);
+					color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
 				} else {
 					have_color = false;
 				}
@@ -1173,16 +1467,19 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 		context_menu->add_separator();
 		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 	}
-	context_menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }
 
 ScriptTextEditor::ScriptTextEditor() {
 
+	theme_loaded = false;
+
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
-	code_editor->set_area_as_parent_rect();
+	code_editor->add_constant_override("separation", 0);
+	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->connect("validate_script", this, "_validate_script");
 	code_editor->connect("load_theme_settings", this, "_load_theme_settings");
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
@@ -1207,7 +1504,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	add_child(color_panel);
 	color_picker = memnew(ColorPicker);
 	color_panel->add_child(color_picker);
-	color_panel->set_child_rect(color_picker); //NOT
 	color_picker->connect("color_changed", this, "_color_changed");
 
 	edit_hb = memnew(HBoxContainer);
@@ -1227,6 +1523,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
@@ -1236,6 +1533,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 #endif
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 	edit_menu->get_popup()->add_separator();
@@ -1243,6 +1542,15 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
+	edit_menu->get_popup()->add_separator();
+	PopupMenu *convert_case = memnew(PopupMenu);
+	convert_case->set_name("convert_case");
+	edit_menu->get_popup()->add_child(convert_case);
+	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
+	convert_case->connect("id_pressed", this, "_edit_option");
 
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
@@ -1273,11 +1581,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 static ScriptEditorBase *create_editor(const Ref<Script> &p_script) {
 
-	if (p_script->has_source_code()) {
-		return memnew(ScriptTextEditor);
-	}
-
-	return NULL;
+	return memnew(ScriptTextEditor);
 }
 
 void ScriptTextEditor::register_editor() {
@@ -1290,6 +1594,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/select_all", TTR("Select All"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT | KEY_DOWN);
+	ED_SHORTCUT("script_text_editor/delete_line", TTR("Delete Line"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_K);
 
 	//leave these at zero, same can be accomplished with tab/shift-tab, including selection
 	//the next/previous in history shortcut in this case makes a lot more sene.
@@ -1304,12 +1609,18 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CTRL | KEY_MASK_ALT | KEY_T);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent To Spaces"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_Y);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent To Tabs"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_X);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_F9);
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Goto Next Breakpoint"), KEY_MASK_CTRL | KEY_PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Goto Previous Breakpoint"), KEY_MASK_CTRL | KEY_COMMA);
+
+	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Convert To Uppercase"), KEY_MASK_SHIFT | KEY_F4);
+	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Convert To Lowercase"), KEY_MASK_SHIFT | KEY_F3);
+	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F);
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);

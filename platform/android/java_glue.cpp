@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,11 +36,11 @@
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
-#include "global_config.h"
 #include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "os_android.h"
+#include "project_settings.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 
@@ -350,7 +351,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		jobjectArray arr = (jobjectArray)obj;
 		int objCount = env->GetArrayLength(arr);
-		Array varr(true);
+		Array varr;
 
 		for (int i = 0; i < objCount; i++) {
 			jobject jobj = env->GetObjectArrayElement(arr, i);
@@ -364,7 +365,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
 
-		Dictionary ret(true);
+		Dictionary ret;
 		jclass oclass = c;
 		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
 		jobjectArray arr = (jobjectArray)env->CallObjectMethod(obj, get_keys);
@@ -601,31 +602,16 @@ struct TST {
 
 TST tst;
 
-struct JAndroidPointerEvent {
-
-	Vector<OS_Android::TouchPos> points;
-	int pointer;
-	int what;
-};
-
-static List<JAndroidPointerEvent> pointer_events;
-static List<InputEvent> key_events;
-static List<OS_Android::JoypadEvent> joy_events;
 static bool initialized = false;
-static Mutex *input_mutex = NULL;
-static Mutex *suspend_mutex = NULL;
 static int step = 0;
 static bool resized = false;
 static bool resized_reload = false;
-static bool go_back_request = false;
 static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
 static HashMap<String, JNISingleton *> jni_singletons;
 static jobject godot_io;
-
-static Vector<int> joy_device_ids;
 
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 
@@ -755,7 +741,19 @@ static void _alert(const String &p_message, const String &p_title) {
 	env->CallVoidMethod(_godot_instance, _alertDialog, jStrMessage, jStrTitle);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jboolean p_need_reload_hook, jobjectArray p_cmdline, jobject p_asset_manager) {
+// volatile because it can be changed from non-main thread and we need to
+// ensure the change is immediately visible to other threads.
+static volatile int virtual_keyboard_height;
+
+static int _get_vk_height() {
+	return virtual_keyboard_height;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHeight(JNIEnv *env, jobject obj, jint p_height) {
+	virtual_keyboard_height = p_height;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jboolean p_need_reload_hook, jobject p_asset_manager, jboolean p_use_apk_expansion) {
 
 	__android_log_print(ANDROID_LOG_INFO, "godot", "**INIT EVENT! - %p\n", env);
 
@@ -825,36 +823,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		AudioDriverAndroid::setup(gob);
 	}
 
-	const char **cmdline = NULL;
-	int cmdlen = 0;
-	bool use_apk_expansion = false;
-	if (p_cmdline) {
-		cmdlen = env->GetArrayLength(p_cmdline);
-		if (cmdlen) {
-			cmdline = (const char **)malloc((env->GetArrayLength(p_cmdline) + 1) * sizeof(const char *));
-			cmdline[cmdlen] = NULL;
-
-			for (int i = 0; i < cmdlen; i++) {
-
-				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
-				const char *rawString = env->GetStringUTFChars(string, 0);
-				if (!rawString) {
-					__android_log_print(ANDROID_LOG_INFO, "godot", "cmdline arg %i is null\n", i);
-				} else {
-					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
-
-					if (strcmp(rawString, "-main_pack") == 0)
-						use_apk_expansion = true;
-				}
-
-				cmdline[i] = rawString;
-			}
-		}
-	}
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "CMDLINE LEN %i - APK EXPANSION %I\n", cmdlen, int(use_apk_expansion));
-
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, p_use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
@@ -863,73 +832,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	__android_log_print(ANDROID_LOG_INFO, "godot", "test construction %i\n", tst.a);
 	__android_log_print(ANDROID_LOG_INFO, "godot", "running from dir %s\n", wd);
 
-	__android_log_print(ANDROID_LOG_INFO, "godot", "**SETUP");
-
-#if 0
-	char *args[]={"-test","render",NULL};
-	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
-	Error err  = Main::setup("apk",2,args,false);
-#else
-	Error err = Main::setup("apk", cmdlen, (char **)cmdline, false);
-#endif
-
-	if (err != OK) {
-		__android_log_print(ANDROID_LOG_INFO, "godot", "*****UNABLE TO SETUP");
-
-		return; //should exit instead and print the error
-	}
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
-
-	//video driver is determined here, because once initialized, it cant be changed
-	String vd = GlobalConfig::get_singleton()->get("display/driver");
+	//video driver is determined here, because once initialized, it can't be changed
+	// String vd = ProjectSettings::get_singleton()->get("display/driver");
 
 	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "**START");
-
-	input_mutex = Mutex::create();
-	suspend_mutex = Mutex::create();
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height, jboolean reload) {
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ resize %lld, %i, %i\n", Thread::get_caller_ID(), width, height);
-	if (os_android)
-		os_android->set_display_size(Size2(width, height));
-
-	/*input_mutex->lock();
-	resized=true;
-	if (reload)
-		resized_reload=true;
-	new_size=Size2(width,height);
-	input_mutex->unlock();*/
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
-
-	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ newcontext %lld\n", Thread::get_caller_ID());
-
-	if (os_android) {
-		os_android->set_context_is_16_bits(!p_32_bits);
-	}
-
-	if (os_android && step > 0) {
-
-		os_android->reload_gfx();
-	}
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jobject obj) {
-
-	input_mutex->lock();
-	go_back_request = true;
-	input_mutex->unlock();
 }
 
 static void _initialize_java_modules() {
 
-	String modules = GlobalConfig::get_singleton()->get("android/modules");
+	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
+		print_line("ANDROID MODULES: Nothing to load, aborting");
+		return;
+	}
+
+	String modules = ProjectSettings::get_singleton()->get("android/modules");
+	modules = modules.strip_edges();
+	if (modules == String()) {
+		return;
+	}
 	Vector<String> mods = modules.split(",", false);
 	print_line("ANDROID MODULES : " + modules);
 	__android_log_print(ANDROID_LOG_INFO, "godot", "mod count: %i", mods.size());
@@ -981,34 +901,106 @@ static void _initialize_java_modules() {
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jobject obj) {
-
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jobject obj, jobjectArray p_cmdline) {
 	ThreadAndroid::setup_thread();
 
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_ID());
+	__android_log_print(ANDROID_LOG_INFO, "godot", "**SETUP");
 
-	suspend_mutex->lock();
-	input_mutex->lock();
-	//first time step happens, initialize
+	const char **cmdline = NULL;
+	int cmdlen = 0;
+	bool use_apk_expansion = false;
+	if (p_cmdline) {
+		cmdlen = env->GetArrayLength(p_cmdline);
+		if (cmdlen) {
+			cmdline = (const char **)malloc((env->GetArrayLength(p_cmdline) + 1) * sizeof(const char *));
+			cmdline[cmdlen] = NULL;
+
+			for (int i = 0; i < cmdlen; i++) {
+
+				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
+				const char *rawString = env->GetStringUTFChars(string, 0);
+				if (!rawString) {
+					__android_log_print(ANDROID_LOG_INFO, "godot", "cmdline arg %i is null\n", i);
+				} else {
+					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
+
+					if (strcmp(rawString, "-main_pack") == 0)
+						use_apk_expansion = true;
+				}
+
+				cmdline[i] = rawString;
+			}
+		}
+	}
+	__android_log_print(ANDROID_LOG_INFO, "godot", "CMDLINE LEN %i - APK EXPANSION %i\n", cmdlen, int(use_apk_expansion));
+
+#if 0
+	char *args[]={"-test","render",NULL};
+	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
+	Error err  = Main::setup("apk",2,args,false);
+#else
+	Error err = Main::setup("apk", cmdlen, (char **)cmdline, false);
+#endif
+	if (cmdline) {
+		free(cmdline);
+	}
+
+	if (err != OK) {
+		__android_log_print(ANDROID_LOG_INFO, "godot", "*****UNABLE TO SETUP");
+		return; //should exit instead and print the error
+	}
+	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
+
+	java_class_wrapper = memnew(JavaClassWrapper(_godot_instance));
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaClassWrapper", java_class_wrapper));
+	_initialize_java_modules();
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height, jboolean reload) {
+
+	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ resize %lld, %i, %i\n", Thread::get_caller_id(), width, height);
+	if (os_android)
+		os_android->set_display_size(Size2(width, height));
+
+	/*input_mutex->lock();
+	resized=true;
+	if (reload)
+		resized_reload=true;
+	new_size=Size2(width,height);
+	input_mutex->unlock();*/
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
+
+	__android_log_print(ANDROID_LOG_INFO, "godot", "^_^_^_^_^ newcontext %lld\n", Thread::get_caller_id());
+
+	if (os_android) {
+		os_android->set_context_is_16_bits(!p_32_bits);
+	}
+
+	if (os_android && step > 0) {
+
+		os_android->reload_gfx();
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jobject obj) {
+	os_android->main_loop_request_go_back();
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jobject obj) {
 	if (step == 0) {
-		// ugly hack to initialize the rest of the engine
-		// because of the way android forces you to do everything with threads
+		__android_log_print(ANDROID_LOG_INFO, "godot", "**FIRST_STEP");
 
-		java_class_wrapper = memnew(JavaClassWrapper(_godot_instance));
-		GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("JavaClassWrapper", java_class_wrapper));
-		_initialize_java_modules();
-
-		Main::setup2();
+		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,
+		// but for Godot purposes, the main thread is the one running the game loop
+		Main::setup2(Thread::get_caller_id());
 		++step;
-		suspend_mutex->unlock();
-		input_mutex->unlock();
 		return;
-	};
+	}
+
 	if (step == 1) {
 		if (!Main::start()) {
-
-			input_mutex->unlock();
-			suspend_mutex->lock();
 			return; //should exit instead and print the error
 		}
 
@@ -1016,37 +1008,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 		++step;
 	}
 
-	while (pointer_events.size()) {
-
-		JAndroidPointerEvent jpe = pointer_events.front()->get();
-		os_android->process_touch(jpe.what, jpe.pointer, jpe.points);
-
-		pointer_events.pop_front();
-	}
-
-	while (key_events.size()) {
-
-		InputEvent event = key_events.front()->get();
-		os_android->process_event(event);
-
-		key_events.pop_front();
-	};
-
-	while (joy_events.size()) {
-
-		OS_Android::JoypadEvent event = joy_events.front()->get();
-		os_android->process_joy_event(event);
-
-		joy_events.pop_front();
-	}
-
-	if (go_back_request) {
-
-		os_android->main_loop_request_go_back();
-		go_back_request = false;
-	}
-
-	input_mutex->unlock();
+	//__android_log_print(ANDROID_LOG_INFO,"godot","**STEP EVENT! - %p-%i\n",env,Thread::get_caller_id());
 
 	os_android->process_accelerometer(accelerometer);
 
@@ -1059,15 +1021,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
 		jmethodID _finish = env->GetMethodID(cls, "forceQuit", "()V");
 		env->CallVoidMethod(_godot_instance, _finish);
-		__android_log_print(ANDROID_LOG_INFO, "godot", "**FINISH REQUEST!!! - %p-%i\n", env, Thread::get_caller_ID());
+		__android_log_print(ANDROID_LOG_INFO, "godot", "**FINISH REQUEST!!! - %p-%i\n", env, Thread::get_caller_id());
 	}
-
-	suspend_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jobject obj, jint ev, jint pointer, jint count, jintArray positions) {
 
-	//__android_log_print(ANDROID_LOG_INFO,"godot","**TOUCH EVENT! - %p-%i\n",env,Thread::get_caller_ID());
+	//__android_log_print(ANDROID_LOG_INFO,"godot","**TOUCH EVENT! - %p-%i\n",env,Thread::get_caller_id());
 
 	Vector<OS_Android::TouchPos> points;
 	for (int i = 0; i < count; i++) {
@@ -1080,16 +1040,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jo
 		points.push_back(tp);
 	}
 
-	JAndroidPointerEvent jpe;
-	jpe.pointer = pointer;
-	jpe.points = points;
-	jpe.what = ev;
+	os_android->process_touch(ev, pointer, points);
 
-	input_mutex->lock();
-
-	pointer_events.push_back(jpe);
-
-	input_mutex->unlock();
 	/*
 	if (os_android)
 		os_android->process_touch(ev,pointer,points);
@@ -1359,9 +1311,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 	jevent.index = p_button;
 	jevent.pressed = p_pressed;
 
-	input_mutex->lock();
-	joy_events.push_back(jevent);
-	input_mutex->unlock();
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
@@ -1372,9 +1322,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, 
 	jevent.index = p_axis;
 	jevent.value = p_value;
 
-	input_mutex->lock();
-	joy_events.push_back(jevent);
-	input_mutex->unlock();
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, jobject obj, jint p_device, jint p_hat_x, jint p_hat_y) {
@@ -1395,9 +1343,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 			hat |= InputDefault::HAT_MASK_DOWN;
 	}
 	jevent.hat = hat;
-	input_mutex->lock();
-	joy_events.push_back(jevent);
-	input_mutex->unlock();
+
+	os_android->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jobject obj, jint p_device, jboolean p_connected, jstring p_name) {
@@ -1409,83 +1356,54 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
-	InputEvent ievent;
-	ievent.type = InputEvent::KEY;
-	ievent.device = 0;
+	Ref<InputEventKey> ievent;
+	ievent.instance();
 	int val = p_unicode_char;
 	int scancode = android_get_keysym(p_scancode);
-	ievent.key.scancode = scancode;
-	ievent.key.unicode = val;
-	ievent.key.pressed = p_pressed;
+	ievent->set_scancode(scancode);
+	ievent->set_unicode(val);
+	ievent->set_pressed(p_pressed);
 
-	print_line("Scancode: " + String::num(p_scancode) + ":" + String::num(ievent.key.scancode) + " Unicode: " + String::num(val));
-
-	ievent.key.mod.shift = false;
-	ievent.key.mod.alt = false;
-	ievent.key.mod.control = false;
-	ievent.key.echo = false;
+	print_line("Scancode: " + String::num(p_scancode) + ":" + String::num(ievent->get_scancode()) + " Unicode: " + String::num(val));
 
 	if (val == '\n') {
-		ievent.key.scancode = KEY_ENTER;
+		ievent->set_scancode(KEY_ENTER);
 	} else if (val == 61448) {
-		ievent.key.scancode = KEY_BACKSPACE;
-		ievent.key.unicode = KEY_BACKSPACE;
+		ievent->set_scancode(KEY_BACKSPACE);
+		ievent->set_unicode(KEY_BACKSPACE);
 	} else if (val == 61453) {
-		ievent.key.scancode = KEY_ENTER;
-		ievent.key.unicode = KEY_ENTER;
+		ievent->set_scancode(KEY_ENTER);
+		ievent->set_unicode(KEY_ENTER);
 	} else if (p_scancode == 4) {
 
-		go_back_request = true;
+		os_android->main_loop_request_go_back();
 	}
 
-	input_mutex->lock();
-	key_events.push_back(ievent);
-	input_mutex->unlock();
+	os_android->process_event(ievent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
-
-	input_mutex->lock();
 	accelerometer = Vector3(x, y, z);
-	input_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
-
-	input_mutex->lock();
 	magnetometer = Vector3(x, y, z);
-	input_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jobject obj, jfloat x, jfloat y, jfloat z) {
-
-	input_mutex->lock();
 	gyroscope = Vector3(x, y, z);
-	input_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jobject obj) {
 
-	if (!suspend_mutex)
-		return;
-	suspend_mutex->lock();
-
 	if (os_android && step > 0)
 		os_android->main_loop_focusin();
-
-	suspend_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusout(JNIEnv *env, jobject obj) {
 
-	if (!suspend_mutex)
-		return;
-	suspend_mutex->lock();
-
 	if (os_android && step > 0)
 		os_android->main_loop_focusout();
-
-	suspend_mutex->unlock();
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_audio(JNIEnv *env, jobject obj) {
@@ -1501,8 +1419,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_singleton(JNIEnv *env
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname] = s;
 
-	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton(singname, s));
-	GlobalConfig::get_singleton()->set(singname, s);
+	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton(singname, s));
+	ProjectSettings::get_singleton()->set(singname, s);
 }
 
 static Variant::Type get_jni_type(const String &p_type) {
@@ -1575,7 +1493,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 
 	String js = env->GetStringUTFChars(path, NULL);
 
-	return env->NewStringUTF(GlobalConfig::get_singleton()->get(js).operator String().utf8().get_data());
+	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args) {

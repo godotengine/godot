@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +31,7 @@
 
 #ifdef MINIZIP_ENABLED
 
-#include "core/global_config.h"
+#include "core/project_settings.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -90,10 +91,10 @@ MainLoop *test() {
 	ResourceSaver::save("test_data/rock.xml", texture);
 
 	print_line("localize paths");
-	print_line(GlobalConfig::get_singleton()->localize_path("algo.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path("c:\\windows\\algo.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path(GlobalConfig::get_singleton()->get_resource_path() + "/something/something.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path("somedir/algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("c:\\windows\\algo.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path(ProjectSettings::get_singleton()->get_resource_path() + "/something/something.xml"));
+	print_line(ProjectSettings::get_singleton()->localize_path("somedir/algo.xml"));
 
 	{
 
@@ -111,66 +112,6 @@ MainLoop *test() {
 		FileAccess::make_default<FileAccessMemory>(FileAccess::ACCESS_USERDATA);
 
 		print_line("archive test");
-#if 0
-		Archive arch;
-
-		Archive::get_singleton()->add_package("a_package");
-		FileAccessArchive f;
-
-		print_line("opening for read");
-		f._open("file.txt", FileAccess::READ);
-		int pos = f.get_pos();
-		printf("file has %i bytes, initial pos %i\n", (int)f.get_len(), pos);
-
-		do {
-			printf("%c", f.get_8());
-
-		} while (!f.eof_reached());
-
-		print_line("opening for stored seek");
-		f.open("seek.bin", FileAccess::READ);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		f.seek(128);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-
-		print_line("opening for deflated seek");
-		f.open("seek_deflated.bin", FileAccess::READ);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		f.seek(128);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		f.seek(256);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		f.seek(4);
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-		pos = f.get_pos();
-		printf("byte at pos %i is %i\n", pos, (int)f.get_8());
-
-		f.close();
-
-		DirAccessArchive d;
-		String dir = "../blah1/blah2/blahask/../blah3/.//blah4/";
-		printf("changing dir to %s\n", dir.utf8().get_data());
-		d.change_dir(dir);
-		printf("current dir is %s\n", d.get_current_dir().utf8().get_data());
-
-		FileAccessMemory::cleanup();
-#endif
 	};
 
 	print_line("test done");

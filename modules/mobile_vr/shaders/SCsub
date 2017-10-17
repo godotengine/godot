@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+Import('env')
+
+if 'GLES3_GLSL' in env['BUILDERS']:
+    env.GLES3_GLSL('lens_distorted.glsl');
+

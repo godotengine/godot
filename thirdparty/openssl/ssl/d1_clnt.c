@@ -320,8 +320,13 @@ int dtls1_connect(SSL *s)
             s->shutdown = 0;
 
             /* every DTLS ClientHello resets Finished MAC */
-            ssl3_init_finished_mac(s);
+            if (!ssl3_init_finished_mac(s)) {
+                ret = -1;
+                s->state = SSL_ST_ERR;
+                goto end;
+            }
 
+            /* fall thru */
         case SSL3_ST_CW_CLNT_HELLO_B:
             dtls1_start_timer(s);
             ret = ssl3_client_hello(s);
@@ -769,6 +774,7 @@ int dtls1_connect(SSL *s)
             /* done with handshaking */
             s->d1->handshake_read_seq = 0;
             s->d1->next_handshake_write_seq = 0;
+            dtls1_clear_received_buffer(s);
             goto end;
             /* break; */
 

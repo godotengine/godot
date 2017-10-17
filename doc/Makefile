@@ -1,5 +1,5 @@
 BASEDIR = $(CURDIR)
-CLASSES = $(BASEDIR)/base/classes.xml
+CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
 
@@ -8,24 +8,10 @@ TOOLSDIR = $(BASEDIR)/tools
 clean:
 	rm -rf $(OUTPUTDIR)
 
-doku:
-	rm -rf $(OUTPUTDIR)/doku
-	mkdir -p $(OUTPUTDIR)/doku
-	pushd $(OUTPUTDIR)/doku
-	python2 $(TOOLSDIR)/makedoku.py $(CLASSES)
-	popd
-
 doxygen:
 	rm -rf $(OUTPUTDIR)/doxygen
 	mkdir -p $(OUTPUTDIR)/doxygen
 	doxygen Doxyfile
-
-html:
-	rm -rf $(OUTPUTDIR)/html
-	mkdir -p  $(OUTPUTDIR)/html
-	pushd $(OUTPUTDIR)/html
-	python2 $(TOOLSDIR)/makehtml.py -multipage $(CLASSES)
-	popd
 
 markdown:
 	rm -rf $(OUTPUTDIR)/markdown
@@ -38,10 +24,5 @@ rst:
 	rm -rf $(OUTPUTDIR)/rst
 	mkdir -p $(OUTPUTDIR)/rst
 	pushd $(OUTPUTDIR)/rst
-	python2 $(TOOLSDIR)/makerst.py $(CLASSES)
+	python $(TOOLSDIR)/makerst.py $(CLASSES)
 	popd
-
-textile:
-	rm -rf $(OUTPUTDIR)/textile
-	mkdir -p $(OUTPUTDIR)/textile
-	python3 $(TOOLSDIR)/makedocs.py --input $(CLASSES) --output $(OUTPUTDIR)/textile

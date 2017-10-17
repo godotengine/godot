@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +30,7 @@
 #include "shape.h"
 
 #include "os/os.h"
-#include "scene/main/scene_main_loop.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_server.h"
 
@@ -48,14 +49,14 @@ void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p
 	}
 }
 
-Ref<Mesh> Shape::get_debug_mesh() {
+Ref<ArrayMesh> Shape::get_debug_mesh() {
 
 	if (debug_mesh_cache.is_valid())
 		return debug_mesh_cache;
 
 	Vector<Vector3> lines = _gen_debug_mesh_lines();
 
-	debug_mesh_cache = Ref<Mesh>(memnew(Mesh));
+	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 	if (!lines.empty()) {
 		//make mesh
@@ -73,7 +74,7 @@ Ref<Mesh> Shape::get_debug_mesh() {
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
 
-		SceneTree *st = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
+		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
 

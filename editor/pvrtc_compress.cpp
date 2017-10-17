@@ -3,9 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,7 +89,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		args.push_back("-m");
 
 	Ref<ImageTexture> t = memnew(ImageTexture);
-	t->create_from_image(*p_image, 0);
+	t->create_from_image(Ref<Image>(p_image), 0);
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
@@ -100,7 +101,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC tool:") + " " + dst_img);
 	ERR_FAIL_COND(t.is_null());
 
-	*p_image = t->get_data();
+	p_image->copy_internals_from(t->get_data());
 }
 
 static void _compress_pvrtc2(Image *p_image) {

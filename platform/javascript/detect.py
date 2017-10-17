@@ -1,6 +1,6 @@
 import os
-import sys
 import string
+import sys
 
 
 def is_active():
@@ -12,30 +12,30 @@ def get_name():
 
 
 def can_build():
-    return os.environ.has_key("EMSCRIPTEN_ROOT")
+
+    return ("EMSCRIPTEN_ROOT" in os.environ)
 
 
 def get_opts():
-
+    from SCons.Variables import BoolVariable
     return [
-        ['wasm', 'Compile to WebAssembly', 'no'],
-        ['javascript_eval', 'Enable JavaScript eval interface', 'yes'],
+        BoolVariable('wasm', 'Compile to WebAssembly', False),
+        BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
     ]
 
 
 def get_flags():
 
     return [
-        ('tools', 'no'),
-        ('module_etc1_enabled', 'no'),
-        ('module_mpc_enabled', 'no'),
-        ('module_theora_enabled', 'no'),
+        ('tools', False),
+        ('module_theora_enabled', False),
     ]
 
 
 def create(env):
+
     # remove Windows' .exe suffix
-    return env.Clone(PROGSUFFIX='')
+    return env.Clone(tools=['textfile', 'zip'], PROGSUFFIX='')
 
 
 def escape_sources_backslashes(target, source, env, for_signature):
@@ -46,10 +46,26 @@ def escape_target_backslashes(target, source, env, for_signature):
 
 
 def configure(env):
+
+    ## Build type
+
+    if (env["target"] == "release"):
+        env.Append(CCFLAGS=['-O3'])
+        env.Append(LINKFLAGS=['-O3'])
+
+    elif (env["target"] == "release_debug"):
+        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-O2', '-s', 'ASSERTIONS=1'])
+        # retain function names at the cost of file size, for backtraces and profiling
+        env.Append(LINKFLAGS=['--profiling-funcs'])
+
+    elif (env["target"] == "debug"):
+        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-g', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-O1', '-g'])
+
+    ## Compiler configuration
+
     env['ENV'] = os.environ
-
-    env.Append(CPPPATH=['#platform/javascript'])
-
     env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
     env['CC']      = 'emcc'
     env['CXX']     = 'em++'
@@ -58,6 +74,7 @@ def configure(env):
     # Emscripten's ar has issues with duplicate file names, so use cc
     env['AR']      = 'emcc'
     env['ARFLAGS'] = '-o'
+
     if (os.name == 'nt'):
         # use TempFileMunge on Windows since some commands get too long for
         # cmd.exe even with spawn_fix
@@ -69,43 +86,35 @@ def configure(env):
     env['OBJSUFFIX'] = '.bc'
     env['LIBSUFFIX'] = '.bc'
 
-    if (env["target"] == "release"):
-        env.Append(CCFLAGS=['-O2'])
-    elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
-    elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-O2', '-DDEBUG_ENABLED'])
-        #env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g4', '-DDEBUG_ENABLED'])
-        env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
+    ## Compile flags
 
-    # TODO: Move that to opus module's config
-    if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
-        env.opus_fixed_point = "yes"
+    env.Append(CPPPATH=['#platform/javascript'])
+    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
+    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
-    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
-    if env['wasm'] == 'yes':
+    if env['javascript_eval']:
+        env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
+
+    ## Link flags
+
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
+    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
+
+    if env['wasm']:
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-        # Maximum memory size is baked into the WebAssembly binary during
-        # compilation, so we need to enable memory growth to allow setting
-        # TOTAL_MEMORY at runtime. The value set at runtime must be higher than
-        # what is set during compilation, check TOTAL_MEMORY in Emscripten's
-        # src/settings.js for the default.
+        # In contrast to asm.js, enabling memory growth on WebAssembly has no
+        # major performance impact, and causes only a negligible increase in
+        # memory size.
         env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
         env.extra_suffix = '.webassembly' + env.extra_suffix
     else:
-        env.Append(CPPFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['--separate-asm'])
+        env.Append(LINKFLAGS=['--memory-init-file', '1'])
 
-    if env['javascript_eval'] == 'yes':
-        env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
-
-    env.Append(LINKFLAGS=['-O2'])
-    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
-    # env.Append(LINKFLAGS=['-g4'])
-
-    import methods
+    # TODO: Move that to opus module's config
+    if 'module_opus_enabled' in env and env['module_opus_enabled']:
+        env.opus_fixed_point = "yes"

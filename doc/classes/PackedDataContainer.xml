@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedDataContainer" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="pack">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="__data__" type="PoolByteArray" setter="_set_data" getter="_get_data">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

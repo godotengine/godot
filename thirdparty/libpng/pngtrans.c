@@ -1,8 +1,8 @@
 
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
- * Last changed in libpng 1.6.26 [October 20, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.33 [September 28, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -514,11 +514,15 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
          if (at_start != 0) /* Skip initial filler */
             ++sp;
          else          /* Skip initial channel and, for sp, the filler */
-            sp += 2, ++dp;
+         {
+            sp += 2; ++dp;
+         }
 
          /* For a 1 pixel wide image there is nothing to do */
          while (sp < ep)
-            *dp++ = *sp, sp += 2;
+         {
+            *dp++ = *sp; sp += 2;
+         }
 
          row_info->pixel_depth = 8;
       }
@@ -528,10 +532,14 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
          if (at_start != 0) /* Skip initial filler */
             sp += 2;
          else          /* Skip initial channel and, for sp, the filler */
-            sp += 4, dp += 2;
+         {
+            sp += 4; dp += 2;
+         }
 
          while (sp < ep)
-            *dp++ = *sp++, *dp++ = *sp, sp += 3;
+         {
+            *dp++ = *sp++; *dp++ = *sp; sp += 3;
+         }
 
          row_info->pixel_depth = 16;
       }
@@ -554,11 +562,15 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
          if (at_start != 0) /* Skip initial filler */
             ++sp;
          else          /* Skip initial channels and, for sp, the filler */
-            sp += 4, dp += 3;
+         {
+            sp += 4; dp += 3;
+         }
 
          /* Note that the loop adds 3 to dp and 4 to sp each time. */
          while (sp < ep)
-            *dp++ = *sp++, *dp++ = *sp++, *dp++ = *sp, sp += 2;
+         {
+            *dp++ = *sp++; *dp++ = *sp++; *dp++ = *sp; sp += 2;
+         }
 
          row_info->pixel_depth = 24;
       }
@@ -568,14 +580,16 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
          if (at_start != 0) /* Skip initial filler */
             sp += 2;
          else          /* Skip initial channels and, for sp, the filler */
-            sp += 8, dp += 6;
+         {
+            sp += 8; dp += 6;
+         }
 
          while (sp < ep)
          {
             /* Copy 6 bytes, skip 2 */
-            *dp++ = *sp++, *dp++ = *sp++;
-            *dp++ = *sp++, *dp++ = *sp++;
-            *dp++ = *sp++, *dp++ = *sp, sp += 3;
+            *dp++ = *sp++; *dp++ = *sp++;
+            *dp++ = *sp++; *dp++ = *sp++;
+            *dp++ = *sp++; *dp++ = *sp; sp += 3;
          }
 
          row_info->pixel_depth = 48;
@@ -595,7 +609,7 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
       return; /* The filler channel has gone already */
 
    /* Fix the rowbytes value. */
-   row_info->rowbytes = (unsigned int)(dp-row);
+   row_info->rowbytes = (png_size_t)(dp-row);
 }
 #endif
 
@@ -694,7 +708,7 @@ png_do_check_palette_indexes(png_structrp png_ptr, png_row_infop row_info)
        * forms produced on either GCC or MSVC.
        */
       int padding = PNG_PADBITS(row_info->pixel_depth, row_info->width);
-      png_bytep rp = png_ptr->row_buf + row_info->rowbytes;
+      png_bytep rp = png_ptr->row_buf + row_info->rowbytes - 1;
 
       switch (row_info->bit_depth)
       {

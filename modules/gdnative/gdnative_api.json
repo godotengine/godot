@@ -1,0 +1,5313 @@
+{
+  "version": "1.0.0",
+  "api": [
+    {
+      "name": "godot_color_new_rgba",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "r_dest"],
+        ["const godot_real", "p_r"],
+        ["const godot_real", "p_g"],
+        ["const godot_real", "p_b"],
+        ["const godot_real", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_color_new_rgb",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "r_dest"],
+        ["const godot_real", "p_r"],
+        ["const godot_real", "p_g"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_color_get_r",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_set_r",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "p_self"],
+        ["const godot_real", "r"]
+      ]
+    },
+    {
+      "name": "godot_color_get_g",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_set_g",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "p_self"],
+        ["const godot_real", "g"]
+      ]
+    },
+    {
+      "name": "godot_color_get_b",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_set_b",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "p_self"],
+        ["const godot_real", "b"]
+      ]
+    },
+    {
+      "name": "godot_color_get_a",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_set_a",
+      "return_type": "void",
+      "arguments": [
+        ["godot_color *", "p_self"],
+        ["const godot_real", "a"]
+      ]
+    },
+    {
+      "name": "godot_color_get_h",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_get_s",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_get_v",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_to_rgba32",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_to_argb32",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_gray",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_inverted",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_contrasted",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_color *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_color_linear_interpolate",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_color *", "p_self"],
+        ["const godot_color *", "p_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_color_blend",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_color *", "p_self"],
+        ["const godot_color *", "p_over"]
+      ]
+    },
+    {
+      "name": "godot_color_to_html",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_color *", "p_self"],
+        ["const godot_bool", "p_with_alpha"]
+      ]
+    },
+    {
+      "name": "godot_color_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_color *", "p_self"],
+        ["const godot_color *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_color_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_color *", "p_self"],
+        ["const godot_color *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_vector2 *", "r_dest"],
+        ["const godot_real", "p_x"],
+        ["const godot_real", "p_y"]
+      ]
+    },
+    {
+      "name": "godot_vector2_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_normalized",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_length",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_angle",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_length_squared",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_is_normalized",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_distance_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_vector2_distance_squared_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_vector2_angle_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_vector2_angle_to_point",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_vector2_linear_interpolate",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_vector2_cubic_interpolate",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"],
+        ["const godot_vector2 *", "p_pre_a"],
+        ["const godot_vector2 *", "p_post_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_vector2_rotated",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_vector2_tangent",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_floor",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_snapped",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_by"]
+      ]
+    },
+    {
+      "name": "godot_vector2_aspect",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_dot",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_vector2_slide",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector2_bounce",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector2_reflect",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector2_abs",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_clamped",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_real", "p_length"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_add",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_substract",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_multiply_vector",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_multiply_scalar",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_divide_vector",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_divide_scalar",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"],
+        ["const godot_vector2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector2_operator_neg",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_set_x",
+      "return_type": "void",
+      "arguments": [
+        ["godot_vector2 *", "p_self"],
+        ["const godot_real", "p_x"]
+      ]
+    },
+    {
+      "name": "godot_vector2_set_y",
+      "return_type": "void",
+      "arguments": [
+        ["godot_vector2 *", "p_self"],
+        ["const godot_real", "p_y"]
+      ]
+    },
+    {
+      "name": "godot_vector2_get_x",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector2_get_y",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "r_dest"],
+        ["const godot_real", "p_x"],
+        ["const godot_real", "p_y"],
+        ["const godot_real", "p_z"],
+        ["const godot_real", "p_w"]
+      ]
+    },
+    {
+      "name": "godot_quat_new_with_axis_angle",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "r_dest"],
+        ["const godot_vector3 *", "p_axis"],
+        ["const godot_real", "p_angle"]
+      ]
+    },
+    {
+      "name": "godot_quat_get_x",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_set_x",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "p_self"],
+        ["const godot_real", "val"]
+      ]
+    },
+    {
+      "name": "godot_quat_get_y",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_set_y",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "p_self"],
+        ["const godot_real", "val"]
+      ]
+    },
+    {
+      "name": "godot_quat_get_z",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_set_z",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "p_self"],
+        ["const godot_real", "val"]
+      ]
+    },
+    {
+      "name": "godot_quat_get_w",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_set_w",
+      "return_type": "void",
+      "arguments": [
+        ["godot_quat *", "p_self"],
+        ["const godot_real", "val"]
+      ]
+    },
+    {
+      "name": "godot_quat_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_length",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_length_squared",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_normalized",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_is_normalized",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_inverse",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_quat_dot",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_xform",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_quat_slerp",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_quat_slerpni",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_quat_cubic_slerp",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"],
+        ["const godot_quat *", "p_pre_a"],
+        ["const godot_quat *", "p_post_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_multiply",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_add",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_substract",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_divide",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_quat *", "p_self"],
+        ["const godot_quat *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_quat_operator_neg",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_quat *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_new_with_rows",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "r_dest"],
+        ["const godot_vector3 *", "p_x_axis"],
+        ["const godot_vector3 *", "p_y_axis"],
+        ["const godot_vector3 *", "p_z_axis"]
+      ]
+    },
+    {
+      "name": "godot_basis_new_with_axis_and_angle",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "r_dest"],
+        ["const godot_vector3 *", "p_axis"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_basis_new_with_euler",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "r_dest"],
+        ["const godot_vector3 *", "p_euler"]
+      ]
+    },
+    {
+      "name": "godot_basis_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_inverse",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_transposed",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_orthonormalized",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_determinant",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_rotated",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_axis"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_basis_scaled",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_scale"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_scale",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_euler",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_tdotx",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_basis_tdoty",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_basis_tdotz",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_basis_xform",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_basis_xform_inv",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_orthogonal_index",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_basis *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_basis_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_basis_new_with_euler_quat",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "r_dest"],
+        ["const godot_quat *", "p_euler"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_elements",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "p_self"],
+        ["godot_vector3 *", "p_elements"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_axis",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_int", "p_axis"]
+      ]
+    },
+    {
+      "name": "godot_basis_set_axis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "p_self"],
+        ["const godot_int", "p_axis"],
+        ["const godot_vector3 *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_basis_get_row",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_int", "p_row"]
+      ]
+    },
+    {
+      "name": "godot_basis_set_row",
+      "return_type": "void",
+      "arguments": [
+        ["godot_basis *", "p_self"],
+        ["const godot_int", "p_row"],
+        ["const godot_vector3 *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_basis_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_basis *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_basis_operator_add",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_basis *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_basis_operator_substract",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_basis *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_basis_operator_multiply_vector",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_basis *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_basis_operator_multiply_scalar",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_basis *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_vector3 *", "r_dest"],
+        ["const godot_real", "p_x"],
+        ["const godot_real", "p_y"],
+        ["const godot_real", "p_z"]
+      ]
+    },
+    {
+      "name": "godot_vector3_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_min_axis",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_max_axis",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_length",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_length_squared",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_is_normalized",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_normalized",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_inverse",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_snapped",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_by"]
+      ]
+    },
+    {
+      "name": "godot_vector3_rotated",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_axis"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_vector3_linear_interpolate",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_vector3_cubic_interpolate",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"],
+        ["const godot_vector3 *", "p_pre_a"],
+        ["const godot_vector3 *", "p_post_b"],
+        ["const godot_real", "p_t"]
+      ]
+    },
+    {
+      "name": "godot_vector3_dot",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_cross",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_outer",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_to_diagonal_matrix",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_abs",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_floor",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_ceil",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_distance_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_distance_squared_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_angle_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_vector3_slide",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector3_bounce",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector3_reflect",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_n"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_add",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_substract",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_multiply_vector",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_multiply_scalar",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_divide_vector",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_divide_scalar",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_real", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_vector3_operator_neg",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_vector3_set_axis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_vector3 *", "p_self"],
+        ["const godot_vector3_axis", "p_axis"],
+        ["const godot_real", "p_val"]
+      ]
+    },
+    {
+      "name": "godot_vector3_get_axis",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_vector3 *", "p_self"],
+        ["const godot_vector3_axis", "p_axis"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "r_dest"],
+        ["const godot_pool_byte_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const uint8_t", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const godot_pool_byte_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const uint8_t", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const uint8_t", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const uint8_t", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_get",
+      "return_type": "uint8_t",
+      "arguments": [
+        ["const godot_pool_byte_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_byte_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_byte_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_byte_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "r_dest"],
+        ["const godot_pool_int_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_pool_int_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_int", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_int", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_get",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_int_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_int_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_int_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_int_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "r_dest"],
+        ["const godot_pool_real_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_real", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_pool_real_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_real", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_real", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_real", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_get",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_pool_real_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_real_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_real_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_real_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "r_dest"],
+        ["const godot_pool_string_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_string *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_pool_string_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_string *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_string *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_string *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_get",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_pool_string_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_string_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_string_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_string_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "r_dest"],
+        ["const godot_pool_vector2_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_vector2 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_pool_vector2_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_vector2 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_vector2 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_vector2 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_get",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_pool_vector2_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_vector2_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector2_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector2_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "r_dest"],
+        ["const godot_pool_vector3_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_vector3 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_pool_vector3_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_vector3 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_vector3 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_vector3 *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_get",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_pool_vector3_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_vector3_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_vector3_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_vector3_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "r_dest"],
+        ["const godot_pool_color_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_new_with_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "r_dest"],
+        ["const godot_array *", "p_a"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_color *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_append_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_pool_color_array *", "p_array"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_insert",
+      "return_type": "godot_error",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_color *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_color *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_color *", "p_data"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_get",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_pool_color_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_pool_color_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_pool_color_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_pool_color_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_array_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_array *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_color_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_color_array *", "p_pca"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_vector3_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_vector3_array *", "p_pv3a"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_vector2_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_vector2_array *", "p_pv2a"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_string_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_string_array *", "p_psa"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_real_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_real_array *", "p_pra"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_int_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_int_array *", "p_pia"]
+      ]
+    },
+    {
+      "name": "godot_array_new_pool_byte_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "r_dest"],
+        ["const godot_pool_byte_array *", "p_pba"]
+      ]
+    },
+    {
+      "name": "godot_array_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_int", "p_idx"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_get",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_array_operator_index",
+      "return_type": "godot_variant *",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_array_append",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_clear",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_count",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_empty",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_erase",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_front",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["const godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_back",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["const godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_find",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_variant *", "p_what"],
+        ["const godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_array_find_last",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_variant *", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_array_has",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_hash",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_insert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_int", "p_pos"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_invert",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_pop_back",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_pop_front",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_push_back",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_push_front",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_array_remove",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_array_resize",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["const godot_int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_array_rfind",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_variant *", "p_what"],
+        ["const godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_array_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_sort",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_array_sort_custom",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"],
+        ["godot_object *", "p_obj"],
+        ["const godot_string *", "p_func"]
+      ]
+    },
+    {
+      "name": "godot_array_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_array *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "r_dest"],
+        ["const godot_dictionary *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_size",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_empty",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_clear",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_has",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_has_all",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
+        ["const godot_array *", "p_keys"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_erase",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_hash",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_keys",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_values",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_get",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_set",
+      "return_type": "void",
+      "arguments": [
+        ["godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"],
+        ["const godot_variant *", "p_value"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_operator_index",
+      "return_type": "godot_variant *",
+      "arguments": [
+        ["godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_next",
+      "return_type": "godot_variant *",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
+        ["const godot_dictionary *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_to_json",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_node_path *", "r_dest"],
+        ["const godot_string *", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_node_path_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_node_path *", "r_dest"],
+        ["const godot_node_path *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_node_path_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_is_absolute",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_get_name_count",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_get_name",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_node_path *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_node_path_get_subname_count",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_get_subname",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_node_path *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_node_path_get_property",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_is_empty",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_node_path *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_node_path_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_node_path *", "p_self"],
+        ["const godot_node_path *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_plane_new_with_reals",
+      "return_type": "void",
+      "arguments": [
+        ["godot_plane *", "r_dest"],
+        ["const godot_real", "p_a"],
+        ["const godot_real", "p_b"],
+        ["const godot_real", "p_c"],
+        ["const godot_real", "p_d"]
+      ]
+    },
+    {
+      "name": "godot_plane_new_with_vectors",
+      "return_type": "void",
+      "arguments": [
+        ["godot_plane *", "r_dest"],
+        ["const godot_vector3 *", "p_v1"],
+        ["const godot_vector3 *", "p_v2"],
+        ["const godot_vector3 *", "p_v3"]
+      ]
+    },
+    {
+      "name": "godot_plane_new_with_normal",
+      "return_type": "void",
+      "arguments": [
+        ["godot_plane *", "r_dest"],
+        ["const godot_vector3 *", "p_normal"],
+        ["const godot_real", "p_d"]
+      ]
+    },
+    {
+      "name": "godot_plane_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_normalized",
+      "return_type": "godot_plane",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_center",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_get_any_point",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_is_point_over",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["const godot_vector3 *", "p_point"]
+      ]
+    },
+    {
+      "name": "godot_plane_distance_to",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["const godot_vector3 *", "p_point"]
+      ]
+    },
+    {
+      "name": "godot_plane_has_point",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["const godot_vector3 *", "p_point"],
+        ["const godot_real", "p_epsilon"]
+      ]
+    },
+    {
+      "name": "godot_plane_project",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["const godot_vector3 *", "p_point"]
+      ]
+    },
+    {
+      "name": "godot_plane_intersect_3",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["godot_vector3 *", "r_dest"],
+        ["const godot_plane *", "p_b"],
+        ["const godot_plane *", "p_c"]
+      ]
+    },
+    {
+      "name": "godot_plane_intersects_ray",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["godot_vector3 *", "r_dest"],
+        ["const godot_vector3 *", "p_from"],
+        ["const godot_vector3 *", "p_dir"]
+      ]
+    },
+    {
+      "name": "godot_plane_intersects_segment",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["godot_vector3 *", "r_dest"],
+        ["const godot_vector3 *", "p_begin"],
+        ["const godot_vector3 *", "p_end"]
+      ]
+    },
+    {
+      "name": "godot_plane_operator_neg",
+      "return_type": "godot_plane",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_plane *", "p_self"],
+        ["const godot_plane *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_plane_set_normal",
+      "return_type": "void",
+      "arguments": [
+        ["godot_plane *", "p_self"],
+        ["const godot_vector3 *", "p_normal"]
+      ]
+    },
+    {
+      "name": "godot_plane_get_normal",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_get_d",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_plane *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_plane_set_d",
+      "return_type": "void",
+      "arguments": [
+        ["godot_plane *", "p_self"],
+        ["const godot_real", "p_d"]
+      ]
+    },
+    {
+      "name": "godot_rect2_new_with_position_and_size",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rect2 *", "r_dest"],
+        ["const godot_vector2 *", "p_pos"],
+        ["const godot_vector2 *", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_rect2_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rect2 *", "r_dest"],
+        ["const godot_real", "p_x"],
+        ["const godot_real", "p_y"],
+        ["const godot_real", "p_width"],
+        ["const godot_real", "p_height"]
+      ]
+    },
+    {
+      "name": "godot_rect2_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect2_get_area",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect2_intersects",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_rect2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rect2_encloses",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_rect2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rect2_has_no_area",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect2_clip",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_rect2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rect2_merge",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_rect2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rect2_has_point",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_vector2 *", "p_point"]
+      ]
+    },
+    {
+      "name": "godot_rect2_grow",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_real", "p_by"]
+      ]
+    },
+    {
+      "name": "godot_rect2_expand",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_vector2 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_rect2_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"],
+        ["const godot_rect2 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rect2_get_position",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect2_get_size",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_rect2 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect2_set_position",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rect2 *", "p_self"],
+        ["const godot_vector2 *", "p_pos"]
+      ]
+    },
+    {
+      "name": "godot_rect2_set_size",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rect2 *", "p_self"],
+        ["const godot_vector2 *", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_rect3_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rect3 *", "r_dest"],
+        ["const godot_vector3 *", "p_pos"],
+        ["const godot_vector3 *", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_position",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_set_position",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_size",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_set_size",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_rect3_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_area",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_has_no_area",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_has_no_surface",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_intersects",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_rect3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_rect3_encloses",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_rect3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_rect3_merge",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_rect3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_rect3_intersection",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_rect3 *", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_rect3_intersects_plane",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_plane *", "p_plane"]
+      ]
+    },
+    {
+      "name": "godot_rect3_intersects_segment",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_from"],
+        ["const godot_vector3 *", "p_to"]
+      ]
+    },
+    {
+      "name": "godot_rect3_has_point",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_point"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_support",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_dir"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_longest_axis",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_longest_axis_index",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_longest_axis_size",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_shortest_axis",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_shortest_axis_index",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_shortest_axis_size",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rect3_expand",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_vector3 *", "p_to_point"]
+      ]
+    },
+    {
+      "name": "godot_rect3_grow",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_real", "p_by"]
+      ]
+    },
+    {
+      "name": "godot_rect3_get_endpoint",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_rect3_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rect3 *", "p_self"],
+        ["const godot_rect3 *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rid_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rid *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_rid_get_id",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_rid *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_rid_new_with_resource",
+      "return_type": "void",
+      "arguments": [
+        ["godot_rid *", "r_dest"],
+        ["const godot_object *", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_rid_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rid *", "p_self"],
+        ["const godot_rid *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_rid_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_rid *", "p_self"],
+        ["const godot_rid *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_transform_new_with_axis_origin",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform *", "r_dest"],
+        ["const godot_vector3 *", "p_x_axis"],
+        ["const godot_vector3 *", "p_y_axis"],
+        ["const godot_vector3 *", "p_z_axis"],
+        ["const godot_vector3 *", "p_origin"]
+      ]
+    },
+    {
+      "name": "godot_transform_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform *", "r_dest"],
+        ["const godot_basis *", "p_basis"],
+        ["const godot_vector3 *", "p_origin"]
+      ]
+    },
+    {
+      "name": "godot_transform_get_basis",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_set_basis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform *", "p_self"],
+        ["godot_basis *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_get_origin",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_set_origin",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform *", "p_self"],
+        ["godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_inverse",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_affine_inverse",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_orthonormalized",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform_rotated",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_axis"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_transform_scaled",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_scale"]
+      ]
+    },
+    {
+      "name": "godot_transform_translated",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_ofs"]
+      ]
+    },
+    {
+      "name": "godot_transform_looking_at",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_target"],
+        ["const godot_vector3 *", "p_up"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_plane",
+      "return_type": "godot_plane",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_plane *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_inv_plane",
+      "return_type": "godot_plane",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_plane *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_new_identity",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_transform_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_transform *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_transform_operator_multiply",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_transform *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_vector3",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_inv_vector3",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_vector3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_rect3",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_rect3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform_xform_inv_rect3",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_transform *", "p_self"],
+        ["const godot_rect3 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform2d *", "r_dest"],
+        ["const godot_real", "p_rot"],
+        ["const godot_vector2 *", "p_pos"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_new_axis_origin",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform2d *", "r_dest"],
+        ["const godot_vector2 *", "p_x_axis"],
+        ["const godot_vector2 *", "p_y_axis"],
+        ["const godot_vector2 *", "p_origin"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_inverse",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_affine_inverse",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_get_rotation",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_get_origin",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_get_scale",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_orthonormalized",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_rotated",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_real", "p_phi"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_scaled",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_scale"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_translated",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_offset"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_xform_vector2",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_xform_inv_vector2",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_basis_xform_vector2",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_basis_xform_inv_vector2",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_vector2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_interpolate_with",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_transform2d *", "p_m"],
+        ["const godot_real", "p_c"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_transform2d *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_operator_multiply",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_transform2d *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_new_identity",
+      "return_type": "void",
+      "arguments": [
+        ["godot_transform2d *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_xform_rect2",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_rect2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_transform2d_xform_inv_rect2",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_transform2d *", "p_self"],
+        ["const godot_rect2 *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_variant_get_type",
+      "return_type": "godot_variant_type",
+      "arguments": [
+        ["const godot_variant *", "p_v"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_variant *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_nil",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_bool",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "p_v"],
+        ["const godot_bool", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_uint",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const uint64_t", "p_i"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_int",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const int64_t", "p_i"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_real",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const double", "p_r"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_string",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_string *", "p_s"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_vector2",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_vector2 *", "p_v2"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_rect2",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_rect2 *", "p_rect2"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_vector3",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_vector3 *", "p_v3"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_transform2d",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_transform2d *", "p_t2d"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_plane",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_plane *", "p_plane"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_quat",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_quat *", "p_quat"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_rect3",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_rect3 *", "p_rect3"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_basis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_basis *", "p_basis"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_transform",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_transform *", "p_trans"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_color",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_color *", "p_color"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_node_path",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_node_path *", "p_np"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_rid",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_rid *", "p_rid"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_object",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_object *", "p_obj"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_dictionary",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_dictionary *", "p_dict"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_array *", "p_arr"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_byte_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_byte_array *", "p_pba"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_int_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_int_array *", "p_pia"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_real_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_real_array *", "p_pra"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_string_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_string_array *", "p_psa"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_vector2_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_vector2_array *", "p_pv2a"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_vector3_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_vector3_array *", "p_pv3a"]
+      ]
+    },
+    {
+      "name": "godot_variant_new_pool_color_array",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "r_dest"],
+        ["const godot_pool_color_array *", "p_pca"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_bool",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_uint",
+      "return_type": "uint64_t",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_int",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_real",
+      "return_type": "double",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_string",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_vector2",
+      "return_type": "godot_vector2",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_rect2",
+      "return_type": "godot_rect2",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_vector3",
+      "return_type": "godot_vector3",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_transform2d",
+      "return_type": "godot_transform2d",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_plane",
+      "return_type": "godot_plane",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_quat",
+      "return_type": "godot_quat",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_rect3",
+      "return_type": "godot_rect3",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_basis",
+      "return_type": "godot_basis",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_transform",
+      "return_type": "godot_transform",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_color",
+      "return_type": "godot_color",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_node_path",
+      "return_type": "godot_node_path",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_rid",
+      "return_type": "godot_rid",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_object",
+      "return_type": "godot_object *",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_dictionary",
+      "return_type": "godot_dictionary",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_array",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_byte_array",
+      "return_type": "godot_pool_byte_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_int_array",
+      "return_type": "godot_pool_int_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_real_array",
+      "return_type": "godot_pool_real_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_string_array",
+      "return_type": "godot_pool_string_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_vector2_array",
+      "return_type": "godot_pool_vector2_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_vector3_array",
+      "return_type": "godot_pool_vector3_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_as_pool_color_array",
+      "return_type": "godot_pool_color_array",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_call",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["godot_variant *", "p_self"],
+        ["const godot_string *", "p_method"],
+        ["const godot_variant **", "p_args"],
+        ["const godot_int", "p_argcount"],
+        ["godot_variant_call_error *", "r_error"]
+      ]
+    },
+    {
+      "name": "godot_variant_has_method",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"],
+        ["const godot_string *", "p_method"]
+      ]
+    },
+    {
+      "name": "godot_variant_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"],
+        ["const godot_variant *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_variant_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"],
+        ["const godot_variant *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_variant_hash_compare",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"],
+        ["const godot_variant *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_variant_booleanize",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_variant_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_variant *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "r_dest"]
+      ]
+    },
+    {
+      "name": "godot_string_new_copy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "r_dest"],
+        ["const godot_string *", "p_src"]
+      ]
+    },
+    {
+      "name": "godot_string_new_data",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "r_dest"],
+        ["const char *", "p_contents"],
+        ["const int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_string_new_unicode_data",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "r_dest"],
+        ["const wchar_t *", "p_contents"],
+        ["const int", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_string_get_data",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["char *", "p_dest"],
+        ["int *", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_string_operator_index",
+      "return_type": "wchar_t *",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_string_c_str",
+      "return_type": "const char *",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_unicode_str",
+      "return_type": "const wchar_t *",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_string_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_string_operator_plus",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_b"]
+      ]
+    },
+    {
+      "name": "godot_string_length",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_begins_with",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_begins_with_char_array",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const char *", "p_char_array"]
+      ]
+    },
+    {
+      "name": "godot_string_bigrams",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_chr",
+      "return_type": "godot_string",
+      "arguments": [
+        ["wchar_t", "p_character"]
+      ]
+    },
+    {
+      "name": "godot_string_ends_with",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_find",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_find_from",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"],
+        ["godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_string_findmk",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_keys"]
+      ]
+    },
+    {
+      "name": "godot_string_findmk_from",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_keys"],
+        ["godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_string_findmk_from_in_place",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_keys"],
+        ["godot_int", "p_from"],
+        ["godot_int *", "r_key"]
+      ]
+    },
+    {
+      "name": "godot_string_findn",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_findn_from",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"],
+        ["godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_string_find_last",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_format",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_variant *", "p_values"]
+      ]
+    },
+    {
+      "name": "godot_string_format_with_custom_placeholder",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_variant *", "p_values"],
+        ["const char *", "p_placeholder"]
+      ]
+    },
+    {
+      "name": "godot_string_hex_encode_buffer",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const uint8_t *", "p_buffer"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_hex_to_int",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_hex_to_int_without_prefix",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_insert",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_at_pos"],
+        ["godot_string", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_is_numeric",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_subsequence_of",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_is_subsequence_ofi",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_lpad",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_min_length"]
+      ]
+    },
+    {
+      "name": "godot_string_lpad_with_custom_character",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_min_length"],
+        ["const godot_string *", "p_character"]
+      ]
+    },
+    {
+      "name": "godot_string_match",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_wildcard"]
+      ]
+    },
+    {
+      "name": "godot_string_matchn",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_wildcard"]
+      ]
+    },
+    {
+      "name": "godot_string_md5",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const uint8_t *", "p_md5"]
+      ]
+    },
+    {
+      "name": "godot_string_num",
+      "return_type": "godot_string",
+      "arguments": [
+        ["double", "p_num"]
+      ]
+    },
+    {
+      "name": "godot_string_num_int64",
+      "return_type": "godot_string",
+      "arguments": [
+        ["int64_t", "p_num"],
+        ["godot_int", "p_base"]
+      ]
+    },
+    {
+      "name": "godot_string_num_int64_capitalized",
+      "return_type": "godot_string",
+      "arguments": [
+        ["int64_t", "p_num"],
+        ["godot_int", "p_base"],
+        ["godot_bool", "p_capitalize_hex"]
+      ]
+    },
+    {
+      "name": "godot_string_num_real",
+      "return_type": "godot_string",
+      "arguments": [
+        ["double", "p_num"]
+      ]
+    },
+    {
+      "name": "godot_string_num_scientific",
+      "return_type": "godot_string",
+      "arguments": [
+        ["double", "p_num"]
+      ]
+    },
+    {
+      "name": "godot_string_num_with_decimals",
+      "return_type": "godot_string",
+      "arguments": [
+        ["double", "p_num"],
+        ["godot_int", "p_decimals"]
+      ]
+    },
+    {
+      "name": "godot_string_pad_decimals",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_digits"]
+      ]
+    },
+    {
+      "name": "godot_string_pad_zeros",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_digits"]
+      ]
+    },
+    {
+      "name": "godot_string_replace_first",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_key"],
+        ["godot_string", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_string_replace",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_key"],
+        ["godot_string", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_string_replacen",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_key"],
+        ["godot_string", "p_with"]
+      ]
+    },
+    {
+      "name": "godot_string_rfind",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_rfindn",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_rfind_from",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"],
+        ["godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_string_rfindn_from",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_what"],
+        ["godot_int", "p_from"]
+      ]
+    },
+    {
+      "name": "godot_string_rpad",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_min_length"]
+      ]
+    },
+    {
+      "name": "godot_string_rpad_with_custom_character",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_min_length"],
+        ["const godot_string *", "p_character"]
+      ]
+    },
+    {
+      "name": "godot_string_similarity",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_string"]
+      ]
+    },
+    {
+      "name": "godot_string_sprintf",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_values"],
+        ["godot_bool *", "p_error"]
+      ]
+    },
+    {
+      "name": "godot_string_substr",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_from"],
+        ["godot_int", "p_chars"]
+      ]
+    },
+    {
+      "name": "godot_string_to_double",
+      "return_type": "double",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_to_float",
+      "return_type": "godot_real",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_to_int",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_camelcase_to_underscore",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_camelcase_to_underscore_lowercased",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_capitalize",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_char_to_double",
+      "return_type": "double",
+      "arguments": [
+        ["const char *", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_char_to_int",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const char *", "p_what"]
+      ]
+    },
+    {
+      "name": "godot_string_wchar_to_int",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const wchar_t *", "p_str"]
+      ]
+    },
+    {
+      "name": "godot_string_char_to_int_with_len",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const char *", "p_what"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_char_to_int64_with_len",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const wchar_t *", "p_str"],
+        ["int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_hex_to_int64",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_hex_to_int64_with_prefix",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_to_int64",
+      "return_type": "int64_t",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_unicode_char_to_double",
+      "return_type": "double",
+      "arguments": [
+        ["const wchar_t *", "p_str"],
+        ["const wchar_t **", "r_end"]
+      ]
+    },
+    {
+      "name": "godot_string_get_slice_count",
+      "return_type": "godot_int",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_get_slice",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_string", "p_splitter"],
+        ["godot_int", "p_slice"]
+      ]
+    },
+    {
+      "name": "godot_string_get_slicec",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["wchar_t", "p_splitter"],
+        ["godot_int", "p_slice"]
+      ]
+    },
+    {
+      "name": "godot_string_split",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_allow_empty",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_floats",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_floats_allows_empty",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_floats_mk",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_splitters"]
+      ]
+    },
+    {
+      "name": "godot_string_split_floats_mk_allows_empty",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_splitters"]
+      ]
+    },
+    {
+      "name": "godot_string_split_ints",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_ints_allows_empty",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_splitter"]
+      ]
+    },
+    {
+      "name": "godot_string_split_ints_mk",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_splitters"]
+      ]
+    },
+    {
+      "name": "godot_string_split_ints_mk_allows_empty",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_array *", "p_splitters"]
+      ]
+    },
+    {
+      "name": "godot_string_split_spaces",
+      "return_type": "godot_array",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_char_lowercase",
+      "return_type": "wchar_t",
+      "arguments": [
+        ["wchar_t", "p_char"]
+      ]
+    },
+    {
+      "name": "godot_string_char_uppercase",
+      "return_type": "wchar_t",
+      "arguments": [
+        ["wchar_t", "p_char"]
+      ]
+    },
+    {
+      "name": "godot_string_to_lower",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_to_upper",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_get_basename",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_get_extension",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_left",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_pos"]
+      ]
+    },
+    {
+      "name": "godot_string_ord_at",
+      "return_type": "wchar_t",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_string_plus_file",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_file"]
+      ]
+    },
+    {
+      "name": "godot_string_right",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_pos"]
+      ]
+    },
+    {
+      "name": "godot_string_strip_edges",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_bool", "p_left"],
+        ["godot_bool", "p_right"]
+      ]
+    },
+    {
+      "name": "godot_string_strip_escapes",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_erase",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["godot_int", "p_pos"],
+        ["godot_int", "p_chars"]
+      ]
+    },
+    {
+      "name": "godot_string_ascii",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["char *", "result"]
+      ]
+    },
+    {
+      "name": "godot_string_ascii_extended",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["char *", "result"]
+      ]
+    },
+    {
+      "name": "godot_string_utf8",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["char *", "result"]
+      ]
+    },
+    {
+      "name": "godot_string_parse_utf8",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["const char *", "p_utf8"]
+      ]
+    },
+    {
+      "name": "godot_string_parse_utf8_with_len",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["godot_string *", "p_self"],
+        ["const char *", "p_utf8"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_chars_to_utf8",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const char *", "p_utf8"]
+      ]
+    },
+    {
+      "name": "godot_string_chars_to_utf8_with_len",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const char *", "p_utf8"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_hash",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_hash64",
+      "return_type": "uint64_t",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_hash_chars",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const char *", "p_cstr"]
+      ]
+    },
+    {
+      "name": "godot_string_hash_chars_with_len",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const char *", "p_cstr"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_hash_utf8_chars",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const wchar_t *", "p_str"]
+      ]
+    },
+    {
+      "name": "godot_string_hash_utf8_chars_with_len",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const wchar_t *", "p_str"],
+        ["godot_int", "p_len"]
+      ]
+    },
+    {
+      "name": "godot_string_md5_buffer",
+      "return_type": "godot_pool_byte_array",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_md5_text",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_sha256_buffer",
+      "return_type": "godot_pool_byte_array",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_sha256_text",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_empty",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_get_base_dir",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_get_file",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_humanize_size",
+      "return_type": "godot_string",
+      "arguments": [
+        ["size_t", "p_size"]
+      ]
+    },
+    {
+      "name": "godot_string_is_abs_path",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_rel_path",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_resource_file",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_path_to",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_path"]
+      ]
+    },
+    {
+      "name": "godot_string_path_to_file",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["const godot_string *", "p_path"]
+      ]
+    },
+    {
+      "name": "godot_string_simplify_path",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_c_escape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_c_escape_multiline",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_c_unescape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_http_escape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_http_unescape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_json_escape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_word_wrap",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_int", "p_chars_per_line"]
+      ]
+    },
+    {
+      "name": "godot_string_xml_escape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_xml_escape_with_quotes",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_xml_unescape",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_percent_decode",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_percent_encode",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_float",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_hex_number",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"],
+        ["godot_bool", "p_with_prefix"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_html_color",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_identifier",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_integer",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_is_valid_ip_address",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_new",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "r_dest"],
+        ["const godot_string *", "p_name"]
+      ]
+    },
+    {
+      "name": "godot_string_name_new_data",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "r_dest"],
+        ["const char *", "p_name"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_name",
+      "return_type": "godot_string",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_hash",
+      "return_type": "uint32_t",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_get_data_unique_pointer",
+      "return_type": "const void *",
+      "arguments": [
+        ["const godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_string_name_operator_equal",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string_name *", "p_self"],
+        ["const godot_string_name *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_string_name_operator_less",
+      "return_type": "godot_bool",
+      "arguments": [
+        ["const godot_string_name *", "p_self"],
+        ["const godot_string_name *", "p_other"]
+      ]
+    },
+    {
+      "name": "godot_string_name_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_string_name *", "p_self"]
+      ]
+    },
+    {
+      "name": "godot_object_destroy",
+      "return_type": "void",
+      "arguments": [
+        ["godot_object *", "p_o"]
+      ]
+    },
+    {
+      "name": "godot_global_get_singleton",
+      "return_type": "godot_object *",
+      "arguments": [
+        ["char *", "p_name"]
+      ]
+    },
+    {
+      "name": "godot_method_bind_get_method",
+      "return_type": "godot_method_bind *",
+      "arguments": [
+        ["const char *", "p_classname"],
+        ["const char *", "p_methodname"]
+      ]
+    },
+    {
+      "name": "godot_method_bind_ptrcall",
+      "return_type": "void",
+      "arguments": [
+        ["godot_method_bind *", "p_method_bind"],
+        ["godot_object *", "p_instance"],
+        ["const void **", "p_args"],
+        ["void *", "p_ret"]
+      ]
+    },
+    {
+      "name": "godot_method_bind_call",
+      "return_type": "godot_variant",
+      "arguments": [
+        ["godot_method_bind *", "p_method_bind"],
+        ["godot_object *", "p_instance"],
+        ["const godot_variant **", "p_args"],
+        ["const int", "p_arg_count"],
+        ["godot_variant_call_error *", "p_call_error"]
+      ]
+    },
+    {
+      "name": "godot_get_class_constructor",
+      "return_type": "godot_class_constructor",
+      "arguments": [
+        ["const char *", "p_classname"]
+      ]
+    },
+    {
+      "name": "godot_alloc",
+      "return_type": "void *",
+      "arguments": [
+        ["int", "p_bytes"]
+      ]
+    },
+    {
+      "name": "godot_realloc",
+      "return_type": "void *",
+      "arguments": [
+        ["void *", "p_ptr"],
+        ["int", "p_bytes"]
+      ]
+    },
+    {
+      "name": "godot_free",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_ptr"]
+      ]
+    },
+    {
+      "name": "godot_print_error",
+      "return_type": "void",
+      "arguments": [
+        ["const char *", "p_description"],
+        ["const char *", "p_function"],
+        ["const char *", "p_file"],
+        ["int", "p_line"]
+      ]
+    },
+    {
+      "name": "godot_print_warning",
+      "return_type": "void",
+      "arguments": [
+        ["const char *", "p_description"],
+        ["const char *", "p_function"],
+        ["const char *", "p_file"],
+        ["int", "p_line"]
+      ]
+    },
+    {
+      "name": "godot_print",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_string *", "p_message"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_register_class",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_gdnative_handle"],
+        ["const char *", "p_name"],
+        ["const char *", "p_base"],
+        ["godot_instance_create_func", "p_create_func"],
+        ["godot_instance_destroy_func", "p_destroy_func"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_register_tool_class",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_gdnative_handle"],
+        ["const char *", "p_name"],
+        ["const char *", "p_base"],
+        ["godot_instance_create_func", "p_create_func"],
+        ["godot_instance_destroy_func", "p_destroy_func"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_register_method",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_gdnative_handle"],
+        ["const char *", "p_name"],
+        ["const char *", "p_function_name"],
+        ["godot_method_attributes", "p_attr"],
+        ["godot_instance_method", "p_method"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_register_property",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_gdnative_handle"],
+        ["const char *", "p_name"],
+        ["const char *", "p_path"],
+        ["godot_property_attributes *", "p_attr"],
+        ["godot_property_set_func", "p_set_func"],
+        ["godot_property_get_func", "p_get_func"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_register_signal",
+      "return_type": "void",
+      "arguments": [
+        ["void *", "p_gdnative_handle"],
+        ["const char *", "p_name"],
+        ["const godot_signal *", "p_signal"]
+      ]
+    },
+    {
+      "name": "godot_nativescript_get_userdata",
+      "return_type": "void *",
+      "arguments": [
+        ["godot_object *", "p_instance"]
+      ]
+    },
+    {
+      "name": "godot_arvr_register_interface",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_arvr_interface_gdnative *", "p_interface"]
+      ]
+    },
+    {
+      "name": "godot_arvr_get_worldscale",
+      "return_type": "godot_real",
+      "arguments": []
+    },
+    {
+      "name": "godot_arvr_get_reference_frame",
+      "return_type": "godot_transform",
+      "arguments": []
+    },
+    {
+      "name": "godot_arvr_blit",
+      "return_type": "void",
+      "arguments": [
+        ["int", "p_eye"],
+        ["godot_rid *", "p_render_target"],
+        ["godot_rect2 *", "p_screen_rect"]
+      ]
+    },
+    {
+      "name": "godot_arvr_get_texid",
+      "return_type": "godot_int",
+      "arguments": [
+        ["godot_rid *", "p_render_target"]
+      ]
+    },
+    {
+      "name": "godot_arvr_add_controller",
+      "return_type": "godot_int",
+      "arguments": [
+        ["char *", "p_device_name"],
+        ["godot_int", "p_hand"],
+        ["godot_bool", "p_tracks_orientation"],
+        ["godot_bool", "p_tracks_position"]
+      ]
+    },
+    {
+      "name": "godot_arvr_remove_controller",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_transform",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_transform *", "p_transform"],
+        ["godot_bool", "p_tracks_orientation"],
+        ["godot_bool", "p_tracks_position"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_button",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_int", "p_button"],
+        ["godot_bool", "p_is_pressed"]
+      ]
+    },
+    {
+      "name": "godot_arvr_set_controller_axis",
+      "return_type": "void",
+      "arguments": [
+        ["godot_int", "p_controller_id"],
+        ["godot_int", "p_exis"],
+        ["godot_real", "p_value"],
+        ["godot_bool", "p_can_be_negative"]
+      ]
+    }
+  ]
+}

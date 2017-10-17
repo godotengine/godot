@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Material" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Abstract base [Resource] for coloring and shading geometry.
+	</brief_description>
+	<description>
+		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_next_pass" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_render_priority" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_next_pass">
+			<return type="void">
+			</return>
+			<argument index="0" name="next_pass" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_render_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="priority" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
+		</member>
+	</members>
+	<constants>
+		<constant name="RENDER_PRIORITY_MAX" value="127" enum="">
+		</constant>
+		<constant name="RENDER_PRIORITY_MIN" value="-128" enum="">
+		</constant>
+	</constants>
+</class>

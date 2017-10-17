@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Position3D" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+		Generic 3D Position hint for editing
+	</brief_description>
+	<description>
+		Generic 3D Position hint for editing. It's just like a plain [Spatial] but displays as a cross in the 3D-Editor at all times.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
