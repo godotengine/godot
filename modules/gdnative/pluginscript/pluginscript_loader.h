@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  api_generator.h                                                      */
+/*  pluginscript_loader.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,12 +27,36 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef API_GENERATOR_H
-#define API_GENERATOR_H
 
-#include "core/typedefs.h"
-#include "core/ustring.h"
+#ifndef PYTHONSCRIPT_PY_LOADER_H
+#define PYTHONSCRIPT_PY_LOADER_H
 
-Error generate_c_api(const String &p_path);
+// Godot imports
+#include "core/script_language.h"
+#include "io/resource_loader.h"
+#include "io/resource_saver.h"
 
-#endif // API_GENERATOR_H
+class PluginScriptLanguage;
+
+class ResourceFormatLoaderPluginScript : public ResourceFormatLoader {
+	PluginScriptLanguage *_language;
+
+public:
+	ResourceFormatLoaderPluginScript(PluginScriptLanguage *language);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
+
+class ResourceFormatSaverPluginScript : public ResourceFormatSaver {
+	PluginScriptLanguage *_language;
+
+public:
+	ResourceFormatSaverPluginScript(PluginScriptLanguage *language);
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
+	virtual bool recognize(const RES &p_resource) const;
+};
+
+#endif // PYTHONSCRIPT_PY_LOADER_H
