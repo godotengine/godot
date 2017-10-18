@@ -37,13 +37,11 @@
 class IP_Unix : public IP {
 	OBJ_TYPE(IP_Unix, IP);
 
-	virtual IP_Address _resolve_hostname(const String &p_hostname, IP::Type p_type);
-
 	static IP *_create_unix();
-
+	
 public:
+	virtual List<IP_Address> _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) const;
 	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
-	virtual Array resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY) const;
 
 	static void make_default();
 	IP_Unix();

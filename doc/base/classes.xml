@@ -15782,6 +15782,15 @@
 				Return a resolved item address, or an empty string if an error happened or resolution didn't happen yet (see [method get_resolve_item_status]).
 			</description>
 		</method>
+		<method name="get_resolve_addresses" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return resolved addresses, or an empty array if an error happened or resolution didn't happen yet (see [method get_resolve_item_status]).
+			</description>
+		</method>
 		<method name="get_resolve_item_status" qualifiers="const">
 			<return type="int">
 			</return>
@@ -15800,6 +15809,17 @@
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
+			</description>
+		</method>
+		<method name="resolve_hostname_addresses">
+			<return type="Array">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="ip_type" type="int" default="3">
+			</argument>
+			<description>
+				Resolve a given hostname, blocking. Resolved addresses is returned as an IPv4 or IPv6 depending on "ip_type".
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">
