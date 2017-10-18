@@ -817,9 +817,11 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 
 	PhysicsDirectBodyState *s = Object::cast_to<PhysicsDirectBodyState>(p_state);
 
-	set_ignore_transform_notification(true);
-	set_global_transform(s->get_transform());
-	set_ignore_transform_notification(false);
+	if (s->has_transform_changed()) {
+		set_ignore_transform_notification(true);
+		set_global_transform(s->get_transform());
+		set_ignore_transform_notification(false);
+	}
 
 	float step = s->get_step();
 

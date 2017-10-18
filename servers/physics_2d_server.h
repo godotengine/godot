@@ -77,6 +77,8 @@ public:
 	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const = 0;
 
+	virtual bool has_transform_changed() const = 0;
+
 	virtual real_t get_step() const = 0;
 	virtual void integrate_forces();
 
