@@ -53,7 +53,7 @@ private:
 	static int _bio_gets(BIO *b, char *buf, int len);
 	static int _bio_puts(BIO *b, const char *str);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 	static BIO_METHOD *_bio_method;
 #else
 	static BIO_METHOD _bio_method;

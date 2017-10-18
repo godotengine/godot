@@ -30,7 +30,7 @@
 #include "stream_peer_openssl.h"
 
 // Compatibility with OpenSSL 1.1.0.
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 #define BIO_set_num(b, n)
 #else
 #define BIO_set_num(b, n) ((b)->num = (n))
@@ -269,7 +269,7 @@ int StreamPeerOpenSSL::_bio_puts(BIO *b, const char *str) {
 	return _bio_write(b, str, strlen(str));
 }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 BIO_METHOD *StreamPeerOpenSSL::_bio_method = NULL;
 
 BIO_METHOD *StreamPeerOpenSSL::_get_bio_method() {
@@ -568,7 +568,7 @@ void StreamPeerOpenSSL::initialize_ssl() {
 	load_certs_func = _load_certs;
 
 	_create = _create_func;
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 	CRYPTO_malloc_init(); // Initialize malloc, free, etc for OpenSSL's use
 #endif
 	SSL_library_init(); // Initialize OpenSSL's SSL libraries
