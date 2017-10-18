@@ -1271,7 +1271,8 @@ bool CSharpScript::_update_exports() {
 				GDMonoField *field = fields[i];
 
 				if (field->is_static()) {
-					ERR_PRINTS("Cannot export field because it is static: " + top->get_full_name() + "." + field->get_name());
+					if (field->has_attribute(CACHED_CLASS(ExportAttribute)))
+						ERR_PRINTS("Cannot export field because it is static: " + top->get_full_name() + "." + field->get_name());
 					continue;
 				}
 
