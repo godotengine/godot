@@ -325,11 +325,6 @@ public:
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
 
 	/* MISC */
-	template <class T>
-	void setStepper() {
-		stepper = bulletnew(T);
-		init();
-	}
 
 	virtual void free(RID p_rid);
 
