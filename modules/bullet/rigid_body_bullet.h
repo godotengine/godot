@@ -145,7 +145,7 @@ public:
 		Vector3 hitNormal;
 	};
 
-	struct StateChangeCallback {
+	struct ForceIntegrationCallback {
 		ObjectID id;
 		StringName method;
 		Variant udata;
@@ -209,7 +209,7 @@ private:
 
 	bool isScratched;
 
-	StateChangeCallback *onStateChange_callback;
+	ForceIntegrationCallback *force_integration_callback;
 
 public:
 	RigidBodyBullet();
@@ -225,7 +225,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch();
 	void scratch_space_override_modificator();
 

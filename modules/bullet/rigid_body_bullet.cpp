@@ -267,7 +267,7 @@ RigidBodyBullet::RigidBodyBullet()
 	  linearDamp(0),
 	  angularDamp(0),
 	  can_sleep(true),
-	  onStateChange_callback(NULL),
+	  force_integration_callback(NULL),
 	  isScratched(false),
 	  maxCollisionsDetection(0),
 	  collisionsCount(0),
@@ -296,8 +296,8 @@ RigidBodyBullet::RigidBodyBullet()
 RigidBodyBullet::~RigidBodyBullet() {
 	bulletdelete(godotMotionState);
 
-	if (onStateChange_callback)
-		memdelete(onStateChange_callback);
+	if (force_integration_callback)
+		memdelete(force_integration_callback);
 
 	destroy_kinematic_utilities();
 }
@@ -340,26 +340,26 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 }
 
 void RigidBodyBullet::dispatch_callbacks() {
+	if (force_integration_callback) {
+		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
+
+		Variant variantBodyDirect = bodyDirect;
+
+		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
+		if (!obj) {
+			// Remove integration callback
+			set_force_integration_callback(0, StringName());
+		} else {
+			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
+
+			Variant::CallError responseCallError;
+			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
+			obj->call(force_integration_callback->method, vp, argc, responseCallError);
+		}
+	}
+
 	if (isScratched) {
 		isScratched = false;
-
-		if (onStateChange_callback) {
-			BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
-
-			Variant variantBodyDirect = bodyDirect;
-
-			Object *obj = ObjectDB::get_instance(onStateChange_callback->id);
-			if (!obj) {
-				// Remove integration callback
-				set_on_state_change(0, StringName());
-			} else {
-				const Variant *vp[2] = { &variantBodyDirect, &onStateChange_callback->udata };
-
-				Variant::CallError responseCallError;
-				int argc = (onStateChange_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-				obj->call(onStateChange_callback->method, vp, argc, responseCallError);
-			}
-		}
 	}
 
 	if (isScratchedSpaceOverrideModificator || 0 < countGravityPointSpaces) {
@@ -368,18 +368,18 @@ void RigidBodyBullet::dispatch_callbacks() {
 	}
 }
 
-void RigidBodyBullet::set_on_state_change(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
+void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
 
-	if (onStateChange_callback) {
-		memdelete(onStateChange_callback);
-		onStateChange_callback = NULL;
+	if (force_integration_callback) {
+		memdelete(force_integration_callback);
+		force_integration_callback = NULL;
 	}
 
 	if (p_id != 0) {
-		onStateChange_callback = memnew(StateChangeCallback);
-		onStateChange_callback->id = p_id;
-		onStateChange_callback->method = p_method;
-		onStateChange_callback->udata = p_udata;
+		force_integration_callback = memnew(ForceIntegrationCallback);
+		force_integration_callback->id = p_id;
+		force_integration_callback->method = p_method;
+		force_integration_callback->udata = p_udata;
 	}
 }
 
