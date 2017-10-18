@@ -119,7 +119,9 @@ void SignalAwaiterHandle::_bind_methods() {
 SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_managed_handle)
 	: MonoGCHandle(p_managed_handle) {
 
+#ifdef DEBUG_ENABLED
 	conn_target_id = 0;
+#endif
 }
 
 SignalAwaiterHandle::~SignalAwaiterHandle() {
