@@ -77,6 +77,7 @@ protected:
 
 public:
 	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
+	virtual Array resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY) const = 0;
 	// async resolver hostname
 	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;

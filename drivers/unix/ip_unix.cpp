@@ -120,6 +120,52 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 	return ip;
 }
 
+Array IP_Unix::resolve_hostname_addresses(const String &p_hostname, Type p_type) const {
+
+	struct addrinfo hints;
+	struct addrinfo *result;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	if (p_type == TYPE_IPV4) {
+		hints.ai_family = AF_INET;
+	} else if (p_type == TYPE_IPV6) {
+		hints.ai_family = AF_INET6;
+		hints.ai_flags = 0;
+	} else {
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_flags = AI_ADDRCONFIG;
+	};
+	hints.ai_flags &= !AI_NUMERICHOST;
+
+	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
+	if (s != 0) {
+		ERR_PRINT("getaddrinfo failed!");
+		return Array();
+	};
+
+	if (result == NULL || result->ai_addr == NULL) {
+		ERR_PRINT("Invalid response from getaddrinfo");
+		return Array();
+	};
+
+	struct addrinfo *next = result;
+
+	Array addresses;
+	IP_Address ip;
+
+	do {
+		ip = _sockaddr2ip(next->ai_addr);
+		if (ip.is_valid()) {
+			addresses.push_back(ip);
+		}
+		next = next->ai_next;
+	} while (next);
+
+	freeaddrinfo(result);
+
+	return addresses;
+}
+
 #if defined(WINDOWS_ENABLED)
 
 #if defined(WINRT_ENABLED)
