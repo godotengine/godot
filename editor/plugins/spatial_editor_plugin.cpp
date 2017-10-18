@@ -2765,8 +2765,14 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 			normal = hit_normal;
 		}
 	}
-	Vector3 center = preview_bounds->get_size() * 0.5;
-	return point + (center * normal);
+	Vector3 offset = Vector3();
+	for (int i = 0; i < 3; i++) {
+		if (normal[i] > 0.0)
+			offset[i] = (preview_bounds->get_size()[i] - (preview_bounds->get_size()[i] + preview_bounds->get_position()[i]));
+		else if (normal[i] < 0.0)
+			offset[i] = -(preview_bounds->get_size()[i] + preview_bounds->get_position()[i]);
+	}
+	return point + offset;
 }
 
 Rect3 SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds) {
