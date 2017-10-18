@@ -51,6 +51,7 @@
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
+#ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
 
 	String sln_path = GodotSharpDirs::get_project_sln_path();
@@ -65,6 +66,7 @@ static bool _create_project_solution_if_needed() {
 
 	return true;
 }
+#endif
 
 CSharpLanguage *CSharpLanguage::singleton = NULL;
 
