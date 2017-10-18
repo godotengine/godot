@@ -56,16 +56,18 @@ static void _png_free_fn(png_structp png_ptr, png_voidp ptr) {
 	memfree(ptr);
 }
 
+static FileAccess *file;
+
 static void _png_error_function(png_structp, png_const_charp text) {
 
-	ERR_PRINT(text);
+	String msg(String(text) + " -> " + file->file_path);
+	ERR_PRINT(msg.ascii());
 }
 
-static String *img_path;
 static void _png_warn_function(png_structp, png_const_charp text) {
 
-	WARN_PRINT(text);
-	WARN_PRINT(img_path->ascii())
+	String msg(String(text) + " -> " + file->file_path);
+	WARN_PRINT(msg.ascii());
 }
 
 typedef void(PNGAPI *png_error_ptr) PNGARG((png_structp, png_const_charp));
@@ -240,9 +242,9 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Image *p_image
 	return OK;
 }
 
-Error ImageLoaderPNG::load_image(Image *p_image, FileAccess *f, String* p_path) {
-
-	img_path = p_path;
+Error ImageLoaderPNG::load_image(Image *p_image, FileAccess *f) {
+	
+	file = f;
 	Error err = _load_image(f, _read_png_data, p_image);
 	f->close();
 

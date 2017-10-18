@@ -89,7 +89,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	return OK;
 }
 
-Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f, String *p_path) {
+Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
 
 	DVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
