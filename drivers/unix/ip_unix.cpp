@@ -85,7 +85,7 @@ static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
 	return ip;
 };
 
-IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
+void IP_Unix::_resolve_hostname(List<IP_Address> &r_addresses, const String &p_hostname, Type p_type) const {
 
 	struct addrinfo hints;
 	struct addrinfo *result;
@@ -105,19 +105,28 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 	int s = getaddrinfo(p_hostname.utf8().get_data(), NULL, &hints, &result);
 	if (s != 0) {
 		ERR_PRINT("getaddrinfo failed!");
-		return IP_Address();
+		return;
 	};
 
 	if (result == NULL || result->ai_addr == NULL) {
 		ERR_PRINT("Invalid response from getaddrinfo");
-		return IP_Address();
+		return;
 	};
 
-	IP_Address ip = _sockaddr2ip(result->ai_addr);
+	struct addrinfo *next = result;
+
+	do {
+		if (next->ai_addr == NULL) {
+			next = next->ai_next;
+			continue;
+		}
+		IP_Address ip = _sockaddr2ip(next->ai_addr);
+		if (!r_addresses.find(ip))
+			r_addresses.push_back(ip);
+		next = next->ai_next;
+	} while (next);
 
 	freeaddrinfo(result);
-
-	return ip;
 }
 
 #if defined(WINDOWS_ENABLED)
