@@ -212,6 +212,8 @@ void Node::_propagate_enter_tree() {
 
 	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
+	data.tree->node_added(this);
+
 	data.blocked++;
 	//block while adding children
 
