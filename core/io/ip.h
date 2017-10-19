@@ -82,7 +82,7 @@ public:
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
 	IP_Address get_resolve_item_address(ResolverID p_id) const;
 	Array get_resolve_addresses(ResolverID p_id) const;
-	virtual List<IP_Address> _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) const = 0;
+	virtual void _resolve_hostname(List<IP_Address> & r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const = 0;
 	virtual void get_local_addresses(List<IP_Address> *r_addresses) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 
