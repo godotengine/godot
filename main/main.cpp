@@ -190,6 +190,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\t-optimize <file> : Save an optimized copy of scene to <file>.\n");
 	OS::get_singleton()->print("\t-optimize_preset <preset> : Use a given preset for optimization.\n");
 	OS::get_singleton()->print("\t-export <target> : Export the project using given export target.\n");
+	OS::get_singleton()->print("\t-export_debug : Use together with -export, enables debug mode for the template.\n");
 #endif
 }
 

@@ -55,6 +55,7 @@ gmon.out
 
 # Misc
 .DS_Store
+logs/
 
 # for projects that use SCons for building: http://http://www.scons.org/
 .sconsign.dblite
