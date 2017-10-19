@@ -250,15 +250,16 @@ class ClassStatus:
         for tag in list(c):
             if tag.tag in ['methods']:
                 for sub_tag in list(tag):
-                    methods.append(sub_tag.find('name'))
+                    methods.append(sub_tag.attrib['name'])
             if tag.tag in ['members']:
                 for sub_tag in list(tag):
                     try:
-                        methods.remove(sub_tag.find('setter'))
-                        methods.remove(sub_tag.find('getter'))
+                        if(sub_tag.attrib['setter'].startswith('_') == False):
+                            methods.remove(sub_tag.attrib['setter'])
+                        if(sub_tag.attrib['getter'].startswith('_') == False):
+                            methods.remove(sub_tag.attrib['getter'])
                     except:
                         pass
-
         for tag in list(c):
 
             if tag.tag == 'brief_description':
@@ -269,7 +270,7 @@ class ClassStatus:
 
             elif tag.tag in ['methods', 'signals']:
                 for sub_tag in list(tag):
-                    if sub_tag.find('name') in methods or tag.tag == 'signals':
+                    if sub_tag.attrib['name'] in methods or tag.tag == 'signals':
                         descr = sub_tag.find('description')
                         status.progresses[tag.tag].increment(len(descr.text.strip()) > 0)
             elif tag.tag in ['constants', 'members']:
