@@ -99,6 +99,11 @@ typedef struct godot_variant_call_error {
 	godot_variant_type expected;
 } godot_variant_call_error;
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/array.h>
 #include <gdnative/basis.h>
 #include <gdnative/color.h>
@@ -118,6 +123,10 @@ typedef struct godot_variant_call_error {
 #include <gdnative/vector3.h>
 
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
 

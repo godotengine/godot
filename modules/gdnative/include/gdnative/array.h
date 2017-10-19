@@ -46,10 +46,19 @@ typedef struct {
 } godot_array;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/pool_arrays.h>
 #include <gdnative/variant.h>
 
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void GDAPI godot_array_new(godot_array *r_dest);
 void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);

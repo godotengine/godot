@@ -2165,8 +2165,8 @@ void CanvasItemEditor::_draw_grid() {
 		Vector2 real_grid_offset;
 		if (snap_relative && get_item_count() > 0) {
 			Vector2 topleft = _find_topleftmost_point();
-			real_grid_offset.x = fmod(topleft.x, grid_step.x * Math::pow(2.0, grid_step_multiplier));
-			real_grid_offset.y = fmod(topleft.y, grid_step.y * Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.x = fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.y = fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}

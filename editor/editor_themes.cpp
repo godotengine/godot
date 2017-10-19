@@ -392,7 +392,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
 	}
 	// thumbnail size has changed, so we regenerate the medium sizes
-	if (p_theme != NULL && fabs(p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
+	if (p_theme != NULL && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
 		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
 	}
 
