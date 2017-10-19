@@ -46,8 +46,17 @@ typedef struct {
 } godot_string;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/gdnative.h>
 #include <gdnative/variant.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void GDAPI godot_string_new(godot_string *r_dest);
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
