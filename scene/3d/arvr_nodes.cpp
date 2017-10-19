@@ -204,7 +204,7 @@ void ARVRController::_notification(int p_what) {
 					int mask = 1;
 					// check button states
 					for (int i = 0; i < 16; i++) {
-						bool was_pressed = (button_states && mask) == mask;
+						bool was_pressed = (button_states & mask) == mask;
 						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, i);
 
 						if (!was_pressed && is_pressed) {
@@ -336,6 +336,7 @@ String ARVRController::get_configuration_warning() const {
 ARVRController::ARVRController() {
 	controller_id = 0;
 	is_active = true;
+	button_states = 0;
 };
 
 ARVRController::~ARVRController(){
