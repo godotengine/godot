@@ -45,8 +45,17 @@ typedef struct {
 } godot_quat;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/gdnative.h>
 #include <gdnative/vector3.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w);
 void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector3 *p_axis, const godot_real p_angle);
