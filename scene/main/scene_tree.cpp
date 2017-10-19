@@ -85,6 +85,11 @@ void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
 }
 
+void SceneTree::node_added(Node *p_node) {
+
+	emit_signal(node_added_name, p_node);
+}
+
 void SceneTree::node_removed(Node *p_node) {
 
 	if (current_scene == p_node) {
@@ -2189,6 +2194,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_server_disconnected"), &SceneTree::_server_disconnected);
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node")));
 	ADD_SIGNAL(MethodInfo("screen_resized"));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node")));
@@ -2260,6 +2266,7 @@ SceneTree::SceneTree() {
 	root = NULL;
 	current_frame = 0;
 	tree_changed_name = "tree_changed";
+	node_added_name = "node_added";
 	node_removed_name = "node_removed";
 	ugc_locked = false;
 	call_lock = 0;
