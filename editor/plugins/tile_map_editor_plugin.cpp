@@ -229,7 +229,7 @@ struct _PaletteEntry {
 		return name < p_rhs.name;
 	}
 };
-}
+} // namespace
 
 void TileMapEditor::_update_palette() {
 
@@ -1152,7 +1152,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void TileMapEditor::_canvas_draw() {
+void TileMapEditor::forward_draw_over_canvas(Control *p_canvas) {
 
 	if (!node)
 		return;
@@ -1379,8 +1379,6 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	if (p_tile_map) {
 
 		node = Object::cast_to<TileMap>(p_tile_map);
-		if (!canvas_item_editor->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->connect("draw", this, "_canvas_draw");
 		if (!canvas_item_editor->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
 			canvas_item_editor->connect("mouse_entered", this, "_canvas_mouse_enter");
 		if (!canvas_item_editor->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
@@ -1391,8 +1389,6 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	} else {
 		node = NULL;
 
-		if (canvas_item_editor->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->disconnect("draw", this, "_canvas_draw");
 		if (canvas_item_editor->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
 			canvas_item_editor->disconnect("mouse_entered", this, "_canvas_mouse_enter");
 		if (canvas_item_editor->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
@@ -1428,7 +1424,6 @@ void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_text_changed"), &TileMapEditor::_text_changed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"), &TileMapEditor::_sbox_input);
 	ClassDB::bind_method(D_METHOD("_menu_option"), &TileMapEditor::_menu_option);
-	ClassDB::bind_method(D_METHOD("_canvas_draw"), &TileMapEditor::_canvas_draw);
 	ClassDB::bind_method(D_METHOD("_canvas_mouse_enter"), &TileMapEditor::_canvas_mouse_enter);
 	ClassDB::bind_method(D_METHOD("_canvas_mouse_exit"), &TileMapEditor::_canvas_mouse_exit);
 	ClassDB::bind_method(D_METHOD("_tileset_settings_changed"), &TileMapEditor::_tileset_settings_changed);

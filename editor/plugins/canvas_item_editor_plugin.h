@@ -410,9 +410,10 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
 
 	void _draw_viewport();
-
-	void _viewport_base_gui_input(const Ref<InputEvent> &p_event);
 	void _draw_viewport_base();
+
+	void _gui_input_viewport(const Ref<InputEvent> &p_event);
+	void _gui_input_viewport_base(const Ref<InputEvent> &p_event);
 
 	void _focus_selection(int p_op);
 
