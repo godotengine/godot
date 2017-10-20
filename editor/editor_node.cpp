@@ -5541,6 +5541,10 @@ EditorNode::EditorNode() {
 		Ref<SpatialMaterialConversionPlugin> spatial_mat_convert;
 		spatial_mat_convert.instance();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
+
+		Ref<ParticlesMaterialConversionPlugin> particles_mat_convert;
+		particles_mat_convert.instance();
+		resource_conversion_plugins.push_back(particles_mat_convert);
 	}
 	circle_step_msec = OS::get_singleton()->get_ticks_msec();
 	circle_step_frame = Engine::get_singleton()->get_frames_drawn();
