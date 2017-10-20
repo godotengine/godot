@@ -157,6 +157,12 @@ void Slider::_notification(int p_what) {
 			mouse_inside = false;
 			update();
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: // fallthrough
+		case NOTIFICATION_EXIT_TREE: {
+
+			mouse_inside = false;
+			grab.active = false;
+		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
