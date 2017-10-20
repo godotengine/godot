@@ -375,9 +375,11 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 #endif
 
 	set_ignore_transform_notification(true);
-	set_global_transform(state->get_transform());
-	linear_velocity = state->get_linear_velocity();
-	angular_velocity = state->get_angular_velocity();
+	if (state->has_transform_changed()) {
+		set_global_transform(state->get_transform());
+		linear_velocity = state->get_linear_velocity();
+		angular_velocity = state->get_angular_velocity();
+	}
 	if (sleeping != state->is_sleeping()) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);

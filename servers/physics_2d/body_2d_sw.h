@@ -389,6 +389,8 @@ public:
 		return body->contacts[p_contact_idx].collider_velocity_at_pos;
 	}
 
+	virtual bool has_transform_changed() const { return true; }
+
 	virtual Physics2DDirectSpaceState *get_space_state();
 
 	virtual real_t get_step() const { return step; }
