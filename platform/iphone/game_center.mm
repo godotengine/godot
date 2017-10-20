@@ -117,7 +117,7 @@ Error GameCenter::post_score(Variant p_score) {
 	String category = params["category"];
 
 	NSString *cat_str = [[[NSString alloc] initWithUTF8String:category.utf8().get_data()] autorelease];
-	GKScore *reporter = [[[GKScore alloc] initWithCategory:cat_str] autorelease];
+	GKScore *reporter = [[[GKScore alloc] initWithLeaderboardIdentifier:cat_str] autorelease];
 	reporter.value = score;
 
 	ERR_FAIL_COND_V([GKScore respondsToSelector:@selector(reportScores)], ERR_UNAVAILABLE);
