@@ -239,6 +239,9 @@ def configure(env):
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
 
+    if (platform.system().find("BSD") >= 0):
+        env.Append(LIBS=['execinfo'])
+
     ## Cross-compilation
 
     if (is64 and env["bits"] == "32"):
