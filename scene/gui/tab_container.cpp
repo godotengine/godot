@@ -293,6 +293,8 @@ void TabContainer::_notification(int p_what) {
 }
 
 int TabContainer::_get_tab_width(int p_index) const {
+	if (_get_tabs().empty())
+		return 0;
 	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
 	if (!control || control->is_set_as_toplevel())
 		return 0;
