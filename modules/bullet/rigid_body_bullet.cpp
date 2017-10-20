@@ -341,7 +341,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 }
 
 void RigidBodyBullet::dispatch_callbacks() {
-	if (force_integration_callback) {
+	if (btBody->isActive() && force_integration_callback) {
 		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
 		Variant variantBodyDirect = bodyDirect;
