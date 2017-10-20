@@ -31,7 +31,6 @@
 #ifndef PLUGINSCRIPT_SCRIPT_H
 #define PLUGINSCRIPT_SCRIPT_H
 
-#include <iostream>
 // Godot imports
 #include "core/script_language.h"
 // PluginScript imports
