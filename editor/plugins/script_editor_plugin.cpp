@@ -717,7 +717,10 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	c->set_meta("__editor_pass", ++edit_pass);
 	_update_history_arrows();
 	_update_script_colors();
-	_update_members_overview();
+
+	if (tab_container->get_child_count() > 0) {
+		_update_members_overview();
+	}
 	_update_members_overview_visibility();
 }
 
@@ -2080,7 +2083,9 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	_update_members_overview();
+	if (tab_container->get_child_count() > 0) {
+		_update_members_overview();
+	}
 	_update_script_colors();
 }
 
