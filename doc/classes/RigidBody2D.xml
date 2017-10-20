@@ -113,7 +113,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the body's moment of inertia. This is usually automatically computed from the mass and the shapes. Note that this doesn't seem to work in a [code]_ready[/code] function: it apparently has not been auto-computed yet.
+				Returns the body's moment of inertia. Automatically computed from associated [class CollisionShape2D]s' mass during physic frames. Inertia is not computed the same frame in which the node was added in. Therefore inertia is not computed during the [code]_ready[/code] function.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
@@ -127,7 +127,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the body linear velocity. This changes by physics granularity. See [method set_linear_velocity].
+				Returns the body's linear velocity. This changes when a physics frame has passed, not during a normal update. See [method set_linear_velocity].
 			</description>
 		</method>
 		<method name="get_mass" qualifiers="const">
