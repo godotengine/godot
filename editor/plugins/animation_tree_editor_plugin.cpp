@@ -1117,8 +1117,11 @@ void AnimationTreeEditor::_file_dialog_selected(String p_path) {
 void AnimationTreeEditor::_add_menu_item(int p_item) {
 
 	if (p_item == MENU_GRAPH_CLEAR) {
-
 		//clear
+	} else if (p_item == MENU_GRAPH_AUTO_PLACE_NODES) {
+
+		anim_tree->auto_place_nodes();
+		update();
 	} else if (p_item == MENU_IMPORT_ANIMATIONS) {
 
 		file_op = MENU_IMPORT_ANIMATIONS;
@@ -1289,6 +1292,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	p->add_separator();
 	p->add_item(TTR("Import Animations.."), MENU_IMPORT_ANIMATIONS); // wtf
 	p->add_separator();
+	p->add_item(TTR("Auto Place Nodes"), MENU_GRAPH_AUTO_PLACE_NODES);
 	p->add_item(TTR("Clear"), MENU_GRAPH_CLEAR);
 
 	p->connect("id_pressed", this, "_add_menu_item");
