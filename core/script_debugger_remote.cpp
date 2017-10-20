@@ -1069,15 +1069,19 @@ void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string) 
 	}
 
 	sdr->char_count += allowed_chars;
-
-	if (sdr->char_count >= sdr->max_cps) {
-		s += "\n[output overflow, print less text!]\n";
-	}
+	bool overflowed = sdr->char_count >= sdr->max_cps;
 
 	sdr->mutex->lock();
 	if (!sdr->locking && sdr->tcp_client->is_connected()) {
 
+		if (overflowed)
+			s += "[...]";
+
 		sdr->output_strings.push_back(s);
+
+		if (overflowed) {
+			sdr->output_strings.push_back("[output overflow, print less text!]");
+		}
 	}
 	sdr->mutex->unlock();
 }
