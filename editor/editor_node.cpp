@@ -308,6 +308,8 @@ void EditorNode::_notification(int p_what) {
 		}
 		_update_scene_tabs();
 
+		recent_scenes->set_as_minsize();
+
 		// debugger area
 		if (ScriptEditor::get_singleton()->get_debugger()->is_visible())
 			bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
