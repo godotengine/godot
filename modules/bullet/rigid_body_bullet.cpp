@@ -286,6 +286,7 @@ RigidBodyBullet::RigidBodyBullet()
 	setupBulletCollisionObject(btBody);
 
 	set_mode(PhysicsServer::BODY_MODE_RIGID);
+	set_axis_lock(PhysicsServer::BODY_AXIS_LOCK_DISABLED);
 
 	areasWhereIam.resize(maxAreasWhereIam);
 	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
@@ -366,6 +367,10 @@ void RigidBodyBullet::dispatch_callbacks() {
 		isScratchedSpaceOverrideModificator = false;
 		reload_space_override_modificator();
 	}
+
+	/// Lock axis
+	btBody->setLinearVelocity(btBody->getLinearVelocity() * btBody->getLinearFactor());
+	btBody->setAngularVelocity(btBody->getAngularVelocity() * btBody->getAngularFactor());
 }
 
 void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
@@ -502,24 +507,24 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 	switch (p_mode) {
 		case PhysicsServer::BODY_MODE_KINEMATIC:
 			mode = PhysicsServer::BODY_MODE_KINEMATIC;
-			btBody->setAngularFactor(1);
+			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0);
 			init_kinematic_utilities();
 			break;
 		case PhysicsServer::BODY_MODE_STATIC:
 			mode = PhysicsServer::BODY_MODE_STATIC;
-			btBody->setAngularFactor(1);
+			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0);
 			break;
 		case PhysicsServer::BODY_MODE_RIGID: {
 			mode = PhysicsServer::BODY_MODE_RIGID;
-			btBody->setAngularFactor(1);
+			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0 == mass ? 1 : mass);
 			break;
 		}
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
-			btBody->setAngularFactor(0);
+			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0 == mass ? 1 : mass);
 			break;
 		}
@@ -658,14 +663,25 @@ Vector3 RigidBodyBullet::get_applied_torque() const {
 }
 
 void RigidBodyBullet::set_axis_lock(PhysicsServer::BodyAxisLock p_lock) {
-	if (PhysicsServer::BODY_AXIS_LOCK_DISABLED == p_lock) {
+	axis_lock = p_lock;
+
+	if (PhysicsServer::BODY_AXIS_LOCK_DISABLED == axis_lock) {
 		btBody->setLinearFactor(btVector3(1., 1., 1.));
-	} else if (PhysicsServer::BODY_AXIS_LOCK_X == p_lock) {
+		btBody->setAngularFactor(btVector3(1., 1., 1.));
+	} else if (PhysicsServer::BODY_AXIS_LOCK_X == axis_lock) {
 		btBody->setLinearFactor(btVector3(0., 1., 1.));
-	} else if (PhysicsServer::BODY_AXIS_LOCK_Y == p_lock) {
+		btBody->setAngularFactor(btVector3(1., 0., 0.));
+	} else if (PhysicsServer::BODY_AXIS_LOCK_Y == axis_lock) {
 		btBody->setLinearFactor(btVector3(1., 0., 1.));
-	} else if (PhysicsServer::BODY_AXIS_LOCK_Z == p_lock) {
+		btBody->setAngularFactor(btVector3(0., 1., 0.));
+	} else if (PhysicsServer::BODY_AXIS_LOCK_Z == axis_lock) {
 		btBody->setLinearFactor(btVector3(1., 1., 0.));
+		btBody->setAngularFactor(btVector3(0., 0., 1.));
+	}
+
+	if (PhysicsServer::BODY_MODE_CHARACTER == mode) {
+		/// When character lock angular
+		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	}
 }
 

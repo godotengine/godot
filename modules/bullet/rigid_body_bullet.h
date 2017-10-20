@@ -186,6 +186,7 @@ private:
 	KinematicUtilities *kinematic_utilities;
 
 	PhysicsServer::BodyMode mode;
+	PhysicsServer::BodyAxisLock axis_lock;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	real_t mass;
