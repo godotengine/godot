@@ -91,6 +91,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		Vector<Control *> tabs = _get_tabs();
+		if (tabs.empty())
+			return;
 
 		// Handle navigation buttons.
 		if (buttons_visible_cache) {
@@ -293,8 +295,8 @@ void TabContainer::_notification(int p_what) {
 }
 
 int TabContainer::_get_tab_width(int p_index) const {
-	if (_get_tabs().empty())
-		return 0;
+
+	ERR_FAIL_COND_V(p_index >= _get_tabs().size(), 0);
 	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
 	if (!control || control->is_set_as_toplevel())
 		return 0;
