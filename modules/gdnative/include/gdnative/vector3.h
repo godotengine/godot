@@ -45,8 +45,17 @@ typedef struct {
 } godot_vector3;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/basis.h>
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
 	GODOT_VECTOR3_AXIS_X,
