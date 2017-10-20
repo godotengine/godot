@@ -43,11 +43,13 @@ class GameCenter : public Object {
 
 	List<Variant> pending_events;
 
-	bool connected;
+	bool authenticated;
+
+	void return_connect_error(const char *p_error_description);
 
 public:
-	Error connect();
-	bool is_connected();
+	void connect();
+	bool is_authenticated();
 
 	Error post_score(Variant p_score);
 	Error award_achievement(Variant p_params);
@@ -55,6 +57,7 @@ public:
 	void request_achievements();
 	void request_achievement_descriptions();
 	Error show_game_center(Variant p_params);
+	Error request_identity_verification_signature();
 
 	void game_center_closed();
 
