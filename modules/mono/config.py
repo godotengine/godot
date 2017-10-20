@@ -125,7 +125,11 @@ def configure(env):
             else:
                 env.Append(LIBS=[mono_lib])
 
-            env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
+            if sys.platform == "darwin":
+                env.Append(LIBS=['iconv', 'pthread'])
+            elif sys.platform == "linux" or sys.platform == "linux2":
+                env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
+
         else:
             if mono_static:
                 raise RuntimeError('mono-static: Not supported with pkg-config. Specify a mono prefix manually')
