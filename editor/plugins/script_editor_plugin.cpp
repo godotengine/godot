@@ -1169,6 +1169,8 @@ void ScriptEditor::_notification(int p_what) {
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
+
+			recent_scripts->set_as_minsize();
 		} break;
 
 		default:
