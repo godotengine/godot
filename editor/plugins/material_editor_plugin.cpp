@@ -450,8 +450,16 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
-		smat->set_shader_param(E->get().name, value);
+
+		// Texture parameter has to be treated specially since SpatialMaterial saved it
+		// as RID but ShaderMaterial needs Texture itself
+		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
+		if (texture.is_valid()) {
+			smat->set_shader_param(E->get().name, texture);
+		} else {
+			Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+			smat->set_shader_param(E->get().name, value);
+		}
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
