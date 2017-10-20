@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <stdlib.h>
 // Godot imports
 #include "core/os/file_access.h"
 #include "core/os/os.h"
