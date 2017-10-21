@@ -1073,7 +1073,7 @@ LIGHT_SHADER_CODE
 		float cNdotH = max(dot(N,H), 0.0);
 		float cLdotH = max(dot(L,H), 0.0);
 
-#if defined(LIGHT_USE_ANISOTROPY)
+# if defined(LIGHT_USE_ANISOTROPY)
 
 		float aspect = sqrt(1.0-anisotropy*0.9);
 		float rx = roughness/aspect;
@@ -1085,11 +1085,11 @@ LIGHT_SHADER_CODE
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
 		float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
 
-#else
+# else
 		float alpha = roughness * roughness;
 		float D = D_GGX(cNdotH, alpha);
 		float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
-#endif
+# endif
 		// F
 		float F0 = 1.0; // FIXME
 		float cLdotH5 = SchlickFresnel(cLdotH);
@@ -1115,7 +1115,9 @@ LIGHT_SHADER_CODE
 			float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 
 
-			specular_light += .25*clearcoat*Gr*Fr*Dr;
+			float specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
+
+			specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 		}
 #endif
 	}
