@@ -7,20 +7,22 @@
 # Andinawan Asa <asaandinawan@gmail.com>, 2016.
 # Damar S. M <the.last.walla@gmail.com>, 2017.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
+# Sofyan Sugianto <sofyanartem@gmail.com>, 2017.
+# Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-18 13:18+0000\n"
-"Last-Translator: Damar S. M. <the.last.walla@gmail.com>\n"
+"PO-Revision-Date: 2017-09-13 10:49+0000\n"
+"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.11-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -35,19 +37,16 @@ msgid "Move Add Key"
 msgstr "Pindahkan Kunci Tambah"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "Ubah Transisi Anim"
+msgstr "Ubah Transisi Animasi"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Transform"
-msgstr "Ubah Transformasi Anim"
+msgstr "Ubah Transformasi Animasi"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Value"
-msgstr "Ubah Nilai Anim"
+msgstr "Ubah Nilai Animasi"
 
 #: editor/animation_editor.cpp
 #, fuzzy
@@ -408,7 +407,7 @@ msgstr "Deskripsi:"
 #: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
 #: editor/project_manager.cpp
 msgid "Install"
-msgstr ""
+msgstr "Pasang"
 
 #: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
 #: editor/connections_dialog.cpp editor/export_template_manager.cpp
@@ -433,8 +432,9 @@ msgid "Can't resolve."
 msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Gangguan koneks, silakan coba lagi."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -452,7 +452,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Tidak ada respon."
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -647,11 +647,11 @@ msgstr "Kembali:"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr "Pergi ke Barisan"
+msgstr "Pergi ke Baris"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Nomor Barisan:"
+msgstr "Baris Nomor:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
@@ -664,11 +664,11 @@ msgstr "Diganti kejadian (kejadian-kejadian) %d."
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr "Tukar"
+msgstr "Ubah"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr "Tukar Semua"
+msgstr "Ubah Semua"
 
 #: editor/code_editor.cpp
 msgid "Match Case"
@@ -1816,12 +1816,14 @@ msgid "Save & Quit"
 msgstr "Simpan sebuah File"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "Simpan perubahan saat ini sebelum keluar?"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "Simpan perubahan saat ini sebelum membuka Manajer Projek?"
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2221,55 +2223,58 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Object properties."
-msgstr ""
+msgstr "Properti Objek."
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "Berkas Sistem"
 
 #: editor/editor_node.cpp editor/node_dock.cpp
+#, fuzzy
 msgid "Node"
-msgstr ""
+msgstr "Titik"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Luaran"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "Jangan Simpan"
 
 #: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
 msgid "Re-Import"
-msgstr ""
+msgstr "Impor Ulang"
 
 #: editor/editor_node.cpp editor/editor_plugin_settings.cpp
 msgid "Update"
-msgstr ""
+msgstr "Perbarui"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Impor Templat dari Berkas ZIP"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "Ekspor Projek"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "Ekspor Pustaka"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Merge With Existing"
-msgstr ""
+msgstr "Gabung dengan yang Ada"
 
 #: editor/editor_node.cpp
 msgid "Password:"
-msgstr ""
+msgstr "Sandi:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr ""
+msgstr "Buka & Jalankan Skrip"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2277,40 +2282,39 @@ msgid "New Inherited"
 msgstr "Scene Turunan Baru.."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Load Errors"
-msgstr ""
+msgstr "Muat Galat"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr ""
+msgstr "Pilih"
 
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Open 2D Editor"
-msgstr "Buka sebuah Direktori"
+msgstr "Buka Penyunting 2D"
 
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Open 3D Editor"
-msgstr "Buka sebuah Direktori"
+msgstr "Buka Penyunting 3D"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Script Editor"
-msgstr "Editor Ketergantungan"
+msgstr "Buka Penyunting Skrip"
 
 #: editor/editor_node.cpp
 msgid "Open Asset Library"
-msgstr ""
+msgstr "Buka Pustaka Aset"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the next Editor"
-msgstr "Editor Ketergantungan"
+msgstr "Buka Penyunting Selanjutnya"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr ""
+msgstr "Buka Penyunting Sebelumnya"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2586,11 +2590,11 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Pick New Name and Location For:"
-msgstr ""
+msgstr "Tentukan Nama dan Lokasi Baru untuk:"
 
 #: editor/filesystem_dock.cpp
 msgid "No files selected!"
-msgstr ""
+msgstr "Tidak ada berkas dipilih!"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2602,7 +2606,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
-msgstr ""
+msgstr "Tampilkan di Manajer Berkas"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2622,11 +2626,11 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Rename or Move.."
-msgstr ""
+msgstr "Ubah Nama atau Pindahkan.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To.."
-msgstr ""
+msgstr "Pindah Ke.."
 
 #: editor/filesystem_dock.cpp
 msgid "Info"
@@ -2634,19 +2638,19 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Import.."
-msgstr ""
+msgstr "Impor Ulang.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
-msgstr ""
+msgstr "Direktori Sebelumnya"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Directory"
-msgstr ""
+msgstr "Direktori Selanjutnya"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr ""
+msgstr "Pindai Ulang Berkas Sistem"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle folder status as Favorite"
@@ -2657,18 +2661,21 @@ msgid "Instance the selected scene(s) as child of the selected node."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
 msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"Memindai Berkas,\n"
+"Silakan Tunggu.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "Pindahkan"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "Tambahkan ke Grup"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
@@ -3113,15 +3120,16 @@ msgstr ""
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture Format"
-msgstr ""
+msgstr "Format Tekstur"
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Texture Compression Quality (WebP):"
 msgstr ""
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
+#, fuzzy
 msgid "Texture Options"
-msgstr ""
+msgstr "Opsi Tekstur"
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Please specify some files!"
@@ -3133,7 +3141,7 @@ msgstr ""
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Error importing:"
-msgstr ""
+msgstr "Galat saat mengimpor:"
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Only one file is required for large texture."
@@ -3141,7 +3149,7 @@ msgstr ""
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Max Texture Size:"
-msgstr ""
+msgstr "Ukuran Tekstur Maksimum:"
 
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 msgid "Import Textures for Atlas (2D)"
@@ -3513,7 +3521,7 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animasi"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "New name:"
@@ -4408,7 +4416,7 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr ""
+msgstr "Galat saat memuat gambar:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image.."
@@ -4429,7 +4437,7 @@ msgstr ""
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr ""
+msgstr "Partikel"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -4564,16 +4572,19 @@ msgid "Curve Point #"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Point Position"
-msgstr ""
+msgstr "Hapus Sinyal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve In Position"
-msgstr ""
+msgstr "Hapus Sinyal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Out Position"
-msgstr ""
+msgstr "Hapus Sinyal"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
@@ -4792,15 +4803,15 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
-msgstr ""
+msgstr "Berkas"
 
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "New"
-msgstr ""
+msgstr "Baru"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr ""
+msgstr "Simpan Semua"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
@@ -4816,24 +4827,23 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
-msgstr ""
+msgstr "Muat Ulang Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
+msgstr "Simpan Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As"
-msgstr ""
+msgstr "Simpan Tema Sebagai"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
-msgstr ""
+msgstr "Tutup Dokumentasi"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close All"
-msgstr "Tutup"
+msgstr "Tutup Semua"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -4844,13 +4854,13 @@ msgstr "Beralih Favorit"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Find.."
-msgstr ""
+msgstr "Cari.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "Pencarian Selanjutnya"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
@@ -5247,51 +5257,51 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View."
-msgstr ""
+msgstr "Tampilan Bawah."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom"
-msgstr ""
+msgstr "Bawah"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
-msgstr ""
+msgstr "Tampilan Atas."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "Atas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
-msgstr ""
+msgstr "Tampilan Belakang."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear"
-msgstr ""
+msgstr "Belakang"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
-msgstr ""
+msgstr "Tampilan Depan."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front"
-msgstr ""
+msgstr "Depan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View."
-msgstr ""
+msgstr "Tampilan Kiri."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left"
-msgstr ""
+msgstr "Kiri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right View."
-msgstr ""
+msgstr "Tampilan Kanan."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right"
-msgstr ""
+msgstr "Kanan"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
@@ -5816,7 +5826,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Ikon"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Style"
@@ -5824,7 +5834,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr ""
+msgstr "Warna"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -6046,23 +6056,23 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Impor Projek yang Sudah Ada"
 
 #: editor/project_manager.cpp
 msgid "Project Path (Must Exist):"
-msgstr ""
+msgstr "Lokasi Projek (Harus Ada):"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Nama Projek:"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Buat Projek Baru"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr ""
+msgstr "Lokasi Projek:"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
@@ -6073,8 +6083,9 @@ msgid "Browse"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "New Game Project"
-msgstr ""
+msgstr "Projek Baru Permainan"
 
 #: editor/project_manager.cpp
 msgid "That's a BINGO!"
@@ -6085,8 +6096,9 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Are you sure to open more than one project?"
-msgstr ""
+msgstr "Apakah Anda yakin membuka lebih dari satu projek?"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6106,8 +6118,9 @@ msgid ""
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Are you sure to run more than one project?"
-msgstr ""
+msgstr "Apakah Anda yakin menjalankan lebih dari satu projek?"
 
 #: editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
@@ -6121,23 +6134,23 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr ""
+msgstr "Daftar Projek"
 
 #: editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Jalankan"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Pindai"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr ""
+msgstr "Pilih Berkas untuk Dipindai"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr ""
+msgstr "Projek Baru"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6146,7 +6159,7 @@ msgstr "Hapus Pilihan"
 
 #: editor/project_manager.cpp
 msgid "Exit"
-msgstr ""
+msgstr "Keluar"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6460,7 +6473,7 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "File.."
-msgstr ""
+msgstr "Berkas.."
 
 #: editor/property_editor.cpp
 msgid "Dir.."
@@ -6481,12 +6494,14 @@ msgid "New Script"
 msgstr "Scene Baru"
 
 #: editor/property_editor.cpp
+#, fuzzy
 msgid "Show in File System"
-msgstr ""
+msgstr "Tampilkan dalam Manajer Berkas"
 
 #: editor/property_editor.cpp
+#, fuzzy
 msgid "Error loading file: Not a resource!"
-msgstr ""
+msgstr "Gagal saat memuat berkas: Bukan berkas resource!"
 
 #: editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -7945,8 +7960,9 @@ msgid "Raw Mode"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+#, fuzzy
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Tambah warna sekarang sebagai preset"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7978,10 +7994,13 @@ msgid ""
 msgstr ""
 
 #: scene/main/scene_tree.cpp
+#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
 msgstr ""
+"Lingkungan Baku yang ditetapkan di Pengaturan Proyek (Rendering -> Viewport -"
+"> Lingkungan Baku) tidak dapat dimuat"
 
 #: scene/main/viewport.cpp
 #, fuzzy

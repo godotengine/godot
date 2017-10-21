@@ -3,31 +3,33 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
+# João Graça <jgraca95@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-11 15:42+0000\n"
-"Last-Translator: António Sarmento <antonio.luis.sarmento@gmail.com>\n"
+"PO-Revision-Date: 2017-09-28 16:47+0000\n"
+"Last-Translator: João Graça <jgraca95@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "desativado"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
 msgstr ""
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Move Add Key"
-msgstr ""
+msgstr "Mover Chave Adcionada"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -4451,16 +4453,19 @@ msgid "Curve Point #"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Point Position"
-msgstr ""
+msgstr "Remover Sinal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve In Position"
-msgstr ""
+msgstr "Remover Sinal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Out Position"
-msgstr ""
+msgstr "Remover Sinal"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
