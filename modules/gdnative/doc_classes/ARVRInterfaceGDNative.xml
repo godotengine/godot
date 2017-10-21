@@ -11,15 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="set_gdnative_library">
-			<return type="void">
-			</return>
-			<argument index="0" name="library" type="GDNativeLibrary">
-			</argument>
-			<description>
-				Bind this GDNative library to our interface. The library must be a GDNative ARVR Interface for this to work.
-			</description>
-		</method>
 	</methods>
 	<constants>
 	</constants>
