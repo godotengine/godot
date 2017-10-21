@@ -1085,7 +1085,7 @@
 		</constant>
 		<constant name="DIFFUSE_TOON" value="4">
 		</constant>
-		<constant name="SPECULAR_SCHLICK_GGX" value="0">
+		<constant name="SPECULAR_GGX" value="0">
 		</constant>
 		<constant name="SPECULAR_BLINN" value="1">
 		</constant>
