@@ -268,7 +268,7 @@ RigidBodyBullet::RigidBodyBullet()
 	  angularDamp(0),
 	  can_sleep(true),
 	  force_integration_callback(NULL),
-	  isScratched(false),
+	  isTransformChanged(false),
 	  maxCollisionsDetection(0),
 	  collisionsCount(0),
 	  maxAreasWhereIam(10),
@@ -324,7 +324,7 @@ void RigidBodyBullet::reload_body() {
 void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
-		isScratched = false;
+		isTransformChanged = false;
 
 		// Remove all eventual constraints
 		assert_no_constraints();
@@ -341,7 +341,9 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 }
 
 void RigidBodyBullet::dispatch_callbacks() {
-	if (btBody->isActive() && force_integration_callback) {
+	/// The check isTransformChanged is necessary in order to call integrated forces only when the first transform is sent
+	if (force_integration_callback && isTransformChanged && btBody->isActive()) {
+
 		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
 		Variant variantBodyDirect = bodyDirect;
@@ -357,10 +359,6 @@ void RigidBodyBullet::dispatch_callbacks() {
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
 			obj->call(force_integration_callback->method, vp, argc, responseCallError);
 		}
-	}
-
-	if (isScratched) {
-		isScratched = false;
 	}
 
 	if (isScratchedSpaceOverrideModificator || 0 < countGravityPointSpaces) {
@@ -389,7 +387,7 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 }
 
 void RigidBodyBullet::scratch() {
-	isScratched = true;
+	isTransformChanged = true;
 }
 
 void RigidBodyBullet::scratch_space_override_modificator() {

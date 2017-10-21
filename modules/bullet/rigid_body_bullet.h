@@ -208,7 +208,7 @@ private:
 	int countGravityPointSpaces;
 	bool isScratchedSpaceOverrideModificator;
 
-	bool isScratched;
+	bool isTransformChanged;
 
 	ForceIntegrationCallback *force_integration_callback;
 
