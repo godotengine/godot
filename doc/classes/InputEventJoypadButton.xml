@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Input event type for joypad button events.
+		Input event for gamepad buttons.
 	</brief_description>
 	<description>
+		Input event type for gamepad buttons. For joysticks see [InputEventJoypadMotion].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -49,13 +51,13 @@
 	</methods>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
-			Joypad button identifier, one of the JOY_BUTTON_* constants in [@Global Scope].
+			Button identifier. One of the [code]JOY_BUTTON_*[/code] constants from [@global Scope].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			Pressed state of the joypad button.
+			If [code]true[/code] the button's state is pressed. If [code]false[/code] the button's state is released.
 		</member>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure">
-			Intensity of the button pressure, ranges from 0 to 1.0.
+			Represents the pressure the user puts on the button with his finger, if the controller supports it. Ranges from [code]0[/code] to [code]1[/code].
 		</member>
 	</members>
 	<constants>

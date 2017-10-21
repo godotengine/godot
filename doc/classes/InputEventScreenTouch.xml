@@ -2,10 +2,13 @@
 <class name="InputEventScreenTouch" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
 		Input event type for screen touch events.
+		(only available on mobile devices)
 	</brief_description>
 	<description>
+		Stores multi-touch press/release information. Supports touch press, touch release and [member index] for multi-touch count and order.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -49,13 +52,13 @@
 	</methods>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index">
-			Touch event index in the case of a multi-touch event.
+			Touch index in the case of a multi-touch event. One index = one finger.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position">
-			Position of the touch event.
+			Touch position.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			Pressed state of the touch event.
+			If [code]true[/code] the touch's state is pressed. If [code]false[/code] the touch's state is released.
 		</member>
 	</members>
 	<constants>

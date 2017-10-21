@@ -2,10 +2,13 @@
 <class name="InputEventScreenDrag" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
 		Input event type for screen drag events.
+		(only available on mobile devices)
 	</brief_description>
 	<description>
+		Contains screen drag informations. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -72,13 +75,13 @@
 			Drag event index in the case of a multi-drag event.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position">
-			Position of the drag event.
+			Drag position.
 		</member>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative">
-			Position of the drag event relative to its start position.
+			Drag position relative to its start position.
 		</member>
 		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed">
-			Speed of the drag event.
+			Drag speed.
 		</member>
 	</members>
 	<constants>
