@@ -310,11 +310,11 @@ def make_method(
 
     if declare or pp == None:
 
-        s = ' **' + m.attrib['name'] + '** '
+        s = '**' + m.attrib['name'] + '** '
     else:
         s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
 
-    s += ' **(**'
+    s += '**(**'
     argfound = False
     for a in mdata['argidx']:
         arg = mdata[a]
@@ -334,10 +334,6 @@ def make_method(
         if 'default' in arg.attrib:
             s += '=' + arg.attrib['default']
 
-        argfound = True
-
-    if argfound:
-        s += ' '
     s += ' **)**'
 
     if 'qualifiers' in m.attrib:
