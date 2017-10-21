@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a Filter to the Audio Bus.
 	</brief_description>
 	<description>
+		The effect lets all frequences other than the [code]Cutoff HZ[/code] pass.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,24 +15,28 @@
 			<return type="float">
 			</return>
 			<description>
+				Return the current cutoff frequence.
 			</description>
 		</method>
 		<method name="get_db" qualifiers="const">
 			<return type="int" enum="AudioEffectFilter.FilterDB">
 			</return>
 			<description>
+				Return the constant of the current filter's dB.
 			</description>
 		</method>
 		<method name="get_gain" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Return the current amount of gain.
 			</description>
 		</method>
 		<method name="get_resonance" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Return the current amount of resonance.
 			</description>
 		</method>
 		<method name="set_cutoff">
@@ -39,6 +45,7 @@
 			<argument index="0" name="freq" type="float">
 			</argument>
 			<description>
+				Set the threshold frequence in [code]float[/code] that the filter uses to apply its effect.
 			</description>
 		</method>
 		<method name="set_db">
@@ -47,6 +54,7 @@
 			<argument index="0" name="amount" type="int" enum="AudioEffectFilter.FilterDB">
 			</argument>
 			<description>
+				Set the [code]amount[/code] of dB in [code]int[/code] for the effect's volume.
 			</description>
 		</method>
 		<method name="set_gain">
@@ -55,6 +63,7 @@
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
+				Set the [code]amount[/code] of gain in [code]float[/code] for the frequence's gain.
 			</description>
 		</method>
 		<method name="set_resonance">
@@ -63,17 +72,22 @@
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
+				Set the [code]amount[/code] of resonance in [code]float[/code] for the overtones.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
+			Threshold frequence for the filter.
 		</member>
 		<member name="dB" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
+			Volume of the effect after the filter in decibels.
 		</member>
 		<member name="gain" type="float" setter="set_gain" getter="get_gain">
+			Gain amount of the frequences after the filter.
 		</member>
 		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
+			Amount of boost in the overtones near the cutoff frequence.
 		</member>
 	</members>
 	<constants>

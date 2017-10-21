@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectHighPassFilter" inherits="AudioEffectFilter" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a High Pass filter to the Audio Bus.
 	</brief_description>
 	<description>
+		The effect cuts frequences lower than the [code]Cutoff HZ[/code], and lets higher frequences pass.
 	</description>
 	<tutorials>
 	</tutorials>

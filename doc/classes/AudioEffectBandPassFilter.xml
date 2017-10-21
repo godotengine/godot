@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectBandPassFilter" inherits="AudioEffectFilter" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a Band Pass Filter to the Audio Bus.
 	</brief_description>
 	<description>
+		The effect attenuates the frequences inside of a range around the [code]Cutoff HZ[/code], and cuts frequences out of this band.
 	</description>
 	<tutorials>
 	</tutorials>
