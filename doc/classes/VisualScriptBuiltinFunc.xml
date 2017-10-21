@@ -114,97 +114,101 @@
 		<constant name="MATH_LERP" value="26">
 			Return a number linearly interpolated between the first two inputs, based on the third input. Uses the formula [code]a + (a - b) * t[/code].
 		</constant>
-		<constant name="MATH_DECTIME" value="27">
+		<constant name="MATH_INVERSE_LERP" value="27">
+		</constant>
+		<constant name="MATH_RANGE_LERP" value="28">
+		</constant>
+		<constant name="MATH_DECTIME" value="29">
 			Return the result of 'value' decreased by 'step' * 'amount'.
 		</constant>
-		<constant name="MATH_RANDOMIZE" value="28">
+		<constant name="MATH_RANDOMIZE" value="30">
 			Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 		</constant>
-		<constant name="MATH_RAND" value="29">
+		<constant name="MATH_RAND" value="31">
 			Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use it with the remainder function.
 		</constant>
-		<constant name="MATH_RANDF" value="30">
+		<constant name="MATH_RANDF" value="32">
 			Return a random floating-point value between 0 and 1. To obtain a random value between 0 to N, you can use it with multiplication.
 		</constant>
-		<constant name="MATH_RANDOM" value="31">
+		<constant name="MATH_RANDOM" value="33">
 			Return a random floating-point value between the two inputs.
 		</constant>
-		<constant name="MATH_SEED" value="32">
+		<constant name="MATH_SEED" value="34">
 			Set the seed for the random number generator.
 		</constant>
-		<constant name="MATH_RANDSEED" value="33">
+		<constant name="MATH_RANDSEED" value="35">
 			Return a random value from the given seed, along with the new seed.
 		</constant>
-		<constant name="MATH_DEG2RAD" value="34">
+		<constant name="MATH_DEG2RAD" value="36">
 			Convert the input from degrees to radians.
 		</constant>
-		<constant name="MATH_RAD2DEG" value="35">
+		<constant name="MATH_RAD2DEG" value="37">
 			Convert the input from radians to degrees.
 		</constant>
-		<constant name="MATH_LINEAR2DB" value="36">
+		<constant name="MATH_LINEAR2DB" value="38">
 			Convert the input from linear volume to decibel volume.
 		</constant>
-		<constant name="MATH_DB2LINEAR" value="37">
+		<constant name="MATH_DB2LINEAR" value="39">
 			Convert the input from decibel volume to linear volume.
 		</constant>
-		<constant name="LOGIC_MAX" value="38">
+		<constant name="LOGIC_MAX" value="40">
 			Return the greater of the two numbers, also known as their maximum.
 		</constant>
-		<constant name="LOGIC_MIN" value="39">
+		<constant name="LOGIC_MIN" value="41">
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
-		<constant name="LOGIC_CLAMP" value="40">
+		<constant name="LOGIC_CLAMP" value="42">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to `min(max(input, range_low), range_high)`
 		</constant>
-		<constant name="LOGIC_NEAREST_PO2" value="41">
+		<constant name="LOGIC_NEAREST_PO2" value="43">
 			Return the nearest power of 2 to the input.
 		</constant>
-		<constant name="OBJ_WEAKREF" value="42">
+		<constant name="OBJ_WEAKREF" value="44">
 			Create a [WeakRef] from the input.
 		</constant>
-		<constant name="FUNC_FUNCREF" value="43">
+		<constant name="FUNC_FUNCREF" value="45">
 			Create a [FuncRef] from the input.
 		</constant>
-		<constant name="TYPE_CONVERT" value="44">
+		<constant name="TYPE_CONVERT" value="46">
 			Convert between types.
 		</constant>
-		<constant name="TYPE_OF" value="45">
+		<constant name="TYPE_OF" value="47">
 			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
-		<constant name="TYPE_EXISTS" value="46">
+		<constant name="TYPE_EXISTS" value="48">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
-		<constant name="TEXT_CHAR" value="47">
+		<constant name="TEXT_CHAR" value="49">
 			Return a character with the given ascii value.
 		</constant>
-		<constant name="TEXT_STR" value="48">
+		<constant name="TEXT_STR" value="50">
 			Convert the input to a string.
 		</constant>
-		<constant name="TEXT_PRINT" value="49">
+		<constant name="TEXT_PRINT" value="51">
 			Print the given string to the output window.
 		</constant>
-		<constant name="TEXT_PRINTERR" value="50">
+		<constant name="TEXT_PRINTERR" value="52">
 			Print the given string to the standard error output.
 		</constant>
-		<constant name="TEXT_PRINTRAW" value="51">
+		<constant name="TEXT_PRINTRAW" value="53">
 			Print the given string to the standard output, without adding a newline.
 		</constant>
-		<constant name="VAR_TO_STR" value="52">
+		<constant name="VAR_TO_STR" value="54">
 			Serialize a [Variant] to a string.
 		</constant>
-		<constant name="STR_TO_VAR" value="53">
+		<constant name="STR_TO_VAR" value="55">
 			Deserialize a [Variant] from a string serialized using [VAR_TO_STR].
 		</constant>
-		<constant name="VAR_TO_BYTES" value="54">
+		<constant name="VAR_TO_BYTES" value="56">
 			Serialize a [Variant] to a [PoolByteArray].
 		</constant>
-		<constant name="BYTES_TO_VAR" value="55">
+		<constant name="BYTES_TO_VAR" value="57">
 			Deserialize a [Variant] from a [PoolByteArray] serialized using [VAR_TO_BYTES].
 		</constant>
-		<constant name="COLORN" value="56">
+		<constant name="COLORN" value="58">
 			Return the [Color] with the given name and alpha ranging from 0 to 1. Note: names are defined in color_names.inc.
 		</constant>
-		<constant name="FUNC_MAX" value="57">
+		<constant name="FUNC_MAX" value="59">
 			The maximum value the [member function] property can have.
 		</constant>
 	</constants>

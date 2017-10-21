@@ -313,7 +313,7 @@
 			</argument>
 			<argument index="2" name="minsize" type="Vector2">
 			</argument>
-			<argument index="3" name="shrink" type="int" default="1">
+			<argument index="3" name="shrink" type="float" default="1">
 			</argument>
 			<description>
 			</description>
@@ -348,6 +348,12 @@
 		</signal>
 		<signal name="network_peer_disconnected">
 			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="node_added">
+			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
 			</description>

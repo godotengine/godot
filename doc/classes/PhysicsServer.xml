@@ -376,14 +376,15 @@
 			</argument>
 			<description>
 				Returns the physics layer or layers a body can collide with.
--                       </description>
--               </method>
--               <method name="body_get_direct_state">
--                       <return type="PhysicsDirectBodyState">
--                       </return>
--                       <argument index="0" name="body" type="RID">
--                       </argument>
--                       <description>
+-
+			</description>
+		</method>
+		<method name="body_get_direct_state">
+			<return type="PhysicsDirectBodyState">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
 				Returns the [PhysicsDirectBodyState] of the body.
 			</description>
 		</method>
@@ -534,7 +535,7 @@
 			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxisLock">
 			</argument>
 			<description>
-				Locks velocity along one axis to 0 and only allows rotation along this axis, can also be set to disabled which disables this functionality. 
+				Locks velocity along one axis to 0 and only allows rotation along this axis, can also be set to disabled which disables this functionality.
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
@@ -746,7 +747,7 @@
 			</argument>
 			<argument index="2" name="flag" type="int" enum="PhysicsServer.G6DOFJointAxisFlag">
 			</argument>
-			<description>				
+			<description>
 				Gets a generic_6_DOF_joint flag (see G6DOF_JOINT_FLAG* constants).
 			</description>
 		</method>
