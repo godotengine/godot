@@ -209,10 +209,9 @@ msgid "Create %d NEW tracks and insert keys?"
 msgstr "Créer %d NOUVELLES pistes et insérer des clés ?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
-#: editor/editor_audio_buses.cpp
+#: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
@@ -376,261 +375,6 @@ msgstr "Modifier type de valeur du tableau"
 msgid "Change Array Value"
 msgstr "Modifier valeur du tableau"
 
-#: editor/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr "Libérer"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "Version :"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Contents:"
-msgstr "Contenu:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "View Files"
-msgstr "Voir Fichiers"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Description :"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
-#: editor/project_manager.cpp
-msgid "Install"
-msgstr "Installer"
-
-#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
-#: editor/connections_dialog.cpp editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/project_settings_editor.cpp editor/property_editor.cpp
-#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "Fermer"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr "Impossible de résoudre le nom de l'hôte:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve."
-msgstr "Impossible à résoudre."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connection error, please try again."
-msgstr "Erreur de connection, veuillez essayer à nouveau."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't connect."
-msgstr "Connection impossible."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't connect to host:"
-msgstr "Connection à l'hôte impossible:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response from host:"
-msgstr "Pas de réponse de l'hôte:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response."
-msgstr "Pas de réponse."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, return code:"
-msgstr "La requête a échoué, code retourné:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
-msgstr "Req. a Échoué."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, too many redirects"
-msgstr "La requête a échoué, trop de redirections"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Redirect Loop."
-msgstr "Boucle de Redirection."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed:"
-msgstr "Échec:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Vérification du téléchargement échouée, le fichier a été altéré."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Expected:"
-msgstr "Attendu:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Got:"
-msgstr "A:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr "Vérification de brouillage sha256 échouée"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Asset Download Error:"
-msgstr "Erreur dans le téléchargement d'une ressource:"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
-msgid "Success!"
-msgstr "Succès!"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr "Récupération:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr "Résolution.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Connexion en cours.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Envoi d'une requête.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Error making request"
-msgstr "Erreur lors de la requête"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Idle"
-msgstr "Inactif"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Retry"
-msgstr "Réessayer"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download Error"
-msgstr "Erreur de téléchargement"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download for this asset is already in progress!"
-msgstr "Le téléchargement de cette ressource est déjà en cours!"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "first"
-msgstr "premier"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr "préc"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr "suiv"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr "dern"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "Tout"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Search:"
-msgstr "Rechercher :"
-
-#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "Rechercher"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "Importer"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Plugins"
-msgstr "Extensions"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Sort:"
-msgstr "Trier :"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "Inverser"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Category:"
-msgstr "Catégorie :"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Site:"
-msgstr "Site :"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Support…"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Official"
-msgstr "Officiel"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-msgid "Community"
-msgstr "Communauté"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Testing"
-msgstr "En test"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Assets ZIP File"
-msgstr "Fichier ZIP de données"
-
-#: editor/call_dialog.cpp
-msgid "Method List For '%s':"
-msgstr "Liste des méthodes pour « %s » :"
-
-#: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Call"
-msgstr "Appel"
-
-#: editor/call_dialog.cpp
-msgid "Method List:"
-msgstr "Liste des méthodes :"
-
-#: editor/call_dialog.cpp
-msgid "Arguments:"
-msgstr "Paramètres :"
-
-#: editor/call_dialog.cpp
-msgid "Return:"
-msgstr "Retourne :"
-
 #: editor/code_editor.cpp
 msgid "Go to Line"
 msgstr "Aller à la ligne"
@@ -667,6 +411,14 @@ msgstr "Mots entiers"
 msgid "Selection Only"
 msgstr "Sélection uniquement"
 
+#: editor/code_editor.cpp editor/editor_node.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "Rechercher"
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
 msgstr "Trouver"
@@ -699,11 +451,11 @@ msgstr "Avertir lors du remplacement"
 msgid "Skip"
 msgstr "Passer"
 
-#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Zoom In"
 msgstr "Zoomer"
 
-#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Zoom Out"
 msgstr "Dézoomer"
 
@@ -772,6 +524,20 @@ msgstr "Différé"
 msgid "Oneshot"
 msgstr "One-shot"
 
+#: editor/connections_dialog.cpp editor/dependency_editor.cpp
+#: editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "Fermer"
+
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "Connecter"
@@ -797,7 +563,7 @@ msgstr "Connecter…"
 msgid "Disconnect"
 msgstr "Déconnecter"
 
-#: editor/connections_dialog.cpp editor/node_dock.cpp
+#: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
 msgstr "Signaux"
 
@@ -814,11 +580,24 @@ msgstr "Favoris :"
 msgid "Recent:"
 msgstr "Récents :"
 
+#: editor/create_dialog.cpp editor/editor_node.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+msgid "Search:"
+msgstr "Rechercher :"
+
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Correspondances :"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Description :"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -879,6 +658,12 @@ msgid "Owners Of:"
 msgstr "Propriétaires de :"
 
 #: editor/dependency_editor.cpp
+msgid "Remove selected files from the project? (no undo)"
+msgstr ""
+"Supprimer les fichiers sélectionnés de ce projet ? (pas d'annulation "
+"possible)"
+
+#: editor/dependency_editor.cpp
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -889,10 +674,9 @@ msgstr ""
 "Les supprimer tout de même ? (pas d'annulation possible)"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
-msgstr ""
-"Supprimer les fichiers sélectionnés de ce projet ? (pas d'annulation "
-"possible)"
+#, fuzzy
+msgid "Cannot remove:\n"
+msgstr "Impossible à résoudre."
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -960,10 +744,6 @@ msgid "Godot Engine contributors"
 msgstr "Contributeurs Godot Engine"
 
 #: editor/editor_about.cpp
-msgid "Authors"
-msgstr "Auteurs"
-
-#: editor/editor_about.cpp
 msgid "Project Founders"
 msgstr "Fondateurs du projet"
 
@@ -978,6 +758,39 @@ msgstr "Gestionnaire de projets"
 #: editor/editor_about.cpp
 msgid "Developers"
 msgstr "Développeurs"
+
+#: editor/editor_about.cpp
+msgid "Authors"
+msgstr "Auteurs"
+
+#: editor/editor_about.cpp
+msgid "Platinum Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Gold Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Mini Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Gold Donors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Silver Donors"
+msgstr ""
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Donors"
+msgstr "Cloner en dessous"
+
+#: editor/editor_about.cpp
+msgid "Donors"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "License"
@@ -1022,6 +835,16 @@ msgstr "Ressource non compressé"
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
 msgstr "Paquetage installé avec succès !"
+
+#: editor/editor_asset_installer.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr "Succès!"
+
+#: editor/editor_asset_installer.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr "Installer"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
@@ -1072,10 +895,6 @@ msgid "Audio Bus, Drag and Drop to rearrange."
 msgstr "Transport audio, glisser-déposer pour réorganiser."
 
 #: editor/editor_audio_buses.cpp
-msgid "Bus options"
-msgstr "Options de tranport"
-
-#: editor/editor_audio_buses.cpp
 msgid "Solo"
 msgstr "Solo"
 
@@ -1087,10 +906,19 @@ msgstr "Assourdir"
 msgid "Bypass"
 msgstr "Contournement"
 
+#: editor/editor_audio_buses.cpp
+msgid "Bus options"
+msgstr "Options de tranport"
+
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Dupliquer"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Reset Volume"
+msgstr "Réinitialiser le zoom"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
@@ -1111,6 +939,11 @@ msgstr "Supprimer le transport audio"
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
 msgstr "Dupliquer le transport audio"
+
+#: editor/editor_audio_buses.cpp
+#, fuzzy
+msgid "Reset Bus Volume"
+msgstr "Réinitialiser le zoom"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
@@ -1144,7 +977,8 @@ msgstr "Ajouter un transport"
 msgid "Create a new Bus Layout."
 msgstr "Créer une nouvel agencement de tranport."
 
-#: editor/editor_audio_buses.cpp editor/script_create_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/property_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Charger"
 
@@ -1240,7 +1074,7 @@ msgid "Rearrange Autoloads"
 msgstr "Ré-organiser les AutoLoads"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp scene/gui/file_dialog.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Chemin :"
 
@@ -1248,9 +1082,7 @@ msgstr "Chemin :"
 msgid "Node Name:"
 msgstr "Nom de nœud :"
 
-#: editor/editor_autoload_settings.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
 msgid "Name"
 msgstr "Nom"
 
@@ -1283,18 +1115,19 @@ msgid "Choose a Directory"
 msgstr "Choisir un répertoire"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Create Folder"
 msgstr "Créer un dossier"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_plugin_settings.cpp editor/plugins/theme_editor_plugin.cpp
-#: editor/project_export.cpp scene/gui/file_dialog.cpp
+#: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "Nom :"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
 msgstr "Impossible de créer le dossier."
 
@@ -1313,30 +1146,6 @@ msgstr "Empaquetage"
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr "Fichier modèle introuvable :\n"
-
-#: editor/editor_export.cpp
-msgid "Added:"
-msgstr "Ajouté :"
-
-#: editor/editor_export.cpp
-msgid "Removed:"
-msgstr "Supprimé :"
-
-#: editor/editor_export.cpp
-msgid "Error saving atlas:"
-msgstr "Erreur de sauvegarde de l'atlas :"
-
-#: editor/editor_export.cpp
-msgid "Could not save atlas subtexture:"
-msgstr "Impossible d'enregistrer la sous-texture atlas :"
-
-#: editor/editor_export.cpp
-msgid "Exporting for %s"
-msgstr "Exportation pour %s"
-
-#: editor/editor_export.cpp
-msgid "Setting Up.."
-msgstr "Configuration…"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1422,6 +1231,11 @@ msgstr "Déplacer le favori vers le haut"
 msgid "Move Favorite Down"
 msgstr "Déplacer le favori vers le bas"
 
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder"
+msgstr "Impossible de créer le dossier."
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
 msgstr "Répertoires et fichiers :"
@@ -1464,6 +1278,10 @@ msgstr "Liste des classes :"
 msgid "Search Classes"
 msgstr "Chercher dans les classes"
 
+#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+msgid "Top"
+msgstr "Dessus"
+
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
 msgstr "Classe :"
@@ -1480,13 +1298,28 @@ msgstr "Héritée par :"
 msgid "Brief Description:"
 msgstr "Brève description :"
 
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Members"
+msgstr "Membres :"
+
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Membres :"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Public Methods"
+msgstr "Méthodes publiques :"
+
+#: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "Méthodes publiques :"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "GUI Theme Items"
+msgstr "Items de thème GUI :"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1497,6 +1330,11 @@ msgid "Signals:"
 msgstr "Signaux :"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Enumerations"
+msgstr "Recensements :"
+
+#: editor/editor_help.cpp
 msgid "Enumerations:"
 msgstr "Recensements :"
 
@@ -1505,16 +1343,48 @@ msgid "enum  "
 msgstr "enum_  "
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Constants"
+msgstr "Constantes :"
+
+#: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Constantes :"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Description"
+msgstr "Description :"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Properties"
+msgstr "Propriétés :"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
 msgstr "Description des propriétés :"
 
 #: editor/editor_help.cpp
+msgid ""
+"There is currently no description for this property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Methods"
+msgstr "Liste des méthodes :"
+
+#: editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Description de la méthode :"
+
+#: editor/editor_help.cpp
+msgid ""
+"There is currently no description for this method. Please help us by [color="
+"$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Search Text"
@@ -1525,24 +1395,21 @@ msgid "Output:"
 msgstr "Sortie :"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/rich_text_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_editor_debugger.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/property_editor.cpp editor/script_editor_debugger.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "Effacer"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-#: editor/resources_dock.cpp
 msgid "Error saving resource!"
 msgstr "Erreur d'enregistrement de la ressource !"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-#: editor/resources_dock.cpp
 msgid "Save Resource As.."
 msgstr "Enregistrer la ressource sous…"
 
-#: editor/editor_node.cpp editor/export_template_manager.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Je vois…"
 
@@ -1556,6 +1423,30 @@ msgstr "Format de fichier demandé inconnu :"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
+msgstr "Erreur lors de l'enregistrement."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Can't open '%s'."
+msgstr "Impossible d'opérer sur « .. »"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Error while parsing '%s'."
+msgstr "Erreur lors de l'enregistrement."
+
+#: editor/editor_node.cpp
+msgid "Unexpected end of file '%s'."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Missing '%s' or its dependencies."
+msgstr "La scène « %s » a des dépendences cassées :"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Error while loading '%s'."
 msgstr "Erreur lors de l'enregistrement."
 
 #: editor/editor_node.cpp
@@ -1616,6 +1507,33 @@ msgstr "Nom de la disposition non trouvé !"
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
 msgstr "Disposition par défaut remise à zéro."
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource belongs to a scene that was instanced or inherited.\n"
+"Changes to it will not be kept when saving the current scene."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This scene was imported, so changes to it will not be kept.\n"
+"Instancing it or inheriting will allow making changes to it.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1796,6 +1714,12 @@ msgstr ""
 "d'ouvrir le gestionnaire de projet ?"
 
 #: editor/editor_node.cpp
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Pick a Main Scene"
 msgstr "Choisir une scène principale"
 
@@ -1826,7 +1750,7 @@ msgstr ""
 "Pour y apporter des modification, une scène fille peut être créée."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Oups"
 
@@ -1840,12 +1764,13 @@ msgstr ""
 "le répertoire du projet."
 
 #: editor/editor_node.cpp
-msgid "Error loading scene."
-msgstr "Erreur lors du chargement de la scène."
-
-#: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
 msgstr "La scène « %s » a des dépendences cassées :"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Clear Recent Scenes"
+msgstr "Effacer les fichiers récents"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -1880,7 +1805,7 @@ msgstr "Mode sans distraction"
 msgid "Toggle distraction-free mode."
 msgstr "Basculer vers mode sans-distraction."
 
-#: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Scene"
 msgstr "Scène"
 
@@ -2120,6 +2045,10 @@ msgstr "Questions et Réponses"
 msgid "Issue Tracker"
 msgstr "Traqueur de problèmes"
 
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+msgid "Community"
+msgstr "Communauté"
+
 #: editor/editor_node.cpp
 msgid "About"
 msgstr "À propos"
@@ -2128,7 +2057,7 @@ msgstr "À propos"
 msgid "Play the project."
 msgstr "Lancer le projet."
 
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Play"
 msgstr "Jouer"
 
@@ -2144,7 +2073,7 @@ msgstr "Mettre en pause la scène"
 msgid "Stop the scene."
 msgstr "Arrêter la scène."
 
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Stop"
 msgstr "Arrêter"
 
@@ -2217,6 +2146,16 @@ msgid "Object properties."
 msgstr "Propriétés de l'objet."
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Changes may be lost!"
+msgstr "Changer le groupe d'images"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "Importer"
+
+#: editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Système de fichiers"
 
@@ -2231,14 +2170,6 @@ msgstr "Sortie"
 #: editor/editor_node.cpp
 msgid "Don't Save"
 msgstr "Ne pas enregistrer"
-
-#: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
-msgid "Re-Import"
-msgstr "Ré-importer"
-
-#: editor/editor_node.cpp editor/editor_plugin_settings.cpp
-msgid "Update"
-msgstr "Mettre à jour"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -2300,9 +2231,27 @@ msgstr "Ouvrir éditeur suivant"
 msgid "Open the previous Editor"
 msgstr "Ouvrir éditeur précédant"
 
+#: editor/editor_plugin.cpp
+#, fuzzy
+msgid "Creating Mesh Previews"
+msgstr "Création de la bibliothèque de maillages"
+
+#: editor/editor_plugin.cpp
+msgid "Thumbnail.."
+msgstr "Aperçu…"
+
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Extensions installées :"
+
+#: editor/editor_plugin_settings.cpp
+msgid "Update"
+msgstr "Mettre à jour"
+
+#: editor/editor_plugin_settings.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Version:"
+msgstr "Version :"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -2355,26 +2304,6 @@ msgstr "Soi"
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
 msgstr "Frame # :"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Please wait for scan to complete."
-msgstr "Veuillez attendre la fin du scan."
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Current scene must be saved to re-import."
-msgstr "La scène actuelle doit être enregistrée afin de pouvoir ré-importer."
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Save & Re-Import"
-msgstr "Enregistrer et ré-importer"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Re-Importing"
-msgstr "Ré-importation"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Re-Import Changed Resources"
-msgstr "Ré-importer les ressources modifiées"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
@@ -2489,10 +2418,6 @@ msgid "Importing:"
 msgstr "Importation :"
 
 #: editor/export_template_manager.cpp
-msgid "Loading Export Templates"
-msgstr "Chargement des modèles d'exportation"
-
-#: editor/export_template_manager.cpp
 msgid "Current Version:"
 msgstr "Version courante :"
 
@@ -2527,12 +2452,18 @@ msgid "Cannot navigate to '"
 msgstr "Ne peux pas acceder à '"
 
 #: editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "View items as a list"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid ""
 "\n"
-"Status: Needs Re-Import"
+"Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
-"\n"
-"Statut: Réimportation nécessaire"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -2543,44 +2474,57 @@ msgstr ""
 "Source : "
 
 #: editor/filesystem_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr "Fichiers source et destination identiques, rien à faire."
+#, fuzzy
+msgid "Cannot move/rename resources root."
+msgstr "Impossible de charger ou traiter la police source."
 
 #: editor/filesystem_dock.cpp
-msgid "Target file exists, can't overwrite. Delete first."
-msgstr "Le fichier cible existe et ne peut être réécrit. Supprimez le d'abord."
+#, fuzzy
+msgid "Cannot move a folder into itself.\n"
+msgstr "Impossible d'importer un fichier par-dessus lui-même :"
 
 #: editor/filesystem_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr "Chemins source et destination identiques, rien à faire."
-
-#: editor/filesystem_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr "Impossible de déplacer des répertoires vers eux-mêmes."
-
-#: editor/filesystem_dock.cpp
-msgid "Can't rename deps for:\n"
-msgstr "Impossible de renommer dependances pour :\n"
-
-#: editor/filesystem_dock.cpp
-msgid "Error moving file:\n"
-msgstr "Erreur lors du déplacement de fichier :\n"
-
-#: editor/filesystem_dock.cpp
-msgid "Error moving dir:\n"
+#, fuzzy
+msgid "Error moving:\n"
 msgstr "Erreur lors du déplacement du répertoire :\n"
 
 #: editor/filesystem_dock.cpp
-msgid "Can't operate on '..'"
-msgstr "Impossible d'opérer sur « .. »"
+#, fuzzy
+msgid "Unable to update dependencies:\n"
+msgstr "La scène « %s » a des dépendences cassées :"
 
 #: editor/filesystem_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr "Entrez un nouveau nom et chemin pour :"
+msgid "No name provided"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "No files selected!"
-msgstr "Pas de fichiers sélectionnés !"
+msgid "Provided name contains invalid characters"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "No name provided."
+msgstr "Renommer ou déplacer…"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Name contains invalid characters."
+msgstr "Caractères valides :"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "A file or folder with this name already exists."
+msgstr "Le nom du groupe existe déjà !"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Renaming file:"
+msgstr "Renommer la variable"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Renaming folder:"
+msgstr "Renommer le nœud"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2589,6 +2533,24 @@ msgstr "Développer tout"
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "Réduire tout"
+
+#: editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "Copier le chemin"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Rename.."
+msgstr "Renommer"
+
+#: editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr "Déplacer vers…"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Folder.."
+msgstr "Créer un dossier"
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
@@ -2605,26 +2567,6 @@ msgstr "Modifier les dépendances…"
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "Voir les propriétaires…"
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "Copier le chemin"
-
-#: editor/filesystem_dock.cpp
-msgid "Rename or Move.."
-msgstr "Renommer ou déplacer…"
-
-#: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "Déplacer vers…"
-
-#: editor/filesystem_dock.cpp
-msgid "Info"
-msgstr "Information"
-
-#: editor/filesystem_dock.cpp
-msgid "Re-Import.."
-msgstr "Ré-importer…"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2660,6 +2602,11 @@ msgstr ""
 msgid "Move"
 msgstr "Déplacer"
 
+#: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Rename"
+msgstr "Renommer"
+
 #: editor/groups_editor.cpp
 msgid "Add to Group"
 msgstr "Ajouter au groupe"
@@ -2671,6 +2618,11 @@ msgstr "Supprimer du groupe"
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
 msgstr "Importer comme scène unique"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Animations"
+msgstr "Importer avec matériaux séparés"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
@@ -2685,6 +2637,21 @@ msgid "Import with Separate Objects+Materials"
 msgstr "Importer avec objets+matériaux séparés"
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Objects+Animations"
+msgstr "Importer avec objets+matériaux séparés"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Materials+Animations"
+msgstr "Importer avec matériaux séparés"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Objects+Materials+Animations"
+msgstr "Importer avec objets+matériaux séparés"
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
 msgstr "Importer comme scènes multiples"
 
@@ -2693,39 +2660,32 @@ msgid "Import as Multiple Scenes+Materials"
 msgstr "Importer comme scènes+matériaux multiples"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import Scene"
 msgstr "Importer une scène"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Importing Scene.."
 msgstr "Importation de la scène…"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Running Custom Script.."
 msgstr "Lancement du script personnalisé…"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Couldn't load post-import script:"
 msgstr "Impossible de charger le script de post-importation :"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
 "Script de post-importation invalide ou corrompu (vérifiez la console) :"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error running post-import script:"
 msgstr "Erreur d'exécution du script de post-importation :"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
 msgstr "Enregistrement…"
 
@@ -2753,578 +2713,6 @@ msgstr "Pré-réglage…"
 msgid "Reimport"
 msgstr "Ré-importer"
 
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "No bit masks to import!"
-msgstr "Pas de masques de bits à importer !"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path is empty."
-msgstr "Le chemin de destination est vide."
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must be a complete resource path."
-msgstr ""
-"Le chemin de destination doit être un chemin complet vers une ressource."
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must exist."
-msgstr "Le chemin de destination doit exister."
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Save path is empty!"
-msgstr "Le chemin de sauvegarde est vide !"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "Import BitMasks"
-msgstr "Importer des BitMasks"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture(s):"
-msgstr "Texture(s) source :"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Target Path:"
-msgstr "Chemin de destination :"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Accept"
-msgstr "Accepter"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "Bit Mask"
-msgstr "Masque de bits"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "No source font file!"
-msgstr "Pas de fichier de police source !"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "No target font resource!"
-msgstr "Pas de ressource de police de destination !"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid ""
-"Invalid file extension.\n"
-"Please use .font."
-msgstr ""
-"Extension de fichier invalide.\n"
-"Veuillez utiliser .font."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Can't load/process source font."
-msgstr "Impossible de charger ou traiter la police source."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Couldn't save font."
-msgstr "Impossible d'enregistrer la police."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Source Font:"
-msgstr "Police source :"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Source Font Size:"
-msgstr "Taille de la police source :"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Dest Resource:"
-msgstr "Ressource de destination :"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "The quick brown fox jumps over the lazy dog."
-msgstr "Voix ambiguë d'un cœur qui, au zéphyr, préfère les jattes de kiwis."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Test:"
-msgstr "Test :"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Options:"
-msgstr "Options :"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Font Import"
-msgstr "Importation d'une police"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid ""
-"This file is already a Godot font file, please supply a BMFont type file "
-"instead."
-msgstr ""
-"Ce fichier est déjà un fichier de police Godot, veuillez fournir un fichier "
-"de type BMFont à la place."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Failed opening as BMFont file."
-msgstr "Impossible d'ouvrir le fichier en tant que fichier BMFont."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "Erreur à l'initialisation de Freetype."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "Format de police inconnu."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "Erreur lors du chargement de la police."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "Taille de police invalide."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Invalid font custom source."
-msgstr "Source personnalisée de police invalide."
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Font"
-msgstr "Police"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "No meshes to import!"
-msgstr "Pas de maillages à importer !"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Single Mesh Import"
-msgstr "Importer un maillage"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Source Mesh(es):"
-msgstr "Maillage(s) source :"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh"
-msgstr "Maillage"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Surface %d"
-msgstr "Surface %d"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "No samples to import!"
-msgstr "Pas d'échantillons à importer !"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Import Audio Samples"
-msgstr "Importer des échantillons audio"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Source Sample(s):"
-msgstr "Échantillon(s) source :"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Audio Sample"
-msgstr "Échantillon audio"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "New Clip"
-msgstr "Nouvelle séquence"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Animation Options"
-msgstr "Options d'animation"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Flags"
-msgstr "Drapeaux"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Bake FPS:"
-msgstr "FPS de calcul :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Optimizer"
-msgstr "Optimiseur"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Linear Error"
-msgstr "Erreur linéaire maximale"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Angular Error"
-msgstr "Erreur angulaire maximale"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Angle"
-msgstr "Angle maximal"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Clips"
-msgstr "Séquences"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Start(s)"
-msgstr "Départ(s)"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "End(s)"
-msgstr "Fin(s)"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Loop"
-msgstr "Boucle"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Filters"
-msgstr "Filtres"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Source path is empty."
-msgstr "Le chemin source est vide."
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Couldn't load post-import script."
-msgstr "Impossible de charger le script de post-importation."
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import."
-msgstr "Script invalide ou cassé de post-importation."
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Error importing scene."
-msgstr "Erreur à l'importation de la scène."
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import 3D Scene"
-msgstr "Importer une scène 3D"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Source Scene:"
-msgstr "Scène source :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Same as Target Scene"
-msgstr "Identique à la scène de destination"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Shared"
-msgstr "Partagé"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Target Texture Folder:"
-msgstr "Dossier de destination des textures :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Post-Process Script:"
-msgstr "Script de post-traitement :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Custom Root Node Type:"
-msgstr "Type de nœud racine personnalisé :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Auto"
-msgstr "Auto."
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Root Node Name:"
-msgstr "Nom de nœud racine :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "The Following Files are Missing:"
-msgstr "Les fichiers suivants sont manquants :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import Anyway"
-msgstr "Importer quand même"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "Annuler"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import & Open"
-msgstr "Importer et ouvrir"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Edited scene has not been saved, open imported scene anyway?"
-msgstr ""
-"La scène modifiée actuellement n'a pas été enregistrée, ouvrir la scène "
-"importée quand même ?"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import Image:"
-msgstr "Importer une image :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Can't import a file over itself:"
-msgstr "Impossible d'importer un fichier par-dessus lui-même :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Couldn't localize path: %s (already local)"
-msgstr "Impossible de rendre le chemin local : %s (déjà local)"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "3D Scene Animation"
-msgstr "Animation de scène 3D"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Uncompressed"
-msgstr "Non compressé"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress Lossless (PNG)"
-msgstr "Compression sans perte (PNG)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress Lossy (WebP)"
-msgstr "Compression avec perte (WebP)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress (VRAM)"
-msgstr "Compression GPU (VRAM)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Format"
-msgstr "Format de texture"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Compression Quality (WebP):"
-msgstr "Qualité de compression de la texture (WebP) :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Options"
-msgstr "Options de texture"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Please specify some files!"
-msgstr "Veuillez spécifier des fichiers !"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "At least one file needed for Atlas."
-msgstr "Il faut au moins un fichier pour créer un atlas."
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Error importing:"
-msgstr "Erreur d'importation :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Only one file is required for large texture."
-msgstr "Un seul fichier est nécessaire pour créer une grande texture."
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Max Texture Size:"
-msgstr "Taille de texture maximale :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for Atlas (2D)"
-msgstr "Importer des textures pour un atlas (2D)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Cell Size:"
-msgstr "Taille des cellules :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Large Texture"
-msgstr "Grande texture"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Large Textures (2D)"
-msgstr "Importer des grandes textures (2D)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture"
-msgstr "Texture source"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Base Atlas Texture"
-msgstr "Texture d'atlas de base"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture(s)"
-msgstr "Texture(s) source"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for 2D"
-msgstr "Importer des textures pour la 2D"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for 3D"
-msgstr "Importer des textures pour la 3D"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures"
-msgstr "Importer des textures"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "2D Texture"
-msgstr "Texture 2D"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "3D Texture"
-msgstr "Texture 3D"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Atlas Texture"
-msgstr "Texture atlas"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid ""
-"NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
-"the project."
-msgstr ""
-"REMARQUE : L'import de textures 2D n'est pas obligatoire. Copiez directement "
-"les fichiers PNG ou JPEG dans le projet."
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Crop empty space."
-msgstr "Rogner l'espace vide."
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture"
-msgstr "Texture"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Large Texture"
-msgstr "Importer une grande texture"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Load Source Image"
-msgstr "Charger une image source"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Slicing"
-msgstr "Découpage"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Inserting"
-msgstr "Insertion"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Saving"
-msgstr "Enregistrement"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save large texture:"
-msgstr "Impossible d'enregistrer la grande texture :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Build Atlas For:"
-msgstr "Construire l'atlas pour :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Loading Image:"
-msgstr "Chargement de l'image :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't load image:"
-msgstr "Impossible de charger l'image :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Converting Images"
-msgstr "Conversion des images"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Cropping Images"
-msgstr "Rognage des images"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Blitting Images"
-msgstr "Découpage des images"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save atlas image:"
-msgstr "Impossible d'enregistrer l'image d'atlas :"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save converted texture:"
-msgstr "Impossible d'enregistrer la texture convertie :"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Invalid source!"
-msgstr "Source invalide !"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Invalid translation source!"
-msgstr "Source de traduction invalide !"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Column"
-msgstr "Colonne"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "Langage"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "No items to import!"
-msgstr "Pas d'objets à importer !"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "No target path!"
-msgstr "Pas de chemin de destination !"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Translations"
-msgstr "Importer des traductions"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Couldn't import!"
-msgstr "Impossible d'importer !"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Translation"
-msgstr "Importer une traduction"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Source CSV:"
-msgstr "CSV source :"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Ignore First Row"
-msgstr "Ignorer la première ligne"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Compress"
-msgstr "Compresser"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (project.godot)"
-msgstr "Ajouter au projet (project.godot)"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Languages:"
-msgstr "Importer les langues :"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Translation"
-msgstr "Traduction"
-
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "Ensemble multi-nœud"
@@ -3336,6 +2724,49 @@ msgstr "Groupes"
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
 msgstr "Sélectionnez un nœud pour editer des signaux et des groupes."
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Create Poly"
+msgstr "Créer un polygone"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Modifier le polygone"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
+msgid "Insert Point"
+msgstr "Insertion"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Modifier le polygone (supprimer un point)"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Remove Poly And Point"
+msgstr "Retirer Polygone et Point"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Create a new polygon from scratch."
+msgstr "Créer un nouveau polygone à partir de rien."
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid ""
+"Edit existing polygon:\n"
+"LMB: Move Point.\n"
+"Ctrl+LMB: Split Segment.\n"
+"RMB: Erase Point."
+msgstr ""
+"Editer polygones existants :\n"
+"Bouton gauche : Déplacer point\n"
+"Ctrl+Bouton gauche : Diviser section.\n"
+"Bouton droit: Effeacer point."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3491,7 +2922,6 @@ msgstr "Nom de l'animation :"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
@@ -3601,10 +3031,6 @@ msgid "Delete Input"
 msgstr "Supprimer l'entrée"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Rename"
-msgstr "Renommer"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is valid."
 msgstr "L'arbre d'animations est valide."
 
@@ -3660,64 +3086,181 @@ msgstr "Modifier les filtres de nœud"
 msgid "Filters.."
 msgstr "Filtres…"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Parsing %d Triangles:"
-msgstr "Analyse de %d triangles :"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr "Libérer"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Triangle #"
-msgstr "Triangle #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Contents:"
+msgstr "Contenu:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Light Baker Setup:"
-msgstr "Paramètres du calculateur d'éclairage :"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "View Files"
+msgstr "Voir Fichiers"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Parsing Geometry"
-msgstr "Analyse de la géométrie"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr "Impossible de résoudre le nom de l'hôte:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Fixing Lights"
-msgstr "Correction des lumières"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr "Impossible à résoudre."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Making BVH"
-msgstr "Création du BVH"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr "Erreur de connection, veuillez essayer à nouveau."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Creating Light Octree"
-msgstr "Création de l'octree de lumière"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't connect."
+msgstr "Connection impossible."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Creating Octree Texture"
-msgstr "Création de la texture d'octree"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't connect to host:"
+msgstr "Connection à l'hôte impossible:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Transfer to Lightmaps:"
-msgstr "Transfert vers des lightmaps :"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr "Pas de réponse de l'hôte:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Allocating Texture #"
-msgstr "Allocation de la texture #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr "Pas de réponse."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Baking Triangle #"
-msgstr "Calcul de la texture #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed, return code:"
+msgstr "La requête a échoué, code retourné:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Post-Processing Texture #"
-msgstr "Post-traitement de la texture #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr "Req. a Échoué."
 
-#: editor/plugins/baked_light_editor_plugin.cpp
-msgid "Bake!"
-msgstr "Calculer !"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr "La requête a échoué, trop de redirections"
 
-#: editor/plugins/baked_light_editor_plugin.cpp
-msgid "Reset the lightmap octree baking process (start over)."
-msgstr "Remettre le processus de calcul de l'éclairage à zéro (recommencer)."
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr "Boucle de Redirection."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr "Échec:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr "Vérification du téléchargement échouée, le fichier a été altéré."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr "Attendu:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr "A:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr "Vérification de brouillage sha256 échouée"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr "Erreur dans le téléchargement d'une ressource:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr "Récupération:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Resolving.."
+msgstr "Résolution.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Connecting.."
+msgstr "Connexion en cours.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Requesting.."
+msgstr "Envoi d'une requête.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Error making request"
+msgstr "Erreur lors de la requête"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr "Inactif"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr "Réessayer"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Download Error"
+msgstr "Erreur de téléchargement"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr "Le téléchargement de cette ressource est déjà en cours!"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr "premier"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr "préc"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr "suiv"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr "dern"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "Tout"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr "Extensions"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Sort:"
+msgstr "Trier :"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Reverse"
+msgstr "Inverser"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_settings_editor.cpp
+msgid "Category:"
+msgstr "Catégorie :"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Site:"
+msgstr "Site :"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Support.."
+msgstr "Support…"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Official"
+msgstr "Officiel"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Testing"
+msgstr "En test"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Assets ZIP File"
+msgstr "Fichier ZIP de données"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
 msgid "Preview"
 msgstr "Aperçu"
 
@@ -3760,12 +3303,18 @@ msgid "Edit CanvasItem"
 msgstr "Modifier le CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Change Anchors"
+#, fuzzy
+msgid "Anchors only"
+msgstr "Ancre"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change Anchors and Margins"
 msgstr "Modifier les ancres"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom (%):"
-msgstr "Zoom (%) :"
+msgid "Change Anchors"
+msgstr "Modifier les ancres"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
@@ -3819,6 +3368,64 @@ msgid "Pan Mode"
 msgstr "Mode navigation"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggles snapping"
+msgstr "Placer un point d'arrêt"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "Aligner sur la grille"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snapping options"
+msgstr "Options d'animation"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to grid"
+msgstr "Mode d'aimantation :"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Rotation Snap"
+msgstr "Rotation alignée"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Configure Snap..."
+msgstr "Configurer la grille…"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap Relative"
+msgstr "Alignement relatif"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Pixel Snap"
+msgstr "Aligner au pixel près"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Smart snapping"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to parent"
+msgstr "Étendre au parent"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to node anchor"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to node sides"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to other nodes"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
 msgstr "Verrouiller l'objet sélectionné (il ne pourra plus être déplacé)."
 
@@ -3833,46 +3440,6 @@ msgstr "Rendre la sélection des enfants de l'objet impossible."
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "Rendre la sélection des enfants de l'objet de nouveau possible."
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit"
-msgstr "Modifier"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
-msgstr "Aligner sur la grille"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
-msgstr "Afficher la grille"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Use Rotation Snap"
-msgstr "Rotation alignée"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
-msgstr "Alignement relatif"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Configurer la grille…"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Use Pixel Snap"
-msgstr "Aligner au pixel près"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Skeleton.."
-msgstr "Squelette…"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Bones"
@@ -3900,12 +3467,19 @@ msgid "View"
 msgstr "Affichage"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Reset"
-msgstr "Réinitialiser le zoom"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "Afficher la grille"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Set.."
-msgstr "Définir le zoom…"
+#, fuzzy
+msgid "Show helpers"
+msgstr "Afficher les os"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show rulers"
+msgstr "Afficher les os"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3916,8 +3490,9 @@ msgid "Frame Selection"
 msgstr "Cadrer la sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Anchor"
-msgstr "Ancre"
+#, fuzzy
+msgid "Layout"
+msgstr "Enregistrer la disposition"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Keys"
@@ -3940,12 +3515,21 @@ msgid "Clear Pose"
 msgstr "Vider la pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Set a Value"
-msgstr "Définir une valeur"
+msgid "Drag pivot from mouse position"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap (Pixels):"
-msgstr "Aligner (pixels) :"
+#, fuzzy
+msgid "Set pivot at mouse position"
+msgstr "Définir courbe hors position"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Multiply grid step by 2"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Divide grid step by 2"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3955,23 +3539,28 @@ msgstr "Ajouter %s"
 msgid "Adding %s..."
 msgstr "Ajout de %s..."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
 msgstr "Créer un nœud"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Erreur d'instanciation de la scène depuis %s"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
 msgstr "OK :("
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr "Pas de parent dans lequel instancier l'enfant."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr ""
 "Cette opération ne peut être réalisée uniquement avec un seul nœud "
@@ -3989,49 +3578,6 @@ msgstr ""
 "Glisser-déposer + Maj : Ajouter un nœud frère\n"
 "Glisser-déposer + Alt : Modifier le type de nœud"
 
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Create Poly"
-msgstr "Créer un polygone"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Edit Poly"
-msgstr "Modifier le polygone"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
-msgstr "Modifier le polygone (supprimer un point)"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "Créer un nouveau polygone à partir de rien."
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
-msgstr ""
-"Editer polygones existants :\n"
-"Bouton gauche : Déplacer point\n"
-"Ctrl+Bouton gauche : Diviser section.\n"
-"Bouton droit: Effeacer point."
-
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Poly3D"
 msgstr "Créer un Poly3D"
@@ -4039,14 +3585,6 @@ msgstr "Créer un Poly3D"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Définir la poignée"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Creating Mesh Library"
-msgstr "Création de la bibliothèque de maillages"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Aperçu…"
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Remove item %d?"
@@ -4069,6 +3607,28 @@ msgstr "Importer depuis la scène"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Mettre à jour depuis la scène"
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Flat0"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Flat1"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Ease in"
+msgstr "Ease in"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Ease out"
+msgstr "Ease out"
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Smoothstep"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Point"
@@ -4147,22 +3707,18 @@ msgid "Create Occluder Polygon"
 msgstr "Créer un polygone occulteur"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Edit existing polygon:"
 msgstr "Modifier un polygone existant :"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "LMB: Move Point."
 msgstr "Bouton gauche : déplacer un point."
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Ctrl+LMB: Split Segment."
 msgstr "Contrôle + Bouton gauche : séparer le segment."
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "RMB: Erase Point."
 msgstr "Bouton droit : effacer un point."
 
@@ -4262,6 +3818,10 @@ msgstr "Impossible de créer le contour !"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline"
 msgstr "Créer le contour"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh"
+msgstr "Maillage"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -4396,13 +3956,82 @@ msgstr "Échelle aléatoire :"
 msgid "Populate"
 msgstr "Peupler"
 
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+msgid "Bake!"
+msgstr "Calculer !"
+
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+#, fuzzy
+msgid "Bake the navigation mesh.\n"
+msgstr "Créer un maillage de navigation"
+
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+#, fuzzy
+msgid "Clear the navigation mesh."
+msgstr "Créer un maillage de navigation"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Setting up Configuration..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Calculating grid size..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating heightfield..."
+msgstr "Création de l'octree de lumière"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Marking walkable triangles..."
+msgstr "Chaînes traduisibles…"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Constructing compact heightfield..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Eroding walkable area..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Partioning..."
+msgstr "Avertissement"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating contours..."
+msgstr "Création de la texture d'octree"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating polymesh..."
+msgstr "Créer un maillage de contour…"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Converting to native navigation mesh..."
+msgstr "Créer un maillage de navigation"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Navigation Mesh Generator Setup:"
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Parsing Geometry..."
+msgstr "Analyse de la géométrie"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Done!"
+msgstr ""
+
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Créer Polygone de Navigation"
-
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-msgid "Remove Poly And Point"
-msgstr "Retirer Polygone et Point"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
@@ -4647,6 +4276,14 @@ msgid "Scale Polygon"
 msgstr "Mettre à l'échelle le polygone"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit"
+msgstr "Modifier"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
 msgstr "Polygone -> UV"
 
@@ -4701,62 +4338,9 @@ msgstr "Charger une ressource"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Coller"
-
-#: editor/plugins/rich_text_editor_plugin.cpp
-msgid "Parse BBCode"
-msgstr "Analyser le BBCode"
-
-#: editor/plugins/sample_editor_plugin.cpp
-msgid "Length:"
-msgstr "Longueur :"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Open Sample File(s)"
-msgstr "Ouvrir un ou des fichiers d'échantillons"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "ERROR: Couldn't load sample!"
-msgstr "ERREUR : Impossible de charger l'échantillon !"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Add Sample"
-msgstr "Ajouter un échantillon"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Rename Sample"
-msgstr "Renommer l'échantillon"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Delete Sample"
-msgstr "Supprimer l'échantillon"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "16 Bits"
-msgstr "16 bits"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "8 Bits"
-msgstr "8 bits"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Stereo"
-msgstr "Stéréo"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Mono"
-msgstr "Mono"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Format"
-msgstr "Format"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Pitch"
-msgstr "Hauteur"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -4848,6 +4432,10 @@ msgstr "Fermer les documentations"
 msgid "Close All"
 msgstr "Fermer tout"
 
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+msgid "Run"
+msgstr "Lancer"
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
 msgstr "Basculer vers le panneau de scripts"
@@ -4887,18 +4475,6 @@ msgstr "Garder le débogueur ouvert"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with external editor"
 msgstr "Deboguer avec un éditeur externe"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Window"
-msgstr "Fenêtre"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Move Left"
-msgstr "Aller à gauche"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Move Right"
-msgstr "Aller à droite"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
@@ -4987,7 +4563,7 @@ msgstr "Couper"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
-#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copier"
 
@@ -5250,10 +4826,6 @@ msgid "View Plane Transform."
 msgstr "Transformation du plan de vue."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling to %s%%."
-msgstr "Mise à l'échelle %s%%."
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
 msgstr "Rotation de %s degrés."
 
@@ -5268,10 +4840,6 @@ msgstr "Dessous"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "Vue de dessus."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Top"
-msgstr "Dessus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
@@ -5504,6 +5072,10 @@ msgid "Transform"
 msgstr "Transformation"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap.."
+msgstr "Configurer la grille…"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
 msgstr "Coordonnées locales"
 
@@ -5649,6 +5221,10 @@ msgid "Speed (FPS):"
 msgstr "Vitesse (FPS) :"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Loop"
+msgstr "Boucle"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames"
 msgstr "Trames d'animation"
 
@@ -5661,12 +5237,14 @@ msgid "Insert Empty (After)"
 msgstr "Insérer vide (après)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Up"
-msgstr "Haut"
+#, fuzzy
+msgid "Move (Before)"
+msgstr "Déplacer le(s) nœud(s)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Down"
-msgstr "Bas"
+#, fuzzy
+msgid "Move (After)"
+msgstr "Aller à gauche"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
@@ -5827,6 +5405,10 @@ msgid "Style"
 msgstr "Style"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Font"
+msgstr "Police"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "Couleur"
 
@@ -5875,8 +5457,9 @@ msgid "Mirror Y"
 msgstr "Miroir Y"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Bucket"
-msgstr "Seau"
+#, fuzzy
+msgid "Paint Tile"
+msgstr "Peindre sur la TileMap"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -5937,6 +5520,11 @@ msgstr "Supprimer patch"
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
 msgstr "Supprimer pré-réglage '%s' ?"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export templates for this platform are missing/corrupted: "
+msgstr "Modèles d'exportation manquants pour cette plateforme :"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -6013,28 +5601,59 @@ msgid "Export templates for this platform are missing:"
 msgstr "Modèles d'exportation manquants pour cette plateforme :"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr "Modèles d'exportation manquants pour cette plateforme :"
+
+#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr "Exporter avec debug"
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, the path must exist!"
-msgstr "Chemin de projet invalide, le chemin doit exister !"
+#, fuzzy
+msgid "The path does not exists."
+msgstr "Le fichier n'existe pas."
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, project.godot must not exist."
-msgstr "Chemin de projet invalide, project.godot ne doit pas exister."
+#, fuzzy
+msgid "Please choose a 'project.godot' file."
+msgstr "Veuillez exporter en dehors du dossier du projet !"
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, project.godot must exist."
-msgstr "Chemin de projet invalide, project.godot doit exister."
+msgid ""
+"Your project will be created in a non empty folder (you might want to create "
+"a new folder)."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Please choose a folder that does not contain a 'project.godot' file."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "Projet importé"
 
 #: editor/project_manager.cpp
+msgid " "
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "It would be a good idea to name your project."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
 msgstr "Chemin de projet non valide (avez-vous changé quelque chose ?)."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't get project.godot in project path."
+msgstr "Impossible de créer le fichier project.godot dans le chemin du projet."
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't edit project.godot in project path."
+msgstr "Impossible de créer le fichier project.godot dans le chemin du projet."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -6045,36 +5664,47 @@ msgid "The following files failed extraction from package:"
 msgstr "L'extraction des fichiers suivants a échoué depuis le paquetage :"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Rename Project"
+msgstr "Projet sans titre"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't get project.godot in the project path."
+msgstr "Impossible de créer le fichier project.godot dans le chemin du projet."
+
+#: editor/project_manager.cpp
+msgid "New Game Project"
+msgstr "Nouveau projet de jeu"
+
+#: editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr "Importer un projet existant"
-
-#: editor/project_manager.cpp
-msgid "Project Path (Must Exist):"
-msgstr "Chemin du projet (doit exister) :"
-
-#: editor/project_manager.cpp
-msgid "Project Name:"
-msgstr "Nom du projet :"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Créer un nouveau projet"
 
 #: editor/project_manager.cpp
-msgid "Project Path:"
-msgstr "Chemin du projet :"
-
-#: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "Installer projet :"
 
 #: editor/project_manager.cpp
-msgid "Browse"
-msgstr "Parcourir"
+msgid "Project Name:"
+msgstr "Nom du projet :"
 
 #: editor/project_manager.cpp
-msgid "New Game Project"
-msgstr "Nouveau projet de jeu"
+#, fuzzy
+msgid "Create folder"
+msgstr "Créer un dossier"
+
+#: editor/project_manager.cpp
+msgid "Project Path:"
+msgstr "Chemin du projet :"
+
+#: editor/project_manager.cpp
+msgid "Browse"
+msgstr "Parcourir"
 
 #: editor/project_manager.cpp
 msgid "That's a BINGO!"
@@ -6083,6 +5713,11 @@ msgstr "C'est un BINGO !"
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "Projet sans titre"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Can't open project"
+msgstr "Impossible de lancer le projet"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -6126,10 +5761,6 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid "Project List"
 msgstr "Liste des projets"
-
-#: editor/project_manager.cpp
-msgid "Run"
-msgstr "Lancer"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -6188,17 +5819,14 @@ msgid "Add Input Action Event"
 msgstr "Ajouter un événement d'action d'entrée"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Meta+"
 msgstr "Méta+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Shift+"
 msgstr "Maj+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Alt+"
 msgstr "Alt+"
 
@@ -6259,7 +5887,7 @@ msgstr "Changer"
 msgid "Joypad Axis Index:"
 msgstr "Index de l'axe de la manette de jeu :"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Axis"
 msgstr "Axe"
 
@@ -6279,31 +5907,31 @@ msgstr "Effacer l'événement d'action d'entrée"
 msgid "Add Event"
 msgstr "Ajouter évènement"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "Périphérique"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button"
 msgstr "Bouton"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Left Button."
 msgstr "Bouton gauche."
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Right Button."
 msgstr "Bouton droite."
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Middle Button."
 msgstr "Bouton du milieu."
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Up."
 msgstr "Molette vers le haut."
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Down."
 msgstr "Molette vers le bas."
 
@@ -6312,7 +5940,8 @@ msgid "Add Global Property"
 msgstr "Ajouter une propriété globale"
 
 #: editor/project_settings_editor.cpp
-msgid "Select an setting item first!"
+#, fuzzy
+msgid "Select a setting item first!"
 msgstr "Choisissez d'abord un élément de réglage !"
 
 #: editor/project_settings_editor.cpp
@@ -6326,6 +5955,16 @@ msgstr "Paramètre"
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
 msgstr "Supprimer élément"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Can't contain '/' or ':'"
+msgstr "Connection à l'hôte impossible:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Already existing"
+msgstr "Mode persistant"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6476,8 +6115,18 @@ msgid "New Script"
 msgstr "Nouveau script"
 
 #: editor/property_editor.cpp
+#, fuzzy
+msgid "Make Unique"
+msgstr "Créer les os"
+
+#: editor/property_editor.cpp
 msgid "Show in File System"
 msgstr "Montrer dans le système de fichiers"
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "Convert To %s"
+msgstr "Convertir vers…"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -6516,6 +6165,11 @@ msgid "Select Property"
 msgstr "Sélectionnez une propriété"
 
 #: editor/property_selector.cpp
+#, fuzzy
+msgid "Select Virtual Method"
+msgstr "Sélectionner une méthode"
+
+#: editor/property_selector.cpp
 msgid "Select Method"
 msgstr "Sélectionner une méthode"
 
@@ -6543,26 +6197,6 @@ msgstr "Conserver la transformation globale"
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
 msgstr "Re-parenter"
-
-#: editor/resources_dock.cpp
-msgid "Create New Resource"
-msgstr "Créer une nouvelle ressource"
-
-#: editor/resources_dock.cpp
-msgid "Open Resource"
-msgstr "Ouvrir la ressource"
-
-#: editor/resources_dock.cpp
-msgid "Save Resource"
-msgstr "Enregistrer la ressource"
-
-#: editor/resources_dock.cpp
-msgid "Resource Tools"
-msgstr "Outils des ressources"
-
-#: editor/resources_dock.cpp
-msgid "Make Local"
-msgstr "Rendre local"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -6692,14 +6326,6 @@ msgstr "Erreur de duplication de la scène afin de l'enregistrer."
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources:"
 msgstr "Ressources secondaires :"
-
-#: editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "Modifier les groupes"
-
-#: editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "Modifier les connexions"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -6895,6 +6521,15 @@ msgid "Invalid base path"
 msgstr "Chemin de base invalide"
 
 #: editor/script_create_dialog.cpp
+msgid "Directory of the same name exists"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "File exists, will be reused"
+msgstr "Le fichier existe, l'écraser ?"
+
+#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Extension invalide"
 
@@ -6935,6 +6570,10 @@ msgid "Load existing script file"
 msgstr "Charger fichier de script existant"
 
 #: editor/script_create_dialog.cpp
+msgid "Language"
+msgstr "Langage"
+
+#: editor/script_create_dialog.cpp
 msgid "Inherits"
 msgstr "Hérité de :"
 
@@ -6973,6 +6612,10 @@ msgstr "Source :"
 #: editor/script_editor_debugger.cpp
 msgid "Function:"
 msgstr "Fonction :"
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
@@ -7055,6 +6698,10 @@ msgid "Type"
 msgstr "Type"
 
 #: editor/script_editor_debugger.cpp
+msgid "Format"
+msgstr "Format"
+
+#: editor/script_editor_debugger.cpp
 msgid "Usage"
 msgstr "Utilisation"
 
@@ -7130,13 +6777,31 @@ msgstr "Changer particules AABB"
 msgid "Change Probe Extents"
 msgstr "Changer les ampleurs de la sonde"
 
+#: modules/gdnative/gd_native_library_editor.cpp
+#, fuzzy
+msgid "Library"
+msgstr "MeshLibrary…"
+
+#: modules/gdnative/gd_native_library_editor.cpp
+#, fuzzy
+msgid "Status"
+msgstr "État :"
+
+#: modules/gdnative/gd_native_library_editor.cpp
+msgid "Libraries: "
+msgstr ""
+
+#: modules/gdnative/register_types.cpp
+msgid "GDNative"
+msgstr ""
+
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 "Argument de type incorrect dans convert(), utilisez les constantes TYPE_*."
 
-#: modules/gdscript/gd_functions.cpp
+#: modules/gdscript/gd_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
@@ -7188,10 +6853,6 @@ msgstr "Sélection de la supression de GridMap"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "Sélection de la duplication de GridMap"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "GridMap Paint"
-msgstr "Peinture de GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
@@ -7287,13 +6948,9 @@ msgstr "Paramètres  GridMap"
 msgid "Pick Distance:"
 msgstr "Choisissez distance :"
 
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Tiles"
-msgstr "Tuiles"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Areas"
-msgstr "Aires"
+#: modules/mono/editor/mono_bottom_panel.cpp
+msgid "Builds"
+msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7494,8 +7151,16 @@ msgid "Return"
 msgstr "Retour"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Call"
+msgstr "Appel"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
 msgstr "Récupérer"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Script already has function '%s'"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
@@ -7919,6 +7584,12 @@ msgstr ""
 "Une ressource de type SampleFrames doit être créée ou définie dans la "
 "propriété « Frames » afin qu'une AnimatedSprite3D fonctionne."
 
+#: scene/3d/vehicle_body.cpp
+msgid ""
+"VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
+"it as a child of a VehicleBody."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Mode brut"
@@ -7928,16 +7599,16 @@ msgid "Add current color as a preset"
 msgstr "Ajouter la couleur courante comme pré-réglage"
 
 #: scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Annuler"
+
+#: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Alerte !"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
-
-#: scene/gui/input_action.cpp
-msgid "Ctrl+"
-msgstr "Ctrl+"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7980,6 +7651,629 @@ msgstr ""
 "nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en une "
 "RenderTarget et assignez sa texture à un nœud pouvant l'afficher."
 
+#: scene/resources/dynamic_font.cpp
+msgid "Error initializing FreeType."
+msgstr "Erreur à l'initialisation de Freetype."
+
+#: scene/resources/dynamic_font.cpp
+msgid "Unknown font format."
+msgstr "Format de police inconnu."
+
+#: scene/resources/dynamic_font.cpp
+msgid "Error loading font."
+msgstr "Erreur lors du chargement de la police."
+
+#: scene/resources/dynamic_font.cpp
+msgid "Invalid font size."
+msgstr "Taille de police invalide."
+
+#~ msgid "Method List For '%s':"
+#~ msgstr "Liste des méthodes pour « %s » :"
+
+#~ msgid "Arguments:"
+#~ msgstr "Paramètres :"
+
+#~ msgid "Return:"
+#~ msgstr "Retourne :"
+
+#~ msgid "Added:"
+#~ msgstr "Ajouté :"
+
+#~ msgid "Removed:"
+#~ msgstr "Supprimé :"
+
+#~ msgid "Error saving atlas:"
+#~ msgstr "Erreur de sauvegarde de l'atlas :"
+
+#~ msgid "Could not save atlas subtexture:"
+#~ msgstr "Impossible d'enregistrer la sous-texture atlas :"
+
+#~ msgid "Exporting for %s"
+#~ msgstr "Exportation pour %s"
+
+#~ msgid "Setting Up.."
+#~ msgstr "Configuration…"
+
+#~ msgid "Error loading scene."
+#~ msgstr "Erreur lors du chargement de la scène."
+
+#~ msgid "Re-Import"
+#~ msgstr "Ré-importer"
+
+#~ msgid "Please wait for scan to complete."
+#~ msgstr "Veuillez attendre la fin du scan."
+
+#~ msgid "Current scene must be saved to re-import."
+#~ msgstr ""
+#~ "La scène actuelle doit être enregistrée afin de pouvoir ré-importer."
+
+#~ msgid "Save & Re-Import"
+#~ msgstr "Enregistrer et ré-importer"
+
+#~ msgid "Re-Importing"
+#~ msgstr "Ré-importation"
+
+#~ msgid "Re-Import Changed Resources"
+#~ msgstr "Ré-importer les ressources modifiées"
+
+#~ msgid "Loading Export Templates"
+#~ msgstr "Chargement des modèles d'exportation"
+
+#~ msgid ""
+#~ "\n"
+#~ "Status: Needs Re-Import"
+#~ msgstr ""
+#~ "\n"
+#~ "Statut: Réimportation nécessaire"
+
+#~ msgid "Same source and destination files, doing nothing."
+#~ msgstr "Fichiers source et destination identiques, rien à faire."
+
+#~ msgid "Target file exists, can't overwrite. Delete first."
+#~ msgstr ""
+#~ "Le fichier cible existe et ne peut être réécrit. Supprimez le d'abord."
+
+#~ msgid "Same source and destination paths, doing nothing."
+#~ msgstr "Chemins source et destination identiques, rien à faire."
+
+#~ msgid "Can't move directories to within themselves."
+#~ msgstr "Impossible de déplacer des répertoires vers eux-mêmes."
+
+#~ msgid "Can't rename deps for:\n"
+#~ msgstr "Impossible de renommer dependances pour :\n"
+
+#~ msgid "Error moving file:\n"
+#~ msgstr "Erreur lors du déplacement de fichier :\n"
+
+#~ msgid "Pick New Name and Location For:"
+#~ msgstr "Entrez un nouveau nom et chemin pour :"
+
+#~ msgid "No files selected!"
+#~ msgstr "Pas de fichiers sélectionnés !"
+
+#~ msgid "Info"
+#~ msgstr "Information"
+
+#~ msgid "Re-Import.."
+#~ msgstr "Ré-importer…"
+
+#~ msgid "No bit masks to import!"
+#~ msgstr "Pas de masques de bits à importer !"
+
+#~ msgid "Target path is empty."
+#~ msgstr "Le chemin de destination est vide."
+
+#~ msgid "Target path must be a complete resource path."
+#~ msgstr ""
+#~ "Le chemin de destination doit être un chemin complet vers une ressource."
+
+#~ msgid "Target path must exist."
+#~ msgstr "Le chemin de destination doit exister."
+
+#~ msgid "Save path is empty!"
+#~ msgstr "Le chemin de sauvegarde est vide !"
+
+#~ msgid "Import BitMasks"
+#~ msgstr "Importer des BitMasks"
+
+#~ msgid "Source Texture(s):"
+#~ msgstr "Texture(s) source :"
+
+#~ msgid "Target Path:"
+#~ msgstr "Chemin de destination :"
+
+#~ msgid "Accept"
+#~ msgstr "Accepter"
+
+#~ msgid "Bit Mask"
+#~ msgstr "Masque de bits"
+
+#~ msgid "No source font file!"
+#~ msgstr "Pas de fichier de police source !"
+
+#~ msgid "No target font resource!"
+#~ msgstr "Pas de ressource de police de destination !"
+
+#~ msgid ""
+#~ "Invalid file extension.\n"
+#~ "Please use .font."
+#~ msgstr ""
+#~ "Extension de fichier invalide.\n"
+#~ "Veuillez utiliser .font."
+
+#~ msgid "Couldn't save font."
+#~ msgstr "Impossible d'enregistrer la police."
+
+#~ msgid "Source Font:"
+#~ msgstr "Police source :"
+
+#~ msgid "Source Font Size:"
+#~ msgstr "Taille de la police source :"
+
+#~ msgid "Dest Resource:"
+#~ msgstr "Ressource de destination :"
+
+#~ msgid "The quick brown fox jumps over the lazy dog."
+#~ msgstr "Voix ambiguë d'un cœur qui, au zéphyr, préfère les jattes de kiwis."
+
+#~ msgid "Test:"
+#~ msgstr "Test :"
+
+#~ msgid "Options:"
+#~ msgstr "Options :"
+
+#~ msgid "Font Import"
+#~ msgstr "Importation d'une police"
+
+#~ msgid ""
+#~ "This file is already a Godot font file, please supply a BMFont type file "
+#~ "instead."
+#~ msgstr ""
+#~ "Ce fichier est déjà un fichier de police Godot, veuillez fournir un "
+#~ "fichier de type BMFont à la place."
+
+#~ msgid "Failed opening as BMFont file."
+#~ msgstr "Impossible d'ouvrir le fichier en tant que fichier BMFont."
+
+#~ msgid "Invalid font custom source."
+#~ msgstr "Source personnalisée de police invalide."
+
+#~ msgid "No meshes to import!"
+#~ msgstr "Pas de maillages à importer !"
+
+#~ msgid "Single Mesh Import"
+#~ msgstr "Importer un maillage"
+
+#~ msgid "Source Mesh(es):"
+#~ msgstr "Maillage(s) source :"
+
+#~ msgid "Surface %d"
+#~ msgstr "Surface %d"
+
+#~ msgid "No samples to import!"
+#~ msgstr "Pas d'échantillons à importer !"
+
+#~ msgid "Import Audio Samples"
+#~ msgstr "Importer des échantillons audio"
+
+#~ msgid "Source Sample(s):"
+#~ msgstr "Échantillon(s) source :"
+
+#~ msgid "Audio Sample"
+#~ msgstr "Échantillon audio"
+
+#~ msgid "New Clip"
+#~ msgstr "Nouvelle séquence"
+
+#~ msgid "Flags"
+#~ msgstr "Drapeaux"
+
+#~ msgid "Bake FPS:"
+#~ msgstr "FPS de calcul :"
+
+#~ msgid "Optimizer"
+#~ msgstr "Optimiseur"
+
+#~ msgid "Max Linear Error"
+#~ msgstr "Erreur linéaire maximale"
+
+#~ msgid "Max Angular Error"
+#~ msgstr "Erreur angulaire maximale"
+
+#~ msgid "Max Angle"
+#~ msgstr "Angle maximal"
+
+#~ msgid "Clips"
+#~ msgstr "Séquences"
+
+#~ msgid "Start(s)"
+#~ msgstr "Départ(s)"
+
+#~ msgid "End(s)"
+#~ msgstr "Fin(s)"
+
+#~ msgid "Filters"
+#~ msgstr "Filtres"
+
+#~ msgid "Source path is empty."
+#~ msgstr "Le chemin source est vide."
+
+#~ msgid "Couldn't load post-import script."
+#~ msgstr "Impossible de charger le script de post-importation."
+
+#~ msgid "Invalid/broken script for post-import."
+#~ msgstr "Script invalide ou cassé de post-importation."
+
+#~ msgid "Error importing scene."
+#~ msgstr "Erreur à l'importation de la scène."
+
+#~ msgid "Import 3D Scene"
+#~ msgstr "Importer une scène 3D"
+
+#~ msgid "Source Scene:"
+#~ msgstr "Scène source :"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Identique à la scène de destination"
+
+#~ msgid "Shared"
+#~ msgstr "Partagé"
+
+#~ msgid "Target Texture Folder:"
+#~ msgstr "Dossier de destination des textures :"
+
+#~ msgid "Post-Process Script:"
+#~ msgstr "Script de post-traitement :"
+
+#~ msgid "Custom Root Node Type:"
+#~ msgstr "Type de nœud racine personnalisé :"
+
+#~ msgid "Auto"
+#~ msgstr "Auto."
+
+#~ msgid "Root Node Name:"
+#~ msgstr "Nom de nœud racine :"
+
+#~ msgid "The Following Files are Missing:"
+#~ msgstr "Les fichiers suivants sont manquants :"
+
+#~ msgid "Import Anyway"
+#~ msgstr "Importer quand même"
+
+#~ msgid "Import & Open"
+#~ msgstr "Importer et ouvrir"
+
+#~ msgid "Edited scene has not been saved, open imported scene anyway?"
+#~ msgstr ""
+#~ "La scène modifiée actuellement n'a pas été enregistrée, ouvrir la scène "
+#~ "importée quand même ?"
+
+#~ msgid "Import Image:"
+#~ msgstr "Importer une image :"
+
+#~ msgid "Couldn't localize path: %s (already local)"
+#~ msgstr "Impossible de rendre le chemin local : %s (déjà local)"
+
+#~ msgid "3D Scene Animation"
+#~ msgstr "Animation de scène 3D"
+
+#~ msgid "Uncompressed"
+#~ msgstr "Non compressé"
+
+#~ msgid "Compress Lossless (PNG)"
+#~ msgstr "Compression sans perte (PNG)"
+
+#~ msgid "Compress Lossy (WebP)"
+#~ msgstr "Compression avec perte (WebP)"
+
+#~ msgid "Compress (VRAM)"
+#~ msgstr "Compression GPU (VRAM)"
+
+#~ msgid "Texture Format"
+#~ msgstr "Format de texture"
+
+#~ msgid "Texture Compression Quality (WebP):"
+#~ msgstr "Qualité de compression de la texture (WebP) :"
+
+#~ msgid "Texture Options"
+#~ msgstr "Options de texture"
+
+#~ msgid "Please specify some files!"
+#~ msgstr "Veuillez spécifier des fichiers !"
+
+#~ msgid "At least one file needed for Atlas."
+#~ msgstr "Il faut au moins un fichier pour créer un atlas."
+
+#~ msgid "Error importing:"
+#~ msgstr "Erreur d'importation :"
+
+#~ msgid "Only one file is required for large texture."
+#~ msgstr "Un seul fichier est nécessaire pour créer une grande texture."
+
+#~ msgid "Max Texture Size:"
+#~ msgstr "Taille de texture maximale :"
+
+#~ msgid "Import Textures for Atlas (2D)"
+#~ msgstr "Importer des textures pour un atlas (2D)"
+
+#~ msgid "Cell Size:"
+#~ msgstr "Taille des cellules :"
+
+#~ msgid "Large Texture"
+#~ msgstr "Grande texture"
+
+#~ msgid "Import Large Textures (2D)"
+#~ msgstr "Importer des grandes textures (2D)"
+
+#~ msgid "Source Texture"
+#~ msgstr "Texture source"
+
+#~ msgid "Base Atlas Texture"
+#~ msgstr "Texture d'atlas de base"
+
+#~ msgid "Source Texture(s)"
+#~ msgstr "Texture(s) source"
+
+#~ msgid "Import Textures for 2D"
+#~ msgstr "Importer des textures pour la 2D"
+
+#~ msgid "Import Textures for 3D"
+#~ msgstr "Importer des textures pour la 3D"
+
+#~ msgid "Import Textures"
+#~ msgstr "Importer des textures"
+
+#~ msgid "2D Texture"
+#~ msgstr "Texture 2D"
+
+#~ msgid "3D Texture"
+#~ msgstr "Texture 3D"
+
+#~ msgid "Atlas Texture"
+#~ msgstr "Texture atlas"
+
+#~ msgid ""
+#~ "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files "
+#~ "to the project."
+#~ msgstr ""
+#~ "REMARQUE : L'import de textures 2D n'est pas obligatoire. Copiez "
+#~ "directement les fichiers PNG ou JPEG dans le projet."
+
+#~ msgid "Crop empty space."
+#~ msgstr "Rogner l'espace vide."
+
+#~ msgid "Texture"
+#~ msgstr "Texture"
+
+#~ msgid "Import Large Texture"
+#~ msgstr "Importer une grande texture"
+
+#~ msgid "Load Source Image"
+#~ msgstr "Charger une image source"
+
+#~ msgid "Slicing"
+#~ msgstr "Découpage"
+
+#~ msgid "Saving"
+#~ msgstr "Enregistrement"
+
+#~ msgid "Couldn't save large texture:"
+#~ msgstr "Impossible d'enregistrer la grande texture :"
+
+#~ msgid "Build Atlas For:"
+#~ msgstr "Construire l'atlas pour :"
+
+#~ msgid "Loading Image:"
+#~ msgstr "Chargement de l'image :"
+
+#~ msgid "Couldn't load image:"
+#~ msgstr "Impossible de charger l'image :"
+
+#~ msgid "Converting Images"
+#~ msgstr "Conversion des images"
+
+#~ msgid "Cropping Images"
+#~ msgstr "Rognage des images"
+
+#~ msgid "Blitting Images"
+#~ msgstr "Découpage des images"
+
+#~ msgid "Couldn't save atlas image:"
+#~ msgstr "Impossible d'enregistrer l'image d'atlas :"
+
+#~ msgid "Couldn't save converted texture:"
+#~ msgstr "Impossible d'enregistrer la texture convertie :"
+
+#~ msgid "Invalid source!"
+#~ msgstr "Source invalide !"
+
+#~ msgid "Invalid translation source!"
+#~ msgstr "Source de traduction invalide !"
+
+#~ msgid "Column"
+#~ msgstr "Colonne"
+
+#~ msgid "No items to import!"
+#~ msgstr "Pas d'objets à importer !"
+
+#~ msgid "No target path!"
+#~ msgstr "Pas de chemin de destination !"
+
+#~ msgid "Import Translations"
+#~ msgstr "Importer des traductions"
+
+#~ msgid "Couldn't import!"
+#~ msgstr "Impossible d'importer !"
+
+#~ msgid "Import Translation"
+#~ msgstr "Importer une traduction"
+
+#~ msgid "Source CSV:"
+#~ msgstr "CSV source :"
+
+#~ msgid "Ignore First Row"
+#~ msgstr "Ignorer la première ligne"
+
+#~ msgid "Compress"
+#~ msgstr "Compresser"
+
+#~ msgid "Add to Project (project.godot)"
+#~ msgstr "Ajouter au projet (project.godot)"
+
+#~ msgid "Import Languages:"
+#~ msgstr "Importer les langues :"
+
+#~ msgid "Translation"
+#~ msgstr "Traduction"
+
+#~ msgid "Parsing %d Triangles:"
+#~ msgstr "Analyse de %d triangles :"
+
+#~ msgid "Triangle #"
+#~ msgstr "Triangle #"
+
+#~ msgid "Light Baker Setup:"
+#~ msgstr "Paramètres du calculateur d'éclairage :"
+
+#~ msgid "Fixing Lights"
+#~ msgstr "Correction des lumières"
+
+#~ msgid "Making BVH"
+#~ msgstr "Création du BVH"
+
+#~ msgid "Transfer to Lightmaps:"
+#~ msgstr "Transfert vers des lightmaps :"
+
+#~ msgid "Allocating Texture #"
+#~ msgstr "Allocation de la texture #"
+
+#~ msgid "Baking Triangle #"
+#~ msgstr "Calcul de la texture #"
+
+#~ msgid "Post-Processing Texture #"
+#~ msgstr "Post-traitement de la texture #"
+
+#~ msgid "Reset the lightmap octree baking process (start over)."
+#~ msgstr ""
+#~ "Remettre le processus de calcul de l'éclairage à zéro (recommencer)."
+
+#~ msgid "Zoom (%):"
+#~ msgstr "Zoom (%) :"
+
+#~ msgid "Skeleton.."
+#~ msgstr "Squelette…"
+
+#~ msgid "Zoom Reset"
+#~ msgstr "Réinitialiser le zoom"
+
+#~ msgid "Zoom Set.."
+#~ msgstr "Définir le zoom…"
+
+#~ msgid "Set a Value"
+#~ msgstr "Définir une valeur"
+
+#~ msgid "Snap (Pixels):"
+#~ msgstr "Aligner (pixels) :"
+
+#~ msgid "Parse BBCode"
+#~ msgstr "Analyser le BBCode"
+
+#~ msgid "Length:"
+#~ msgstr "Longueur :"
+
+#~ msgid "Open Sample File(s)"
+#~ msgstr "Ouvrir un ou des fichiers d'échantillons"
+
+#~ msgid "ERROR: Couldn't load sample!"
+#~ msgstr "ERREUR : Impossible de charger l'échantillon !"
+
+#~ msgid "Add Sample"
+#~ msgstr "Ajouter un échantillon"
+
+#~ msgid "Rename Sample"
+#~ msgstr "Renommer l'échantillon"
+
+#~ msgid "Delete Sample"
+#~ msgstr "Supprimer l'échantillon"
+
+#~ msgid "16 Bits"
+#~ msgstr "16 bits"
+
+#~ msgid "8 Bits"
+#~ msgstr "8 bits"
+
+#~ msgid "Stereo"
+#~ msgstr "Stéréo"
+
+#~ msgid "Mono"
+#~ msgstr "Mono"
+
+#~ msgid "Pitch"
+#~ msgstr "Hauteur"
+
+#~ msgid "Window"
+#~ msgstr "Fenêtre"
+
+#~ msgid "Move Right"
+#~ msgstr "Aller à droite"
+
+#~ msgid "Scaling to %s%%."
+#~ msgstr "Mise à l'échelle %s%%."
+
+#~ msgid "Up"
+#~ msgstr "Haut"
+
+#~ msgid "Down"
+#~ msgstr "Bas"
+
+#~ msgid "Bucket"
+#~ msgstr "Seau"
+
+#~ msgid "Invalid project path, the path must exist!"
+#~ msgstr "Chemin de projet invalide, le chemin doit exister !"
+
+#~ msgid "Invalid project path, project.godot must not exist."
+#~ msgstr "Chemin de projet invalide, project.godot ne doit pas exister."
+
+#~ msgid "Invalid project path, project.godot must exist."
+#~ msgstr "Chemin de projet invalide, project.godot doit exister."
+
+#~ msgid "Project Path (Must Exist):"
+#~ msgstr "Chemin du projet (doit exister) :"
+
+#~ msgid "Create New Resource"
+#~ msgstr "Créer une nouvelle ressource"
+
+#~ msgid "Open Resource"
+#~ msgstr "Ouvrir la ressource"
+
+#~ msgid "Save Resource"
+#~ msgstr "Enregistrer la ressource"
+
+#~ msgid "Resource Tools"
+#~ msgstr "Outils des ressources"
+
+#~ msgid "Make Local"
+#~ msgstr "Rendre local"
+
+#~ msgid "Edit Groups"
+#~ msgstr "Modifier les groupes"
+
+#~ msgid "Edit Connections"
+#~ msgstr "Modifier les connexions"
+
+#~ msgid "GridMap Paint"
+#~ msgstr "Peinture de GridMap"
+
+#~ msgid "Tiles"
+#~ msgstr "Tuiles"
+
+#~ msgid "Areas"
+#~ msgstr "Aires"
+
+#~ msgid "Ctrl+"
+#~ msgstr "Ctrl+"
+
 #~ msgid "Down Wheel)"
 #~ msgstr "Roue descendante)"
 
@@ -7999,9 +8293,6 @@ msgstr ""
 
 #~ msgid "Close Goto Prev. Scene"
 #~ msgstr "Fermer, aller à la scène précédente"
-
-#~ msgid "Expand to Parent"
-#~ msgstr "Étendre au parent"
 
 #~ msgid "Del"
 #~ msgstr "Supprimer"
@@ -8177,17 +8468,11 @@ msgstr ""
 #~ msgid "Save Translatable Strings"
 #~ msgstr "Enregistrer les chaînes traduisibles"
 
-#~ msgid "Translatable Strings.."
-#~ msgstr "Chaînes traduisibles…"
-
 #~ msgid "Install Export Templates"
 #~ msgstr "Installer les modèles d'exportation"
 
 #~ msgid "Edit Script Options"
 #~ msgstr "Modifier les options du script"
-
-#~ msgid "Please export outside the project folder!"
-#~ msgstr "Veuillez exporter en dehors du dossier du projet !"
 
 #~ msgid "Error exporting project!"
 #~ msgstr "Erreur d'exportation du projet !"
@@ -8238,17 +8523,11 @@ msgstr ""
 #~ msgid "Include"
 #~ msgstr "Inclure"
 
-#~ msgid "Change Image Group"
-#~ msgstr "Changer le groupe d'images"
-
 #~ msgid "Group name can't be empty!"
 #~ msgstr "Le nom du groupe ne peut pas être vide !"
 
 #~ msgid "Invalid character in group name!"
 #~ msgstr "Caractère invalide dans le nom du groupe !"
-
-#~ msgid "Group name already exists!"
-#~ msgstr "Le nom du groupe existe déjà !"
 
 #~ msgid "Add Image Group"
 #~ msgstr "Ajouter un groupe d'images"
@@ -8397,9 +8676,6 @@ msgstr ""
 
 #~ msgid "Lighting"
 #~ msgstr "Éclairage"
-
-#~ msgid "Toggle Persisting"
-#~ msgstr "Mode persistant"
 
 #~ msgid "Global"
 #~ msgstr "Global"
