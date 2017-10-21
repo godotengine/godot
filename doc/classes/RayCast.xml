@@ -78,11 +78,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="get_collision_layer" qualifiers="const">
+		<method name="get_collision_mask" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the collision layer for this ray.
+				Returns the collision mask for this ray.
 			</description>
 		</method>
 		<method name="get_collision_normal" qualifiers="const">
@@ -147,13 +147,13 @@
 				Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code].
 			</description>
 		</method>
-		<method name="set_collision_layer">
+		<method name="set_collision_mask">
 			<return type="void">
 			</return>
-			<argument index="0" name="layer" type="int">
+			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
-				Set the mask to filter objects. Only objects with at least the same mask element set will be detected.
+				Set the mask to filter objects. Only objects in at least one collision layer enabled in the mask will be detected.
 			</description>
 		</method>
 		<method name="set_enabled">
@@ -179,8 +179,8 @@
 		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
-			The RayCast's collision layer(s). Only bodies in the same collision layer(s) will be detected.
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
