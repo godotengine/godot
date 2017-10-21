@@ -35,8 +35,6 @@
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
-#include "servers/physics_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -55,9 +53,6 @@ class OS_Server : public OS_Unix {
 	MainLoop *main_loop;
 
 	bool grab;
-
-	PhysicsServer *physics_server;
-	Physics2DServer *physics_2d_server;
 
 	virtual void delete_main_loop();
 	IP_Unix *ip_unix;

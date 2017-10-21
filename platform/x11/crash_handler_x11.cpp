@@ -33,6 +33,7 @@
 
 #include "main/main.h"
 #include "os_x11.h"
+#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>

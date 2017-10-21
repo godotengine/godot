@@ -136,13 +136,6 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	AudioDriverManager::add_driver(&audio_driver);
 	AudioDriverManager::initialize(p_audio_driver);
 
-	// init physics servers
-	physics_server = memnew(PhysicsServerSW);
-	physics_server->init();
-	//physics_2d_server = memnew( Physics2DServerSW );
-	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
-	physics_2d_server->init();
-
 	input = memnew(InputDefault);
 
 /*
@@ -381,12 +374,6 @@ void OSIPhone::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
-
-	physics_server->finish();
-	memdelete(physics_server);
-
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
 
 	memdelete(input);
 };

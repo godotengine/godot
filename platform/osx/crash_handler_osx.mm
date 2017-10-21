@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "main/main.h"
 #include "os_osx.h"
+#include "project_settings.h"
 
 #include <string.h>
 #include <unistd.h>
