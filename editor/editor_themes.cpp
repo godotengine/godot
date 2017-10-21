@@ -233,7 +233,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	clock_t end_time = clock();
 
 	double time_d = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-	print_line("SVG_GENERATION TIME: " + rtos(time_d));
 #else
 	print_line("Sorry no icons for you");
 #endif

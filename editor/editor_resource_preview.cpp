@@ -185,7 +185,6 @@ void EditorResourcePreview::_thread() {
 					path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
 				}
 
-				print_line("cached: " + item.path);
 				_preview_ready(path, cache[item.path].preview, item.id, item.function, item.userdata);
 
 				preview_mutex->unlock();
@@ -201,15 +200,11 @@ void EditorResourcePreview::_thread() {
 
 				if (item.resource.is_valid()) {
 
-					print_line("generated: " + item.path);
-
 					texture = _generate_preview(item, String());
 					//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
 					_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, item.id, item.function, item.userdata);
 
 				} else {
-
-					print_line("from file: " + item.path);
 
 					String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
@@ -218,11 +213,8 @@ void EditorResourcePreview::_thread() {
 					//does not have it, try to load a cached thumbnail
 
 					String file = cache_base + ".txt";
-					//print_line("cachetxt at "+file);
 					FileAccess *f = FileAccess::open(file, FileAccess::READ);
 					if (!f) {
-
-						//print_line("generate because not cached");
 
 						//generate
 						texture = _generate_preview(item, cache_base);
@@ -283,7 +275,6 @@ void EditorResourcePreview::_thread() {
 						}
 					}
 
-					//print_line("notify of preview ready");
 					_preview_ready(item.path, texture, item.id, item.function, item.userdata);
 				}
 			}

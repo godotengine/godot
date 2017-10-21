@@ -44,7 +44,6 @@ def can_build():
         if (os.system(mingw64 + test) == 0 or os.system(mingw32 + test) == 0):
             return True
 
-    print("Could not detect MinGW. Ensure its binaries are in your PATH or that MINGW32_PREFIX or MINGW64_PREFIX are properly defined.")
     return False
 
 

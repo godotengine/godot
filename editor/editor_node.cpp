@@ -406,7 +406,6 @@ void EditorNode::_fs_changed() {
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
 
 				if (mt != E->get()->get_import_last_modified_time()) {
-					print_line("success");
 					changed.push_back(E->get());
 				}
 #endif
@@ -431,7 +430,7 @@ void EditorNode::_fs_changed() {
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
-	print_line("reimporting");
+
 	List<String> scenes; //will load later
 
 	for (int i = 0; i < p_resources.size(); i++) {
@@ -463,7 +462,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		if (defer_load_scene != "") {
 
-			print_line("loading scene DEFERRED");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -781,7 +779,6 @@ bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, i
 	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
 			//save
-			print_line("Also saving modified external resource: " + p_res->get_path());
 			ResourceSaver::save(p_res->get_path(), p_res, flags);
 		}
 		processed[p_res] = false; //because it's a file
@@ -1991,7 +1988,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDIT_UNDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				print_line("no because state");
 				break; // can't undo while mouse buttons are pressed
 			}
 
@@ -2960,7 +2956,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.clear();
 
-	print_line("actually loading it");
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true, &err);
 	if (!sdata.is_valid()) {
@@ -4297,15 +4292,11 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
-	print_line("reloading: " + p_path);
 	List<Ref<Resource> > cached;
 	ResourceCache::get_cached_resources(&cached);
 	List<Ref<Resource> > to_clear; //clear internal resources from previous scene from being used
 	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
 
-		if (E->get()->get_path().find("::") != -1) {
-			print_line(E->get()->get_path());
-		}
 		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
 			to_clear.push_back(E->get());
 		}
@@ -4313,7 +4304,6 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	//so reload reloads everything, clear subresources of previous scene
 	while (to_clear.front()) {
-		print_line("bye bye: " + to_clear.front()->get()->get_path());
 		to_clear.front()->get()->set_path("");
 		to_clear.pop_front();
 	}
