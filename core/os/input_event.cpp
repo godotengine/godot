@@ -637,7 +637,7 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event) const 
 	if (jm.is_null())
 		return false;
 
-	return (axis == jm->axis && (axis_value < 0) == (jm->axis_value < 0));
+	return (axis == jm->axis && ((axis_value < 0) == (jm->axis_value < 0) || jm->axis_value == 0));
 }
 
 String InputEventJoypadMotion::as_text() const {
