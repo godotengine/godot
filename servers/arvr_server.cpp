@@ -138,7 +138,7 @@ void ARVRServer::add_interface(const Ref<ARVRInterface> &p_interface) {
 		};
 	};
 
-	print_line("Registered interface " + p_interface->get_name());
+	print_line("ARVR: Registered interface: " + p_interface->get_name());
 
 	interfaces.push_back(p_interface);
 	emit_signal("interface_added", p_interface->get_name());

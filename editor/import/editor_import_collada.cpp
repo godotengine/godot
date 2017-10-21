@@ -1106,7 +1106,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 			for (int mi = 0; mi < p_morph_meshes.size(); mi++) {
 
-				//print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
 				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
 				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
 
@@ -1187,9 +1186,6 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 				if (cd.control_vertices.has("TILT") && cd.sources.has(cd.control_vertices["TILT"]))
 					tilts = &cd.sources[cd.control_vertices["TILT"]];
 
-				if (tilts) {
-					print_line("FOUND TILTS!!!");
-				}
 				int pc = vertices.array.size() / 3;
 				for (int i = 0; i < pc; i++) {
 
@@ -1237,11 +1233,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 			Vector<int> bone_remap;
 			Vector<Ref<ArrayMesh> > morphs;
 
-			print_line("mesh: " + String(mi->get_name()));
-
 			if (ng->controller) {
-
-				print_line("has controller");
 
 				String ngsource = ng->source;
 
@@ -1255,9 +1247,6 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					ERR_FAIL_COND_V(skeletons.empty(), ERR_INVALID_DATA);
 
 					String skname = skeletons[0];
-					if (!node_map.has(skname)) {
-						print_line("no node for skeleton " + skname);
-					}
 					ERR_FAIL_COND_V(!node_map.has(skname), ERR_INVALID_DATA);
 					NodeMap nmsk = node_map[skname];
 					Skeleton *sk = Object::cast_to<Skeleton>(nmsk.node);
@@ -1295,22 +1284,16 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					for (int i = 0; i < bone_remap.size(); i++) {
 
 						String str = joint_src->sarray[i];
-						if (!bone_remap_map.has(str)) {
-							print_line("bone not found for remap: " + str);
-							print_line("in skeleton: " + skname);
-						}
 						ERR_FAIL_COND_V(!bone_remap_map.has(str), ERR_INVALID_DATA);
 						bone_remap[i] = bone_remap_map[str];
 					}
 				}
 
 				if (collada.state.morph_controller_data_map.has(ngsource)) {
-					print_line("is morph " + ngsource);
+
 					//it's a morph!!
 					morph = &collada.state.morph_controller_data_map[ngsource];
 					meshid = morph->mesh;
-					printf("KKmorph: %p\n", morph);
-					print_line("morph mshid: " + meshid);
 
 					Vector<String> targets;
 

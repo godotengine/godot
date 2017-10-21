@@ -163,7 +163,10 @@ void register_gdnative_types() {
 
 	// run singletons
 
-	Array singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	Array singletons = Array();
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
+		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	}
 
 	singleton_gdnatives.resize(singletons.size());
 
