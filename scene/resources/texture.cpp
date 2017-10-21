@@ -1324,16 +1324,18 @@ void CubeMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_width"), &CubeMap::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &CubeMap::get_height);
-	//ClassDB::bind_method(D_METHOD("get_rid"),&CubeMap::get_rid);
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &CubeMap::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &CubeMap::get_flags);
-
 	ClassDB::bind_method(D_METHOD("set_side", "side", "image"), &CubeMap::set_side);
 	ClassDB::bind_method(D_METHOD("get_side", "side"), &CubeMap::get_side);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &CubeMap::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &CubeMap::get_storage);
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &CubeMap::set_lossy_storage_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"), &CubeMap::get_lossy_storage_quality);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_ENUM, "Mipmaps,Repeat,Filter,Default"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "storage_mode", PROPERTY_HINT_ENUM, "Raw,Lossy Compressed,Lossless Compressed"), "set_storage", "get_storage");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lossy_storage_quality"), "set_lossy_storage_quality", "get_lossy_storage_quality");
 
 	BIND_ENUM_CONSTANT(STORAGE_RAW);
 	BIND_ENUM_CONSTANT(STORAGE_COMPRESS_LOSSY);
