@@ -212,7 +212,7 @@ def rstize_text(text, cclass):
                 cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
                 tag_text = param
-            elif cmd.find('method') == 0:
+            elif cmd.find('method') == 0 or cmd.find('member') == 0 or cmd.find('signal') == 0:
                 cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
 
@@ -450,6 +450,7 @@ def make_rst_class(node):
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, node.attrib['name'], m, True, name, True)
             f.write('\n')
             d = m.find('description')
@@ -465,12 +466,14 @@ def make_rst_class(node):
         f.write(make_heading('Member Variables', '-'))
 
         for c in list(members):
+            # Leading two spaces necessary to prevent breaking the <ul>
+            f.write("  .. _class_" + name + "_" + c.attrib['name'] + ":\n\n")
             s = '- '
             s += make_type(c.attrib['type']) + ' '
             s += '**' + c.attrib['name'] + '**'
             if c.text.strip() != '':
                 s += ' - ' + rstize_text(c.text.strip(), name)
-            f.write(s + '\n')
+            f.write(s + '\n\n')
         f.write('\n')
 
     constants = node.find('constants')
