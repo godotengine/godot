@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-07-19 09:38+0000\n"
+"PO-Revision-Date: 2017-08-29 13:49+0000\n"
 "Last-Translator: hubbyist <hub@legrud.net>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.16-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -446,11 +446,11 @@ msgstr "İstem Başarısız, çok fazla yönlendirme"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
-msgstr ""
+msgstr "Yönlendirme Döngüsü."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Başarısız:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -458,27 +458,27 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Beklenen:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Alınan:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "Başarısız sha256 hash sınaması"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Nesne İndirme Hatası:"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Başarılı!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "Alınıyor:"
 
 #: editor/asset_library_editor_plugin.cpp
 #, fuzzy
@@ -502,36 +502,35 @@ msgstr "Kaynak kaydedilirken sorun!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Boşta"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Tekrarla"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Download Error"
-msgstr "Aşağı"
+msgstr "İndirme Hatası"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Bu nesne için zaten sürdürülen bir indirme var!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "first"
-msgstr ""
+msgstr "ilk"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "prev"
-msgstr ""
+msgstr "önceki"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "next"
-msgstr ""
+msgstr "sonraki"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "last"
-msgstr ""
+msgstr "son"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "All"
@@ -945,7 +944,7 @@ msgstr "Sağ olun!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot Oyun Motoru katkı sağlayanlar"
 
 #: editor/editor_about.cpp
 #, fuzzy
@@ -959,7 +958,7 @@ msgstr "Tasarı Yöneticisi"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Baş Geliştirici"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
@@ -967,15 +966,15 @@ msgstr "Tasarı Yöneticisi"
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Geliştiriciler"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Lisans"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr ""
+msgstr "Üçüncü Parti Lisans"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -997,7 +996,7 @@ msgstr "İçerikler:"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Lisanslar"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
@@ -1019,7 +1018,7 @@ msgstr "Çıkın Başarı ile Kuruldu!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Hoparlörler"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
@@ -1072,15 +1071,15 @@ msgstr "Sorun ayıklama seçenekleri"
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr ""
+msgstr "Tekil"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr ""
+msgstr "Sessiz"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr ""
+msgstr "Dolan"
 
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -1314,7 +1313,7 @@ msgstr "Çıkınla"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
-msgstr ""
+msgstr "Biçem dosyası bulunamadı:\n"
 
 #: editor/editor_export.cpp
 msgid "Added:"
@@ -1506,7 +1505,7 @@ msgstr "Canlandırmalar"
 
 #: editor/editor_help.cpp
 msgid "enum  "
-msgstr ""
+msgstr "enum…  "
 
 #: editor/editor_help.cpp
 msgid "Constants:"
@@ -4610,14 +4609,17 @@ msgid "Curve Point #"
 msgstr "Eğrisel Nokta #"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Point Position"
 msgstr "Eğri Noktası Konumu Ayarla"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve In Position"
 msgstr "Eğriyi Konumda Ayarla"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Out Position"
 msgstr "Eğri Çıkış Konumunu Ayarla"
 

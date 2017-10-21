@@ -2,20 +2,21 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Aram Nap <xyphex.aram@gmail.com>, 2017
+# Aram Nap <xyphex.aram@gmail.com>, 2017.
+# Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-04-13 18:15+0000\n"
-"Last-Translator: Aram Nap <xyphex.aram@gmail.com>\n"
+"PO-Revision-Date: 2017-09-19 22:45+0000\n"
+"Last-Translator: Senno Kaasjager <senno.kaasjager@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.14-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -153,7 +154,7 @@ msgstr "Lineair"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr "Constant"
+msgstr "Constante"
 
 #: editor/animation_editor.cpp
 msgid "In"
@@ -360,21 +361,19 @@ msgstr "Wijzig Array Waarde"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Vrij"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
 msgid "Version:"
-msgstr ""
+msgstr "Versie:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Constanten:"
+msgstr "Inhoud:"
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "Bestand:"
+msgstr "Bekijk Bestanden"
 
 #: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
 #: editor/editor_help.cpp editor/property_selector.cpp
@@ -385,7 +384,7 @@ msgstr "Omschrijving:"
 #: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
 #: editor/project_manager.cpp
 msgid "Install"
-msgstr ""
+msgstr "Installeer"
 
 #: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
 #: editor/connections_dialog.cpp editor/export_template_manager.cpp
@@ -411,46 +410,43 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Verbindingsfout, probeer het nog eens."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect."
-msgstr "Verbind.."
+msgstr "Kan niet verbinden."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Can't connect to host:"
-msgstr "Verbind Aan Node:"
+msgstr "Kan niet verbinden met host:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Geen antwoord van host:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "Geen antwoord."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, return code:"
-msgstr "Opgevraagde bestandsformaat onbekend:"
+msgstr "Aanvraag mislukt, retourcode:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "Aanv. Mislukt."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "Aanvraag mislukt, te veel redirects"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
-msgstr ""
+msgstr "Redirectlus."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "Mislukt:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -458,46 +454,43 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Verwacht:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Gekregen:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "Sha256 hash controle mislukt"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Asset download fout:"
 
 #: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Succes!"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "Ophalen:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Resolving.."
 msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "Verbind.."
+msgstr "Verbinden.."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "Testen"
+msgstr "Opvragen..."
 
 #: editor/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Error making request"
-msgstr "Error bij het opslaan van resource!"
+msgstr "Fout bij opvragen"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -505,7 +498,7 @@ msgstr ""
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Probeer opnieuw"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Download Error"
@@ -559,7 +552,7 @@ msgstr "Zoeken"
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Importeren"
 
 #: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Plugins"
@@ -604,7 +597,7 @@ msgstr "Assets ZIP Bestand"
 
 #: editor/call_dialog.cpp
 msgid "Method List For '%s':"
-msgstr "Methode Lijst Voor '%s':"
+msgstr "Methodelijst voor '%s':"
 
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
@@ -628,7 +621,7 @@ msgstr "Ga naar Regel"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Regel Nummer:"
+msgstr "Regelnummer:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
@@ -1125,7 +1118,7 @@ msgstr "Locatie voor Nieuwe Layout.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr "Open Audio Bus Layout"
+msgstr "Open Audio Bus Lay-out"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
@@ -1617,7 +1610,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr ""
+msgstr "Lay-out naam niet gevonden!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
@@ -4517,16 +4510,19 @@ msgid "Curve Point #"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Point Position"
-msgstr ""
+msgstr "Verwijder Signaal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve In Position"
-msgstr ""
+msgstr "Verwijder Signaal"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Out Position"
-msgstr ""
+msgstr "Verwijder Signaal"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"

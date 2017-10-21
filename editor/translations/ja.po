@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # akirakido <achts.y@gmail.com>, 2016-2017.
-# hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016.
+# hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016-2017.
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017.
@@ -11,15 +11,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-07-27 05:10+0000\n"
-"Last-Translator: Tetsuji Ochiai <ochiaixp@gmail.com>\n"
+"PO-Revision-Date: 2017-08-28 04:47+0000\n"
+"Last-Translator: hopping tappy <hopping.tappy@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.16-dev\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1094,7 +1094,7 @@ msgstr "開発者"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "ライセンス"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
@@ -1142,7 +1142,7 @@ msgstr "パッケージインストール成功!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "スピーカー"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
@@ -2177,9 +2177,8 @@ msgid "Close Scene"
 msgstr "シーンを閉じる"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open Recent"
-msgstr "最近のを開く"
+msgstr "最近使ったファイルを開く"
 
 #: editor/editor_node.cpp
 #, fuzzy
