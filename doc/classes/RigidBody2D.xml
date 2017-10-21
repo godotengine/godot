@@ -116,7 +116,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the body's moment of inertia, which is computed automatically from the body's mass and assigned [Shape2D]\ s during the physics frame. Note that it will not yet have a value in the [code]_ready()[/code] function.
+				Returns the body's moment of inertia, which is computed automatically from the body's mass and assigned [Shape2D]s during the physics frame. Note that it will not yet have a value in the [code]_ready()[/code] function.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
@@ -415,7 +415,7 @@
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]\s. Default value: [code]1[/code].
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 			Damps the body's [member linear_velocity]. If [code]-1[/code] the body will use the "Default Linear Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].

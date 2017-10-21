@@ -4,7 +4,7 @@
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
 	<description>
-		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]\ s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths.
+		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths.
 	</description>
 	<tutorials>
 	</tutorials>

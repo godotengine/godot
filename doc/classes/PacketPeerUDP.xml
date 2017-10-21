@@ -4,7 +4,7 @@
 		UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]\ s.
+		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
 	</description>
 	<tutorials>
 	</tutorials>

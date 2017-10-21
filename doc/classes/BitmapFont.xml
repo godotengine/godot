@@ -168,7 +168,7 @@
 			The font's kernings as [PoolIntArray].
 		</member>
 		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures">
-			The font's [Texture]\ s.
+			The font's [Texture]s.
 		</member>
 	</members>
 	<constants>

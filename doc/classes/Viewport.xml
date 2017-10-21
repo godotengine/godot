@@ -303,7 +303,7 @@
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
-				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]\ s. This is relative to the global canvas transform of the viewport.
+				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 			</description>
 		</method>
 		<method name="set_clear_mode">

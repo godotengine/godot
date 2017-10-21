@@ -102,7 +102,7 @@
 			<argument index="1" name="preview_size" type="int">
 			</argument>
 			<description>
-				Returns mesh previews rendered at the given size as an [Array] of [Texture]\ s.
+				Returns mesh previews rendered at the given size as an [Array] of [Texture]s.
 			</description>
 		</method>
 		<method name="open_scene_from_path">
