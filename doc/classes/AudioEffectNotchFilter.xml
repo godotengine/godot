@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectNotchFilter" inherits="AudioEffectFilter" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a notch filter to the Audio Bus.
 	</brief_description>
 	<description>
+		Attenuates frequencies in a narrow band around the [member cutoff_hz] and cuts frequencies outside of this range.
 	</description>
 	<tutorials>
 	</tutorials>
