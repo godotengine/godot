@@ -4,7 +4,7 @@
 		A unit of execution in a process.
 	</brief_description>
 	<description>
-		A unit of execution in a process. Can run methods on [Object]\ s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
+		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the current [Thread]\ s id, uniquely identifying it among all threads.
+				Returns the current [Thread]s id, uniquely identifying it among all threads.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">

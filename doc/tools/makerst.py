@@ -189,8 +189,11 @@ def rstize_text(text, cclass):
         post_text = text[endq_pos + 1:]
         tag_text = text[pos + 1:endq_pos]
 
+        escape_post = False
+
         if tag_text in class_names:
             tag_text = make_type(tag_text)
+            escape_post = True
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(' ')
@@ -218,12 +221,14 @@ def rstize_text(text, cclass):
                     tag_text = ':ref:`' + class_param + '.' + method_param + '<class_' + class_param + '_' + method_param + '>`'
                 else:
                     tag_text = ':ref:`' + param + '<class_' + cclass + "_" + param + '>`'
+                escape_post = True
             elif cmd.find('image=') == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find('url=') == 0:
                 tag_text = ':ref:`' + cmd[4:] + '<' + cmd[4:] + ">`"
             elif cmd == '/url':
-                tag_text = ')'
+                tag_text = ''
+                escape_post = True
             elif cmd == 'center':
                 tag_text = ''
             elif cmd == '/center':
@@ -248,6 +253,11 @@ def rstize_text(text, cclass):
                 inside_code = True
             else:
                 tag_text = make_type(tag_text)
+                escape_post = True
+
+        # Properly escape things like `[Node]s`
+        if escape_post and post_text and post_text[0].isalnum(): # not punctuation, escape
+            post_text = '\ ' + post_text
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
@@ -459,7 +469,7 @@ def make_rst_class(node):
             s += make_type(c.attrib['type']) + ' '
             s += '**' + c.attrib['name'] + '**'
             if c.text.strip() != '':
-                s += ' - ' + c.text.strip()
+                s += ' - ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
         f.write('\n')
 
