@@ -732,6 +732,19 @@ void TextEdit::_notification(int p_what) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
 				}
 
+				if (str.length() == 0) {
+					// draw line background if empty as we won't loop at at all
+					if (line == cursor.line) {
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
+					}
+
+					// give visual indication of empty selected line
+					if (selection.active && line >= selection.from_line && line <= selection.to_line) {
+						int char_w = cache.font->get_char_size(' ').width;
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, char_w, get_row_height()), cache.selection_color);
+					}
+				}
+
 				if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
 #ifdef TOOLS_ENABLED
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
@@ -953,15 +966,18 @@ void TextEdit::_notification(int p_what) {
 					bool in_selection = (selection.active && line >= selection.from_line && line <= selection.to_line && (line > selection.from_line || j >= selection.from_column) && (line < selection.to_line || j < selection.to_column));
 
 					if (line == cursor.line) {
-						if (j == 0)
-							//first char
+						// if its the first char draw behind line numbers
+						if (j == 0) {
 							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, (char_ofs + char_margin), get_row_height()), cache.current_line_color);
-						else if (j == str.length() - 1)
-							//last char
+						}
+						// if its the last char draw to end of the line
+						if (j == str.length() - 1) {
 							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin + char_w, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
-
-						if (!in_selection)
+						}
+						// actual text
+						if (!in_selection) {
 							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.current_line_color);
+						}
 					}
 
 					if (in_selection) {
