@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectLowPassFilter" inherits="AudioEffectFilter" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a low pass filter to the Audio Bus.
 	</brief_description>
 	<description>
+		Cuts frequencies higher than the [member cutoff_hz] and allows lower frequencies to pass.
 	</description>
 	<tutorials>
 	</tutorials>
