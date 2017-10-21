@@ -124,6 +124,7 @@ public:
 			float z_slope_scale;
 			float shadow_dual_paraboloid_render_zfar;
 			float shadow_dual_paraboloid_render_side;
+			float viewport_size[2];
 			float screen_pixel_size[2];
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
@@ -143,7 +144,7 @@ public:
 			float fog_height_min;
 			float fog_height_max;
 			float fog_height_curve;
-			uint8_t padding[8];
+			// make sure this struct is padded to be a multiple of 16 bytes for webgl
 
 		} ubo_data;
 
