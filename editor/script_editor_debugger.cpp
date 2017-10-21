@@ -663,7 +663,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorProfiler::Metric::Category::Item item;
 			item.calls = 1;
 			item.line = 0;
-			item.name = "Fixed Time";
+			item.name = "Physics Time";
 			item.total = metric.physics_time;
 			item.self = item.total;
 			item.signature = "physics_time";
@@ -677,7 +677,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Fixed Frame Time";
+			item.name = "Physics Frame Time";
 			item.total = metric.physics_frame_time;
 			item.self = item.total;
 			item.signature = "physics_frame_time";
