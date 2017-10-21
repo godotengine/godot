@@ -634,7 +634,7 @@ EditorProfiler::EditorProfiler() {
 	display_mode->add_item(TTR("Frame Time (sec)"));
 	display_mode->add_item(TTR("Average Time (sec)"));
 	display_mode->add_item(TTR("Frame %"));
-	display_mode->add_item(TTR("Fixed Frame %"));
+	display_mode->add_item(TTR("Physics Frame %"));
 	display_mode->connect("item_selected", this, "_combo_changed");
 
 	hb->add_child(display_mode);
