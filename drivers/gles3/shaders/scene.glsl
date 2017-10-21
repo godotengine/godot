@@ -169,7 +169,7 @@ void light_compute(vec3 N, vec3 L,vec3 V, vec3 light_color, float roughness, ino
 	float dotNL = max(dot(N,L), 0.0 );
 	diffuse += dotNL * light_color / M_PI;
 
-	if (roughness > 0.0) {
+	if (roughness < 1.0) {
 
 		vec3 H = normalize(V + L);
 		float dotNH = max(dot(N,H), 0.0 );
@@ -940,7 +940,7 @@ vec3 metallic_to_specular_color(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, metallic); // TODO: reference?
 }
 
-void light_compute(vec3 N, vec3 L, vec3 V, vec3 B, vec3 T, vec3 light_color, vec3 attenuation, vec3 diffuse_color, vec3 transmission, float specular_blob_intensity, float roughness, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, inout vec3 diffuse_light, inout vec3 specular_light) {
+void light_compute(vec3 N, vec3 L, vec3 V, vec3 B, vec3 T, vec3 light_color, vec3 attenuation, vec3 diffuse_color, vec3 transmission, float specular_blob_intensity, float roughness, float metallic, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, inout vec3 diffuse_light, inout vec3 specular_light) {
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
@@ -1198,7 +1198,7 @@ vec3 light_transmittance(float translucency,vec3 light_vec, vec3 normal, vec3 po
 }
 #endif
 
-void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 binormal, vec3 tangent, vec3 albedo, vec3 transmission, float roughness, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light) {
+void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 binormal, vec3 tangent, vec3 albedo, vec3 transmission, float roughness, float metallic, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, float anisotropy, float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light) {
 
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
@@ -1252,11 +1252,11 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 		light_attenuation*=mix(omni_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,omni_lights[idx].light_params.z*p_blob_intensity,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,omni_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
-void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent,vec3 albedo, vec3 transmission,float roughness, float rim,float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light) {
+void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 binormal, vec3 tangent,vec3 albedo, vec3 transmission,float roughness, float metallic, float rim, float rim_tint, float clearcoat, float clearcoat_gloss,float anisotropy,float p_blob_intensity, inout vec3 diffuse_light, inout vec3 specular_light) {
 
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
@@ -1286,7 +1286,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 		light_attenuation*=mix(spot_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,spot_lights[idx].light_params.z*p_blob_intensity,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,spot_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
@@ -1919,7 +1919,7 @@ FRAGMENT_SHADER_CODE
 	specular_light*=mix(vec3(1.0),light_attenuation,specular_light_interp.a);
 
 #else
-	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb,light_attenuation,albedo,transmission,light_params.z*specular_blob_intensity,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,-light_direction_attenuation.xyz,eye_vec,binormal,tangent,light_color_energy.rgb,light_attenuation,albedo,transmission,light_params.z*specular_blob_intensity,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 #endif
 
 
@@ -1957,11 +1957,11 @@ FRAGMENT_SHADER_CODE
 #else
 
 	for(int i=0;i<omni_light_count;i++) {
-		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,transmission,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,specular_blob_intensity,diffuse_light,specular_light);
+		light_process_omni(omni_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,transmission,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,specular_blob_intensity,diffuse_light,specular_light);
 	}
 
 	for(int i=0;i<spot_light_count;i++) {
-		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,transmission,roughness,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,specular_blob_intensity,diffuse_light,specular_light);
+		light_process_spot(spot_light_indices[i],vertex,eye_vec,normal,binormal,tangent,albedo,transmission,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,specular_blob_intensity,diffuse_light,specular_light);
 	}
 
 #endif //USE_VERTEX_LIGHTING
