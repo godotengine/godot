@@ -54,9 +54,8 @@ struct _VariantCall {
 		Variant::Type return_type;
 
 		bool _const;
-#ifdef DEBUG_ENABLED
 		bool returns;
-#endif
+
 		VariantFunc func;
 
 		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) {
@@ -146,7 +145,7 @@ struct _VariantCall {
 #endif
 	}
 
-	static void addfunc(bool p_const, Variant::Type p_type, Variant::Type p_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
+	static void addfunc(bool p_const, Variant::Type p_type, Variant::Type p_return, bool p_has_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
 
 		FuncData funcdata;
 		funcdata.func = p_func;
@@ -154,7 +153,7 @@ struct _VariantCall {
 		funcdata._const = p_const;
 #ifdef DEBUG_ENABLED
 		funcdata.return_type = p_return;
-		funcdata.returns = p_return != Variant::NIL;
+		funcdata.returns = p_has_return;
 #endif
 
 		if (p_argtype1.name) {
@@ -1051,7 +1050,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return String();
 
 			// math types
-
 			case VECTOR2:
 				return Vector2(); // 5
 			case RECT2: return Rect2();
@@ -1234,7 +1232,7 @@ Variant::Type Variant::get_method_return_type(Variant::Type p_type, const String
 		return Variant::NIL;
 
 	if (r_has_return)
-		*r_has_return = E->get().return_type;
+		*r_has_return = E->get().returns;
 
 	return E->get().return_type;
 }
@@ -1376,215 +1374,237 @@ void register_variant_methods() {
 	_VariantCall::construct_funcs = memnew_arr(_VariantCall::ConstructFunc, Variant::VARIANT_MAX);
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
+#define ADDFUNC0R(m_vtype, m_ret, m_class, m_method, m_defarg) \
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+#define ADDFUNC1R(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+#define ADDFUNC2R(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+#define ADDFUNC3R(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+#define ADDFUNC4R(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+
+#define ADDFUNC0RNC(m_vtype, m_ret, m_class, m_method, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+#define ADDFUNC1RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+#define ADDFUNC2RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+#define ADDFUNC3RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+#define ADDFUNC4RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+
 #define ADDFUNC0(m_vtype, m_ret, m_class, m_method, m_defarg) \
-	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
 #define ADDFUNC1(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
-	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
 #define ADDFUNC2(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
-	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
 #define ADDFUNC3(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
-	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
 #define ADDFUNC4(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
-	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
 
 #define ADDFUNC0NC(m_vtype, m_ret, m_class, m_method, m_defarg) \
-	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
 #define ADDFUNC1NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
-	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)));
 #define ADDFUNC2NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_defarg) \
-	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)));
 #define ADDFUNC3NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_defarg) \
-	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
 #define ADDFUNC4NC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
-	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
+	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
 
 	/* STRING */
-	ADDFUNC1(STRING, INT, String, casecmp_to, STRING, "to", varray());
-	ADDFUNC1(STRING, INT, String, nocasecmp_to, STRING, "to", varray());
-	ADDFUNC0(STRING, INT, String, length, varray());
-	ADDFUNC2(STRING, STRING, String, substr, INT, "from", INT, "len", varray());
+	ADDFUNC1R(STRING, INT, String, casecmp_to, STRING, "to", varray());
+	ADDFUNC1R(STRING, INT, String, nocasecmp_to, STRING, "to", varray());
+	ADDFUNC0R(STRING, INT, String, length, varray());
+	ADDFUNC2R(STRING, STRING, String, substr, INT, "from", INT, "len", varray());
 
-	ADDFUNC2(STRING, INT, String, find, STRING, "what", INT, "from", varray(0));
+	ADDFUNC2R(STRING, INT, String, find, STRING, "what", INT, "from", varray(0));
 
-	ADDFUNC1(STRING, INT, String, find_last, STRING, "what", varray());
-	ADDFUNC2(STRING, INT, String, findn, STRING, "what", INT, "from", varray(0));
-	ADDFUNC2(STRING, INT, String, rfind, STRING, "what", INT, "from", varray(-1));
-	ADDFUNC2(STRING, INT, String, rfindn, STRING, "what", INT, "from", varray(-1));
-	ADDFUNC1(STRING, BOOL, String, match, STRING, "expr", varray());
-	ADDFUNC1(STRING, BOOL, String, matchn, STRING, "expr", varray());
-	ADDFUNC1(STRING, BOOL, String, begins_with, STRING, "text", varray());
-	ADDFUNC1(STRING, BOOL, String, ends_with, STRING, "text", varray());
-	ADDFUNC1(STRING, BOOL, String, is_subsequence_of, STRING, "text", varray());
-	ADDFUNC1(STRING, BOOL, String, is_subsequence_ofi, STRING, "text", varray());
-	ADDFUNC0(STRING, POOL_STRING_ARRAY, String, bigrams, varray());
-	ADDFUNC1(STRING, REAL, String, similarity, STRING, "text", varray());
+	ADDFUNC1R(STRING, INT, String, find_last, STRING, "what", varray());
+	ADDFUNC2R(STRING, INT, String, findn, STRING, "what", INT, "from", varray(0));
+	ADDFUNC2R(STRING, INT, String, rfind, STRING, "what", INT, "from", varray(-1));
+	ADDFUNC2R(STRING, INT, String, rfindn, STRING, "what", INT, "from", varray(-1));
+	ADDFUNC1R(STRING, BOOL, String, match, STRING, "expr", varray());
+	ADDFUNC1R(STRING, BOOL, String, matchn, STRING, "expr", varray());
+	ADDFUNC1R(STRING, BOOL, String, begins_with, STRING, "text", varray());
+	ADDFUNC1R(STRING, BOOL, String, ends_with, STRING, "text", varray());
+	ADDFUNC1R(STRING, BOOL, String, is_subsequence_of, STRING, "text", varray());
+	ADDFUNC1R(STRING, BOOL, String, is_subsequence_ofi, STRING, "text", varray());
+	ADDFUNC0R(STRING, POOL_STRING_ARRAY, String, bigrams, varray());
+	ADDFUNC1R(STRING, REAL, String, similarity, STRING, "text", varray());
 
-	ADDFUNC2(STRING, STRING, String, format, NIL, "values", STRING, "placeholder", varray("{_}"));
-	ADDFUNC2(STRING, STRING, String, replace, STRING, "what", STRING, "forwhat", varray());
-	ADDFUNC2(STRING, STRING, String, replacen, STRING, "what", STRING, "forwhat", varray());
-	ADDFUNC2(STRING, STRING, String, insert, INT, "position", STRING, "what", varray());
-	ADDFUNC0(STRING, STRING, String, capitalize, varray());
-	ADDFUNC2(STRING, POOL_STRING_ARRAY, String, split, STRING, "divisor", BOOL, "allow_empty", varray(true));
-	ADDFUNC2(STRING, POOL_REAL_ARRAY, String, split_floats, STRING, "divisor", BOOL, "allow_empty", varray(true));
+	ADDFUNC2R(STRING, STRING, String, format, NIL, "values", STRING, "placeholder", varray("{_}"));
+	ADDFUNC2R(STRING, STRING, String, replace, STRING, "what", STRING, "forwhat", varray());
+	ADDFUNC2R(STRING, STRING, String, replacen, STRING, "what", STRING, "forwhat", varray());
+	ADDFUNC2R(STRING, STRING, String, insert, INT, "position", STRING, "what", varray());
+	ADDFUNC0R(STRING, STRING, String, capitalize, varray());
+	ADDFUNC2R(STRING, POOL_STRING_ARRAY, String, split, STRING, "divisor", BOOL, "allow_empty", varray(true));
+	ADDFUNC2R(STRING, POOL_REAL_ARRAY, String, split_floats, STRING, "divisor", BOOL, "allow_empty", varray(true));
 
-	ADDFUNC0(STRING, STRING, String, to_upper, varray());
-	ADDFUNC0(STRING, STRING, String, to_lower, varray());
+	ADDFUNC0R(STRING, STRING, String, to_upper, varray());
+	ADDFUNC0R(STRING, STRING, String, to_lower, varray());
 
-	ADDFUNC1(STRING, STRING, String, left, INT, "position", varray());
-	ADDFUNC1(STRING, STRING, String, right, INT, "position", varray());
-	ADDFUNC2(STRING, STRING, String, strip_edges, BOOL, "left", BOOL, "right", varray(true, true));
-	ADDFUNC0(STRING, STRING, String, get_extension, varray());
-	ADDFUNC0(STRING, STRING, String, get_basename, varray());
-	ADDFUNC1(STRING, STRING, String, plus_file, STRING, "file", varray());
-	ADDFUNC1(STRING, INT, String, ord_at, INT, "at", varray());
+	ADDFUNC1R(STRING, STRING, String, left, INT, "position", varray());
+	ADDFUNC1R(STRING, STRING, String, right, INT, "position", varray());
+	ADDFUNC2R(STRING, STRING, String, strip_edges, BOOL, "left", BOOL, "right", varray(true, true));
+	ADDFUNC0R(STRING, STRING, String, get_extension, varray());
+	ADDFUNC0R(STRING, STRING, String, get_basename, varray());
+	ADDFUNC1R(STRING, STRING, String, plus_file, STRING, "file", varray());
+	ADDFUNC1R(STRING, INT, String, ord_at, INT, "at", varray());
 	ADDFUNC2(STRING, NIL, String, erase, INT, "position", INT, "chars", varray());
-	ADDFUNC0(STRING, INT, String, hash, varray());
-	ADDFUNC0(STRING, STRING, String, md5_text, varray());
-	ADDFUNC0(STRING, STRING, String, sha256_text, varray());
-	ADDFUNC0(STRING, POOL_BYTE_ARRAY, String, md5_buffer, varray());
-	ADDFUNC0(STRING, POOL_BYTE_ARRAY, String, sha256_buffer, varray());
-	ADDFUNC0(STRING, BOOL, String, empty, varray());
-	ADDFUNC0(STRING, BOOL, String, is_abs_path, varray());
-	ADDFUNC0(STRING, BOOL, String, is_rel_path, varray());
-	ADDFUNC0(STRING, STRING, String, get_base_dir, varray());
-	ADDFUNC0(STRING, STRING, String, get_file, varray());
-	ADDFUNC0(STRING, STRING, String, xml_escape, varray());
-	ADDFUNC0(STRING, STRING, String, xml_unescape, varray());
-	ADDFUNC0(STRING, STRING, String, c_escape, varray());
-	ADDFUNC0(STRING, STRING, String, c_unescape, varray());
-	ADDFUNC0(STRING, STRING, String, json_escape, varray());
-	ADDFUNC0(STRING, STRING, String, percent_encode, varray());
-	ADDFUNC0(STRING, STRING, String, percent_decode, varray());
-	ADDFUNC0(STRING, BOOL, String, is_valid_identifier, varray());
-	ADDFUNC0(STRING, BOOL, String, is_valid_integer, varray());
-	ADDFUNC0(STRING, BOOL, String, is_valid_float, varray());
-	ADDFUNC0(STRING, BOOL, String, is_valid_html_color, varray());
-	ADDFUNC0(STRING, BOOL, String, is_valid_ip_address, varray());
-	ADDFUNC0(STRING, INT, String, to_int, varray());
-	ADDFUNC0(STRING, REAL, String, to_float, varray());
-	ADDFUNC0(STRING, INT, String, hex_to_int, varray());
-	ADDFUNC1(STRING, STRING, String, pad_decimals, INT, "digits", varray());
-	ADDFUNC1(STRING, STRING, String, pad_zeros, INT, "digits", varray());
+	ADDFUNC0R(STRING, INT, String, hash, varray());
+	ADDFUNC0R(STRING, STRING, String, md5_text, varray());
+	ADDFUNC0R(STRING, STRING, String, sha256_text, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, md5_buffer, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, sha256_buffer, varray());
+	ADDFUNC0R(STRING, BOOL, String, empty, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_abs_path, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_rel_path, varray());
+	ADDFUNC0R(STRING, STRING, String, get_base_dir, varray());
+	ADDFUNC0R(STRING, STRING, String, get_file, varray());
+	ADDFUNC0R(STRING, STRING, String, xml_escape, varray());
+	ADDFUNC0R(STRING, STRING, String, xml_unescape, varray());
+	ADDFUNC0R(STRING, STRING, String, c_escape, varray());
+	ADDFUNC0R(STRING, STRING, String, c_unescape, varray());
+	ADDFUNC0R(STRING, STRING, String, json_escape, varray());
+	ADDFUNC0R(STRING, STRING, String, percent_encode, varray());
+	ADDFUNC0R(STRING, STRING, String, percent_decode, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_identifier, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_integer, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_float, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_html_color, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_ip_address, varray());
+	ADDFUNC0R(STRING, INT, String, to_int, varray());
+	ADDFUNC0R(STRING, REAL, String, to_float, varray());
+	ADDFUNC0R(STRING, INT, String, hex_to_int, varray());
+	ADDFUNC1R(STRING, STRING, String, pad_decimals, INT, "digits", varray());
+	ADDFUNC1R(STRING, STRING, String, pad_zeros, INT, "digits", varray());
 
-	ADDFUNC0(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
-	ADDFUNC0(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_ascii, varray());
+	ADDFUNC0R(STRING, POOL_BYTE_ARRAY, String, to_utf8, varray());
 
-	ADDFUNC0(VECTOR2, VECTOR2, Vector2, normalized, varray());
-	ADDFUNC0(VECTOR2, REAL, Vector2, length, varray());
-	ADDFUNC0(VECTOR2, REAL, Vector2, angle, varray());
-	ADDFUNC0(VECTOR2, REAL, Vector2, length_squared, varray());
-	ADDFUNC0(VECTOR2, BOOL, Vector2, is_normalized, varray());
-	ADDFUNC1(VECTOR2, REAL, Vector2, distance_to, VECTOR2, "to", varray());
-	ADDFUNC1(VECTOR2, REAL, Vector2, distance_squared_to, VECTOR2, "to", varray());
-	ADDFUNC1(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
-	ADDFUNC1(VECTOR2, REAL, Vector2, angle_to_point, VECTOR2, "to", varray());
-	ADDFUNC2(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", REAL, "t", varray());
-	ADDFUNC4(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "t", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
-	ADDFUNC0(VECTOR2, VECTOR2, Vector2, tangent, varray());
-	ADDFUNC0(VECTOR2, VECTOR2, Vector2, floor, varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, snapped, VECTOR2, "by", varray());
-	ADDFUNC0(VECTOR2, REAL, Vector2, aspect, varray());
-	ADDFUNC1(VECTOR2, REAL, Vector2, dot, VECTOR2, "with", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, slide, VECTOR2, "n", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, bounce, VECTOR2, "n", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, reflect, VECTOR2, "n", varray());
-	//ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
-	ADDFUNC0(VECTOR2, VECTOR2, Vector2, abs, varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, clamped, REAL, "length", varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, normalized, varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, length, varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, angle, varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, length_squared, varray());
+	ADDFUNC0R(VECTOR2, BOOL, Vector2, is_normalized, varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_to, VECTOR2, "to", varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, distance_squared_to, VECTOR2, "to", varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, angle_to_point, VECTOR2, "to", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", REAL, "t", varray());
+	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", REAL, "t", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, REAL, "phi", varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, floor, varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, snapped, VECTOR2, "by", varray());
+	ADDFUNC0R(VECTOR2, REAL, Vector2, aspect, varray());
+	ADDFUNC1R(VECTOR2, REAL, Vector2, dot, VECTOR2, "with", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, slide, VECTOR2, "n", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, bounce, VECTOR2, "n", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, reflect, VECTOR2, "n", varray());
+	//ADDFUNC1R(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
+	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, abs, varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, clamped, REAL, "length", varray());
 
-	ADDFUNC0(RECT2, REAL, Rect2, get_area, varray());
-	ADDFUNC1(RECT2, BOOL, Rect2, intersects, RECT2, "b", varray());
-	ADDFUNC1(RECT2, BOOL, Rect2, encloses, RECT2, "b", varray());
-	ADDFUNC0(RECT2, BOOL, Rect2, has_no_area, varray());
-	ADDFUNC1(RECT2, RECT2, Rect2, clip, RECT2, "b", varray());
-	ADDFUNC1(RECT2, RECT2, Rect2, merge, RECT2, "b", varray());
-	ADDFUNC1(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
-	ADDFUNC1(RECT2, RECT2, Rect2, grow, REAL, "by", varray());
-	ADDFUNC2(RECT2, RECT2, Rect2, grow_margin, INT, "margin", REAL, "by", varray());
-	ADDFUNC4(RECT2, RECT2, Rect2, grow_individual, REAL, "left", REAL, "top", REAL, "right", REAL, " bottom", varray());
-	ADDFUNC1(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
+	ADDFUNC0R(RECT2, REAL, Rect2, get_area, varray());
+	ADDFUNC1R(RECT2, BOOL, Rect2, intersects, RECT2, "b", varray());
+	ADDFUNC1R(RECT2, BOOL, Rect2, encloses, RECT2, "b", varray());
+	ADDFUNC0R(RECT2, BOOL, Rect2, has_no_area, varray());
+	ADDFUNC1R(RECT2, RECT2, Rect2, clip, RECT2, "b", varray());
+	ADDFUNC1R(RECT2, RECT2, Rect2, merge, RECT2, "b", varray());
+	ADDFUNC1R(RECT2, BOOL, Rect2, has_point, VECTOR2, "point", varray());
+	ADDFUNC1R(RECT2, RECT2, Rect2, grow, REAL, "by", varray());
+	ADDFUNC2R(RECT2, RECT2, Rect2, grow_margin, INT, "margin", REAL, "by", varray());
+	ADDFUNC4R(RECT2, RECT2, Rect2, grow_individual, REAL, "left", REAL, "top", REAL, "right", REAL, " bottom", varray());
+	ADDFUNC1R(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
 
-	ADDFUNC0(VECTOR3, INT, Vector3, min_axis, varray());
-	ADDFUNC0(VECTOR3, INT, Vector3, max_axis, varray());
-	ADDFUNC0(VECTOR3, REAL, Vector3, length, varray());
-	ADDFUNC0(VECTOR3, REAL, Vector3, length_squared, varray());
-	ADDFUNC0(VECTOR3, BOOL, Vector3, is_normalized, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, normalized, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, inverse, varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, snapped, REAL, "by", varray());
-	ADDFUNC2(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
-	ADDFUNC2(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", REAL, "t", varray());
-	ADDFUNC4(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "t", varray());
-	ADDFUNC1(VECTOR3, REAL, Vector3, dot, VECTOR3, "b", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
-	ADDFUNC1(VECTOR3, BASIS, Vector3, outer, VECTOR3, "b", varray());
-	ADDFUNC0(VECTOR3, BASIS, Vector3, to_diagonal_matrix, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, abs, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, floor, varray());
-	ADDFUNC0(VECTOR3, VECTOR3, Vector3, ceil, varray());
-	ADDFUNC1(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
-	ADDFUNC1(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
-	ADDFUNC1(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "n", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, bounce, VECTOR3, "n", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "n", varray());
+	ADDFUNC0R(VECTOR3, INT, Vector3, min_axis, varray());
+	ADDFUNC0R(VECTOR3, INT, Vector3, max_axis, varray());
+	ADDFUNC0R(VECTOR3, REAL, Vector3, length, varray());
+	ADDFUNC0R(VECTOR3, REAL, Vector3, length_squared, varray());
+	ADDFUNC0R(VECTOR3, BOOL, Vector3, is_normalized, varray());
+	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, normalized, varray());
+	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, REAL, "by", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", REAL, "t", varray());
+	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", REAL, "t", varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, dot, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, cross, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, BASIS, Vector3, outer, VECTOR3, "b", varray());
+	ADDFUNC0R(VECTOR3, BASIS, Vector3, to_diagonal_matrix, varray());
+	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, abs, varray());
+	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, floor, varray());
+	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, ceil, varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
+	ADDFUNC1R(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "n", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, bounce, VECTOR3, "n", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "n", varray());
 
-	ADDFUNC0(PLANE, PLANE, Plane, normalized, varray());
-	ADDFUNC0(PLANE, VECTOR3, Plane, center, varray());
-	ADDFUNC0(PLANE, VECTOR3, Plane, get_any_point, varray());
-	ADDFUNC1(PLANE, BOOL, Plane, is_point_over, VECTOR3, "point", varray());
-	ADDFUNC1(PLANE, REAL, Plane, distance_to, VECTOR3, "point", varray());
-	ADDFUNC2(PLANE, BOOL, Plane, has_point, VECTOR3, "point", REAL, "epsilon", varray(CMP_EPSILON));
-	ADDFUNC1(PLANE, VECTOR3, Plane, project, VECTOR3, "point", varray());
-	ADDFUNC2(PLANE, VECTOR3, Plane, intersect_3, PLANE, "b", PLANE, "c", varray());
-	ADDFUNC2(PLANE, VECTOR3, Plane, intersects_ray, VECTOR3, "from", VECTOR3, "dir", varray());
-	ADDFUNC2(PLANE, VECTOR3, Plane, intersects_segment, VECTOR3, "begin", VECTOR3, "end", varray());
+	ADDFUNC0R(PLANE, PLANE, Plane, normalized, varray());
+	ADDFUNC0R(PLANE, VECTOR3, Plane, center, varray());
+	ADDFUNC0R(PLANE, VECTOR3, Plane, get_any_point, varray());
+	ADDFUNC1R(PLANE, BOOL, Plane, is_point_over, VECTOR3, "point", varray());
+	ADDFUNC1R(PLANE, REAL, Plane, distance_to, VECTOR3, "point", varray());
+	ADDFUNC2R(PLANE, BOOL, Plane, has_point, VECTOR3, "point", REAL, "epsilon", varray(CMP_EPSILON));
+	ADDFUNC1R(PLANE, VECTOR3, Plane, project, VECTOR3, "point", varray());
+	ADDFUNC2R(PLANE, VECTOR3, Plane, intersect_3, PLANE, "b", PLANE, "c", varray());
+	ADDFUNC2R(PLANE, VECTOR3, Plane, intersects_ray, VECTOR3, "from", VECTOR3, "dir", varray());
+	ADDFUNC2R(PLANE, VECTOR3, Plane, intersects_segment, VECTOR3, "begin", VECTOR3, "end", varray());
 
-	ADDFUNC0(QUAT, REAL, Quat, length, varray());
-	ADDFUNC0(QUAT, REAL, Quat, length_squared, varray());
-	ADDFUNC0(QUAT, QUAT, Quat, normalized, varray());
-	ADDFUNC0(QUAT, BOOL, Quat, is_normalized, varray());
-	ADDFUNC0(QUAT, QUAT, Quat, inverse, varray());
-	ADDFUNC1(QUAT, REAL, Quat, dot, QUAT, "b", varray());
-	ADDFUNC1(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
-	ADDFUNC2(QUAT, QUAT, Quat, slerp, QUAT, "b", REAL, "t", varray());
-	ADDFUNC2(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
-	ADDFUNC4(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
+	ADDFUNC0R(QUAT, REAL, Quat, length, varray());
+	ADDFUNC0R(QUAT, REAL, Quat, length_squared, varray());
+	ADDFUNC0R(QUAT, QUAT, Quat, normalized, varray());
+	ADDFUNC0R(QUAT, BOOL, Quat, is_normalized, varray());
+	ADDFUNC0R(QUAT, QUAT, Quat, inverse, varray());
+	ADDFUNC1R(QUAT, REAL, Quat, dot, QUAT, "b", varray());
+	ADDFUNC1R(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
+	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "b", REAL, "t", varray());
+	ADDFUNC2R(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
+	ADDFUNC4R(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
 
-	ADDFUNC0(COLOR, INT, Color, to_rgba32, varray());
-	ADDFUNC0(COLOR, INT, Color, to_argb32, varray());
-	ADDFUNC0(COLOR, REAL, Color, gray, varray());
-	ADDFUNC0(COLOR, COLOR, Color, inverted, varray());
-	ADDFUNC0(COLOR, COLOR, Color, contrasted, varray());
-	ADDFUNC2(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", REAL, "t", varray());
-	ADDFUNC1(COLOR, COLOR, Color, blend, COLOR, "over", varray());
-	ADDFUNC1(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
+	ADDFUNC0R(COLOR, INT, Color, to_rgba32, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_argb32, varray());
+	ADDFUNC0R(COLOR, REAL, Color, gray, varray());
+	ADDFUNC0R(COLOR, COLOR, Color, inverted, varray());
+	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
+	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", REAL, "t", varray());
+	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
+	ADDFUNC1R(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
 
-	ADDFUNC0(_RID, INT, RID, get_id, varray());
+	ADDFUNC0R(_RID, INT, RID, get_id, varray());
 
-	ADDFUNC0(NODE_PATH, BOOL, NodePath, is_absolute, varray());
-	ADDFUNC0(NODE_PATH, INT, NodePath, get_name_count, varray());
-	ADDFUNC1(NODE_PATH, STRING, NodePath, get_name, INT, "idx", varray());
-	ADDFUNC0(NODE_PATH, INT, NodePath, get_subname_count, varray());
-	ADDFUNC1(NODE_PATH, STRING, NodePath, get_subname, INT, "idx", varray());
-	ADDFUNC0(NODE_PATH, STRING, NodePath, get_property, varray());
-	ADDFUNC0(NODE_PATH, BOOL, NodePath, is_empty, varray());
+	ADDFUNC0R(NODE_PATH, BOOL, NodePath, is_absolute, varray());
+	ADDFUNC0R(NODE_PATH, INT, NodePath, get_name_count, varray());
+	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_name, INT, "idx", varray());
+	ADDFUNC0R(NODE_PATH, INT, NodePath, get_subname_count, varray());
+	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_subname, INT, "idx", varray());
+	ADDFUNC0R(NODE_PATH, STRING, NodePath, get_property, varray());
+	ADDFUNC0R(NODE_PATH, BOOL, NodePath, is_empty, varray());
 
-	ADDFUNC0(DICTIONARY, INT, Dictionary, size, varray());
-	ADDFUNC0(DICTIONARY, BOOL, Dictionary, empty, varray());
+	ADDFUNC0R(DICTIONARY, INT, Dictionary, size, varray());
+	ADDFUNC0R(DICTIONARY, BOOL, Dictionary, empty, varray());
 	ADDFUNC0NC(DICTIONARY, NIL, Dictionary, clear, varray());
-	ADDFUNC1(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
-	ADDFUNC1(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
+	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
+	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
 	ADDFUNC1(DICTIONARY, NIL, Dictionary, erase, NIL, "key", varray());
-	ADDFUNC0(DICTIONARY, INT, Dictionary, hash, varray());
-	ADDFUNC0(DICTIONARY, ARRAY, Dictionary, keys, varray());
-	ADDFUNC0(DICTIONARY, ARRAY, Dictionary, values, varray());
+	ADDFUNC0R(DICTIONARY, INT, Dictionary, hash, varray());
+	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
+	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
 
-	ADDFUNC0(ARRAY, INT, Array, size, varray());
-	ADDFUNC0(ARRAY, BOOL, Array, empty, varray());
+	ADDFUNC0R(ARRAY, INT, Array, size, varray());
+	ADDFUNC0R(ARRAY, BOOL, Array, empty, varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, clear, varray());
-	ADDFUNC0(ARRAY, INT, Array, hash, varray());
+	ADDFUNC0R(ARRAY, INT, Array, hash, varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, push_back, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, push_front, NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, append, NIL, "value", varray());
@@ -1592,165 +1612,160 @@ void register_variant_methods() {
 	ADDFUNC2NC(ARRAY, NIL, Array, insert, INT, "position", NIL, "value", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, remove, INT, "position", varray());
 	ADDFUNC1NC(ARRAY, NIL, Array, erase, NIL, "value", varray());
-	ADDFUNC0(ARRAY, NIL, Array, front, varray());
-	ADDFUNC0(ARRAY, NIL, Array, back, varray());
-	ADDFUNC2(ARRAY, INT, Array, find, NIL, "what", INT, "from", varray(0));
-	ADDFUNC2(ARRAY, INT, Array, rfind, NIL, "what", INT, "from", varray(-1));
-	ADDFUNC1(ARRAY, INT, Array, find_last, NIL, "value", varray());
-	ADDFUNC1(ARRAY, INT, Array, count, NIL, "value", varray());
-	ADDFUNC1(ARRAY, BOOL, Array, has, NIL, "value", varray());
-	ADDFUNC0NC(ARRAY, NIL, Array, pop_back, varray());
-	ADDFUNC0NC(ARRAY, NIL, Array, pop_front, varray());
+	ADDFUNC0R(ARRAY, NIL, Array, front, varray());
+	ADDFUNC0R(ARRAY, NIL, Array, back, varray());
+	ADDFUNC2R(ARRAY, INT, Array, find, NIL, "what", INT, "from", varray(0));
+	ADDFUNC2R(ARRAY, INT, Array, rfind, NIL, "what", INT, "from", varray(-1));
+	ADDFUNC1R(ARRAY, INT, Array, find_last, NIL, "value", varray());
+	ADDFUNC1R(ARRAY, INT, Array, count, NIL, "value", varray());
+	ADDFUNC1R(ARRAY, BOOL, Array, has, NIL, "value", varray());
+	ADDFUNC0RNC(ARRAY, NIL, Array, pop_back, varray());
+	ADDFUNC0RNC(ARRAY, NIL, Array, pop_front, varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, sort, varray());
 	ADDFUNC2NC(ARRAY, NIL, Array, sort_custom, OBJECT, "obj", STRING, "func", varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
-	ADDFUNC0NC(ARRAY, ARRAY, Array, duplicate, varray());
+	ADDFUNC0RNC(ARRAY, ARRAY, Array, duplicate, varray());
 
-	ADDFUNC0(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
+	ADDFUNC0R(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, NIL, PoolByteArray, set, INT, "idx", INT, "byte", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, push_back, INT, "byte", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, append, INT, "byte", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, append_array, POOL_BYTE_ARRAY, "array", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_BYTE_ARRAY, INT, PoolByteArray, insert, INT, "idx", INT, "byte", varray());
+	ADDFUNC2R(POOL_BYTE_ARRAY, INT, PoolByteArray, insert, INT, "idx", INT, "byte", varray());
 	ADDFUNC1(POOL_BYTE_ARRAY, NIL, PoolByteArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_BYTE_ARRAY, NIL, PoolByteArray, invert, varray());
-	ADDFUNC2(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, subarray, INT, "from", INT, "to", varray());
+	ADDFUNC2R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, subarray, INT, "from", INT, "to", varray());
 
-	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
-	ADDFUNC0(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
-	ADDFUNC1(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
-	ADDFUNC2(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
+	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
+	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
+	ADDFUNC1R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
+	ADDFUNC2R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
 
-	ADDFUNC0(POOL_INT_ARRAY, INT, PoolIntArray, size, varray());
+	ADDFUNC0R(POOL_INT_ARRAY, INT, PoolIntArray, size, varray());
 	ADDFUNC2(POOL_INT_ARRAY, NIL, PoolIntArray, set, INT, "idx", INT, "integer", varray());
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, push_back, INT, "integer", varray());
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, append, INT, "integer", varray());
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, append_array, POOL_INT_ARRAY, "array", varray());
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_INT_ARRAY, INT, PoolIntArray, insert, INT, "idx", INT, "integer", varray());
+	ADDFUNC2R(POOL_INT_ARRAY, INT, PoolIntArray, insert, INT, "idx", INT, "integer", varray());
 	ADDFUNC1(POOL_INT_ARRAY, NIL, PoolIntArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_INT_ARRAY, NIL, PoolIntArray, invert, varray());
 
-	ADDFUNC0(POOL_REAL_ARRAY, INT, PoolRealArray, size, varray());
+	ADDFUNC0R(POOL_REAL_ARRAY, INT, PoolRealArray, size, varray());
 	ADDFUNC2(POOL_REAL_ARRAY, NIL, PoolRealArray, set, INT, "idx", REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, push_back, REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, append, REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, append_array, POOL_REAL_ARRAY, "array", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_REAL_ARRAY, INT, PoolRealArray, insert, INT, "idx", REAL, "value", varray());
+	ADDFUNC2R(POOL_REAL_ARRAY, INT, PoolRealArray, insert, INT, "idx", REAL, "value", varray());
 	ADDFUNC1(POOL_REAL_ARRAY, NIL, PoolRealArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_REAL_ARRAY, NIL, PoolRealArray, invert, varray());
 
-	ADDFUNC0(POOL_STRING_ARRAY, INT, PoolStringArray, size, varray());
+	ADDFUNC0R(POOL_STRING_ARRAY, INT, PoolStringArray, size, varray());
 	ADDFUNC2(POOL_STRING_ARRAY, NIL, PoolStringArray, set, INT, "idx", STRING, "string", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, push_back, STRING, "string", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, append, STRING, "string", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, append_array, POOL_STRING_ARRAY, "array", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_STRING_ARRAY, INT, PoolStringArray, insert, INT, "idx", STRING, "string", varray());
+	ADDFUNC2R(POOL_STRING_ARRAY, INT, PoolStringArray, insert, INT, "idx", STRING, "string", varray());
 	ADDFUNC1(POOL_STRING_ARRAY, NIL, PoolStringArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_STRING_ARRAY, NIL, PoolStringArray, invert, varray());
 	ADDFUNC1(POOL_STRING_ARRAY, STRING, PoolStringArray, join, STRING, "delimiter", varray());
 
-	ADDFUNC0(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, size, varray());
+	ADDFUNC0R(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, size, varray());
 	ADDFUNC2(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, set, INT, "idx", VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, push_back, VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, append, VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, append_array, POOL_VECTOR2_ARRAY, "array", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, insert, INT, "idx", VECTOR2, "vector2", varray());
+	ADDFUNC2R(POOL_VECTOR2_ARRAY, INT, PoolVector2Array, insert, INT, "idx", VECTOR2, "vector2", varray());
 	ADDFUNC1(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_VECTOR2_ARRAY, NIL, PoolVector2Array, invert, varray());
 
-	ADDFUNC0(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, size, varray());
+	ADDFUNC0R(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, size, varray());
 	ADDFUNC2(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, set, INT, "idx", VECTOR3, "vector3", varray());
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, push_back, VECTOR3, "vector3", varray());
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, append, VECTOR3, "vector3", varray());
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, append_array, POOL_VECTOR3_ARRAY, "array", varray());
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, insert, INT, "idx", VECTOR3, "vector3", varray());
+	ADDFUNC2R(POOL_VECTOR3_ARRAY, INT, PoolVector3Array, insert, INT, "idx", VECTOR3, "vector3", varray());
 	ADDFUNC1(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_VECTOR3_ARRAY, NIL, PoolVector3Array, invert, varray());
 
-	ADDFUNC0(POOL_COLOR_ARRAY, INT, PoolColorArray, size, varray());
+	ADDFUNC0R(POOL_COLOR_ARRAY, INT, PoolColorArray, size, varray());
 	ADDFUNC2(POOL_COLOR_ARRAY, NIL, PoolColorArray, set, INT, "idx", COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, push_back, COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, append, COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, append_array, POOL_COLOR_ARRAY, "array", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, remove, INT, "idx", varray());
-	ADDFUNC2(POOL_COLOR_ARRAY, INT, PoolColorArray, insert, INT, "idx", COLOR, "color", varray());
+	ADDFUNC2R(POOL_COLOR_ARRAY, INT, PoolColorArray, insert, INT, "idx", COLOR, "color", varray());
 	ADDFUNC1(POOL_COLOR_ARRAY, NIL, PoolColorArray, resize, INT, "idx", varray());
 	ADDFUNC0(POOL_COLOR_ARRAY, NIL, PoolColorArray, invert, varray());
 
 	//pointerbased
 
-	ADDFUNC0(RECT3, REAL, Rect3, get_area, varray());
-	ADDFUNC0(RECT3, BOOL, Rect3, has_no_area, varray());
-	ADDFUNC0(RECT3, BOOL, Rect3, has_no_surface, varray());
-	ADDFUNC1(RECT3, BOOL, Rect3, intersects, RECT3, "with", varray());
-	ADDFUNC1(RECT3, BOOL, Rect3, encloses, RECT3, "with", varray());
-	ADDFUNC1(RECT3, RECT3, Rect3, merge, RECT3, "with", varray());
-	ADDFUNC1(RECT3, RECT3, Rect3, intersection, RECT3, "with", varray());
-	ADDFUNC1(RECT3, BOOL, Rect3, intersects_plane, PLANE, "plane", varray());
-	ADDFUNC2(RECT3, BOOL, Rect3, intersects_segment, VECTOR3, "from", VECTOR3, "to", varray());
-	ADDFUNC1(RECT3, BOOL, Rect3, has_point, VECTOR3, "point", varray());
-	ADDFUNC1(RECT3, VECTOR3, Rect3, get_support, VECTOR3, "dir", varray());
-	ADDFUNC0(RECT3, VECTOR3, Rect3, get_longest_axis, varray());
-	ADDFUNC0(RECT3, INT, Rect3, get_longest_axis_index, varray());
-	ADDFUNC0(RECT3, REAL, Rect3, get_longest_axis_size, varray());
-	ADDFUNC0(RECT3, VECTOR3, Rect3, get_shortest_axis, varray());
-	ADDFUNC0(RECT3, INT, Rect3, get_shortest_axis_index, varray());
-	ADDFUNC0(RECT3, REAL, Rect3, get_shortest_axis_size, varray());
-	ADDFUNC1(RECT3, RECT3, Rect3, expand, VECTOR3, "to_point", varray());
-	ADDFUNC1(RECT3, RECT3, Rect3, grow, REAL, "by", varray());
-	ADDFUNC1(RECT3, VECTOR3, Rect3, get_endpoint, INT, "idx", varray());
+	ADDFUNC0R(RECT3, REAL, Rect3, get_area, varray());
+	ADDFUNC0R(RECT3, BOOL, Rect3, has_no_area, varray());
+	ADDFUNC0R(RECT3, BOOL, Rect3, has_no_surface, varray());
+	ADDFUNC1R(RECT3, BOOL, Rect3, intersects, RECT3, "with", varray());
+	ADDFUNC1R(RECT3, BOOL, Rect3, encloses, RECT3, "with", varray());
+	ADDFUNC1R(RECT3, RECT3, Rect3, merge, RECT3, "with", varray());
+	ADDFUNC1R(RECT3, RECT3, Rect3, intersection, RECT3, "with", varray());
+	ADDFUNC1R(RECT3, BOOL, Rect3, intersects_plane, PLANE, "plane", varray());
+	ADDFUNC2R(RECT3, BOOL, Rect3, intersects_segment, VECTOR3, "from", VECTOR3, "to", varray());
+	ADDFUNC1R(RECT3, BOOL, Rect3, has_point, VECTOR3, "point", varray());
+	ADDFUNC1R(RECT3, VECTOR3, Rect3, get_support, VECTOR3, "dir", varray());
+	ADDFUNC0R(RECT3, VECTOR3, Rect3, get_longest_axis, varray());
+	ADDFUNC0R(RECT3, INT, Rect3, get_longest_axis_index, varray());
+	ADDFUNC0R(RECT3, REAL, Rect3, get_longest_axis_size, varray());
+	ADDFUNC0R(RECT3, VECTOR3, Rect3, get_shortest_axis, varray());
+	ADDFUNC0R(RECT3, INT, Rect3, get_shortest_axis_index, varray());
+	ADDFUNC0R(RECT3, REAL, Rect3, get_shortest_axis_size, varray());
+	ADDFUNC1R(RECT3, RECT3, Rect3, expand, VECTOR3, "to_point", varray());
+	ADDFUNC1R(RECT3, RECT3, Rect3, grow, REAL, "by", varray());
+	ADDFUNC1R(RECT3, VECTOR3, Rect3, get_endpoint, INT, "idx", varray());
 
-	ADDFUNC0(TRANSFORM2D, TRANSFORM2D, Transform2D, inverse, varray());
-	ADDFUNC0(TRANSFORM2D, TRANSFORM2D, Transform2D, affine_inverse, varray());
-	ADDFUNC0(TRANSFORM2D, REAL, Transform2D, get_rotation, varray());
-	ADDFUNC0(TRANSFORM2D, VECTOR2, Transform2D, get_origin, varray());
-	ADDFUNC0(TRANSFORM2D, VECTOR2, Transform2D, get_scale, varray());
-	ADDFUNC0(TRANSFORM2D, TRANSFORM2D, Transform2D, orthonormalized, varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, rotated, REAL, "phi", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, scaled, VECTOR2, "scale", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, translated, VECTOR2, "offset", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, xform, NIL, "v", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, xform_inv, NIL, "v", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform, NIL, "v", varray());
-	ADDFUNC1(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform_inv, NIL, "v", varray());
-	ADDFUNC2(TRANSFORM2D, TRANSFORM2D, Transform2D, interpolate_with, TRANSFORM2D, "transform", REAL, "weight", varray());
+	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, inverse, varray());
+	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, affine_inverse, varray());
+	ADDFUNC0R(TRANSFORM2D, REAL, Transform2D, get_rotation, varray());
+	ADDFUNC0R(TRANSFORM2D, VECTOR2, Transform2D, get_origin, varray());
+	ADDFUNC0R(TRANSFORM2D, VECTOR2, Transform2D, get_scale, varray());
+	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, orthonormalized, varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, rotated, REAL, "phi", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, scaled, VECTOR2, "scale", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, translated, VECTOR2, "offset", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, xform, NIL, "v", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, xform_inv, NIL, "v", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform, NIL, "v", varray());
+	ADDFUNC1R(TRANSFORM2D, TRANSFORM2D, Transform2D, basis_xform_inv, NIL, "v", varray());
+	ADDFUNC2R(TRANSFORM2D, TRANSFORM2D, Transform2D, interpolate_with, TRANSFORM2D, "transform", REAL, "weight", varray());
 
-	ADDFUNC0(BASIS, BASIS, Basis, inverse, varray());
-	ADDFUNC0(BASIS, BASIS, Basis, transposed, varray());
-	ADDFUNC0(BASIS, BASIS, Basis, orthonormalized, varray());
-	ADDFUNC0(BASIS, REAL, Basis, determinant, varray());
-	ADDFUNC2(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "phi", varray());
-	ADDFUNC1(BASIS, BASIS, Basis, scaled, VECTOR3, "scale", varray());
-	ADDFUNC0(BASIS, VECTOR3, Basis, get_scale, varray());
-	ADDFUNC0(BASIS, VECTOR3, Basis, get_euler, varray());
-	ADDFUNC1(BASIS, REAL, Basis, tdotx, VECTOR3, "with", varray());
-	ADDFUNC1(BASIS, REAL, Basis, tdoty, VECTOR3, "with", varray());
-	ADDFUNC1(BASIS, REAL, Basis, tdotz, VECTOR3, "with", varray());
-	ADDFUNC1(BASIS, VECTOR3, Basis, xform, VECTOR3, "v", varray());
-	ADDFUNC1(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
-	ADDFUNC0(BASIS, INT, Basis, get_orthogonal_index, varray());
+	ADDFUNC0R(BASIS, BASIS, Basis, inverse, varray());
+	ADDFUNC0R(BASIS, BASIS, Basis, transposed, varray());
+	ADDFUNC0R(BASIS, BASIS, Basis, orthonormalized, varray());
+	ADDFUNC0R(BASIS, REAL, Basis, determinant, varray());
+	ADDFUNC2R(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC1R(BASIS, BASIS, Basis, scaled, VECTOR3, "scale", varray());
+	ADDFUNC0R(BASIS, VECTOR3, Basis, get_scale, varray());
+	ADDFUNC0R(BASIS, VECTOR3, Basis, get_euler, varray());
+	ADDFUNC1R(BASIS, REAL, Basis, tdotx, VECTOR3, "with", varray());
+	ADDFUNC1R(BASIS, REAL, Basis, tdoty, VECTOR3, "with", varray());
+	ADDFUNC1R(BASIS, REAL, Basis, tdotz, VECTOR3, "with", varray());
+	ADDFUNC1R(BASIS, VECTOR3, Basis, xform, VECTOR3, "v", varray());
+	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
+	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
 
-	ADDFUNC0(TRANSFORM, TRANSFORM, Transform, inverse, varray());
-	ADDFUNC0(TRANSFORM, TRANSFORM, Transform, affine_inverse, varray());
-	ADDFUNC0(TRANSFORM, TRANSFORM, Transform, orthonormalized, varray());
-	ADDFUNC2(TRANSFORM, TRANSFORM, Transform, rotated, VECTOR3, "axis", REAL, "phi", varray());
-	ADDFUNC1(TRANSFORM, TRANSFORM, Transform, scaled, VECTOR3, "scale", varray());
-	ADDFUNC1(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "ofs", varray());
-	ADDFUNC2(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
-	ADDFUNC2(TRANSFORM, TRANSFORM, Transform, interpolate_with, TRANSFORM, "transform", REAL, "weight", varray());
-	ADDFUNC1(TRANSFORM, NIL, Transform, xform, NIL, "v", varray());
-	ADDFUNC1(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
-
-#ifdef DEBUG_ENABLED
-	_VariantCall::type_funcs[Variant::TRANSFORM].functions["xform"].returns = true;
-	_VariantCall::type_funcs[Variant::TRANSFORM].functions["xform_inv"].returns = true;
-#endif
+	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());
+	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, affine_inverse, varray());
+	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, orthonormalized, varray());
+	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, rotated, VECTOR3, "axis", REAL, "phi", varray());
+	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, scaled, VECTOR3, "scale", varray());
+	ADDFUNC1R(TRANSFORM, TRANSFORM, Transform, translated, VECTOR3, "ofs", varray());
+	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, looking_at, VECTOR3, "target", VECTOR3, "up", varray());
+	ADDFUNC2R(TRANSFORM, TRANSFORM, Transform, interpolate_with, TRANSFORM, "transform", REAL, "weight", varray());
+	ADDFUNC1R(TRANSFORM, NIL, Transform, xform, NIL, "v", varray());
+	ADDFUNC1R(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
 
 	/* REGISTER CONSTRUCTORS */
 
