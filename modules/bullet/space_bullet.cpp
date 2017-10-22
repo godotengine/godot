@@ -1125,12 +1125,12 @@ void SpaceBullet::check_body_collision() {
 
 				if (bodyA->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
-					B_TO_G(pt.m_localPointA, collisionLocalPosition);
+					B_TO_G(pt.m_localPointB, collisionLocalPosition);
 					bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, pt.m_index1, pt.m_index0);
 				}
 				if (bodyB->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
-					B_TO_G(pt.m_localPointB, collisionLocalPosition);
+					B_TO_G(pt.m_localPointA, collisionLocalPosition);
 					bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, pt.m_index0, pt.m_index1);
 				}
 
