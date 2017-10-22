@@ -197,7 +197,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 	TileMapEditor *tile_map_editor;
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
 	virtual void forward_draw_over_canvas(Control *p_canvas) { tile_map_editor->forward_draw_over_canvas(p_canvas); }
 
 	virtual String get_name() const { return "TileMap"; }
