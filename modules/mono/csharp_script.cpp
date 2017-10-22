@@ -277,7 +277,14 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "        // Initialization here\n"
 							 "        \n"
 							 "    }\n"
-							 "}\n";
+							 "\n"
+							 "//    public override void _Process(float delta)\n"
+							 "//    {\n"
+							 "//        // Called every frame. Delta is time since last frame.\n"
+							 "//        // Update game logic here.\n"
+							 "//        \n"
+							 "//    }\n"
+							 "//}\n";
 
 	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name).replace("%CLASS_NAME%", p_class_name);
 
