@@ -15,14 +15,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the height of the [CapsuleShape2D].
+				Return the height of the [code]CapsuleShape2D[/code].
 			</description>
 		</method>
 		<method name="get_radius" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the radius of the [CapsuleShape2D].
+				Return the radius of the [code]CapsuleShape2D[/code].
 			</description>
 		</method>
 		<method name="set_height">
@@ -31,7 +31,7 @@
 			<argument index="0" name="height" type="float">
 			</argument>
 			<description>
-				Set the height of the [CapsuleShape2D].
+				Set the height of the [code]CapsuleShape2D[/code].
 			</description>
 		</method>
 		<method name="set_radius">
@@ -40,7 +40,7 @@
 			<argument index="0" name="radius" type="float">
 			</argument>
 			<description>
-				Set the radius of the [CapsuleShape2D].
+				Set the radius of the [code]CapsuleShape2D[/code].
 			</description>
 		</method>
 	</methods>

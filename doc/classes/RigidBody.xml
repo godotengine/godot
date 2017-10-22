@@ -430,17 +430,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_STATIC" value="1">
-			Static mode. The body behaves like a [StaticBody], and can only move by user code.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3">
-			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
-		</constant>
 		<constant name="MODE_RIGID" value="0">
 			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
+		<constant name="MODE_STATIC" value="1">
+			Static mode. The body behaves like a [StaticBody], and can only move by user code.
+		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 			Character body. This behaves like a rigid body, but can not rotate.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="3">
+			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 		<constant name="AXIS_LOCK_DISABLED" value="0">
 		</constant>

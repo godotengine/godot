@@ -5,9 +5,9 @@
 	</brief_description>
 	<description>
 		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
-		Ignores non-[class Control] children.
+		Ignores non-[Control] children.
 		Individual tabs are always visible unless you use [method set_tab_disabled] and [method set_tab_title] to hide it.
-		To hide only a tab's content, nest the content inside a child [class Control], so it receives the [class TabContainer]'s visibility setting instead. 
+		To hide only a tab's content, nest the content inside a child [Control], so it receives the [code]TabContainer[/code]'s visibility setting instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -32,21 +32,21 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the child [class Control] node located at the active tab index.
+				Returns the child [Control] node located at the active tab index.
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
 			<return type="Popup">
 			</return>
 			<description>
-				Returns the [class Popup] node instance if one has been set already with [method set_popup].
+				Returns the [Popup] node instance if one has been set already with [method set_popup].
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the previously active tab index. 
+				Returns the previously active tab index.
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
@@ -62,7 +62,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the currently visible tab's [class Control] node.
+				Returns the currently visible tab's [Control] node.
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
@@ -105,7 +105,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Sets to [code]false[/code] the [code]visible[/code] property for all [class Control] children except for the tab at [code]tab_idx[/code].
+				Sets to [code]false[/code] the [code]visible[/code] property for all [Control] children except for the tab at [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_popup">
@@ -114,7 +114,7 @@
 			<argument index="0" name="popup" type="Node">
 			</argument>
 			<description>
-				If set on a [class Popup] node instance, a popup menu icon appears in the top-right corner of the [class TabContainer]. Clicking it will expand the [class Popup] node.
+				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [code]TabContainer[/code]. Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_align">
@@ -171,7 +171,7 @@
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
-			The current tab index. When set, this index's [class Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
+			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign">
 			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
@@ -183,7 +183,7 @@
 	<signals>
 		<signal name="pre_popup_pressed">
 			<description>
-				Emitted when the [class TabContainer]'s [class Popup] button is clicked. See [method set_popup] for details.
+				Emitted when the [code]TabContainer[/code]'s [Popup] button is clicked. See [method set_popup] for details.
 			</description>
 		</signal>
 		<signal name="tab_changed">

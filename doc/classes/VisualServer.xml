@@ -1884,8 +1884,6 @@
 		</constant>
 		<constant name="ARRAY_FORMAT_INDEX" value="256">
 		</constant>
-		<constant name="ARRAY_COMPRESS_BASE" value="9">
-		</constant>
 		<constant name="ARRAY_COMPRESS_VERTEX" value="512">
 		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024">

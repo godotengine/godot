@@ -1113,17 +1113,17 @@
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2">
-		</constant>
 		<constant name="PRESET_MODE_KEEP_WIDTH" value="1">
+		</constant>
+		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2">
 		</constant>
 		<constant name="PRESET_MODE_KEEP_SIZE" value="3">
 		</constant>
-		<constant name="SIZE_EXPAND" value="2">
-			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
-		</constant>
 		<constant name="SIZE_FILL" value="1">
 			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+		</constant>
+		<constant name="SIZE_EXPAND" value="2">
+			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_EXPAND_FILL" value="3">
 			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.

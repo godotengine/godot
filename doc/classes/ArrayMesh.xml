@@ -75,7 +75,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of surfaces that the [ArrayMesh] holds.
+				Return the amount of surfaces that the [code]ArrayMesh[/code] holds.
 			</description>
 		</method>
 		<method name="regen_normalmaps">

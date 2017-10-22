@@ -15,21 +15,21 @@
 			<return type="void">
 			</return>
 			<description>
-				Lock this [Mutex], blocks until it is unlocked by the current owner.
+				Lock this [code]Mutex[/code], blocks until it is unlocked by the current owner.
 			</description>
 		</method>
 		<method name="try_lock">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Try locking this [Mutex], does not block. Returns [OK] on success else [ERR_BUSY].
+				Try locking this [code]Mutex[/code], does not block. Returns [OK] on success else [ERR_BUSY].
 			</description>
 		</method>
 		<method name="unlock">
 			<return type="void">
 			</return>
 			<description>
-				Unlock this [Mutex], leaving it to others threads.
+				Unlock this [code]Mutex[/code], leaving it to others threads.
 			</description>
 		</method>
 	</methods>

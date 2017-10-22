@@ -4,7 +4,7 @@
 		Data class wrapper for decoded JSON.
 	</brief_description>
 	<description>
-		Returned by [method JSON.parse], [JSONParseResult] contains decoded JSON or error information if JSON source not successfully parsed. You can check if JSON source was successfully parsed with [code]if json_result.error == 0[/code].
+		Returned by [method JSON.parse], [code]JSONParseResult[/code] contains decoded JSON or error information if JSON source not successfully parsed. You can check if JSON source was successfully parsed with [code]if json_result.error == 0[/code].
 	</description>
 	<tutorials>
 	</tutorials>

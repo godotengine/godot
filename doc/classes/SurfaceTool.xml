@@ -4,7 +4,7 @@
 		Helper tool to create geometry.
 	</brief_description>
 	<description>
-		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
+		The [code]SurfaceTool[/code] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
 		[codeblock]
 		var st = SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -12,7 +12,7 @@
 		st.add_uv(Vector2(0, 0))
 		st.add_vertex(Vector3(0, 0, 0))
 		[/codeblock]
-		The [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
+		The [code]SurfaceTool[/code] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
 		It is very important that vertex attributes are passed [b]before[/b] the call to [method add_vertex], failure to do this will result in an error when committing the vertex information to a mesh.
 	</description>
 	<tutorials>

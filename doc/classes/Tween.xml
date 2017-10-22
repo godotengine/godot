@@ -423,10 +423,10 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0">
-			The [Tween] should use [code]_physics_process[/code] for timekeeping when this is enabled.
+			The [code]Tween[/code] should use [code]_physics_process[/code] for timekeeping when this is enabled.
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1">
-			The [Tween] should use [code]_process[/code] for timekeeping when this is enabled (default).
+			The [code]Tween[/code] should use [code]_process[/code] for timekeeping when this is enabled (default).
 		</constant>
 		<constant name="TRANS_LINEAR" value="0">
 			Means that the animation is interpolated linearly.

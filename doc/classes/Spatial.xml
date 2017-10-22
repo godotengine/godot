@@ -29,7 +29,7 @@
 			<return type="Spatial">
 			</return>
 			<description>
-				Returns the parent [Spatial], or an empty [Object] if no parent exists or parent is not of type [Spatial].
+				Returns the parent [code]Spatial[/code], or an empty [Object] if no parent exists or parent is not of type [code]Spatial[/code].
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">

@@ -484,17 +484,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_STATIC" value="1">
-			Static mode. The body behaves like a [StaticBody2D] and does not move.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3">
-			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.
-		</constant>
 		<constant name="MODE_RIGID" value="0">
 			Rigid mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
 		</constant>
+		<constant name="MODE_STATIC" value="1">
+			Static mode. The body behaves like a [StaticBody2D] and does not move.
+		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 			Character mode. Similar to [code]MODE_RIGID[/code], but the body can not rotate.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="3">
+			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

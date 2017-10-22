@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Transform">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from a 3D [Transform].
+				Constructs the [code]Transform2D[/code] from a 3D [Transform].
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -30,7 +30,7 @@
 			<argument index="2" name="origin" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from 3 [Vector2] consisting of rows x, y and origin.
+				Constructs the [code]Transform2D[/code] from 3 [Vector2] consisting of rows x, y and origin.
 			</description>
 		</method>
 		<method name="Transform2D">
@@ -41,7 +41,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Constructs the [Transform2D] from rotation angle in radians and position [Vector2].
+				Constructs the [code]Transform2D[/code] from rotation angle in radians and position [Vector2].
 			</description>
 		</method>
 		<method name="affine_inverse">

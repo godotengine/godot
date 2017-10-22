@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolByteArray">
 			</argument>
 			<description>
-				Append a [PoolByteArray] at the end of this array.
+				Append a [code]PoolByteArray[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="compress">
@@ -40,7 +40,7 @@
 			<argument index="0" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [PoolByteArray] with the data compressed. Set the compression mode using one of [File]'s COMPRESS_* constants.
+				Returns a new [code]PoolByteArray[/code] with the data compressed. Set the compression mode using one of [File]'s COMPRESS_* constants.
 			</description>
 		</method>
 		<method name="decompress">
@@ -51,7 +51,7 @@
 			<argument index="1" name="compression_mode" type="int" default="0">
 			</argument>
 			<description>
-				Returns a new [PoolByteArray] with the data decompressed. Set buffer_size to the size of the uncompressed data. Set the compression mode using one of [File]'s COMPRESS_* constants.
+				Returns a new [code]PoolByteArray[/code] with the data decompressed. Set buffer_size to the size of the uncompressed data. Set the compression mode using one of [File]'s COMPRESS_* constants.
 			</description>
 		</method>
 		<method name="get_string_from_ascii">
@@ -129,7 +129,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Returns the slice of the [PoolByteArray] between indices (inclusive) as a new [PoolByteArray].  Any negative index is considered to be from the end of the array.
+				Returns the slice of the [code]PoolByteArray[/code] between indices (inclusive) as a new [code]PoolByteArray[/code].  Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
 	</methods>
