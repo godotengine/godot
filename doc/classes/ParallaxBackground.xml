@@ -4,7 +4,7 @@
 		A node used to create a parallax scrolling background.
 	</brief_description>
 	<description>
-		A ParallaxBackground will use one or more [ParallaxLayer] nodes to create a parallax scrolling background. Each [ParallaxLayer] can be set to move at different speeds relative to the camera movement, this can be used to create an illusion of depth in a 2D game.
+		A ParallaxBackground uses one or more [ParallaxLayer] child nodes to create a parallax effect. Each [ParallaxLayer] can move at a different speed using [member ParallaxLayer.motion_offset]. This creates an illusion of depth in a 2D game. If not used with a [Camera2D], you must manually calculate the [member scroll_offset].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -108,16 +108,22 @@
 	</methods>
 	<members>
 		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset">
+			Base position offset of all [ParallaxLayer] children.
 		</member>
 		<member name="scroll_base_scale" type="Vector2" setter="set_scroll_base_scale" getter="get_scroll_base_scale">
+			Base motion scale of all [ParallaxLayer] children.
 		</member>
 		<member name="scroll_ignore_camera_zoom" type="bool" setter="set_ignore_camera_zoom" getter="is_ignore_camera_zoom">
+			If [code]true[/code] elements in [ParallaxLayer] child aren't affected by the zoom level of the camera.
 		</member>
 		<member name="scroll_limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin">
+			Top left limits for scrolling to begin. If the camera is outside of this limit the background will stop scrolling. Must be lower than [member scroll_limit_end] to work.
 		</member>
 		<member name="scroll_limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end">
+			Right bottom limits for scrolling to end. If the camera is outside of this limit the background will stop scrolling. Must be higher than [member scroll_limit_begin] to work.
 		</member>
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset">
+			The ParallaxBackground's scroll value. Calculated automatically when using a [Camera2D], but can be used to manually manage scrolling when no camera is present.
 		</member>
 	</members>
 	<constants>
