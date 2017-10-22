@@ -736,23 +736,10 @@ void TextureRegionEditor::_edit_region() {
 	edit_draw->update();
 }
 
-inline float _snap_scalar(float p_offset, float p_step, float separation, float p_target) {
-	if (p_step != 0) {
-		float a = Math::stepify(p_target - p_offset, p_step + separation) + p_offset;
-		float b = a;
-		if (p_target >= 0)
-			b -= separation;
-		else
-			b += p_step;
-		return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
-	}
-	return p_target;
-}
-
 Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 	if (snap_mode == SNAP_GRID) {
-		p_target.x = _snap_scalar(snap_offset.x, snap_step.x, snap_separation.x, p_target.x);
-		p_target.y = _snap_scalar(snap_offset.y, snap_step.y, snap_separation.y, p_target.y);
+		p_target.x = Math::snap_scalar_seperation(snap_offset.x, snap_step.x, p_target.x, snap_separation.x);
+		p_target.y = Math::snap_scalar_seperation(snap_offset.y, snap_step.y, p_target.y, snap_separation.y);
 	}
 
 	return p_target;
