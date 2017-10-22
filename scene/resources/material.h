@@ -193,7 +193,7 @@ public:
 	};
 
 	enum SpecularMode {
-		SPECULAR_SCHLICK_GGX,
+		SPECULAR_GGX,
 		SPECULAR_BLINN,
 		SPECULAR_PHONG,
 		SPECULAR_TOON,
