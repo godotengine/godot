@@ -87,6 +87,9 @@ class TextureRegionEditor : public Control {
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
 
+	Ref<Texture> cached_texture;
+	Ref<BitMap> cached_bm;
+
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin;
