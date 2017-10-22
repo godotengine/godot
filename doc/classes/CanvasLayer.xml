@@ -4,7 +4,7 @@
 		Canvas drawing layer.
 	</brief_description>
 	<description>
-		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
+		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [code]CanvasLayer[/code] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [code]CanvasLayer[/code] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<tutorials>
 	</tutorials>

@@ -31,7 +31,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [NetworkedMultiplayerPeer] is refusing new connections.
+				Return whether this [code]NetworkedMultiplayerPeer[/code] is refusing new connections.
 			</description>
 		</method>
 		<method name="poll">
@@ -46,7 +46,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]endable[/code] is true, this [NetworkedMultiplayerPeer] will refuse new connections.
+				If [code]endable[/code] is true, this [code]NetworkedMultiplayerPeer[/code] will refuse new connections.
 			</description>
 		</method>
 		<method name="set_target_peer">

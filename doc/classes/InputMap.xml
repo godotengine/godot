@@ -4,7 +4,7 @@
 		Singleton that manages [InputEventAction].
 	</brief_description>
 	<description>
-		Manages all [InputEventAction] which can be created/modified from the project settings menu [code]Project > Project Settings > Input Map[/Code] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
+		Manages all [InputEventAction] which can be created/modified from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/Code] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html#inputmap
@@ -51,7 +51,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Adds an (empty) action to the [InputMap]. An [InputEvent] can then be added to this action with [method action_add_event].
+				Adds an (empty) action to the [code]InputMap[/code]. An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
 		<method name="erase_action">

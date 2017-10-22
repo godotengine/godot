@@ -4,7 +4,7 @@
 		Input event type for actions.
 	</brief_description>
 	<description>
-		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project > Project Settings > Input Map[/Code]. See [method Node._input].
+		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/Code]. See [method Node._input].
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html#actions

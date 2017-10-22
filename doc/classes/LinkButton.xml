@@ -40,7 +40,7 @@
 			<argument index="0" name="underline_mode" type="int" enum="LinkButton.UnderlineMode">
 			</argument>
 			<description>
-				Sets the underline mode for this button, the argument must be one of the [LinkButton] constants (see constants section).
+				Sets the underline mode for this button, the argument must be one of the [code]LinkButton[/code] constants (see constants section).
 			</description>
 		</method>
 	</methods>

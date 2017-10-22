@@ -652,6 +652,9 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
+			Canvas item transform has changed. Only received if requested.
+		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30" enum="">
 			CanvasItem is requested to draw.
 		</constant>
@@ -663,9 +666,6 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33" enum="">
 			Canvas item has exited the canvas.
-		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
-			Canvas item transform has changed. Only received if requested.
 		</constant>
 	</constants>
 </class>

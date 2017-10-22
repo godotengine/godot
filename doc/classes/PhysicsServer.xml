@@ -1437,11 +1437,11 @@
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
-			Constant to set/get a body's angular dampening factor.
-		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
 			Constant to set/get a body's linear dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+			Constant to set/get a body's angular dampening factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="6">
 			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.

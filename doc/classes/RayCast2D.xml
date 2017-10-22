@@ -156,7 +156,7 @@
 		<method name="set_collision_mask">
 			<return type="void">
 			</return>
-			<argument index="0" name="layer" type="int">
+			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
 				Set the mask to filter objects. Only objects in at least one collision layer enabled in the mask will be detected.

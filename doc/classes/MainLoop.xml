@@ -4,7 +4,7 @@
 		Main loop is the abstract main loop base class.
 	</brief_description>
 	<description>
-		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
+		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [code]MainLoop[/code] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [code]MainLoop[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -123,6 +123,8 @@
 		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="5" enum="">
 		</constant>
 		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="6" enum="">
+		</constant>
+		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="7" enum="">
 		</constant>
 		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="8" enum="">
 		</constant>

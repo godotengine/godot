@@ -4,7 +4,7 @@
 		Resource Loader.
 	</brief_description>
 	<description>
-		Resource Loader. This is a static object accessible as [ResourceLoader]. GDScript has a simplified load() function, though.
+		Resource Loader. This is a static object accessible as [code]ResourceLoader[/code]. GDScript has a simplified load() function, though.
 	</description>
 	<tutorials>
 	</tutorials>

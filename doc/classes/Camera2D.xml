@@ -384,9 +384,9 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
-		</constant>
 		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
+		</constant>
+		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
 		</constant>
 	</constants>
 </class>

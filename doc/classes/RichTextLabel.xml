@@ -394,6 +394,8 @@
 		</constant>
 		<constant name="ITEM_LIST" value="9">
 		</constant>
+		<constant name="ITEM_TABLE" value="10">
+		</constant>
 		<constant name="ITEM_META" value="11">
 		</constant>
 	</constants>

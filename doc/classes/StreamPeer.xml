@@ -43,7 +43,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bytes this [StreamPeer] has available.
+				Return the amount of bytes this [code]StreamPeer[/code] has available.
 			</description>
 		</method>
 		<method name="get_data">
@@ -135,7 +135,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [StreamPeer] is using big-endian format.
+				Return whether this [code]StreamPeer[/code] is using big-endian format.
 			</description>
 		</method>
 		<method name="put_16">
@@ -270,7 +270,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set this [StreamPeer] to use big-endian format. Default is false.
+				Set this [code]StreamPeer[/code] to use big-endian format. Default is false.
 			</description>
 		</method>
 	</methods>

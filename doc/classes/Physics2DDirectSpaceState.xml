@@ -130,11 +130,11 @@
 		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
 			Check for collisions with rigid bodies in character mode.
 		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-			Check for collisions with areas.
-		</constant>
 		<constant name="TYPE_MASK_COLLISION" value="15">
 			Check for collisions with any kind of bodies (but not areas).
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
+			Check for collisions with areas.
 		</constant>
 	</constants>
 </class>

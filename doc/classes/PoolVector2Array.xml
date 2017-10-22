@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [PoolVector2Array]. Optionally, you can pass in an Array that will be converted.
+				Construct a new [code]PoolVector2Array[/code]. Optionally, you can pass in an Array that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolVector2Array">
 			</argument>
 			<description>
-				Append an [PoolVector2Array] at the end of this array.
+				Append an [code]PoolVector2Array[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		In GDScript, functions are not [i]first-class objects[/i]. This means it is impossible to store them directly as variables, return them from another function, or pass them as arguments.
-		However, by creating a [FuncRef] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
+		However, by creating a [code]FuncRef[/code] using the [method @GDScript.funcref] function, a reference to a function in a given object can be created, passed around and called.
 	</description>
 	<tutorials>
 	</tutorials>
