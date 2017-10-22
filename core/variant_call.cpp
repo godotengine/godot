@@ -164,8 +164,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype1.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype2.name) {
@@ -174,8 +173,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype2.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype3.name) {
@@ -184,8 +182,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype3.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype4.name) {
@@ -193,8 +190,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype4.name);
 #endif
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype5.name) {
@@ -202,8 +198,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype5.name);
 #endif
-		}
-		else
+		} else
 			goto end;
 
 	end:
