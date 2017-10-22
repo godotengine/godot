@@ -775,3 +775,12 @@
 			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);                                                                         \
 		}                                                                                                                                              \
 	}
+
+#define FUNC12(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8, m_arg9, m_arg10, m_arg11, m_arg12)                                           \
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8, m_arg9 p9, m_arg10 p10, m_arg11 p11, m_arg12 p12) { \
+		if (Thread::get_caller_id() != server_thread) {                                                                                                             \
+			command_queue.push(server_name, &ServerName::m_type, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);                                                \
+		} else {                                                                                                                                                    \
+			server_name->m_type(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);                                                                                 \
+		}                                                                                                                                                           \
+	}

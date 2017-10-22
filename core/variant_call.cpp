@@ -88,7 +88,7 @@ struct _VariantCall {
 				return;
 			} else
 #endif
-			if (p_argcount < arg_count) {
+					if (p_argcount < arg_count) {
 				int def_argcount = default_args.size();
 #ifdef DEBUG_ENABLED
 				if (p_argcount < (arg_count - def_argcount)) {
@@ -146,7 +146,6 @@ struct _VariantCall {
 #endif
 	}
 
-
 	static void addfunc(bool p_const, Variant::Type p_type, Variant::Type p_return, bool p_has_return, const StringName &p_name, VariantFunc p_func, const Vector<Variant> &p_defaultarg, const Arg &p_argtype1 = Arg(), const Arg &p_argtype2 = Arg(), const Arg &p_argtype3 = Arg(), const Arg &p_argtype4 = Arg(), const Arg &p_argtype5 = Arg()) {
 
 		FuncData funcdata;
@@ -164,8 +163,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype1.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype2.name) {
@@ -174,8 +172,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype2.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype3.name) {
@@ -184,8 +181,7 @@ struct _VariantCall {
 			funcdata.arg_names.push_back(p_argtype3.name);
 #endif
 
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype4.name) {
@@ -193,8 +189,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype4.name);
 #endif
-		}
-		else
+		} else
 			goto end;
 
 		if (p_argtype5.name) {
@@ -202,8 +197,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 			funcdata.arg_names.push_back(p_argtype5.name);
 #endif
-		}
-		else
+		} else
 			goto end;
 
 	end:
@@ -211,7 +205,6 @@ struct _VariantCall {
 		funcdata.arg_count = funcdata.arg_types.size();
 		type_funcs[p_type].functions[p_name] = funcdata;
 	}
-
 
 #define VCALL_LOCALMEM0(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { reinterpret_cast<m_type *>(p_self._data._mem)->m_method(); }
@@ -1058,7 +1051,6 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return String();
 
 			// math types
-
 			case VECTOR2:
 				return Vector2(); // 5
 			case RECT2: return Rect2();
@@ -1394,7 +1386,6 @@ void register_variant_methods() {
 #define ADDFUNC4R(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
 	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
 
-
 #define ADDFUNC0RNC(m_vtype, m_ret, m_class, m_method, m_defarg) \
 	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
 #define ADDFUNC1RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_defarg) \
@@ -1405,7 +1396,6 @@ void register_variant_methods() {
 	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)));
 #define ADDFUNC4RNC(m_vtype, m_ret, m_class, m_method, m_arg1, m_argname1, m_arg2, m_argname2, m_arg3, m_argname3, m_arg4, m_argname4, m_defarg) \
 	_VariantCall::addfunc(false, Variant::m_vtype, Variant::m_ret, true, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg, _VariantCall::Arg(Variant::m_arg1, _scs_create(m_argname1)), _VariantCall::Arg(Variant::m_arg2, _scs_create(m_argname2)), _VariantCall::Arg(Variant::m_arg3, _scs_create(m_argname3)), _VariantCall::Arg(Variant::m_arg4, _scs_create(m_argname4)));
-
 
 #define ADDFUNC0(m_vtype, m_ret, m_class, m_method, m_defarg) \
 	_VariantCall::addfunc(true, Variant::m_vtype, Variant::m_ret, false, _scs_create(#m_method), VCALL(m_class, m_method), m_defarg);
