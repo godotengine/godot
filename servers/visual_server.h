@@ -678,7 +678,21 @@ public:
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, bool p_blur) = 0;
+
+	enum EnvironmentSSAOQuality {
+		ENV_SSAO_QUALITY_LOW,
+		ENV_SSAO_QUALITY_MEDIUM,
+		ENV_SSAO_QUALITY_HIGH,
+	};
+
+	enum EnvironmentSSAOBlur {
+		ENV_SSAO_BLUR_DISABLED,
+		ENV_SSAO_BLUR_1x1,
+		ENV_SSAO_BLUR_2x2,
+		ENV_SSAO_BLUR_3x3,
+	};
+
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, EnvironmentSSAOQuality p_quality, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;

@@ -13,7 +13,23 @@ void main() {
 
 #define TWO_PI 6.283185307179586476925286766559
 
+#ifdef SSAO_QUALITY_HIGH
+
+#define NUM_SAMPLES (80)
+
+#endif
+
+#ifdef SSAO_QUALITY_LOW
+
 #define NUM_SAMPLES (15)
+
+#endif
+
+#if !defined(SSAO_QUALITY_LOW) && !defined(SSAO_QUALITY_HIGH)
+
+#define NUM_SAMPLES (40)
+
+#endif
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower
 // miplevel to maintain reasonable spatial locality in the cache
@@ -212,12 +228,12 @@ void main() {
 
 	//visibility=-C.z/camera_z_far;
 	//return;
-
-	//vec3 n_C = texelFetch(source_normal,ssC,0).rgb * 2.0 - 1.0;
-
+#if 0
+	vec3 n_C = texelFetch(source_normal,ssC,0).rgb * 2.0 - 1.0;
+#else
 	vec3 n_C = reconstructCSFaceNormal(C);
 	n_C = -n_C;
-
+#endif
 
 	// Hash function used in the HPG12 AlchemyAO paper
 	float randomPatternRotationAngle = mod(float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10), TWO_PI);
