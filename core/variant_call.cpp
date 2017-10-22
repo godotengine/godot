@@ -1050,8 +1050,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case STRING:
 				return String();
 
-				// math types
-
+			// math types
 			case VECTOR2:
 				return Vector2(); // 5
 			case RECT2: return Rect2();
