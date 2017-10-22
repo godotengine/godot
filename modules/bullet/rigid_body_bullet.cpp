@@ -342,7 +342,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 
 void RigidBodyBullet::dispatch_callbacks() {
 	/// The check isTransformChanged is necessary in order to call integrated forces only when the first transform is sent
-	if (force_integration_callback && isTransformChanged && btBody->isActive()) {
+	if (btBody->isActive() && force_integration_callback && isTransformChanged) {
 
 		BulletPhysicsDirectBodyState *bodyDirect = BulletPhysicsDirectBodyState::get_singleton(this);
 
@@ -500,6 +500,8 @@ real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
 }
 
 void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
+	// This is necessary to block force_integration untile next move
+	isTransformChanged = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
 	switch (p_mode) {
