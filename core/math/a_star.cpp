@@ -443,4 +443,5 @@ AStar::AStar() {
 AStar::~AStar() {
 
 	pass = 1;
+	clear();
 }
