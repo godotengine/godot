@@ -437,14 +437,10 @@ void Polygon2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_snap_step_y"), &Polygon2DEditor::_set_snap_step_y);
 }
 
-inline float _snap_scalar(float p_offset, float p_step, float p_target) {
-	return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
-}
-
 Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	if (use_snap) {
-		p_target.x = _snap_scalar(snap_offset.x * uv_draw_zoom - uv_draw_ofs.x, snap_step.x * uv_draw_zoom, p_target.x);
-		p_target.y = _snap_scalar(snap_offset.y * uv_draw_zoom - uv_draw_ofs.y, snap_step.y * uv_draw_zoom, p_target.y);
+		p_target.x = Math::snap_scalar(snap_offset.x * uv_draw_zoom - uv_draw_ofs.x, snap_step.x * uv_draw_zoom, p_target.x);
+		p_target.y = Math::snap_scalar(snap_offset.y * uv_draw_zoom - uv_draw_ofs.y, snap_step.y * uv_draw_zoom, p_target.y);
 	}
 
 	return p_target;

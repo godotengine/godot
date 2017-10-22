@@ -16,7 +16,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Cloces the current connection, allows for reusal of [HTTPClient].
+				Cloces the current connection, allows for reusal of [code]HTTPClient[/code].
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -84,7 +84,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [HTTPClient] has a response available.
+				Return whether this [code]HTTPClient[/code] has a response available.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
@@ -98,7 +98,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [HTTPClient] has a response that is chunked.
+				Return whether this [code]HTTPClient[/code] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">

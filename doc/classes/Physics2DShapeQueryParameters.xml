@@ -22,7 +22,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of objects, or object [RID]\ s, that will be excluded from collisions.
+				Return the list of objects, or object [RID]s, that will be excluded from collisions.
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
@@ -75,7 +75,7 @@
 			<argument index="0" name="exclude" type="Array">
 			</argument>
 			<description>
-				Set the list of objects, or object [RID]\ s, that will be excluded from collisions.
+				Set the list of objects, or object [RID]s, that will be excluded from collisions.
 			</description>
 		</method>
 		<method name="set_margin">

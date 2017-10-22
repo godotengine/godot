@@ -75,7 +75,6 @@ protected:
 
 	virtual void _menu_option(int p_option);
 	void _wip_close();
-	void _canvas_draw();
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
@@ -103,6 +102,8 @@ protected:
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
+	void forward_draw_over_canvas(Control *p_canvas);
+
 	void edit(Node *p_polygon);
 	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
 };
@@ -116,7 +117,8 @@ class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	String klass;
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
+	virtual void forward_draw_over_canvas(Control *p_canvas) { polygon_editor->forward_draw_over_canvas(p_canvas); }
 
 	bool has_main_screen() const { return false; }
 	virtual String get_name() const { return klass; }

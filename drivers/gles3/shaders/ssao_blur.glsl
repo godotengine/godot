@@ -15,6 +15,7 @@ void main() {
 
 uniform sampler2D source_ssao; //texunit:0
 uniform sampler2D source_depth; //texunit:1
+uniform sampler2D source_normal; //texunit:3
 
 
 layout(location = 0) out float visibility;
@@ -24,7 +25,7 @@ layout(location = 0) out float visibility;
 // Tunable Parameters:
 
 /** Increase to make depth edges crisper. Decrease to reduce flicker. */
-#define EDGE_SHARPNESS     (4.0)
+uniform float edge_sharpness;
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
     first AO pass.  This constant can be increased while R decreases to improve
@@ -34,7 +35,8 @@ layout(location = 0) out float visibility;
     unobjectionable after shading was applied but eliminated most temporal incoherence
     from using small numbers of sample taps.
     */
-#define SCALE               (3)
+
+uniform int filter_scale;
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R                   (4)
@@ -63,13 +65,14 @@ void main() {
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
 
 	float depth = texelFetch(source_depth, ssC, 0).r;
+	//vec3 normal = texelFetch(source_normal,ssC,0).rgb * 2.0 - 1.0;
 
 	depth = depth * 2.0 - 1.0;
 	depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - depth * (camera_z_far - camera_z_near));
 
 	float depth_divide = 1.0 / camera_z_far;
 
-	depth*=depth_divide;
+//	depth*=depth_divide;
 
 	/*
 	if (depth > camera_z_far*0.999) {
@@ -92,20 +95,23 @@ void main() {
 		// so the IF statement has no runtime cost
 		if (r != 0) {
 
-			ivec2 ppos = ssC + axis * (r * SCALE);
+			ivec2 ppos = ssC + axis * (r * filter_scale);
 			float value = texelFetch(source_ssao, clamp(ppos,ivec2(0),clamp_limit), 0).r;
-			float temp_depth = texelFetch(source_depth, clamp(ssC,ivec2(0),clamp_limit), 0).r;
+			ivec2 rpos = clamp(ppos,ivec2(0),clamp_limit);
+			float temp_depth = texelFetch(source_depth, rpos, 0).r;
+			//vec3 temp_normal = texelFetch(source_normal, rpos, 0).rgb * 2.0 - 1.0;
 
 			temp_depth = temp_depth * 2.0 - 1.0;
 			temp_depth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - temp_depth * (camera_z_far - camera_z_near));
-			temp_depth *= depth_divide;
+//			temp_depth *= depth_divide;
 
 			// spatial domain: offset gaussian tap
 			float weight = 0.3 + gaussian[abs(r)];
+			//weight *= max(0.0,dot(temp_normal,normal));
 
 			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
 			weight *= max(0.0, 1.0
-				      - (EDGE_SHARPNESS * 2000.0) * abs(temp_depth - depth)
+				      - edge_sharpness * abs(temp_depth - depth)
 				      );
 
 			sum += value * weight;

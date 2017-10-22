@@ -73,9 +73,9 @@
 		</constant>
 		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
 		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-		</constant>
 		<constant name="TYPE_MASK_COLLISION" value="15">
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
 		</constant>
 	</constants>
 </class>

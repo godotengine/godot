@@ -23,7 +23,7 @@
 			<argument index="3" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [ImageTexture] with "width" and "height".
+				Create a new [code]ImageTexture[/code] with "width" and "height".
 				"format" one of [Image].FORMAT_*.
 				"flags" one or more of [Texture].FLAG_*.
 			</description>
@@ -36,28 +36,28 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [ImageTexture] from an [Image] with "flags" from [Texture].FLAG_*.
+				Create a new [code]ImageTexture[/code] from an [Image] with "flags" from [Texture].FLAG_*.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [ImageTexture], one of [Image].FORMAT_*.
+				Return the format of the [code]ImageTexture[/code], one of [Image].FORMAT_*.
 			</description>
 		</method>
 		<method name="get_lossy_storage_quality" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the storage quality for [ImageTexture].STORAGE_COMPRESS_LOSSY.
+				Return the storage quality for [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
 			</description>
 		</method>
 		<method name="get_storage" qualifiers="const">
 			<return type="int" enum="ImageTexture.Storage">
 			</return>
 			<description>
-				Return the storage type. One of [ImageTexture].STORAGE_*.
+				Return the storage type. One of [code]ImageTexture[/code].STORAGE_*.
 			</description>
 		</method>
 		<method name="load">
@@ -66,7 +66,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [ImageTexture].
+				Load an [code]ImageTexture[/code].
 			</description>
 		</method>
 		<method name="set_data">
@@ -75,7 +75,7 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
-				Set the [Image] of this [ImageTexture].
+				Set the [Image] of this [code]ImageTexture[/code].
 			</description>
 		</method>
 		<method name="set_lossy_storage_quality">
@@ -84,7 +84,7 @@
 			<argument index="0" name="quality" type="float">
 			</argument>
 			<description>
-				Set the storage quality in case of [ImageTexture].STORAGE_COMPRESS_LOSSY.
+				Set the storage quality in case of [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -102,7 +102,7 @@
 			<argument index="0" name="mode" type="int" enum="ImageTexture.Storage">
 			</argument>
 			<description>
-				Set the storage type. One of [ImageTexture].STORAGE_*.
+				Set the storage type. One of [code]ImageTexture[/code].STORAGE_*.
 			</description>
 		</method>
 	</methods>

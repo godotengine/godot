@@ -1368,35 +1368,41 @@ EditorFileDialog::EditorFileDialog() {
 
 	VBoxContainer *item_vb = memnew(VBoxContainer);
 	list_hb->add_child(item_vb);
-	item_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	HBoxContainer *preview_hb = memnew(HBoxContainer);
+	preview_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+	item_vb->add_child(preview_hb);
+
+	VBoxContainer *list_vb = memnew(VBoxContainer);
+	list_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
+	preview_hb->add_child(list_vb);
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	item_vb->add_margin_child(TTR("Directories & Files:"), item_list, true);
-
-	HBoxContainer *filter_hb = memnew(HBoxContainer);
-	item_vb->add_child(filter_hb);
-
-	VBoxContainer *filter_vb = memnew(VBoxContainer);
-	filter_hb->add_child(filter_vb);
-	filter_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	list_vb->add_child(item_list);
 
 	preview_vb = memnew(VBoxContainer);
-	filter_hb->add_child(preview_vb);
+	preview_hb->add_child(preview_vb);
 	CenterContainer *prev_cc = memnew(CenterContainer);
 	preview_vb->add_margin_child(TTR("Preview:"), prev_cc);
 	preview = memnew(TextureRect);
 	prev_cc->add_child(preview);
 	preview_vb->hide();
 
+	HBoxContainer *filename_hbc = memnew(HBoxContainer);
+	filename_hbc->add_child(memnew(Label(TTR("File:"))));
 	file = memnew(LineEdit);
-	//add_child(file);
-	filter_vb->add_margin_child(TTR("File:"), file);
-
+	file->set_stretch_ratio(4);
+	file->set_h_size_flags(SIZE_EXPAND_FILL);
+	filename_hbc->add_child(file);
 	filter = memnew(OptionButton);
-	//add_child(filter);
-	filter_vb->add_margin_child(TTR("Filter:"), filter);
+	filter->set_stretch_ratio(3);
+	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); //too many extensions overflow it
+	filename_hbc->add_child(filter);
+	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	item_vb->add_child(filename_hbc);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;

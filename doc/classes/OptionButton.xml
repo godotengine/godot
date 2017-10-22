@@ -46,7 +46,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear all the items in the [OptionButton].
+				Clear all the items in the [code]OptionButton[/code].
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">

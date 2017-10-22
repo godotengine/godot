@@ -4,8 +4,10 @@
 		Generic input event
 	</brief_description>
 	<description>
+		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -16,7 +18,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Returns true if this input event matches the event passed.
+				Returns [code]true[/code] if this event matches [code]event[event].
 			</description>
 		</method>
 		<method name="as_text" qualifiers="const">
@@ -30,14 +32,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the id of the device that generated the event.
+				Returns the device's id that generated the event.
 			</description>
 		</method>
 		<method name="get_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the id of the event.
+				Returns the event's ID.
 			</description>
 		</method>
 		<method name="is_action" qualifiers="const">
@@ -46,7 +48,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns true if this input event matches a pre-defined action, no matter the type.
+				Returns [code]true[/code] if this input event matches a pre-defined action of any type.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -55,7 +57,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns true if the given action is being pressed (and is not an echo event for KEY events). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+				Returns [code]true[/code] if the given action is being pressed (and is not an echo event for KEY events). Not relevant for the event types [code]MOUSE_MOTION[/code], [code]SCREEN_DRAG[/code] or [code]NONE[/code].
 			</description>
 		</method>
 		<method name="is_action_released" qualifiers="const">
@@ -64,27 +66,28 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns true if the given action is released (i.e. not pressed). Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+				Returns [code]true[/code] if the given action is released (i.e. not pressed). Not relevant for the event types [code]MOUSE_MOTION[/code], [code]SCREEN_DRAG[/code] or [code]NONE[/code].
 			</description>
 		</method>
 		<method name="is_action_type" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this input event's type is one of the [code]InputEvent[/code] constants.
 			</description>
 		</method>
 		<method name="is_echo" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this input event is an echo event (only for events of type KEY, it will return false for other types).
+				Returns [code]true[/code] if this input event is an echo event (only for events of type KEY).
 			</description>
 		</method>
 		<method name="is_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this input event is pressed. Not relevant for the event types MOUSE_MOTION, SCREEN_DRAG and NONE.
+				Returns [code]true[/code] if this input event is pressed. Not relevant for the event types [code]MOUSE_MOTION[/code], [code]SCREEN_DRAG[/code] or [code]NONE[/code].
 			</description>
 		</method>
 		<method name="set_device">
@@ -124,6 +127,7 @@
 	</methods>
 	<members>
 		<member name="device" type="int" setter="set_device" getter="get_device">
+			The event's device ID.
 		</member>
 	</members>
 	<constants>

@@ -4,8 +4,10 @@
 		Base input event type for mouse events.
 	</brief_description>
 	<description>
+		Stores general mouse events informations.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -58,10 +60,10 @@
 			Mouse button mask identifier, one of or a bitwise combination of the BUTTON_MASK_* constants in [@Global Scope].
 		</member>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
-			Global position of the mouse click.
+			Mouse position relative to the current [Viewport] when used in [method Control._gui_input], otherwise is at 0,0.
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position">
-			Local position of the mouse click.
+			Mouse local position relative to the [Viewport]. If used in [method Control._gui_input] the position is relative to the current [Control] wich is under the mouse.
 		</member>
 	</members>
 	<constants>

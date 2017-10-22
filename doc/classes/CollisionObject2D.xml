@@ -4,7 +4,7 @@
 		Base node for 2D collision objects.
 	</brief_description>
 	<description>
-		CollisionObject2D is the base class for 2D physics objects. It can hold any number of 2D collision [Shape2D]\ s. Each shape must be assigned to a [i]shape owner[/i]. The CollisionObject2D can have any number of shape owners. Shape owners are not nodes and do not appear in the editor, but are accessible through code using the [code]shape_owner_*[/code] methods.
+		CollisionObject2D is the base class for 2D physics objects. It can hold any number of 2D collision [Shape2D]s. Each shape must be assigned to a [i]shape owner[/i]. The CollisionObject2D can have any number of shape owners. Shape owners are not nodes and do not appear in the editor, but are accessible through code using the [code]shape_owner_*[/code] methods.
 	</description>
 	<tutorials>
 	</tutorials>

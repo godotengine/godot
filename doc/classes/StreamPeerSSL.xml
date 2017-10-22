@@ -29,7 +29,7 @@
 			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
+				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [code]StreamPeerSSL[/code] will validate that the certificate presented by the peer matches the "for_hostname".
 			</description>
 		</method>
 		<method name="disconnect_from_stream">
@@ -49,10 +49,10 @@
 	</methods>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0">
-			A status representing a [StreamPeerSSL] that is disconnected.
+			A status representing a [code]StreamPeerSSL[/code] that is disconnected.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="1">
-			A status representing a [StreamPeerSSL] that is connected to a host.
+			A status representing a [code]StreamPeerSSL[/code] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2">
 			An errot status that shows the peer did not present a SSL certificate and validation was requested.

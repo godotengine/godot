@@ -59,7 +59,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of keys in the [Dictionary].
+				Return the list of keys in the [code]Dictionary[/code].
 			</description>
 		</method>
 		<method name="size">
@@ -73,7 +73,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of values in the [Dictionary].
+				Return the list of values in the [code]Dictionary[/code].
 			</description>
 		</method>
 	</methods>

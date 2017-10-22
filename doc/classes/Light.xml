@@ -179,6 +179,8 @@
 		</constant>
 		<constant name="PARAM_SHADOW_BIAS" value="12">
 		</constant>
+		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="13">
+		</constant>
 		<constant name="PARAM_MAX" value="14">
 		</constant>
 	</constants>

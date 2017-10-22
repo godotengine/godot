@@ -4,7 +4,7 @@
 		A unit of execution in a process.
 	</brief_description>
 	<description>
-		A unit of execution in a process. Can run methods on [Object]\ s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
+		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +15,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the current [Thread]\ s id, uniquely identifying it among all threads.
+				Returns the current [code]Thread[/code]s id, uniquely identifying it among all threads.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
+				Returns true if this [code]Thread[/code] is currently active. An active [code]Thread[/code] cannot start work on a new method but can be joined with [method wait_to_finish].
 			</description>
 		</method>
 		<method name="start">
@@ -37,7 +37,7 @@
 			<argument index="3" name="priority" type="int" default="1">
 			</argument>
 			<description>
-				Starts a new [Thread] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [Thread] can be changed by passing a PRIORITY_* enum.
+				Starts a new [code]Thread[/code] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [code]Thread[/code] can be changed by passing a PRIORITY_* enum.
 				Returns OK on success, or ERR_CANT_CREATE on failure.
 			</description>
 		</method>
@@ -45,7 +45,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Joins the [Thread] and waits for it to finish. Returns what the method called returned.
+				Joins the [code]Thread[/code] and waits for it to finish. Returns what the method called returned.
 			</description>
 		</method>
 	</methods>

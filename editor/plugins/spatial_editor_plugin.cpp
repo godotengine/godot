@@ -2095,7 +2095,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 }
 
 // TODO That should be part of the drawing API...
-static void stroke_rect(CanvasItem *ci, Rect2 rect, Color color, real_t width = 1.0) {
+static void stroke_rect(CanvasItem &ci, Rect2 rect, Color color, real_t width = 1.0) {
 
 	// a---b
 	// |   |
@@ -2105,10 +2105,31 @@ static void stroke_rect(CanvasItem *ci, Rect2 rect, Color color, real_t width = 
 	Vector2 c(rect.position.x, rect.position.y + rect.size.y);
 	Vector2 d(rect.position + rect.size);
 
-	ci->draw_line(a, b, color, width);
-	ci->draw_line(b, d, color, width);
-	ci->draw_line(d, c, color, width);
-	ci->draw_line(c, a, color, width);
+	ci.draw_line(a, b, color, width);
+	ci.draw_line(b, d, color, width);
+	ci.draw_line(d, c, color, width);
+	ci.draw_line(c, a, color, width);
+}
+
+static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture> icon) {
+
+	// Adjust bar size from control height
+	Vector2 surface_size = surface.get_size();
+	real_t h = surface_size.y / 2.0;
+	real_t y = (surface_size.y - h) / 2.0;
+
+	Rect2 r(10, y, 6, h);
+	real_t sy = r.size.y * fill;
+
+	// Note: because this bar appears over the viewport, it has to stay readable for any background color
+	// Draw both neutral dark and bright colors to account this
+	surface.draw_rect(r, Color(1, 1, 1, 0.2));
+	surface.draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
+	stroke_rect(surface, r.grow(1), Color(0, 0, 0, 0.7));
+
+	Vector2 icon_size = icon->get_size();
+	Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 2);
+	surface.draw_texture(icon, icon_pos);
 }
 
 void SpatialEditorViewport::_draw() {
@@ -2167,35 +2188,47 @@ void SpatialEditorViewport::_draw() {
 
 		draw_rect = Rect2(Vector2(), s).clip(draw_rect);
 
-		stroke_rect(surface, draw_rect, Color(0.6, 0.6, 0.1, 0.5), 2.0);
+		stroke_rect(*surface, draw_rect, Color(0.6, 0.6, 0.1, 0.5), 2.0);
 
 	} else {
 
 		if (zoom_indicator_delay > 0.0) {
-			// Show indicative zoom factor
 
-			real_t min_distance = ZOOM_MIN_DISTANCE; // TODO Why not pick znear to limit zoom?
-			real_t max_distance = camera->get_zfar();
-			real_t scale_length = (max_distance - min_distance);
+			if (is_freelook_active()) {
+				// Show speed
 
-			if (Math::abs(scale_length) > CMP_EPSILON) {
-				real_t logscale_t = 1.0 - Math::log(1 + cursor.distance - min_distance) / Math::log(1 + scale_length);
+				real_t min_speed = FREELOOK_MIN_SPEED;
+				real_t max_speed = camera->get_zfar();
+				real_t scale_length = (max_speed - min_speed);
 
-				// There is no real maximum distance so that factor can become negative,
-				// Let's make it look asymptotic instead (will decrease slower and slower).
-				if (logscale_t < 0.25)
-					logscale_t = 0.25 * Math::exp(4.0 * logscale_t - 1.0);
+				if (Math::abs(scale_length) > CMP_EPSILON) {
+					real_t logscale_t = 1.0 - Math::log(1 + freelook_speed - min_speed) / Math::log(1 + scale_length);
 
-				Vector2 surface_size = surface->get_size();
-				real_t h = surface_size.y / 2.0;
-				real_t y = (surface_size.y - h) / 2.0;
+					// There is no real maximum speed so that factor can become negative,
+					// Let's make it look asymptotic instead (will decrease slower and slower).
+					if (logscale_t < 0.25)
+						logscale_t = 0.25 * Math::exp(4.0 * logscale_t - 1.0);
 
-				Rect2 r(10, y, 6, h);
-				real_t sy = r.size.y * logscale_t;
+					draw_indicator_bar(*surface, 1.0 - logscale_t, get_icon("ViewportSpeed", "EditorIcons"));
+				}
 
-				surface->draw_rect(r, Color(1, 1, 1, 0.2));
-				surface->draw_rect(Rect2(r.position.x, r.position.y + r.size.y - sy, r.size.x, sy), Color(1, 1, 1, 0.6));
-				stroke_rect(surface, r.grow(1), Color(0, 0, 0, 0.7));
+			} else {
+				// Show zoom
+
+				real_t min_distance = ZOOM_MIN_DISTANCE; // TODO Why not pick znear to limit zoom?
+				real_t max_distance = camera->get_zfar();
+				real_t scale_length = (max_distance - min_distance);
+
+				if (Math::abs(scale_length) > CMP_EPSILON) {
+					real_t logscale_t = 1.0 - Math::log(1 + cursor.distance - min_distance) / Math::log(1 + scale_length);
+
+					// There is no real maximum distance so that factor can become negative,
+					// Let's make it look asymptotic instead (will decrease slower and slower).
+					if (logscale_t < 0.25)
+						logscale_t = 0.25 * Math::exp(4.0 * logscale_t - 1.0);
+
+					draw_indicator_bar(*surface, logscale_t, get_icon("ViewportZoom", "EditorIcons"));
+				}
 			}
 		}
 	}
@@ -2732,8 +2765,14 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 			normal = hit_normal;
 		}
 	}
-	Vector3 center = preview_bounds->get_size() * 0.5;
-	return point + (center * normal);
+	Vector3 offset = Vector3();
+	for (int i = 0; i < 3; i++) {
+		if (normal[i] > 0.0)
+			offset[i] = (preview_bounds->get_size()[i] - (preview_bounds->get_size()[i] + preview_bounds->get_position()[i]));
+		else if (normal[i] < 0.0)
+			offset[i] = -(preview_bounds->get_size()[i] + preview_bounds->get_position()[i]);
+	}
+	return point + offset;
 }
 
 Rect3 SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds) {
@@ -2855,7 +2894,7 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 	if (parent_spatial)
 		global_transform = parent_spatial->get_global_transform();
 
-	global_transform.origin = _get_instance_position(p_point);
+	global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 
 	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
 
@@ -4793,6 +4832,15 @@ void SpatialEditorPlugin::set_state(const Dictionary &p_state) {
 void SpatialEditor::snap_cursor_to_plane(const Plane &p_plane) {
 
 	//cursor.pos=p_plane.project(cursor.pos);
+}
+
+Vector3 SpatialEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
+	if (is_snap_enabled()) {
+		p_target.x = Math::snap_scalar(0.0, get_translate_snap(), p_target.x);
+		p_target.y = Math::snap_scalar(0.0, get_translate_snap(), p_target.y);
+		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
+	}
+	return p_target;
 }
 
 void SpatialEditorPlugin::_bind_methods() {

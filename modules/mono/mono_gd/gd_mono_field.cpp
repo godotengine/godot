@@ -51,6 +51,7 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 	{                                                     \
 		m_type val = p_value.operator m_type();           \
 		mono_field_set_value(p_object, mono_field, &val); \
+		break;                                            \
 	}
 
 #define SET_FROM_ARRAY_AND_BREAK(m_type)                                                       \
@@ -136,6 +137,9 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 
 			if (tclass == CACHED_CLASS(Plane))
 				SET_FROM_STRUCT_AND_BREAK(Plane);
+
+			if (mono_class_is_enum(tclass->get_raw()))
+				SET_FROM_PRIMITIVE(signed int);
 
 			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + tclass->get_name());
 			ERR_FAIL();

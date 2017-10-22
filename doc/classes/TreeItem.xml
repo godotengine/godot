@@ -4,7 +4,7 @@
 		Control for a single item inside a [Tree].
 	</brief_description>
 	<description>
-		Control for a single item inside a [Tree]. May have child [TreeItem]\ s and be styled as well as contain buttons.
+		Control for a single item inside a [Tree]. May have child [code]TreeItem[/code]s and be styled as well as contain buttons.
 	</description>
 	<tutorials>
 	</tutorials>

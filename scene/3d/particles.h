@@ -388,6 +388,8 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
+	RID get_shader_rid() const;
+
 	ParticlesMaterial();
 	~ParticlesMaterial();
 };

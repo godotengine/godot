@@ -49,8 +49,8 @@ void ParallaxBackground::_notification(int p_what) {
 
 void ParallaxBackground::_camera_moved(const Transform2D &p_transform) {
 
-	set_scroll_offset(p_transform.get_origin());
 	set_scroll_scale(p_transform.get_scale().dot(Vector2(0.5, 0.5)));
+	set_scroll_offset(p_transform.get_origin() / p_transform.get_scale());
 }
 
 void ParallaxBackground::set_scroll_scale(float p_scale) {

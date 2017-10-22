@@ -59,16 +59,16 @@
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
-			The initial status of the [StreamPeerTCP], also the status after a disconnect.
+			The initial status of the [code]StreamPeerTCP[/code], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1">
-			A status representing a [StreamPeerTCP] that is connecting to a host.
+			A status representing a [code]StreamPeerTCP[/code] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2">
-			A status representing a [StreamPeerTCP] that is connected to a host.
+			A status representing a [code]StreamPeerTCP[/code] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3">
-			A staus representing a [StreamPeerTCP] in error state.
+			A staus representing a [code]StreamPeerTCP[/code] in error state.
 		</constant>
 	</constants>
 </class>

@@ -10,6 +10,7 @@
 # Geequlim <geequlim@gmail.com>, 2016-2017.
 # Luo Jun <vipsbpig@gmail.com>, 2016.
 # oberon-tonya <360119124@qq.com>, 2016.
+# sersoong <seraphim945@qq.com>, 2017.
 # wanfang liu <wanfang.liu@gmail.com>, 2016.
 # Youmu <konpaku.w@gmail.com>, 2017.
 #
@@ -17,15 +18,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-07-08 15:27+0800\n"
-"Last-Translator: Geequlim <geequlim@gmail.com>\n"
-"Language-Team: 汉语 <geequlim@gmail.com>\n"
+"PO-Revision-Date: 2017-09-15 08:55+0000\n"
+"Last-Translator: sersoong <seraphim945@qq.com>\n"
+"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Gtranslator 2.91.7\n"
+"X-Generator: Weblate 2.17-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -201,10 +203,9 @@ msgid "Create %d NEW tracks and insert keys?"
 msgstr "创建%d个新轨道并插入关键帧？"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
-#: editor/editor_audio_buses.cpp
+#: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
@@ -366,261 +367,6 @@ msgstr "修改数组类型"
 msgid "Change Array Value"
 msgstr "修改数组值"
 
-#: editor/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_plugin_settings.cpp
-msgid "Version:"
-msgstr "版本:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Contents:"
-msgstr "内容:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "View Files"
-msgstr "查看文件"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_help.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "描述:"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
-#: editor/project_manager.cpp
-msgid "Install"
-msgstr "安装"
-
-#: editor/asset_library_editor_plugin.cpp editor/call_dialog.cpp
-#: editor/connections_dialog.cpp editor/export_template_manager.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/project_settings_editor.cpp editor/property_editor.cpp
-#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Close"
-msgstr "关闭"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't resolve."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connection error, please try again."
-msgstr "连接错误，请重试。"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't connect."
-msgstr "无法连接。"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Can't connect to host:"
-msgstr "无法连接到服务器:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response from host:"
-msgstr "服务器无响应:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "No response."
-msgstr "无响应。"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, return code:"
-msgstr "请求失败，错误代码:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Req. Failed."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Request failed, too many redirects"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Redirect Loop."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed:"
-msgstr "失败:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Expected:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Got:"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Failed sha256 hash check"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Asset Download Error:"
-msgstr "资源下载出错:"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_asset_installer.cpp
-msgid "Success!"
-msgstr "完成！"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr "获取:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr "解析中.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "连接中.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "正在请求.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Error making request"
-msgstr "请求错误"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Idle"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Retry"
-msgstr "重试"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download Error"
-msgstr "下载错误"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Download for this asset is already in progress!"
-msgstr "此资源文件正在下载中！"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "first"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr ""
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "All"
-msgstr "全部"
-
-#: editor/asset_library_editor_plugin.cpp editor/create_dialog.cpp
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Search:"
-msgstr "搜索:"
-
-#: editor/asset_library_editor_plugin.cpp editor/code_editor.cpp
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Search"
-msgstr "搜索"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "导入"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Plugins"
-msgstr "插件"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Sort:"
-msgstr "排序:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "反选"
-
-#: editor/asset_library_editor_plugin.cpp editor/project_settings_editor.cpp
-msgid "Category:"
-msgstr "分类:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Site:"
-msgstr "站点:"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "支持.."
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Official"
-msgstr "官方"
-
-#: editor/asset_library_editor_plugin.cpp editor/editor_node.cpp
-msgid "Community"
-msgstr "社区"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Testing"
-msgstr "测试"
-
-#: editor/asset_library_editor_plugin.cpp
-msgid "Assets ZIP File"
-msgstr "ZIP资源包"
-
-#: editor/call_dialog.cpp
-msgid "Method List For '%s':"
-msgstr "'%s'的方法列表："
-
-#: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Call"
-msgstr "调用到"
-
-#: editor/call_dialog.cpp
-msgid "Method List:"
-msgstr "方法列表:"
-
-#: editor/call_dialog.cpp
-msgid "Arguments:"
-msgstr "参数:"
-
-#: editor/call_dialog.cpp
-msgid "Return:"
-msgstr "返回:"
-
 #: editor/code_editor.cpp
 msgid "Go to Line"
 msgstr "转到行"
@@ -657,6 +403,14 @@ msgstr "全字匹配"
 msgid "Selection Only"
 msgstr "仅选中"
 
+#: editor/code_editor.cpp editor/editor_node.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+msgid "Search"
+msgstr "搜索"
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
 msgstr "查找"
@@ -689,11 +443,11 @@ msgstr "更换时提示"
 msgid "Skip"
 msgstr "跳过"
 
-#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Zoom In"
 msgstr "放大"
 
-#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Zoom Out"
 msgstr "缩小"
 
@@ -760,6 +514,20 @@ msgstr "延时"
 msgid "Oneshot"
 msgstr "单次"
 
+#: editor/connections_dialog.cpp editor/dependency_editor.cpp
+#: editor/export_template_manager.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Close"
+msgstr "关闭"
+
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "连接"
@@ -785,7 +553,7 @@ msgstr "连接事件。"
 msgid "Disconnect"
 msgstr "删除事件连接"
 
-#: editor/connections_dialog.cpp editor/node_dock.cpp
+#: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
 msgstr "信号"
 
@@ -802,11 +570,24 @@ msgstr "收藏:"
 msgid "Recent:"
 msgstr "最近文件:"
 
+#: editor/create_dialog.cpp editor/editor_node.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
+#: editor/quick_open.cpp editor/settings_config_dialog.cpp
+msgid "Search:"
+msgstr "搜索:"
+
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
 msgstr "匹配项:"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "描述:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -863,6 +644,10 @@ msgid "Owners Of:"
 msgstr "拥有者:"
 
 #: editor/dependency_editor.cpp
+msgid "Remove selected files from the project? (no undo)"
+msgstr "确定从项目中删除文件？（此操作无法撤销）"
+
+#: editor/dependency_editor.cpp
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -870,8 +655,9 @@ msgid ""
 msgstr "要删除的文件被其他资源所依赖，仍然要删除吗？（无法撤销）"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
-msgstr "确定从项目中删除文件？（此操作无法撤销）"
+#, fuzzy
+msgid "Cannot remove:\n"
+msgstr "无法解析."
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -937,19 +723,12 @@ msgid "Godot Engine contributors"
 msgstr "Godot引擎贡献者"
 
 #: editor/editor_about.cpp
-#, fuzzy
-msgid "Authors"
-msgstr "作者:"
-
-#: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Founders"
-msgstr "项目管理器"
+msgstr "项目创始人"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Lead Developer"
-msgstr "开发者"
+msgstr "主要开发者"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
@@ -960,12 +739,45 @@ msgid "Developers"
 msgstr "开发者"
 
 #: editor/editor_about.cpp
-msgid "License"
+msgid "Authors"
+msgstr "作者"
+
+#: editor/editor_about.cpp
+msgid "Platinum Sponsors"
 msgstr ""
 
 #: editor/editor_about.cpp
-msgid "Thirdparty License"
+msgid "Gold Sponsors"
 msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Mini Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Gold Donors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Silver Donors"
+msgstr ""
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Donors"
+msgstr "拷贝到下一行"
+
+#: editor/editor_about.cpp
+msgid "Donors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "License"
+msgstr "许可证"
+
+#: editor/editor_about.cpp
+msgid "Thirdparty License"
+msgstr "第三方许可证"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -974,104 +786,106 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot引擎依赖第三方开源代码库，全部符合MIT 许可证的条款。下面列出所有第三方组"
+"件相关的版权声明和许可协议条款。"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "All Components"
-msgstr "内容:"
+msgstr "所有组件"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Components"
-msgstr "内容:"
+msgstr "组件"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "许可证"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
-msgstr ""
+msgstr "打开压缩包出错，非zip格式。"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Uncompressing Assets"
-msgstr "不压缩"
+msgstr "无压缩资源"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
 msgstr "软件包安装成功！"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Success!"
+msgstr "完成！"
+
+#: editor/editor_asset_installer.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Install"
+msgstr "安装"
+
+#: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr "软件包安装成功！"
+msgstr "程序包安装程序"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "扬声器"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Effect"
-msgstr "添加事件"
+msgstr "添加效果"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Rename Audio Bus"
-msgstr "打开音频Bus布局"
+msgstr "重命名音频总线（Audio Bus）"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Solo"
-msgstr "打开音频Bus布局"
+msgstr "切换音频独奏"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Mute"
-msgstr "打开音频Bus布局"
+msgstr "切换音频静音"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "切换音频旁通效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr ""
+msgstr "选择音频发送总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "添加音频总线效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr ""
+msgstr "移动总线效果"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Bus Effect"
-msgstr "删除选择的节点"
+msgstr "删除音频总线效果"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr ""
-
-#: editor/editor_audio_buses.cpp
-#, fuzzy
-msgid "Bus options"
-msgstr "子场景选项"
+msgstr "音频总线，拖放重新排列。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr ""
+msgstr "独奏"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr ""
+msgstr "静音"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr ""
+msgstr "旁通"
+
+#: editor/editor_audio_buses.cpp
+msgid "Bus options"
+msgstr "音频总线选项"
 
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
@@ -1080,32 +894,37 @@ msgstr "拷贝"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
-msgid "Delete Effect"
-msgstr "删除选择的节点"
+msgid "Reset Volume"
+msgstr "重置缩放"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
+msgid "Delete Effect"
+msgstr "删除效果"
+
+#: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr "添加Bus"
+msgstr "添加音频总线（Audio Bus）"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr ""
+msgstr "不能删除主音频总线!"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Audio Bus"
-msgstr "删除布局"
+msgstr "删除音频总线"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Duplicate Audio Bus"
-msgstr "复制动画"
+msgstr "复制音频总线"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
+msgid "Reset Bus Volume"
+msgstr "重置缩放"
+
+#: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr "移动动作"
+msgstr "移动音频总线"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
@@ -1121,32 +940,28 @@ msgstr "打开音频Bus布局"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr ""
+msgstr "不存在'res://default_bus_layout.tres'文件。"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Invalid file, not an audio bus layout."
-msgstr ""
-"文件扩展名不合法\n"
-"请使用.font文件。"
+msgstr "无效文件,不存在音频总线布局。"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "添加Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Create a new Bus Layout."
-msgstr "创建资源"
+msgstr "创建一个新的总线布局。"
 
-#: editor/editor_audio_buses.cpp editor/script_create_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/property_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "加载"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Load an existing Bus Layout."
-msgstr "从磁盘中加载资源并编辑。"
+msgstr "加载现有的总线布局。"
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1154,18 +969,16 @@ msgid "Save As"
 msgstr "另存为"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Save this Bus Layout to a file."
 msgstr "将音频Bus布局保存为.."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
-#, fuzzy
 msgid "Load Default"
-msgstr "默认"
+msgstr "加载默认"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr ""
+msgstr "加载默认总线布局。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1209,7 +1022,7 @@ msgstr "Autoload '%s'已存在！"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr "移除Autoload"
+msgstr "重命名自动加载脚本"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
@@ -1232,7 +1045,7 @@ msgid "Rearrange Autoloads"
 msgstr "重排序Autoload"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp scene/gui/file_dialog.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "路径:"
 
@@ -1240,9 +1053,7 @@ msgstr "路径:"
 msgid "Node Name:"
 msgstr "节点名称:"
 
-#: editor/editor_autoload_settings.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/editor_autoload_settings.cpp editor/project_manager.cpp
 msgid "Name"
 msgstr "名称"
 
@@ -1267,27 +1078,27 @@ msgid "Updating scene.."
 msgstr "更新场景中.."
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first"
-msgstr "请先保存场景。"
+msgstr "请先选择一个目录"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
 msgstr "选择目录"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Create Folder"
 msgstr "新建目录"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_plugin_settings.cpp editor/plugins/theme_editor_plugin.cpp
-#: editor/project_export.cpp scene/gui/file_dialog.cpp
+#: editor/editor_plugin_settings.cpp editor/filesystem_dock.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Name:"
 msgstr "名称:"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
 msgid "Could not create folder."
 msgstr "无法创建目录。"
 
@@ -1305,31 +1116,7 @@ msgstr "打包中"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
-msgstr "找不到模板文件:"
-
-#: editor/editor_export.cpp
-msgid "Added:"
-msgstr "已添加:"
-
-#: editor/editor_export.cpp
-msgid "Removed:"
-msgstr "已移除:"
-
-#: editor/editor_export.cpp
-msgid "Error saving atlas:"
-msgstr "保存贴图集出错:"
-
-#: editor/editor_export.cpp
-msgid "Could not save atlas subtexture:"
-msgstr "无法保存精灵集子贴图:"
-
-#: editor/editor_export.cpp
-msgid "Exporting for %s"
-msgstr "正在导出 %s"
-
-#: editor/editor_export.cpp
-msgid "Setting Up.."
-msgstr "配置.."
+msgstr "找不到模板文件:\n"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
@@ -1415,6 +1202,11 @@ msgstr "向上移动收藏"
 msgid "Move Favorite Down"
 msgstr "向下移动收藏"
 
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder"
+msgstr "无法创建目录。"
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
 msgstr "目录|文件:"
@@ -1457,6 +1249,10 @@ msgstr "类型列表:"
 msgid "Search Classes"
 msgstr "搜索类型"
 
+#: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
+msgid "Top"
+msgstr "顶部"
+
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
 msgstr "类:"
@@ -1473,13 +1269,28 @@ msgstr "派生类:"
 msgid "Brief Description:"
 msgstr "简介:"
 
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Members"
+msgstr "成员："
+
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "成员："
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Public Methods"
+msgstr "公共方法:"
+
+#: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "公共方法:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "GUI Theme Items"
+msgstr "GUI主题:"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1491,53 +1302,85 @@ msgstr "事件:"
 
 #: editor/editor_help.cpp
 #, fuzzy
+msgid "Enumerations"
+msgstr "枚举："
+
+#: editor/editor_help.cpp
 msgid "Enumerations:"
-msgstr "动画"
+msgstr "枚举："
 
 #: editor/editor_help.cpp
 msgid "enum  "
-msgstr ""
+msgstr "枚举  "
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Constants"
+msgstr "常量:"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "常量:"
 
 #: editor/editor_help.cpp
+#, fuzzy
+msgid "Description"
+msgstr "描述:"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Properties"
+msgstr "属性:"
+
+#: editor/editor_help.cpp
 msgid "Property Description:"
 msgstr "属性描述："
+
+#: editor/editor_help.cpp
+msgid ""
+"There is currently no description for this property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Methods"
+msgstr "方法列表:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "方法描述:"
 
 #: editor/editor_help.cpp
+msgid ""
+"There is currently no description for this method. Please help us by [color="
+"$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+
+#: editor/editor_help.cpp
 msgid "Search Text"
 msgstr "搜索文本"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Output:"
-msgstr " 输出："
+msgstr "输出："
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/rich_text_editor_plugin.cpp editor/property_editor.cpp
-#: editor/script_editor_debugger.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
+#: editor/property_editor.cpp editor/script_editor_debugger.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Clear"
 msgstr "清除"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-#: editor/resources_dock.cpp
 msgid "Error saving resource!"
 msgstr "保存资源出错！"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-#: editor/resources_dock.cpp
 msgid "Save Resource As.."
 msgstr "资源另存为.."
 
-#: editor/editor_node.cpp editor/export_template_manager.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "好吧.."
 
@@ -1554,6 +1397,30 @@ msgid "Error while saving."
 msgstr "保存出错。"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Can't open '%s'."
+msgstr "无法对'..'引用操作"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Error while parsing '%s'."
+msgstr "保存出错。"
+
+#: editor/editor_node.cpp
+msgid "Unexpected end of file '%s'."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Missing '%s' or its dependencies."
+msgstr "场景'%s'的依赖已被破坏:"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Error while loading '%s'."
+msgstr "保存出错。"
+
+#: editor/editor_node.cpp
 msgid "Saving Scene"
 msgstr "正在保存场景"
 
@@ -1566,7 +1433,6 @@ msgid "Creating Thumbnail"
 msgstr "创建缩略图"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a tree root."
 msgstr "此操作必须在打开一个场景后才能执行。"
 
@@ -1612,6 +1478,33 @@ msgid "Restored default layout to base settings."
 msgstr "重置为默认布局设置。"
 
 #: editor/editor_node.cpp
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource belongs to a scene that was instanced or inherited.\n"
+"Changes to it will not be kept when saving the current scene."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"This scene was imported, so changes to it will not be kept.\n"
+"Instancing it or inheriting will allow making changes to it.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Copy Params"
 msgstr "拷贝参数"
 
@@ -1633,7 +1526,7 @@ msgstr "使之内置"
 
 #: editor/editor_node.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "使子资源唯一化"
+msgstr "转换为独立子资源"
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
@@ -1695,13 +1588,12 @@ msgid "Quick Open Script.."
 msgstr "快速打开脚本.."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Close"
-msgstr "保存文件"
+msgstr "保存并关闭"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "在关闭前保存更改到 %s 吗？"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
@@ -1725,16 +1617,15 @@ msgstr "此操作必须在打开一个场景后才能执行。"
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "导出MeshLibrary"
+msgstr "导出网格库(Mesh Library)"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "导出砖块集"
+msgstr "导出砖块集(Tile Set)"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a selected node."
-msgstr "此操作必须在打开一个场景后才能执行。"
+msgstr "此操作必须先选择一个node才能执行。"
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1765,21 +1656,25 @@ msgid "Exit the editor?"
 msgstr "确定要退出编辑器吗？"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Manager?"
-msgstr "项目管理器"
+msgstr "打开项目管理器？"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Quit"
-msgstr "保存文件"
+msgstr "保存后退出"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "以下场景在退出前保存更改吗？"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
+msgstr "在打开项目管理器之前保存更改吗？"
+
+#: editor/editor_node.cpp
+msgid ""
+"This option is deprecated. Situations where refresh must be forced are now "
+"considered a bug. Please report."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -1788,19 +1683,19 @@ msgstr "选择主场景"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '"
-msgstr ""
+msgstr "无法启用插件: '"
 
 #: editor/editor_node.cpp
 msgid "' parsing of config failed."
-msgstr ""
+msgstr "' 解析配置失败。"
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/"
-msgstr ""
+msgstr "在插件目录中没有找到脚本: 'res://addons/"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '"
-msgstr ""
+msgstr "无法从路径加载插件脚本: '"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1808,12 +1703,12 @@ msgid ""
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
 "自动导入的场景'％s'无法修改。\n"
-"要进行更改，可以创建一个新的场景继承自它。"
+"如要更改，请创建一个新的备份场景。"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ugh"
-msgstr "额"
+msgstr "呃"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1823,12 +1718,13 @@ msgstr ""
 "加载场景出错，场景必须放在项目目录下。请尝试使用'导入'菜单导入此场景后再试。"
 
 #: editor/editor_node.cpp
-msgid "Error loading scene."
-msgstr "加载场景出错。"
-
-#: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
 msgstr "场景'%s'的依赖已被破坏:"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Clear Recent Scenes"
+msgstr "清理当前文件"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -1860,11 +1756,10 @@ msgid "Distraction Free Mode"
 msgstr "无干扰模式"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle distraction-free mode."
-msgstr "无干扰模式"
+msgstr "切换无干扰模式。"
 
-#: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Scene"
 msgstr "场景"
 
@@ -2090,7 +1985,11 @@ msgstr "问答"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr ""
+msgstr "问题跟踪器"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+msgid "Community"
+msgstr "社区"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -2100,7 +1999,7 @@ msgstr "关于"
 msgid "Play the project."
 msgstr "运行此项目（F5）。"
 
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Play"
 msgstr "播放"
 
@@ -2116,7 +2015,7 @@ msgstr "暂停运行场景"
 msgid "Stop the scene."
 msgstr "停止运行场景。"
 
-#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp
 msgid "Stop"
 msgstr "停止"
 
@@ -2189,6 +2088,16 @@ msgid "Object properties."
 msgstr "对象属性。"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Changes may be lost!"
+msgstr "修改图片分组"
+
+#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "导入"
+
+#: editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "文件系统"
 
@@ -2202,15 +2111,7 @@ msgstr "输出"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
-
-#: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
-msgid "Re-Import"
-msgstr "重新导入"
-
-#: editor/editor_node.cpp editor/editor_plugin_settings.cpp
-msgid "Update"
-msgstr "更新"
+msgstr "不保存"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -2237,9 +2138,8 @@ msgid "Open & Run a Script"
 msgstr "打开并运行脚本"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "New Inherited"
-msgstr "从现有场景中创建.."
+msgstr "从现有场景中创建"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
@@ -2273,9 +2173,27 @@ msgstr "打开下一个编辑器"
 msgid "Open the previous Editor"
 msgstr "打开上一个编辑器"
 
+#: editor/editor_plugin.cpp
+#, fuzzy
+msgid "Creating Mesh Previews"
+msgstr "创建 Mesh(网格) 库"
+
+#: editor/editor_plugin.cpp
+msgid "Thumbnail.."
+msgstr "缩略图.."
+
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "已安装插件:"
+
+#: editor/editor_plugin_settings.cpp
+msgid "Update"
+msgstr "更新"
+
+#: editor/editor_plugin_settings.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Version:"
+msgstr "版本:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
@@ -2311,7 +2229,7 @@ msgstr "渲染速度"
 
 #: editor/editor_profiler.cpp
 msgid "Fixed Frame %"
-msgstr "物理速度"
+msgstr "固定帧速率 %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
@@ -2329,35 +2247,17 @@ msgstr "自身"
 msgid "Frame #:"
 msgstr "帧序号:"
 
-#: editor/editor_reimport_dialog.cpp
-msgid "Please wait for scan to complete."
-msgstr "扫描中，请稍后..."
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Current scene must be saved to re-import."
-msgstr "需要先保存当前场景才能重新导入。"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Save & Re-Import"
-msgstr "保存并重新导入"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Re-Importing"
-msgstr "重新导入"
-
-#: editor/editor_reimport_dialog.cpp
-msgid "Re-Import Changed Resources"
-msgstr "重新导入改变的资源"
-
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
-msgstr ""
+msgstr "从列表中选择设备"
 
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
+"没有这个平台的导出配置。\n"
+"请在导出菜单中添加配置。"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -2425,7 +2325,7 @@ msgstr "(当前)"
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr "移除版本为 '%s' 的模板"
+msgstr "移除版本为 '%s' 的模板?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2447,7 +2347,7 @@ msgstr "模板中没有找到version.txt文件。"
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:\n"
-msgstr "无法将模板保存到以下文件:"
+msgstr "无法将模板保存到以下文件:\n"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2456,10 +2356,6 @@ msgstr "正在解压导出模板"
 #: editor/export_template_manager.cpp
 msgid "Importing:"
 msgstr "导入:"
-
-#: editor/export_template_manager.cpp
-msgid "Loading Export Templates"
-msgstr "正在加载导出模板"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -2491,63 +2387,82 @@ msgstr "无法以可写方式打开file_type_cache.cch！"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '"
-msgstr "无法导航到 "
+msgstr "无法导航到 '"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
+msgid "View items as a grid of thumbnails"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+msgid "View items as a list"
+msgstr ""
+
+#: editor/filesystem_dock.cpp
 msgid ""
 "\n"
-"Status: Needs Re-Import"
-msgstr "保存并重新导入"
+"Status: Import of file failed. Please fix file and reimport manually."
+msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid ""
 "\n"
 "Source: "
-msgstr "源:"
+msgstr ""
+"\n"
+"源: "
 
 #: editor/filesystem_dock.cpp
-msgid "Same source and destination files, doing nothing."
-msgstr "源文件和目标文件相同，操作忽略。"
+#, fuzzy
+msgid "Cannot move/rename resources root."
+msgstr "无法加载/处理源字体。"
 
 #: editor/filesystem_dock.cpp
-msgid "Target file exists, can't overwrite. Delete first."
+#, fuzzy
+msgid "Cannot move a folder into itself.\n"
+msgstr "不允许导入文件本身:"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Error moving:\n"
+msgstr "移动目录出错:\n"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Unable to update dependencies:\n"
+msgstr "场景'%s'的依赖已被破坏:"
+
+#: editor/filesystem_dock.cpp
+msgid "No name provided"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-msgid "Same source and destination paths, doing nothing."
-msgstr "源路径和目标路径相同，操作忽略。"
-
-#: editor/filesystem_dock.cpp
-msgid "Can't move directories to within themselves."
-msgstr "无法将目录移动到自身下。"
-
-#: editor/filesystem_dock.cpp
-msgid "Can't rename deps for:\n"
+msgid "Provided name contains invalid characters"
 msgstr ""
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Error moving file:\n"
-msgstr "加载图片出错:"
+msgid "No name provided."
+msgstr "移动或重命名.."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Error moving dir:\n"
-msgstr "导入出错:"
+msgid "Name contains invalid characters."
+msgstr "字符合法:"
 
 #: editor/filesystem_dock.cpp
-msgid "Can't operate on '..'"
-msgstr "无法对'..'引用操作"
+#, fuzzy
+msgid "A file or folder with this name already exists."
+msgstr "分组名称已存在！"
 
 #: editor/filesystem_dock.cpp
-msgid "Pick New Name and Location For:"
-msgstr "选择新名称和路径:"
+#, fuzzy
+msgid "Renaming file:"
+msgstr "重命名变量"
 
 #: editor/filesystem_dock.cpp
-msgid "No files selected!"
-msgstr "没有选中任何文件！"
+#, fuzzy
+msgid "Renaming folder:"
+msgstr "重命名节点"
 
 #: editor/filesystem_dock.cpp
 msgid "Expand all"
@@ -2556,6 +2471,24 @@ msgstr "展开所有"
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
 msgstr "收起所有"
+
+#: editor/filesystem_dock.cpp
+msgid "Copy Path"
+msgstr "拷贝路径"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Rename.."
+msgstr "重命名"
+
+#: editor/filesystem_dock.cpp
+msgid "Move To.."
+msgstr "移动.."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Folder.."
+msgstr "新建目录"
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
@@ -2572,26 +2505,6 @@ msgstr "编辑依赖.."
 #: editor/filesystem_dock.cpp
 msgid "View Owners.."
 msgstr "查看所有者.."
-
-#: editor/filesystem_dock.cpp
-msgid "Copy Path"
-msgstr "拷贝路径"
-
-#: editor/filesystem_dock.cpp
-msgid "Rename or Move.."
-msgstr "移动或重命名.."
-
-#: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "移动.."
-
-#: editor/filesystem_dock.cpp
-msgid "Info"
-msgstr "信息"
-
-#: editor/filesystem_dock.cpp
-msgid "Re-Import.."
-msgstr "重新导入.."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2618,10 +2531,17 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"扫描文件，\n"
+"请稍候。"
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
 msgstr "移动"
+
+#: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Rename"
+msgstr "重命名"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -2632,78 +2552,89 @@ msgid "Remove from Group"
 msgstr "从分组中移除"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import as Single Scene"
-msgstr "导入场景.."
+msgstr "导入为独立场景"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Animations"
+msgstr "导入独立材质"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "导入独立材质"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "导入独立物体"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "导入独立物体 + 材质"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
+msgid "Import with Separate Objects+Animations"
+msgstr "导入独立物体 + 材质"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Materials+Animations"
+msgstr "导入独立材质"
+
+#: editor/import/resource_importer_scene.cpp
+#, fuzzy
+msgid "Import with Separate Objects+Materials+Animations"
+msgstr "导入独立物体 + 材质"
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr "导入3D场景"
+msgstr "导入多个场景"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "导入多个场景 + 材质"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Import Scene"
 msgstr "导入场景"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Importing Scene.."
 msgstr "导入场景.."
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Running Custom Script.."
 msgstr "执行自定义脚本.."
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Couldn't load post-import script:"
 msgstr "无法载入后导入脚本:"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr "后处理脚本被损坏或不合法（查看控制台）:"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Error running post-import script:"
 msgstr "后处理脚本运行发生错误："
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
 msgstr "保存中..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "将默认设置为 '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "清除默认'%s'"
 
 #: editor/import_dock.cpp
 msgid " Files"
-msgstr "文件"
+msgstr " 文件"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -2717,574 +2648,6 @@ msgstr "预设.."
 msgid "Reimport"
 msgstr "重新导入"
 
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "No bit masks to import!"
-msgstr "没有要导入的bit masks！"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path is empty."
-msgstr "目标路径为空。"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must be a complete resource path."
-msgstr "目标路径必须是一个完整的资源文件路径。"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Target path must exist."
-msgstr "目标路径必须存在。"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Save path is empty!"
-msgstr "保存路径为空！"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "Import BitMasks"
-msgstr "导入BitMask"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture(s):"
-msgstr "源贴图:"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Target Path:"
-msgstr "目标路径:"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Accept"
-msgstr "接受"
-
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
-msgid "Bit Mask"
-msgstr "位掩码（BitMask）"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "No source font file!"
-msgstr "请设置源字体文件！"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "No target font resource!"
-msgstr "请设置目标字体资源！"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid ""
-"Invalid file extension.\n"
-"Please use .font."
-msgstr ""
-"文件扩展名不合法\n"
-"请使用.font文件。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Can't load/process source font."
-msgstr "无法加载/处理源字体。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Couldn't save font."
-msgstr "无法保存字体。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Source Font:"
-msgstr "源字体文件:"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Source Font Size:"
-msgstr "源字体大小:"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Dest Resource:"
-msgstr "目标资源:"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "The quick brown fox jumps over the lazy dog."
-msgstr ""
-"The quick brown fox jumps over the lazy dog.\n"
-"我能吞下玻璃而不伤身体。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Test:"
-msgstr "测试:"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Options:"
-msgstr "选项:"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Font Import"
-msgstr "导入字体"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid ""
-"This file is already a Godot font file, please supply a BMFont type file "
-"instead."
-msgstr "此文件已经是一个Godot的字体文件，请提供一个位图字体（BMFont）文件。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Failed opening as BMFont file."
-msgstr "打开位图字体失败。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "初始化FreeType出错。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "未知的字体格式。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "加载字体出错。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "字体大小非法。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Invalid font custom source."
-msgstr "自定义字体文件非法。"
-
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Font"
-msgstr "字体"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "No meshes to import!"
-msgstr "没有要导入的Mesh！"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Single Mesh Import"
-msgstr "导入单个Mesh"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Source Mesh(es):"
-msgstr "源Mesh:"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Mesh"
-msgstr "Mesh"
-
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-msgid "Surface %d"
-msgstr "表面 %d"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "No samples to import!"
-msgstr "没有音效要导入！"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Import Audio Samples"
-msgstr "导入声音文件"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Source Sample(s):"
-msgstr "源音效文件:"
-
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-msgid "Audio Sample"
-msgstr "音效"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "New Clip"
-msgstr "新片段"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Animation Options"
-msgstr "动画选项"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Flags"
-msgstr "标记"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Bake FPS:"
-msgstr "烘培FPS:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Optimizer"
-msgstr "优化"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Linear Error"
-msgstr "最大线性误差"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Angular Error"
-msgstr "最大角度误差"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Max Angle"
-msgstr "最大角度"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Clips"
-msgstr "片段"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Start(s)"
-msgstr "起点"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "End(s)"
-msgstr "终点"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Loop"
-msgstr "循环"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Filters"
-msgstr "筛选"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Source path is empty."
-msgstr "源路径为空。"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Couldn't load post-import script."
-msgstr "无法载入后导入脚本。"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Invalid/broken script for post-import."
-msgstr "后导入脚本被损坏或不合法。"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Error importing scene."
-msgstr "导入场景出错。"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import 3D Scene"
-msgstr "导入3D场景"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Source Scene:"
-msgstr "源场景:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Same as Target Scene"
-msgstr "与目标场景相同"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Shared"
-msgstr "共享的"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Target Texture Folder:"
-msgstr "目标贴图目录:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Post-Process Script:"
-msgstr "后处理脚本:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Custom Root Node Type:"
-msgstr "自定义根节点类型:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Auto"
-msgstr "自动"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Root Node Name:"
-msgstr "节点名称:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "The Following Files are Missing:"
-msgstr "找不到下列文件:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import Anyway"
-msgstr "仍然导入"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "取消"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import & Open"
-msgstr "导入|打开"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Edited scene has not been saved, open imported scene anyway?"
-msgstr "正在编辑的场景尚未保存，仍然要打开导入的场景吗？"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Import Image:"
-msgstr "导入图片:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Can't import a file over itself:"
-msgstr "不允许导入文件本身:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Couldn't localize path: %s (already local)"
-msgstr "无法本地化路径:%s (已经是本地路径)"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "3D Scene Animation"
-msgstr "3D场景动画"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Uncompressed"
-msgstr "不压缩"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress Lossless (PNG)"
-msgstr "无损压缩（PNG）"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress Lossy (WebP)"
-msgstr "有损压缩（WebP）"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Compress (VRAM)"
-msgstr "VRAM压缩"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Format"
-msgstr "纹理格式"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Compression Quality (WebP):"
-msgstr "高质量（WebP）压缩方式:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture Options"
-msgstr "纹理选项"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Please specify some files!"
-msgstr "请添加文件！"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "At least one file needed for Atlas."
-msgstr "精灵集至少需要一个文件。"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Error importing:"
-msgstr "导入出错:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Only one file is required for large texture."
-msgstr "大图导入仅支持一个输入文件。"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Max Texture Size:"
-msgstr "最大纹理尺寸:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for Atlas (2D)"
-msgstr "导入2D精灵集"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Cell Size:"
-msgstr "单元尺寸:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Large Texture"
-msgstr "大图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Large Textures (2D)"
-msgstr "导入2D大图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture"
-msgstr "源贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Base Atlas Texture"
-msgstr "基础图集纹理"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Source Texture(s)"
-msgstr "源贴图(s)"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for 2D"
-msgstr "导入2D贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures for 3D"
-msgstr "导入3D贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Textures"
-msgstr "导入贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "2D Texture"
-msgstr "2D贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "3D Texture"
-msgstr "3D贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Atlas Texture"
-msgstr "精灵图集"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid ""
-"NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files to "
-"the project."
-msgstr ""
-"提示:大多数2D贴图并不需要导入操作，只要将png/jpg文件放到项目目录下即可。"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Crop empty space."
-msgstr "切除空白区域。"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Texture"
-msgstr "贴图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Import Large Texture"
-msgstr "导入大图"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Load Source Image"
-msgstr "加载源图片"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Slicing"
-msgstr "切片中"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Inserting"
-msgstr "插入中"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Saving"
-msgstr "正在保存文件"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save large texture:"
-msgstr "无法保存大图:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Build Atlas For:"
-msgstr "使用以下图片生成精灵集:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Loading Image:"
-msgstr "加载图片中:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't load image:"
-msgstr "无法加载图片:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Converting Images"
-msgstr "正在转换图片"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Cropping Images"
-msgstr "剪裁图片"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Blitting Images"
-msgstr "Blitting 图片"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save atlas image:"
-msgstr "无法保存精灵集图片:"
-
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-msgid "Couldn't save converted texture:"
-msgstr "无法保存转换的贴图:"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Invalid source!"
-msgstr "输入源非法！"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Invalid translation source!"
-msgstr "源语言文件非法！"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Column"
-msgstr "列"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/script_create_dialog.cpp
-msgid "Language"
-msgstr "语言"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "No items to import!"
-msgstr "没有要导入的项目！"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "No target path!"
-msgstr "目标路径为空！"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Translations"
-msgstr "导入多种语言翻译"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Couldn't import!"
-msgstr "无法导入！"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Translation"
-msgstr "导入语言翻译"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Source CSV:"
-msgstr "源CSV文件:"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Ignore First Row"
-msgstr "忽略第一行"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Compress"
-msgstr "压缩"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (project.godot)"
-msgstr "添加到项目 (project.godot)"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Import Languages:"
-msgstr "导入语言:"
-
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Translation"
-msgstr "语言"
-
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "多节点组"
@@ -3296,6 +2659,49 @@ msgstr "分组"
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
 msgstr "请选择一个节点来设置信号或分组。"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Create Poly"
+msgstr "创建多边形"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "编辑多边形"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
+msgid "Insert Point"
+msgstr "插入中"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "编辑多边形（移除顶点）"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Remove Poly And Point"
+msgstr "移除多边形及顶点"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/light_occluder_2d_editor_plugin.cpp
+msgid "Create a new polygon from scratch."
+msgstr "从头开始创建一个新的多边形。"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid ""
+"Edit existing polygon:\n"
+"LMB: Move Point.\n"
+"Ctrl+LMB: Split Segment.\n"
+"RMB: Erase Point."
+msgstr ""
+"编辑多边形：\n"
+"LMB： 移动点。\n"
+"Ctrl + LMB： 分离片段。\n"
+"人民币： 擦除点。"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3315,7 +2721,7 @@ msgstr "重命名动画:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr "删除动画"
+msgstr "是否删除动画？"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3450,7 +2856,6 @@ msgstr "动画名称:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
@@ -3478,9 +2883,8 @@ msgid "New name:"
 msgstr "新名称:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filters"
-msgstr "编辑节点筛选"
+msgstr "编辑筛选器"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -3561,10 +2965,6 @@ msgid "Delete Input"
 msgstr "删除输入事件"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Rename"
-msgstr "重命名"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is valid."
 msgstr "动画树可用。"
 
@@ -3620,64 +3020,181 @@ msgstr "编辑节点筛选"
 msgid "Filters.."
 msgstr "筛选.."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Parsing %d Triangles:"
-msgstr "正在解析第%d个三角形:"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr "释放"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Triangle #"
-msgstr "三角形 #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Contents:"
+msgstr "内容:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Light Baker Setup:"
-msgstr "建立烘培:"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "View Files"
+msgstr "查看文件"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Parsing Geometry"
-msgstr "解析多边形中"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr "无法解析主机名："
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Fixing Lights"
-msgstr "修正光照"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve."
+msgstr "无法解析."
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Making BVH"
-msgstr "制作BVH(动作骨骼)"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Connection error, please try again."
+msgstr "连接错误，请重试。"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Creating Light Octree"
-msgstr "创建光的 Octree(八叉树)"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't connect."
+msgstr "无法连接。"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Creating Octree Texture"
-msgstr "创建 Octree (八叉树) 纹理"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't connect to host:"
+msgstr "无法连接到服务器:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Transfer to Lightmaps:"
-msgstr "转移到光照贴图:"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No response from host:"
+msgstr "服务器无响应:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Allocating Texture #"
-msgstr "分配纹理 #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "No response."
+msgstr "无响应。"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Baking Triangle #"
-msgstr "烘培三角形 #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed, return code:"
+msgstr "请求失败，错误代码:"
 
-#: editor/plugins/baked_light_baker.cpp
-msgid "Post-Processing Texture #"
-msgstr "后加工纹理 #"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Req. Failed."
+msgstr "请求失败."
 
-#: editor/plugins/baked_light_editor_plugin.cpp
-msgid "Bake!"
-msgstr "烘培！"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Request failed, too many redirects"
+msgstr "请求失败，重定向次数过多"
 
-#: editor/plugins/baked_light_editor_plugin.cpp
-msgid "Reset the lightmap octree baking process (start over)."
-msgstr "重置贴图烘焙过程 （重新开始） 的 octree (八叉树)。"
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Redirect Loop."
+msgstr "循环重定向。"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Failed:"
+msgstr "失败:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr "文件hash值错误，该文件可能被篡改。"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Expected:"
+msgstr "预计："
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Got:"
+msgstr "获得:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Failed sha256 hash check"
+msgstr "sha256哈希值校验失败"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Asset Download Error:"
+msgstr "资源下载出错:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Fetching:"
+msgstr "获取:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Resolving.."
+msgstr "解析中.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Connecting.."
+msgstr "连接中.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Requesting.."
+msgstr "正在请求.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Error making request"
+msgstr "请求错误"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Idle"
+msgstr "空闲"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Retry"
+msgstr "重试"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Download Error"
+msgstr "下载错误"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Download for this asset is already in progress!"
+msgstr "此资源文件正在下载中！"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "first"
+msgstr "首先"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "prev"
+msgstr "上一页"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "next"
+msgstr "下一页"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "last"
+msgstr "最后一页"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "All"
+msgstr "全部"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr "插件"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Sort:"
+msgstr "排序:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Reverse"
+msgstr "反选"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/project_settings_editor.cpp
+msgid "Category:"
+msgstr "分类:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Site:"
+msgstr "站点:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Support.."
+msgstr "支持.."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Official"
+msgstr "官方"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Testing"
+msgstr "测试"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Assets ZIP File"
+msgstr "ZIP资源包"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
 msgid "Preview"
 msgstr "预览"
 
@@ -3720,12 +3237,18 @@ msgid "Edit CanvasItem"
 msgstr "编辑CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Change Anchors"
+#, fuzzy
+msgid "Anchors only"
+msgstr "锚点"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Change Anchors and Margins"
 msgstr "编辑锚点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom (%):"
-msgstr "缩放（%）："
+msgid "Change Anchors"
+msgstr "编辑锚点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
@@ -3775,6 +3298,64 @@ msgid "Pan Mode"
 msgstr "移动画布"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Toggles snapping"
+msgstr "设置断点"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Use Snap"
+msgstr "使用吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snapping options"
+msgstr "动画选项"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to grid"
+msgstr "吸附模式:"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Rotation Snap"
+msgstr "使用旋转吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Configure Snap..."
+msgstr "设置吸附.."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap Relative"
+msgstr "相对吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Use Pixel Snap"
+msgstr "使用像素吸附"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Smart snapping"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to parent"
+msgstr "展开父节点"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to node anchor"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to node sides"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Snap to other nodes"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
 msgstr "锁定选中对象的位置。"
 
@@ -3789,46 +3370,6 @@ msgstr "确保节点的子孙无法被选中。"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "恢复节点的子孙能够被选中。"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit"
-msgstr "编辑"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Use Snap"
-msgstr "使用吸附"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Show Grid"
-msgstr "显示网格"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Use Rotation Snap"
-msgstr "使用旋转吸附"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
-msgstr "相对吸附"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "设置吸附.."
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Use Pixel Snap"
-msgstr "使用像素吸附"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Skeleton.."
-msgstr "骨骼.."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Bones"
@@ -3856,12 +3397,19 @@ msgid "View"
 msgstr "视图"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Reset"
-msgstr "重置缩放"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Show Grid"
+msgstr "显示网格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom Set.."
-msgstr "设置缩放.."
+#, fuzzy
+msgid "Show helpers"
+msgstr "显示骨骼"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show rulers"
+msgstr "显示骨骼"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3872,8 +3420,9 @@ msgid "Frame Selection"
 msgstr "最大化显示选中节点"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Anchor"
-msgstr "锚点"
+#, fuzzy
+msgid "Layout"
+msgstr "保存布局"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Keys"
@@ -3896,12 +3445,21 @@ msgid "Clear Pose"
 msgstr "清除姿势"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Set a Value"
-msgstr "设置值"
+msgid "Drag pivot from mouse position"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap (Pixels):"
-msgstr "吸附（像素）："
+#, fuzzy
+msgid "Set pivot at mouse position"
+msgstr "设置曲线输出位置（Pos）"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Multiply grid step by 2"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Divide grid step by 2"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3911,23 +3469,28 @@ msgstr "添加(Add)  %s"
 msgid "Adding %s..."
 msgstr "添加(Adding) %s..."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
 msgstr "新节点"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "从%s实例化场景出错"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
 msgstr "好吧"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr "没有选中节点来添加实例。"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr "此操作只能应用于单个选中节点。"
 
@@ -3943,45 +3506,6 @@ msgstr ""
 "拖放+ Shift：将节点添加为兄弟节点\n"
 "拖放+ Alt：更改节点类型"
 
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Create Poly"
-msgstr "创建多边形"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Edit Poly"
-msgstr "编辑多边形"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
-msgstr "编辑多边形（移除顶点）"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "从头开始创建一个新的多边形。"
-
-#: editor/plugins/collision_polygon_2d_editor_plugin.cpp
-msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
-msgstr ""
-
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Poly3D"
 msgstr "创建 Poly3D (多边型3D)"
@@ -3989,14 +3513,6 @@ msgstr "创建 Poly3D (多边型3D)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "设置处理程序"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Creating Mesh Library"
-msgstr "创建 Mesh(网格) 库"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "缩略图.."
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Remove item %d?"
@@ -4021,19 +3537,38 @@ msgid "Update from Scene"
 msgstr "从场景中更新"
 
 #: editor/plugins/curve_editor_plugin.cpp
+msgid "Flat0"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Flat1"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
 #, fuzzy
+msgid "Ease in"
+msgstr "缓入"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Ease out"
+msgstr "缓出"
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Smoothstep"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
 msgid "Modify Curve Point"
-msgstr "修改曲线"
+msgstr "修改曲线点"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Modify Curve Tangent"
-msgstr "修改曲线图"
+msgstr "修改曲线切角"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Curve Preset"
-msgstr "加载预设"
+msgstr "加载曲线预设"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add point"
@@ -4044,31 +3579,28 @@ msgid "Remove point"
 msgstr "移除顶点"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Left linear"
-msgstr "线性"
+msgstr "左线性"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right linear"
-msgstr "右视图"
+msgstr "右线性"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Load preset"
 msgstr "加载预设"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Curve Point"
 msgstr "移除路径顶点"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
-msgstr ""
+msgstr "切换曲线线性Tangent"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr ""
+msgstr "按住 Shift 可单独编辑切线"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
@@ -4096,28 +3628,26 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
+"在这个节点上没有 OccluderPolygon2D 资源。\n"
+"创建和分配一个吗？"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "添加遮光多边形"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Edit existing polygon:"
 msgstr "编辑已存在的多边形:"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "LMB: Move Point."
 msgstr "鼠标左键:移动点。"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Ctrl+LMB: Split Segment."
 msgstr "Ctrl+鼠标左键:分割视图块。"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "RMB: Erase Point."
 msgstr "鼠标右键:移除点。"
 
@@ -4216,6 +3746,10 @@ msgstr "无法创建轮廓(outlines)！"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline"
 msgstr "创建轮廓(outlines)"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh"
+msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -4345,13 +3879,82 @@ msgstr "随机缩放:"
 msgid "Populate"
 msgstr "填充"
 
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+msgid "Bake!"
+msgstr "烘培！"
+
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+#, fuzzy
+msgid "Bake the navigation mesh.\n"
+msgstr "创建导航Mesh(网格)"
+
+#: editor/plugins/navigation_mesh_editor_plugin.cpp
+#, fuzzy
+msgid "Clear the navigation mesh."
+msgstr "创建导航Mesh(网格)"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Setting up Configuration..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Calculating grid size..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating heightfield..."
+msgstr "创建光的 Octree(八叉树)"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Marking walkable triangles..."
+msgstr "可翻译字符串.."
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Constructing compact heightfield..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Eroding walkable area..."
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Partioning..."
+msgstr "警告"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating contours..."
+msgstr "创建 Octree (八叉树) 纹理"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Creating polymesh..."
+msgstr "创建轮廓网格(Outline Mesh).."
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Converting to native navigation mesh..."
+msgstr "创建导航Mesh(网格)"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Navigation Mesh Generator Setup:"
+msgstr ""
+
+#: editor/plugins/navigation_mesh_generator.cpp
+#, fuzzy
+msgid "Parsing Geometry..."
+msgstr "解析多边形中"
+
+#: editor/plugins/navigation_mesh_generator.cpp
+msgid "Done!"
+msgstr ""
+
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "创建导航多边形"
-
-#: editor/plugins/navigation_polygon_editor_plugin.cpp
-msgid "Remove Poly And Point"
-msgstr "移除多边形及顶点"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
@@ -4364,7 +3967,7 @@ msgstr "正在生成AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
-msgstr ""
+msgstr "可以设置ParticlesMaterial 点的材质"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
@@ -4380,7 +3983,7 @@ msgstr "设置Emission Mask（发射屏蔽）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "生成可视化区域"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -4388,9 +3991,8 @@ msgstr "加载Emission Mask（发射屏蔽）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Particles"
-msgstr "顶点"
+msgstr "粒子"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -4399,19 +4001,19 @@ msgstr "生成顶点计数:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
-msgstr "生成时间（秒）"
+msgstr "生成时间（秒）:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr ""
+msgstr "发光遮罩（mask）"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
-msgstr ""
+msgstr "从像素捕捉"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr ""
+msgstr "发光颜色"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
@@ -4471,11 +4073,11 @@ msgstr "体积"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr "发射源："
+msgstr "发射源： "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
+msgstr "生成可见的AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4525,14 +4127,17 @@ msgid "Curve Point #"
 msgstr "曲线定点 #"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Point Position"
 msgstr "设置曲线顶点坐标"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve In Position"
 msgstr "设置的曲线输入位置（Pos）"
 
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Set Curve Out Position"
 msgstr "设置曲线输出位置（Pos）"
 
@@ -4593,6 +4198,14 @@ msgid "Scale Polygon"
 msgstr "缩放多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_settings_editor.cpp editor/property_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Edit"
+msgstr "编辑"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
 msgstr "多边形->UV"
 
@@ -4647,62 +4260,9 @@ msgstr "加载资源"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "粘贴"
-
-#: editor/plugins/rich_text_editor_plugin.cpp
-msgid "Parse BBCode"
-msgstr "解析BBCode"
-
-#: editor/plugins/sample_editor_plugin.cpp
-msgid "Length:"
-msgstr "长度:"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Open Sample File(s)"
-msgstr "打开声音文件"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "ERROR: Couldn't load sample!"
-msgstr "错误:无法加载音效！"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Add Sample"
-msgstr "添加音效"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Rename Sample"
-msgstr "重命名音效"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Delete Sample"
-msgstr "删除音效"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "16 Bits"
-msgstr "16位"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "8 Bits"
-msgstr "8位"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Stereo"
-msgstr "立体声"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Mono"
-msgstr "单声道"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
-msgid "Format"
-msgstr "格式"
-
-#: editor/plugins/sample_library_editor_plugin.cpp
-msgid "Pitch"
-msgstr "音调"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -4713,6 +4273,8 @@ msgid ""
 "Close and save changes?\n"
 "\""
 msgstr ""
+"关闭并保存更改吗？\n"
+"\""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4740,7 +4302,7 @@ msgstr "主题另存为.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " 类引用"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -4794,10 +4356,13 @@ msgstr "关闭文档"
 msgid "Close All"
 msgstr "关闭全部"
 
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+msgid "Run"
+msgstr "运行"
+
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Scripts Panel"
-msgstr "切换收藏"
+msgstr "切换脚本面板"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4832,25 +4397,12 @@ msgid "Keep Debugger Open"
 msgstr "保持调试器打开"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Debug with external editor"
-msgstr "打开下一个编辑器"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Window"
-msgstr "窗口"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Move Left"
-msgstr "向左移动"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Move Right"
-msgstr "向右移动"
+msgstr "使用外部编辑器进行调试"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
-msgstr ""
+msgstr "打开Godot在线文档"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
@@ -4903,7 +4455,7 @@ msgstr "内建脚本只有在其所属的节点读取后才能被修改"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
-msgstr ""
+msgstr "只可以拖入文件系统的资源。"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
@@ -4933,7 +4485,7 @@ msgstr "剪切"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
-#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "复制"
 
@@ -4952,9 +4504,8 @@ msgid "Move Down"
 msgstr "向下移动"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Delete Line"
-msgstr "删除顶点"
+msgstr "删除线"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -5197,10 +4748,6 @@ msgid "View Plane Transform."
 msgstr "视图平面变换。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scaling to %s%%."
-msgstr "缩放到%s%%。"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
 msgstr "旋转%s度。"
 
@@ -5215,10 +4762,6 @@ msgstr "底部"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "俯视图(Top View)。"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Top"
-msgstr "顶部"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View."
@@ -5262,7 +4805,7 @@ msgstr "插入动画键。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr ""
+msgstr "绘制的对象"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -5278,7 +4821,7 @@ msgstr "表面变更"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls"
-msgstr "Draw Calls"
+msgstr "绘制调用(Draw Calls)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Vertices"
@@ -5302,60 +4845,57 @@ msgstr "显示过度绘制"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Unshaded"
-msgstr ""
+msgstr "显示无阴影"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Environment"
-msgstr ""
+msgstr "视图环境"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Gizmos"
 msgstr "Gizmos（可视化调试工具）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
-msgstr ""
+msgstr "查看信息"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
 msgstr "音频监听器"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Doppler Enable"
-msgstr "启用"
+msgstr "启用多普勒效应"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr ""
+msgstr "自由视图 左"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr ""
+msgstr "自由视图 右"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr ""
+msgstr "自由视图 前"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr ""
+msgstr "自由视图 后"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr ""
+msgstr "自由视图 上"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr ""
+msgstr "自由视图 下"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr ""
+msgstr "自由视图速度调整"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "preview"
 msgstr "预览"
 
@@ -5364,17 +4904,18 @@ msgid "XForm Dialog"
 msgstr "XForm对话框"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)\n"
-msgstr "选择模式"
+msgstr "选择模式 (Q)\n"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Drag: Rotate\n"
 "Alt+Drag: Move\n"
 "Alt+RMB: Depth list selection"
-msgstr "Alt+鼠标右键:显示鼠标点击位置下的所有节点列表"
+msgstr ""
+"鼠标拖拽：旋转\n"
+"Alt+拖拽：移动\n"
+"Alt+鼠标右键：显示列表"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode (W)"
@@ -5433,28 +4974,28 @@ msgid "Align Selection With View"
 msgstr "选中项与视图对齐"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Select"
-msgstr "选择"
+msgstr "选择工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Move"
-msgstr "移动"
+msgstr "移动工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Rotate"
-msgstr "Ctrl:旋转"
+msgstr "旋转工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Scale"
-msgstr "缩放："
+msgstr "缩放工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
 msgstr "变换"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap.."
+msgstr "设置吸附.."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
@@ -5602,6 +5143,10 @@ msgid "Speed (FPS):"
 msgstr "速度（FPS）:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Loop"
+msgstr "循环"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames"
 msgstr "动画帧"
 
@@ -5614,19 +5159,20 @@ msgid "Insert Empty (After)"
 msgstr "插入空白帧（之后）"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Up"
-msgstr "向上"
+#, fuzzy
+msgid "Move (Before)"
+msgstr "移动节点"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Down"
-msgstr "向下"
+#, fuzzy
+msgid "Move (After)"
+msgstr "向左移动"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "StyleBox预览:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Region Rect"
 msgstr "设置纹理区域"
 
@@ -5688,14 +5234,12 @@ msgid "Remove Item"
 msgstr "移除项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Items"
 msgstr "移除类项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All"
-msgstr "移除"
+msgstr "移除全部"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
@@ -5783,11 +5327,14 @@ msgid "Style"
 msgstr "样式"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Font"
+msgstr "字体"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
 msgstr "颜色"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Selection"
 msgstr "擦除选中"
 
@@ -5796,18 +5343,16 @@ msgid "Paint TileMap"
 msgstr "绘制砖块地图"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Line Draw"
-msgstr "线性"
+msgstr "线性绘制"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
-msgstr ""
+msgstr "绘制矩形"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Bucket Fill"
-msgstr "桶(Bucket)"
+msgstr "油漆桶填充"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -5834,12 +5379,13 @@ msgid "Mirror Y"
 msgstr "沿Y轴翻转"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Bucket"
-msgstr "桶(Bucket)"
+#, fuzzy
+msgid "Paint Tile"
+msgstr "绘制砖块地图"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "选择砖块"
+msgstr "选择砖块(Tile)"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
@@ -5898,6 +5444,11 @@ msgid "Delete preset '%s'?"
 msgstr "删除选中的 '%s'?"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Export templates for this platform are missing/corrupted: "
+msgstr "没有下列平台的导出模板:"
+
+#: editor/project_export.cpp
 msgid "Presets"
 msgstr "预设"
 
@@ -5911,15 +5462,15 @@ msgstr "资源"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
-msgstr "导出项目中的所有资源。"
+msgstr "导出项目中的所有资源"
 
 #: editor/project_export.cpp
 msgid "Export selected scenes (and dependencies)"
-msgstr "导出选中的场景（包括其依赖）。"
+msgstr "导出选中的场景（包括依赖项）"
 
 #: editor/project_export.cpp
 msgid "Export selected resources (and dependencies)"
-msgstr "导出选中的资源（包括其依赖资源）。"
+msgstr "导出选中的资源（包括依赖资源）"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
@@ -5932,12 +5483,12 @@ msgstr "导出的资源:"
 #: editor/project_export.cpp
 msgid ""
 "Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
-msgstr "导出非资源文件筛选（使用英文逗号分隔，如:*.json,*.txt）:"
+msgstr "导出非资源文件筛选（使用英文逗号分隔，如:*.json,*.txt）"
 
 #: editor/project_export.cpp
 msgid ""
 "Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
-msgstr "排除导出的非资源文件筛选（使用英文逗号分隔，如:*.json,*.txt）:"
+msgstr "排除导出的非资源文件筛选（使用英文逗号分隔，如:*.json,*.txt）"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -5948,18 +5499,16 @@ msgid "Make Patch"
 msgstr "制作Patch"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Features"
-msgstr "贴图"
+msgstr "功能"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
-msgstr ""
+msgstr "自定义 （以逗号分隔）："
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Feature List:"
-msgstr "方法列表:"
+msgstr "功能列表："
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -5970,28 +5519,59 @@ msgid "Export templates for this platform are missing:"
 msgstr "没有下列平台的导出模板:"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr "没有下列平台的导出模板:"
+
+#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr "导出为调试"
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, the path must exist!"
-msgstr "项目目录不存在！"
+#, fuzzy
+msgid "The path does not exists."
+msgstr "文件不存在。"
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, project.godot must not exist."
-msgstr "项目目录下不能包含project.godot文件。"
+#, fuzzy
+msgid "Please choose a 'project.godot' file."
+msgstr "请导出到项目目录之外！"
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, project.godot must exist."
-msgstr "项目目录下必须包含project.godot文件。"
+msgid ""
+"Your project will be created in a non empty folder (you might want to create "
+"a new folder)."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Please choose a folder that does not contain a 'project.godot' file."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr "已导入的项目"
 
 #: editor/project_manager.cpp
+msgid " "
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "It would be a good idea to name your project."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
 msgstr "项目路径非法（被外部修改？）。"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't get project.godot in project path."
+msgstr "无法在项目目录下创建project.godot文件。"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't edit project.godot in project path."
+msgstr "无法在项目目录下创建project.godot文件。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -6002,36 +5582,47 @@ msgid "The following files failed extraction from package:"
 msgstr "提取以下文件失败:"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Rename Project"
+msgstr "未命名项目"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Couldn't get project.godot in the project path."
+msgstr "无法在项目目录下创建project.godot文件。"
+
+#: editor/project_manager.cpp
+msgid "New Game Project"
+msgstr "新建游戏项目"
+
+#: editor/project_manager.cpp
 msgid "Import Existing Project"
 msgstr "导入现有项目"
-
-#: editor/project_manager.cpp
-msgid "Project Path (Must Exist):"
-msgstr "项目目录（必须存在）:"
-
-#: editor/project_manager.cpp
-msgid "Project Name:"
-msgstr "项目名称:"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "新建项目"
 
 #: editor/project_manager.cpp
-msgid "Project Path:"
-msgstr "项目目录:"
-
-#: editor/project_manager.cpp
 msgid "Install Project:"
 msgstr "安装项目:"
 
 #: editor/project_manager.cpp
-msgid "Browse"
-msgstr "浏览"
+msgid "Project Name:"
+msgstr "项目名称:"
 
 #: editor/project_manager.cpp
-msgid "New Game Project"
-msgstr "新建游戏项目"
+#, fuzzy
+msgid "Create folder"
+msgstr "新建目录"
+
+#: editor/project_manager.cpp
+msgid "Project Path:"
+msgstr "项目目录:"
+
+#: editor/project_manager.cpp
+msgid "Browse"
+msgstr "浏览"
 
 #: editor/project_manager.cpp
 msgid "That's a BINGO!"
@@ -6042,24 +5633,30 @@ msgid "Unnamed Project"
 msgstr "未命名项目"
 
 #: editor/project_manager.cpp
+#, fuzzy
+msgid "Can't open project"
+msgstr "无法运行项目"
+
+#: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "您确定要打开多个项目吗？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in \"Project Settings\" under "
 "the \"Application\" category."
 msgstr ""
 "尚未定义主场景, 现在选择一个吗?\n"
-"你也可以稍后在项目设置的application分类下修改。"
+"你也可以稍后在项目设置的Application分类下修改。"
 
 #: editor/project_manager.cpp
 msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
+"不能运行项目： 需要导入资源文件。\n"
+"请编辑项目导入初始化资源。"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run more than one project?"
@@ -6078,10 +5675,6 @@ msgstr "您确认要扫描%s目录下现有的Godot项目吗？"
 #: editor/project_manager.cpp
 msgid "Project List"
 msgstr "项目列表"
-
-#: editor/project_manager.cpp
-msgid "Run"
-msgstr "运行"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -6104,9 +5697,8 @@ msgid "Exit"
 msgstr "退出"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't run project"
-msgstr "无法连接。"
+msgstr "无法运行项目"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -6141,17 +5733,14 @@ msgid "Add Input Action Event"
 msgstr "添加输入事件"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Meta+"
 msgstr "Meta+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Shift+"
 msgstr "Shift+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#: scene/gui/input_action.cpp
 msgid "Alt+"
 msgstr "Alt+"
 
@@ -6212,7 +5801,7 @@ msgstr "更改"
 msgid "Joypad Axis Index:"
 msgstr "手柄摇杆序号:"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Axis"
 msgstr "轴"
 
@@ -6232,57 +5821,64 @@ msgstr "移除输入事件"
 msgid "Add Event"
 msgstr "添加事件"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Device"
 msgstr "设备"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Button"
 msgstr "按钮"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Left Button."
 msgstr "左键。"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Right Button."
 msgstr "右键。"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Middle Button."
 msgstr "中键（滚轮）。"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Up."
 msgstr "滚轮向上滚动。"
 
-#: editor/project_settings_editor.cpp scene/gui/input_action.cpp
+#: editor/project_settings_editor.cpp
 msgid "Wheel Down."
 msgstr "滚轮向下滚动。"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add Global Property"
-msgstr "添加 Getter Property"
-
-#: editor/project_settings_editor.cpp
-msgid "Select an setting item first!"
-msgstr ""
+msgstr "添加Getter属性"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
+msgid "Select a setting item first!"
+msgstr "首先选择一个设置项目 ！"
+
+#: editor/project_settings_editor.cpp
 msgid "No property '"
-msgstr "属性:"
+msgstr "没有属性 '"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Setting '"
-msgstr "设置"
+msgstr "设置 '"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Delete Item"
 msgstr "删除输入事件"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Can't contain '/' or ':'"
+msgstr "无法连接到服务器:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Already existing"
+msgstr "动作%s已存在！"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6294,7 +5890,7 @@ msgstr "保存设置成功。"
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
-msgstr ""
+msgstr "重写功能"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Translation"
@@ -6338,7 +5934,7 @@ msgstr "属性:"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For.."
-msgstr ""
+msgstr "重写的......"
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -6425,7 +6021,6 @@ msgid "Assign"
 msgstr "分配(Assign)"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Select Node"
 msgstr "选择一个节点"
 
@@ -6434,17 +6029,26 @@ msgid "New Script"
 msgstr "新建脚本"
 
 #: editor/property_editor.cpp
+#, fuzzy
+msgid "Make Unique"
+msgstr "添加骨骼"
+
+#: editor/property_editor.cpp
 msgid "Show in File System"
 msgstr "在资源管理器中展示"
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "Convert To %s"
+msgstr "转换为.."
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
 msgstr "加载文件出错:不是资源文件！"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Selected node is not a Viewport!"
-msgstr "选择要导入的节点"
+msgstr "选定的节点不是一个Viewport节点！"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
@@ -6475,6 +6079,11 @@ msgid "Select Property"
 msgstr "选择属性"
 
 #: editor/property_selector.cpp
+#, fuzzy
+msgid "Select Virtual Method"
+msgstr "选择方式"
+
+#: editor/property_selector.cpp
 msgid "Select Method"
 msgstr "选择方式"
 
@@ -6501,26 +6110,6 @@ msgstr "保持全局变换"
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
 msgstr "重设父节点"
-
-#: editor/resources_dock.cpp
-msgid "Create New Resource"
-msgstr "创建资源"
-
-#: editor/resources_dock.cpp
-msgid "Open Resource"
-msgstr "打开资源"
-
-#: editor/resources_dock.cpp
-msgid "Save Resource"
-msgstr "保存资源"
-
-#: editor/resources_dock.cpp
-msgid "Resource Tools"
-msgstr "资源工具"
-
-#: editor/resources_dock.cpp
-msgid "Make Local"
-msgstr "使用本地"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -6648,14 +6237,6 @@ msgid "Sub-Resources:"
 msgstr "子资源:"
 
 #: editor/scene_tree_dock.cpp
-msgid "Edit Groups"
-msgstr "编辑分组"
-
-#: editor/scene_tree_dock.cpp
-msgid "Edit Connections"
-msgstr "编辑事件连接"
-
-#: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
 msgstr "清除继承"
 
@@ -6714,9 +6295,8 @@ msgid ""
 msgstr "实例化场景文件为一个节点，如果没有根节点则创建一个继承自该文件的场景。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Filter nodes"
-msgstr "筛选"
+msgstr "筛选节点"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
@@ -6751,6 +6331,8 @@ msgid ""
 "Node has connection(s) and group(s)\n"
 "Click to show signals dock."
 msgstr ""
+"节点具有信号连接和组\n"
+"单击以显示信号接口。"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -6789,6 +6371,8 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make selectable"
 msgstr ""
+"子节点无法选择。\n"
+"单击使其可选"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
@@ -6807,18 +6391,16 @@ msgid "Scene Tree (Nodes):"
 msgstr "场景树:"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Node Configuration Warning!"
-msgstr "节点配置警告:"
+msgstr "节点配置警告！"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
 msgstr "选择一个节点"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading template '%s'"
-msgstr "加载图片出错:"
+msgstr "加载模板 %s 时出错"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
@@ -6843,6 +6425,15 @@ msgstr "必须是项目路径"
 #: editor/script_create_dialog.cpp
 msgid "Invalid base path"
 msgstr "父路径非法"
+
+#: editor/script_create_dialog.cpp
+msgid "Directory of the same name exists"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "File exists, will be reused"
+msgstr "文件已存在，确定要覆盖它吗？"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid extension"
@@ -6885,6 +6476,10 @@ msgid "Load existing script file"
 msgstr "加载现有脚本"
 
 #: editor/script_create_dialog.cpp
+msgid "Language"
+msgstr "语言"
+
+#: editor/script_create_dialog.cpp
 msgid "Inherits"
 msgstr "继承自"
 
@@ -6923,6 +6518,10 @@ msgstr "源:"
 #: editor/script_editor_debugger.cpp
 msgid "Function:"
 msgstr "函数:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
@@ -7005,6 +6604,10 @@ msgid "Type"
 msgstr "类型"
 
 #: editor/script_editor_debugger.cpp
+msgid "Format"
+msgstr "格式"
+
+#: editor/script_editor_debugger.cpp
 msgid "Usage"
 msgstr "用量"
 
@@ -7038,7 +6641,7 @@ msgstr "设置光照半径"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr ""
+msgstr "改变 AudioStreamPlayer3D 发射角"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -7080,12 +6683,30 @@ msgstr "修改粒子AABB"
 msgid "Change Probe Extents"
 msgstr "更改探针(Probe)范围"
 
+#: modules/gdnative/gd_native_library_editor.cpp
+#, fuzzy
+msgid "Library"
+msgstr "MeshLibrary(网格库).."
+
+#: modules/gdnative/gd_native_library_editor.cpp
+#, fuzzy
+msgid "Status"
+msgstr "状态："
+
+#: modules/gdnative/gd_native_library_editor.cpp
+msgid "Libraries: "
+msgstr ""
+
+#: modules/gdnative/register_types.cpp
+msgid "GDNative"
+msgstr ""
+
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "convert函数参数类型非法，请传入以“TYPE_”打头的常量。"
 
-#: modules/gdscript/gd_functions.cpp
+#: modules/gdscript/gd_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "没有足够的字节来解码或格式不正确。"
@@ -7124,133 +6745,112 @@ msgstr "非法的字典实例（派生类非法）"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Object can't provide a length."
-msgstr ""
+msgstr "对象不能提供长度。"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "删除选择的节点"
+msgstr "删除选择的栅格图"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Duplicate Selection"
 msgstr "复制选中项"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "GridMap Paint"
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Snap View"
-msgstr "Top视图"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Prev Level (%sDown Wheel)"
-msgstr ""
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Next Level (%sUp Wheel)"
-msgstr ""
+msgstr "捕捉视图"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 #, fuzzy
+msgid "Prev Level (%sDown Wheel)"
+msgstr "上一级"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Next Level (%sUp Wheel)"
+msgstr "下一级"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
-msgstr "已禁用"
+msgstr "禁用剪辑"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Above"
-msgstr ""
+msgstr "上级剪辑"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Below"
-msgstr ""
+msgstr "下级剪辑"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
-msgstr ""
+msgstr "编辑 X 轴"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Y Axis"
-msgstr ""
+msgstr "编辑 Y 轴"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Z Axis"
-msgstr ""
+msgstr "编辑 Z 轴"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate X"
-msgstr "Ctrl:旋转"
+msgstr "光标沿X轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Y"
-msgstr "Ctrl:旋转"
+msgstr "沿Y轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Z"
-msgstr "Ctrl:旋转"
+msgstr "沿Z轴旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
-msgstr ""
+msgstr "光标沿X轴向后旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Y"
-msgstr ""
+msgstr "光标沿Y轴向后旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Z"
-msgstr ""
+msgstr "光标沿Z轴向后旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
-msgstr ""
+msgstr "光标清除旋转"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Area"
-msgstr "新建"
+msgstr "新建区域"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Exterior Connector"
-msgstr "新建项目"
+msgstr "创建外部连接器"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Area"
-msgstr "擦除砖块地图"
+msgstr "擦除区域"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Selection -> Duplicate"
-msgstr "仅选中"
+msgstr "选择->复制"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Selection -> Clear"
-msgstr "仅选中"
+msgstr "选择->清空"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Settings"
-msgstr "捕捉(snap)设置"
+msgstr "栅格图设置"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Pick Distance:"
-msgstr "实例:"
+msgstr "拾取距离:"
 
-#: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
-msgid "Tiles"
-msgstr "文件"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Areas"
+#: modules/mono/editor/mono_bottom_panel.cpp
+msgid "Builds"
 msgstr ""
 
 #: modules/visual_script/visual_script.cpp
@@ -7285,29 +6885,24 @@ msgid "Stack overflow with stack depth: "
 msgstr "堆栈深度溢出： "
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Signal Arguments"
-msgstr "编辑事件参数:"
+msgstr "编辑信号参数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument Type"
-msgstr "修改数组类型"
+msgstr "修改参数类型"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument name"
-msgstr "更改输入名称"
+msgstr "更改参数名称"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Default Value"
 msgstr "修改默认值"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Type"
-msgstr "编辑变量:"
+msgstr "设置变量类型"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
@@ -7358,14 +6953,12 @@ msgid "Add Node"
 msgstr "添加节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Nodes"
-msgstr "移除无效键"
+msgstr "删除 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Duplicate VisualScript Nodes"
-msgstr "复制Graph Node节点"
+msgstr "复制 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
@@ -7408,24 +7001,20 @@ msgid "Add Setter Property"
 msgstr "添加 Setter Property"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type"
-msgstr "更改类型"
+msgstr "更改基本类型"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Move Node(s)"
-msgstr "移除节点"
+msgstr "移动节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Node"
-msgstr "移除Graph Node节点"
+msgstr "删除 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Connect Nodes"
-msgstr "连接到节点:"
+msgstr "连接节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
@@ -7452,46 +7041,48 @@ msgid "Return"
 msgstr "返回节点（Return）"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Call"
+msgstr "调用到"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
 msgstr "获取"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
+msgid "Script already has function '%s'"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
-msgstr "更改输入名称"
+msgstr "更改输入的值"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't copy the function node."
-msgstr "无法对'..'引用操作"
+msgstr "无法复制函数节点。"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty!"
-msgstr "资源剪切板中无内容！"
+msgstr "剪贴板是空的 ！"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste VisualScript Nodes"
-msgstr "粘贴节点"
+msgstr "粘贴 VisualScript 节点"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "删除函数"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable"
-msgstr "编辑变量:"
+msgstr "编辑变量"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
 msgstr "删除变量"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal"
-msgstr "编辑事件:"
+msgstr "编辑信号"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
@@ -7703,7 +7294,7 @@ msgstr ""
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
-msgstr ""
+msgstr "粒子材质没有指定，该行为无效。"
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -7715,6 +7306,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"运行时，修改RigidBody2D （character或rigid模式）的尺寸，会修改物理引擎的大小"
+"尺寸。\n"
+"修改子节点碰撞形状的大小作为代替。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -7743,31 +7337,31 @@ msgstr "VisibilityEnable2D类型的节点用于场景的根节点才能获得最
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRCamera 必须处于 ARVROrigin 节点之下"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRController 必须处于 ARVROrigin 节点之下"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The controller id must not be 0 or this controller will not be bound to an "
 "actual controller"
-msgstr ""
+msgstr "控制器 id 必须不为 0 或此控制器将不绑定到实际的控制器"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRAnchor 必须处于 ARVROrigin 节点之下"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The anchor id must not be 0 or this anchor will not be bound to an actual "
 "anchor"
-msgstr ""
+msgstr "锚 id 必须不是 0 或这个锚点将不绑定到实际的锚"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node"
-msgstr ""
+msgstr "ARVROrigin 必须拥有 ARVRCamera 子节点"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7813,7 +7407,7 @@ msgstr ""
 #: scene/3d/particles.cpp
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
+msgstr "粒子不可见，因为没有网格(meshes)指定到绘制通道(draw passes)。"
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -7821,6 +7415,9 @@ msgid ""
 "the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"运行时，修改RigidBody（character或rigid模式）的尺寸，会修改物理引擎的大小尺"
+"寸。\n"
+"修改子节点碰撞形状的大小作为代替。"
 
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
@@ -7839,14 +7436,23 @@ msgstr ""
 "SpriteFrame资源必须是通过AnimatedSprite3D节点的Frames属性创建的，否则无法显示"
 "动画帧。"
 
+#: scene/3d/vehicle_body.cpp
+msgid ""
+"VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
+"it as a child of a VehicleBody."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw Mode"
-msgstr "移动画布"
+msgstr "Raw 模式"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
 msgstr "将当前颜色添加为预设"
+
+#: scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "取消"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -7855,10 +7461,6 @@ msgstr "提示！"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "请确认..."
-
-#: scene/gui/input_action.cpp
-msgid "Ctrl+"
-msgstr "Ctrl+"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7883,7 +7485,7 @@ msgstr ""
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
-msgstr ""
+msgstr "项目设置中的默认环境无法加载，详见（渲染->视图->默认环境） 。"
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -7895,6 +7497,628 @@ msgstr ""
 "这个Viewport未设置为render target。如果你刻意打算让其直接在屏幕上显示其内容，"
 "使其成为子控件的所以它可以有一个尺寸大小值。否则请设置为Render target，并将其"
 "内部纹理分配给一些节点以显示。"
+
+#: scene/resources/dynamic_font.cpp
+msgid "Error initializing FreeType."
+msgstr "初始化FreeType出错。"
+
+#: scene/resources/dynamic_font.cpp
+msgid "Unknown font format."
+msgstr "未知的字体格式。"
+
+#: scene/resources/dynamic_font.cpp
+msgid "Error loading font."
+msgstr "加载字体出错。"
+
+#: scene/resources/dynamic_font.cpp
+msgid "Invalid font size."
+msgstr "字体大小非法。"
+
+#~ msgid "Method List For '%s':"
+#~ msgstr "'%s'的方法列表："
+
+#~ msgid "Arguments:"
+#~ msgstr "参数:"
+
+#~ msgid "Return:"
+#~ msgstr "返回:"
+
+#~ msgid "Added:"
+#~ msgstr "已添加:"
+
+#~ msgid "Removed:"
+#~ msgstr "已移除:"
+
+#~ msgid "Error saving atlas:"
+#~ msgstr "保存贴图集出错:"
+
+#~ msgid "Could not save atlas subtexture:"
+#~ msgstr "无法保存精灵集子贴图:"
+
+#~ msgid "Exporting for %s"
+#~ msgstr "正在导出 %s"
+
+#~ msgid "Setting Up.."
+#~ msgstr "配置.."
+
+#~ msgid "Error loading scene."
+#~ msgstr "加载场景出错。"
+
+#~ msgid "Re-Import"
+#~ msgstr "重新导入"
+
+#~ msgid "Please wait for scan to complete."
+#~ msgstr "扫描中，请稍后..."
+
+#~ msgid "Current scene must be saved to re-import."
+#~ msgstr "需要先保存当前场景才能重新导入。"
+
+#~ msgid "Save & Re-Import"
+#~ msgstr "保存并重新导入"
+
+#~ msgid "Re-Importing"
+#~ msgstr "重新导入"
+
+#~ msgid "Re-Import Changed Resources"
+#~ msgstr "重新导入改变的资源"
+
+#~ msgid "Loading Export Templates"
+#~ msgstr "正在加载导出模板"
+
+#~ msgid ""
+#~ "\n"
+#~ "Status: Needs Re-Import"
+#~ msgstr ""
+#~ "\n"
+#~ "状态： 需要重新导入"
+
+#~ msgid "Same source and destination files, doing nothing."
+#~ msgstr "源文件和目标文件相同，操作忽略。"
+
+#~ msgid "Target file exists, can't overwrite. Delete first."
+#~ msgstr "目标文件存在，无法覆盖。请先删除。"
+
+#~ msgid "Same source and destination paths, doing nothing."
+#~ msgstr "源路径和目标路径相同，操作忽略。"
+
+#~ msgid "Can't move directories to within themselves."
+#~ msgstr "无法将目录移动到自身下。"
+
+#~ msgid "Can't rename deps for:\n"
+#~ msgstr "无法重命名deps:\n"
+
+#~ msgid "Error moving file:\n"
+#~ msgstr "移动文件时出错：\n"
+
+#~ msgid "Pick New Name and Location For:"
+#~ msgstr "选择新名称和路径:"
+
+#~ msgid "No files selected!"
+#~ msgstr "没有选中任何文件！"
+
+#~ msgid "Info"
+#~ msgstr "信息"
+
+#~ msgid "Re-Import.."
+#~ msgstr "重新导入.."
+
+#~ msgid "No bit masks to import!"
+#~ msgstr "没有要导入的bit masks！"
+
+#~ msgid "Target path is empty."
+#~ msgstr "目标路径为空。"
+
+#~ msgid "Target path must be a complete resource path."
+#~ msgstr "目标路径必须是一个完整的资源文件路径。"
+
+#~ msgid "Target path must exist."
+#~ msgstr "目标路径必须存在。"
+
+#~ msgid "Save path is empty!"
+#~ msgstr "保存路径为空！"
+
+#~ msgid "Import BitMasks"
+#~ msgstr "导入BitMask"
+
+#~ msgid "Source Texture(s):"
+#~ msgstr "源贴图:"
+
+#~ msgid "Target Path:"
+#~ msgstr "目标路径:"
+
+#~ msgid "Accept"
+#~ msgstr "接受"
+
+#~ msgid "Bit Mask"
+#~ msgstr "位掩码（BitMask）"
+
+#~ msgid "No source font file!"
+#~ msgstr "请设置源字体文件！"
+
+#~ msgid "No target font resource!"
+#~ msgstr "请设置目标字体资源！"
+
+#~ msgid ""
+#~ "Invalid file extension.\n"
+#~ "Please use .font."
+#~ msgstr ""
+#~ "文件扩展名不合法\n"
+#~ "请使用.font文件。"
+
+#~ msgid "Couldn't save font."
+#~ msgstr "无法保存字体。"
+
+#~ msgid "Source Font:"
+#~ msgstr "源字体文件:"
+
+#~ msgid "Source Font Size:"
+#~ msgstr "源字体大小:"
+
+#~ msgid "Dest Resource:"
+#~ msgstr "目标资源:"
+
+#~ msgid "The quick brown fox jumps over the lazy dog."
+#~ msgstr ""
+#~ "The quick brown fox jumps over the lazy dog.\n"
+#~ "我能吞下玻璃而不伤身体。"
+
+#~ msgid "Test:"
+#~ msgstr "测试:"
+
+#~ msgid "Options:"
+#~ msgstr "选项:"
+
+#~ msgid "Font Import"
+#~ msgstr "导入字体"
+
+#~ msgid ""
+#~ "This file is already a Godot font file, please supply a BMFont type file "
+#~ "instead."
+#~ msgstr "此文件已经是一个Godot的字体文件，请提供一个位图字体（BMFont）文件。"
+
+#~ msgid "Failed opening as BMFont file."
+#~ msgstr "打开位图字体失败。"
+
+#~ msgid "Invalid font custom source."
+#~ msgstr "自定义字体文件非法。"
+
+#~ msgid "No meshes to import!"
+#~ msgstr "没有要导入的Mesh！"
+
+#~ msgid "Single Mesh Import"
+#~ msgstr "导入单个Mesh"
+
+#~ msgid "Source Mesh(es):"
+#~ msgstr "源Mesh:"
+
+#~ msgid "Surface %d"
+#~ msgstr "表面 %d"
+
+#~ msgid "No samples to import!"
+#~ msgstr "没有音效要导入！"
+
+#~ msgid "Import Audio Samples"
+#~ msgstr "导入声音文件"
+
+#~ msgid "Source Sample(s):"
+#~ msgstr "源音效文件:"
+
+#~ msgid "Audio Sample"
+#~ msgstr "音效"
+
+#~ msgid "New Clip"
+#~ msgstr "新片段"
+
+#~ msgid "Flags"
+#~ msgstr "标记"
+
+#~ msgid "Bake FPS:"
+#~ msgstr "烘培FPS:"
+
+#~ msgid "Optimizer"
+#~ msgstr "优化"
+
+#~ msgid "Max Linear Error"
+#~ msgstr "最大线性误差"
+
+#~ msgid "Max Angular Error"
+#~ msgstr "最大角度误差"
+
+#~ msgid "Max Angle"
+#~ msgstr "最大角度"
+
+#~ msgid "Clips"
+#~ msgstr "片段"
+
+#~ msgid "Start(s)"
+#~ msgstr "起点"
+
+#~ msgid "End(s)"
+#~ msgstr "终点"
+
+#~ msgid "Filters"
+#~ msgstr "筛选"
+
+#~ msgid "Source path is empty."
+#~ msgstr "源路径为空。"
+
+#~ msgid "Couldn't load post-import script."
+#~ msgstr "无法载入后导入脚本。"
+
+#~ msgid "Invalid/broken script for post-import."
+#~ msgstr "后导入脚本被损坏或不合法。"
+
+#~ msgid "Error importing scene."
+#~ msgstr "导入场景出错。"
+
+#~ msgid "Import 3D Scene"
+#~ msgstr "导入3D场景"
+
+#~ msgid "Source Scene:"
+#~ msgstr "源场景:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "与目标场景相同"
+
+#~ msgid "Shared"
+#~ msgstr "共享的"
+
+#~ msgid "Target Texture Folder:"
+#~ msgstr "目标贴图目录:"
+
+#~ msgid "Post-Process Script:"
+#~ msgstr "后处理脚本:"
+
+#~ msgid "Custom Root Node Type:"
+#~ msgstr "自定义根节点类型:"
+
+#~ msgid "Auto"
+#~ msgstr "自动"
+
+#~ msgid "Root Node Name:"
+#~ msgstr "节点名称:"
+
+#~ msgid "The Following Files are Missing:"
+#~ msgstr "找不到下列文件:"
+
+#~ msgid "Import Anyway"
+#~ msgstr "仍然导入"
+
+#~ msgid "Import & Open"
+#~ msgstr "导入|打开"
+
+#~ msgid "Edited scene has not been saved, open imported scene anyway?"
+#~ msgstr "正在编辑的场景尚未保存，仍然要打开导入的场景吗？"
+
+#~ msgid "Import Image:"
+#~ msgstr "导入图片:"
+
+#~ msgid "Couldn't localize path: %s (already local)"
+#~ msgstr "无法本地化路径:%s (已经是本地路径)"
+
+#~ msgid "3D Scene Animation"
+#~ msgstr "3D场景动画"
+
+#~ msgid "Uncompressed"
+#~ msgstr "不压缩"
+
+#~ msgid "Compress Lossless (PNG)"
+#~ msgstr "无损压缩（PNG）"
+
+#~ msgid "Compress Lossy (WebP)"
+#~ msgstr "有损压缩（WebP）"
+
+#~ msgid "Compress (VRAM)"
+#~ msgstr "VRAM压缩"
+
+#~ msgid "Texture Format"
+#~ msgstr "纹理格式"
+
+#~ msgid "Texture Compression Quality (WebP):"
+#~ msgstr "高质量（WebP）压缩方式:"
+
+#~ msgid "Texture Options"
+#~ msgstr "纹理选项"
+
+#~ msgid "Please specify some files!"
+#~ msgstr "请添加文件！"
+
+#~ msgid "At least one file needed for Atlas."
+#~ msgstr "精灵集至少需要一个文件。"
+
+#~ msgid "Error importing:"
+#~ msgstr "导入出错:"
+
+#~ msgid "Only one file is required for large texture."
+#~ msgstr "大图导入仅支持一个输入文件。"
+
+#~ msgid "Max Texture Size:"
+#~ msgstr "最大纹理尺寸:"
+
+#~ msgid "Import Textures for Atlas (2D)"
+#~ msgstr "导入2D精灵集"
+
+#~ msgid "Cell Size:"
+#~ msgstr "单元尺寸:"
+
+#~ msgid "Large Texture"
+#~ msgstr "大图"
+
+#~ msgid "Import Large Textures (2D)"
+#~ msgstr "导入2D大图"
+
+#~ msgid "Source Texture"
+#~ msgstr "源贴图"
+
+#~ msgid "Base Atlas Texture"
+#~ msgstr "基础图集纹理"
+
+#~ msgid "Source Texture(s)"
+#~ msgstr "源贴图(s)"
+
+#~ msgid "Import Textures for 2D"
+#~ msgstr "导入2D贴图"
+
+#~ msgid "Import Textures for 3D"
+#~ msgstr "导入3D贴图"
+
+#~ msgid "Import Textures"
+#~ msgstr "导入贴图"
+
+#~ msgid "2D Texture"
+#~ msgstr "2D贴图"
+
+#~ msgid "3D Texture"
+#~ msgstr "3D贴图"
+
+#~ msgid "Atlas Texture"
+#~ msgstr "精灵图集"
+
+#~ msgid ""
+#~ "NOTICE: Importing 2D textures is not mandatory. Just copy png/jpg files "
+#~ "to the project."
+#~ msgstr ""
+#~ "提示:大多数2D贴图并不需要导入操作，只要将png/jpg文件放到项目目录下即可。"
+
+#~ msgid "Crop empty space."
+#~ msgstr "切除空白区域。"
+
+#~ msgid "Texture"
+#~ msgstr "贴图"
+
+#~ msgid "Import Large Texture"
+#~ msgstr "导入大图"
+
+#~ msgid "Load Source Image"
+#~ msgstr "加载源图片"
+
+#~ msgid "Slicing"
+#~ msgstr "切片中"
+
+#~ msgid "Saving"
+#~ msgstr "正在保存文件"
+
+#~ msgid "Couldn't save large texture:"
+#~ msgstr "无法保存大图:"
+
+#~ msgid "Build Atlas For:"
+#~ msgstr "使用以下图片生成精灵集:"
+
+#~ msgid "Loading Image:"
+#~ msgstr "加载图片中:"
+
+#~ msgid "Couldn't load image:"
+#~ msgstr "无法加载图片:"
+
+#~ msgid "Converting Images"
+#~ msgstr "正在转换图片"
+
+#~ msgid "Cropping Images"
+#~ msgstr "剪裁图片"
+
+#~ msgid "Blitting Images"
+#~ msgstr "Blitting 图片"
+
+#~ msgid "Couldn't save atlas image:"
+#~ msgstr "无法保存精灵集图片:"
+
+#~ msgid "Couldn't save converted texture:"
+#~ msgstr "无法保存转换的贴图:"
+
+#~ msgid "Invalid source!"
+#~ msgstr "输入源非法！"
+
+#~ msgid "Invalid translation source!"
+#~ msgstr "源语言文件非法！"
+
+#~ msgid "Column"
+#~ msgstr "列"
+
+#~ msgid "No items to import!"
+#~ msgstr "没有要导入的项目！"
+
+#~ msgid "No target path!"
+#~ msgstr "目标路径为空！"
+
+#~ msgid "Import Translations"
+#~ msgstr "导入多种语言翻译"
+
+#~ msgid "Couldn't import!"
+#~ msgstr "无法导入！"
+
+#~ msgid "Import Translation"
+#~ msgstr "导入语言翻译"
+
+#~ msgid "Source CSV:"
+#~ msgstr "源CSV文件:"
+
+#~ msgid "Ignore First Row"
+#~ msgstr "忽略第一行"
+
+#~ msgid "Compress"
+#~ msgstr "压缩"
+
+#~ msgid "Add to Project (project.godot)"
+#~ msgstr "添加到项目 (project.godot)"
+
+#~ msgid "Import Languages:"
+#~ msgstr "导入语言:"
+
+#~ msgid "Translation"
+#~ msgstr "语言"
+
+#~ msgid "Parsing %d Triangles:"
+#~ msgstr "正在解析第%d个三角形:"
+
+#~ msgid "Triangle #"
+#~ msgstr "三角形 #"
+
+#~ msgid "Light Baker Setup:"
+#~ msgstr "建立烘培:"
+
+#~ msgid "Fixing Lights"
+#~ msgstr "修正光照"
+
+#~ msgid "Making BVH"
+#~ msgstr "制作BVH(动作骨骼)"
+
+#~ msgid "Transfer to Lightmaps:"
+#~ msgstr "转移到光照贴图:"
+
+#~ msgid "Allocating Texture #"
+#~ msgstr "分配纹理 #"
+
+#~ msgid "Baking Triangle #"
+#~ msgstr "烘培三角形 #"
+
+#~ msgid "Post-Processing Texture #"
+#~ msgstr "后加工纹理 #"
+
+#~ msgid "Reset the lightmap octree baking process (start over)."
+#~ msgstr "重置贴图烘焙过程 （重新开始） 的 octree (八叉树)。"
+
+#~ msgid "Zoom (%):"
+#~ msgstr "缩放（%）："
+
+#~ msgid "Skeleton.."
+#~ msgstr "骨骼.."
+
+#~ msgid "Zoom Reset"
+#~ msgstr "重置缩放"
+
+#~ msgid "Zoom Set.."
+#~ msgstr "设置缩放.."
+
+#~ msgid "Set a Value"
+#~ msgstr "设置值"
+
+#~ msgid "Snap (Pixels):"
+#~ msgstr "吸附（像素）："
+
+#~ msgid "Parse BBCode"
+#~ msgstr "解析BBCode"
+
+#~ msgid "Length:"
+#~ msgstr "长度:"
+
+#~ msgid "Open Sample File(s)"
+#~ msgstr "打开声音文件"
+
+#~ msgid "ERROR: Couldn't load sample!"
+#~ msgstr "错误:无法加载音效！"
+
+#~ msgid "Add Sample"
+#~ msgstr "添加音效"
+
+#~ msgid "Rename Sample"
+#~ msgstr "重命名音效"
+
+#~ msgid "Delete Sample"
+#~ msgstr "删除音效"
+
+#~ msgid "16 Bits"
+#~ msgstr "16位"
+
+#~ msgid "8 Bits"
+#~ msgstr "8位"
+
+#~ msgid "Stereo"
+#~ msgstr "立体声"
+
+#~ msgid "Mono"
+#~ msgstr "单声道"
+
+#~ msgid "Pitch"
+#~ msgstr "音调"
+
+#~ msgid "Window"
+#~ msgstr "窗口"
+
+#~ msgid "Move Right"
+#~ msgstr "向右移动"
+
+#~ msgid "Scaling to %s%%."
+#~ msgstr "缩放到%s%%。"
+
+#~ msgid "Up"
+#~ msgstr "向上"
+
+#~ msgid "Down"
+#~ msgstr "向下"
+
+#~ msgid "Bucket"
+#~ msgstr "桶(Bucket)"
+
+#~ msgid "Invalid project path, the path must exist!"
+#~ msgstr "项目目录不存在！"
+
+#~ msgid "Invalid project path, project.godot must not exist."
+#~ msgstr "项目目录下不能包含project.godot文件。"
+
+#~ msgid "Invalid project path, project.godot must exist."
+#~ msgstr "项目目录下必须包含project.godot文件。"
+
+#~ msgid "Project Path (Must Exist):"
+#~ msgstr "项目目录（必须存在）:"
+
+#~ msgid "Create New Resource"
+#~ msgstr "创建资源"
+
+#~ msgid "Open Resource"
+#~ msgstr "打开资源"
+
+#~ msgid "Save Resource"
+#~ msgstr "保存资源"
+
+#~ msgid "Resource Tools"
+#~ msgstr "资源工具"
+
+#~ msgid "Make Local"
+#~ msgstr "使用本地"
+
+#~ msgid "Edit Groups"
+#~ msgstr "编辑分组"
+
+#~ msgid "Edit Connections"
+#~ msgstr "编辑事件连接"
+
+#~ msgid "GridMap Paint"
+#~ msgstr "绘制栅格图"
+
+#~ msgid "Tiles"
+#~ msgstr "砖块（Tiles）"
+
+#~ msgid "Areas"
+#~ msgstr "区域"
+
+#~ msgid "Ctrl+"
+#~ msgstr "Ctrl+"
+
+#~ msgid "Down Wheel)"
+#~ msgstr "下轮）"
+
+#~ msgid "Up Wheel)"
+#~ msgstr "上轮）"
 
 #~ msgid "Close scene? (Unsaved changes will be lost)"
 #~ msgstr "确定要关闭场景吗？（未保存的修改将丢失）"
@@ -7908,9 +8132,6 @@ msgstr ""
 
 #~ msgid "Close Goto Prev. Scene"
 #~ msgstr "关闭并前往上一个场景"
-
-#~ msgid "Expand to Parent"
-#~ msgstr "展开父节点"
 
 #~ msgid "Del"
 #~ msgstr "删除"
@@ -8070,17 +8291,11 @@ msgstr ""
 #~ msgid "Save Translatable Strings"
 #~ msgstr "保存可翻译字符串"
 
-#~ msgid "Translatable Strings.."
-#~ msgstr "可翻译字符串.."
-
 #~ msgid "Install Export Templates"
 #~ msgstr "安装导出模板"
 
 #~ msgid "Edit Script Options"
 #~ msgstr "脚本编辑器选项"
-
-#~ msgid "Please export outside the project folder!"
-#~ msgstr "请导出到项目目录之外！"
 
 #~ msgid "Error exporting project!"
 #~ msgstr "导出项目出错！"
@@ -8140,17 +8355,11 @@ msgstr ""
 #~ msgid "Include"
 #~ msgstr "包含"
 
-#~ msgid "Change Image Group"
-#~ msgstr "修改图片分组"
-
 #~ msgid "Group name can't be empty!"
 #~ msgstr "分组名称不能为空！"
 
 #~ msgid "Invalid character in group name!"
 #~ msgstr "分组名称中包含非法字符！"
-
-#~ msgid "Group name already exists!"
-#~ msgstr "分组名称已存在！"
 
 #~ msgid "Add Image Group"
 #~ msgstr "添加图片分组"

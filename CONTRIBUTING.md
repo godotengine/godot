@@ -87,7 +87,7 @@ rebase -i`` and relevant help about rebasing or ammending commits on the
 Internet).
 
 This git style guide has some good practices to have in mind:
-https://github.com/agis-/git-style-guide
+[Git Style Guide](https://github.com/agis-/git-style-guide)
 
 #### Format your commit logs with readability in mind
 

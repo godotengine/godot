@@ -978,6 +978,8 @@
 		<constant name="SHAPE_LINE" value="0">
 			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
+		<constant name="SHAPE_RAY" value="1">
+		</constant>
 		<constant name="SHAPE_SEGMENT" value="2">
 			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
 		</constant>

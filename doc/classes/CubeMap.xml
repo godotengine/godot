@@ -82,6 +82,12 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="lossy_storage_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
+		</member>
+		<member name="storage_mode" type="int" setter="set_storage" getter="get_storage" enum="CubeMap.Storage">
+		</member>
+	</members>
 	<constants>
 		<constant name="STORAGE_RAW" value="0">
 		</constant>

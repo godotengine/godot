@@ -869,7 +869,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation_filter_cutoff_hz", PROPERTY_HINT_RANGE, "50,50000,1"), "set_attenuation_filter_cutoff_hz", "get_attenuation_filter_cutoff_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1"), "set_attenuation_filter_db", "get_attenuation_filter_db");
 	ADD_GROUP("Doppler", "doppler_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Fixed"), "set_doppler_tracking", "get_doppler_tracking");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
 
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_SQUARE_DISTANCE);

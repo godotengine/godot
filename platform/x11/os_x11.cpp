@@ -35,7 +35,11 @@
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+
+#ifdef HAVE_MNTENT
 #include <mntent.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2182,6 +2186,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
+#ifdef HAVE_MNTENT
 	dev_t dev = s.st_dev;
 	FILE *fd = setmntent("/proc/mounts", "r");
 	if (!fd) {
@@ -2199,6 +2204,7 @@ static String get_mountpoint(const String &p_path) {
 	}
 
 	endmntent(fd);
+#endif
 	return "";
 }
 

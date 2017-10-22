@@ -88,7 +88,7 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 				continue;
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || (is_val_path && (p_string[i] == '/' || p_string[i] == '.'));
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '-' || (is_val_path && (p_string[i] == '/' || p_string[i] == '.'));
 
 		if (!valid_char)
 			return false;

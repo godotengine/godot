@@ -2586,6 +2586,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			} else if (tk.type == TK_BRACKET_OPEN) {
 
 				Node *index = _parse_and_reduce_expression(p_block, p_builtin_types);
+				if (!index)
+					return NULL;
 
 				if (index->get_datatype() != TYPE_INT && index->get_datatype() != TYPE_UINT) {
 					_set_error("Only integer datatypes are allowed for indexing");

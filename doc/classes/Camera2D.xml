@@ -327,12 +327,13 @@
 			The Camera2D's anchor point. See [code]ANCHOR_MODE_*[/code] constants.
 		</member>
 		<member name="current" type="bool" setter="_set_current" getter="is_current">
-			If [code]true[/code] this camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
+			If [code]true[/code] the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin">
 			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled">
+			If [code]true[/code] the camera only moves when reaching the horizontal drag margins. If [code]false[/code] the camera moves horizontally regardless of margins. Default value: [code]true[/code].
 		</member>
 		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin">
 			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
@@ -344,6 +345,7 @@
 			Top margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
 		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled">
+			If [code]true[/code] the camera only moves when reaching the vertical drag margins. If [code]false[/code] the camera moves vertically regardless of margins. Default value: [code]true[/code].
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled">
 		</member>
@@ -369,19 +371,22 @@
 			The camera's offset, useful for looking around or camera shake animations.
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
+			If [code]true[/code] the camera can rotate during gameplay. Default value: [code]false[/code].
 		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled">
+			If [code]true[/code] the camera's velocity changes gradually, preventing sudden starts and stops. Default value: [code]false[/code].
 		</member>
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
+			How fast the camera's velocity changes if smoothing is enabled.
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
 			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2x zoom in, and [code]Vector2(4, 4)[/code] for a 4x zoom out.
 		</member>
 	</members>
 	<constants>
-		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
-		</constant>
 		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
+		</constant>
+		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
 		</constant>
 	</constants>
 </class>

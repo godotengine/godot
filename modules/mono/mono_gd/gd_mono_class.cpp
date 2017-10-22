@@ -43,6 +43,14 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
+String GDMonoClass::get_full_name() const {
+
+	String res = namespace_name;
+	if (res.length())
+		res += ".";
+	return res + class_name;
+}
+
 GDMonoClass *GDMonoClass::get_parent_class() {
 
 	if (assembly) {
@@ -55,6 +63,30 @@ GDMonoClass *GDMonoClass::get_parent_class() {
 
 	return NULL;
 }
+
+#ifdef TOOLS_ENABLED
+Vector<MonoClassField *> GDMonoClass::get_enum_fields() {
+
+	bool class_is_enum = mono_class_is_enum(mono_class);
+	ERR_FAIL_COND_V(!class_is_enum, Vector<MonoClassField *>());
+
+	Vector<MonoClassField *> enum_fields;
+
+	void *iter = NULL;
+	MonoClassField *raw_field = NULL;
+	while ((raw_field = mono_class_get_fields(get_raw(), &iter)) != NULL) {
+		uint32_t field_flags = mono_field_get_flags(raw_field);
+
+		// Enums have an instance field named value__ which holds the value of the enum.
+		// Enum constants are static, so we will use this to ignore the value__ field.
+		if (field_flags & MONO_FIELD_ATTR_PUBLIC && field_flags & MONO_FIELD_ATTR_STATIC) {
+			enum_fields.push_back(raw_field);
+		}
+	}
+
+	return enum_fields;
+}
+#endif
 
 bool GDMonoClass::has_method(const StringName &p_name) {
 

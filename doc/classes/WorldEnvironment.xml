@@ -4,7 +4,7 @@
 		Sets environment properties for the entire scene
 	</brief_description>
 	<description>
-		The [WorldEnvironment] node can be added to a scene in order to set default [Environment] variables for the scene. The [WorldEnvironment] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [WorldEnvironment] may be instanced in a given scene at a time. The [WorldEnvironment] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox).
+		The [code]WorldEnvironment[/code] node can be added to a scene in order to set default [Environment] variables for the scene. The [code]WorldEnvironment[/code] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [code]WorldEnvironment[/code] may be instanced in a given scene at a time. The [code]WorldEnvironment[/code] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox).
 	</description>
 	<tutorials>
 	</tutorials>

@@ -919,6 +919,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	updating = false;
 
+	get_cancel()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Export PCK/Zip"));
 	export_button = add_button(TTR("Export Project"), !OS::get_singleton()->get_swap_ok_cancel(), "export");
 

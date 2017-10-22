@@ -19,7 +19,7 @@
 			<argument index="1" name="size" type="Vector2">
 			</argument>
 			<description>
-				Construct a [Rect2] by position and size.
+				Construct a [code]Rect2[/code] by position and size.
 			</description>
 		</method>
 		<method name="Rect2">
@@ -34,7 +34,7 @@
 			<argument index="3" name="height" type="float">
 			</argument>
 			<description>
-				Construct a [Rect2] by x, y, width and height.
+				Construct a [code]Rect2[/code] by x, y, width and height.
 			</description>
 		</method>
 		<method name="clip">
@@ -43,7 +43,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns the intersection of this [Rect2] and b.
+				Returns the intersection of this [code]Rect2[/code] and b.
 			</description>
 		</method>
 		<method name="encloses">
@@ -52,7 +52,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns true if this [Rect2] completely encloses another one.
+				Returns true if this [code]Rect2[/code] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand">
@@ -61,14 +61,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Return this [Rect2] expanded to include a given point.
+				Return this [code]Rect2[/code] expanded to include a given point.
 			</description>
 		</method>
 		<method name="get_area">
 			<return type="float">
 			</return>
 			<description>
-				Get the area of the [Rect2].
+				Get the area of the [code]Rect2[/code].
 			</description>
 		</method>
 		<method name="grow">
@@ -77,7 +77,7 @@
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
-				Return a copy of the [Rect2] grown a given amount of units towards all the sides.
+				Return a copy of the [code]Rect2[/code] grown a given amount of units towards all the sides.
 			</description>
 		</method>
 		<method name="grow_individual">
@@ -108,7 +108,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the [Rect2] is flat or empty.
+				Return true if the [code]Rect2[/code] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point">
@@ -117,7 +117,7 @@
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
-				Return true if the [Rect2] contains a point.
+				Return true if the [code]Rect2[/code] contains a point.
 			</description>
 		</method>
 		<method name="intersects">
@@ -126,7 +126,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Return true if the [Rect2] overlaps with another.
+				Return true if the [code]Rect2[/code] overlaps with another.
 			</description>
 		</method>
 		<method name="merge">
@@ -135,7 +135,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Combine this [Rect2] with another, a larger one is returned that contains both.
+				Combine this [code]Rect2[/code] with another, a larger one is returned that contains both.
 			</description>
 		</method>
 	</methods>

@@ -415,12 +415,11 @@ if env['tools']:
     f.close()
 
     # API documentation
-    docs=[]
-    print("cdir is: "+env.Dir('#').abspath)
-    for f in os.listdir(os.path.join(env.Dir('#').abspath,"doc/classes")):
-        docs.append("#doc/classes/"+f)
+    docs = []
+    for f in os.listdir(os.path.join(env.Dir('#').abspath, "doc/classes")):
+        docs.append("#doc/classes/" + f)
 
-    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath,"editor/doc"))
+    _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor/doc"))
 
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.Command("#editor/doc_data_compressed.gen.h", docs, make_doc_header)

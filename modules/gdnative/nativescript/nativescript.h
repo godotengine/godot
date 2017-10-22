@@ -30,14 +30,14 @@
 #ifndef NATIVE_SCRIPT_H
 #define NATIVE_SCRIPT_H
 
+#include "core/resource.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "ordered_hash_map.h"
 #include "os/thread_safe.h"
-#include "resource.h"
 #include "scene/main/node.h"
-#include "script_language.h"
-#include "self_list.h"
 
 #include "modules/gdnative/gdnative.h"
 #include <nativescript/godot_nativescript.h>

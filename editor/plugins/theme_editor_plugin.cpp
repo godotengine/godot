@@ -588,6 +588,8 @@ void ThemeEditor::_notification(int p_what) {
 			time_left = 1.5;
 			_refresh_interval();
 		}
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
 	}
 }
 
@@ -627,7 +629,9 @@ ThemeEditor::ThemeEditor() {
 	main_vb->add_child(hb_menu);
 
 	theme_menu = memnew(MenuButton);
-	theme_menu->set_text(TTR("Theme"));
+	theme_menu->set_text(TTR("Edit theme.."));
+	theme_menu->set_flat(false);
+	theme_menu->set_tooltip(TTR("Theme editing menu."));
 	theme_menu->get_popup()->add_item(TTR("Add Item"), POPUP_ADD);
 	theme_menu->get_popup()->add_item(TTR("Add Class Items"), POPUP_CLASS_ADD);
 	theme_menu->get_popup()->add_item(TTR("Remove Item"), POPUP_REMOVE);

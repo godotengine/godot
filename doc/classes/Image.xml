@@ -21,7 +21,7 @@
 			<argument index="2" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+				Alpha-blends a "src_rect" [Rect2] from "src" [code]Image[/code] to this [code]Image[/code] on coordinates "dest".
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channels are required for both "src" and "mask", dest pixels and src pixels will blend if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+				Alpha-blends a "src_rect" [Rect2] from "src" [code]Image[/code] to this [code]Image[/code] using a "mask" [code]Image[/code] on coordinates "dest". Alpha channels are required for both "src" and "mask", dest pixels and src pixels will blend if the corresponding mask pixel's alpha value is not 0. "src" [code]Image[/code] and "mask" [code]Image[/code] *must* have the same size (width and height) but they can have different formats
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -49,7 +49,7 @@
 			<argument index="2" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Copy a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+				Copy a "src_rect" [Rect2] from "src" [code]Image[/code] to this [code]Image[/code] on coordinates "dest".
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -64,7 +64,7 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Blits a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+				Blits a "src_rect" [Rect2] from "src" [code]Image[/code] to this [code]Image[/code] using a "mask" [code]Image[/code] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [code]Image[/code] and "mask" [code]Image[/code] *must* have the same size (width and height) but they can have different formats
 			</description>
 		</method>
 		<method name="clear_mipmaps">
@@ -166,7 +166,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Fills an [Image] with a specified [Color]
+				Fills an [code]Image[/code] with a specified [Color]
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
@@ -197,21 +197,21 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Return the raw data of the [Image].
+				Return the raw data of the [code]Image[/code].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [Image], one of [Image].FORMAT_*.
+				Return the format of the [code]Image[/code], one of [code]Image[/code].FORMAT_*.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the height of the [Image].
+				Return the height of the [code]Image[/code].
 			</description>
 		</method>
 		<method name="get_mipmap_offset" qualifiers="const">
@@ -238,7 +238,7 @@
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
-				Return a new [Image] that is a copy of "area" in this [Image].
+				Return a new [code]Image[/code] that is a copy of "area" in this [code]Image[/code].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -251,14 +251,14 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Return the area of this [Image] that is used/visibly colored/opaque.
+				Return the area of this [code]Image[/code] that is used/visibly colored/opaque.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the width of the [Image].
+				Return the width of the [code]Image[/code].
 			</description>
 		</method>
 		<method name="has_mipmaps" qualifiers="const">
@@ -291,7 +291,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [Image].
+				Load an [code]Image[/code].
 			</description>
 		</method>
 		<method name="lock">
@@ -338,7 +338,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Save this [Image] as a png.
+				Save this [code]Image[/code] as a png.
 			</description>
 		</method>
 		<method name="set_pixel">

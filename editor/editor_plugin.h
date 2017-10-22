@@ -156,8 +156,8 @@ public:
 	void notify_scene_closed(const String &scene_filepath);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event);
-	virtual void forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas);
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
+	virtual void forward_draw_over_canvas(Control *p_canvas);
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;

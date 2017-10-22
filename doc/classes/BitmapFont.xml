@@ -38,7 +38,7 @@
 			<argument index="2" name="kerning" type="int">
 			</argument>
 			<description>
-				Adds a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+				Adds a kerning pair to the [code]BitmapFont[/code] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="add_texture">
@@ -47,7 +47,7 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Adds a texture to the [BitmapFont].
+				Adds a texture to the [code]BitmapFont[/code].
 			</description>
 		</method>
 		<method name="clear">
@@ -168,7 +168,7 @@
 			The font's kernings as [PoolIntArray].
 		</member>
 		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures">
-			The font's [Texture]\ s.
+			The font's [Texture]s.
 		</member>
 	</members>
 	<constants>

@@ -132,7 +132,7 @@ void GDMono::initialize() {
 
 	ERR_FAIL_NULL(Engine::get_singleton());
 
-	OS::get_singleton()->print("Initializing mono...\n");
+	OS::get_singleton()->print("Mono: Initializing module...\n");
 
 #ifdef DEBUG_METHODS_ENABLED
 	_initialize_and_check_api_hashes();
@@ -214,7 +214,7 @@ void GDMono::initialize() {
 	// The following assemblies are not required at initialization
 	_load_all_script_assemblies();
 
-	OS::get_singleton()->print("Mono: EVERYTHING OK\n");
+	OS::get_singleton()->print("Mono: ALL IS GOOD\n");
 }
 
 #ifndef MONO_GLUE_DISABLED

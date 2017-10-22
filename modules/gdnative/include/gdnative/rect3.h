@@ -45,9 +45,18 @@ typedef struct {
 } godot_rect3;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/gdnative.h>
 #include <gdnative/plane.h>
 #include <gdnative/vector3.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void GDAPI godot_rect3_new(godot_rect3 *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size);
 

@@ -137,6 +137,7 @@ public:
 	};
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
+	Array _texture_debug_usage_bind();
 
 	virtual void textures_keep_original(bool p_enable) = 0;
 
@@ -160,6 +161,7 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	Array _shader_get_param_list_bind(RID p_shader) const;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) = 0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const = 0;
@@ -275,6 +277,7 @@ public:
 	virtual Rect3 mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
 	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const = 0;
 	virtual Vector<Rect3> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const = 0;
+	Array _mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_index) = 0;
 	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
@@ -675,7 +678,21 @@ public:
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, bool p_blur) = 0;
+
+	enum EnvironmentSSAOQuality {
+		ENV_SSAO_QUALITY_LOW,
+		ENV_SSAO_QUALITY_MEDIUM,
+		ENV_SSAO_QUALITY_HIGH,
+	};
+
+	enum EnvironmentSSAOBlur {
+		ENV_SSAO_BLUR_DISABLED,
+		ENV_SSAO_BLUR_1x1,
+		ENV_SSAO_BLUR_2x2,
+		ENV_SSAO_BLUR_3x3,
+	};
+
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, EnvironmentSSAOQuality p_quality, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
@@ -941,18 +958,29 @@ public:
 };
 
 // make variant understand the enums
-
 VARIANT_ENUM_CAST(VisualServer::CubeMapSide);
 VARIANT_ENUM_CAST(VisualServer::TextureFlags);
 VARIANT_ENUM_CAST(VisualServer::ShaderMode);
 VARIANT_ENUM_CAST(VisualServer::ArrayType);
 VARIANT_ENUM_CAST(VisualServer::ArrayFormat);
 VARIANT_ENUM_CAST(VisualServer::PrimitiveType);
+VARIANT_ENUM_CAST(VisualServer::BlendShapeMode);
 VARIANT_ENUM_CAST(VisualServer::LightType);
 VARIANT_ENUM_CAST(VisualServer::LightParam);
+VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
+VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
+VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);
+VARIANT_ENUM_CAST(VisualServer::ViewportUsage);
+VARIANT_ENUM_CAST(VisualServer::ViewportRenderInfo);
+VARIANT_ENUM_CAST(VisualServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(VisualServer::ScenarioDebugMode);
 VARIANT_ENUM_CAST(VisualServer::InstanceType);
+VARIANT_ENUM_CAST(VisualServer::NinePatchAxisMode);
+VARIANT_ENUM_CAST(VisualServer::CanvasLightMode);
+VARIANT_ENUM_CAST(VisualServer::CanvasLightShadowFilter);
+VARIANT_ENUM_CAST(VisualServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(VisualServer::RenderInfo);
+VARIANT_ENUM_CAST(VisualServer::Features);
 
 //typedef VisualServer VS; // makes it easier to use
 #define VS VisualServer

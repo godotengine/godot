@@ -4,8 +4,10 @@
 		Input event type for actions.
 	</brief_description>
 	<description>
+		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/Code]. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html#actions
 	</tutorials>
 	<demos>
 	</demos>
@@ -35,8 +37,10 @@
 	</methods>
 	<members>
 		<member name="action" type="String" setter="set_action" getter="get_action">
+			The action's name. Actions are accessed via this [String].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
+			If [code]true[/code] the action's state is pressed. If [code]false[/code] the action's state is released.
 		</member>
 	</members>
 	<constants>

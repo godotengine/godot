@@ -175,7 +175,7 @@ void Camera::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "h_offset"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "v_offset"));
-	p_list->push_back(PropertyInfo(Variant::INT, "doppler/tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Fixed"));
+	p_list->push_back(PropertyInfo(Variant::INT, "doppler/tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"));
 }
 
 void Camera::_update_camera() {

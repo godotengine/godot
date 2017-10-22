@@ -125,9 +125,6 @@
 		<constant name="FLAG_FILTER" value="4">
 			Turn on magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
-		<constant name="FLAG_VIDEO_SURFACE" value="4096">
-			Texture is a video surface.
-		</constant>
 		<constant name="FLAGS_DEFAULT" value="7">
 			Default flags. Generate mipmaps, repeat, and filter are enabled.
 		</constant>
@@ -136,6 +133,9 @@
 		<constant name="FLAG_CONVERT_TO_LINEAR" value="16">
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32">
+		</constant>
+		<constant name="FLAG_VIDEO_SURFACE" value="4096">
+			Texture is a video surface.
 		</constant>
 	</constants>
 </class>

@@ -1171,9 +1171,7 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 
 	ERR_FAIL_COND_V(idx == -2, T());
 
-	if (p_ok)
-		*p_ok = true;
-
+	bool result = true;
 	int next = 0;
 	float c = 0;
 	// prepare for all cases of interpolation
@@ -1243,9 +1241,18 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 
 		} else if (idx < 0) {
 
-			idx = next = 0;
+			// only allow extending first key to anim start if looping
+			if (loop)
+				idx = next = 0;
+			else
+				result = false;
 		}
 	}
+
+	if (p_ok)
+		*p_ok = result;
+	if (!result)
+		return T();
 
 	float tr = p_keys[idx].transition;
 
@@ -1298,7 +1305,7 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 
 	TransformKey tk = _interpolate(tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok);
 
-	if (!ok) // ??
+	if (!ok)
 		return ERR_UNAVAILABLE;
 
 	if (r_loc)

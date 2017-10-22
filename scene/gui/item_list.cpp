@@ -489,7 +489,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 				if (mb->get_button_index() == BUTTON_RIGHT) {
 
-					emit_signal("item_rmb_selected", i, pos);
+					emit_signal("item_rmb_selected", i, get_local_mouse_position());
 				}
 			} else {
 
@@ -500,7 +500,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 				if (items[i].selected && mb->get_button_index() == BUTTON_RIGHT) {
 
-					emit_signal("item_rmb_selected", i, pos);
+					emit_signal("item_rmb_selected", i, get_local_mouse_position());
 				} else {
 					bool selected = !items[i].selected;
 
@@ -515,7 +515,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (mb->get_button_index() == BUTTON_RIGHT) {
 
-						emit_signal("item_rmb_selected", i, pos);
+						emit_signal("item_rmb_selected", i, get_local_mouse_position());
 					} else if (/*select_mode==SELECT_SINGLE &&*/ mb->is_doubleclick()) {
 
 						emit_signal("item_activated", i);

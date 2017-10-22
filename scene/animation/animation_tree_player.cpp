@@ -1796,7 +1796,7 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("recompute_caches"), &AnimationTreePlayer::recompute_caches);
 
 	ADD_GROUP("Playback", "playback_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 
 	BIND_ENUM_CONSTANT(NODE_OUTPUT);
 	BIND_ENUM_CONSTANT(NODE_ANIMATION);

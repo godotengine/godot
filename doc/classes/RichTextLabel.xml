@@ -102,6 +102,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_overriding_selected_font_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_scroll_active" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -247,6 +253,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_override_selected_font_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="override" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_percent_visible">
 			<return type="void">
 			</return>
@@ -330,6 +344,8 @@
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
 		</member>
+		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
+		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
@@ -377,6 +393,8 @@
 		<constant name="ITEM_INDENT" value="8">
 		</constant>
 		<constant name="ITEM_LIST" value="9">
+		</constant>
+		<constant name="ITEM_TABLE" value="10">
 		</constant>
 		<constant name="ITEM_META" value="11">
 		</constant>

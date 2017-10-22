@@ -46,7 +46,7 @@
 		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
-			Could be defined as looseness in the [ConeTwistJoint].
+			Could be defined as looseness in the [code]ConeTwistJoint[/code].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</member>
 		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span">
@@ -58,7 +58,7 @@
 		<constant name="PARAM_SWING_SPAN" value="0">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
-			Could be defined as looseness in the [ConeTwistJoint].
+			Could be defined as looseness in the [code]ConeTwistJoint[/code].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
 		<constant name="PARAM_TWIST_SPAN" value="1">

@@ -759,38 +759,42 @@ FileDialog::FileDialog() {
 	mode = MODE_SAVE_FILE;
 	set_title(RTR("Save a File"));
 
+	HBoxContainer *hbc = memnew(HBoxContainer);
+	hbc->add_child(memnew(Label(RTR("Path:"))));
 	dir = memnew(LineEdit);
-	HBoxContainer *pathhb = memnew(HBoxContainer);
-	pathhb->add_child(dir);
+	hbc->add_child(dir);
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
 	refresh->connect("pressed", this, "_update_file_list");
-	pathhb->add_child(refresh);
+	hbc->add_child(refresh);
 
 	drives = memnew(OptionButton);
-	pathhb->add_child(drives);
+	hbc->add_child(drives);
 	drives->connect("item_selected", this, "_select_drive");
 
 	makedir = memnew(Button);
 	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", this, "_make_dir");
-	pathhb->add_child(makedir);
-
-	vbc->add_margin_child(RTR("Path:"), pathhb);
+	hbc->add_child(makedir);
+	vbc->add_child(hbc);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
 
+	hbc = memnew(HBoxContainer);
+	hbc->add_child(memnew(Label(RTR("File:"))));
 	file = memnew(LineEdit);
-	//add_child(file);
-	vbc->add_margin_child(RTR("File:"), file);
-
+	file->set_stretch_ratio(4);
+	file->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(file);
 	filter = memnew(OptionButton);
-	//add_child(filter);
-	vbc->add_margin_child(RTR("Filter:"), filter);
+	filter->set_stretch_ratio(3);
+	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); //too many extensions overflow it
+	hbc->add_child(filter);
+	vbc->add_child(hbc);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;

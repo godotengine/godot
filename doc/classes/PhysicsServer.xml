@@ -376,14 +376,15 @@
 			</argument>
 			<description>
 				Returns the physics layer or layers a body can collide with.
--                       </description>
--               </method>
--               <method name="body_get_direct_state">
--                       <return type="PhysicsDirectBodyState">
--                       </return>
--                       <argument index="0" name="body" type="RID">
--                       </argument>
--                       <description>
+-
+			</description>
+		</method>
+		<method name="body_get_direct_state">
+			<return type="PhysicsDirectBodyState">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
 				Returns the [PhysicsDirectBodyState] of the body.
 			</description>
 		</method>
@@ -534,7 +535,7 @@
 			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxisLock">
 			</argument>
 			<description>
-				Locks velocity along one axis to 0 and only allows rotation along this axis, can also be set to disabled which disables this functionality. 
+				Locks velocity along one axis to 0 and only allows rotation along this axis, can also be set to disabled which disables this functionality.
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
@@ -746,7 +747,7 @@
 			</argument>
 			<argument index="2" name="flag" type="int" enum="PhysicsServer.G6DOFJointAxisFlag">
 			</argument>
-			<description>				
+			<description>
 				Gets a generic_6_DOF_joint flag (see G6DOF_JOINT_FLAG* constants).
 			</description>
 		</method>
@@ -1436,11 +1437,11 @@
 		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
-			Constant to set/get a body's angular dampening factor.
-		</constant>
 		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
 			Constant to set/get a body's linear dampening factor.
+		</constant>
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+			Constant to set/get a body's angular dampening factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="6">
 			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.

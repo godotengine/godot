@@ -213,11 +213,11 @@
 		</constant>
 		<constant name="ALIGN_MAX" value="3">
 		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
+		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1">
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2">
-		</constant>
-		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3">
 		</constant>

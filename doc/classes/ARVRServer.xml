@@ -171,11 +171,11 @@
 		<constant name="TRACKER_ANCHOR" value="4">
 			Our tracker tracks the location and size of an AR anchor.
 		</constant>
-		<constant name="TRACKER_UNKNOWN" value="128">
-			Used internally if we haven't set the tracker type yet.
-		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127">
 			Used internally to filter trackers of any known type.
+		</constant>
+		<constant name="TRACKER_UNKNOWN" value="128">
+			Used internally if we haven't set the tracker type yet.
 		</constant>
 		<constant name="TRACKER_ANY" value="255">
 			Used internally to select all trackers.

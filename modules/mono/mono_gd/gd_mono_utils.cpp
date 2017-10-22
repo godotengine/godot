@@ -86,6 +86,7 @@ void MonoCache::clear_members() {
 	class_NodePath = NULL;
 	class_RID = NULL;
 	class_GodotObject = NULL;
+	class_GodotReference = NULL;
 	class_Node = NULL;
 	class_Control = NULL;
 	class_Spatial = NULL;
@@ -95,7 +96,6 @@ void MonoCache::clear_members() {
 	class_ExportAttribute = NULL;
 	field_ExportAttribute_hint = NULL;
 	field_ExportAttribute_hint_string = NULL;
-	field_ExportAttribute_usage = NULL;
 	class_ToolAttribute = NULL;
 	class_RemoteAttribute = NULL;
 	class_SyncAttribute = NULL;
@@ -153,6 +153,7 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(NodePath, GODOT_API_CLASS(NodePath));
 	CACHE_CLASS_AND_CHECK(RID, GODOT_API_CLASS(NodePath));
 	CACHE_CLASS_AND_CHECK(GodotObject, GODOT_API_CLASS(Object));
+	CACHE_CLASS_AND_CHECK(GodotReference, GODOT_API_CLASS(Reference));
 	CACHE_CLASS_AND_CHECK(Node, GODOT_API_CLASS(Node));
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
 	CACHE_CLASS_AND_CHECK(Spatial, GODOT_API_CLASS(Spatial));
@@ -163,7 +164,6 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(ExportAttribute, GODOT_API_CLASS(ExportAttribute));
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hint, CACHED_CLASS(ExportAttribute)->get_field("hint"));
 	CACHE_FIELD_AND_CHECK(ExportAttribute, hint_string, CACHED_CLASS(ExportAttribute)->get_field("hint_string"));
-	CACHE_FIELD_AND_CHECK(ExportAttribute, usage, CACHED_CLASS(ExportAttribute)->get_field("usage"));
 	CACHE_CLASS_AND_CHECK(ToolAttribute, GODOT_API_CLASS(ToolAttribute));
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
 	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));

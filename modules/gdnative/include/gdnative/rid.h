@@ -45,7 +45,16 @@ typedef struct {
 } godot_rid;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void GDAPI godot_rid_new(godot_rid *r_dest);
 

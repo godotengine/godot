@@ -17,14 +17,14 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Append text at cursor, scrolling the [LineEdit] when needed.
+				Append text at cursor, scrolling the [code]LineEdit[/code] when needed.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clear the [LineEdit] text.
+				Clear the [code]LineEdit[/code] text.
 			</description>
 		</method>
 		<method name="cursor_get_blink_enabled" qualifiers="const">
@@ -63,14 +63,14 @@
 			<return type="int" enum="LineEdit.Align">
 			</return>
 			<description>
-				Return the align mode of the [LineEdit].
+				Return the align mode of the [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="get_cursor_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the cursor position inside the [LineEdit].
+				Return the cursor position inside the [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="get_expand_to_text_length" qualifiers="const">
@@ -83,14 +83,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the maximum amount of characters the [LineEdit] can edit. If 0 is returned, no limit exists.
+				Return the maximum amount of characters the [code]LineEdit[/code] can edit. If 0 is returned, no limit exists.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Return the [PopupMenu] of this [LineEdit].
+				Return the [PopupMenu] of this [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="get_placeholder" qualifiers="const">
@@ -111,21 +111,21 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the text in the [LineEdit].
+				Return the text in the [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="is_editable" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return the [i]editable[/i] status of the [LineEdit] (see [method set_editable]).
+				Return the [i]editable[/i] status of the [code]LineEdit[/code] (see [method set_editable]).
 			</description>
 		</method>
 		<method name="is_secret" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return the [i]secret[/i] status of the [LineEdit] (see [method set_secret]).
+				Return the [i]secret[/i] status of the [code]LineEdit[/code] (see [method set_secret]).
 			</description>
 		</method>
 		<method name="menu_option">
@@ -145,7 +145,7 @@
 			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
-				Select the text inside [LineEdit] by the given character positions. [code]from[/code] is default to the beginning. [code]to[/code] is default to the end.
+				Select the text inside [code]LineEdit[/code] by the given character positions. [code]from[/code] is default to the beginning. [code]to[/code] is default to the end.
 				[codeblock]
 				select()     # select all
 				select(5)    # select from the fifth character to the end.
@@ -166,7 +166,7 @@
 			<argument index="0" name="align" type="int" enum="LineEdit.Align">
 			</argument>
 			<description>
-				Set text alignment of the [LineEdit].
+				Set text alignment of the [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="set_cursor_position">
@@ -175,7 +175,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Set the cursor position inside the [LineEdit], causing it to scroll if needed.
+				Set the cursor position inside the [code]LineEdit[/code], causing it to scroll if needed.
 			</description>
 		</method>
 		<method name="set_editable">
@@ -184,7 +184,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the [i]editable[/i] status of the [LineEdit]. When disabled, existing text can't be modified and new text can't be added.
+				Set the [i]editable[/i] status of the [code]LineEdit[/code]. When disabled, existing text can't be modified and new text can't be added.
 			</description>
 		</method>
 		<method name="set_expand_to_text_length">
@@ -201,7 +201,7 @@
 			<argument index="0" name="chars" type="int">
 			</argument>
 			<description>
-				Set the maximum amount of characters the [LineEdit] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
+				Set the maximum amount of characters the [code]LineEdit[/code] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
 			</description>
 		</method>
 		<method name="set_placeholder">
@@ -228,7 +228,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set the [i]secret[/i] status of the [LineEdit]. When enabled, every character is displayed as "*".
+				Set the [i]secret[/i] status of the [code]LineEdit[/code]. When enabled, every character is displayed as "*".
 			</description>
 		</method>
 		<method name="set_text">
@@ -237,7 +237,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Set the text in the [LineEdit], clearing the existing one and the selection.
+				Set the text in the [code]LineEdit[/code], clearing the existing one and the selection.
 			</description>
 		</method>
 	</methods>
@@ -277,7 +277,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				This signal is emitted when the user presses KEY_ENTER on the [LineEdit]. This signal is often used as an alternate confirmation mechanism in dialogs.
+				This signal is emitted when the user presses KEY_ENTER on the [code]LineEdit[/code]. This signal is often used as an alternate confirmation mechanism in dialogs.
 			</description>
 		</signal>
 	</signals>

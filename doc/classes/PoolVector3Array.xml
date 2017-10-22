@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolVector3Array">
 			</argument>
 			<description>
-				Append an [PoolVector3Array] at the end of this array.
+				Append an [code]PoolVector3Array[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

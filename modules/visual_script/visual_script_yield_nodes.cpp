@@ -82,7 +82,7 @@ String VisualScriptYield::get_text() const {
 	switch (yield_mode) {
 		case YIELD_RETURN: return ""; break;
 		case YIELD_FRAME: return "Next Frame"; break;
-		case YIELD_PHYSICS_FRAME: return "Next Fixed Frame"; break;
+		case YIELD_PHYSICS_FRAME: return "Next Physics Frame"; break;
 		case YIELD_WAIT: return rtos(wait_time) + " sec(s)"; break;
 	}
 
@@ -186,7 +186,7 @@ void VisualScriptYield::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wait_time", "sec"), &VisualScriptYield::set_wait_time);
 	ClassDB::bind_method(D_METHOD("get_wait_time"), &VisualScriptYield::get_wait_time);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,FixedFrame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,Physics Frame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time"), "set_wait_time", "get_wait_time");
 
 	BIND_ENUM_CONSTANT(YIELD_FRAME);

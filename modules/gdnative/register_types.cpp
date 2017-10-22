@@ -37,6 +37,7 @@
 
 #include "nativearvr/register_types.h"
 #include "nativescript/register_types.h"
+#include "pluginscript/register_types.h"
 
 #include "core/engine.h"
 #include "core/os/os.h"
@@ -158,10 +159,14 @@ void register_gdnative_types() {
 
 	register_nativearvr_types();
 	register_nativescript_types();
+	register_pluginscript_types();
 
 	// run singletons
 
-	Array singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	Array singletons = Array();
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
+		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	}
 
 	singleton_gdnatives.resize(singletons.size());
 
@@ -207,8 +212,9 @@ void unregister_gdnative_types() {
 	}
 	singleton_gdnatives.clear();
 
-	unregister_nativearvr_types();
+	unregister_pluginscript_types();
 	unregister_nativescript_types();
+	unregister_nativearvr_types();
 
 	memdelete(GDNativeCallRegistry::singleton);
 

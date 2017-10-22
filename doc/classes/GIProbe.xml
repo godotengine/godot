@@ -195,6 +195,8 @@
 		</constant>
 		<constant name="SUBDIV_256" value="2">
 		</constant>
+		<constant name="SUBDIV_512" value="3">
+		</constant>
 		<constant name="SUBDIV_MAX" value="4">
 		</constant>
 	</constants>

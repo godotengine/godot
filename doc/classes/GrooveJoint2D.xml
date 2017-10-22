@@ -46,8 +46,10 @@
 	</methods>
 	<members>
 		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset">
+			The body B's initial anchor position defined by the joint's origin and a local offset [member initial_offset] along the joint's y axis (along the groove). Default value: [code]25[/code]
 		</member>
 		<member name="length" type="float" setter="set_length" getter="get_length">
+			The groove's length. The groove is from the joint's origin towards [member length] along the joint's local y axis. Default value: [code]50[/code]
 		</member>
 	</members>
 	<constants>
