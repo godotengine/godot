@@ -169,7 +169,7 @@ void light_compute(vec3 N, vec3 L,vec3 V, vec3 light_color, float roughness, ino
 	float dotNL = max(dot(N,L), 0.0 );
 	diffuse += dotNL * light_color / M_PI;
 
-	if (roughness < 1.0) {
+	if (roughness > 0.0) {
 
 		vec3 H = normalize(V + L);
 		float dotNH = max(dot(N,H), 0.0 );
@@ -1034,7 +1034,7 @@ LIGHT_SHADER_CODE
 	}
 
 
-	if (roughness < 1.0) {
+	if (roughness > 0.0) { // FIXME: roughness == 0 should not disable specular light entirely
 
 
 		// D
