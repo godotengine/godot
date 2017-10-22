@@ -734,7 +734,7 @@ msgstr "Usuń"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Podziękowania od społeczności Godot'a!"
+msgstr "Podziękowania od społeczności Godota!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
