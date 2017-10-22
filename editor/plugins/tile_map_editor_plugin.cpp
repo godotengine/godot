@@ -945,6 +945,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 
 		Point2i new_over_tile = node->world_to_map(xform_inv.xform(mm->get_position()));
+		Point2i old_over_tile = over_tile;
 
 		if (new_over_tile != over_tile) {
 
@@ -963,17 +964,43 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (tool == TOOL_PAINTING) {
 
+			// Paint using bresenham line to prevent holes in painting if the user moves fast
+
+			Vector<Point2i> points = line(old_over_tile.x, over_tile.x, old_over_tile.y, over_tile.y);
 			int id = get_selected_tile();
-			if (id != TileMap::INVALID_CELL) {
+
+			for (int i = 0; i < points.size(); ++i) {
+
+				Point2i pos = points[i];
 
 				if (!paint_undo.has(over_tile)) {
-					paint_undo[over_tile] = _get_op_from_cell(over_tile);
+					paint_undo[pos] = _get_op_from_cell(pos);
 				}
 
-				_set_cell(over_tile, id, flip_h, flip_v, transpose);
-
-				return true;
+				_set_cell(pos, id, flip_h, flip_v, transpose);
 			}
+
+			return true;
+		}
+
+		if (tool == TOOL_ERASING) {
+
+			// erase using bresenham line to prevent holes in painting if the user moves fast
+
+			Vector<Point2i> points = line(old_over_tile.x, over_tile.x, old_over_tile.y, over_tile.y);
+
+			for (int i = 0; i < points.size(); ++i) {
+
+				Point2i pos = points[i];
+
+				if (!paint_undo.has(over_tile)) {
+					paint_undo[pos] = _get_op_from_cell(pos);
+				}
+
+				_set_cell(pos, TileMap::INVALID_CELL);
+			}
+
+			return true;
 		}
 
 		if (tool == TOOL_SELECTING) {
@@ -1041,16 +1068,6 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 			}
-
-			return true;
-		}
-		if (tool == TOOL_ERASING) {
-
-			if (!paint_undo.has(over_tile)) {
-				paint_undo[over_tile] = _get_op_from_cell(over_tile);
-			}
-
-			_set_cell(over_tile, TileMap::INVALID_CELL);
 
 			return true;
 		}
