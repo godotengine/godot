@@ -253,6 +253,7 @@ class TextEdit : public Control {
 	bool scroll_past_end_of_file_enabled;
 	bool auto_brace_completion_enabled;
 	bool brace_matching_enabled;
+	bool highlight_current_line;
 	bool auto_indent;
 	bool cut_copy_line;
 	bool insert_mode;
@@ -513,6 +514,9 @@ public:
 
 	void set_show_line_numbers(bool p_show);
 	bool is_show_line_numbers_enabled() const;
+
+	void set_highlight_current_line(bool p_enabled);
+	bool is_highlight_current_line_enabled() const;
 
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 
