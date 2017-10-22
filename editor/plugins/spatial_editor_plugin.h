@@ -405,6 +405,7 @@ private:
 	SpatialEditorViewport *viewports[VIEWPORTS_COUNT];
 	VSplitContainer *shader_split;
 	HSplitContainer *palette_split;
+	HBoxContainer *palette_split_container;
 
 	/////
 
@@ -593,7 +594,7 @@ public:
 	void add_control_to_menu_panel(Control *p_control);
 
 	VSplitContainer *get_shader_split();
-	HSplitContainer *get_palette_split();
+	HBoxContainer *get_palette_split();
 
 	Spatial *get_selected() { return selected; }
 

@@ -187,10 +187,13 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, int p_value, bool p_flip_h, 
 	if (p_with_undo) {
 
 		undo_redo->add_do_method(node, "set_cellv", Point2(p_pos), p_value, p_flip_h, p_flip_v, p_transpose);
+		undo_redo->add_do_method(node, "make_bitmask_area_dirty", Point2(p_pos));
 		undo_redo->add_undo_method(node, "set_cellv", Point2(p_pos), prev_val, prev_flip_h, prev_flip_v, prev_transpose);
+		undo_redo->add_undo_method(node, "make_bitmask_area_dirty", Point2(p_pos));
 	} else {
 
 		node->set_cell(p_pos.x, p_pos.y, p_value, p_flip_h, p_flip_v, p_transpose);
+		node->update_bitmask_area(Point2(p_pos));
 	}
 }
 
@@ -305,6 +308,12 @@ void TileMapEditor::_update_palette() {
 
 		if (tex.is_valid()) {
 			Rect2 region = tileset->tile_get_region(entries[i].id);
+
+			if (tileset->tile_get_is_autotile(entries[i].id)) {
+				int spacing = tileset->autotile_get_spacing(entries[i].id);
+				region.size = tileset->autotile_get_size(entries[i].id);
+				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
+			}
 
 			if (!region.has_no_area())
 				palette->set_item_icon_region(palette->get_item_count() - 1, region);
@@ -499,6 +508,11 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 	Vector2 tile_ofs = node->get_tileset()->tile_get_texture_offset(p_cell);
 
 	Rect2 r = node->get_tileset()->tile_get_region(p_cell);
+	if (node->get_tileset()->tile_get_is_autotile(p_cell)) {
+		int spacing = node->get_tileset()->autotile_get_spacing(p_cell);
+		r.size = node->get_tileset()->autotile_get_size(p_cell);
+		r.position += (r.size + Vector2(spacing, spacing)) * node->get_tileset()->autotile_get_icon_coordinate(p_cell);
+	}
 	Size2 sc = p_xform.get_scale();
 
 	Rect2 rect = Rect2();
