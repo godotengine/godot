@@ -31,6 +31,7 @@
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
 			</return>
 			<description>
+				Returns the hand holding this controller, if known. See TRACKER_* constants in [ARVRPositionalTracker].
 			</description>
 		</method>
 		<method name="get_is_active" qualifiers="const">
@@ -77,6 +78,7 @@
 	</methods>
 	<members>
 		<member name="controller_id" type="int" setter="set_controller_id" getter="get_controller_id">
+			The controller's id. The first controller that the [ARVRServer] detects will have id 1, the second id 2, the third id 3, etc. When a controller is turned off, it's slot is freed. This ensures controllers will keep the same id even when controllers with lower ids are turned off.
 		</member>
 	</members>
 	<signals>
