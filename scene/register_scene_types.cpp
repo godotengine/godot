@@ -152,6 +152,10 @@
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
+#include "scene/3d/particles.h"
+#include "scene/3d/scenario_fx.h"
+#include "scene/3d/spatial.h"
+
 #ifndef _3D_DISABLED
 #include "scene/3d/area.h"
 #include "scene/3d/arvr_nodes.h"
@@ -169,7 +173,6 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/3d/navigation.h"
 #include "scene/3d/navigation_mesh.h"
-#include "scene/3d/particles.h"
 #include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/physics_joint.h"
@@ -180,9 +183,7 @@
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform.h"
 #include "scene/3d/room_instance.h"
-#include "scene/3d/scenario_fx.h"
 #include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
@@ -551,7 +552,9 @@ void register_scene_types() {
 
 	ClassDB::register_class<AudioStreamPlayer>();
 	ClassDB::register_class<AudioStreamPlayer2D>();
+#ifndef _3D_DISABLED
 	ClassDB::register_class<AudioStreamPlayer3D>();
+#endif
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 
