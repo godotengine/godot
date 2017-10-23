@@ -908,6 +908,9 @@ Script *NativeScriptLanguage::create_script() const {
 bool NativeScriptLanguage::has_named_classes() const {
 	return true;
 }
+bool NativeScriptLanguage::supports_builtin_mode() const {
+	return true;
+}
 int NativeScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	return -1;
 }
