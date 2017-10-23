@@ -778,8 +778,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		cs_file.push_back(itype.proxy_name);
 		cs_file.push_back("(IntPtr " BINDINGS_PTR_FIELD ")\n" OPEN_BLOCK_L2 "this." BINDINGS_PTR_FIELD " = " BINDINGS_PTR_FIELD ";\n" CLOSE_BLOCK_L2);
 
-		cs_file.push_back(MEMBER_BEGIN "public bool HasValidHandle()\n" OPEN_BLOCK_L2
-									   "return " BINDINGS_PTR_FIELD " == IntPtr.Zero;\n" CLOSE_BLOCK_L2);
+		cs_file.push_back(MEMBER_BEGIN "public IntPtr NativeInstance\n" OPEN_BLOCK_L2
+									   "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
 	} else if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 
@@ -841,8 +841,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// Add methods
 
 		if (!is_derived_type) {
-			cs_file.push_back(MEMBER_BEGIN "public bool HasValidHandle()\n" OPEN_BLOCK_L2
-										   "return " BINDINGS_PTR_FIELD " == IntPtr.Zero;\n" CLOSE_BLOCK_L2);
+			cs_file.push_back(MEMBER_BEGIN "public IntPtr NativeInstance\n" OPEN_BLOCK_L2
+										   "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
 
 			cs_file.push_back(MEMBER_BEGIN "internal static IntPtr " CS_SMETHOD_GETINSTANCE "(Object instance)\n" OPEN_BLOCK_L2
 										   "return instance == null ? IntPtr.Zero : instance." BINDINGS_PTR_FIELD ";\n" CLOSE_BLOCK_L2);
