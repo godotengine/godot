@@ -395,10 +395,11 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	}
 
 	if (!exited) {
-		ERR_PRINT("BuildProcess::start called, but process still running");
 		exited = true;
-		build_tab->on_build_exec_failed("!exited");
-		return;
+		String message = "Tried to start build process, but it is already running";
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
+		ERR_FAIL();
 	}
 
 	exited = false;
@@ -410,10 +411,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	if (d->file_exists(issues_file)) {
 		Error err = d->remove(issues_file);
 		if (err != OK) {
-			ERR_PRINTS("Cannot remove file: " + logs_dir.plus_file(issues_file));
 			exited = true;
-			build_tab->on_build_exec_failed("Cannot remove file: " + issues_file);
-			return;
+			String file_path = ProjectSettings::get_singleton()->localize_path(logs_dir).plus_file(issues_file);
+			String message = "Cannot remove issues file: " + file_path;
+			build_tab->on_build_exec_failed(message);
+			ERR_EXPLAIN(message);
+			ERR_FAIL();
 		}
 	}
 
@@ -434,7 +437,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
-		build_tab->on_build_exec_failed("The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex));
+		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
 		ERR_FAIL();
 	}
 
@@ -452,7 +457,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
-		build_tab->on_build_exec_failed("The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex));
+		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
 		ERR_FAIL();
 	}
 
