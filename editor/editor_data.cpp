@@ -913,8 +913,8 @@ void EditorSelection::update() {
 
 	if (!changed)
 		return;
-	emit_signal("selection_changed");
 	changed = false;
+	emit_signal("selection_changed");
 }
 
 List<Node *> &EditorSelection::get_selected_node_list() {

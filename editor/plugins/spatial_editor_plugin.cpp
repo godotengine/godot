@@ -1065,7 +1065,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						if (get_selected_count() == 0)
 							break; //bye
-						//handle rotate
+						//handle scale
 						_edit.mode = TRANSFORM_SCALE;
 						_compute_edit(b->get_position());
 						break;
@@ -1327,6 +1327,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
+							if (sp->has_meta("_edit_lock_")) {
+								continue;
+							}
+
 							Transform original = se->original;
 							Transform original_local = se->original_local;
 							Transform base = Transform(Basis(), _edit.center);
@@ -1452,6 +1456,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
+							if (sp->has_meta("_edit_lock_")) {
+								continue;
+							}
+
 							Transform original = se->original;
 							Transform t;
 
@@ -1547,6 +1555,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							SpatialEditorSelectedItem *se = editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
 							if (!se)
 								continue;
+
+							if (sp->has_meta("_edit_lock_")) {
+								continue;
+							}
 
 							Transform t;
 
@@ -3978,6 +3990,44 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
 		} break;
+		case MENU_LOCK_SELECTED: {
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *spatial = Object::cast_to<Spatial>(E->get());
+				if (!spatial || !spatial->is_visible_in_tree())
+					continue;
+
+				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
+					continue;
+
+				spatial->set_meta("_edit_lock_", true);
+				emit_signal("item_lock_status_changed");
+			}
+
+			_refresh_menu_icons();
+		} break;
+		case MENU_UNLOCK_SELECTED: {
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *spatial = Object::cast_to<Spatial>(E->get());
+				if (!spatial || !spatial->is_visible_in_tree())
+					continue;
+
+				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
+					continue;
+
+				spatial->set_meta("_edit_lock_", Variant());
+				emit_signal("item_lock_status_changed");
+			}
+
+			_refresh_menu_icons();
+		} break;
 	}
 }
 
@@ -4317,6 +4367,28 @@ bool SpatialEditor::is_any_freelook_active() const {
 	return false;
 }
 
+void SpatialEditor::_refresh_menu_icons() {
+
+	bool all_locked = true;
+
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+
+	if (selection.empty()) {
+		all_locked = false;
+	} else {
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			if (Object::cast_to<Spatial>(E->get()) && !Object::cast_to<Spatial>(E->get())->has_meta("_edit_lock_")) {
+				all_locked = false;
+				break;
+			}
+		}
+	}
+
+	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
+	tool_button[TOOL_LOCK_SELECTED]->set_disabled(selection.empty());
+	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
+}
+
 void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
@@ -4355,6 +4427,8 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon(get_icon("ToolRotate", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_LIST_SELECT]->set_icon(get_icon("ListSelect", "EditorIcons"));
+		tool_button[SpatialEditor::TOOL_LOCK_SELECTED]->set_icon(get_icon("Lock", "EditorIcons"));
+		tool_button[SpatialEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_icon("Unlock", "EditorIcons"));
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_icon("Panels1", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_icon("Panels2", "EditorIcons"));
@@ -4365,7 +4439,11 @@ void SpatialEditor::_notification(int p_what) {
 
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
+		_refresh_menu_icons();
+
 		get_tree()->connect("node_removed", this, "_node_removed");
+		EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor()->connect("node_changed", this, "_refresh_menu_icons");
+		editor_selection->connect("selection_changed", this, "_refresh_menu_icons");
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -4508,8 +4586,10 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &SpatialEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
 	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
+	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
+	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 }
 
 void SpatialEditor::clear() {
@@ -4610,6 +4690,18 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	button_binds[0] = MENU_TOOL_LIST_SELECT;
 	tool_button[TOOL_MODE_LIST_SELECT]->connect("pressed", this, "_menu_item_pressed", button_binds);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip(TTR("Show a list of all objects at the position clicked\n(same as Alt+RMB in select mode)."));
+
+	tool_button[TOOL_LOCK_SELECTED] = memnew(ToolButton);
+	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTED]);
+	button_binds[0] = MENU_LOCK_SELECTED;
+	tool_button[TOOL_LOCK_SELECTED]->connect("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_LOCK_SELECTED]->set_tooltip(TTR("Lock the selected object in place (can't be moved)."));
+
+	tool_button[TOOL_UNLOCK_SELECTED] = memnew(ToolButton);
+	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
+	button_binds[0] = MENU_UNLOCK_SELECTED;
+	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
 
 	vs = memnew(VSeparator);
 	hbc_menu->add_child(vs);

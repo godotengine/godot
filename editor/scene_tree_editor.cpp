@@ -88,7 +88,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 	} else if (p_id == BUTTON_LOCK) {
 
-		if (n->is_class("CanvasItem")) {
+		if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
 			n->set_meta("_edit_lock_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
@@ -265,6 +265,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("Spatial")) {
+
+			bool is_locked = p_node->has_meta("_edit_lock_");
+			if (is_locked)
+				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock"));
 
 			bool v = p_node->call("is_visible");
 			if (v)
