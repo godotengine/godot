@@ -1065,7 +1065,7 @@ LIGHT_SHADER_CODE
 #elif defined(SPECULAR_DISABLED)
 		//none..
 
-#elif defined(SPECULAR_GGX)
+#elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
 		vec3 H = normalize(V + L);
@@ -1102,10 +1102,10 @@ LIGHT_SHADER_CODE
 
 #if defined(LIGHT_USE_CLEARCOAT)
 		if (clearcoat_gloss > 0.0) {
-# if !defined(SPECULAR_GGX) && !defined(SPECULAR_BLINN)
+# if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
 			vec3 H = normalize(V + L);
 # endif
-# if !defined(SPECULAR_GGX)
+# if !defined(SPECULAR_SCHLICK_GGX)
 			float cNdotH = max(dot(N,H), 0.0);
 			float cLdotH = max(dot(L,H), 0.0);
 			float cLdotH5 = SchlickFresnel(cLdotH);
