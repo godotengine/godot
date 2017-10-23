@@ -2670,12 +2670,12 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	String addon_path = "res://addons/" + p_addon + "/plugin.cfg";
 	Error err = cf->load(addon_path);
 	if (err != OK) {
-		show_warning(TTR("Unable to enable addon plugin at: '") + addon_path + TTR("' parsing of config failed."));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(TTR("Unable to find script field for addon plugin at: 'res://addons/") + p_addon + "''.");
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: 'res://addons/%s'."), p_addon));
 		return;
 	}
 
@@ -2685,18 +2685,18 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	Ref<Script> script = ResourceLoader::load(path);
 
 	if (script.is_null()) {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "'.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), path));
 		return;
 	}
 
 	//could check inheritance..
 	if (String(script->get_instance_base_type()) != "EditorPlugin") {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "' Base type is not EditorPlugin.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), path));
 		return;
 	}
 
 	if (!script->is_tool()) {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "' Script is not in tool mode.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), path));
 		return;
 	}
 
