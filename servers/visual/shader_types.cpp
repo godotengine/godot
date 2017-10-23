@@ -159,7 +159,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_burley");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("diffuse_toon");
 
-	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_ggx");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_schlick_ggx");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_blinn");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_phong");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("specular_toon");
