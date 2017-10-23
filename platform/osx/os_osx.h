@@ -212,6 +212,9 @@ public:
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
 
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsync_enabled() const;
+
 	void run();
 
 	void set_mouse_mode(MouseMode p_mode);
