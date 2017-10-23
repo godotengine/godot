@@ -72,6 +72,9 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
 	void set_type_mask(uint32_t p_mask);
 	uint32_t get_type_mask() const;
 
