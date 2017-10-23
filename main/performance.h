@@ -79,8 +79,16 @@ public:
 		MONITOR_MAX
 	};
 
+	enum MonitorType {
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_TIME
+	};
+
 	float get_monitor(Monitor p_monitor) const;
 	String get_monitor_name(Monitor p_monitor) const;
+
+	MonitorType get_monitor_type(Monitor p_monitor) const;
 
 	void set_process_time(float p_pt);
 	void set_physics_process_time(float p_pt);
