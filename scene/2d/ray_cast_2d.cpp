@@ -61,6 +61,21 @@ void RayCast2D::set_type_mask(uint32_t p_mask) {
 	type_mask = p_mask;
 }
 
+void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool RayCast2D::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
 uint32_t RayCast2D::get_type_mask() const {
 
 	return type_mask;
@@ -278,6 +293,9 @@ void RayCast2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &RayCast2D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &RayCast2D::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &RayCast2D::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &RayCast2D::get_collision_mask_bit);
 
 	ClassDB::bind_method(D_METHOD("set_type_mask", "mask"), &RayCast2D::set_type_mask);
 	ClassDB::bind_method(D_METHOD("get_type_mask"), &RayCast2D::get_type_mask);
