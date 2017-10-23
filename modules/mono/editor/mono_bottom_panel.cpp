@@ -280,7 +280,11 @@ void MonoBuildTab::_update_issues_list() {
 
 		String tooltip;
 		tooltip += String("Message: ") + issue.message;
-		tooltip += String("\nCode: ") + issue.code;
+
+		if (issue.code.length()) {
+			tooltip += String("\nCode: ") + issue.code;
+		}
+
 		tooltip += String("\nType: ") + (issue.warning ? "warning" : "error");
 
 		String text;
@@ -356,23 +360,21 @@ void MonoBuildTab::on_build_exit(BuildResult result) {
 	MonoBottomPanel::get_singleton()->raise_build_tab(this);
 }
 
-void MonoBuildTab::on_build_exec_failed(const String &p_cause, const String &p_detailed) {
+void MonoBuildTab::on_build_exec_failed(const String &p_cause) {
 
 	build_exited = true;
 	build_result = RESULT_ERROR;
 
 	issues_list->clear();
 
-	String tooltip;
+	BuildIssue issue;
+	issue.message = p_cause;
+	issue.warning = false;
 
-	tooltip += "Message: " + (p_detailed.length() ? p_detailed : p_cause);
-	tooltip += "\nType: error";
+	error_count += 1;
+	issues.push_back(issue);
 
-	int line_break_idx = p_cause.find("\n");
-	issues_list->add_item(line_break_idx == -1 ? p_cause : p_cause.substr(0, line_break_idx),
-			get_icon("Error", "EditorIcons"));
-	int index = issues_list->get_item_count() - 1;
-	issues_list->set_item_tooltip(index, tooltip);
+	_update_issues_list();
 
 	MonoBottomPanel::get_singleton()->raise_build_tab(this);
 }
