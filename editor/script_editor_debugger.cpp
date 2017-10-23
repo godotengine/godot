@@ -806,7 +806,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	reason->set_tooltip(p_reason);
 }
 
-void ScriptEditorDebugger::_performance_select(Object *, int, bool) {
+void ScriptEditorDebugger::_performance_select() {
 
 	perf_draw->update();
 }
@@ -816,7 +816,7 @@ void ScriptEditorDebugger::_performance_draw() {
 	Vector<int> which;
 	for (int i = 0; i < perf_items.size(); i++) {
 
-		if (perf_items[i]->is_selected(0))
+		if (perf_items[i]->is_checked(0))
 			which.push_back(i);
 	}
 
@@ -1816,13 +1816,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_monitors->set_column_title(1, TTR("Value"));
 		perf_monitors->set_column_titles_visible(true);
 		hsp->add_child(perf_monitors);
-		perf_monitors->set_select_mode(Tree::SELECT_MULTI);
-		perf_monitors->connect("multi_selected", this, "_performance_select");
+		perf_monitors->connect("item_edited", this, "_performance_select");
 		perf_draw = memnew(Control);
 		perf_draw->connect("draw", this, "_performance_draw");
 		hsp->add_child(perf_draw);
 		hsp->set_name(TTR("Monitors"));
-		hsp->set_split_offset(300);
+		hsp->set_split_offset(340 * EDSCALE);
 		tabs->add_child(hsp);
 		perf_max.resize(Performance::MONITOR_MAX);
 
@@ -1840,13 +1839,16 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 				b->set_text(0, base.capitalize());
 				b->set_editable(0, false);
 				b->set_selectable(0, false);
+				b->set_expand_right(0, true);
 				bases[base] = b;
 			}
 
 			TreeItem *it = perf_monitors->create_item(bases[base]);
 			it->set_metadata(1, mtype);
-			it->set_editable(0, false);
-			it->set_selectable(0, true);
+			it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+			it->set_editable(0, true);
+			it->set_selectable(0, false);
+			it->set_selectable(1, false);
 			it->set_text(0, name.capitalize());
 			perf_items.push_back(it);
 			perf_max[i] = 0;
