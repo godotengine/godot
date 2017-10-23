@@ -632,6 +632,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/highlighting/syntax_highlighting", true);
 
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
+	_initial_set("text_editor/highlighting/highlight_current_line", true);
 	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
 
 	_initial_set("text_editor/indent/type", 0);
