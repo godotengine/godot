@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  patch_9_rect.cpp                                                     */
+/*  nine_patch_rect.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,7 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "patch_9_rect.h"
+#include "nine_patch_rect.h"
 
 #include "servers/visual_server.h"
 
