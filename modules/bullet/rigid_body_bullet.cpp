@@ -261,6 +261,8 @@ RigidBodyBullet::RigidBodyBullet() :
 		angularDamp(0),
 		can_sleep(true),
 		omit_forces_integration(false),
+		restitution_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
+		friction_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
 		force_integration_callback(NULL),
 		isTransformChanged(false),
 		previousActiveState(true),
