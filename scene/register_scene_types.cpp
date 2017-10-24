@@ -86,7 +86,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/patch_9_rect.h"
+#include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"

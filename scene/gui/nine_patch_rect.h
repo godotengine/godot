@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  patch_9_rect.h                                                       */
+/*  nine_patch_rect.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PATCH_9_FRAME_H
-#define PATCH_9_FRAME_H
+#ifndef NINE_PATCH_RECT_H
+#define NINE_PATCH_RECT_H
 
 #include "scene/gui/control.h"
 /**
@@ -81,4 +81,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
-#endif // PATCH_9_FRAME_H
+#endif // NINE_PATCH_RECT_H
