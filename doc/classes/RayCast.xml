@@ -85,6 +85,14 @@
 				Returns the collision mask for this ray.
 			</description>
 		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_collision_normal" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -154,6 +162,16 @@
 			</argument>
 			<description>
 				Set the mask to filter objects. Only objects in at least one collision layer enabled in the mask will be detected.
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_enabled">

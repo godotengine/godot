@@ -127,7 +127,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Performs a spherical-linear interpolation with another quaterion without checking if the rotation path is not bigger than 90°. 
+				Performs a spherical-linear interpolation with another quaterion without checking if the rotation path is not bigger than 90°.
 			</description>
 		</method>
 		<method name="xform">

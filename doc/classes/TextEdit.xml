@@ -239,6 +239,12 @@
 				Returns true if highlight all occurrences is enabled.
 			</description>
 		</method>
+		<method name="is_highlight_current_line_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_overriding_selected_font_color" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -340,6 +346,14 @@
 				Set to enable highlighting all occurrences of the current selection.
 			</description>
 		</method>
+		<method name="set_highlight_current_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_max_chars">
 			<return type="void">
 			</return>
@@ -434,6 +448,8 @@
 		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
+		</member>
+		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled">
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 		</member>
