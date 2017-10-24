@@ -1,4 +1,4 @@
-﻿/*************************************************************************/
+/*************************************************************************/
 /*  variant_call.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -55,8 +55,7 @@ struct _VariantCall {
 
 		bool _const;
 		bool returns;
-#ifdef DEBUG_ENABLED
-#endif
+
 		VariantFunc func;
 
 		_FORCE_INLINE_ bool verify_arguments(const Variant **p_args, Variant::CallError &r_error) {
