@@ -1186,78 +1186,36 @@ void FileSystemDock::set_display_mode(int p_mode) {
 }
 
 Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	bool is_favorite = false;
+	Vector<String> paths;
 
 	if (p_from == tree) {
-
 		TreeItem *selected = tree->get_selected();
 		if (!selected)
 			return Variant();
 
-		String fpath = selected->get_metadata(0);
-		if (fpath == String())
+		String folder = selected->get_metadata(0);
+		if (folder == String())
 			return Variant();
-		if (!fpath.ends_with("/"))
-			fpath = fpath + "/";
-		Vector<String> paths;
-		paths.push_back(fpath);
-		Dictionary d = EditorNode::get_singleton()->drag_files(paths, p_from);
 
-		if (selected->get_parent() && tree->get_root()->get_children() == selected->get_parent()) {
-			//a favorite.. treat as such
-			d["type"] = "favorite";
-		}
-
-		return d;
-	}
-
-	if (p_from == files) {
-
-		List<int> seldirs;
-		List<int> selfiles;
-
+		paths.push_back(folder.ends_with("/") ? folder : (folder + "/"));
+		is_favorite = selected->get_parent() != NULL && tree->get_root()->get_children() == selected->get_parent();
+	} else if (p_from == files) {
 		for (int i = 0; i < files->get_item_count(); i++) {
 			if (files->is_selected(i)) {
-				String fpath = files->get_item_metadata(i);
-				if (fpath.ends_with("/"))
-					seldirs.push_back(i);
-				else
-					selfiles.push_back(i);
+				paths.push_back(files->get_item_metadata(i));
 			}
-		}
-
-		if (seldirs.empty() && selfiles.empty())
-			return Variant();
-		/*
-		if (seldirs.size() && selfiles.size())
-			return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
-		*/
-
-		/*if (selfiles.size()==1) {
-			Ref<Resource> resource = ResourceLoader::load(files->get_item_metadata(selfiles.front()->get()));
-			if (resource.is_valid()) {
-				return EditorNode::get_singleton()->drag_resource(resource,p_from);
-			}
-		}*/
-
-		Vector<String> fnames;
-		if (selfiles.size() > 0 || seldirs.size() > 0) {
-			if (selfiles.size() > 0) {
-				for (List<int>::Element *E = selfiles.front(); E; E = E->next()) {
-					fnames.push_back(files->get_item_metadata(E->get()));
-				}
-				if (seldirs.size() == 0)
-					return EditorNode::get_singleton()->drag_files(fnames, p_from);
-			}
-
-			for (List<int>::Element *E = seldirs.front(); E; E = E->next()) {
-				fnames.push_back(files->get_item_metadata(E->get()));
-			}
-
-			return EditorNode::get_singleton()->drag_files_and_dirs(fnames, p_from);
 		}
 	}
 
-	return Variant();
+	if (paths.empty())
+		return Variant();
+
+	Dictionary drag_data = EditorNode::get_singleton()->drag_files_and_dirs(paths, p_from);
+	if (is_favorite) {
+		drag_data["type"] = "favorite";
+	}
+	return drag_data;
 }
 
 bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
