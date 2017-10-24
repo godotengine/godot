@@ -38,7 +38,7 @@ def get_flags():
 def configure(env):
 
     if(env["bits"] != "default"):
-        print "Error: bits argument is disabled for MSVC"
+        print("Error: bits argument is disabled for MSVC")
         print ("Bits argument is not supported for MSVC compilation. Architecture depends on the Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings)"
                +" that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits argument (example: scons p=winrt) and SCons will attempt to detect what MSVC compiler"
                +" will be executed and inform you.")
@@ -58,7 +58,7 @@ def configure(env):
 
     if os.getenv('Platform') == "ARM":
 
-        print "Compiled program architecture will be an ARM executable. (forcing bits=32)."
+        print("Compiled program architecture will be an ARM executable. (forcing bits=32).")
 
         arch="arm"
         env["bits"]="32"
@@ -75,12 +75,12 @@ def configure(env):
 
         if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
             env["bits"]="64"
-            print "Compiled program architecture will be a x64 executable (forcing bits=64)."
+            print("Compiled program architecture will be a x64 executable (forcing bits=64).")
         elif (compiler_version_str=="x86" or compiler_version_str == "amd64_x86"):
             env["bits"]="32"
-            print "Compiled program architecture will be a x86 executable. (forcing bits=32)."
+            print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
         else:
-            print "Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
+            print("Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup.")
             env["bits"]="32"
 
         if (env["bits"] == "32"):

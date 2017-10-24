@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
 Import('env')
-
+from compat import StringIO
 
 def make_editor_icons_action(target, source, env):
 
     import os
-    import cStringIO
 
     dst = target[0].srcnode().abspath
     pixmaps = source
 
-    s = cStringIO.StringIO()
+    s = StringIO()
 
     s.write("#include \"editor_icons.h\"\n\n")
     s.write("#include \"editor_scale.h\"\n\n")
@@ -79,7 +78,7 @@ def make_editor_icons_action(target, source, env):
 
     s.write("\n\n}\n\n")
 
-    f = open(dst, "wb")
+    f = open(dst, "w")
     f.write(s.getvalue())
     f.close()
     s.close()

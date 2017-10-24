@@ -13,7 +13,7 @@ def get_name():
 
 def can_build():
 
-    if (sys.platform == "darwin" or os.environ.has_key("OSXCROSS_ROOT")):
+    if (sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ)):
         return True
 
     return False
@@ -53,7 +53,7 @@ def configure(env):
 
         env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
-    if (not os.environ.has_key("OSXCROSS_ROOT")):
+    if ("OSXCROSS_ROOT" not in os.environ):
         # regular native build
         if (env["bits"] == "64"):
             env.Append(CCFLAGS=['-arch', 'x86_64'])
