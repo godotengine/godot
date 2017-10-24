@@ -319,6 +319,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				editor->push_item(existing.ptr());
 			else {
 				String path = selected->get_filename();
+				if (path == "") {
+					String root_path = editor_data->get_edited_scene_root()->get_filename();
+					if (root_path == "") {
+						path = "res://" + selected->get_name();
+					} else {
+						path = root_path.get_base_dir() + "/" + selected->get_name();
+					}
+				}
 				script_create_dialog->config(selected->get_class(), path);
 				script_create_dialog->popup_centered();
 			}
