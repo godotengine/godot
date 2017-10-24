@@ -1906,7 +1906,8 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static) {
 		// all the constants like strings and numbers
 		default: {
 			Node *value = _parse_and_reduce_expression(pattern, p_static);
-			if (error_set) {
+			if (!value) {
+				_set_error("Expect constant expression or variables in a pattern");
 				return NULL;
 			}
 
