@@ -98,6 +98,7 @@ SIMD_FORCE_INLINE bool btMutexTryLock( btSpinMutex* mutex )
 class btIParallelForBody
 {
 public:
+    virtual ~btIParallelForBody() {}
     virtual void forLoop( int iBegin, int iEnd ) const = 0;
 };
 

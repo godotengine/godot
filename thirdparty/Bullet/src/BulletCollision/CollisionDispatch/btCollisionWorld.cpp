@@ -21,6 +21,7 @@ subject to the following restrictions:
 #include "BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h" //for raycasting
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h" //for raycasting
+#include "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h" //for raycasting
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "BulletCollision/CollisionShapes/btCompoundShape.h"
 #include "BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.h"
@@ -135,7 +136,7 @@ void	btCollisionWorld::addCollisionObject(btCollisionObject* collisionObject, in
 		collisionObject,
 		collisionFilterGroup,
 		collisionFilterMask,
-        m_dispatcher1));
+		m_dispatcher1))	;
 
 
 
@@ -406,6 +407,22 @@ void	btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans,con
 				BridgeTriangleRaycastCallback rcb(rayFromLocal,rayToLocal,&resultCallback,collisionObjectWrap->getCollisionObject(),triangleMesh,colObjWorldTransform);
 				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
 				triangleMesh->performRaycast(&rcb,rayFromLocal,rayToLocal);
+			}
+			else if (collisionShape->getShapeType() == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE)
+			{
+				///optimized version for btScaledBvhTriangleMeshShape
+				btScaledBvhTriangleMeshShape* scaledTriangleMesh = (btScaledBvhTriangleMeshShape*)collisionShape;
+				btBvhTriangleMeshShape* triangleMesh = (btBvhTriangleMeshShape*)scaledTriangleMesh->getChildShape();
+
+				//scale the ray positions
+				btVector3 scale = scaledTriangleMesh->getLocalScaling();
+				btVector3 rayFromLocalScaled = rayFromLocal / scale;
+				btVector3 rayToLocalScaled = rayToLocal / scale;
+				
+				//perform raycast in the underlying btBvhTriangleMeshShape
+				BridgeTriangleRaycastCallback rcb(rayFromLocalScaled, rayToLocalScaled, &resultCallback, collisionObjectWrap->getCollisionObject(), triangleMesh, colObjWorldTransform);
+				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
+				triangleMesh->performRaycast(&rcb, rayFromLocalScaled, rayToLocalScaled);
 			}
 			else
 			{
@@ -1333,7 +1350,7 @@ void btCollisionWorld::debugDrawObject(const btTransform& worldTransform, const 
 	// Draw a small simplex at the center of the object
 	if (getDebugDrawer() && getDebugDrawer()->getDebugMode() & btIDebugDraw::DBG_DrawFrames)
 	{
-		getDebugDrawer()->drawTransform(worldTransform,1);
+		getDebugDrawer()->drawTransform(worldTransform,.1);
 	}
 
 	if (shape->getShapeType() == COMPOUND_SHAPE_PROXYTYPE)

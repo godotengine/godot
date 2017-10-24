@@ -176,7 +176,7 @@ public:
 	void setMaxJumpHeight (btScalar maxJumpHeight);
 	bool canJump () const;
 
-	void jump(const btVector3& v = btVector3());
+	void jump(const btVector3& v = btVector3(0, 0, 0));
 
 	void applyImpulse(const btVector3& v) { jump(v); }
 

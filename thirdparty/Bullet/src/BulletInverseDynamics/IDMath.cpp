@@ -33,6 +33,18 @@ void setZero(mat33 &m) {
 	m(2, 2) = 0;
 }
 
+void skew(vec3& v, mat33* result) {
+	(*result)(0, 0) = 0.0;
+	(*result)(0, 1) = -v(2);
+	(*result)(0, 2) = v(1);
+	(*result)(1, 0) = v(2);
+	(*result)(1, 1) = 0.0;
+	(*result)(1, 2) = -v(0);
+	(*result)(2, 0) = -v(1);
+	(*result)(2, 1) = v(0);
+	(*result)(2, 2) = 0.0;
+}
+
 idScalar maxAbs(const vecx &v) {
 	idScalar result = 0.0;
 	for (int i = 0; i < v.size(); i++) {
@@ -69,7 +81,7 @@ idScalar maxAbsMat3x(const mat3x &m) {
 
 void mul(const mat33 &a, const mat3x &b, mat3x *result) {
     if (b.cols() != result->cols()) {
-        error_message("size missmatch. a.cols()= %d, b.cols()= %d\n",
+        error_message("size missmatch. b.cols()= %d, result->cols()= %d\n",
                       static_cast<int>(b.cols()), static_cast<int>(result->cols()));
         abort();
     }

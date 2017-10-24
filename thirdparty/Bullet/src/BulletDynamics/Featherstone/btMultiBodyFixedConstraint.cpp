@@ -156,7 +156,7 @@ void btMultiBodyFixedConstraint::createConstraintRows(btMultiBodyConstraintArray
         btVector3 constraintNormalAng(0,0,0);
         btScalar posError = 0.0;
         if (i < 3) {
-            constraintNormalLin[i] = -1;
+            constraintNormalLin[i] = 1;
             posError = (pivotAworld-pivotBworld).dot(constraintNormalLin);
             fillMultiBodyConstraint(constraintRow, data, 0, 0, constraintNormalAng,
                                     constraintNormalLin, pivotAworld, pivotBworld,

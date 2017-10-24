@@ -28,10 +28,12 @@ protected:
 	btRigidBody*	m_rigidBodyB;
 	btVector3		m_pivotInA;
 	btVector3		m_pivotInB;
-  btMatrix3x3     m_frameInA;
-  btMatrix3x3     m_frameInB;
+	btMatrix3x3     m_frameInA;
+	btMatrix3x3     m_frameInB;
 	btScalar			m_gearRatio;
 	int			m_gearAuxLink;
+	btScalar	m_erp;
+	btScalar	m_relativePositionTarget;
 	
 public:
 
@@ -102,7 +104,14 @@ public:
 	{
 		m_gearAuxLink = gearAuxLink;
 	}
-
+	virtual void setRelativePositionTarget(btScalar relPosTarget)
+	{
+		m_relativePositionTarget = relPosTarget;
+	}
+	virtual void setErp(btScalar erp)
+	{
+		m_erp = erp;
+	}
 };
 
 #endif //BT_MULTIBODY_GEAR_CONSTRAINT_H

@@ -227,26 +227,59 @@ static void						b3FetchLeaves(b3DynamicBvh* pdbvt,
 	}
 }
 
-//
-static void						b3Split(	const b3NodeArray& leaves,
-									  b3NodeArray& left,
-									  b3NodeArray& right,
+static bool						b3LeftOfAxis(	const b3DbvtNode* node,
+										   const b3Vector3& org,
+										   const b3Vector3& axis)
+{
+	return b3Dot(axis,node->volume.Center()-org) <= 0;
+}
+
+// Partitions leaves such that leaves[0, n) are on the
+// left of axis, and leaves[n, count) are on the right
+// of axis. returns N.
+static int						b3Split(	b3DbvtNode** leaves,
+									  int count,
 									  const b3Vector3& org,
 									  const b3Vector3& axis)
 {
-	left.resize(0);
-	right.resize(0);
-	for(int i=0,ni=leaves.size();i<ni;++i)
+	int begin=0;
+	int end=count;
+	for(;;)
 	{
-		if(b3Dot(axis,leaves[i]->volume.Center()-org)<0)
-			left.push_back(leaves[i]);
-		else
-			right.push_back(leaves[i]);
+		while(begin!=end && b3LeftOfAxis(leaves[begin],org,axis))
+		{
+			++begin;
+		}
+
+		if(begin==end)
+		{
+			break;
+		}
+
+		while(begin!=end && !b3LeftOfAxis(leaves[end-1],org,axis))
+		{
+			--end;
+		}
+
+		if(begin==end)
+		{
+			break;
+		}
+
+		// swap out of place nodes
+		--end;
+		b3DbvtNode* temp=leaves[begin];
+		leaves[begin]=leaves[end];
+		leaves[end]=temp;
+		++begin;
 	}
+
+	return begin;
 }
 
 //
-static b3DbvtVolume				b3Bounds(	const b3NodeArray& leaves)
+static b3DbvtVolume				b3Bounds(	b3DbvtNode** leaves,
+										 int count)
 {
 #if B3_DBVT_MERGE_IMPL==B3_DBVT_IMPL_SSE
 	B3_ATTRIBUTE_ALIGNED16(char	locals[sizeof(b3DbvtVolume)]);
@@ -255,7 +288,7 @@ static b3DbvtVolume				b3Bounds(	const b3NodeArray& leaves)
 #else
 	b3DbvtVolume volume=leaves[0]->volume;
 #endif
-	for(int i=1,ni=leaves.size();i<ni;++i)
+	for(int i=1,ni=count;i<ni;++i)
 	{
 		b3Merge(volume,leaves[i]->volume,volume);
 	}
@@ -264,15 +297,16 @@ static b3DbvtVolume				b3Bounds(	const b3NodeArray& leaves)
 
 //
 static void						b3BottomUp(	b3DynamicBvh* pdbvt,
-										 b3NodeArray& leaves)
+										 b3DbvtNode** leaves,
+										 int count)
 {
-	while(leaves.size()>1)
+	while(count>1)
 	{
 		b3Scalar	minsize=B3_INFINITY;
 		int			minidx[2]={-1,-1};
-		for(int i=0;i<leaves.size();++i)
+		for(int i=0;i<count;++i)
 		{
-			for(int j=i+1;j<leaves.size();++j)
+			for(int j=i+1;j<count;++j)
 			{
 				const b3Scalar	sz=b3Size(b3Merge(leaves[i]->volume,leaves[j]->volume));
 				if(sz<minsize)
@@ -290,31 +324,33 @@ static void						b3BottomUp(	b3DynamicBvh* pdbvt,
 		n[0]->parent		=	p;
 		n[1]->parent		=	p;
 		leaves[minidx[0]]	=	p;
-		leaves.swap(minidx[1],leaves.size()-1);
-		leaves.pop_back();
+		leaves[minidx[1]]	=	leaves[count-1];
+		--count;
 	}
 }
 
 //
 static b3DbvtNode*			b3TopDown(b3DynamicBvh* pdbvt,
-									b3NodeArray& leaves,
+									b3DbvtNode** leaves,
+									int count,
 									int bu_treshold)
 {
 	static const b3Vector3	axis[]={b3MakeVector3(1,0,0),
 		b3MakeVector3(0,1,0),
 		b3MakeVector3(0,0,1)};
-	if(leaves.size()>1)
+	b3Assert(bu_treshold>1);
+	if(count>1)
 	{
-		if(leaves.size()>bu_treshold)
+		if(count>bu_treshold)
 		{
-			const b3DbvtVolume	vol=b3Bounds(leaves);
+			const b3DbvtVolume	vol=b3Bounds(leaves,count);
 			const b3Vector3			org=vol.Center();
-			b3NodeArray				sets[2];
+			int						partition;
 			int						bestaxis=-1;
-			int						bestmidp=leaves.size();
+			int						bestmidp=count;
 			int						splitcount[3][2]={{0,0},{0,0},{0,0}};
 			int i;
-			for( i=0;i<leaves.size();++i)
+			for( i=0;i<count;++i)
 			{
 				const b3Vector3	x=leaves[i]->volume.Center()-org;
 				for(int j=0;j<3;++j)
@@ -336,29 +372,23 @@ static b3DbvtNode*			b3TopDown(b3DynamicBvh* pdbvt,
 			}
 			if(bestaxis>=0)
 			{
-				sets[0].reserve(splitcount[bestaxis][0]);
-				sets[1].reserve(splitcount[bestaxis][1]);
-				b3Split(leaves,sets[0],sets[1],org,axis[bestaxis]);
+				partition=b3Split(leaves,count,org,axis[bestaxis]);
+				b3Assert(partition!=0 && partition!=count);
 			}
 			else
 			{
-				sets[0].reserve(leaves.size()/2+1);
-				sets[1].reserve(leaves.size()/2);
-				for(int i=0,ni=leaves.size();i<ni;++i)
-				{
-					sets[i&1].push_back(leaves[i]);
-				}
+				partition=count/2+1;
 			}
 			b3DbvtNode*	node=b3CreateNode(pdbvt,0,vol,0);
-			node->childs[0]=b3TopDown(pdbvt,sets[0],bu_treshold);
-			node->childs[1]=b3TopDown(pdbvt,sets[1],bu_treshold);
+			node->childs[0]=b3TopDown(pdbvt,&leaves[0],partition,bu_treshold);
+			node->childs[1]=b3TopDown(pdbvt,&leaves[partition],count-partition,bu_treshold);
 			node->childs[0]->parent=node;
 			node->childs[1]->parent=node;
 			return(node);
 		}
 		else
 		{
-			b3BottomUp(pdbvt,leaves);
+			b3BottomUp(pdbvt,leaves,count);
 			return(leaves[0]);
 		}
 	}
@@ -442,7 +472,7 @@ void			b3DynamicBvh::optimizeBottomUp()
 		b3NodeArray leaves;
 		leaves.reserve(m_leaves);
 		b3FetchLeaves(this,m_root,leaves);
-		b3BottomUp(this,leaves);
+		b3BottomUp(this,&leaves[0],leaves.size());
 		m_root=leaves[0];
 	}
 }
@@ -455,7 +485,7 @@ void			b3DynamicBvh::optimizeTopDown(int bu_treshold)
 		b3NodeArray	leaves;
 		leaves.reserve(m_leaves);
 		b3FetchLeaves(this,m_root,leaves);
-		m_root=b3TopDown(this,leaves,bu_treshold);
+		m_root=b3TopDown(this,&leaves[0],leaves.size(),bu_treshold);
 	}
 }
 

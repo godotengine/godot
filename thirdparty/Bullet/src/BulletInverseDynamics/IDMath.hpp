@@ -12,7 +12,8 @@ void setZero(vec3& v);
 void setZero(vecx& v);
 /// set all elements to zero
 void setZero(mat33& m);
-
+/// create a skew symmetric matrix from a vector (useful for cross product abstraction, e.g. v x a = V * a)
+void skew(vec3& v, mat33* result);
 /// return maximum absolute value
 idScalar maxAbs(const vecx& v);
 #ifndef ID_LINEAR_MATH_USE_EIGEN

@@ -185,7 +185,9 @@ public:
 
 	virtual void setGearRatio(btScalar ratio) {}
 	virtual void setGearAuxLink(int gearAuxLink) {}
-
+	virtual void setRelativePositionTarget(btScalar relPosTarget){}
+	virtual void setErp(btScalar erp){}
+	
 	
 };
 

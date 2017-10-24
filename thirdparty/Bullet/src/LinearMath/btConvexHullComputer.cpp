@@ -1277,8 +1277,21 @@ void btConvexHullInternal::computeInternal(int start, int end, IntermediateHull&
 
 				return;
 			}
+			{
+				Vertex* v = originalVertices[start];
+							v->edges = NULL;
+							v->next = v;
+							v->prev = v;
+
+							result.minXy = v;
+							result.maxXy = v;
+							result.minYx = v;
+							result.maxYx = v;
+			}
+			
+			return;
 		}
-		// lint -fallthrough
+		
 		case 1:
 		{
 			Vertex* v = originalVertices[start];

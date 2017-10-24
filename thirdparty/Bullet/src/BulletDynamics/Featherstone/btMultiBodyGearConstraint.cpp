@@ -23,7 +23,9 @@ subject to the following restrictions:
 btMultiBodyGearConstraint::btMultiBodyGearConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB)
 	:btMultiBodyConstraint(bodyA,bodyB,linkA,linkB,1,false),
 	m_gearRatio(1),
-	m_gearAuxLink(-1)
+	m_gearAuxLink(-1),
+	m_erp(0),
+	m_relativePositionTarget(0)
 {
    
 }
@@ -107,9 +109,9 @@ void btMultiBodyGearConstraint::createConstraintRows(btMultiBodyConstraintArray&
 	jacobianA(0)[offsetA] = 1;
 	jacobianB(0)[offsetB] = m_gearRatio;
 
-	const btScalar posError = 0;
+	btScalar posError = 0;
 	const btVector3 dummy(0, 0, 0);
-	btScalar erp = infoGlobal.m_erp;
+	
 	btScalar kp = 1;
 	btScalar kd = 1;
 	int numRows = getNumRows();
@@ -129,10 +131,15 @@ void btMultiBodyGearConstraint::createConstraintRows(btMultiBodyConstraintArray&
 			auxVel = m_bodyA->getJointVelMultiDof(m_gearAuxLink)[dof];
 		}
 		currentVelocity += auxVel;
-			
-		//btScalar positionStabiliationTerm = erp*(m_desiredPosition-currentPosition)/infoGlobal.m_timeStep;
-        //btScalar velocityError = (m_desiredVelocity - currentVelocity);
-
+		if (m_erp!=0)
+		{
+			btScalar currentPositionA = m_bodyA->getJointPosMultiDof(m_linkA)[dof];
+			btScalar currentPositionB = m_gearRatio*m_bodyA->getJointPosMultiDof(m_linkB)[dof];
+			btScalar diff = currentPositionB+currentPositionA;
+			btScalar desiredPositionDiff = this->m_relativePositionTarget;
+			posError = -m_erp*(desiredPositionDiff - diff);
+		}
+		
         btScalar desiredRelativeVelocity =   auxVel;
     
 		fillMultiBodyConstraint(constraintRow,data,jacobianA(row),jacobianB(row),dummy,dummy,dummy,dummy,posError,infoGlobal,-m_maxAppliedImpulse,m_maxAppliedImpulse,false,1,false,desiredRelativeVelocity);

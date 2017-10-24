@@ -524,7 +524,7 @@ void			btSoftBody::addAeroForceToNode(const btVector3& windVelocity,int nodeInde
 				}
 				else if (m_cfg.aeromodel == btSoftBody::eAeroModel::V_Point || m_cfg.aeromodel == btSoftBody::eAeroModel::V_OneSided || m_cfg.aeromodel == btSoftBody::eAeroModel::V_TwoSided)
 				{
-					if (btSoftBody::eAeroModel::V_TwoSided)
+					if (m_cfg.aeromodel == btSoftBody::eAeroModel::V_TwoSided)
 						nrm *= (btScalar)( (btDot(nrm,rel_v) < 0) ? -1 : +1);
 
 					const btScalar dvn = btDot(rel_v,nrm);
@@ -619,7 +619,7 @@ void			btSoftBody::addAeroForceToFace(const btVector3& windVelocity,int faceInde
 			}
 			else if (m_cfg.aeromodel == btSoftBody::eAeroModel::F_OneSided || m_cfg.aeromodel == btSoftBody::eAeroModel::F_TwoSided)
 			{
-				if (btSoftBody::eAeroModel::F_TwoSided)
+				if (m_cfg.aeromodel == btSoftBody::eAeroModel::F_TwoSided)
 					nrm *= (btScalar)( (btDot(nrm,rel_v) < 0) ? -1 : +1);
 
 				const btScalar	dvn=btDot(rel_v,nrm);
@@ -3003,6 +3003,7 @@ void				btSoftBody::applyForces()
 //
 void				btSoftBody::PSolve_Anchors(btSoftBody* psb,btScalar kst,btScalar ti)
 {
+	BT_PROFILE("PSolve_Anchors");
 	const btScalar	kAHR=psb->m_cfg.kAHR*kst;
 	const btScalar	dt=psb->m_sst.sdt;
 	for(int i=0,ni=psb->m_anchors.size();i<ni;++i)
@@ -3024,8 +3025,10 @@ void				btSoftBody::PSolve_Anchors(btSoftBody* psb,btScalar kst,btScalar ti)
 //
 void btSoftBody::PSolve_RContacts(btSoftBody* psb, btScalar kst, btScalar ti)
 {
+	BT_PROFILE("PSolve_RContacts");
 	const btScalar	dt = psb->m_sst.sdt;
 	const btScalar	mrg = psb->getCollisionShape()->getMargin();
+	btMultiBodyJacobianData jacobianData;
 	for(int i=0,ni=psb->m_rcontacts.size();i<ni;++i)
 	{
 		const RContact&		c = psb->m_rcontacts[i];
@@ -3033,10 +3036,10 @@ void btSoftBody::PSolve_RContacts(btSoftBody* psb, btScalar kst, btScalar ti)
 		if (cti.m_colObj->hasContactResponse()) 
 		{
             btVector3 va(0,0,0);
-            btRigidBody* rigidCol;
-            btMultiBodyLinkCollider* multibodyLinkCol;
+            btRigidBody* rigidCol=0;
+            btMultiBodyLinkCollider* multibodyLinkCol=0;
             btScalar* deltaV;
-            btMultiBodyJacobianData jacobianData;
+            
             if (cti.m_colObj->getInternalType() == btCollisionObject::CO_RIGID_BODY)
             {
                 rigidCol = (btRigidBody*)btRigidBody::upcast(cti.m_colObj);
@@ -3096,6 +3099,8 @@ void btSoftBody::PSolve_RContacts(btSoftBody* psb, btScalar kst, btScalar ti)
 //
 void				btSoftBody::PSolve_SContacts(btSoftBody* psb,btScalar,btScalar ti)
 {
+	BT_PROFILE("PSolve_SContacts");
+	
 	for(int i=0,ni=psb->m_scontacts.size();i<ni;++i)
 	{
 		const SContact&		c=psb->m_scontacts[i];
@@ -3129,6 +3134,7 @@ void				btSoftBody::PSolve_SContacts(btSoftBody* psb,btScalar,btScalar ti)
 //
 void				btSoftBody::PSolve_Links(btSoftBody* psb,btScalar kst,btScalar ti)
 {
+BT_PROFILE("PSolve_Links");
 	for(int i=0,ni=psb->m_links.size();i<ni;++i)
 	{			
 		Link&	l=psb->m_links[i];
@@ -3151,6 +3157,7 @@ void				btSoftBody::PSolve_Links(btSoftBody* psb,btScalar kst,btScalar ti)
 //
 void				btSoftBody::VSolve_Links(btSoftBody* psb,btScalar kst)
 {
+	BT_PROFILE("VSolve_Links");
 	for(int i=0,ni=psb->m_links.size();i<ni;++i)
 	{			
 		Link&			l=psb->m_links[i];

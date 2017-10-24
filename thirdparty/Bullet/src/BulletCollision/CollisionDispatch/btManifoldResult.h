@@ -34,6 +34,15 @@ extern ContactAddedCallback		gContactAddedCallback;
 
 //#define DEBUG_PART_INDEX 1
 
+/// These callbacks are used to customize the algorith that combine restitution, friction, damping, Stiffness
+typedef btScalar (*CalculateCombinedCallback)(const btCollisionObject* body0,const btCollisionObject* body1);
+
+extern CalculateCombinedCallback		gCalculateCombinedRestitutionCallback;
+extern CalculateCombinedCallback		gCalculateCombinedFrictionCallback;
+extern CalculateCombinedCallback		gCalculateCombinedRollingFrictionCallback;
+extern CalculateCombinedCallback		gCalculateCombinedSpinningFrictionCallback;
+extern CalculateCombinedCallback		gCalculateCombinedContactDampingCallback;
+extern CalculateCombinedCallback		gCalculateCombinedContactStiffnessCallback;
 
 ///btManifoldResult is a helper class to manage  contact results.
 class btManifoldResult : public btDiscreteCollisionDetectorInterface::Result

@@ -368,7 +368,7 @@ public:
 		return btAcos(dot(v) / s);
 	}
 	
-  /**@brief Return a vector will the absolute values of each element */
+  /**@brief Return a vector with the absolute values of each element */
 	SIMD_FORCE_INLINE btVector3 absolute() const 
 	{
 
@@ -1159,7 +1159,6 @@ public:
 		if (m_floats[3] > maxVal)
 		{
 			maxIndex = 3;
-			maxVal = m_floats[3];
 		}
 
 		return maxIndex;
@@ -1188,7 +1187,6 @@ public:
 		if (m_floats[3] < minVal)
 		{
 			minIndex = 3;
-			minVal = m_floats[3];
 		}
 		
 		return minIndex;

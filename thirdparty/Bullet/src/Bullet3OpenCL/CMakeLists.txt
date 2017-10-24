@@ -12,7 +12,6 @@ SET(Bullet3OpenCL_clew_SRCS
 	NarrowphaseCollision/b3ContactCache.cpp
 	NarrowphaseCollision/b3ConvexHullContact.cpp
 	NarrowphaseCollision/b3GjkEpa.cpp
-	NarrowphaseCollision/b3GjkPairDetector.cpp
 	NarrowphaseCollision/b3OptimizedBvh.cpp
 	NarrowphaseCollision/b3QuantizedBvh.cpp
 	NarrowphaseCollision/b3StridingMeshInterface.cpp

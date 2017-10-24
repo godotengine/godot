@@ -1013,7 +1013,7 @@ int  MultiBodyTree::MultiBodyImpl::getBodyDotJacobianRotU(const int body_index, 
 int  MultiBodyTree::MultiBodyImpl::getBodyJacobianTrans(const int body_index, mat3x* world_jac_trans) const{
     CHECK_IF_BODY_INDEX_IS_VALID(body_index);
     const RigidBody &body = m_body_list[body_index];
-    mul(body.m_body_T_world.transpose(), body.m_body_Jac_T,world_jac_trans);
+    mul(body.m_body_T_world.transpose(), body.m_body_Jac_T, world_jac_trans);
     return 0;
 }
 

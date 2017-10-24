@@ -19,7 +19,7 @@ subject to the following restrictions:
 #include "LinearMath/btSerializer.h"
 
 
-#define DEFAULT_DEBUGDRAW_SIZE btScalar(0.3f)
+#define DEFAULT_DEBUGDRAW_SIZE btScalar(0.05f)
 
 btTypedConstraint::btTypedConstraint(btTypedConstraintType type, btRigidBody& rbA)
 :btTypedObject(type),

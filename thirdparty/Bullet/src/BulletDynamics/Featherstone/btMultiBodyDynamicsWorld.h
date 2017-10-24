@@ -72,6 +72,11 @@ public:
 		return m_multiBodies[mbIndex];
 	}
 
+	const btMultiBody*	getMultiBody(int mbIndex) const
+	{
+		return m_multiBodies[mbIndex];
+	}
+
 	virtual void	addMultiBodyConstraint( btMultiBodyConstraint* constraint);
 
 	virtual int     getNumMultiBodyConstraints() const

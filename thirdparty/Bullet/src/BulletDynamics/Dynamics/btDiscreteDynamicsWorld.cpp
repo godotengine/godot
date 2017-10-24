@@ -952,7 +952,7 @@ void btDiscreteDynamicsWorld::createPredictiveContactsInternal( btRigidBody** bo
 						int index = manifold->addManifoldPoint(newPoint, isPredictive);
 						btManifoldPoint& pt = manifold->getContactPoint(index);
 						pt.m_combinedRestitution = 0;
-						pt.m_combinedFriction = btManifoldResult::calculateCombinedFriction(body,sweepResults.m_hitCollisionObject);
+						pt.m_combinedFriction = gCalculateCombinedFrictionCallback(body,sweepResults.m_hitCollisionObject);
 						pt.m_positionWorldOnA = body->getWorldTransform().getOrigin();
 						pt.m_positionWorldOnB = worldPointB;
 
@@ -1113,7 +1113,7 @@ void btDiscreteDynamicsWorld::integrateTransforms(btScalar timeStep)
 			for (int p=0;p<manifold->getNumContacts();p++)
 			{
 				const btManifoldPoint& pt = manifold->getContactPoint(p);
-				btScalar combinedRestitution = btManifoldResult::calculateCombinedRestitution(body0, body1);
+				btScalar combinedRestitution = gCalculateCombinedRestitutionCallback(body0, body1);
 
 				if (combinedRestitution>0 && pt.m_appliedImpulse != 0.f)
 				//if (pt.getDistance()>0 && combinedRestitution>0 && pt.m_appliedImpulse != 0.f)

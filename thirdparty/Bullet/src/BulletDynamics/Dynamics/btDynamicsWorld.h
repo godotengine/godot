@@ -135,6 +135,11 @@ public:
 			return m_solverInfo;
 		}
 
+		const btContactSolverInfo& getSolverInfo() const
+		{
+			return m_solverInfo;
+		}
+
 
 		///obsolete, use addAction instead.
 		virtual void	addVehicle(btActionInterface* vehicle) {(void)vehicle;}

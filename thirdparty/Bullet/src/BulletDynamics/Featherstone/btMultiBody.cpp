@@ -345,7 +345,10 @@ void btMultiBody::finalizeMultiDof()
 	m_deltaV.resize(6 + m_dofCount);
 	m_realBuf.resize(6 + m_dofCount + m_dofCount*m_dofCount + 6 + m_dofCount);			//m_dofCount for joint-space vels + m_dofCount^2 for "D" matrices + delta-pos vector (6 base "vels" + joint "vels")
 	m_vectorBuf.resize(2 * m_dofCount);													//two 3-vectors (i.e. one six-vector) for each system dof	("h" matrices)
-
+	for (int i=0;i<m_vectorBuf.size();i++)
+	{
+		m_vectorBuf[i].setValue(0,0,0);
+	}
 	updateLinksDofOffsets();
 }
 	
