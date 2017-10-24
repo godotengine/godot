@@ -30,6 +30,7 @@
 			[Geometry] singleton
 		</member>
 		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			[GodotSharp] singleton
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			[IP] singleton
@@ -41,6 +42,7 @@
 			[InputMap] singleton
 		</member>
 		<member name="JSON" type="JSON" setter="" getter="">
+			[JSON] singleton
 		</member>
 		<member name="Marshalls" type="Reference" setter="" getter="">
 			[Marshalls] singleton
@@ -144,8 +146,10 @@
 			Printscreen Key
 		</constant>
 		<constant name="KEY_SYSREQ" value="16777227">
+			System Request Key
 		</constant>
 		<constant name="KEY_CLEAR" value="16777228">
+			Clear Key
 		</constant>
 		<constant name="KEY_HOME" value="16777229">
 			Home Key
@@ -178,6 +182,7 @@
 			Control Key
 		</constant>
 		<constant name="KEY_META" value="16777239">
+			Meta Key
 		</constant>
 		<constant name="KEY_ALT" value="16777240">
 			Alt Key
@@ -285,24 +290,28 @@
 			Number 9 on Numpad
 		</constant>
 		<constant name="KEY_SUPER_L" value="16777260">
-			Super Left key (windows key)
+			Left Super Key (Windows Key)
 		</constant>
 		<constant name="KEY_SUPER_R" value="16777261">
-			Super Left key (windows key)
+			Right Super Key (Windows Key)
 		</constant>
 		<constant name="KEY_MENU" value="16777262">
 			Context menu key
 		</constant>
 		<constant name="KEY_HYPER_L" value="16777263">
+			Left Hyper Key
 		</constant>
 		<constant name="KEY_HYPER_R" value="16777264">
+			Right Hyper Key
 		</constant>
 		<constant name="KEY_HELP" value="16777265">
 			Help key
 		</constant>
 		<constant name="KEY_DIRECTION_L" value="16777266">
+			Left Direction Key
 		</constant>
 		<constant name="KEY_DIRECTION_R" value="16777267">
+			Right Direction Key
 		</constant>
 		<constant name="KEY_BACK" value="16777280">
 			Back key
@@ -326,14 +335,19 @@
 			Volume up key
 		</constant>
 		<constant name="KEY_BASSBOOST" value="16777287">
+			Bass Boost Key
 		</constant>
 		<constant name="KEY_BASSUP" value="16777288">
+			Bass Up Key
 		</constant>
 		<constant name="KEY_BASSDOWN" value="16777289">
+			Bass Down Key
 		</constant>
 		<constant name="KEY_TREBLEUP" value="16777290">
+			Treble Up Key
 		</constant>
 		<constant name="KEY_TREBLEDOWN" value="16777291">
+			Treble Down Key
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="16777292">
 			Media play key
@@ -360,46 +374,67 @@
 			Search key
 		</constant>
 		<constant name="KEY_STANDBY" value="16777300">
+			Standby Key
 		</constant>
 		<constant name="KEY_OPENURL" value="16777301">
+			Open URL / Launch Browser Key
 		</constant>
 		<constant name="KEY_LAUNCHMAIL" value="16777302">
+			Launch Mail Key
 		</constant>
 		<constant name="KEY_LAUNCHMEDIA" value="16777303">
+			Launch Media Key
 		</constant>
 		<constant name="KEY_LAUNCH0" value="16777304">
+			Launch Shortcut 0 Key
 		</constant>
 		<constant name="KEY_LAUNCH1" value="16777305">
+			Launch Shortcut 1 Key
 		</constant>
 		<constant name="KEY_LAUNCH2" value="16777306">
+			Launch Shortcut 2 Key
 		</constant>
 		<constant name="KEY_LAUNCH3" value="16777307">
+			Launch Shortcut 3 Key
 		</constant>
 		<constant name="KEY_LAUNCH4" value="16777308">
+			Launch Shortcut 4 Key
 		</constant>
 		<constant name="KEY_LAUNCH5" value="16777309">
+			Launch Shortcut 5 Key
 		</constant>
 		<constant name="KEY_LAUNCH6" value="16777310">
+			Launch Shortcut 6 Key
 		</constant>
 		<constant name="KEY_LAUNCH7" value="16777311">
+			Launch Shortcut 7 Key
 		</constant>
 		<constant name="KEY_LAUNCH8" value="16777312">
+			Launch Shortcut 8 Key
 		</constant>
 		<constant name="KEY_LAUNCH9" value="16777313">
+			Launch Shortcut 9 Key
 		</constant>
 		<constant name="KEY_LAUNCHA" value="16777314">
+			Launch Shortcut A Key
 		</constant>
 		<constant name="KEY_LAUNCHB" value="16777315">
+			Launch Shortcut B Key
 		</constant>
 		<constant name="KEY_LAUNCHC" value="16777316">
+			Launch Shortcut C Key
 		</constant>
 		<constant name="KEY_LAUNCHD" value="16777317">
+			Launch Shortcut D Key
 		</constant>
 		<constant name="KEY_LAUNCHE" value="16777318">
+			Launch Shortcut E Key
 		</constant>
 		<constant name="KEY_LAUNCHF" value="16777319">
+			Launch Shortcut F Key
 		</constant>
 		<constant name="KEY_UNKNOWN" value="33554431">
+			Unknown Key
 		</constant>
 		<constant name="KEY_SPACE" value="32">
 			Space Key
@@ -594,6 +629,7 @@
 			_ key
 		</constant>
 		<constant name="KEY_QUOTELEFT" value="96">
+			Left Quote Key
 		</constant>
 		<constant name="KEY_BRACELEFT" value="123">
 			{ key
@@ -619,6 +655,7 @@
 		<constant name="KEY_CURRENCY" value="164">
 		</constant>
 		<constant name="KEY_YEN" value="165">
+			Yen Key
 		</constant>
 		<constant name="KEY_BROKENBAR" value="166">
 			¦ key
@@ -647,6 +684,7 @@
 			® key
 		</constant>
 		<constant name="KEY_MACRON" value="175">
+			Macron Key
 		</constant>
 		<constant name="KEY_DEGREE" value="176">
 			° key
@@ -667,6 +705,7 @@
 			µ key
 		</constant>
 		<constant name="KEY_PARAGRAPH" value="182">
+			Paragraph Key
 		</constant>
 		<constant name="KEY_PERIODCENTERED" value="183">
 			· key
@@ -675,105 +714,154 @@
 			¬ key
 		</constant>
 		<constant name="KEY_ONESUPERIOR" value="185">
+			¹ key
 		</constant>
 		<constant name="KEY_MASCULINE" value="186">
+			♂ key
 		</constant>
 		<constant name="KEY_GUILLEMOTRIGHT" value="187">
+			» key
 		</constant>
 		<constant name="KEY_ONEQUARTER" value="188">
+			¼ key
 		</constant>
 		<constant name="KEY_ONEHALF" value="189">
 			½ key
 		</constant>
 		<constant name="KEY_THREEQUARTERS" value="190">
+			¾ key
 		</constant>
 		<constant name="KEY_QUESTIONDOWN" value="191">
+			¿ key
 		</constant>
 		<constant name="KEY_AGRAVE" value="192">
+			à key
 		</constant>
 		<constant name="KEY_AACUTE" value="193">
+			á key
 		</constant>
 		<constant name="KEY_ACIRCUMFLEX" value="194">
+			â key
 		</constant>
 		<constant name="KEY_ATILDE" value="195">
+			ã key
 		</constant>
 		<constant name="KEY_ADIAERESIS" value="196">
+			ä key
 		</constant>
 		<constant name="KEY_ARING" value="197">
+			å key
 		</constant>
 		<constant name="KEY_AE" value="198">
+			æ key
 		</constant>
 		<constant name="KEY_CCEDILLA" value="199">
+			ç key
 		</constant>
 		<constant name="KEY_EGRAVE" value="200">
+			è key
 		</constant>
 		<constant name="KEY_EACUTE" value="201">
+			é key
 		</constant>
 		<constant name="KEY_ECIRCUMFLEX" value="202">
+			ê key
 		</constant>
 		<constant name="KEY_EDIAERESIS" value="203">
+			ë key
 		</constant>
 		<constant name="KEY_IGRAVE" value="204">
+			ì key
 		</constant>
 		<constant name="KEY_IACUTE" value="205">
+			í key
 		</constant>
 		<constant name="KEY_ICIRCUMFLEX" value="206">
+			î key
 		</constant>
 		<constant name="KEY_IDIAERESIS" value="207">
+			ë key
 		</constant>
 		<constant name="KEY_ETH" value="208">
+			ð key
 		</constant>
 		<constant name="KEY_NTILDE" value="209">
+			ñ key
 		</constant>
 		<constant name="KEY_OGRAVE" value="210">
+			ò key
 		</constant>
 		<constant name="KEY_OACUTE" value="211">
+			ó key
 		</constant>
 		<constant name="KEY_OCIRCUMFLEX" value="212">
+			ô key
 		</constant>
 		<constant name="KEY_OTILDE" value="213">
+			õ key
 		</constant>
 		<constant name="KEY_ODIAERESIS" value="214">
+			ö key
 		</constant>
 		<constant name="KEY_MULTIPLY" value="215">
+			× key
 		</constant>
 		<constant name="KEY_OOBLIQUE" value="216">
+			ø key
 		</constant>
 		<constant name="KEY_UGRAVE" value="217">
+			ù key
 		</constant>
 		<constant name="KEY_UACUTE" value="218">
+			ú key
 		</constant>
 		<constant name="KEY_UCIRCUMFLEX" value="219">
+			û key
 		</constant>
 		<constant name="KEY_UDIAERESIS" value="220">
+			ü key
 		</constant>
 		<constant name="KEY_YACUTE" value="221">
+			ý key
 		</constant>
 		<constant name="KEY_THORN" value="222">
+			þ key
 		</constant>
 		<constant name="KEY_SSHARP" value="223">
+			ß key
 		</constant>
 		<constant name="KEY_DIVISION" value="247">
+			÷ key
 		</constant>
 		<constant name="KEY_YDIAERESIS" value="255">
+			ÿ key
 		</constant>
 		<constant name="KEY_CODE_MASK" value="33554431">
+			Key Code Mask
 		</constant>
 		<constant name="KEY_MODIFIER_MASK" value="-16777216">
+			Modifier Key Mask
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432">
+			Shift Key Mask
 		</constant>
 		<constant name="KEY_MASK_ALT" value="67108864">
+			Alt Key Mask
 		</constant>
 		<constant name="KEY_MASK_META" value="134217728">
+			Meta Key Mask
 		</constant>
 		<constant name="KEY_MASK_CTRL" value="268435456">
+			CTRL Key Mask
 		</constant>
 		<constant name="KEY_MASK_CMD" value="268435456">
+			CMD Key Mask
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912">
+			Keypad Key Mask
 		</constant>
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824">
+			Group Switch Key Mask
 		</constant>
 		<constant name="BUTTON_LEFT" value="1" enum="">
 			Left Mouse Button
@@ -797,10 +885,13 @@
 			Mouse wheel right button
 		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1" enum="">
+			Left Mouse Button Mask
 		</constant>
 		<constant name="BUTTON_MASK_RIGHT" value="2" enum="">
+			Right Mouse Button Mask
 		</constant>
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="">
+			Middle Mouse Button Mask
 		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="">
 			Joypad Button 0
@@ -878,12 +969,16 @@
 			XBOX controller Y button
 		</constant>
 		<constant name="JOY_DS_A" value="1" enum="">
+			DualShock controller A button
 		</constant>
 		<constant name="JOY_DS_B" value="0" enum="">
+			DualShock controller B button
 		</constant>
 		<constant name="JOY_DS_X" value="3" enum="">
+			DualShock controller X button
 		</constant>
 		<constant name="JOY_DS_Y" value="2" enum="">
+			DualShock controller Y button
 		</constant>
 		<constant name="JOY_SELECT" value="10" enum="">
 			Joypad Button Select
@@ -958,94 +1053,136 @@
 			Joypad Right Stick Vertical Axis
 		</constant>
 		<constant name="JOY_ANALOG_L2" value="6" enum="">
+			Joypad Left Analog Trigger
 		</constant>
 		<constant name="JOY_ANALOG_R2" value="7" enum="">
+			Joypad Right Analog Trigger
 		</constant>
 		<constant name="OK" value="0">
-			Functions that return Error return OK when everything went ok. Most functions don't return error anyway and/or just print errors to stdout.
+			Functions that return Error return OK when no error occured. Most functions don't return errors and/or just print errors to STDOUT.
 		</constant>
 		<constant name="FAILED" value="1">
-			Generic fail return error.
+			Generic error.
 		</constant>
 		<constant name="ERR_UNAVAILABLE" value="2">
+			Unavailable error
 		</constant>
 		<constant name="ERR_UNCONFIGURED" value="3">
+			Unconfigured error
 		</constant>
 		<constant name="ERR_UNAUTHORIZED" value="4">
+			Unauthorized error
 		</constant>
 		<constant name="ERR_PARAMETER_RANGE_ERROR" value="5">
+			Parameter range error
 		</constant>
 		<constant name="ERR_OUT_OF_MEMORY" value="6">
+			Out of memory (OOM) error
 		</constant>
 		<constant name="ERR_FILE_NOT_FOUND" value="7">
+			File: Not found error
 		</constant>
 		<constant name="ERR_FILE_BAD_DRIVE" value="8">
+			File: Bad drive error
 		</constant>
 		<constant name="ERR_FILE_BAD_PATH" value="9">
+			File: Bad path error
 		</constant>
 		<constant name="ERR_FILE_NO_PERMISSION" value="10">
+			File: No permission error
 		</constant>
 		<constant name="ERR_FILE_ALREADY_IN_USE" value="11">
+			File: Already in use error
 		</constant>
 		<constant name="ERR_FILE_CANT_OPEN" value="12">
+			File: Can't open error
 		</constant>
 		<constant name="ERR_FILE_CANT_WRITE" value="13">
+			File: Can't write error
 		</constant>
 		<constant name="ERR_FILE_CANT_READ" value="14">
+			File: Can't read error
 		</constant>
 		<constant name="ERR_FILE_UNRECOGNIZED" value="15">
+			File: Unrecognized error
 		</constant>
 		<constant name="ERR_FILE_CORRUPT" value="16">
+			File: Corrupt error
 		</constant>
 		<constant name="ERR_FILE_MISSING_DEPENDENCIES" value="17">
+			File: Missing dependencies error
 		</constant>
 		<constant name="ERR_FILE_EOF" value="18">
+			File: End of file (EOF) error
 		</constant>
 		<constant name="ERR_CANT_OPEN" value="19">
+			Can't open error
 		</constant>
 		<constant name="ERR_CANT_CREATE" value="20">
+			Can't create error
 		</constant>
 		<constant name="ERR_PARSE_ERROR" value="43">
+			Parse error
 		</constant>
 		<constant name="ERR_QUERY_FAILED" value="21">
+			Query failed error
 		</constant>
 		<constant name="ERR_ALREADY_IN_USE" value="22">
+			Already in use error
 		</constant>
 		<constant name="ERR_LOCKED" value="23">
+			Locked error
 		</constant>
 		<constant name="ERR_TIMEOUT" value="24">
+			Timeout error
 		</constant>
 		<constant name="ERR_CANT_ACQUIRE_RESOURCE" value="28">
+			Can't acquire resource error
 		</constant>
 		<constant name="ERR_INVALID_DATA" value="30">
+			Invalid data error
 		</constant>
 		<constant name="ERR_INVALID_PARAMETER" value="31">
+			Invalid parameter error
 		</constant>
 		<constant name="ERR_ALREADY_EXISTS" value="32">
+			Already exists error
 		</constant>
 		<constant name="ERR_DOES_NOT_EXIST" value="33">
+			Does not exist error
 		</constant>
 		<constant name="ERR_DATABASE_CANT_READ" value="34">
+			Database: Read error
 		</constant>
 		<constant name="ERR_DATABASE_CANT_WRITE" value="35">
+			Database: Write error
 		</constant>
 		<constant name="ERR_COMPILATION_FAILED" value="36">
+			Compilation failed error
 		</constant>
 		<constant name="ERR_METHOD_NOT_FOUND" value="37">
+			Method not found error
 		</constant>
 		<constant name="ERR_LINK_FAILED" value="38">
+			Linking failed error
 		</constant>
 		<constant name="ERR_SCRIPT_FAILED" value="39">
+			Script failed error
 		</constant>
 		<constant name="ERR_CYCLIC_LINK" value="40">
+			Cycling link (import cycle) error
 		</constant>
 		<constant name="ERR_BUSY" value="44">
+			Busy error
 		</constant>
 		<constant name="ERR_HELP" value="46">
+			Help error
 		</constant>
 		<constant name="ERR_BUG" value="47">
+			Bug error
 		</constant>
 		<constant name="ERR_WTF" value="49">
+			WTF error (something probably went really wrong)
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0">
 			No hint for edited property.
@@ -1094,8 +1231,10 @@
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19">
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20">
+			Hints that the image is compressed using lossy compression.
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21">
+			Hints that the image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1">
 			Property will be used as storage (default).
@@ -1135,20 +1274,26 @@
 		<constant name="PROPERTY_USAGE_NOEDITOR" value="5">
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1">
+			Flag for normal method
 		</constant>
 		<constant name="METHOD_FLAG_EDITOR" value="2">
+			Flag for editor method
 		</constant>
 		<constant name="METHOD_FLAG_NOSCRIPT" value="4">
 		</constant>
 		<constant name="METHOD_FLAG_CONST" value="8">
+			Flag for constant method
 		</constant>
 		<constant name="METHOD_FLAG_REVERSE" value="16">
 		</constant>
 		<constant name="METHOD_FLAG_VIRTUAL" value="32">
+			Flag for virtual method
 		</constant>
 		<constant name="METHOD_FLAG_FROM_SCRIPT" value="64">
+			Flag for method from script
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1">
+			Default method flags
 		</constant>
 		<constant name="TYPE_NIL" value="0">
 			Variable is of type nil (only applied for null).
@@ -1233,5 +1378,6 @@
 		</constant>
 		<constant name="TYPE_MAX" value="27">
 		</constant>
+			Marker for end of type constants.
 	</constants>
 </class>

@@ -44,7 +44,7 @@
  * The events are pretty obvious.
  */
 
-enum {
+enum ButtonList {
 	BUTTON_LEFT = 1,
 	BUTTON_RIGHT = 2,
 	BUTTON_MIDDLE = 3,
@@ -58,7 +58,7 @@ enum {
 
 };
 
-enum {
+enum JoystickList {
 
 	JOY_BUTTON_0 = 0,
 	JOY_BUTTON_1 = 1,

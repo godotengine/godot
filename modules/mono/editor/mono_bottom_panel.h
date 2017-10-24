@@ -134,7 +134,7 @@ public:
 
 	void on_build_start();
 	void on_build_exit(BuildResult result);
-	void on_build_exec_failed(const String &p_cause, const String &p_detailed = String());
+	void on_build_exec_failed(const String &p_cause);
 
 	void restart_build();
 	void stop_build();

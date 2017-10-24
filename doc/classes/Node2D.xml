@@ -26,7 +26,7 @@
 			<argument index="0" name="pivot" type="Vector2">
 			</argument>
 			<description>
-				Set the pivot position of the 2D node to 'pivot' value. Only some Node2Ds implement this method.
+				Sets the node's pivot position.
 			</description>
 		</method>
 		<method name="get_angle_to" qualifiers="const">
@@ -143,7 +143,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Apply a local translation on the node's X axis based on the process's 'delta'. If 'scaled' is false, normalizes the movement.
+				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
 			</description>
 		</method>
 		<method name="move_local_y">
@@ -154,7 +154,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Apply a local translation on the node's Y axis based on the process's 'delta'. If 'scaled' is false, normalizes the movement.
+				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
 			</description>
 		</method>
 		<method name="rotate">
@@ -163,7 +163,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Apply a rotation to the node, in radians, starting from its current rotation.
+				Applies a rotation to the node, in radians, starting from its current rotation.
 			</description>
 		</method>
 		<method name="set_global_position">
@@ -172,7 +172,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Set the node's global position.
+				Sets the node's global position.
 			</description>
 		</method>
 		<method name="set_global_rotation">
@@ -181,7 +181,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Set the node's global rotation in radians.
+				Sets the node's global rotation in radians.
 			</description>
 		</method>
 		<method name="set_global_rotation_in_degrees">
@@ -190,7 +190,7 @@
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
-				Set the node's global rotation in degrees.
+				Sets the node's global rotation in degrees.
 			</description>
 		</method>
 		<method name="set_global_scale">
@@ -199,7 +199,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Set the node's global scale.
+				Sets the node's global scale.
 			</description>
 		</method>
 		<method name="set_global_transform">
@@ -208,7 +208,7 @@
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
-				Set the node's global [Transform2D].
+				Sets the node's global [Transform2D].
 			</description>
 		</method>
 		<method name="set_position">
@@ -217,7 +217,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Set the node's position.
+				Sets the node's position.
 			</description>
 		</method>
 		<method name="set_rotation">
@@ -226,7 +226,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Set the node's rotation in radians.
+				Sets the node's rotation in radians.
 			</description>
 		</method>
 		<method name="set_rotation_in_degrees">
@@ -235,7 +235,7 @@
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
-				Set the node's rotation in degrees.
+				Sets the node's rotation in degrees.
 			</description>
 		</method>
 		<method name="set_scale">
@@ -244,7 +244,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Set the node's scale.
+				Sets the node's scale.
 			</description>
 		</method>
 		<method name="set_transform">
@@ -253,7 +253,7 @@
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
-				Set the node's local [Transform2D].
+				Sets the node's local [Transform2D].
 			</description>
 		</method>
 		<method name="set_z">
@@ -262,7 +262,7 @@
 			<argument index="0" name="z" type="int">
 			</argument>
 			<description>
-				Set the node's Z-index.
+				Sets the node's Z-index.
 			</description>
 		</method>
 		<method name="set_z_as_relative">
@@ -271,7 +271,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Make the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
+				Makes the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
@@ -280,6 +280,7 @@
 			<argument index="0" name="local_point" type="Vector2">
 			</argument>
 			<description>
+				Converts a local point's coordinates to global coordinates.
 			</description>
 		</method>
 		<method name="to_local" qualifiers="const">
@@ -288,6 +289,7 @@
 			<argument index="0" name="global_point" type="Vector2">
 			</argument>
 			<description>
+				Converts a global point's coordinates to local coordinates.
 			</description>
 		</method>
 		<method name="translate">
@@ -296,7 +298,7 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translate the node locally by the 'offset' vector, starting from its current local position.
+				Translates the node by the given [code]offset[/code] in local coordinates.
 			</description>
 		</method>
 	</methods>

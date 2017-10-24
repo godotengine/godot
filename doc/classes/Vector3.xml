@@ -37,6 +37,7 @@
 			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
+				Returns the vector's minimum angle to the vector [code]to[/code].
 			</description>
 		</method>
 		<method name="bounce">
@@ -61,7 +62,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Return the cross product with b.
+				Returns the cross product with [code]b[/code].
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -76,7 +77,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Perform a cubic interpolation between vectors pre_a, a, b, post_b (a is current), by the given amount (t).
+				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount (t).
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -85,7 +86,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Return the squared distance (distance minus the last square root) to b. Prefer this function over distance_to if you need to sort vectors or need the squared distance for some formula.
+				Returns the squared distance to [code]b[/code]. Prefer this function over distance_to if you need to sort vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="distance_to">
@@ -94,7 +95,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Return the distance to b.
+				Returns the distance to b.
 			</description>
 		</method>
 		<method name="dot">
@@ -103,7 +104,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Return the dot product with b.
+				Returns the dot product with b.
 			</description>
 		</method>
 		<method name="floor">
@@ -131,14 +132,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the length of the vector.
+				Returns the length of the vector.
 			</description>
 		</method>
 		<method name="length_squared">
 			<return type="float">
 			</return>
 			<description>
-				Return the length of the vector, squared. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
+				Returns the length of the vector, squared. Prefer this function over "length" if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -170,7 +171,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return a copy of the normalized vector to unit length. This is the same as v / v.length().
+				Returns a copy of the normalized vector to unit length. This is the same as v / v.length().
 			</description>
 		</method>
 		<method name="outer">
@@ -179,7 +180,7 @@
 			<argument index="0" name="b" type="Vector3">
 			</argument>
 			<description>
-				Return the outer product with b.
+				Returns the outer product with b.
 			</description>
 		</method>
 		<method name="reflect">
@@ -217,14 +218,14 @@
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
-				Return a copy of the vector, snapped to the lowest neared multiple.
+				Returns a copy of the vector, snapped to the lowest neared multiple.
 			</description>
 		</method>
 		<method name="to_diagonal_matrix">
 			<return type="Basis">
 			</return>
 			<description>
-				Return a diagonal matrix with the vector as main diagonal.
+				Returns a diagonal matrix with the vector as main diagonal.
 			</description>
 		</method>
 	</methods>

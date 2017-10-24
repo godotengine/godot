@@ -169,7 +169,7 @@ void light_compute(vec3 N, vec3 L,vec3 V, vec3 light_color, float roughness, ino
 	float dotNL = max(dot(N,L), 0.0 );
 	diffuse += dotNL * light_color / M_PI;
 
-	if (roughness < 1.0) {
+	if (roughness > 0.0) {
 
 		vec3 H = normalize(V + L);
 		float dotNH = max(dot(N,H), 0.0 );
@@ -1034,7 +1034,7 @@ LIGHT_SHADER_CODE
 	}
 
 
-	if (roughness < 1.0) {
+	if (roughness > 0.0) { // FIXME: roughness == 0 should not disable specular light entirely
 
 
 		// D
@@ -1065,7 +1065,7 @@ LIGHT_SHADER_CODE
 #elif defined(SPECULAR_DISABLED)
 		//none..
 
-#elif defined(SPECULAR_GGX)
+#elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
 		vec3 H = normalize(V + L);
@@ -1102,10 +1102,10 @@ LIGHT_SHADER_CODE
 
 #if defined(LIGHT_USE_CLEARCOAT)
 		if (clearcoat_gloss > 0.0) {
-# if !defined(SPECULAR_GGX) && !defined(SPECULAR_BLINN)
+# if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
 			vec3 H = normalize(V + L);
 # endif
-# if !defined(SPECULAR_GGX)
+# if !defined(SPECULAR_SCHLICK_GGX)
 			float cNdotH = max(dot(N,H), 0.0);
 			float cLdotH = max(dot(L,H), 0.0);
 			float cLdotH5 = SchlickFresnel(cLdotH);

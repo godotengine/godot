@@ -45,7 +45,7 @@
 #include "scene/2d/screen_button.h"
 #include "scene/2d/sprite.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/patch_9_rect.h"
+#include "scene/gui/nine_patch_rect.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"

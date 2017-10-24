@@ -377,7 +377,7 @@ void SpatialMaterial::_update_shader() {
 		case DIFFUSE_TOON: code += ",diffuse_toon"; break;
 	}
 	switch (specular_mode) {
-		case SPECULAR_GGX: code += ",specular_ggx"; break;
+		case SPECULAR_SCHLICK_GGX: code += ",specular_schlick_ggx"; break;
 		case SPECULAR_BLINN: code += ",specular_blinn"; break;
 		case SPECULAR_PHONG: code += ",specular_phong"; break;
 		case SPECULAR_TOON: code += ",specular_toon"; break;
@@ -1819,7 +1819,7 @@ void SpatialMaterial::_bind_methods() {
 
 	ADD_GROUP("Parameters", "params_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Oren Nayar,Toon"), "set_diffuse_mode", "get_diffuse_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "GGX,Blinn,Phong,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
@@ -2006,7 +2006,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(DIFFUSE_OREN_NAYAR);
 	BIND_ENUM_CONSTANT(DIFFUSE_TOON);
 
-	BIND_ENUM_CONSTANT(SPECULAR_GGX);
+	BIND_ENUM_CONSTANT(SPECULAR_SCHLICK_GGX);
 	BIND_ENUM_CONSTANT(SPECULAR_BLINN);
 	BIND_ENUM_CONSTANT(SPECULAR_PHONG);
 	BIND_ENUM_CONSTANT(SPECULAR_TOON);
@@ -2087,7 +2087,7 @@ SpatialMaterial::SpatialMaterial()
 		flags[i] = 0;
 	}
 	diffuse_mode = DIFFUSE_LAMBERT;
-	specular_mode = SPECULAR_GGX;
+	specular_mode = SPECULAR_SCHLICK_GGX;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;

@@ -61,7 +61,11 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "func _ready():\n" +
 					   "%TS%# Called every time the node is added to the scene.\n" +
 					   "%TS%# Initialization here\n" +
-					   "%TS%pass\n";
+					   "%TS%pass\n\n" +
+					   "#func _process(delta):\n" +
+					   "#%TS%# Called every frame. Delta is time since last frame.\n" +
+					   "#%TS%# Update game logic here.\n" +
+					   "#%TS%pass\n";
 
 	_template = _template.replace("%BASE%", p_base_class_name);
 	_template = _template.replace("%TS%", _get_indentation());

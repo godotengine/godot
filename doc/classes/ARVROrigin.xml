@@ -35,6 +35,8 @@
 	</methods>
 	<members>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">
+			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 meter in the real world.
+			Note that this method is a passthrough to the [ARVRServer] itself.
 		</member>
 	</members>
 	<constants>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Path2D" inherits="Node2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Container for a [Curve2D].
+		Contains a [Curve2D] path for [PathFollow2D] nodes to follow.
 	</brief_description>
 	<description>
-		This class is a container/Node-ification of a [Curve2D], so it can have [Node2D] properties and [Node] info.
+		Can have [PathFollow2D] child-nodes moving along the [Curve2D]. See [PathFollow2D] for more information on this usage.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +30,7 @@
 	</methods>
 	<members>
 		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve">
+			A [Curve2D] describing the path.
 		</member>
 	</members>
 	<constants>

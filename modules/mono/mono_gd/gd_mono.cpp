@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "gd_mono.h"
 
+#include <mono/metadata/exception.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/mono-gc.h>
@@ -46,6 +47,15 @@
 #ifdef TOOLS_ENABLED
 #include "../editor/godotsharp_editor.h"
 #endif
+
+void gdmono_unhandled_exception_hook(MonoObject *exc, void *user_data) {
+
+	(void)user_data; // UNUSED
+
+	ERR_PRINT(GDMonoUtils::get_exception_name_and_message(exc).utf8());
+	mono_print_unhandled_exception(exc);
+	abort();
+}
 
 #ifdef MONO_PRINT_HANDLER_ENABLED
 void gdmono_MonoPrintCallback(const char *string, mono_bool is_stdout) {
@@ -213,6 +223,8 @@ void GDMono::initialize() {
 
 	// The following assemblies are not required at initialization
 	_load_all_script_assemblies();
+
+	mono_install_unhandled_exception_hook(gdmono_unhandled_exception_hook, NULL);
 
 	OS::get_singleton()->print("Mono: ALL IS GOOD\n");
 }

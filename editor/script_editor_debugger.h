@@ -142,7 +142,7 @@ class ScriptEditorDebugger : public Control {
 	bool live_debug;
 
 	void _performance_draw();
-	void _performance_select(Object *, int, bool);
+	void _performance_select();
 	void _stack_dump_frame_selected();
 	void _output_clear();
 
