@@ -438,7 +438,6 @@ private:
 
 		Element *rp = ((p_node->left == _data._nil) || (p_node->right == _data._nil)) ? p_node : p_node->_next;
 		Element *node = (rp->left == _data._nil) ? rp->right : rp->left;
-		node->parent = rp->parent;
 
 		Element *sibling;
 		if (rp == rp->parent->left) {
