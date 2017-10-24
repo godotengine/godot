@@ -438,6 +438,9 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 		return sln_error;
 	}
 
+	if (verbose_output)
+		OS::get_singleton()->print("Core API solution and C# project generated successfully!\n");
+
 	return OK;
 }
 
@@ -529,6 +532,9 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 		ERR_PRINT("Could not to save .NET solution.");
 		return sln_error;
 	}
+
+	if (verbose_output)
+		OS::get_singleton()->print("Editor API solution and C# project generated successfully!\n");
 
 	return OK;
 }
@@ -1389,13 +1395,20 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	cpp_file.push_back(CLOSE_BLOCK "}\n");
 
-	return _save_file(path_join(p_output_dir, "mono_glue.gen.cpp"), cpp_file);
+	Error save_err = _save_file(path_join(p_output_dir, "mono_glue.gen.cpp"), cpp_file);
+	if (save_err != OK)
+		return save_err;
+
+	OS::get_singleton()->print("Mono glue generated successfully!\n");
+
+	return OK;
 }
 
 Error BindingsGenerator::_save_file(const String &p_path, const List<String> &p_content) {
 
 	FileAccessRef file = FileAccess::open(p_path, FileAccess::WRITE);
 
+	ERR_EXPLAIN("Cannot open file: " + p_path);
 	ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
 
 	for (const List<String>::Element *E = p_content.front(); E; E = E->next()) {
@@ -1471,7 +1484,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.memory_own = itype.is_reference;
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
-			WARN_PRINTS("Ignoring type " + String(type_cname) + " because it's not exposed");
+			if (verbose_output)
+				WARN_PRINTS("Ignoring type " + String(type_cname) + " because it's not exposed");
 			class_list.pop_front();
 			continue;
 		}
@@ -1535,9 +1549,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					// which could actually will return something differnet.
 					// Let's put this to notify us if that ever happens.
 					if (itype.name != "Object" || imethod.name != "free") {
-						WARN_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
-									"We only expected Object.free, but found " +
-									itype.name + "." + imethod.name);
+						if (verbose_output) {
+							WARN_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
+										"We only expected Object.free, but found " +
+										itype.name + "." + imethod.name);
+						}
 					}
 				} else {
 					ERR_PRINTS("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
@@ -2043,7 +2059,8 @@ BindingsGenerator::BindingsGenerator() {
 
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
-	int options_count = 3;
+	const int NUM_OPTIONS = 3;
+	int options_left = NUM_OPTIONS;
 
 	String mono_glue_option = "--generate-mono-glue";
 	String cs_core_api_option = "--generate-cs-core-api";
@@ -2053,7 +2070,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
-	while (elem && options_count) {
+	while (elem && options_left) {
 
 		if (elem->get() == mono_glue_option) {
 
@@ -2066,7 +2083,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				ERR_PRINTS("--generate-mono-glue: No output directory specified");
 			}
 
-			--options_count;
+			--options_left;
 
 		} else if (elem->get() == cs_core_api_option) {
 
@@ -2079,7 +2096,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				ERR_PRINTS(cs_core_api_option + ": No output directory specified");
 			}
 
-			--options_count;
+			--options_left;
 
 		} else if (elem->get() == cs_editor_api_option) {
 
@@ -2096,13 +2113,16 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				ERR_PRINTS(cs_editor_api_option + ": No output directory specified");
 			}
 
-			--options_count;
+			--options_left;
 		}
 
 		elem = elem->next();
 	}
 
 	verbose_output = false;
+
+	if (options_left != NUM_OPTIONS)
+		exit(0);
 }
 
 #endif
