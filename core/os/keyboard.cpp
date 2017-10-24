@@ -505,6 +505,27 @@ static const _KeyCodeReplace _keycode_replace_neo[] = {
 	{ 0, 0 }
 };
 
+static const _KeyCodeReplace _keycode_replace_colemak[] = {
+	{ KEY_E, KEY_F },
+	{ KEY_R, KEY_P },
+	{ KEY_T, KEY_G },
+	{ KEY_Y, KEY_J },
+	{ KEY_U, KEY_L },
+	{ KEY_I, KEY_U },
+	{ KEY_O, KEY_Y },
+	{ KEY_P, KEY_SEMICOLON },
+	{ KEY_S, KEY_R },
+	{ KEY_D, KEY_S },
+	{ KEY_F, KEY_T },
+	{ KEY_G, KEY_D },
+	{ KEY_J, KEY_N },
+	{ KEY_K, KEY_E },
+	{ KEY_L, KEY_I },
+	{ KEY_SEMICOLON, KEY_O },
+	{ KEY_N, KEY_K },
+	{ 0, 0 }
+};
+
 int keycode_get_count() {
 
 	const _KeyCodeText *kct = &_keycodes[0];
@@ -537,6 +558,7 @@ int latin_keyboard_keycode_convert(int p_keycode) {
 		case OS::LATIN_KEYBOARD_QZERTY: kcr = _keycode_replace_qzerty; break;
 		case OS::LATIN_KEYBOARD_DVORAK: kcr = _keycode_replace_dvorak; break;
 		case OS::LATIN_KEYBOARD_NEO: kcr = _keycode_replace_neo; break;
+		case OS::LATIN_KEYBOARD_COLEMAK: kcr = _keycode_replace_colemak; break;
 		default: return p_keycode;
 	}
 

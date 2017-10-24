@@ -2268,9 +2268,9 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	Vector<String> info = String(layout).split("+");
 	ERR_FAIL_INDEX_V(1, info.size(), LATIN_KEYBOARD_QWERTY);
 
-	/*if (info[1].find("colemak") != -1) {
+	if (info[1].find("colemak") != -1) {
 		return LATIN_KEYBOARD_COLEMAK;
-	} else*/ if (info[1].find("qwertz") != -1) {
+	} else if (info[1].find("qwertz") != -1) {
 		return LATIN_KEYBOARD_QWERTZ;
 	} else if (info[1].find("azerty") != -1) {
 		return LATIN_KEYBOARD_AZERTY;
