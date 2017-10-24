@@ -919,6 +919,10 @@ BulletPhysicsDirectSpaceState *SpaceBullet::get_direct_state() {
 	return direct_access;
 }
 
+btScalar calculateGodotCombinedRestitution(const btCollisionObject *body0, const btCollisionObject *body1) {
+	return MAX(body0->getRestitution(), body1->getRestitution());
+}
+
 void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	assert(NULL == broadphase);
 	assert(NULL == dispatcher);
@@ -940,6 +944,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	}
 	ghostPairCallback = bulletnew(btGhostPairCallback);
 	godotFilterCallback = bulletnew(GodotFilterCallback);
+	gCalculateCombinedRestitutionCallback = &calculateGodotCombinedRestitution;
 
 	dynamicsWorld->setWorldUserInfo(this);
 
