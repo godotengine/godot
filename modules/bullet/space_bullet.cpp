@@ -549,7 +549,43 @@ BulletPhysicsDirectSpaceState *SpaceBullet::get_direct_state() {
 }
 
 btScalar calculateGodotCombinedRestitution(const btCollisionObject *body0, const btCollisionObject *body1) {
-	return MAX(body0->getRestitution(), body1->getRestitution());
+
+	const PhysicsServer::CombineMode cm = static_cast<RigidBodyBullet *>(body0->getUserPointer())->get_restitution_combine_mode();
+
+	switch (cm) {
+		case PhysicsServer::COMBINE_MODE_INHERIT:
+			if (static_cast<RigidBodyBullet *>(body1->getUserPointer())->get_restitution_combine_mode() != PhysicsServer::COMBINE_MODE_INHERIT)
+				return calculateGodotCombinedRestitution(body1, body0);
+			// else use MAX [This is used when the two bodies doesn't use physical material]
+		case PhysicsServer::COMBINE_MODE_MAX:
+			return MAX(body0->getRestitution(), body1->getRestitution());
+		case PhysicsServer::COMBINE_MODE_MIN:
+			return MIN(body0->getRestitution(), body1->getRestitution());
+		case PhysicsServer::COMBINE_MODE_MULTIPLY:
+			return body0->getRestitution() * body1->getRestitution();
+		default: // Is always PhysicsServer::COMBINE_MODE_AVERAGE:
+			return (body0->getRestitution() + body1->getRestitution()) / 2;
+	}
+}
+
+btScalar calculateGodotCombinedFriction(const btCollisionObject *body0, const btCollisionObject *body1) {
+
+	const PhysicsServer::CombineMode cm = static_cast<RigidBodyBullet *>(body0->getUserPointer())->get_friction_combine_mode();
+
+	switch (cm) {
+		case PhysicsServer::COMBINE_MODE_INHERIT:
+			if (static_cast<RigidBodyBullet *>(body1->getUserPointer())->get_friction_combine_mode() != PhysicsServer::COMBINE_MODE_INHERIT)
+				return calculateGodotCombinedFriction(body1, body0);
+			// else use MULTIPLY [This is used when the two bodies doesn't use physical material]
+		case PhysicsServer::COMBINE_MODE_MULTIPLY:
+			return body0->getFriction() * body1->getFriction();
+		case PhysicsServer::COMBINE_MODE_MAX:
+			return MAX(body0->getFriction(), body1->getFriction());
+		case PhysicsServer::COMBINE_MODE_MIN:
+			return MIN(body0->getFriction(), body1->getFriction());
+		default: // Is always PhysicsServer::COMBINE_MODE_AVERAGE:
+			return (body0->getFriction() * body1->getFriction()) / 2;
+	}
 }
 
 void SpaceBullet::create_empty_world(bool p_create_soft_world) {
@@ -585,6 +621,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	ghostPairCallback = bulletnew(btGhostPairCallback);
 	godotFilterCallback = bulletnew(GodotFilterCallback);
 	gCalculateCombinedRestitutionCallback = &calculateGodotCombinedRestitution;
+	gCalculateCombinedFrictionCallback = &calculateGodotCombinedFriction;
 
 	dynamicsWorld->setWorldUserInfo(this);
 

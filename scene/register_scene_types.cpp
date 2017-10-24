@@ -192,6 +192,7 @@
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/physics_material.h"
 #endif
 
 static ResourceFormatLoaderTheme *resource_loader_theme = NULL;
@@ -519,6 +520,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<SpatialVelocityTracker>();
+
+	ClassDB::register_class<PhysicsMaterial>();
 #endif
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();

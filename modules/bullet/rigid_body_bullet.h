@@ -202,6 +202,9 @@ private:
 	bool can_sleep;
 	bool omit_forces_integration;
 
+	PhysicsServer::CombineMode restitution_combine_mode;
+	PhysicsServer::CombineMode friction_combine_mode;
+
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize
 	int maxCollisionsDetection;
@@ -296,6 +299,12 @@ public:
 
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
+
+	void set_combine_mode(const PhysicsServer::BodyParameter p_param, const PhysicsServer::CombineMode p_mode);
+	PhysicsServer::CombineMode get_combine_mode(PhysicsServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_restitution_combine_mode() const { return restitution_combine_mode; }
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;

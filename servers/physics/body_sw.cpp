@@ -423,6 +423,22 @@ void BodySW::_compute_area_gravity_and_dampenings(const AreaSW *p_area) {
 	area_angular_damp += p_area->get_angular_damp();
 }
 
+void BodySW::set_combine_mode(PhysicsServer::BodyParameter p_param, PhysicsServer::CombineMode p_mode) {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		bounce_combine_mode = p_mode;
+	} else {
+		friction_combine_mode = p_mode;
+	}
+}
+
+PhysicsServer::CombineMode BodySW::get_combine_mode(PhysicsServer::BodyParameter p_param) const {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		return bounce_combine_mode;
+	} else {
+		return friction_combine_mode;
+	}
+}
+
 void BodySW::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock) {
 	if (lock) {
 		locked_axis |= p_axis;

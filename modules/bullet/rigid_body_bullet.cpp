@@ -260,6 +260,8 @@ RigidBodyBullet::RigidBodyBullet() :
 		angularDamp(0),
 		can_sleep(true),
 		omit_forces_integration(false),
+		restitution_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
+		friction_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
 		force_integration_callback(NULL),
 		isTransformChanged(false),
 		previousActiveState(true),
@@ -752,6 +754,22 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 	Vector3 gVec;
 	B_TO_G(btBody->getAngularVelocity(), gVec);
 	return gVec;
+}
+
+void RigidBodyBullet::set_combine_mode(const PhysicsServer::BodyParameter p_param, const PhysicsServer::CombineMode p_mode) {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		restitution_combine_mode = p_mode;
+	} else {
+		friction_combine_mode = p_mode;
+	}
+}
+
+PhysicsServer::CombineMode RigidBodyBullet::get_combine_mode(PhysicsServer::BodyParameter p_param) const {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		return restitution_combine_mode;
+	} else {
+		return friction_combine_mode;
+	}
 }
 
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {

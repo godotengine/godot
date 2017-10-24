@@ -49,6 +49,8 @@ class BodySW : public CollisionObjectSW {
 	real_t mass;
 	real_t bounce;
 	real_t friction;
+	PhysicsServer::CombineMode bounce_combine_mode;
+	PhysicsServer::CombineMode friction_combine_mode;
 
 	real_t linear_damp;
 	real_t angular_damp;
@@ -297,6 +299,12 @@ public:
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
+
+	void set_combine_mode(PhysicsServer::BodyParameter p_param, PhysicsServer::CombineMode p_mode);
+	PhysicsServer::CombineMode get_combine_mode(PhysicsServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_bounce_combine_mode() const { return bounce_combine_mode; }
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock);
 	bool is_axis_locked(PhysicsServer::BodyAxis p_axis) const;

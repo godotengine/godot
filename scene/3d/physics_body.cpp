@@ -30,6 +30,7 @@
 
 #include "physics_body.h"
 
+#include "core/core_string_names.h"
 #include "engine.h"
 #include "method_bind_ext.gen.inc"
 #include "scene/scene_string_names.h"
@@ -178,28 +179,75 @@ PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 	collision_mask = 1;
 }
 
+#ifndef DISABLE_DEPRECATED
 void StaticBody::set_friction(real_t p_friction) {
+
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
-	friction = p_friction;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, friction);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_friction(p_friction);
+	_reload_physics_characteristics();
 }
+
 real_t StaticBody::get_friction() const {
 
-	return friction;
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 1;
+	}
+
+	return physics_material_override->get_friction();
 }
 
 void StaticBody::set_bounce(real_t p_bounce) {
 
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
-	bounce = p_bounce;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, bounce);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_bounce(p_bounce);
+	_reload_physics_characteristics();
 }
+
 real_t StaticBody::get_bounce() const {
 
-	return bounce;
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 0;
+	}
+
+	return physics_material_override->get_bounce();
+}
+#endif
+
+void StaticBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+	if (physics_material_override.is_valid()) {
+		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+
+	physics_material_override = p_physics_material_override;
+
+	if (physics_material_override.is_valid()) {
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+	_reload_physics_characteristics();
+}
+
+Ref<PhysicsMaterial> StaticBody::get_physics_material_override() const {
+	return physics_material_override;
 }
 
 void StaticBody::set_constant_linear_velocity(const Vector3 &p_vel) {
@@ -236,24 +284,39 @@ void StaticBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &StaticBody::set_bounce);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &StaticBody::get_bounce);
 
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody::get_physics_material_override);
+
+	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &StaticBody::_reload_physics_characteristics);
+
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody::remove_collision_exception_with);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
-
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_linear_velocity"), "set_constant_linear_velocity", "get_constant_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_angular_velocity"), "set_constant_angular_velocity", "get_constant_angular_velocity");
 }
 
 StaticBody::StaticBody() :
 		PhysicsBody(PhysicsServer::BODY_MODE_STATIC) {
-
-	bounce = 0;
-	friction = 1;
 }
 
-StaticBody::~StaticBody() {
+StaticBody::~StaticBody() {}
+
+void StaticBody::_reload_physics_characteristics() {
+	if (physics_material_override.is_null()) {
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, 1);
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, PhysicsServer::COMBINE_MODE_INHERIT);
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, PhysicsServer::COMBINE_MODE_INHERIT);
+	} else {
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce_combine_mode());
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction_combine_mode());
+	}
 }
 
 void RigidBody::_body_enter_tree(ObjectID p_id) {
@@ -550,28 +613,67 @@ real_t RigidBody::get_weight() const {
 	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 }
 
+#ifndef DISABLE_DEPRECATED
 void RigidBody::set_friction(real_t p_friction) {
 
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
-	friction = p_friction;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, friction);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_friction(p_friction);
+	_reload_physics_characteristics();
 }
 real_t RigidBody::get_friction() const {
 
-	return friction;
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+	if (physics_material_override.is_null()) {
+		return 1;
+	}
+
+	return physics_material_override->get_friction();
 }
 
 void RigidBody::set_bounce(real_t p_bounce) {
-
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
-	bounce = p_bounce;
-	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, bounce);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_bounce(p_bounce);
+	_reload_physics_characteristics();
 }
 real_t RigidBody::get_bounce() const {
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+	if (physics_material_override.is_null()) {
+		return 0;
+	}
 
-	return bounce;
+	return physics_material_override->get_bounce();
+}
+#endif
+
+void RigidBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+	if (physics_material_override.is_valid()) {
+		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+
+	physics_material_override = p_physics_material_override;
+
+	if (physics_material_override.is_valid()) {
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+	_reload_physics_characteristics();
+}
+
+Ref<PhysicsMaterial> RigidBody::get_physics_material_override() const {
+	return physics_material_override;
 }
 
 void RigidBody::set_gravity_scale(real_t p_gravity_scale) {
@@ -812,6 +914,11 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &RigidBody::set_bounce);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &RigidBody::get_bounce);
 
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody::get_physics_material_override);
+
+	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &RigidBody::_reload_physics_characteristics);
+
 	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &RigidBody::set_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_linear_velocity"), &RigidBody::get_linear_velocity);
 
@@ -865,6 +972,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_cd"), "set_use_continuous_collision_detection", "is_using_continuous_collision_detection");
@@ -903,9 +1011,7 @@ RigidBody::RigidBody() :
 
 	mode = MODE_RIGID;
 
-	bounce = 0;
 	mass = 1;
-	friction = 1;
 	max_contacts_reported = 0;
 	state = NULL;
 
@@ -929,6 +1035,21 @@ RigidBody::~RigidBody() {
 	if (contact_monitor)
 		memdelete(contact_monitor);
 }
+
+void RigidBody::_reload_physics_characteristics() {
+	if (physics_material_override.is_null()) {
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, 1);
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, PhysicsServer::COMBINE_MODE_INHERIT);
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, PhysicsServer::COMBINE_MODE_INHERIT);
+	} else {
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce_combine_mode());
+		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction_combine_mode());
+	}
+}
+
 //////////////////////////////////////////////////////
 //////////////////////////
 
@@ -2228,6 +2349,7 @@ void PhysicalBone::set_bounce(real_t p_bounce) {
 	bounce = p_bounce;
 	PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, bounce);
 }
+
 real_t PhysicalBone::get_bounce() const {
 
 	return bounce;
