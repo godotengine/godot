@@ -2412,6 +2412,10 @@ bool VisualScriptLanguage::has_named_classes() const {
 
 	return false;
 }
+bool VisualScriptLanguage::supports_builtin_mode() const {
+
+	return true;
+}
 int VisualScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 
 	return -1;

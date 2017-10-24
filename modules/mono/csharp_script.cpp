@@ -286,11 +286,13 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "//    }\n"
 							 "//}\n";
 
-	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name).replace("%CLASS_NAME%", p_class_name);
+	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name)
+							  .replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
 	script->set_source_code(script_template);
+	script->set_name(p_class_name);
 
 	return script;
 }
@@ -302,7 +304,12 @@ Script *CSharpLanguage::create_script() const {
 
 bool CSharpLanguage::has_named_classes() const {
 
-	return true;
+	return false;
+}
+
+bool CSharpLanguage::supports_builtin_mode() const {
+
+	return false;
 }
 
 static String variant_type_to_managed_name(const String &p_var_type_name) {

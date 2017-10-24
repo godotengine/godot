@@ -131,6 +131,11 @@ bool GDScriptLanguage::has_named_classes() const {
 	return false;
 }
 
+bool GDScriptLanguage::supports_builtin_mode() const {
+
+	return true;
+}
+
 int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 
 	GDTokenizerText tokenizer;
