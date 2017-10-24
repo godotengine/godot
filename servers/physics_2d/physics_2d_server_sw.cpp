@@ -789,6 +789,22 @@ real_t Physics2DServerSW::body_get_param(RID p_body, BodyParameter p_param) cons
 	return body->get_param(p_param);
 };
 
+void Physics2DServerSW::body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_combine_mode(p_param, p_mode);
+}
+
+Physics2DServer::CombineMode Physics2DServerSW::body_get_combine_mode(RID p_body, BodyParameter p_param) const {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, COMBINE_MODE_INHERIT);
+
+	return body->get_combine_mode(p_param);
+}
+
 void Physics2DServerSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 
 	Body2DSW *body = body_owner.get(p_body);

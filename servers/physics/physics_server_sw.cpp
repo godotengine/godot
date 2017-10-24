@@ -696,6 +696,20 @@ real_t PhysicsServerSW::body_get_param(RID p_body, BodyParameter p_param) const 
 	return body->get_param(p_param);
 };
 
+void PhysicsServerSW::body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_combine_mode(p_param, p_mode);
+}
+
+PhysicsServer::CombineMode PhysicsServerSW::body_get_combine_mode(RID p_body, BodyParameter p_param) const {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, COMBINE_MODE_INHERIT);
+
+	return body->get_combine_mode(p_param);
+}
+
 void PhysicsServerSW::body_set_kinematic_safe_margin(RID p_body, real_t p_margin) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

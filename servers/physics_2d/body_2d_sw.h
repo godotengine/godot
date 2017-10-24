@@ -54,6 +54,8 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t mass;
 	real_t bounce;
 	real_t friction;
+	Physics2DServer::CombineMode bounce_combine_mode;
+	Physics2DServer::CombineMode friction_combine_mode;
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
@@ -255,6 +257,12 @@ public:
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
 	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
+
+	void set_combine_mode(Physics2DServer::BodyParameter p_param, Physics2DServer::CombineMode p_mode);
+	Physics2DServer::CombineMode get_combine_mode(Physics2DServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ Physics2DServer::CombineMode get_bounce_combine_mode() const { return bounce_combine_mode; }
+	_FORCE_INLINE_ Physics2DServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
