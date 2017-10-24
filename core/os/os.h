@@ -409,6 +409,7 @@ public:
 		LATIN_KEYBOARD_QZERTY,
 		LATIN_KEYBOARD_DVORAK,
 		LATIN_KEYBOARD_NEO,
+		LATIN_KEYBOARD_COLEMAK,
 	};
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;

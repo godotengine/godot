@@ -413,6 +413,7 @@ String _OS::get_latin_keyboard_variant() const {
 		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
 		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
 		case OS::LATIN_KEYBOARD_NEO: return "NEO";
+		case OS::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
 		default: return "ERROR";
 	}
 }
