@@ -957,6 +957,12 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
+String TranslationServer::get_locale_name(const String &p_locale) const {
+
+	if (!locale_name_map.has(p_locale)) return String();
+	return locale_name_map[p_locale];
+}
+
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 
 	translations.insert(p_translation);
@@ -1122,6 +1128,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &TranslationServer::get_locale);
 
+	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
+
 	ClassDB::bind_method(D_METHOD("translate", "message"), &TranslationServer::translate);
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
@@ -1147,4 +1155,9 @@ TranslationServer::TranslationServer()
 	: locale("en"),
 	  enabled(true) {
 	singleton = this;
+
+	for (int i = 0; locale_list[i]; ++i) {
+
+		locale_name_map.insert(locale_list[i], locale_names[i]);
+	}
 }

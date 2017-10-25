@@ -73,6 +73,8 @@ class TranslationServer : public Object {
 	Set<Ref<Translation> > translations;
 	Ref<Translation> tool_translation;
 
+	Map<String, String> locale_name_map;
+
 	bool enabled;
 
 	static TranslationServer *singleton;
@@ -90,6 +92,8 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+
+	String get_locale_name(const String &p_locale) const;
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);
