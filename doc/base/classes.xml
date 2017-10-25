@@ -15819,7 +15819,7 @@
 			<argument index="1" name="ip_type" type="int" default="3">
 			</argument>
 			<description>
-				Resolve a given hostname, blocking. Resolved addresses is returned as an IPv4 or IPv6 depending on "ip_type".
+				Resolve a given hostname, blocking. Addresses are returned as an Array of IPv4 or IPv6 depending on "ip_type".
 			</description>
 		</method>
 		<method name="resolve_hostname_queue_item">

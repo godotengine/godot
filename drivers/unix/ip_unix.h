@@ -38,7 +38,7 @@ class IP_Unix : public IP {
 	OBJ_TYPE(IP_Unix, IP);
 
 	static IP *_create_unix();
-	
+
 public:
 	virtual void _resolve_hostname(List<IP_Address> & r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const;
 	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;

@@ -71,9 +71,9 @@ protected:
 	static void _bind_methods();
 
 	Array _get_local_addresses() const;
-	
+
 	static IP *(*_create)();
-	
+
 public:
 	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
 	Array resolve_hostname_addresses(const String &p_hostname, Type p_type = TYPE_ANY);
