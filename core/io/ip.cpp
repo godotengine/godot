@@ -101,7 +101,7 @@ struct _IP_ResolverPrivate {
 		}
 	}
 
-	HashMap<String, List<IP_Address>> cache;
+	HashMap<String, List<IP_Address> > cache;
 
 	static String get_cache_key(String p_hostname, IP::Type p_type) {
 		return itos(p_type) + p_hostname;
