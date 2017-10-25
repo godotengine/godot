@@ -1288,7 +1288,8 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		return true;
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		return !to_dir.empty();
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
@@ -1381,40 +1382,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		Ref<Resource> res = drag_data["resource"];
-
-		if (!res.is_valid()) {
-			return;
-		}
-
-		if (p_from == tree) {
-
-			TreeItem *ti = tree->get_item_at_position(p_point);
-			if (!ti)
-				return;
-
-			String fpath = ti->get_metadata(0);
-			if (fpath == String())
-				return;
-
-			EditorNode::get_singleton()->save_resource_as(res, fpath);
-			return;
-		}
-
-		if (p_from == files) {
-			String save_path = path;
-
-			int at_pos = files->get_item_at_position(p_point);
-			if (at_pos != -1) {
-				String to_dir = files->get_item_metadata(at_pos);
-				if (to_dir.ends_with("/")) {
-					save_path = to_dir;
-					if (save_path != "res://")
-						save_path = save_path.substr(0, save_path.length() - 1);
-				}
-			}
-
-			EditorNode::get_singleton()->save_resource_as(res, save_path);
-			return;
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		if (res.is_valid() && !to_dir.empty()) {
+			EditorNode::get_singleton()->push_item(res.ptr());
+			EditorNode::get_singleton()->save_resource_as(res, to_dir);
 		}
 	}
 
