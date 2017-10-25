@@ -209,6 +209,7 @@ private:
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	String _get_drag_target_folder(const Point2 &p_point, Control *p_from) const;
 
 	void _preview_invalidated(const String &p_path);
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
