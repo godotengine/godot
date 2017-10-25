@@ -31,6 +31,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="bbcode" type="String">
+				Adds BBCode to the text label.
 			</argument>
 			<description>
 			</description>
@@ -39,24 +40,28 @@
 			<return type="void">
 			</return>
 			<description>
+				Clears the label's text.
 			</description>
 		</method>
 		<method name="get_bbcode" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns label's BBCode.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of lines in the text.
 			</description>
 		</method>
 		<method name="get_percent_visible" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the text's visibility as a floating point value between 0.0 and 1.0.
 			</description>
 		</method>
 		<method name="get_tab_size" qualifiers="const">
@@ -69,13 +74,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the raw text, stripping out the formatting information.
+				Returns the label's text with the formatting removed.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the total number of characters.
 			</description>
 		</method>
 		<method name="get_v_scroll">
@@ -94,6 +100,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of visible lines.
 			</description>
 		</method>
 		<method name="is_meta_underlined" qualifiers="const">
@@ -112,6 +119,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if active scrolling is enabled.
 			</description>
 		</method>
 		<method name="is_scroll_following" qualifiers="const">
@@ -124,19 +132,21 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if selecting the text inside this richtext is allowed.
+				Returns [code]true[/code] if the label's text can be selected.
 			</description>
 		</method>
 		<method name="is_using_bbcode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the label has BBCode.
 			</description>
 		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
 			<description>
+				Adds a newline to the end of the rich text.
 			</description>
 		</method>
 		<method name="parse_bbcode">
@@ -243,6 +253,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Sets the BBCode text to the label.
 			</description>
 		</method>
 		<method name="set_meta_underline">
@@ -267,6 +278,7 @@
 			<argument index="0" name="percent_visible" type="float">
 			</argument>
 			<description>
+				Sets the text's visibility. Takes a floating point value between 0.0 and 1.0.
 			</description>
 		</method>
 		<method name="set_scroll_active">
@@ -291,7 +303,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set to true if selecting the text inside this richtext is allowed.
+				If [code]true[/code] text can be selected.
 			</description>
 		</method>
 		<method name="set_tab_size">
@@ -341,14 +353,19 @@
 	</methods>
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
+			If [code]true[/code] the label uses BBCode formatting. Default value: [code]false[/code].
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
+			The label's text in BBCode format.
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
+			If [code]true[/code] the label uses the custom font color. Default value: [code]false[/code].
 		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
+			The text's visibility, as a [float] between 0.0 and 1.0.
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
+			The restricted number of characters to display in the label.
 		</member>
 	</members>
 	<signals>
