@@ -1278,7 +1278,7 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "proximity_fade_distacne" && !proximity_fade_enabled) {
+	if (property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
 		property.usage = 0;
 	}
 
