@@ -75,7 +75,7 @@
 		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
 		</member>
 		<member name="gain" type="float" setter="set_gain" getter="get_gain">
-			Gain amount of the frequences after the filter.
+			Gain amount of the frequencies after the filter.
 		</member>
 		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
 			Amount of boost in the overtones near the cutoff frequency.
