@@ -348,10 +348,13 @@
 			If [code]true[/code] the camera only moves when reaching the vertical drag margins. If [code]false[/code] the camera moves vertically regardless of margins. Default value: [code]true[/code].
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled">
+			If [code]true[/code] draws the camera's drag margin rectangle in the editor. Default value: [code]false[/code]
 		</member>
 		<member name="editor_draw_limits" type="bool" setter="set_limit_drawing_enabled" getter="is_limit_drawing_enabled">
+			If [code]true[/code] draws the camera's limits rectangle in the editor. Default value: [code]true[/code]
 		</member>
 		<member name="editor_draw_screen" type="bool" setter="set_screen_drawing_enabled" getter="is_screen_drawing_enabled">
+			If [code]true[/code] draws the camera's screen rectangle in the editor. Default value: [code]false[/code]
 		</member>
 		<member name="limit_bottom" type="int" setter="set_limit" getter="get_limit">
 			Bottom scroll limit in pixels. The camera stops moving when reaching this value.
@@ -363,6 +366,7 @@
 			Right scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled">
+			If [code]true[/code] the camera smoothly stops when reaches its limits. Default value: [code]false[/code]
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit">
 			Top scroll limit in pixels. The camera stops moving when reaching this value.
@@ -371,13 +375,13 @@
 			The camera's offset, useful for looking around or camera shake animations.
 		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
-			If [code]true[/code] the camera can rotate during gameplay. Default value: [code]false[/code].
+			If [code]true[/code] the camera rotates with the target. Default value: [code]false[/code]
 		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled">
-			If [code]true[/code] the camera's velocity changes gradually, preventing sudden starts and stops. Default value: [code]false[/code].
+			If [code]true[/code] the camera smoothly moves towards the target at [member smoothing_speed]. Default value: [code]false[/code]
 		</member>
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing">
-			How fast the camera's velocity changes if smoothing is enabled.
+			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code]
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom">
 			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2x zoom in, and [code]Vector2(4, 4)[/code] for a 4x zoom out.
