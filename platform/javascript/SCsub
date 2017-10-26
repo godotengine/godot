@@ -7,6 +7,7 @@ javascript_files = [
     "audio_driver_javascript.cpp",
     "javascript_main.cpp",
     "power_javascript.cpp",
+    "http_client_javascript.cpp",
     "javascript_eval.cpp",
 ]
 
@@ -41,6 +42,12 @@ else:
 
 js = env.Program(['#bin/godot'] + implicit_targets, javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js')[0];
 zip_files.append(InstallAs(zip_dir.File('godot.js'), js))
+
+js_libraries = []
+js_libraries.append(env.File('http_request.js'))
+for lib in js_libraries:
+    env.Append(LINKFLAGS=['--js-library', lib.path])
+env.Depends(js, js_libraries)
 
 postjs = env.File('engine.js')
 env.Depends(js, [prejs, postjs])
