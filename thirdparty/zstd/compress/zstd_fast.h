@@ -8,8 +8,8 @@
  * You may select, at your option, one of the above-listed licenses.
  */
 
-#ifndef ZSTD_OPT_H
-#define ZSTD_OPT_H
+#ifndef ZSTD_FAST_H
+#define ZSTD_FAST_H
 
 #include "zstd_compress.h"
 
@@ -17,14 +17,14 @@
 extern "C" {
 #endif
 
-size_t ZSTD_compressBlock_btopt(ZSTD_CCtx* ctx, const void* src, size_t srcSize);
-size_t ZSTD_compressBlock_btultra(ZSTD_CCtx* ctx, const void* src, size_t srcSize);
-
-size_t ZSTD_compressBlock_btopt_extDict(ZSTD_CCtx* ctx, const void* src, size_t srcSize);
-size_t ZSTD_compressBlock_btultra_extDict(ZSTD_CCtx* ctx, const void* src, size_t srcSize);
+void ZSTD_fillHashTable(ZSTD_CCtx* zc, const void* end, const U32 mls);
+size_t ZSTD_compressBlock_fast(ZSTD_CCtx* ctx,
+                         const void* src, size_t srcSize);
+size_t ZSTD_compressBlock_fast_extDict(ZSTD_CCtx* ctx,
+                         const void* src, size_t srcSize);
 
 #if defined (__cplusplus)
 }
 #endif
 
-#endif /* ZSTD_OPT_H */
+#endif /* ZSTD_FAST_H */

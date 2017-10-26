@@ -5,6 +5,7 @@
  * This source code is licensed under both the BSD-style license (found in the
  * LICENSE file in the root directory of this source tree) and the GPLv2 (found
  * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
  */
 
 #ifndef ZSTD_ERRORS_H_398273423
@@ -62,9 +63,10 @@ typedef enum {
   ZSTD_error_memory_allocation = 64,
   ZSTD_error_dstSize_tooSmall = 70,
   ZSTD_error_srcSize_wrong    = 72,
+  /* following error codes are not stable and may be removed or changed in a future version */
   ZSTD_error_frameIndex_tooLarge = 100,
   ZSTD_error_seekableIO          = 102,
-  ZSTD_error_maxCode = 120  /* never EVER use this value directly, it may change in future versions! Use ZSTD_isError() instead */
+  ZSTD_error_maxCode = 120  /* never EVER use this value directly, it can change in future versions! Use ZSTD_isError() instead */
 } ZSTD_ErrorCode;
 
 /*! ZSTD_getErrorCode() :

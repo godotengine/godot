@@ -5,6 +5,7 @@
  * This source code is licensed under both the BSD-style license (found in the
  * LICENSE file in the root directory of this source tree) and the GPLv2 (found
  * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
  */
 
 
@@ -15,8 +16,7 @@
 #include <stdlib.h>      /* malloc, calloc, free */
 #include <string.h>      /* memset */
 #include "error_private.h"
-#define ZSTD_STATIC_LINKING_ONLY
-#include "zstd.h"
+#include "zstd_internal.h"
 
 
 /*-****************************************
