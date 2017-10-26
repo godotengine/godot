@@ -169,24 +169,6 @@
 				Sends body raw, as a byte array, does not encode it in any way.
 			</description>
 		</method>
-		<method name="send_body_data">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="body" type="PoolByteArray">
-			</argument>
-			<description>
-				Stub function
-			</description>
-		</method>
-		<method name="send_body_text">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="body" type="String">
-			</argument>
-			<description>
-				Stub function
-			</description>
-		</method>
 		<method name="set_blocking_mode">
 			<return type="void">
 			</return>
