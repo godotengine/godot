@@ -103,8 +103,6 @@ public:
 
 	bool is_tool() const { return _tool; }
 
-	virtual String get_node_type() const;
-
 	virtual ScriptLanguage *get_language() const;
 
 	virtual bool has_script_signal(const StringName &p_signal) const;

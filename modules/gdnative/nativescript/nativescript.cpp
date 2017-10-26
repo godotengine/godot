@@ -270,10 +270,6 @@ bool NativeScript::is_tool() const {
 	return false;
 }
 
-String NativeScript::get_node_type() const {
-	return ""; // NOTE(karroffel): uhm?
-}
-
 ScriptLanguage *NativeScript::get_language() const {
 	return NativeScriptLanguage::get_singleton();
 }

@@ -138,7 +138,6 @@ public:
 
 	virtual bool is_tool() const { return tool; }
 	virtual Ref<Script> get_base_script() const;
-	virtual String get_node_type() const;
 	virtual ScriptLanguage *get_language() const;
 
 	/* TODO */ virtual void get_script_method_list(List<MethodInfo> *p_list) const {}

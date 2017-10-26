@@ -1720,11 +1720,6 @@ Error CSharpScript::reload(bool p_keep_state) {
 	return ERR_FILE_MISSING_DEPENDENCIES;
 }
 
-String CSharpScript::get_node_type() const {
-
-	return ""; // ?
-}
-
 ScriptLanguage *CSharpScript::get_language() const {
 
 	return CSharpLanguage::get_singleton();

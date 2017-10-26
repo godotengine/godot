@@ -974,11 +974,6 @@ bool VisualScript::is_tool() const {
 	return false;
 }
 
-String VisualScript::get_node_type() const {
-
-	return String();
-}
-
 ScriptLanguage *VisualScript::get_language() const {
 
 	return VisualScriptLanguage::singleton;
