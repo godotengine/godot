@@ -5,4 +5,4 @@ Import('env')
 env.add_source_files(env.core_sources, "*.cpp")
 
 Export('env')
-env.Append(CCFLAGS="-DZSTD_STATIC_LINKING_ONLY")
+
