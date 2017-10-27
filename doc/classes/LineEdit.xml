@@ -17,14 +17,14 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Append text at cursor, scrolling the [code]LineEdit[/code] when needed.
+				Adds [code]text[/code] after the cursor. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clear the [code]LineEdit[/code] text.
+				Erases the [LineEdit] text.
 			</description>
 		</method>
 		<method name="cursor_get_blink_enabled" qualifiers="const">
@@ -70,7 +70,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the cursor position inside the [code]LineEdit[/code].
+				Returns the cursor position inside the [code]LineEdit[/code].
 			</description>
 		</method>
 		<method name="get_expand_to_text_length" qualifiers="const">
@@ -90,7 +90,7 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Return the [PopupMenu] of this [code]LineEdit[/code].
+				Returns the [PopupMenu] of this [code]LineEdit[/code]. By default, this menu is displayed when right-clicking on the [LineEdit].
 			</description>
 		</method>
 		<method name="get_placeholder" qualifiers="const">
@@ -134,7 +134,7 @@
 			<argument index="0" name="option" type="int">
 			</argument>
 			<description>
-				Execute a given action as defined in the MENU_* enum.
+				Executes a given action as defined in the MENU_* enum.
 			</description>
 		</method>
 		<method name="select">
@@ -145,11 +145,12 @@
 			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
-				Select the text inside [code]LineEdit[/code] by the given character positions. [code]from[/code] is default to the beginning. [code]to[/code] is default to the end.
+				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblock]
-				select()     # select all
-				select(5)    # select from the fifth character to the end.
-				select(2, 5) # select from the second to the fifth character.
+				text = "Welcome"
+				select()     # Welcome
+				select(4)    # ome
+				select(2, 5) # lco
 				[/codeblock]
 			</description>
 		</method>
@@ -157,7 +158,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Select the whole string.
+				Selects the whole [String].
 			</description>
 		</method>
 		<method name="set_align">
@@ -175,7 +176,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Set the cursor position inside the [code]LineEdit[/code], causing it to scroll if needed.
+				Sets the cursor position inside the [code]LineEdit[/code]. The text may scroll if needed.
 			</description>
 		</method>
 		<method name="set_editable">
@@ -243,26 +244,37 @@
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
+			Text alignment as defined in the ALIGN_* enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
+			If [code]true[/code] the caret (visual cursor) blinks.
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
+			Duration (in seconds) of a caret's blinking cycle.
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
+			If [code]false[/code] existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="expand_to_len" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
+			If [code]true[/code] the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
+			Defines how the [LineEdit] can grab focus (Keyboard and mouse, only keyboard, or none). See [code]enum FocusMode[/code] in [Control] for details.
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length">
+			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 		</member>
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha">
+			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
 		</member>
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder">
+			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret">
+			If [code]true[/code] every character is shown as "*".
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
+			String value of the [LineEdit].
 		</member>
 	</members>
 	<signals>
@@ -270,47 +282,47 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				When the text changes, this signal is emitted.
+				Emitted when the text changes.
 			</description>
 		</signal>
 		<signal name="text_entered">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				This signal is emitted when the user presses KEY_ENTER on the [code]LineEdit[/code]. This signal is often used as an alternate confirmation mechanism in dialogs.
+				Emitted when the user presses KEY_ENTER on the [code]LineEdit[/code].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0">
-			Align left.
+			Aligns the text on the left hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_CENTER" value="1">
-			Align center.
+			Centers the text in the middle of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2">
-			Align right.
+			Aligns the text on the right hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_FILL" value="3">
-			Align fill.
+			Stretches whitespaces to fit the [LineEdit]'s width.
 		</constant>
 		<constant name="MENU_CUT" value="0">
-			Cut (Copy and clear).
+			Cuts (Copies and clears) the selected text.
 		</constant>
 		<constant name="MENU_COPY" value="1">
-			Copy the selected text.
+			Copies the selected text.
 		</constant>
 		<constant name="MENU_PASTE" value="2">
-			Paste the clipboard text over the selected text.
+			Pastes the clipboard text over the selected text (or at the cursor's position).
 		</constant>
 		<constant name="MENU_CLEAR" value="3">
-			Clear the text.
+			Erases the whole [Linedit] text.
 		</constant>
 		<constant name="MENU_SELECT_ALL" value="4">
-			Select all text.
+			Selects the whole [Linedit] text.
 		</constant>
 		<constant name="MENU_UNDO" value="5">
-			Undo an action.
+			Undoes the previous action.
 		</constant>
 		<constant name="MENU_MAX" value="6">
 		</constant>
