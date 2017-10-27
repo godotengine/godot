@@ -5,6 +5,7 @@
  * This source code is licensed under both the BSD-style license (found in the
  * LICENSE file in the root directory of this source tree) and the GPLv2 (found
  * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
  */
 
 #ifndef POOL_H
@@ -16,6 +17,7 @@ extern "C" {
 
 
 #include <stddef.h>   /* size_t */
+#include "zstd_internal.h"   /* ZSTD_customMem */
 
 typedef struct POOL_ctx_s POOL_ctx;
 
@@ -26,6 +28,8 @@ typedef struct POOL_ctx_s POOL_ctx;
  * @return : POOL_ctx pointer on success, else NULL.
 */
 POOL_ctx *POOL_create(size_t numThreads, size_t queueSize);
+
+POOL_ctx *POOL_create_advanced(size_t numThreads, size_t queueSize, ZSTD_customMem customMem);
 
 /*! POOL_free() :
     Free a thread pool returned by POOL_create().

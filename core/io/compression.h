@@ -38,6 +38,8 @@ public:
 	static int zlib_level;
 	static int gzip_level;
 	static int zstd_level;
+	static bool zstd_long_distance_matching;
+	static int zstd_window_log_size;
 
 	enum Mode {
 		MODE_FASTLZ,

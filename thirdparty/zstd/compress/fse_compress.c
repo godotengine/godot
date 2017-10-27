@@ -461,6 +461,7 @@ static unsigned FSE_minTableLog(size_t srcSize, unsigned maxSymbolValue)
     U32 minBitsSrc = BIT_highbit32((U32)(srcSize - 1)) + 1;
     U32 minBitsSymbols = BIT_highbit32(maxSymbolValue) + 2;
     U32 minBits = minBitsSrc < minBitsSymbols ? minBitsSrc : minBitsSymbols;
+    assert(srcSize > 1); /* Not supported, RLE should be used instead */
     return minBits;
 }
 
@@ -469,6 +470,7 @@ unsigned FSE_optimalTableLog_internal(unsigned maxTableLog, size_t srcSize, unsi
     U32 maxBitsSrc = BIT_highbit32((U32)(srcSize - 1)) - minus;
     U32 tableLog = maxTableLog;
     U32 minBits = FSE_minTableLog(srcSize, maxSymbolValue);
+    assert(srcSize > 1); /* Not supported, RLE should be used instead */
     if (tableLog==0) tableLog = FSE_DEFAULT_TABLELOG;
     if (maxBitsSrc < tableLog) tableLog = maxBitsSrc;   /* Accuracy can be reduced */
     if (minBits > tableLog) tableLog = minBits;   /* Need a minimum to safely represent all symbol values */
@@ -580,7 +582,7 @@ size_t FSE_normalizeCount (short* normalizedCounter, unsigned tableLog,
     if (tableLog > FSE_MAX_TABLELOG) return ERROR(tableLog_tooLarge);   /* Unsupported size */
     if (tableLog < FSE_minTableLog(total, maxSymbolValue)) return ERROR(GENERIC);   /* Too small tableLog, compression potentially impossible */
 
-    {   U32 const rtbTable[] = {     0, 473195, 504333, 520860, 550000, 700000, 750000, 830000 };
+    {   static U32 const rtbTable[] = {     0, 473195, 504333, 520860, 550000, 700000, 750000, 830000 };
         U64 const scale = 62 - tableLog;
         U64 const step = ((U64)1<<62) / total;   /* <== here, one division ! */
         U64 const vStep = 1ULL<<(scale-20);
