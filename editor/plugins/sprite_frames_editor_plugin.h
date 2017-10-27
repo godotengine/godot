@@ -44,6 +44,7 @@ class SpriteFramesEditor : public PanelContainer {
 
 	Button *load;
 	Button *_delete;
+	Button *copy;
 	Button *paste;
 	Button *empty;
 	Button *empty2;
@@ -72,6 +73,7 @@ class SpriteFramesEditor : public PanelContainer {
 	void _load_pressed();
 	void _load_scene_pressed();
 	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+	void _copy_pressed();
 	void _paste_pressed();
 	void _empty_pressed();
 	void _empty2_pressed();
