@@ -698,7 +698,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			field_names.push_back("x");
 			field_names.push_back("y");
-			config_value_editors(2, 2, 10, field_names);
+			config_value_editors(2, 2, 17, field_names);
 			Vector2 vec = v;
 			value_editor[0]->set_text(String::num(vec.x));
 			value_editor[1]->set_text(String::num(vec.y));
@@ -709,7 +709,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("y");
 			field_names.push_back("w");
 			field_names.push_back("h");
-			config_value_editors(4, 4, 10, field_names);
+			config_value_editors(4, 4, 17, field_names);
 			Rect2 r = v;
 			value_editor[0]->set_text(String::num(r.position.x));
 			value_editor[1]->set_text(String::num(r.position.y));
@@ -721,7 +721,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("x");
 			field_names.push_back("y");
 			field_names.push_back("z");
-			config_value_editors(3, 3, 10, field_names);
+			config_value_editors(3, 3, 17, field_names);
 			Vector3 vec = v;
 			value_editor[0]->set_text(String::num(vec.x));
 			value_editor[1]->set_text(String::num(vec.y));
@@ -733,7 +733,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("y");
 			field_names.push_back("z");
 			field_names.push_back("d");
-			config_value_editors(4, 4, 10, field_names);
+			config_value_editors(4, 4, 17, field_names);
 			Plane plane = v;
 			value_editor[0]->set_text(String::num(plane.normal.x));
 			value_editor[1]->set_text(String::num(plane.normal.y));
@@ -747,7 +747,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("y");
 			field_names.push_back("z");
 			field_names.push_back("w");
-			config_value_editors(4, 4, 10, field_names);
+			config_value_editors(4, 4, 17, field_names);
 			Quat q = v;
 			value_editor[0]->set_text(String::num(q.x));
 			value_editor[1]->set_text(String::num(q.y));
@@ -763,7 +763,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("sx");
 			field_names.push_back("sy");
 			field_names.push_back("sz");
-			config_value_editors(6, 3, 16, field_names);
+			config_value_editors(6, 3, 25, field_names);
 
 			Rect3 aabb = v;
 			value_editor[0]->set_text(String::num(aabb.position.x));
@@ -782,7 +782,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("yy");
 			field_names.push_back("ox");
 			field_names.push_back("oy");
-			config_value_editors(6, 2, 16, field_names);
+			config_value_editors(6, 2, 25, field_names);
 
 			Transform2D basis = v;
 			for (int i = 0; i < 6; i++) {
@@ -802,7 +802,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("zx");
 			field_names.push_back("zy");
 			field_names.push_back("zz");
-			config_value_editors(9, 3, 16, field_names);
+			config_value_editors(9, 3, 25, field_names);
 
 			Basis basis = v;
 			for (int i = 0; i < 9; i++) {
@@ -825,7 +825,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("zy");
 			field_names.push_back("zz");
 			field_names.push_back("zo");
-			config_value_editors(12, 4, 16, field_names);
+			config_value_editors(12, 4, 25, field_names);
 
 			Transform tr = v;
 			for (int i = 0; i < 9; i++) {
@@ -1805,9 +1805,9 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 			value_editor[i]->show();
 			value_label[i]->show();
 			value_label[i]->set_text(i < p_strings.size() ? p_strings[i] : String(""));
+			value_label[i]->set_position(Point2(m + c * (w + m + p_label_w), m + r * (h + m)));
 			value_editor[i]->set_position(Point2(m + p_label_w + c * (w + m + p_label_w), m + r * (h + m)));
 			value_editor[i]->set_size(Size2(w, h));
-			value_label[i]->set_position(Point2(m + c * (w + m + p_label_w), m + r * (h + m)));
 			value_editor[i]->set_editable(!read_only);
 		} else {
 			value_editor[i]->hide();
