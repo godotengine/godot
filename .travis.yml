@@ -6,45 +6,29 @@ sudo: false
 
 cache: ccache
 
-compiler:
-  - gcc
-  - clang
-
-os:
-  - linux
-  - osx
-
-env:
-  - GODOT_TARGET=iphone
-  - GODOT_TARGET=osx
-  - GODOT_TARGET=x11
-  #- GODOT_TARGET=android
-  #- GODOT_TARGET=windows
-
 matrix:
   include:
     - env: STATIC_CHECKS=yes
-  exclude:
-    - os: linux
-      env: GODOT_TARGET=iphone
-    - os: linux
-      env: GODOT_TARGET=osx
-    - os: linux
-      env: GODOT_TARGET=android
-    - os: osx
-      env: GODOT_TARGET=x11
-    - os: osx
-      env: GODOT_TARGET=windows
-    - compiler: gcc
-      env: GODOT_TARGET=iphone
-    - compiler: gcc
-      env: GODOT_TARGET=osx
-    - compiler: clang
-      env: GODOT_TARGET=android
-    - compiler: clang
-      env: GODOT_TARGET=windows
-    - compiler: clang
-      env: GODOT_TARGET=x11
+      os: linux
+      compiler: clang
+    - env: GODOT_TARGET=x11 TOOLS=yes
+      os: linux
+      compiler: gcc
+    - env: GODOT_TARGET=x11 TOOLS=no
+      os: linux
+      compiler: clang
+    #- env: GODOT_TARGET=windows TOOLS=yes
+    #  os: linux
+    #  compiler: gcc
+    - env: GODOT_TARGET=osx TOOLS=yes
+      os: osx
+      compiler: clang
+    #- env: GODOT_TARGET=android TOOLS=no
+    #  os: osx
+    #  compiler: clang
+    #- env: GODOT_TARGET=iphone TOOLS=no
+    #  os: osx
+    #  compiler: clang
 
 addons:
   apt:
@@ -92,5 +76,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
     fi
