@@ -1767,18 +1767,18 @@ void CustomPropertyEditor::_focus_exit() {
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
 
 	int w = 100;
-	int h = 18;
+	int h = 60;
 	int m = 5;
 
-	set_size(Size2(w, m * 2 + (h + m) * p_strings.size()));
+	set_size(Size2((m * 2 + w) * p_strings.size() - m, h));
 
 	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
 
 		if (i < p_strings.size()) {
 			action_buttons[i]->show();
 			action_buttons[i]->set_text(p_strings[i]);
-			action_buttons[i]->set_position(Point2(m, m + i * (h + m)));
-			action_buttons[i]->set_size(Size2(w - m * 2, h));
+			action_buttons[i]->set_position(Point2(m + i * (w + m), m));
+			action_buttons[i]->set_size(Size2(w, h - m * 2));
 			action_buttons[i]->set_flat(true);
 		} else {
 			action_buttons[i]->hide();
