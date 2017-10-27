@@ -30,18 +30,123 @@
 /*************************************************************************/
 
 #include "godot_collision_configuration.h"
+#include "thirdparty\Bullet\src\BulletCollision\BroadphaseCollision\btBroadphaseProxy.h"
+
+GodotRayConvexAlgorithm::GodotRayConvexAlgorithm(btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, btConvexPenetrationDepthSolver *pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold, bool isSwapped)
+	: btConvexConvexAlgorithm(mf, ci, body0Wrap, body1Wrap, pdSolver, numPerturbationIterations, minimumPointsPerturbationThreshold), m_isSwapped(isSwapped) {
+}
+
+void GodotRayConvexAlgorithm::processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut) {
+	btConvexConvexAlgorithm::processCollision(body0Wrap, body1Wrap, dispatchInfo, resultOut);
+
+	btVector3 rayNormal(0, 1, 0);
+	if (m_isSwapped) {
+		rayNormal *= -1;
+	}
+
+	// Clamping all lateral contacts
+	for (int x = resultOut->getPersistentManifold()->getNumContacts() - 1; 0 <= x; --x) {
+		resultOut->getPersistentManifold()->getContactPoint(x).m_normalWorldOnB = rayNormal;
+	}
+}
+
+GodotRayConvexAlgorithm::CreateFunc::CreateFunc(btConvexPenetrationDepthSolver *pdSolver)
+	: btConvexConvexAlgorithm::CreateFunc(pdSolver) {}
+
+GodotRayConvexAlgorithm::SwappedCreateFunc::SwappedCreateFunc(btConvexPenetrationDepthSolver *pdSolver)
+	: btConvexConvexAlgorithm::CreateFunc(pdSolver) {}
+
+GodotRayConcaveAlgorithm::GodotRayConcaveAlgorithm(const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped1)
+	: btConvexConcaveCollisionAlgorithm(ci, body0Wrap, body1Wrap, isSwapped1), m_isSwapped(isSwapped1) {
+}
+
+void GodotRayConcaveAlgorithm::processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut) {
+	btConvexConcaveCollisionAlgorithm::processCollision(body0Wrap, body1Wrap, dispatchInfo, resultOut);
+
+	btVector3 rayNormal(0, 1, 0);
+	if (m_isSwapped) {
+		rayNormal *= -1;
+	}
+
+	// Clamping all lateral contacts
+	for (int x = resultOut->getPersistentManifold()->getNumContacts() - 1; 0 <= x; --x) {
+		resultOut->getPersistentManifold()->getContactPoint(x).m_normalWorldOnB = rayNormal;
+	}
+}
 
 GodotCollisionConfiguration::GodotCollisionConfiguration(const btDefaultCollisionConstructionInfo &constructionInfo)
 	: btDefaultCollisionConfiguration(constructionInfo) {
+
+	void *mem = NULL;
+
+	mem = btAlignedAlloc(sizeof(GodotRayConvexAlgorithm::CreateFunc), 16);
+	m_rayConvexCF = new (mem) GodotRayConvexAlgorithm::CreateFunc(m_pdSolver);
+
+	mem = btAlignedAlloc(sizeof(GodotRayConvexAlgorithm::SwappedCreateFunc), 16);
+	m_swappedRayConvexCF = new (mem) GodotRayConvexAlgorithm::SwappedCreateFunc(m_pdSolver);
+
+	mem = btAlignedAlloc(sizeof(GodotRayConcaveAlgorithm::CreateFunc), 16);
+	m_rayConcaveCF = new (mem) GodotRayConcaveAlgorithm::CreateFunc;
+
+	mem = btAlignedAlloc(sizeof(GodotRayConcaveAlgorithm::SwappedCreateFunc), 16);
+	m_swappedRayConcaveCF = new (mem) GodotRayConcaveAlgorithm::SwappedCreateFunc;
 }
 
 GodotCollisionConfiguration::~GodotCollisionConfiguration() {
+	m_rayConvexCF->~btCollisionAlgorithmCreateFunc();
+	btAlignedFree(m_rayConvexCF);
+
+	m_swappedRayConvexCF->~btCollisionAlgorithmCreateFunc();
+	btAlignedFree(m_swappedRayConvexCF);
+
+	m_rayConcaveCF->~btCollisionAlgorithmCreateFunc();
+	btAlignedFree(m_rayConcaveCF);
+
+	m_swappedRayConcaveCF->~btCollisionAlgorithmCreateFunc();
+	btAlignedFree(m_swappedRayConcaveCF);
 }
 
 btCollisionAlgorithmCreateFunc *GodotCollisionConfiguration::getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-	return btDefaultCollisionConfiguration::getCollisionAlgorithmCreateFunc(proxyType0, proxyType1);
+
+	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
+
+		// This collision is not supported
+		return m_emptyCreateFunc;
+	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && btBroadphaseProxy::isConvex(proxyType1)) {
+
+		return m_rayConvexCF;
+	} else if (btBroadphaseProxy::isConvex(proxyType0) && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
+
+		return m_swappedRayConvexCF;
+	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && btBroadphaseProxy::isConcave(proxyType1)) {
+
+		return m_rayConcaveCF;
+	} else if (btBroadphaseProxy::isConcave(proxyType0) && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
+
+		return m_swappedRayConcaveCF;
+	} else {
+
+		return btDefaultCollisionConfiguration::getCollisionAlgorithmCreateFunc(proxyType0, proxyType1);
+	}
 }
 
 btCollisionAlgorithmCreateFunc *GodotCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-	return btDefaultCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(proxyType0, proxyType1);
+
+	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
+
+		// This collision is not supported
+		return m_emptyCreateFunc;
+	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && btBroadphaseProxy::isConvex(proxyType1)) {
+
+		return m_rayConvexCF;
+	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && btBroadphaseProxy::isConcave(proxyType1)) {
+
+		return m_rayConcaveCF;
+	} else if (btBroadphaseProxy::isConcave(proxyType0) && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
+
+		return m_swappedRayConcaveCF;
+	} else {
+
+		return btDefaultCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(proxyType0, proxyType1);
+	}
 }

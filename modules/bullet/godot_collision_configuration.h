@@ -33,8 +33,71 @@
 #define GODOT_COLLISION_CONFIGURATION_H
 
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
+#include "thirdparty/Bullet/src/BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h"
+#include "thirdparty\Bullet/src/BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h"
+
+class GodotRayConvexAlgorithm : public btConvexConvexAlgorithm {
+
+	bool m_isSwapped;
+
+public:
+	GodotRayConvexAlgorithm(btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, btConvexPenetrationDepthSolver *pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold, bool isSwapped);
+
+	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
+
+	struct CreateFunc : public btConvexConvexAlgorithm::CreateFunc {
+
+		CreateFunc(btConvexPenetrationDepthSolver *pdSolver);
+
+		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
+			return new (mem) GodotRayConvexAlgorithm(ci.m_manifold, ci, body0Wrap, body1Wrap, m_pdSolver, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold, false);
+		}
+	};
+
+	struct SwappedCreateFunc : public btConvexConvexAlgorithm::CreateFunc {
+
+		SwappedCreateFunc(btConvexPenetrationDepthSolver *pdSolver);
+
+		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
+			return new (mem) GodotRayConvexAlgorithm(ci.m_manifold, ci, body0Wrap, body1Wrap, m_pdSolver, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold, true);
+		}
+	};
+};
+
+class GodotRayConcaveAlgorithm : public btConvexConcaveCollisionAlgorithm {
+
+	bool m_isSwapped;
+
+public:
+	GodotRayConcaveAlgorithm(const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
+
+	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
+
+	struct CreateFunc : public btConvexConcaveCollisionAlgorithm::CreateFunc {
+
+		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
+			return new (mem) GodotRayConcaveAlgorithm(ci, body0Wrap, body1Wrap, false);
+		}
+	};
+
+	struct SwappedCreateFunc : public btConvexConcaveCollisionAlgorithm::CreateFunc {
+
+		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
+			return new (mem) GodotRayConcaveAlgorithm(ci, body0Wrap, body1Wrap, true);
+		}
+	};
+};
 
 class GodotCollisionConfiguration : public btDefaultCollisionConfiguration {
+	btCollisionAlgorithmCreateFunc *m_rayConvexCF;
+	btCollisionAlgorithmCreateFunc *m_swappedRayConvexCF;
+	btCollisionAlgorithmCreateFunc *m_rayConcaveCF;
+	btCollisionAlgorithmCreateFunc *m_swappedRayConcaveCF;
+
 public:
 	GodotCollisionConfiguration(const btDefaultCollisionConstructionInfo &constructionInfo = btDefaultCollisionConstructionInfo());
 	virtual ~GodotCollisionConfiguration();

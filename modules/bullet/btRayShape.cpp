@@ -49,16 +49,12 @@ btVector3 btRayShape::localGetSupportingVertexWithoutMargin(const btVector3 &vec
 
 void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3 *vectors, btVector3 *supportVerticesOut, int numVectors) const {
 	for (int i = 0; i < numVectors; ++i) {
-		if (vectors[i].z() > 0) {
-			supportVerticesOut[i] = m_shapeAxis * m_length;
-		} else {
-			supportVerticesOut[i].setZero();
-		}
+		supportVerticesOut[i] = localGetSupportingVertexWithoutMargin(vectors[i]);
 	}
 }
 
 void btRayShape::getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aabbMax) const {
-#define MARGIN 0.0005
+#define MARGIN 0.1
 	btVector3 localAabbMin(0, 0, 0);
 	btVector3 localAabbMax(m_shapeAxis * m_length);
 	btTransformAabb(localAabbMin, localAabbMax, MARGIN, t, aabbMin, aabbMax);
