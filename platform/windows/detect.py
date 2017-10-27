@@ -264,10 +264,7 @@ def configure(env):
 
         if env['use_lto']:
             env.Append(CCFLAGS=['-flto'])
-            if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
-                env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
-            else:
-                env.Append(LINKFLAGS=['-flto'])
+            env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
 
         ## Compile flags
 
