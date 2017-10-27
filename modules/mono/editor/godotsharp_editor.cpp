@@ -71,6 +71,10 @@ bool GodotSharpEditor::_create_project_solution() {
 
 	String path = OS::get_singleton()->get_resource_dir();
 	String name = ProjectSettings::get_singleton()->get("application/config/name");
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
+
 	String guid = CSharpProject::generate_game_project(path, name);
 
 	if (guid.length()) {

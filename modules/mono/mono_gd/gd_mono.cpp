@@ -369,9 +369,12 @@ bool GDMono::_load_project_assembly() {
 	if (project_assembly)
 		return true;
 
-	String project_assembly_name = ProjectSettings::get_singleton()->get("application/config/name");
+	String name = ProjectSettings::get_singleton()->get("application/config/name");
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
 
-	bool success = _load_assembly(project_assembly_name, &project_assembly);
+	bool success = _load_assembly(name, &project_assembly);
 
 	if (success)
 		mono_assembly_set_main(project_assembly->get_assembly());
