@@ -322,13 +322,13 @@
 			Position, relative to the node's parent.
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation">
-			Rotation in radians.
+			Rotation in radians, relative to the node's parent.
 		</member>
 		<member name="rotation_deg" type="float" setter="set_rotation_in_degrees" getter="get_rotation_in_degrees">
-			Rotation in degrees.
+			Rotation in degrees, relative to the node's parent.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale">
-			Rotation in degrees.
+			The node's scale. Unscaled value: [code](1, 1)[/code]
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
@@ -337,7 +337,7 @@
 			Z-index. Controls the order in which the nodes render. A node with a higher Z-index will display in front of others.
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative">
-			Make the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
+			If [code]true[/code] the node's Z-index is relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
 		</member>
 	</members>
 	<constants>
