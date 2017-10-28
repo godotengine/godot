@@ -162,10 +162,13 @@ int BulletPhysicsDirectBodyState::get_contact_collider_shape(int p_contact_idx) 
 
 Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(int p_contact_idx) const {
 	RigidBodyBullet::CollisionData &colDat = body->collisions[p_contact_idx];
+
 	btVector3 hitLocation;
 	G_TO_B(colDat.hitLocalLocation, hitLocation);
+
 	Vector3 velocityAtPoint;
-	B_TO_G(body->collisions[p_contact_idx].otherObject->get_bt_rigid_body()->getVelocityInLocalPoint(hitLocation), velocityAtPoint);
+	B_TO_G(colDat.otherObject->get_bt_rigid_body()->getVelocityInLocalPoint(hitLocation), velocityAtPoint);
+
 	return velocityAtPoint;
 }
 
