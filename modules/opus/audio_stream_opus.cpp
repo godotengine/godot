@@ -267,7 +267,7 @@ void AudioStreamPlaybackOpus::seek(float p_time) {
 	frames_mixed = osrate * p_time;
 }
 
-int AudioStreamPlaybackOpus::mix(int16_t *p_bufer, int p_frames) {
+int AudioStreamPlaybackOpus::mix(int16_t *p_buffer, int p_frames) {
 	if (!playing)
 		return 0;
 
@@ -281,7 +281,7 @@ int AudioStreamPlaybackOpus::mix(int16_t *p_bufer, int p_frames) {
 			break;
 		}
 
-		int ret = op_read(opus_file, (opus_int16 *)p_bufer, todo * stream_channels, &current_section);
+		int ret = op_read(opus_file, (opus_int16 *)p_buffer, todo * stream_channels, &current_section);
 		if (ret < 0) {
 			playing = false;
 			ERR_EXPLAIN("Error reading Opus File: " + file);
@@ -325,7 +325,7 @@ int AudioStreamPlaybackOpus::mix(int16_t *p_bufer, int p_frames) {
 
 		frames_mixed += ret;
 
-		p_bufer += ret * stream_channels;
+		p_buffer += ret * stream_channels;
 		p_frames -= ret;
 	}
 
