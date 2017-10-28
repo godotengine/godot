@@ -86,6 +86,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	LineEdit *action_name;
 	Button *action_add;
+	Label *action_add_error;
 	Tree *input_editor;
 	bool setting;
 	bool updating_translations;
