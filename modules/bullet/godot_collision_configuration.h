@@ -33,8 +33,8 @@
 #define GODOT_COLLISION_CONFIGURATION_H
 
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
+#include "thirdparty/Bullet/src/BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h"
 #include "thirdparty/Bullet/src/BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h"
-#include "thirdparty\Bullet/src/BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h"
 
 class GodotRayConvexAlgorithm : public btConvexConvexAlgorithm {
 

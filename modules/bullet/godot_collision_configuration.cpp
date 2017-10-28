@@ -30,7 +30,7 @@
 /*************************************************************************/
 
 #include "godot_collision_configuration.h"
-#include "thirdparty\Bullet\src\BulletCollision\BroadphaseCollision\btBroadphaseProxy.h"
+#include "thirdparty/Bullet/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"
 
 GodotRayConvexAlgorithm::GodotRayConvexAlgorithm(btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, btConvexPenetrationDepthSolver *pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold, bool isSwapped)
 	: btConvexConvexAlgorithm(mf, ci, body0Wrap, body1Wrap, pdSolver, numPerturbationIterations, minimumPointsPerturbationThreshold), m_isSwapped(isSwapped) {
