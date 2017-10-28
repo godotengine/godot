@@ -281,7 +281,7 @@ class VisualServerRaster : public VisualServer {
 			Set<Instance*> owned_instances;
 			BakedLightSampler *sampler;
 			int resolution;
-			Vector<Color> light_bufer;
+			Vector<Color> light_buffer;
 			RID sampled_light;
 			uint64_t last_pass;
 			Transform xform; // viewspace normal to lightspace, might not use one.
