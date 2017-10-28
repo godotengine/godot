@@ -13,7 +13,7 @@ def get_name():
 
 def can_build():
 
-    return ("EMSCRIPTEN_ROOT" in os.environ)
+    return ("EMSCRIPTEN_ROOT" in os.environ or "EMSCRIPTEN" in os.environ)
 
 
 def get_opts():
@@ -66,7 +66,10 @@ def configure(env):
     ## Compiler configuration
 
     env['ENV'] = os.environ
-    env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
+    if ("EMSCRIPTEN_ROOT" in os.environ):
+        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
+    elif ("EMSCRIPTEN" in os.environ):
+        env.PrependENVPath('PATH', os.environ['EMSCRIPTEN'])
     env['CC']      = 'emcc'
     env['CXX']     = 'em++'
     env['LINK']    = 'emcc'
