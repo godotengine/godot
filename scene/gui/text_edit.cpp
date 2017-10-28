@@ -4489,7 +4489,13 @@ void TextEdit::_update_completion_candidates() {
 	completion_index = 0;
 	completion_base = s;
 	Vector<float> sim_cache;
+	bool single_quote = s.begins_with("'");
+
 	for (int i = 0; i < completion_strings.size(); i++) {
+		if (single_quote && completion_strings[i].is_quoted()) {
+			completion_strings[i] = completion_strings[i].unquote().quote("'");
+		}
+
 		if (s == completion_strings[i]) {
 			// A perfect match, stop completion
 			_cancel_completion();
