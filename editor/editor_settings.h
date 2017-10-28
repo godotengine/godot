@@ -66,11 +66,13 @@ private:
 		int order;
 		Variant variant;
 		Variant initial;
+		bool initial_set;
 		bool hide_from_editor;
 		bool save;
 		VariantContainer() {
 			order = 0;
 			hide_from_editor = false;
+			initial_set = false;
 			save = false;
 		}
 		VariantContainer(const Variant &p_variant, int p_order) {
@@ -128,6 +130,7 @@ public:
 	static void destroy();
 	void set_optimize_save(bool p_optimize);
 
+	bool has_default_value(const String &p_setting) const;
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 	bool has_setting(const String &p_setting) const;
