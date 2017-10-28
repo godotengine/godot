@@ -1766,19 +1766,19 @@ void CustomPropertyEditor::_focus_exit() {
 
 void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) {
 
-	int w = 100;
-	int h = 60;
-	int m = 5;
+	int cell_width = 60;
+	int cell_height = 25;
+	int cell_margin = 5;
 
-	set_size(Size2((m * 2 + w) * p_strings.size() - m, h));
+	set_size(Size2(cell_margin + (cell_width + cell_margin) * p_strings.size(), (cell_margin * 2) + cell_height) * EDSCALE);
 
 	for (int i = 0; i < MAX_ACTION_BUTTONS; i++) {
 
 		if (i < p_strings.size()) {
 			action_buttons[i]->show();
 			action_buttons[i]->set_text(p_strings[i]);
-			action_buttons[i]->set_position(Point2(m + i * (w + m), m));
-			action_buttons[i]->set_size(Size2(w, h - m * 2));
+			action_buttons[i]->set_position(Point2(cell_margin + (cell_width + cell_margin) * i, cell_margin) * EDSCALE);
+			action_buttons[i]->set_size(Size2(cell_width, cell_height - cell_margin * 2) * EDSCALE);
 			action_buttons[i]->set_flat(true);
 		} else {
 			action_buttons[i]->hide();
@@ -1788,14 +1788,14 @@ void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) 
 
 void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int p_label_w, const List<String> &p_strings) {
 
-	int cell_width = 80;
-	int cell_height = 20;
-	int cell_margin = 10;
-	int hor_spacing = 8; // Spacing between labels and their values
+	int cell_width = 95;
+	int cell_height = 25;
+	int cell_margin = 5;
+	int hor_spacing = 5; // Spacing between labels and their values
 
 	int rows = ((p_amount - 1) / p_columns) + 1;
 
-	set_size(Size2(cell_margin * (1 + p_columns) + (cell_width + p_label_w + hor_spacing) * p_columns, cell_margin * (1 + rows) + cell_height * rows));
+	set_size(Size2(cell_margin + p_label_w + (cell_width + cell_margin + p_label_w) * p_columns, cell_margin + (cell_height + cell_margin) * rows) * EDSCALE);
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
 
@@ -1806,9 +1806,9 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 			value_editor[i]->show();
 			value_label[i]->show();
 			value_label[i]->set_text(i < p_strings.size() ? p_strings[i] : String(""));
-			value_editor[i]->set_position(Point2(cell_margin + p_label_w + hor_spacing + c * (cell_width + cell_margin + p_label_w + hor_spacing), cell_margin + r * (cell_height + cell_margin)));
+			value_editor[i]->set_position(Point2(cell_margin + p_label_w + hor_spacing + (cell_width + cell_margin + p_label_w + hor_spacing) * c, cell_margin + (cell_height + cell_margin) * r) * EDSCALE);
 			value_editor[i]->set_size(Size2(cell_width, cell_height));
-			value_label[i]->set_position(Point2(cell_margin + c * (cell_width + cell_margin + p_label_w + hor_spacing), cell_margin + r * (cell_height + cell_margin)));
+			value_label[i]->set_position(Point2(cell_margin + (cell_width + cell_margin + p_label_w + hor_spacing) * c, cell_margin + (cell_height + cell_margin) * r) * EDSCALE);
 			value_editor[i]->set_editable(!read_only);
 		} else {
 			value_editor[i]->hide();
