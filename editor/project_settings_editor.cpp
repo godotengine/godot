@@ -81,6 +81,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 
+			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
+
 			translation_list->connect("button_pressed", this, "_translation_delete");
 			_update_actions();
 			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
@@ -819,12 +821,16 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 	} else {
 
 		if (p_action.find("/") != -1 || p_action.find(":") != -1) {
-			action_add->set_text(TTR("Can't contain '/' or ':'"));
+
+			action_add_error->set_text(TTR("Can't contain '/' or ':'"));
+			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
 		}
 		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
-			action_add->set_text(TTR("Already existing"));
+
+			action_add_error->set_text(TTR("Already existing"));
+			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
 		}
@@ -832,7 +838,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 		action_add->set_disabled(false);
 	}
 
-	action_add->set_text(TTR("Add"));
+	action_add_error->hide();
 }
 
 void ProjectSettingsEditor::_action_adds(String) {
@@ -869,7 +875,7 @@ void ProjectSettingsEditor::_action_add() {
 		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
-	action_add->set_text(TTR("Add"));
+	action_add_error->hide();
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
@@ -1695,6 +1701,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	hbc->add_child(action_name);
 	action_name->connect("text_entered", this, "_action_adds");
 	action_name->connect("text_changed", this, "_action_check");
+
+	action_add_error = memnew(Label);
+	hbc->add_child(action_add_error);
+	action_add_error->hide();
 
 	add = memnew(Button);
 	hbc->add_child(add);
