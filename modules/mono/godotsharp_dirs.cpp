@@ -122,7 +122,14 @@ private:
 #ifdef TOOLS_ENABLED
 		mono_solutions_dir = mono_user_dir.plus_file("solutions");
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
-		String base_path = String("res://") + ProjectSettings::get_singleton()->get("application/config/name");
+
+		String name = ProjectSettings::get_singleton()->get("application/config/name");
+		if (name.empty()) {
+			name = "UnnamedProject";
+		}
+
+		String base_path = String("res://") + name;
+
 		sln_filepath = ProjectSettings::get_singleton()->globalize_path(base_path + ".sln");
 		csproj_filepath = ProjectSettings::get_singleton()->globalize_path(base_path + ".csproj");
 #endif
