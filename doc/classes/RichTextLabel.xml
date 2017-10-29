@@ -31,7 +31,6 @@
 			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="bbcode" type="String">
-				Adds BBCode to the text label.
 			</argument>
 			<description>
 			</description>

@@ -409,10 +409,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary">
-			<description>
-				Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
-			</description>
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
 		</member>
 	</members>
 	<constants>
