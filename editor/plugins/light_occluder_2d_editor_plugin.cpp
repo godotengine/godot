@@ -318,7 +318,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void LightOccluder2DEditor::forward_draw_over_canvas(Control *p_canvas) {
+void LightOccluder2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 
 	if (!node || !node->get_occluder_polygon().is_valid())
 		return;

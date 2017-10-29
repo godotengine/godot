@@ -136,7 +136,7 @@ protected:
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_canvas(Control *p_canvas);
+	void forward_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_polygon);
 	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
@@ -152,7 +152,7 @@ class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_canvas(Control *p_canvas) { polygon_editor->forward_draw_over_canvas(p_canvas); }
+	virtual void forward_draw_over_viewport(Control *p_overlay) { polygon_editor->forward_draw_over_viewport(p_overlay); }
 
 	bool has_main_screen() const { return false; }
 	virtual String get_name() const { return klass; }

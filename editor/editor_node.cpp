@@ -5624,6 +5624,7 @@ EditorNode::EditorNode() {
 
 	editor_plugin_screen = NULL;
 	editor_plugins_over = memnew(EditorPluginList);
+	editor_plugins_force_over = memnew(EditorPluginList);
 	editor_plugins_force_input_forwarding = memnew(EditorPluginList);
 
 	_edit_current();
@@ -5748,6 +5749,7 @@ EditorNode::~EditorNode() {
 	memdelete(EditorHelp::get_doc_data());
 	memdelete(editor_selection);
 	memdelete(editor_plugins_over);
+	memdelete(editor_plugins_force_over);
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
 	memdelete(progress_hb);
@@ -5801,10 +5803,17 @@ bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 	return discard;
 }
 
-void EditorPluginList::forward_draw_over_canvas(Control *p_canvas) {
+void EditorPluginList::forward_draw_over_viewport(Control *p_overlay) {
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_draw_over_canvas(p_canvas);
+		plugins_list[i]->forward_draw_over_viewport(p_overlay);
+	}
+}
+
+void EditorPluginList::forward_force_draw_over_viewport(Control *p_overlay) {
+
+	for (int i = 0; i < plugins_list.size(); i++) {
+		plugins_list[i]->forward_force_draw_over_viewport(p_overlay);
 	}
 }
 

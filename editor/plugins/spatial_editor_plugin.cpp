@@ -2332,6 +2332,16 @@ static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture> icon)
 
 void SpatialEditorViewport::_draw() {
 
+	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
+	if (!over_plugin_list->empty()) {
+		over_plugin_list->forward_draw_over_viewport(surface);
+	}
+
+	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
+	if (!force_over_plugin_list->empty()) {
+		force_over_plugin_list->forward_force_draw_over_viewport(surface);
+	}
+
 	if (surface->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r = Rect2(Point2(), size);
