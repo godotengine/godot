@@ -32,6 +32,7 @@
 #include "main/main.h"
 
 #include "../godotsharp_dirs.h"
+#include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
@@ -84,10 +85,16 @@ void godot_icall_BuildInstance_get_MSBuildInfo(MonoString **r_msbuild_path, Mono
 				if (!msbuild_tools_path.ends_with("\\"))
 					msbuild_tools_path += "\\";
 
-				*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
-
 				// FrameworkPathOverride
-				*r_framework_path = GDMonoMarshal::mono_string_from_godot(GDMono::get_singleton()->get_mono_reg_info().assembly_dir);
+				const MonoRegInfo &mono_reg_info = GDMono::get_singleton()->get_mono_reg_info();
+				if (mono_reg_info.assembly_dir.length()) {
+					*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+
+					String framework_path = path_join(mono_reg_info.assembly_dir, "mono", "4.5");
+					*r_framework_path = GDMonoMarshal::mono_string_from_godot(framework_path);
+				} else {
+					ERR_PRINT("Cannot find Mono's assemblies directory in the registry");
+				}
 
 				return;
 			}
@@ -130,6 +137,7 @@ void godot_icall_BuildInstance_get_MSBuildInfo(MonoString **r_msbuild_path, Mono
 
 	return;
 #else
+	ERR_PRINT("Not implemented on this platform");
 	return;
 #endif
 }

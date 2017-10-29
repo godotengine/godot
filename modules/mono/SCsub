@@ -97,29 +97,31 @@ def find_msbuild_unix(filename):
 def find_msbuild_windows():
     import mono_reg_utils as monoreg
 
+    bits = env['bits']
+
+    if bits == '32':
+        if os.getenv('MONO32_PREFIX'):
+            mono_root = os.getenv('MONO32_PREFIX')
+        else:
+            mono_root = monoreg.find_mono_root_dir(bits)
+    else:
+        if os.getenv('MONO64_PREFIX'):
+            mono_root = os.getenv('MONO64_PREFIX')
+        else:
+            mono_root = monoreg.find_mono_root_dir(bits)
+
+    if not mono_root:
+        raise RuntimeError('Cannot find mono root directory')
+
     msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), '')
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), os.path.join(mono_root, 'lib', 'mono', '4.5'))
     else:
-        bits = env['bits']
+        msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
 
-        if bits == '32':
-            if os.getenv('MONO32_PREFIX'):
-                mono_root = os.getenv('MONO32_PREFIX')
-            else:
-                mono_root = monoreg.find_mono_root_dir(bits)
-        else:
-            if os.getenv('MONO64_PREFIX'):
-                mono_root = os.getenv('MONO64_PREFIX')
-            else:
-                mono_root = monoreg.find_mono_root_dir(bits)
-
-        if mono_root:
-            msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
-
-            if os.path.isfile(msbuild_mono):
-                return (msbuild_mono, os.path.join(mono_root, 'lib', 'mono', '4.5'))
+        if os.path.isfile(msbuild_mono):
+            return (msbuild_mono, '')
 
     return None
 
