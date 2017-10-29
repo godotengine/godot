@@ -71,9 +71,14 @@ String _find_build_engine_on_unix(const String &p_name) {
 }
 #endif
 
-MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
+MonoString **godot_icall_BuildInstance_get_MSBuildInfo() {
 
 	GodotSharpBuilds::BuildTool build_tool = GodotSharpBuilds::BuildTool(int(EditorSettings::get_singleton()->get("mono/builds/build_tool")));
+
+	MonoString *res[2] = {
+		NULL, // MSBuildPath
+		NULL // FrameworkPathOverride
+	};
 
 #if defined(WINDOWS_ENABLED)
 	switch (build_tool) {
@@ -84,11 +89,17 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 				if (!msbuild_tools_path.ends_with("\\"))
 					msbuild_tools_path += "\\";
 
-				return GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+				res[0] = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+
+				// FrameworkPathOverride
+				res[1] = GDMonoMarshal::mono_string_from_godot(GDMono::get_singleton()->get_mono_reg_info().assembly_dir);
+
+				return res;
 			}
 
-			OS::get_singleton()->print("Cannot find System's MSBuild. Trying with Mono's...\n");
-		}
+			if (OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("Cannot find System's MSBuild. Trying with Mono's...\n");
+		} // fall through
 		case GodotSharpBuilds::MSBUILD_MONO: {
 			String msbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("msbuild.bat");
 
@@ -96,17 +107,9 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 				WARN_PRINTS("Cannot find msbuild ('mono/builds/build_tool'). Tried with path: " + msbuild_path);
 			}
 
-			return GDMonoMarshal::mono_string_from_godot(msbuild_path);
-		}
-		case GodotSharpBuilds::XBUILD: {
-			String xbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("xbuild.bat");
-
-			if (!FileAccess::exists(xbuild_path)) {
-				WARN_PRINTS("Cannot find xbuild ('mono/builds/build_tool'). Tried with path: " + xbuild_path);
-			}
-
-			return GDMonoMarshal::mono_string_from_godot(xbuild_path);
-		}
+			res[0] = GDMonoMarshal::mono_string_from_godot(msbuild_path);
+			return res;
+		} break;
 		default:
 			ERR_EXPLAIN("You don't deserve to live");
 			CRASH_NOW();
@@ -118,25 +121,26 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 	if (build_tool != GodotSharpBuilds::XBUILD) {
 		if (msbuild_path.empty()) {
 			WARN_PRINT("Cannot find msbuild ('mono/builds/build_tool').");
-			return NULL;
+			return res;
 		}
 	} else {
 		if (xbuild_path.empty()) {
 			WARN_PRINT("Cannot find xbuild ('mono/builds/build_tool').");
-			return NULL;
+			return res;
 		}
 	}
 
-	return GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+	res[0] = GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+	return res;
 #else
-	return NULL;
+	return res;
 #endif
 }
 
 void GodotSharpBuilds::_register_internal_calls() {
 
 	mono_add_internal_call("GodotSharpTools.Build.BuildSystem::godot_icall_BuildInstance_ExitCallback", (void *)godot_icall_BuildInstance_ExitCallback);
-	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildPath", (void *)godot_icall_BuildInstance_get_MSBuildPath);
+	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildInfo", (void *)godot_icall_BuildInstance_get_MSBuildInfo);
 }
 
 void GodotSharpBuilds::show_build_error_dialog(const String &p_message) {
@@ -353,9 +357,22 @@ GodotSharpBuilds::GodotSharpBuilds() {
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	if (!ed_settings->has_setting("mono/builds/build_tool")) {
-		ed_settings->set_setting("mono/builds/build_tool", MSBUILD);
+		ed_settings->set_setting("mono/builds/build_tool",
+#ifdef WINDOWS_ENABLED
+				// TODO: Default to MSBUILD_MONO if its csc.exe issue is fixed in the installed mono version
+				MSBUILD
+#else
+				MSBUILD_MONO
+#endif
+				);
 	}
-	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM, "MSBuild (System),MSBuild (Mono),xbuild"));
+	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM,
+#ifdef WINDOWS_ENABLED
+			"MSBuild (Mono),MSBuild (System)"
+#else
+			"MSBuild (Mono),xbuild (Deprecated)"
+#endif
+			));
 }
 
 GodotSharpBuilds::~GodotSharpBuilds() {
