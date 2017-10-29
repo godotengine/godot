@@ -5523,7 +5523,7 @@ msgstr "타일 셋 내보내기"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "파일이 존재하지 않습니다."
 
 #: editor/project_manager.cpp

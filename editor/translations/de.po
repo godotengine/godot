@@ -5616,7 +5616,7 @@ msgstr "Exportiere mit Debuginformationen"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "Datei existiert nicht."
 
 #: editor/project_manager.cpp

@@ -125,7 +125,7 @@ private:
 		}
 
 		if (valid_path == "") {
-			set_message(TTR("The path does not exists."), MESSAGE_ERROR);
+			set_message(TTR("The path does not exist."), MESSAGE_ERROR);
 			memdelete(d);
 			return "";
 		}

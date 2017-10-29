@@ -5552,7 +5552,7 @@ msgid "Export With Debug"
 msgstr "Exportar Com Depuração"
 
 #: editor/project_manager.cpp
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "O caminho não existe."
 
 #: editor/project_manager.cpp

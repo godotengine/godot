@@ -5813,7 +5813,7 @@ msgstr "Exportar Tile Set"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "El archivo existe."
 
 #: editor/project_manager.cpp

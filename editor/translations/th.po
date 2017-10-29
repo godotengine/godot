@@ -5504,7 +5504,7 @@ msgstr "ส่งออกพร้อมตัวดีบัค"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "ไม่พบไฟล์"
 
 #: editor/project_manager.cpp

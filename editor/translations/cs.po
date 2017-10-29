@@ -5515,7 +5515,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "Soubor neexistuje."
 
 #: editor/project_manager.cpp

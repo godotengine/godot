@@ -5701,7 +5701,7 @@ msgstr "Tile Set এক্সপোর্ট করুন"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "ফাইলটি বিদ্যমান নয়।"
 
 #: editor/project_manager.cpp

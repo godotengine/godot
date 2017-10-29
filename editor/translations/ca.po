@@ -5615,7 +5615,7 @@ msgstr "Exporta el joc de Mosaics (Tiles)"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "El Fitxer no existeix."
 
 #: editor/project_manager.cpp

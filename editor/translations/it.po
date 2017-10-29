@@ -5601,7 +5601,7 @@ msgstr "Esporta Con Debug"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "File non esistente."
 
 #: editor/project_manager.cpp

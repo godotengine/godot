@@ -5552,7 +5552,7 @@ msgid "Export With Debug"
 msgstr "Экспорт в режиме отладки"
 
 #: editor/project_manager.cpp
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "Путь не существует."
 
 #: editor/project_manager.cpp

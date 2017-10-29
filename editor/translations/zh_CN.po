@@ -5543,7 +5543,7 @@ msgstr "导出为调试"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "文件不存在。"
 
 #: editor/project_manager.cpp

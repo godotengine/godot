@@ -5601,7 +5601,7 @@ msgstr "Ekspor Tile Set"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "The path does not exists."
+msgid "The path does not exist."
 msgstr "File tidak ada."
 
 #: editor/project_manager.cpp
