@@ -71,14 +71,9 @@ String _find_build_engine_on_unix(const String &p_name) {
 }
 #endif
 
-MonoString **godot_icall_BuildInstance_get_MSBuildInfo() {
+void godot_icall_BuildInstance_get_MSBuildInfo(MonoString **r_msbuild_path, MonoString **r_framework_path) {
 
 	GodotSharpBuilds::BuildTool build_tool = GodotSharpBuilds::BuildTool(int(EditorSettings::get_singleton()->get("mono/builds/build_tool")));
-
-	MonoString *res[2] = {
-		NULL, // MSBuildPath
-		NULL // FrameworkPathOverride
-	};
 
 #if defined(WINDOWS_ENABLED)
 	switch (build_tool) {
@@ -89,12 +84,12 @@ MonoString **godot_icall_BuildInstance_get_MSBuildInfo() {
 				if (!msbuild_tools_path.ends_with("\\"))
 					msbuild_tools_path += "\\";
 
-				res[0] = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+				*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
 
 				// FrameworkPathOverride
-				res[1] = GDMonoMarshal::mono_string_from_godot(GDMono::get_singleton()->get_mono_reg_info().assembly_dir);
+				*r_framework_path = GDMonoMarshal::mono_string_from_godot(GDMono::get_singleton()->get_mono_reg_info().assembly_dir);
 
-				return res;
+				return;
 			}
 
 			if (OS::get_singleton()->is_stdout_verbose())
@@ -107,8 +102,9 @@ MonoString **godot_icall_BuildInstance_get_MSBuildInfo() {
 				WARN_PRINTS("Cannot find msbuild ('mono/builds/build_tool'). Tried with path: " + msbuild_path);
 			}
 
-			res[0] = GDMonoMarshal::mono_string_from_godot(msbuild_path);
-			return res;
+			*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_path);
+
+			return;
 		} break;
 		default:
 			ERR_EXPLAIN("You don't deserve to live");
@@ -121,19 +117,20 @@ MonoString **godot_icall_BuildInstance_get_MSBuildInfo() {
 	if (build_tool != GodotSharpBuilds::XBUILD) {
 		if (msbuild_path.empty()) {
 			WARN_PRINT("Cannot find msbuild ('mono/builds/build_tool').");
-			return res;
+			return;
 		}
 	} else {
 		if (xbuild_path.empty()) {
 			WARN_PRINT("Cannot find xbuild ('mono/builds/build_tool').");
-			return res;
+			return;
 		}
 	}
 
-	res[0] = GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
-	return res;
+	*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+
+	return;
 #else
-	return res;
+	return;
 #endif
 }
 

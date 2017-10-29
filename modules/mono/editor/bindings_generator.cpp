@@ -667,18 +667,18 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Add the virtual Dispose
 		output.push_back(MEMBER_BEGIN "public virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
-									   "if (disposed) return;\n" INDENT3
-									   "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3 "NativeCalls.godot_icall_");
+									  "if (disposed) return;\n" INDENT3
+									  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3 "NativeCalls.godot_icall_");
 		output.push_back(itype.proxy_name);
 		output.push_back("_Dtor(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD " = IntPtr.Zero;\n" CLOSE_BLOCK_L3 INDENT3
-						  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
+						 "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
 		output.push_back(MEMBER_BEGIN "internal ");
 		output.push_back(itype.proxy_name);
 		output.push_back("(IntPtr " BINDINGS_PTR_FIELD ")\n" OPEN_BLOCK_L2 "this." BINDINGS_PTR_FIELD " = " BINDINGS_PTR_FIELD ";\n" CLOSE_BLOCK_L2);
 
 		output.push_back(MEMBER_BEGIN "public IntPtr NativeInstance\n" OPEN_BLOCK_L2
-									   "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
+									  "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
 	} else if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 
@@ -734,17 +734,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.push_back("(bool " CS_FIELD_MEMORYOWN ") : base(" CS_FIELD_MEMORYOWN ") {}\n");
 		} else {
 			output.push_back("(bool " CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L2
-							  "this." CS_FIELD_MEMORYOWN " = " CS_FIELD_MEMORYOWN ";\n" CLOSE_BLOCK_L2);
+							 "this." CS_FIELD_MEMORYOWN " = " CS_FIELD_MEMORYOWN ";\n" CLOSE_BLOCK_L2);
 		}
 
 		// Add methods
 
 		if (!is_derived_type) {
 			output.push_back(MEMBER_BEGIN "public IntPtr NativeInstance\n" OPEN_BLOCK_L2
-										   "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
+										  "get { return " BINDINGS_PTR_FIELD "; }\n" CLOSE_BLOCK_L2);
 
 			output.push_back(MEMBER_BEGIN "internal static IntPtr " CS_SMETHOD_GETINSTANCE "(Object instance)\n" OPEN_BLOCK_L2
-										   "return instance == null ? IntPtr.Zero : instance." BINDINGS_PTR_FIELD ";\n" CLOSE_BLOCK_L2);
+										  "return instance == null ? IntPtr.Zero : instance." BINDINGS_PTR_FIELD ";\n" CLOSE_BLOCK_L2);
 		}
 
 		if (!is_derived_type) {
@@ -758,13 +758,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			// Add the virtual Dispose
 			output.push_back(MEMBER_BEGIN "public virtual void Dispose(bool disposing)\n" OPEN_BLOCK_L2
-										   "if (disposed) return;\n" INDENT3
-										   "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
-										   "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
-										   " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
-										   "(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD
-										   " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
-										   "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
+										  "if (disposed) return;\n" INDENT3
+										  "if (" BINDINGS_PTR_FIELD " != IntPtr.Zero)\n" OPEN_BLOCK_L3
+										  "if (" CS_FIELD_MEMORYOWN ")\n" OPEN_BLOCK_L4 CS_FIELD_MEMORYOWN
+										  " = false;\n" INDENT5 CS_CLASS_NATIVECALLS "." ICALL_OBJECT_DTOR
+										  "(" BINDINGS_PTR_FIELD ");\n" INDENT5 BINDINGS_PTR_FIELD
+										  " = IntPtr.Zero;\n" CLOSE_BLOCK_L4 CLOSE_BLOCK_L3 INDENT3
+										  "GC.SuppressFinalize(this);\n" INDENT3 "disposed = true;\n" CLOSE_BLOCK_L2);
 
 			Map<String, TypeInterface>::Element *array_itype = builtin_types.find("Array");
 
@@ -783,7 +783,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.push_back(MEMBER_BEGIN "public " CS_CLASS_SIGNALAWAITER " ToSignal(");
 			output.push_back(object_itype->get().cs_type);
 			output.push_back(" source, string signal)\n" OPEN_BLOCK_L2
-							  "return new " CS_CLASS_SIGNALAWAITER "(source, signal, this);\n" CLOSE_BLOCK_L2);
+							 "return new " CS_CLASS_SIGNALAWAITER "(source, signal, this);\n" CLOSE_BLOCK_L2);
 		}
 	}
 
@@ -1138,7 +1138,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	List<String> output;
 
 	output.push_back("#include \"" GLUE_HEADER_FILE "\"\n"
-					   "\n");
+					 "\n");
 
 	generated_icall_funcs.clear();
 
@@ -1183,11 +1183,11 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 			output.push_back("Object* ");
 			output.push_back(ctor_method);
 			output.push_back("(MonoObject* obj) " OPEN_BLOCK
-							   "\t" C_MACRO_OBJECT_CONSTRUCT "(instance, \"");
+							 "\t" C_MACRO_OBJECT_CONSTRUCT "(instance, \"");
 			output.push_back(itype.name);
 			output.push_back("\");\n"
-							   "\t" C_METHOD_TIE_MANAGED_TO_UNMANAGED "(obj, instance);\n"
-							   "\treturn instance;\n" CLOSE_BLOCK "\n");
+							 "\t" C_METHOD_TIE_MANAGED_TO_UNMANAGED "(obj, instance);\n"
+							 "\treturn instance;\n" CLOSE_BLOCK "\n");
 		}
 	}
 
@@ -1195,13 +1195,13 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	output.push_back("uint64_t get_core_api_hash() { return ");
 	output.push_back(itos(GDMono::get_singleton()->get_api_core_hash()) + "; }\n");
 	output.push_back("#ifdef TOOLS_ENABLED\n"
-					   "uint64_t get_editor_api_hash() { return ");
+					 "uint64_t get_editor_api_hash() { return ");
 	output.push_back(itos(GDMono::get_singleton()->get_api_editor_hash()) +
-					   "; }\n#endif // TOOLS_ENABLED\n");
+					 "; }\n#endif // TOOLS_ENABLED\n");
 	output.push_back("void register_generated_icalls() " OPEN_BLOCK);
 
-#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                       \
-	{                                                                                                 \
+#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                     \
+	{                                                                                               \
 		output.push_back("\tmono_add_internal_call(");                                              \
 		output.push_back("\"" BINDINGS_NAMESPACE ".");                                              \
 		output.push_back(m_icall.editor_only ? CS_CLASS_NATIVECALLS_EDITOR : CS_CLASS_NATIVECALLS); \
@@ -1386,7 +1386,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				String real_argc_str = itos(p_imethod.arguments.size() - 1); // Arguments count without vararg
 
 				p_output.push_back("\tVector<Variant> varargs;\n"
-									 "\tint vararg_length = mono_array_length(");
+								   "\tint vararg_length = mono_array_length(");
 				p_output.push_back(vararg_arg);
 				p_output.push_back(");\n\tint total_length = ");
 				p_output.push_back(real_argc_str);
@@ -1401,11 +1401,11 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				p_output.push_back(");\n");
 				p_output.push_back(c_in_statements);
 				p_output.push_back("\tfor (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
-									 "\t\tMonoObject* elem = mono_array_get(");
+								   "\t\tMonoObject* elem = mono_array_get(");
 				p_output.push_back(vararg_arg);
 				p_output.push_back(", MonoObject*, i);\n"
-									 "\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
-									 "\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
+								   "\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
+								   "\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
 				p_output.push_back(real_argc_str);
 				p_output.push_back(" + i, &varargs[i]);\n\t" CLOSE_BLOCK);
 			} else {
