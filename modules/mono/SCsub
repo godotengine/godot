@@ -135,8 +135,8 @@ def mono_build_solution(source, target, env):
         msbuild_info = find_msbuild_windows()
         if msbuild_info is None:
             raise RuntimeError('Cannot find MSBuild executable')
-        msbuild_path = msbuild_windows[0]
-        framework_path_override = msbuild_windows[1]
+        msbuild_path = msbuild_info[0]
+        framework_path_override = msbuild_info[1]
     else:
         msbuild_path = find_msbuild_unix('msbuild')
         if msbuild_path is None:
