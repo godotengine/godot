@@ -32,74 +32,55 @@
 #ifndef GODOT_COLLISION_CONFIGURATION_H
 #define GODOT_COLLISION_CONFIGURATION_H
 
+#include "BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h"
+#include "BulletCollision/CollisionDispatch/btCollisionCreateFunc.h"
+#include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
-#include "thirdparty/Bullet/src/BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.h"
-#include "thirdparty/Bullet/src/BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.h"
 
-class GodotRayConvexAlgorithm : public btConvexConvexAlgorithm {
+class btDiscreteDynamicsWorld;
 
+class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
+
+	const btDiscreteDynamicsWorld *m_world;
+	btPersistentManifold *m_manifoldPtr;
 	bool m_isSwapped;
 
 public:
-	GodotRayConvexAlgorithm(btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, btConvexPenetrationDepthSolver *pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold, bool isSwapped);
+	GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *m_world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
 
 	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
+	virtual btScalar calculateTimeOfImpact(btCollisionObject *body0, btCollisionObject *body1, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
+	virtual void getAllContactManifolds(btManifoldArray &manifoldArray);
 
-	struct CreateFunc : public btConvexConvexAlgorithm::CreateFunc {
+	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
 
-		CreateFunc(btConvexPenetrationDepthSolver *pdSolver);
+		const btDiscreteDynamicsWorld *m_world;
+		CreateFunc(const btDiscreteDynamicsWorld *world);
 
 		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
-			return new (mem) GodotRayConvexAlgorithm(ci.m_manifold, ci, body0Wrap, body1Wrap, m_pdSolver, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold, false);
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));
+			return new (mem) GodotRayWorldAlgorithm(m_world, ci.m_manifold, ci, body0Wrap, body1Wrap, false);
 		}
 	};
 
-	struct SwappedCreateFunc : public btConvexConvexAlgorithm::CreateFunc {
+	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc {
 
-		SwappedCreateFunc(btConvexPenetrationDepthSolver *pdSolver);
-
-		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
-			return new (mem) GodotRayConvexAlgorithm(ci.m_manifold, ci, body0Wrap, body1Wrap, m_pdSolver, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold, true);
-		}
-	};
-};
-
-class GodotRayConcaveAlgorithm : public btConvexConcaveCollisionAlgorithm {
-
-	bool m_isSwapped;
-
-public:
-	GodotRayConcaveAlgorithm(const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
-
-	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
-
-	struct CreateFunc : public btConvexConcaveCollisionAlgorithm::CreateFunc {
+		const btDiscreteDynamicsWorld *m_world;
+		SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
 
 		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
-			return new (mem) GodotRayConcaveAlgorithm(ci, body0Wrap, body1Wrap, false);
-		}
-	};
-
-	struct SwappedCreateFunc : public btConvexConcaveCollisionAlgorithm::CreateFunc {
-
-		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
-			return new (mem) GodotRayConcaveAlgorithm(ci, body0Wrap, body1Wrap, true);
+			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));
+			return new (mem) GodotRayWorldAlgorithm(m_world, ci.m_manifold, ci, body0Wrap, body1Wrap, true);
 		}
 	};
 };
 
 class GodotCollisionConfiguration : public btDefaultCollisionConfiguration {
-	btCollisionAlgorithmCreateFunc *m_rayConvexCF;
-	btCollisionAlgorithmCreateFunc *m_swappedRayConvexCF;
-	btCollisionAlgorithmCreateFunc *m_rayConcaveCF;
-	btCollisionAlgorithmCreateFunc *m_swappedRayConcaveCF;
+	btCollisionAlgorithmCreateFunc *m_rayWorldCF;
+	btCollisionAlgorithmCreateFunc *m_swappedRayWorldCF;
 
 public:
-	GodotCollisionConfiguration(const btDefaultCollisionConstructionInfo &constructionInfo = btDefaultCollisionConstructionInfo());
+	GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo = btDefaultCollisionConstructionInfo());
 	virtual ~GodotCollisionConfiguration();
 
 	virtual btCollisionAlgorithmCreateFunc *getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1);

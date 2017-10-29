@@ -239,14 +239,12 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 				kin_shape_ref->setLocalScaling(m_owner->body_scale + btVector3(m_margin, m_margin, m_margin));
 				break;
 			}
-			case PhysicsServer::SHAPE_RAY: {
-				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale[1] + m_margin);
-				break;
-			}
-			case PhysicsServer::SHAPE_HEIGHTMAP:
-			case PhysicsServer::SHAPE_CONCAVE_POLYGON:
-			case PhysicsServer::SHAPE_PLANE:
+			//case PhysicsServer::SHAPE_RAY: {
+			//	RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
+			//	kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale[1] + m_margin);
+			//	break;
+			//}
+			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
 				kin_shape_ref = NULL;
 		}

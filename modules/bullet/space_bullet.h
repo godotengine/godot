@@ -39,6 +39,7 @@
 #include "LinearMath/btVector3.h"
 #include "core/variant.h"
 #include "core/vector.h"
+#include "godot_result_callbacks.h"
 #include "rid_bullet.h"
 #include "servers/physics_server.h"
 
@@ -58,16 +59,6 @@ class CollisionObjectBullet;
 class RigidBodyBullet;
 class SpaceBullet;
 class SoftBodyBullet;
-
-#define MAX_PENETRATION_DEPTH 0.005
-
-/// This class is required to implement custom collision behaviour in the broadphase
-struct GodotFilterCallback : public btOverlapFilterCallback {
-	static bool test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask);
-
-	// return true when pairs need collision
-	virtual bool needBroadphaseCollision(btBroadphaseProxy *proxy0, btBroadphaseProxy *proxy1) const;
-};
 
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState {
 	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState)

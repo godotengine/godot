@@ -30,14 +30,29 @@
 /*************************************************************************/
 
 #include "btRayShape.h"
+#include "LinearMath/btAabbUtil2.h"
 #include "math/math_funcs.h"
 
-btRayShape::btRayShape(btScalar p_length)
-	: btConvexInternalShape(), m_shapeAxis(0, 0, 1), m_length(p_length) {
+btRayShape::btRayShape(btScalar length)
+	: btCollisionShape(),
+	  m_margin(0),
+	  m_localScaling(0, 0, 0),
+	  m_shapeAxis(0, 0, 1) {
 	m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;
+	setLength(length);
 }
 
 btRayShape::~btRayShape() {
+}
+
+void btRayShape::setLength(btScalar p_length) {
+	m_length = p_length;
+
+	reload_cache();
+}
+
+btVector3 btRayShape::localGetSupportingVertex(const btVector3 &vec) const {
+	return localGetSupportingVertexWithoutMargin(vec) * m_margin;
 }
 
 btVector3 btRayShape::localGetSupportingVertexWithoutMargin(const btVector3 &vec) const {
@@ -54,20 +69,46 @@ void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVecto
 }
 
 void btRayShape::getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aabbMax) const {
-#define MARGIN 0.1
+#define MARGIN_BROADPHASE 0.1
 	btVector3 localAabbMin(0, 0, 0);
 	btVector3 localAabbMax(m_shapeAxis * m_length);
-	btTransformAabb(localAabbMin, localAabbMax, MARGIN, t, aabbMin, aabbMax);
+	btTransformAabb(localAabbMin, localAabbMax, MARGIN_BROADPHASE, t, aabbMin, aabbMax);
 }
 
 void btRayShape::setLocalScaling(const btVector3 &scaling) {
-	const btScalar old_zScale(m_localScaling[2]);
-	btConvexInternalShape::setLocalScaling(scaling);
 
-	const btScalar unscaledLength = m_length / old_zScale;
-	m_length = unscaledLength * m_localScaling[2];
+	// Can be scaled only by shape axis
+	m_localScaling = m_shapeAxis * scaling;
+
+	reload_cache();
+}
+
+const btVector3 &btRayShape::getLocalScaling() const {
+	return m_localScaling;
 }
 
 void btRayShape::calculateLocalInertia(btScalar mass, btVector3 &inertia) const {
 	inertia.setZero();
+}
+
+void btRayShape::setMargin(btScalar margin) {
+	m_margin = margin;
+	reload_cache();
+}
+
+btScalar btRayShape::getMargin() const {
+	return m_margin;
+}
+
+int btRayShape::getNumPreferredPenetrationDirections() const {
+	return 0;
+}
+
+void btRayShape::getPreferredPenetrationDirection(int index, btVector3 &penetrationVector) const {
+	penetrationVector.setZero();
+}
+
+void btRayShape::reload_cache() {
+	m_cacheSupportPoint.setIdentity();
+	m_cacheSupportPoint.setOrigin(m_shapeAxis * (m_length * m_localScaling[2] + m_margin));
 }
