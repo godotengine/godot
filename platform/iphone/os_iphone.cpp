@@ -104,7 +104,9 @@ void OSIPhone::initialize_core() {
 void OSIPhone::initialize_logger() {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
-	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+	// FIXME: Reenable once we figure out how to get this properly in user://
+	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
+	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
