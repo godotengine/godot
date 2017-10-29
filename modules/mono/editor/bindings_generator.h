@@ -368,6 +368,8 @@ class BindingsGenerator {
 	List<InternalCall> method_icalls;
 	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
 
+	List<const InternalCall *> generated_icall_funcs;
+
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
@@ -403,6 +405,11 @@ class BindingsGenerator {
 	void _populate_builtin_type_interfaces();
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
+
+	Error _generate_cs_property(const TypeInterface &p_itype, const DocData::PropertyDoc &p_prop_doc, List<String> &p_output);
+	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output);
+
+	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, List<String> &p_output);
 
 	Error _save_file(const String &path, const List<String> &content);
 
