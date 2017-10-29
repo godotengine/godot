@@ -1229,10 +1229,6 @@ msgid "File:"
 msgstr "Файл:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "Фильтр:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "Нужно использовать доступное расширение."
 
@@ -1705,19 +1701,29 @@ msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+#, fuzzy
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Не удается включить плагин: '"
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
-msgstr "' анализ конфигурации не удался."
-
-#: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr "Не удается найти поле script для плагина: ' res://addons/"
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "Не удалось загрузить скрипт из источника: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "Не удалось загрузить скрипт из источника: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "Не удалось загрузить скрипт из источника: '"
 
 #: editor/editor_node.cpp
@@ -2261,7 +2267,8 @@ msgid "Frame %"
 msgstr "Кадр %"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "Фиксированный кадр %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -3937,7 +3944,8 @@ msgid "Eroding walkable area..."
 msgstr "Размытие проходимого района..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partioning..."
+#, fuzzy
+msgid "Partitioning..."
 msgstr "Разметка..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4399,7 +4407,8 @@ msgstr "Шаг в"
 msgid "Break"
 msgstr "Пауза"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Продолжить"
 
@@ -4497,7 +4506,8 @@ msgid "Cut"
 msgstr "Вырезать"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
@@ -5253,8 +5263,12 @@ msgid "Remove All"
 msgstr "Удалить все"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "Тема"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5671,6 +5685,12 @@ msgstr "Удалить проект из списка? (Содержимое п�
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
@@ -5700,6 +5720,11 @@ msgstr "Шаблоны"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "Выход"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "Перезапуск (сек.):"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -5923,6 +5948,15 @@ msgid "Remove Resource Remap Option"
 msgstr "Удалён параметр ресурса перенаправления"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Changed Locale Filter"
+msgstr "Изменено время \"смешивания\""
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr "Настройки проекта (project.godot)"
 
@@ -5980,6 +6014,30 @@ msgstr "Заменить на язык:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "Язык"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "Фильтр:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "Показать кости"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "Фильтрация узлов"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "Язык"
 
 #: editor/project_settings_editor.cpp
@@ -7570,6 +7628,15 @@ msgstr "Ошибка загрузки шрифта."
 msgid "Invalid font size."
 msgstr "Недопустимый размер шрифта."
 
+#~ msgid "Filter:"
+#~ msgstr "Фильтр:"
+
+#~ msgid "' parsing of config failed."
+#~ msgstr "' анализ конфигурации не удался."
+
+#~ msgid "Theme"
+#~ msgstr "Тема"
+
 #~ msgid "Method List For '%s':"
 #~ msgstr "Список методов для '%s':"
 
@@ -8504,9 +8571,6 @@ msgstr "Недопустимый размер шрифта."
 
 #~ msgid "Preview Atlas"
 #~ msgstr "Предпросмотр атласа"
-
-#~ msgid "Image Filter:"
-#~ msgstr "Фильтр:"
 
 #~ msgid "Images:"
 #~ msgstr "Изображения:"

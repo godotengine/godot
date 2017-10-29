@@ -1228,10 +1228,6 @@ msgid "File:"
 msgstr "Bestand:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "Filter:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "Een geldige extensie moet gebruikt worden."
 
@@ -1708,19 +1704,29 @@ msgid "Pick a Main Scene"
 msgstr "Kies een Hoofdscene"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+#, fuzzy
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "Onmogelijk om de plugin op: '"
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
-msgstr "' te activeren. Het configuratiebestand kon niet gelezen worden."
-
-#: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr "Onmogelijk om scriptveld te vinden voor de plugin op: 'res://addons/"
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "Volgend script kon niet geladen worden: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "Volgend script kon niet geladen worden: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "Volgend script kon niet geladen worden: '"
 
 #: editor/editor_node.cpp
@@ -2252,7 +2258,7 @@ msgid "Frame %"
 msgstr ""
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+msgid "Physics Frame %"
 msgstr ""
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -3922,7 +3928,7 @@ msgid "Eroding walkable area..."
 msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partioning..."
+msgid "Partitioning..."
 msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4385,7 +4391,8 @@ msgstr ""
 msgid "Break"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr ""
 
@@ -4481,7 +4488,8 @@ msgid "Cut"
 msgstr "Knippen"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Kopiëren"
@@ -5247,7 +5255,11 @@ msgid "Remove All"
 msgstr "Verwijderen"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5669,6 +5681,12 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
@@ -5696,6 +5714,10 @@ msgstr "Verwijder Selectie"
 
 #: editor/project_manager.cpp
 msgid "Exit"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Restart Now"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5925,6 +5947,14 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr ""
 
@@ -5982,6 +6012,27 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Locales Filter"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Show all locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "Filter:"
+
+#: editor/project_settings_editor.cpp
+msgid "Locales:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -7574,6 +7625,12 @@ msgstr "Error bij het laden van lettertype."
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "Ongeldige lettertype grootte."
+
+#~ msgid "Filter:"
+#~ msgstr "Filter:"
+
+#~ msgid "' parsing of config failed."
+#~ msgstr "' te activeren. Het configuratiebestand kon niet gelezen worden."
 
 #~ msgid "Method List For '%s':"
 #~ msgstr "Methodelijst voor '%s':"

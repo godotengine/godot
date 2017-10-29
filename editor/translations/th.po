@@ -1214,10 +1214,6 @@ msgid "File:"
 msgstr "ไฟล์:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "ตัวกรอง:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
 
@@ -1671,19 +1667,29 @@ msgid "Pick a Main Scene"
 msgstr "เลือกฉากเริ่มต้น"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+#, fuzzy
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "ไม่สามารถเปิดใช้งานปลั๊กอิน: '"
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
-msgstr "' ผิดพลาดขณะอ่านไฟล์"
-
-#: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr "ไม่พบชื่อสคริปต์ใน: 'res://addons/"
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "ไม่สามารถโหลดสคริปต์จาก: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "ไม่สามารถโหลดสคริปต์จาก: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "ไม่สามารถโหลดสคริปต์จาก: '"
 
 #: editor/editor_node.cpp
@@ -2214,7 +2220,8 @@ msgid "Frame %"
 msgstr "เฟรม %"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "เฟรมคงที่ %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -3885,7 +3892,8 @@ msgid "Eroding walkable area..."
 msgstr "บีบแคบส่วนที่เดินผ่านได้..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partioning..."
+#, fuzzy
+msgid "Partitioning..."
 msgstr "กำลังแบ่งส่วน..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4351,7 +4359,8 @@ msgstr "คำสั่งต่อไป"
 msgid "Break"
 msgstr "หยุดพัก"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "ทำต่อไป"
 
@@ -4447,7 +4456,8 @@ msgid "Cut"
 msgstr "ตัด"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "คัดลอก"
@@ -5206,8 +5216,12 @@ msgid "Remove All"
 msgstr "ลบทั้งหมด"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "ธีม"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5622,6 +5636,12 @@ msgstr "ลบโปรเจกต์ออกจากรายชื่อ? (
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr "จะทำการสแกนหาโปรเจกต์ใน %s โฟลเดอร์ ยืนยัน?"
@@ -5649,6 +5669,11 @@ msgstr "แม่แบบ"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "ออก"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "หาโหนดแม่ใหม่"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -5872,6 +5897,15 @@ msgid "Remove Resource Remap Option"
 msgstr "ลบการแทนที่"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Changed Locale Filter"
+msgstr "ปรับขนาดกล้อง"
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr "ตัวเลือกโปรเจกต์ (project.godot)"
 
@@ -5929,6 +5963,30 @@ msgstr "แทนที่ตามท้องถิ่น:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "ท้องถิ่น"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "ท้องถิ่น"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "แสดงกระดูก"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "ตัวกรอง"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "ท้องถิ่น"
 
 #: editor/project_settings_editor.cpp
@@ -7456,6 +7514,15 @@ msgstr "ผิดพลาดขณะโหลดฟอนต์"
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
 msgstr "ขนาดฟอนต์ผิดพลาด"
+
+#~ msgid "Filter:"
+#~ msgstr "ตัวกรอง:"
+
+#~ msgid "' parsing of config failed."
+#~ msgstr "' ผิดพลาดขณะอ่านไฟล์"
+
+#~ msgid "Theme"
+#~ msgstr "ธีม"
 
 #~ msgid "Method List For '%s':"
 #~ msgstr "รายชื่อเมท็อดของ '%s':"

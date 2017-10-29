@@ -1222,10 +1222,6 @@ msgid "File:"
 msgstr "文件:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "筛选:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "必须使用合法的拓展名。"
 
@@ -1683,19 +1679,29 @@ msgid "Pick a Main Scene"
 msgstr "选择主场景"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+#, fuzzy
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "无法启用插件: '"
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
-msgstr "' 解析配置失败。"
-
-#: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr "在插件目录中没有找到脚本: 'res://addons/"
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "无法从路径加载插件脚本: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "无法从路径加载插件脚本: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "无法从路径加载插件脚本: '"
 
 #: editor/editor_node.cpp
@@ -2229,7 +2235,8 @@ msgid "Frame %"
 msgstr "渲染速度"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "固定帧速率 %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -3922,7 +3929,7 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
-msgid "Partioning..."
+msgid "Partitioning..."
 msgstr "警告"
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4389,7 +4396,8 @@ msgstr "单步进入"
 msgid "Break"
 msgstr "跳过"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "继续"
 
@@ -4485,7 +4493,8 @@ msgid "Cut"
 msgstr "剪切"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "复制"
@@ -5243,8 +5252,12 @@ msgid "Remove All"
 msgstr "移除全部"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "主题"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5669,6 +5682,12 @@ msgstr "移除此项目（项目的文件不受影响）"
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr "您确认要扫描%s目录下现有的Godot项目吗？"
@@ -5696,6 +5715,11 @@ msgstr "模板"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "退出"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "重新开始（秒）:"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -5922,6 +5946,15 @@ msgid "Remove Resource Remap Option"
 msgstr "移除资源重定向选项"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Changed Locale Filter"
+msgstr "更改混合时间"
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr "项目设置（project.godot）"
 
@@ -5979,6 +6012,30 @@ msgstr "地区重定向:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "地区"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "纹理过滤:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "显示骨骼"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "筛选节点"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "地区"
 
 #: editor/project_settings_editor.cpp
@@ -7515,6 +7572,15 @@ msgstr "加载字体出错。"
 msgid "Invalid font size."
 msgstr "字体大小非法。"
 
+#~ msgid "Filter:"
+#~ msgstr "筛选:"
+
+#~ msgid "' parsing of config failed."
+#~ msgstr "' 解析配置失败。"
+
+#~ msgid "Theme"
+#~ msgstr "主题"
+
 #~ msgid "Method List For '%s':"
 #~ msgstr "'%s'的方法列表："
 
@@ -8439,9 +8505,6 @@ msgstr "字体大小非法。"
 
 #~ msgid "Preview Atlas"
 #~ msgstr "精灵集预览"
-
-#~ msgid "Image Filter:"
-#~ msgstr "纹理过滤:"
 
 #~ msgid "Images:"
 #~ msgstr "图片:"

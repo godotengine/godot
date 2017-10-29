@@ -1282,10 +1282,6 @@ msgid "File:"
 msgstr "Archivo:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "Filtro:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "Debe ser una extensión válida."
 
@@ -1769,24 +1765,30 @@ msgstr "Elige una escena principal"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Unable to enable addon plugin at: '"
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "No se pudo activar el plugin addon en: '"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "' parsing of config failed."
-msgstr "' análisis de config fallido."
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 "No se pudo encontrar el campo del script para el plugin addon en: 'res://"
 "addons/"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Unable to load addon script from path: '"
+msgid "Unable to load addon script from path: '%s'."
+msgstr "No se pudo cargar el script addon desde la ruta: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "No se pudo cargar el script addon desde la ruta: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "No se pudo cargar el script addon desde la ruta: '"
 
 #: editor/editor_node.cpp
@@ -2349,7 +2351,8 @@ msgid "Frame %"
 msgstr "% de cuadro"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "% de cuadro fijo"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -4107,7 +4110,7 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
-msgid "Partioning..."
+msgid "Partitioning..."
 msgstr "Advertencia"
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4599,7 +4602,8 @@ msgstr "Step Into"
 msgid "Break"
 msgstr "Break"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Continuar"
 
@@ -4703,7 +4707,8 @@ msgid "Cut"
 msgstr "Cortar"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
@@ -5492,9 +5497,12 @@ msgid "Remove All"
 msgstr "Quitar"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Theme"
-msgstr "Guardar tema"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5950,6 +5958,12 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
@@ -5980,6 +5994,11 @@ msgstr "Remover Item"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "Salir"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "Reiniciar (s):"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6216,6 +6235,15 @@ msgstr "Quitar opción de remapeo de recursos"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
+msgid "Changed Locale Filter"
+msgstr "Cambiar tiempo de mezcla"
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
 msgid "Project Settings (project.godot)"
 msgstr "Ajustes de proyecto (engine.cfg)"
 
@@ -6274,6 +6302,30 @@ msgstr "Remapeos por idioma:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "Idioma"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "Filtrado de imágenes:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "Crear huesos"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "Filtros"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "Idioma"
 
 #: editor/project_settings_editor.cpp
@@ -7971,6 +8023,17 @@ msgstr "Error al cargar la tipografía."
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía incorrecto."
 
+#~ msgid "Filter:"
+#~ msgstr "Filtro:"
+
+#, fuzzy
+#~ msgid "' parsing of config failed."
+#~ msgstr "' análisis de config fallido."
+
+#, fuzzy
+#~ msgid "Theme"
+#~ msgstr "Guardar tema"
+
 #~ msgid "Method List For '%s':"
 #~ msgstr "Lista de métodos Para '%s':"
 
@@ -8951,9 +9014,6 @@ msgstr "Tamaño de tipografía incorrecto."
 
 #~ msgid "Preview Atlas"
 #~ msgstr "Vista previa del atlas"
-
-#~ msgid "Image Filter:"
-#~ msgstr "Filtrado de imágenes:"
 
 #~ msgid "Images:"
 #~ msgstr "Imágenes:"

@@ -1248,10 +1248,6 @@ msgid "File:"
 msgstr "Dizeç:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "Süzgeç:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "Gecerli bir uzantı kullanılmalı."
 
@@ -1722,19 +1718,25 @@ msgid "Pick a Main Scene"
 msgstr "Bir Ana Sahne Seç"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "Yazı tipi %s yüklerken sorun oluştu"
+
+#: editor/editor_node.cpp
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2291,7 +2293,8 @@ msgid "Frame %"
 msgstr "Kare %"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "Sabit Kare %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -4016,7 +4019,7 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 #, fuzzy
-msgid "Partioning..."
+msgid "Partitioning..."
 msgstr "Uyarı"
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4499,7 +4502,8 @@ msgstr "İçeri Adımla"
 msgid "Break"
 msgstr "Ara Ver"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Devam Et"
 
@@ -4601,7 +4605,8 @@ msgid "Cut"
 msgstr "Kes"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Tıpkıla"
@@ -5380,8 +5385,12 @@ msgid "Remove All"
 msgstr "Kaldır"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "Kalıp"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5828,6 +5837,12 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
@@ -5858,6 +5873,11 @@ msgstr "Öğeyi Kaldır"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "Çık"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "Yeniden Başlat (sn):"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6092,6 +6112,15 @@ msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
+msgid "Changed Locale Filter"
+msgstr "Karışım Süresini Değiştir"
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
 msgid "Project Settings (project.godot)"
 msgstr "Tasarı Ayarları (engine.cfg)"
 
@@ -6149,6 +6178,30 @@ msgstr "Yerel Ayara Göre Yeniden Eşlemeler:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "Yerel"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "Bediz Süzgeci:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "Kemikleri Göster"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "Süzgeçler"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "Yerel"
 
 #: editor/project_settings_editor.cpp
@@ -7766,6 +7819,12 @@ msgstr "Yazı türü yüklerken sorun oluştu."
 msgid "Invalid font size."
 msgstr "Geçersiz yazı türü boyutu."
 
+#~ msgid "Filter:"
+#~ msgstr "Süzgeç:"
+
+#~ msgid "Theme"
+#~ msgstr "Kalıp"
+
 #~ msgid "Method List For '%s':"
 #~ msgstr "'%s' İçin Yöntem Dizelgesi:"
 
@@ -8685,9 +8744,6 @@ msgstr "Geçersiz yazı türü boyutu."
 
 #~ msgid "Preview Atlas"
 #~ msgstr "Atlası Önizle"
-
-#~ msgid "Image Filter:"
-#~ msgstr "Bediz Süzgeci:"
 
 #~ msgid "Images:"
 #~ msgstr "Bedizler:"

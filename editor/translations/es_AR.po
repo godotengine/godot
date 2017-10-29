@@ -1226,10 +1226,6 @@ msgid "File:"
 msgstr "Archivo:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Filter:"
-msgstr "Filtro:"
-
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
 msgstr "Debe ser una extensión válida."
 
@@ -1703,21 +1699,31 @@ msgid "Pick a Main Scene"
 msgstr "Elegí una Escena Principal"
 
 #: editor/editor_node.cpp
-msgid "Unable to enable addon plugin at: '"
+#, fuzzy
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "No se pudo activar el plugin de addon en : '"
 
 #: editor/editor_node.cpp
-msgid "' parsing of config failed."
-msgstr "' falló el parseo de la configuración."
-
-#: editor/editor_node.cpp
-msgid "Unable to find script field for addon plugin at: 'res://addons/"
+#, fuzzy
+msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 "No se pudo encontrar el campo script para el plugin de addon en: 'res://"
 "addons/"
 
 #: editor/editor_node.cpp
-msgid "Unable to load addon script from path: '"
+#, fuzzy
+msgid "Unable to load addon script from path: '%s'."
+msgstr "No se pudo cargar el script de addon desde la ruta: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
+msgstr "No se pudo cargar el script de addon desde la ruta: '"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr "No se pudo cargar el script de addon desde la ruta: '"
 
 #: editor/editor_node.cpp
@@ -2262,7 +2268,8 @@ msgid "Frame %"
 msgstr "Frame %"
 
 #: editor/editor_profiler.cpp
-msgid "Fixed Frame %"
+#, fuzzy
+msgid "Physics Frame %"
 msgstr "Fixed Frame %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
@@ -3937,7 +3944,8 @@ msgid "Eroding walkable area..."
 msgstr "Erocionando area caminable..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partioning..."
+#, fuzzy
+msgid "Partitioning..."
 msgstr "Particionando..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
@@ -4398,7 +4406,8 @@ msgstr "Step Into"
 msgid "Break"
 msgstr "Break"
 
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Continuar"
 
@@ -4496,7 +4505,8 @@ msgid "Cut"
 msgstr "Cortar"
 
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
@@ -5252,8 +5262,12 @@ msgid "Remove All"
 msgstr "Quitar Todos"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr "Tema"
+msgid "Edit theme.."
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme editing menu."
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5682,6 +5696,12 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
+"Language changed.\n"
+"The UI will update next time the editor or project manager starts."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
@@ -5711,6 +5731,11 @@ msgstr "Plantillas"
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "Salir"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Restart Now"
+msgstr "Reiniciar (s):"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -5934,6 +5959,15 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opción de Remapeo de Recursos"
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Changed Locale Filter"
+msgstr "Cambiar Tiempo de Blend"
+
+#: editor/project_settings_editor.cpp
+msgid "Changed Locale Filter Mode"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
 msgstr "Configuración de Proyecto (project.godot)"
 
@@ -5991,6 +6025,30 @@ msgstr "Remapeos por Locale:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
+msgstr "Locale"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales Filter"
+msgstr "Filtro de Imágenes:"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Show all locales"
+msgstr "Mostrar Huesos"
+
+#: editor/project_settings_editor.cpp
+msgid "Show only selected locales"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Filter mode:"
+msgstr "Filtrar nodos"
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Locales:"
 msgstr "Locale"
 
 #: editor/project_settings_editor.cpp
@@ -7578,6 +7636,15 @@ msgstr "Error cargando tipografía."
 msgid "Invalid font size."
 msgstr "Tamaño de tipografía inválido."
 
+#~ msgid "Filter:"
+#~ msgstr "Filtro:"
+
+#~ msgid "' parsing of config failed."
+#~ msgstr "' falló el parseo de la configuración."
+
+#~ msgid "Theme"
+#~ msgstr "Tema"
+
 #~ msgid "Method List For '%s':"
 #~ msgstr "Lista de Métodos Para '%s':"
 
@@ -8523,9 +8590,6 @@ msgstr "Tamaño de tipografía inválido."
 
 #~ msgid "Preview Atlas"
 #~ msgstr "Vista Previa de Atlas"
-
-#~ msgid "Image Filter:"
-#~ msgstr "Filtro de Imágenes:"
 
 #~ msgid "Images:"
 #~ msgstr "Imágenes:"
