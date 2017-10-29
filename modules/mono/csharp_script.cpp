@@ -477,6 +477,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 	(void)p_script; // UNUSED
 
 #ifdef TOOLS_ENABLED
+	MonoReloadNode::get_singleton()->restart_reload_timer();
 	reload_assemblies_if_needed(p_soft_reload);
 #endif
 }
@@ -624,6 +625,9 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 
 		//if instance states were saved, set them!
 	}
+
+	if (Engine::get_singleton()->is_editor_hint())
+		EditorNode::get_singleton()->get_property_editor()->update_tree();
 }
 #endif
 

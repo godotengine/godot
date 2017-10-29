@@ -625,6 +625,8 @@ GDMono::~GDMono() {
 
 	if (gdmono_log)
 		memdelete(gdmono_log);
+
+	singleton = NULL;
 }
 
 _GodotSharp *_GodotSharp::singleton = NULL;

@@ -139,6 +139,14 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 	build_tab->_update_issues_list();
 }
 
+void MonoBottomPanel::_build_project_pressed() {
+
+	GodotSharpBuilds::get_singleton()->build_project_blocking();
+
+	MonoReloadNode::get_singleton()->restart_reload_timer();
+	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
+}
+
 void MonoBottomPanel::_notification(int p_what) {
 
 	switch (p_what) {
@@ -153,6 +161,7 @@ void MonoBottomPanel::_notification(int p_what) {
 
 void MonoBottomPanel::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_build_project_pressed"), &MonoBottomPanel::_build_project_pressed);
 	ClassDB::bind_method(D_METHOD("_warnings_toggled", "pressed"), &MonoBottomPanel::_warnings_toggled);
 	ClassDB::bind_method(D_METHOD("_errors_toggled", "pressed"), &MonoBottomPanel::_errors_toggled);
 	ClassDB::bind_method(D_METHOD("_build_tab_item_selected", "idx"), &MonoBottomPanel::_build_tab_item_selected);
@@ -186,6 +195,12 @@ MonoBottomPanel::MonoBottomPanel(EditorNode *p_editor) {
 		HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 		toolbar_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 		panel_builds_tab->add_child(toolbar_hbc);
+
+		ToolButton *build_project_btn = memnew(ToolButton);
+		build_project_btn->set_text("Build Project");
+		build_project_btn->set_focus_mode(FOCUS_NONE);
+		build_project_btn->connect("pressed", this, "_build_project_pressed");
+		toolbar_hbc->add_child(build_project_btn);
 
 		toolbar_hbc->add_spacer();
 
