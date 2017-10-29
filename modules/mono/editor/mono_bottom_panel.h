@@ -61,6 +61,8 @@ class MonoBottomPanel : public VBoxContainer {
 	void _warnings_toggled(bool p_pressed);
 	void _errors_toggled(bool p_pressed);
 
+	void _build_project_pressed();
+
 	static MonoBottomPanel *singleton;
 
 protected:

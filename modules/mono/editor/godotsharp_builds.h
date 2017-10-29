@@ -89,6 +89,8 @@ public:
 
 	static bool make_api_sln(APIType p_api_type);
 
+	static bool build_project_blocking();
+
 	GodotSharpBuilds();
 	~GodotSharpBuilds();
 };

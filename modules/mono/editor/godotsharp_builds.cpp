@@ -269,7 +269,7 @@ bool GodotSharpBuilds::make_api_sln(GodotSharpBuilds::APIType p_api_type) {
 	return true;
 }
 
-bool godotsharp_build_callback() {
+bool GodotSharpBuilds::build_project_blocking() {
 
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
@@ -348,7 +348,7 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	singleton = this;
 
-	EditorNode::get_singleton()->add_build_callback(&godotsharp_build_callback);
+	EditorNode::get_singleton()->add_build_callback(&GodotSharpBuilds::build_project_blocking);
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
