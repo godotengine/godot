@@ -1,6 +1,8 @@
 import os
 import platform
 
+from compat import decode_utf8
+
 if os.name == 'nt':
     import sys
     if sys.version_info < (3,):
@@ -12,7 +14,7 @@ if os.name == 'nt':
 def _reg_open_key(key, subkey):
     try:
         return winreg.OpenKey(key, subkey)
-    except WindowsError, OSError:
+    except (WindowsError, OSError):
         if platform.architecture()[0] == '32bit':
             bitness_sam = winreg.KEY_WOW64_64KEY
         else:
@@ -40,7 +42,7 @@ def _find_mono_in_reg(subkey, bits):
         with _reg_open_key_bits(winreg.HKEY_LOCAL_MACHINE, subkey, bits) as hKey:
             value, regtype = winreg.QueryValueEx(hKey, 'SdkInstallRoot')
             return value
-    except WindowsError, OSError:
+    except (WindowsError, OSError):
         return None
 
 
@@ -79,7 +81,7 @@ def find_msbuild_tools_path_reg():
         lines = subprocess.check_output([vswhere] + vswhere_args).splitlines()
 
         for line in lines:
-            parts = line.split(':', 1)
+            parts = decode_utf8(line).split(':', 1)
 
             if len(parts) < 2 or parts[0] != 'installationPath':
                 continue
@@ -96,7 +98,7 @@ def find_msbuild_tools_path_reg():
         print('Error reading output from vswhere: ' + e.message)
     except WindowsError:
         pass # Fine, vswhere not found
-    except subprocess.CalledProcessError, OSError:
+    except (subprocess.CalledProcessError, OSError):
         pass
 
     # Try to find 14.0 in the Registry
@@ -106,7 +108,7 @@ def find_msbuild_tools_path_reg():
         with _reg_open_key(winreg.HKEY_LOCAL_MACHINE, subkey) as hKey:
             value, regtype = winreg.QueryValueEx(hKey, 'MSBuildToolsPath')
             return value
-    except WindowsError, OSError:
+    except (WindowsError, OSError):
         return ''
 
     return ''
