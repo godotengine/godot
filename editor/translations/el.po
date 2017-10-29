@@ -1,5 +1,6 @@
 # Greek translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # George Tsiamasiotis <gtsiam@windowslive.com>, 2017.
@@ -7,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-08-27 16:46+0000\n"
+"PO-Revision-Date: 2017-10-24 18:46+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -15,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -653,9 +654,8 @@ msgstr ""
 "Να αφαιρεθούν; (Αδύνατη η αναίρεση)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:\n"
-msgstr "Δεν είναι δυνατή η επίλυση."
+msgstr "Αδύνατη η αφαίρεση:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -742,32 +742,31 @@ msgstr "Συγγραφείς"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Κορυφαίοι Χορηγοί"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Χρυσοί Χορυγοί"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Μικροί Χορηγοί"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Χρυσοί Δωρητές"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Αργυροί Δωρητές"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Donors"
-msgstr "Κλωνοποίηση κάτω"
+msgstr "Χάλκινοι Δωρητές"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Δωρητές"
 
 #: editor/editor_about.cpp
 msgid "License"
@@ -894,9 +893,8 @@ msgid "Duplicate"
 msgstr "Διπλασιασμός"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Volume"
-msgstr "Επαναφορά μεγέθυνσης"
+msgstr "Επαναφορά Έντασης"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
@@ -919,9 +917,8 @@ msgid "Duplicate Audio Bus"
 msgstr "Αναπαραγωγή διαύλου ήχου"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "Επαναφορά μεγέθυνσης"
+msgstr "Επαναφορά Έντασης Διαύλου"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
@@ -1206,9 +1203,8 @@ msgid "Move Favorite Down"
 msgstr "Μετακίνηση αγαπημένου κάτω"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder"
-msgstr "Αδύνατη η δημιουργία φακέλου."
+msgstr "Πήγαινε στον γονικό φάκελο"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1273,27 +1269,24 @@ msgid "Brief Description:"
 msgstr "Σύντομη περιγραφή:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Μέλη:"
+msgstr "Μέλη"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Μέλη:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Public Methods"
-msgstr "Δημόσιες συναρτήσεις:"
+msgstr "Δημόσιες συναρτήσεις"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "Δημόσιες συναρτήσεις:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "GUI Theme Items"
-msgstr "Στοιχεία του θέματος GUI:"
+msgstr "Στοιχεία του θέματος GUI"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1304,9 +1297,8 @@ msgid "Signals:"
 msgstr "Σήματα:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Απαριθμήσεις:"
+msgstr "Απαριθμήσεις"
 
 #: editor/editor_help.cpp
 msgid "Enumerations:"
@@ -1317,23 +1309,20 @@ msgid "enum  "
 msgstr "απαρίθμηση  "
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "Σταθερές:"
+msgstr "Σταθερές"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Σταθερές:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Περιγραφή:"
+msgstr "Περιγραφή"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Properties"
-msgstr "Ιδιότητες:"
+msgstr "Ιδιότητες"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
@@ -1346,9 +1335,8 @@ msgid ""
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods"
-msgstr "Λίστα συναρτήσεων:"
+msgstr "Συναρτήσεις"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -1400,28 +1388,24 @@ msgid "Error while saving."
 msgstr "Σφάλμα κατά την αποθήκευση."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Can't open '%s'."
-msgstr "Αδύνατη η λειτουργία στο '..'"
+msgstr "Αδύνατο το άνοιγμα του '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "Σφάλμα κατά την αποθήκευση."
+msgstr "Σφάλμα κατά η ανάλυση του '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Missing '%s' or its dependencies."
-msgstr "Η σκηνή '%s' έχει σπασμένες εξαρτήσεις:"
+msgstr "Λείπει το '%s' ή οι εξαρτήσεις του."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "Σφάλμα κατά την αποθήκευση."
+msgstr "Σφάλμα κατά την φόρτωση του '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1743,9 +1727,8 @@ msgid "Scene '%s' has broken dependencies:"
 msgstr "Η σκηνή '%s' έχει σπασμένες εξαρτήσεις:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Clear Recent Scenes"
-msgstr "Εκκαθάριση πρόσφατων αρχείων"
+msgstr "Εκκαθάριση πρόσφατων σκηνών"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
@@ -2120,9 +2103,8 @@ msgid "Object properties."
 msgstr "Ιδιότητες αντικειμένου."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Changes may be lost!"
-msgstr "Αλλαγή διανυσματικής σταθεράς"
+msgstr "Οι αλλαγές μπορεί να χαθούν!"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
@@ -2208,7 +2190,7 @@ msgstr "Άνοιγμα του προηγούμενου επεξεργαστή"
 #: editor/editor_plugin.cpp
 #, fuzzy
 msgid "Creating Mesh Previews"
-msgstr "Δημιουργία βιβλιοθήκης πλεγμάτων"
+msgstr "Δημιουργία προεπισκοπήσεων πλεγμάτων"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."

@@ -1,5 +1,6 @@
 # Spanish translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # Addiel Lucena Perez <addiell2017@gmail.com>, 2017.
@@ -16,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-10-05 13:48+0000\n"
-"Last-Translator: Rabid Orange <theorangerabid@gmail.com>\n"
+"PO-Revision-Date: 2017-10-23 01:48+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -382,9 +383,8 @@ msgid "No Matches"
 msgstr "Sin soincidencias"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d occurrence(s)."
-msgstr "%d ocurrencias reemplazadas."
+msgstr "%d ocurrencia/s reemplazadas."
 
 #: editor/code_editor.cpp
 msgid "Replace"
@@ -2396,7 +2396,7 @@ msgstr "No se pudo instanciar el script:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr "Te olvidaste de la palabra clave 'tool'?"
+msgstr "Has olvidado la palabra clave 'tool'?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
@@ -3266,19 +3266,16 @@ msgid "Resolving.."
 msgstr "Guardando…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "Conectar.."
+msgstr "Conectando.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "Prueba"
+msgstr "Solicitando.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Error making request"
-msgstr "¡Hubo un error al guardar el recurso!"
+msgstr "Error al realizar la solicitud"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -3289,9 +3286,8 @@ msgid "Retry"
 msgstr "Reintente"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Download Error"
-msgstr "Abajo"
+msgstr "Error de Descarga"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"

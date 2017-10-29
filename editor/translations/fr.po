@@ -1,5 +1,6 @@
 # French translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # Antoine Carrier <ac.g392@gmail.com>, 2017.
@@ -17,6 +18,7 @@
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
 # rafeu <duchainer@gmail.com>, 2016-2017.
 # Rémi Verschelde <rverschelde@gmail.com>, 2016-2017.
+# Robin Arys <robinarys@hotmail.com>, 2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
 # Thomas Baijot <thomasbaijot@gmail.com>, 2016.
 #
@@ -24,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-09-25 10:46+0000\n"
-"Last-Translator: keltwookie <keltwookie@protonmail.com>\n"
+"PO-Revision-Date: 2017-10-25 22:46+0000\n"
+"Last-Translator: Robin Arys <robinarys@hotmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -33,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -737,11 +739,11 @@ msgstr "La communauté Godot vous dit merci !"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr "Merci !"
+msgstr "Merci!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr "Contributeurs Godot Engine"
+msgstr "Contributeurs de Godot Engine"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
@@ -1242,16 +1244,16 @@ msgstr "Répertoires et fichiers :"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr "Aperçu :"
+msgstr "Aperçu:"
 
 #: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
 #: scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr "Fichier :"
+msgstr "Fichier:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Filter:"
-msgstr "Filtre :"
+msgstr "Filtre:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
@@ -1336,7 +1338,7 @@ msgstr "Recensements :"
 
 #: editor/editor_help.cpp
 msgid "Enumerations:"
-msgstr "Recensements :"
+msgstr "Recensements:"
 
 #: editor/editor_help.cpp
 msgid "enum  "
@@ -1392,7 +1394,7 @@ msgstr "Chercher du texte"
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr "Sortie :"
+msgstr "Sortie:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
@@ -1795,11 +1797,11 @@ msgstr "%d fichier(s) supplémentaire(s)"
 
 #: editor/editor_node.cpp
 msgid "%d more file(s) or folder(s)"
-msgstr "%s fichier(s) ou dossier(s) supplémentaire(s)"
+msgstr "%d fichier(s) ou dossier(s) supplémentaire(s)"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr "Mode sans distraction"
+msgstr "Mode Sans Distraction"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."

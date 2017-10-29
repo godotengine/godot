@@ -1,22 +1,24 @@
 # Portuguese (Portugal) translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # João Graça <jgraca95@gmail.com>, 2017.
+# Rueben Stevens <supercell03@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-09-28 16:47+0000\n"
-"Last-Translator: João Graça <jgraca95@gmail.com>\n"
+"PO-Revision-Date: 2017-10-25 01:48+0000\n"
+"Last-Translator: Rueben Stevens <supercell03@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -24,7 +26,7 @@ msgstr "desativado"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Toda a selecção"
 
 #: editor/animation_editor.cpp
 #, fuzzy
@@ -65,15 +67,15 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Remover a banda de animação"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "Definir transições para:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Renomear Banda de Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
@@ -88,12 +90,13 @@ msgid "Anim Track Change Wrap Mode"
 msgstr ""
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Editar Curva de Node"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Editar Curva de Selecção"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -101,7 +104,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr ""
+msgstr "Duplicar Selecção"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
@@ -109,19 +112,19 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr ""
+msgstr "Remover Selecção"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Contínuo"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Discreto"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Gatilho"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
@@ -133,28 +136,28 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Escalar Selecção"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Alterar escala a partir do cursor"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Ir para o próximo passo"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Ir para passo anterior"
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Linear"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Constante"
 
 #: editor/animation_editor.cpp
 msgid "In"
@@ -174,15 +177,15 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Transições"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimizar Animação"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Limpar Animação"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -199,7 +202,7 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Criar"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
@@ -243,15 +246,15 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "Comprimento (s):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "Duração da animação (em segundos)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "Passos (s):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
@@ -259,11 +262,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "Habilitar/Desabilitar repetição na animação."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "Adicionar novas bandas."
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
@@ -275,7 +278,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "Remover a banda seleccionada."
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
@@ -283,7 +286,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "Habilitar a edição de chaves individuais ao clicar nelas."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"

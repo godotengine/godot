@@ -1,22 +1,24 @@
 # Dutch translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # Aram Nap <xyphex.aram@gmail.com>, 2017.
+# Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-09-19 22:45+0000\n"
-"Last-Translator: Senno Kaasjager <senno.kaasjager@gmail.com>\n"
+"PO-Revision-Date: 2017-10-25 23:45+0000\n"
+"Last-Translator: Robin Arys <robinarys@hotmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -85,7 +87,7 @@ msgstr "Anim Track Wijzig Waarde Modus"
 #: editor/animation_editor.cpp
 #, fuzzy
 msgid "Anim Track Change Wrap Mode"
-msgstr "Anim Track Wijzig Waarde Modus"
+msgstr "Animatiespoor Wijzig Wikkelmodus"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -279,7 +281,7 @@ msgstr "Verwijder geselecteerde track."
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
-msgstr "Track tools"
+msgstr "Spoorgereedschappen"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
@@ -312,7 +314,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Key"
-msgstr "Key"
+msgstr "Sleutel"
 
 #: editor/animation_editor.cpp
 msgid "Transition"
@@ -576,7 +578,7 @@ msgstr "Zoeken:"
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
-msgstr "Matches:"
+msgstr "Overeenkomsten:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
@@ -660,7 +662,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:\n"
-msgstr ""
+msgstr "Niet wisbaar:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -715,71 +717,71 @@ msgstr "Verwijder"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "Bedankt van de Godot gemeenschap!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr ""
+msgstr "Bedankt!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot Engine medewerkers"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr ""
+msgstr "Projectoprichters"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Hoofdontwikkelaar"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
-msgstr ""
+msgstr "Project Manager"
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Ontwikkelaars"
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr ""
+msgstr "Auteurs"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Platina Sponsors"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Gouden Sponsors"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Mini Sponsors"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Gouden Donors"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Zilveren Donors"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "Bronzen Donors"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Donors"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Licentie"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr ""
+msgstr "Derde partijslicentie"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -788,33 +790,34 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine maakt gebruik van enkele gratis en open-source bibliotheken, "
+"ontwikkeld door derden, die compatibel zijn met onze MIT licentie. Wat volgt "
+"is een exhaustieve lijst van alle componenten van een derde partij met hun "
+"respectievelijke copyrightberichten en licentietermen."
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "All Components"
-msgstr "Constanten:"
+msgstr "Alle Componenten"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Components"
-msgstr "Constanten:"
+msgstr "Componenten"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Licenties"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
-msgstr ""
+msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Uncompressing Assets"
-msgstr "Aan Het Herimporteren"
+msgstr "Bronnen aan het uitpakken"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr ""
+msgstr "Pakket Succesvol Geïnstalleerd!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -828,115 +831,105 @@ msgstr "Installeer"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr ""
+msgstr "Pakketinstalleerder"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Luidsprekers"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "Geluidseffect Toevoegen"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Rename Audio Bus"
-msgstr "Open Audio Bus Layout"
+msgstr "Hernoem audiobus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Solo"
-msgstr "Open Audio Bus Layout"
+msgstr "Verander audiobus solo"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Mute"
-msgstr "Open Audio Bus Layout"
+msgstr "Verander audiobus stil"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
-
-#: editor/editor_audio_buses.cpp
-msgid "Select Audio Bus Send"
-msgstr ""
-
-#: editor/editor_audio_buses.cpp
-msgid "Add Audio Bus Effect"
-msgstr ""
-
-#: editor/editor_audio_buses.cpp
-msgid "Move Bus Effect"
-msgstr ""
+msgstr "Verander audiobusomleiding"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
+msgid "Select Audio Bus Send"
+msgstr "Selecteer audiobus verzend"
+
+#: editor/editor_audio_buses.cpp
+msgid "Add Audio Bus Effect"
+msgstr "Voeg audiobuseffect toe"
+
+#: editor/editor_audio_buses.cpp
+msgid "Move Bus Effect"
+msgstr "Verplaats audiobuseffect"
+
+#: editor/editor_audio_buses.cpp
 msgid "Delete Bus Effect"
-msgstr "Geselecteerde Verwijderen"
+msgstr "Verwijder audiobuseffect"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr ""
+msgstr "Audiobus, versleep om volgorde te veranderen."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr ""
+msgstr "Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr ""
+msgstr "Stil"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr ""
+msgstr "Omleiden"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr ""
+msgstr "Audiobusopties"
 
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr ""
+msgstr "Dupliceren"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Volume"
-msgstr "Reset Zoom"
+msgstr "Herstel Volume"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Effect"
-msgstr "Geselecteerde Verwijderen"
+msgstr "Effect Verwijderen"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Audio Bus"
-msgstr "Bus Toevoegen"
+msgstr "Audiobus Toevoegen"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr ""
+msgstr "Hoofdaudiobus kan niet verwijderd worden!"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Audio Bus"
-msgstr "Optimaliseer Animatie"
+msgstr "Verwijder audiobus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Duplicate Audio Bus"
-msgstr "Dupliceer Selectie"
+msgstr "Dupliceer Audiobus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "Reset Zoom"
+msgstr "Reset Audiobus Volume"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Audio Bus"
-msgstr "Open Audio Bus Layout"
+msgstr "Verplaats audiobus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
@@ -952,20 +945,19 @@ msgstr "Open Audio Bus Lay-out"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr ""
+msgstr "Er is geen 'res://default_bus_layout.tres' bestand."
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr ""
+msgstr "Ongeldig bestand, geen audiobus layout."
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
 msgstr "Bus Toevoegen"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Create a new Bus Layout."
-msgstr "Sla Audio Bus Layout Op Als.."
+msgstr "Maak een nieuwe audiobus layout."
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
@@ -974,7 +966,7 @@ msgstr "Laden"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr ""
+msgstr "Laad een bestaand audiobus layout."
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -982,18 +974,16 @@ msgid "Save As"
 msgstr "Opslaan Als"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Save this Bus Layout to a file."
-msgstr "Sla Audio Bus Layout Op Als.."
+msgstr "Sla deze audiobus layout op in een bestand."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
-#, fuzzy
 msgid "Load Default"
-msgstr "Standaard"
+msgstr "Laad Standaard"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr ""
+msgstr "Laad de standaard audiobus layout."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1044,7 +1034,7 @@ msgstr "Autoload Hernoemen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "Toggle AutoLoad Globals"
+msgstr "AutoLoad-Globalen omschakelen"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1097,7 +1087,7 @@ msgstr "Scene aan het updaten.."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first"
-msgstr ""
+msgstr "Kies eerst een basisfolder"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1125,12 +1115,10 @@ msgid "Choose"
 msgstr "Kies"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Storing File:"
-msgstr "Opslag Bestand:"
+msgstr "Bestand Opslaan:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Packing"
 msgstr "Inpakken"
 
@@ -1223,9 +1211,8 @@ msgid "Move Favorite Down"
 msgstr "Verplaats Favoriet Naar Beneden"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder"
-msgstr "Map kon niet gemaakt worden."
+msgstr "Ga naar bovenliggende folder"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1233,7 +1220,7 @@ msgstr "Mappen & Bestanden:"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
-msgstr "Preview:"
+msgstr "Voorbeeld:"
 
 #: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
 #: scene/gui/file_dialog.cpp
@@ -1254,9 +1241,8 @@ msgid "ScanSources"
 msgstr "Scan Bronnen"
 
 #: editor/editor_file_system.cpp
-#, fuzzy
 msgid "(Re)Importing Assets"
-msgstr "Aan Het Herimporteren"
+msgstr "Bronnen (Her)Importeren"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1273,7 +1259,7 @@ msgstr "Zoek Klasses"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "Boven"
 
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
@@ -1292,27 +1278,24 @@ msgid "Brief Description:"
 msgstr "Korte Beschrijving:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Leden:"
+msgstr "Leden"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Leden:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Public Methods"
-msgstr "Publieke Methodes:"
+msgstr "Publieke Methodes"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "Publieke Methodes:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "GUI Theme Items"
-msgstr "GUI Thema Items:"
+msgstr "GUI Thema Items"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1323,36 +1306,32 @@ msgid "Signals:"
 msgstr "Signalen:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Functies:"
+msgstr "Enumeraties"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations:"
-msgstr "Functies:"
+msgstr "Enumeraties:"
 
 #: editor/editor_help.cpp
 msgid "enum  "
-msgstr ""
+msgstr "enum  "
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "Constanten:"
+msgstr "Constanten"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Constanten:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Omschrijving:"
+msgstr "Beschrijving"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "Eigenschappen"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
@@ -1363,11 +1342,12 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Er is momenteel geen beschrijving voor deze eigenschap. Help ons alsjeblieft "
+"door [color=$color][url=$url]een toe te voegen[/url][/color]!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods"
-msgstr "Methode Lijst:"
+msgstr "Methodes"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -1378,15 +1358,16 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Er is momenteel geen beschrijving voor deze methode. Help ons alsjeblieft "
+"door [color=$color][url=$url]een toe te voegen[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Search Text"
 msgstr "Zoek Tekst"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Output:"
-msgstr " Uitvoer:"
+msgstr "Uitvoer:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
@@ -1404,7 +1385,6 @@ msgstr "Resource Opslaan Als.."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "I see.."
 msgstr "Ik snap het.."
 
@@ -1418,30 +1398,27 @@ msgstr "Opgevraagde bestandsformaat onbekend:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "Error bij het opslaan."
+msgstr "Fout bij het opslaan."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Can't open '%s'."
-msgstr "Kan niet verbinden."
+msgstr "Kan '%s' niet openen."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "Error bij het opslaan."
+msgstr "Fout tijdens het parsen van '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr ""
+msgstr "Onverwacht einde van het bestand '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr ""
+msgstr "'%s' of zijn afhankelijkheden ontbreken."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "Error bij het opslaan."
+msgstr "Fout tijdens het laden van '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1457,7 +1434,7 @@ msgstr "Thumbnail Aan Het Maken"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr ""
+msgstr "Deze operatie kan niet gedaan worden zonder boomwortel."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1492,7 +1469,7 @@ msgstr "Error bij het opslaan van layout!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr ""
+msgstr "Standaard editor layout overschreven."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -1500,26 +1477,36 @@ msgstr "Lay-out naam niet gevonden!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr ""
+msgstr "Standaard layout hersteld naar basisinstellingen."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Dit bestand hoort bij een scene die geïmporteerd werd, dus het is niet "
+"bewerkbaar.\n"
+"Lees de documentatie over scenes importeren om deze workflow beter te "
+"begrijpen."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
+"Dit bestand hoort bij een scene die werd geïnstantieerd of overgeërfd.\n"
+"Aanpassingen zullen niet worden bijgehouden bij het opslaan van de huidige "
+"scene."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"Dit bestand werd geïmporteerd, dus het is niet bewerkbaar. Pas de "
+"instellingen aan in het importeerpaneel en importeer het nadien opnieuw."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1528,38 +1515,43 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Deze scene werd geïmporteerd, dus aanpassingen zullen niet worden "
+"opgeslagen.\n"
+"Instantieer het of erf het over om er aanpassingen aan te maken.\n"
+"Lees de documentatie over scenes importeren om deze workflow beter te "
+"begrijpen."
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
-msgstr ""
+msgstr "Kopieer Parameters"
 
 #: editor/editor_node.cpp
 msgid "Paste Params"
-msgstr ""
+msgstr "Plak Parameters"
 
 #: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
-msgstr ""
+msgstr "Plak Bron"
 
 #: editor/editor_node.cpp
 msgid "Copy Resource"
-msgstr ""
+msgstr "Kopieer Bron"
 
 #: editor/editor_node.cpp
 msgid "Make Built-In"
-msgstr ""
+msgstr "Integreer"
 
 #: editor/editor_node.cpp
 msgid "Make Sub-Resources Unique"
-msgstr ""
+msgstr "Maak Onderliggende Bronnen Uniek"
 
 #: editor/editor_node.cpp
 msgid "Open in Help"
-msgstr ""
+msgstr "Open in Help"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "Er is geen startscene gedefinieerd."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1567,6 +1559,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Er is nooit een hoofdscene gekozen, wil je er een selecteren?\n"
+"Je kan dit later nog aanpassen in \"Projectinstellingen\" onder de categorie "
+"'toepassing'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1574,6 +1569,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"De geselecteerde scene '%s' bestaat niet, selecteer een andere?\n"
+"Je kan dit later aanpassen in \"Projectinstellingen\" onder de categorie "
+"'toepassing'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1581,175 +1579,187 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"De geselecteerde scene '%s' is geen scenebestand, selecteer een andere?\n"
+"Je kan dit later aanpassen in \"Projectinstellingen\" onder de categorie "
+"'toepassing'."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "De huidige scene werd nooit opgeslagen, sla ze op voor het uitvoeren."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "Kon het subproces niet opstarten!"
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Scene Openen"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "Open Basisscene"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "Open Scene Snel..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr ""
+msgstr "Open Script Snel..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Close"
-msgstr "Sla een Bestand Op"
+msgstr "Opslaan & Sluiten"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr ""
+msgstr "Sla Scene Op Als..."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "Nee"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "Deze scene is nooit opgeslagen. Sla op voor het uitvoeren?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "Deze operatie kan niet uitgevoerd worden zonder scene."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "Exporteer Mesh Library"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr ""
+msgstr "Exporteer Tile Set"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
 msgstr ""
+"Deze operatie kan niet uitgevoerd worden zonder een geselecteerde knoop."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr ""
+msgstr "De huidige scene is nog niet opgeslagen. Toch openen?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr ""
+msgstr "Een scene die nooit opgeslagen is kan je niet opnieuw laden."
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr ""
+msgstr "Herstellen"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr ""
+msgstr "Deze actie kan niet ongedaan gemaakt worden. Toch herstellen?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene.."
-msgstr ""
+msgstr "Snel Scene Uitvoeren..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "Afsluiten"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "Sluit de editor af?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "Open de Project Manager?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Quit"
-msgstr "Sla een Bestand Op"
+msgstr "Opslaan & Afsluiten"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
+"Wil je de wijzigen aan de volgende scene(s) opslaan voor het afsluiten?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
+"Wil je de wijzigen aan de volgende scene(s) opslaan voor de Project Manager "
+"opent?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"Deze optie is verouderd. Situaties waar een hernieuwing geforceerd moet "
+"worden zijn softwarefouten. Rapporteer dit alsjeblieft."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "Kies een Hoofdscene"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '"
-msgstr ""
+msgstr "Onmogelijk om de plugin op: '"
 
 #: editor/editor_node.cpp
 msgid "' parsing of config failed."
-msgstr ""
+msgstr "' te activeren. Het configuratiebestand kon niet gelezen worden."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/"
-msgstr ""
+msgstr "Onmogelijk om scriptveld te vinden voor de plugin op: 'res://addons/"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '"
-msgstr ""
+msgstr "Volgend script kon niet geladen worden: '"
 
 #: editor/editor_node.cpp
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Scene '%s' werd automatisch geïmporteerd, dus ze kan niet aangepast worden.\n"
+"Om aanpassingen te doen kan je een erfende scene aanmaken."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ugh"
-msgstr ""
+msgstr "Oeps"
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
+"Fout tijdens het laden van de scene, ze moet zich in het projectpad "
+"bevinden. Gebruik 'Importeer' om de scene te openen en sla ze nadien ergens "
+"in het projectpad op."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr ""
+msgstr "De scene '%s' heeft kapotte afhankelijkheden:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr ""
+msgstr "Maak Leeg"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr ""
+msgstr "Layout Opslaan"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr ""
+msgstr "Layout Verwijderen"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
@@ -1758,87 +1768,87 @@ msgstr "Standaard"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr ""
+msgstr "Scenetab Wisselen"
 
 #: editor/editor_node.cpp
 msgid "%d more file(s)"
-msgstr ""
+msgstr "nog %d bestand(en)"
 
 #: editor/editor_node.cpp
 msgid "%d more file(s) or folder(s)"
-msgstr ""
+msgstr "nog %d bestand(en) of folder(s)"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Afleidingsvrije Modus"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr ""
+msgstr "Afleidingsvrije modus veranderen."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr ""
+msgstr "Scène"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr ""
+msgstr "Ga naar de vorige geopende scene."
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr ""
+msgstr "Volgend tabblad"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr ""
+msgstr "Vorig tabblad"
 
 #: editor/editor_node.cpp
 msgid "Filter Files.."
-msgstr ""
+msgstr "Bestanden Filteren..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "Operaties met scenebestanden."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Nieuwe Scene"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene.."
-msgstr ""
+msgstr "Nieuwe Geërfde Scene..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene.."
-msgstr ""
+msgstr "Scene Openen..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Scene Opslaan"
 
 #: editor/editor_node.cpp
 msgid "Save all Scenes"
-msgstr ""
+msgstr "Alle Scenes Opslaan"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Scene Sluiten"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Recente Scenes Openen"
 
 #: editor/editor_node.cpp
 msgid "Convert To.."
-msgstr ""
+msgstr "Converteer Naar..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary.."
-msgstr ""
+msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
 msgid "TileSet.."
-msgstr ""
+msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
@@ -1849,57 +1859,59 @@ msgstr "Ongedaan Maken"
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Opnieuw"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr ""
+msgstr "Scene Herstellen"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "Diverse project of scene-brede gereedschappen."
 
 #: editor/editor_node.cpp
 msgid "Project"
-msgstr ""
+msgstr "Project"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "Projectinstellingen"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
-msgstr ""
+msgstr "Voer Script Uit"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Exporteren"
 
 #: editor/editor_node.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Gereedschappen"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Sluit af naar Projectlijst"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Debuggen"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr ""
+msgstr "Start met Debuggen op Afstand"
 
 #: editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
+"Na het exporteren of opstarten van het programma zal het proberen verbinding "
+"maken met het IP-adres van deze computer zodat het gedebugd kan worden."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "Kleine Deployatie over het Netwerk"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1913,7 +1925,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Collision Shapes Zichtbaar"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1923,7 +1935,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr ""
+msgstr "Navigatie Zichtbaar"
 
 #: editor/editor_node.cpp
 msgid ""

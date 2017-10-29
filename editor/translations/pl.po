@@ -1,5 +1,6 @@
 # Polish translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # 8-bit Pixel <dawdejw@gmail.com>, 2016.
@@ -11,13 +12,14 @@
 # Maksymilian Świąć <maksymilian.swiac@gmail.com>, 2017.
 # Mietek Szcześniak <ravaging@go2.pl>, 2016.
 # Rafal Brozio <rafal.brozio@gmail.com>, 2016.
+# Sebastian Krzyszkowiak <dos@dosowisko.net>, 2017.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-06-26 08:24+0000\n"
-"Last-Translator: Daniel Lewan <vision360.daniel@gmail.com>\n"
+"PO-Revision-Date: 2017-10-23 16:47+0000\n"
+"Last-Translator: Sebastian Krzyszkowiak <dos@dosowisko.net>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -25,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.15-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -734,7 +736,7 @@ msgstr "Usuń"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Podziękowania od społeczności Godot'a!"
+msgstr "Podziękowania od społeczności Godota!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"

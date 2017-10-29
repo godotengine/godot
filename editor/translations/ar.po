@@ -1,5 +1,6 @@
 # Arabic translation of the Godot Engine editor
-# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
+# Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
 # athomield <athomield@hotmail.com>, 2017.
@@ -7,12 +8,13 @@
 # Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016.
 # omar anwar aglan <omar.aglan91@yahoo.com>, 2017.
 # OWs Tetra <owstetra@gmail.com>, 2017.
+# Wajdi Feki <wajdi.feki@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-09-29 19:44+0000\n"
-"Last-Translator: omar anwar aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2017-10-25 20:58+0000\n"
+"Last-Translator: Wajdi Feki <wajdi.feki@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -20,99 +22,99 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "معطل"
+msgstr "معطّل"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "كُل المُحدد"
+msgstr "كُل الإختيار"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr "تحرك أضف مُفتاح"
+msgstr "مفتاح إضافة الحركة"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "الحركة تغير إنتقال"
+msgstr "إنتقالية تغيير التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "الحركة تغير تبديل"
+msgstr "تحويل تغيير التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr "الحركة تغير القيمة"
+msgstr "قيمة تغيير التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "الحركة تغير الخانة"
+msgstr "نداء تغيير التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "الحركة إضافة مسار"
+msgstr "مسار إضافة التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "الحركة تكرار المفاتيح"
+msgstr "مفاتيح نسخ التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "تحرك الحركة متابعة"
+msgstr "رفع مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "تحريك الحركة تتبع أسفل"
+msgstr "إنزال مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "إمسح مسار الحركة"
+msgstr "حذف مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "حدد التحولات إلي:"
+msgstr "تحديد التحولات ل:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "إعادة تسمية مسار الحركة"
+msgstr "تغيير إسم مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr "تغير إدخال مسار الحركة"
+msgstr "تغيير إقحام مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr "وضع تغير قيمة مسار الحركة"
+msgstr "تغيير صيغة القيمة لمسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr "وضع تغيير لف مسار الحركة"
+msgstr "تغيير صيغة الغلاف لمسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr "تعديل منحني العقدة"
+msgstr "تحرير منحى العقدة"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr "تعديل المنحني المحدد"
+msgstr "تحرير منحى الإختيار"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "حذف مفاتيح الحركة"
+msgstr "مفاتيح حذف التحريك"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "تكرير المحدد"
+msgstr "إختيار النسخ"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "تكرير النقل"
+msgstr "نسخ محمّل"
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr "إزالة التحديد"
+msgstr "حذف الإختيار"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
@@ -128,11 +130,11 @@ msgstr "مُطلق"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr "إضافة مفتاح حركة"
+msgstr "مفتاح إضافة تحريك"
 
 #: editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr "مفتاح حركة"
+msgstr "مفتاح حركة التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
@@ -458,15 +460,15 @@ msgstr "العمود:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "الميثود في العقدة الهدف يجب أن تحدد!"
+msgstr "الطريقة في العقدة المستهدفة يجب أن تكون محدّدة!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"الميثود الهدف لا يمكن إيجاده! حدد ميثود صالح أو صل كود برمجي إلي العقدة "
-"الهدف."
+"لم يتم العثور على الطريقة المستهدفة! حدّد طريقة سليمة أو أرفق سيكربت لاستهداف "
+"العقدة."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -487,11 +489,11 @@ msgstr "إمسح"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "إضافة وسيطة إستدعاء إضافية"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "وسائط إستدعاء إضافية :"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
@@ -745,31 +747,31 @@ msgstr "المالكون"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "الرعاة البلاتينيين"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "الرعاة الذهبيين"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "الرعاة الصغار"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "المانحين الذهبيين"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "المانحين الفضيين"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "المانحين البرنزيين"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "مانحين"
 
 #: editor/editor_about.cpp
 msgid "License"
@@ -1000,7 +1002,7 @@ msgstr "إسم غير صالح، يجب أن لا يتصادم مع الأسما
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr "إسم غير صالح، يجب أن لا يتصادم مع أسم ثابت عالمياص موجود بالفعل."
+msgstr "إسم غير صالح، ييجب ألاّ يتصادم مع إسم موجود لثابت عمومي."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid Path."
@@ -1245,19 +1247,19 @@ msgstr "إبحث في المساعدة"
 
 #: editor/editor_help.cpp
 msgid "Class List:"
-msgstr "قائمة الفصول:"
+msgstr "قائمة الأصناف:"
 
 #: editor/editor_help.cpp
 msgid "Search Classes"
-msgstr "إبحث في الفصول"
+msgstr "إبحث في الأصناف"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "فوق"
 
 #: editor/editor_help.cpp editor/property_editor.cpp
 msgid "Class:"
-msgstr "الفصل:"
+msgstr "صنف:"
 
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 msgid "Inherits:"
@@ -1331,7 +1333,7 @@ msgstr "الوصف:"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "خصائص"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
@@ -1342,6 +1344,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"لا يوجد حاليا وصف لهذه الخاصية. الرجاء المساعدة من خلال [url][/color/] "
+"المساهمة واحد [color=$color][url=$url]!"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1357,6 +1361,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"لا يوجد حاليا وصف لهذه الطريقة. الرجاء المساعدة من خلال [color=$color][url="
+"$url]المساهمة واحد[/url][/color] !"
 
 #: editor/editor_help.cpp
 msgid "Search Text"
@@ -1409,7 +1415,7 @@ msgstr "خطأ خلال الحفظ."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr ""
+msgstr "نهاية ملف غير مرتقبة 's%'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
@@ -1439,7 +1445,7 @@ msgstr "هذه العملية لا يمكنها الإكتمال من غير ج�
 #: editor/editor_node.cpp
 msgid ""
 "Couldn't save scene. Likely dependencies (instances) couldn't be satisfied."
-msgstr "لا يمكن حفظ المشهد. علي ما يبدو التبعيات (الأمثلة) لا يمكن ملئها."
+msgstr "لا يمكن حفظ المشهد. على الأرجح لا يمكن إستيفاء التبعيات (مجسّدات)."
 
 #: editor/editor_node.cpp
 msgid "Failed to load resource."
@@ -1962,7 +1968,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
-msgstr ""
+msgstr "أصناف"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
@@ -2246,7 +2252,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr ""
+msgstr "أكتب منطقك في الطريقة ()run_"
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
@@ -2266,7 +2272,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr ""
+msgstr "هل نسيت الطريقة '_run' ؟"
 
 #: editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
@@ -3019,7 +3025,7 @@ msgstr "لا يمكن الإتصال بالمُضيف:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr "لا إستجابة من المُضيف:"
+msgstr "لا ردّ من المُضيف:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
@@ -4246,7 +4252,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " مرجع الصنف"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -4350,7 +4356,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
-msgstr ""
+msgstr "إبحث في هرمية الأصناف."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -5187,11 +5193,11 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
-msgstr ""
+msgstr "إضافة بنود للصنف"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Class Items"
-msgstr ""
+msgstr "حذف بنود من الصنف"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
@@ -6006,11 +6012,11 @@ msgstr ""
 
 #: editor/property_selector.cpp
 msgid "Select Virtual Method"
-msgstr ""
+msgstr "إختر طريقة إفتراضية"
 
 #: editor/property_selector.cpp
 msgid "Select Method"
-msgstr ""
+msgstr "إختر طريقة"
 
 #: editor/pvrtc_compress.cpp
 msgid "Could not execute PVRTC tool:"
@@ -6366,7 +6372,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name"
-msgstr ""
+msgstr "إسم صنف غير صالح"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path"
@@ -6403,7 +6409,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name"
-msgstr ""
+msgstr "إسم صنف"
 
 #: editor/script_create_dialog.cpp
 msgid "Template"
@@ -6669,9 +6675,7 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
-"instance dictionary نموذج القاموس غير صالح - subclasses الفئة الفرعية غير "
-"صالحة"
+msgstr "مجسّد القاموس غير صالح (أصناف فرعية غير صالحة)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Object can't provide a length."
@@ -7111,7 +7115,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr ""
+msgstr "العقدة المخصصة لا تحتوي طريقة  ()step_ ، لا يمكن معالجة المخطوط."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
