@@ -1205,6 +1205,8 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 		if (!viewport_base->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport_base->call_deferred("grab_focus");
 	}
+
+    _gui_input_viewport(p_event);
 }
 
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
