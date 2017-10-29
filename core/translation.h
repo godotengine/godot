@@ -85,8 +85,6 @@ class TranslationServer : public Object {
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
-	//yes, portuguese is supported!
-
 	void set_enabled(bool p_enabled) { enabled = p_enabled; }
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
 
@@ -103,6 +101,7 @@ public:
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
 	static bool is_locale_valid(const String &p_locale);
+	static String standardize_locale(const String &p_locale);
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	StringName tool_translate(const StringName &p_message) const;
