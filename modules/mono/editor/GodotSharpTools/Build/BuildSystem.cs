@@ -16,33 +16,24 @@ namespace GodotSharpTools.Build
         private extern static void godot_icall_BuildInstance_ExitCallback(string solution, string config, int exitCode);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern static MSBuildInfo godot_icall_BuildInstance_get_MSBuildInfo();
+        private extern static void godot_icall_BuildInstance_get_MSBuildInfo(ref string msbuildPath, ref string frameworkPath);
 
-        [StructLayout(LayoutKind.Sequential)]
         private struct MSBuildInfo
         {
-            string path;
-            string frameworkPathOverride;
-
-            public string MSBuildPath
-            {
-                get { return path; }
-            }
-
-            public string FrameworkPathOverride
-            {
-                get { return frameworkPathOverride; }
-            }
+            public string path;
+            public string frameworkPathOverride;
         }
 
         private static MSBuildInfo GetMSBuildInfo()
         {
-            MSBuildInfo ret = godot_icall_BuildInstance_get_MSBuildInfo();
+            MSBuildInfo msbuildInfo = new MSBuildInfo();
 
-            if (ret.MSBuildPath == null)
+            godot_icall_BuildInstance_get_MSBuildInfo(ref msbuildInfo.path, ref msbuildInfo.frameworkPathOverride);
+
+            if (msbuildInfo.path == null)
                 throw new FileNotFoundException("Cannot find the MSBuild executable.");
 
-            return ret;
+            return msbuildInfo;
         }
 
         private string solution;
@@ -70,12 +61,12 @@ namespace GodotSharpTools.Build
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.FrameworkPathOverride.Length > 0)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.FrameworkPathOverride);
+            if (msbuildInfo.frameworkPathOverride != null)
+                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.MSBuildPath, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
@@ -114,12 +105,12 @@ namespace GodotSharpTools.Build
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            if (msbuildInfo.FrameworkPathOverride.Length > 0)
-                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.FrameworkPathOverride);
+            if (msbuildInfo.frameworkPathOverride.Length > 0)
+                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.MSBuildPath, compilerArgs);
+            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
