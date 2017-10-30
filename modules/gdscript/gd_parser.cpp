@@ -2132,18 +2132,37 @@ void GDParser::_parse_extends(ClassNode *p_class) {
 	}
 
 	while (true) {
-		if (tokenizer->get_token() != GDTokenizer::TK_IDENTIFIER) {
 
-			_set_error("Invalid 'extends' syntax, expected string constant (path) and/or identifier (parent class).");
-			return;
+		switch (tokenizer->get_token()) {
+
+			case GDTokenizer::TK_IDENTIFIER: {
+
+					StringName identifier = tokenizer->get_token_identifier();
+					p_class->extends_class.push_back(identifier);
+				}
+				break;
+
+			case GDTokenizer::TK_PERIOD:
+				break;
+
+			default: {
+
+				_set_error("Invalid 'extends' syntax, expected string constant (path) and/or identifier (parent class).");
+				return;
+			}
 		}
 
-		StringName identifier = tokenizer->get_token_identifier();
-		p_class->extends_class.push_back(identifier);
-
 		tokenizer->advance(1);
-		if (tokenizer->get_token() != GDTokenizer::TK_PERIOD)
-			return;
+
+		switch (tokenizer->get_token()) {
+
+			case GDTokenizer::TK_IDENTIFIER:
+			case GDTokenizer::TK_PERIOD:
+				continue;
+
+			default:
+				return;
+		}
 	}
 }
 

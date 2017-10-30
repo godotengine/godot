@@ -1537,21 +1537,44 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 					base_class = p->subclasses[base];
 					break;
 				}
+
+				if (p->constants.has(base)) {
+
+					base_class = p->constants[base];
+					if (base_class.is_null()) {
+						_set_error("Constant not a class: " + base, p_class);
+						return ERR_SCRIPT_FAILED;
+					}
+					break;
+				}
+
 				p = p->_owner;
 			}
 
 			if (base_class.is_valid()) {
 
+				String ident = base;
+
 				for (int i = 1; i < p_class->extends_class.size(); i++) {
 
 					String subclass = p_class->extends_class[i];
 
+					ident += ("." + subclass);
+
 					if (base_class->subclasses.has(subclass)) {
 
 						base_class = base_class->subclasses[subclass];
+					} else if (base_class->constants.has(subclass)) {
+
+						Ref<GDScript> base = base_class->constants[subclass];
+						if (base.is_null()) {
+							_set_error("Constant not a class: " + ident, p_class);
+							return ERR_SCRIPT_FAILED;
+						}
+						base_class = base;
 					} else {
 
-						_set_error("Could not find subclass: " + subclass, p_class);
+						_set_error("Could not find subclass: " + ident, p_class);
 						return ERR_FILE_NOT_FOUND;
 					}
 				}
