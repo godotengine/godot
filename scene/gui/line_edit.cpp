@@ -1038,9 +1038,11 @@ void LineEdit::set_cursor_position(int p_pos) {
 	Ref<StyleBox> style = get_stylebox("normal");
 	Ref<Font> font = get_font("font");
 
-	if (cursor_pos < window_pos) {
+	if (cursor_pos <= window_pos) {
 		/* Adjust window if cursor goes too much to the left */
-		set_window_pos(cursor_pos);
+		if (window_pos > 0)
+			set_window_pos(window_pos - 1);
+
 	} else if (cursor_pos > window_pos) {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
