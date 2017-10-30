@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OccluderPolygon2D" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Defines a 2D polygon for LightOccluder2D.
 	</brief_description>
 	<description>
+		Editor facility that helps you draw a 2D polygon used as resource for [LightOccluder2D].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,18 +56,24 @@
 	</methods>
 	<members>
 		<member name="closed" type="bool" setter="set_closed" getter="is_closed">
+			If [code]true[/code] closes the polygon. A closed OccluderPolygon2D occludes the light coming from any direction. An opened OccluderPolygon2D occludes the light only at its outline's direction. Default value [code]true[/code].
 		</member>
 		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="OccluderPolygon2D.CullMode">
+			Set the direction of the occlusion culling when not [code]CULL_DISABLED[/code]. Default value [code]DISABLED[/code].
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
+			A [Vector2] array with the index for polygon's vertices positions.
 		</member>
 	</members>
 	<constants>
 		<constant name="CULL_DISABLED" value="0">
+			Culling mode for the occlusion. Disabled means no culling. See [member cull_mode].
 		</constant>
 		<constant name="CULL_CLOCKWISE" value="1">
+			Culling mode for the occlusion. Sets the culling to be in clockwise direction. See [member cull_mode].
 		</constant>
 		<constant name="CULL_COUNTER_CLOCKWISE" value="2">
+			Culling mode for the occlusion. Sets the culling to be in counter clockwise direction. See [member cull_mode].
 		</constant>
 	</constants>
 </class>
