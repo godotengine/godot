@@ -171,11 +171,6 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 			String script_path = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
 			monodevel_instance->execute(script_path);
 		} break;
-		case EDITOR_VISUAL_STUDIO:
-		// TODO
-		// devenv <PathToSolutionFolder>
-		// devenv /edit <PathToCsFile> /command "edit.goto <Line>"
-		// HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7
 		default:
 			return ERR_UNAVAILABLE;
 	}
@@ -229,7 +224,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	if (!ed_settings->has_setting("mono/editor/external_editor")) {
 		ed_settings->set_setting("mono/editor/external_editor", EDITOR_NONE);
 	}
-	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio,Visual Studio Code"));
+	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio Code"));
 }
 
 GodotSharpEditor::~GodotSharpEditor() {

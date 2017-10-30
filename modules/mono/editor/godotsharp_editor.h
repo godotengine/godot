@@ -69,7 +69,6 @@ public:
 	enum ExternalEditor {
 		EDITOR_NONE,
 		EDITOR_MONODEVELOP,
-		EDITOR_VISUAL_STUDIO,
 		EDITOR_CODE,
 	};
 
