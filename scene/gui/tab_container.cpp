@@ -90,6 +90,10 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
+		// Do not activate tabs when tabs is empty
+		if (get_tab_count() == 0)
+			return;
+
 		Vector<Control *> tabs = _get_tabs();
 
 		// Handle navigation buttons.
@@ -298,6 +302,8 @@ void TabContainer::_notification(int p_what) {
 }
 
 int TabContainer::_get_tab_width(int p_index) const {
+
+	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
 	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
 	if (!control || control->is_set_as_toplevel())
 		return 0;
@@ -669,6 +675,7 @@ void TabContainer::_bind_methods() {
 TabContainer::TabContainer() {
 
 	first_tab_cache = 0;
+	last_tab_cache = 0;
 	buttons_visible_cache = false;
 	tabs_ofs_cache = 0;
 	current = 0;
