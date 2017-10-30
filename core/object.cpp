@@ -1073,9 +1073,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
 	//this happens automatically and will not change the performance of calling.
 	//awesome, isn't it?
-	VMap<Signal::Target, Signal::Slot> slot_map = s->slot_map;
-
-	int ssize = slot_map.size();
+	OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher> slot_map = s->slot_map;
 
 	OBJ_DEBUG_LOCK
 
@@ -1083,13 +1081,13 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 
 	Error err = OK;
 
-	for (int i = 0; i < ssize; i++) {
+	for (OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher>::Element E = slot_map.front(); E; E = E.next()) {
 
-		const Connection &c = slot_map.getv(i).conn;
+		const Connection &c = E.value().conn;
 
 		Object *target;
 #ifdef DEBUG_ENABLED
-		target = ObjectDB::get_instance(slot_map.getk(i)._id);
+		target = ObjectDB::get_instance(E.key()._id);
 		ERR_CONTINUE(!target);
 #else
 		target = c.target;
@@ -1102,11 +1100,11 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			//handle binds
 			bind_mem.resize(p_argcount + c.binds.size());
 
-			for (int j = 0; j < p_argcount; j++) {
-				bind_mem[j] = p_args[j];
+			for (int i = 0; i < p_argcount; i++) {
+				bind_mem[i] = p_args[i];
 			}
-			for (int j = 0; j < c.binds.size(); j++) {
-				bind_mem[p_argcount + j] = &c.binds[j];
+			for (int i = 0; i < c.binds.size(); i++) {
+				bind_mem[p_argcount + i] = &c.binds[i];
 			}
 
 			args = bind_mem.ptr();
@@ -1271,9 +1269,9 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 
 		const Signal *s = &signal_map[*S];
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
+		for (OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher>::ConstElement E = s->slot_map.front(); E; E = E.next()) {
 
-			p_connections->push_back(s->slot_map.getv(i).conn);
+			p_connections->push_back(E.value().conn);
 		}
 	}
 }
@@ -1284,8 +1282,8 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 	if (!s)
 		return; //nothing
 
-	for (int i = 0; i < s->slot_map.size(); i++)
-		p_connections->push_back(s->slot_map.getv(i).conn);
+	for (OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher>::ConstElement E = s->slot_map.front(); E; E = E.next())
+		p_connections->push_back(E.value().conn);
 }
 
 bool Object::has_persistent_signal_connections() const {
@@ -1296,9 +1294,9 @@ bool Object::has_persistent_signal_connections() const {
 
 		const Signal *s = &signal_map[*S];
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
+		for (OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher>::ConstElement E = s->slot_map.front(); E; E = E.next()) {
 
-			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST)
+			if (E.value().conn.flags & CONNECT_PERSIST)
 				return true;
 		}
 	}
@@ -1738,9 +1736,9 @@ Object::~Object() {
 		ERR_EXPLAIN("Attempt to delete an object in the middle of a signal emission from it");
 		ERR_CONTINUE(s->lock > 0);
 
-		for (int i = 0; i < s->slot_map.size(); i++) {
+		for (OrderedHashMap<Signal::Target, Signal::Slot, Signal::TargetHasher>::Element E = s->slot_map.front(); E; E = E.next()) {
 
-			sconnections.push_back(s->slot_map.getv(i).conn);
+			sconnections.push_back(E.value().conn);
 		}
 	}
 

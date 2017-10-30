@@ -32,10 +32,10 @@
 
 #include "list.h"
 #include "map.h"
+#include "ordered_hash_map.h"
 #include "os/rw_lock.h"
 #include "set.h"
 #include "variant.h"
-#include "vmap.h"
 
 #define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant()
 #define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5
@@ -425,13 +425,16 @@ private:
 			ObjectID _id;
 			StringName method;
 
-			_FORCE_INLINE_ bool operator<(const Target &p_target) const { return (_id == p_target._id) ? (method < p_target.method) : (_id < p_target._id); }
-
+			_FORCE_INLINE_ bool operator==(const Target &p_target) const { return (_id == p_target._id) && (method == method); }
 			Target(const ObjectID &p_id, const StringName &p_method)
 				: _id(p_id),
 				  method(p_method) {
 			}
 			Target() { _id = 0; }
+		};
+
+		struct TargetHasher {
+			static _FORCE_INLINE_ uint32_t hash(const Target &p_target) { return ((p_target._id << 5) + p_target._id) + p_target.method.hash(); }
 		};
 
 		struct Slot {
@@ -441,7 +444,7 @@ private:
 		};
 
 		MethodInfo user;
-		VMap<Target, Slot> slot_map;
+		OrderedHashMap<Target, Slot, TargetHasher> slot_map;
 		int lock;
 		Signal() { lock = 0; }
 	};
