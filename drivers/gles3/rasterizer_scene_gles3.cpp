@@ -1134,9 +1134,9 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_draw = p_material->shader->spatial.depth_draw_mode;
 	}
 
-//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
-/*
+	/*
 	if (p_material->flags[VS::MATERIAL_FLAG_WIREFRAME])
 		glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	else
@@ -4022,6 +4022,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	state.ubo_data.z_slope_scale = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_side = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = 0;
+
+	p_cam_projection.get_viewport_size(state.ubo_data.viewport_size[0], state.ubo_data.viewport_size[1]);
 
 	if (storage->frame.current_rt) {
 		state.ubo_data.screen_pixel_size[0] = 1.0 / storage->frame.current_rt->width;
