@@ -1205,6 +1205,32 @@ void CanvasItemEditor::_gui_input_viewport_base(const Ref<InputEvent> &p_event) 
 		if (!viewport_base->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport_base->call_deferred("grab_focus");
 	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		if (k->is_pressed() && drag == DRAG_NONE) {
+			// Move the object with the arrow keys
+			KeyMoveMODE move_mode = MOVE_VIEW_BASE;
+			if (k->get_alt()) move_mode = MOVE_LOCAL_BASE;
+			if (k->get_control() || k->get_metakey()) move_mode = MOVE_LOCAL_WITH_ROT;
+
+			if (k->get_scancode() == KEY_UP)
+				_key_move(Vector2(0, -1), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_DOWN)
+				_key_move(Vector2(0, 1), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_LEFT)
+				_key_move(Vector2(-1, 0), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_RIGHT)
+				_key_move(Vector2(1, 0), k->get_shift(), move_mode);
+			else if (k->get_scancode() == KEY_ESCAPE) {
+				editor_selection->clear();
+				viewport->update();
+			} else
+				return;
+
+			accept_event();
+		}
+	}
 }
 
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
@@ -1999,32 +2025,6 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 				break;
 			}
-		}
-	}
-
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->is_pressed() && drag == DRAG_NONE) {
-			// Move the object with the arrow keys
-			KeyMoveMODE move_mode = MOVE_VIEW_BASE;
-			if (k->get_alt()) move_mode = MOVE_LOCAL_BASE;
-			if (k->get_control() || k->get_metakey()) move_mode = MOVE_LOCAL_WITH_ROT;
-
-			if (k->get_scancode() == KEY_UP)
-				_key_move(Vector2(0, -1), k->get_shift(), move_mode);
-			else if (k->get_scancode() == KEY_DOWN)
-				_key_move(Vector2(0, 1), k->get_shift(), move_mode);
-			else if (k->get_scancode() == KEY_LEFT)
-				_key_move(Vector2(-1, 0), k->get_shift(), move_mode);
-			else if (k->get_scancode() == KEY_RIGHT)
-				_key_move(Vector2(1, 0), k->get_shift(), move_mode);
-			else if (k->get_scancode() == KEY_ESCAPE) {
-				editor_selection->clear();
-				viewport->update();
-			} else
-				return;
-
-			accept_event();
 		}
 	}
 }
