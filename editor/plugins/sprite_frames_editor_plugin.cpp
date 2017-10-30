@@ -142,6 +142,19 @@ void SpriteFramesEditor::_paste_pressed() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_copy_pressed() {
+	ERR_FAIL_COND(!frames->has_animation(edited_anim));
+
+	if (tree->get_current() < 0)
+		return;
+	Ref<Texture> r = frames->get_frame(edited_anim, tree->get_current());
+	if (!r.is_valid()) {
+		return;
+	}
+
+	EditorSettings::get_singleton()->set_resource_clipboard(r);
+}
+
 void SpriteFramesEditor::_empty_pressed() {
 
 	ERR_FAIL_COND(!frames->has_animation(edited_anim));
@@ -642,6 +655,7 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_empty_pressed"), &SpriteFramesEditor::_empty_pressed);
 	ClassDB::bind_method(D_METHOD("_empty2_pressed"), &SpriteFramesEditor::_empty2_pressed);
 	ClassDB::bind_method(D_METHOD("_delete_pressed"), &SpriteFramesEditor::_delete_pressed);
+	ClassDB::bind_method(D_METHOD("_copy_pressed"), &SpriteFramesEditor::_copy_pressed);
 	ClassDB::bind_method(D_METHOD("_paste_pressed"), &SpriteFramesEditor::_paste_pressed);
 	ClassDB::bind_method(D_METHOD("_file_load_request", "files", "at_position"), &SpriteFramesEditor::_file_load_request, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("_update_library", "skipsel"), &SpriteFramesEditor::_update_library, DEFVAL(false));
@@ -725,6 +739,10 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
+	copy = memnew(Button);
+	copy->set_text(TTR("Copy"));
+	hbc->add_child(copy);
+
 	paste = memnew(Button);
 	paste->set_text(TTR("Paste"));
 	hbc->add_child(paste);
@@ -772,6 +790,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	load->connect("pressed", this, "_load_pressed");
 	_delete->connect("pressed", this, "_delete_pressed");
+	copy->connect("pressed", this, "_copy_pressed");
 	paste->connect("pressed", this, "_paste_pressed");
 	empty->connect("pressed", this, "_empty_pressed");
 	empty2->connect("pressed", this, "_empty2_pressed");

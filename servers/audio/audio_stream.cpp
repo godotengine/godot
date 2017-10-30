@@ -191,12 +191,12 @@ void AudioStreamPlaybackRandomPitch::seek(float p_time) {
 	}
 }
 
-void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames) {
+void AudioStreamPlaybackRandomPitch::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (playing.is_valid()) {
-		playing->mix(p_bufer, p_rate_scale * pitch_scale, p_frames);
+		playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
 	} else {
 		for (int i = 0; i < p_frames; i++) {
-			p_bufer[i] = AudioFrame(0, 0);
+			p_buffer[i] = AudioFrame(0, 0);
 		}
 	}
 }

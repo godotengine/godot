@@ -238,6 +238,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_ssao_blur" qualifiers="const">
+			<return type="int" enum="Environment.SSAOBlur">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_ssao_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -245,6 +251,12 @@
 			</description>
 		</method>
 		<method name="get_ssao_direct_light_affect" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ssao_edge_sharpness" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -258,6 +270,12 @@
 		</method>
 		<method name="get_ssao_intensity2" qualifiers="const">
 			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ssao_quality" qualifiers="const">
+			<return type="int" enum="Environment.SSAOQuality">
 			</return>
 			<description>
 			</description>
@@ -405,12 +423,6 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="is_ssao_blur_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -813,7 +825,7 @@
 		<method name="set_ssao_blur">
 			<return type="void">
 			</return>
-			<argument index="0" name="enabled" type="bool">
+			<argument index="0" name="mode" type="int" enum="Environment.SSAOBlur">
 			</argument>
 			<description>
 			</description>
@@ -830,6 +842,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ssao_edge_sharpness">
+			<return type="void">
+			</return>
+			<argument index="0" name="edge_sharpness" type="float">
 			</argument>
 			<description>
 			</description>
@@ -854,6 +874,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="intensity" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ssao_quality">
+			<return type="void">
+			</return>
+			<argument index="0" name="quality" type="int" enum="Environment.SSAOQuality">
 			</argument>
 			<description>
 			</description>
@@ -1172,9 +1200,11 @@
 		</member>
 		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias">
 		</member>
-		<member name="ssao_blur" type="bool" setter="set_ssao_blur" getter="is_ssao_blur_enabled">
+		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="is_ssao_blur_enabled" enum="Environment.SSAOBlur">
 		</member>
 		<member name="ssao_color" type="Color" setter="set_ssao_color" getter="get_ssao_color">
+		</member>
+		<member name="ssao_edge_sharpness" type="float" setter="set_ssao_edge_sharpness" getter="get_ssao_edge_sharpness">
 		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled">
 		</member>
@@ -1183,6 +1213,8 @@
 		<member name="ssao_intensity2" type="float" setter="set_ssao_intensity2" getter="get_ssao_intensity2">
 		</member>
 		<member name="ssao_light_affect" type="float" setter="set_ssao_direct_light_affect" getter="get_ssao_direct_light_affect">
+		</member>
+		<member name="ssao_quality" type="int" setter="set_ssao_quality" getter="get_ssao_quality" enum="Environment.SSAOQuality">
 		</member>
 		<member name="ssao_radius" type="float" setter="set_ssao_radius" getter="get_ssao_radius">
 		</member>
@@ -1252,6 +1284,20 @@
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="2">
 			High depth-of-field blur quality.
+		</constant>
+		<constant name="SSAO_BLUR_DISABLED" value="0">
+		</constant>
+		<constant name="SSAO_BLUR_1x1" value="1">
+		</constant>
+		<constant name="SSAO_BLUR_2x2" value="2">
+		</constant>
+		<constant name="SSAO_BLUR_3x3" value="3">
+		</constant>
+		<constant name="SSAO_QUALITY_LOW" value="0">
+		</constant>
+		<constant name="SSAO_QUALITY_MEDIUM" value="1">
+		</constant>
+		<constant name="SSAO_QUALITY_HIGH" value="2">
 		</constant>
 	</constants>
 </class>

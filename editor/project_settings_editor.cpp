@@ -81,6 +81,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 
+			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
+
 			translation_list->connect("button_pressed", this, "_translation_delete");
 			_update_actions();
 			popup_add->add_icon_item(get_icon("Keyboard", "EditorIcons"), TTR("Key "), INPUT_KEY); //"Key " - because the word 'key' has already been used as a key animation
@@ -819,12 +821,16 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 	} else {
 
 		if (p_action.find("/") != -1 || p_action.find(":") != -1) {
-			action_add->set_text(TTR("Can't contain '/' or ':'"));
+
+			action_add_error->set_text(TTR("Can't contain '/' or ':'"));
+			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
 		}
 		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
-			action_add->set_text(TTR("Already existing"));
+
+			action_add_error->set_text(TTR("Already existing"));
+			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
 		}
@@ -832,7 +838,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 		action_add->set_disabled(false);
 	}
 
-	action_add->set_text(TTR("Add"));
+	action_add_error->hide();
 }
 
 void ProjectSettingsEditor::_action_adds(String) {
@@ -869,7 +875,7 @@ void ProjectSettingsEditor::_action_add() {
 		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
-	action_add->set_text(TTR("Add"));
+	action_add_error->hide();
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
@@ -1127,7 +1133,11 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
-	r.set(idx, path + ":" + langs[which]);
+	if (translation_locales_idxs_remap.size() > 0) {
+		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
+	} else {
+		r.set(idx, path + ":" + langs[which]);
+	}
 	remaps[key] = r;
 
 	updating_translations = true;
@@ -1203,6 +1213,88 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 	undo_redo->commit_action();
 }
 
+void ProjectSettingsEditor::_translation_filter_option_changed() {
+
+	int sel_id = translation_locale_filter_mode->get_selected_id();
+	TreeItem *t = translation_filter->get_selected();
+	String locale = t->get_tooltip(0);
+	bool checked = t->is_checked(0);
+
+	Variant prev;
+	Array f_locales_all;
+
+	if (ProjectSettings::get_singleton()->has_setting("locale/locale_filter")) {
+		f_locales_all = ProjectSettings::get_singleton()->get("locale/locale_filter");
+		prev = f_locales_all;
+
+		if (f_locales_all.size() != 2) {
+			f_locales_all.clear();
+			f_locales_all.append(sel_id);
+			f_locales_all.append(Array());
+		}
+	} else {
+		f_locales_all.append(sel_id);
+		f_locales_all.append(Array());
+	}
+
+	Array f_locales = f_locales_all[1];
+	int l_idx = f_locales.find(locale);
+
+	if (checked) {
+		if (l_idx == -1) {
+			f_locales.append(locale);
+		}
+	} else {
+		if (l_idx != -1) {
+			f_locales.remove(l_idx);
+		}
+	}
+
+	f_locales = f_locales.sort();
+
+	undo_redo->create_action(TTR("Changed Locale Filter"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/locale_filter", f_locales_all);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/locale_filter", prev);
+	undo_redo->add_do_method(this, "_update_translations");
+	undo_redo->add_undo_method(this, "_update_translations");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_translation_filter_mode_changed(int p_mode) {
+
+	int sel_id = translation_locale_filter_mode->get_selected_id();
+
+	Variant prev;
+	Array f_locales_all;
+
+	if (ProjectSettings::get_singleton()->has_setting("locale/locale_filter")) {
+		f_locales_all = ProjectSettings::get_singleton()->get("locale/locale_filter");
+		prev = f_locales_all;
+
+		if (f_locales_all.size() != 2) {
+			f_locales_all.clear();
+			f_locales_all.append(sel_id);
+			f_locales_all.append(Array());
+		} else {
+			f_locales_all[0] = sel_id;
+		}
+	} else {
+		f_locales_all.append(sel_id);
+		f_locales_all.append(Array());
+	}
+
+	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/locale_filter", f_locales_all);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "locale/locale_filter", prev);
+	undo_redo->add_do_method(this, "_update_translations");
+	undo_redo->add_undo_method(this, "_update_translations");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
 void ProjectSettingsEditor::_update_translations() {
 
 	//update translations
@@ -1229,6 +1321,61 @@ void ProjectSettingsEditor::_update_translations() {
 		}
 	}
 
+	Vector<String> langs = TranslationServer::get_all_locales();
+	Vector<String> names = TranslationServer::get_all_locale_names();
+
+	//update filter tab
+	Array l_filter_all;
+
+	bool is_arr_empty = true;
+	if (ProjectSettings::get_singleton()->has_setting("locale/locale_filter")) {
+
+		l_filter_all = ProjectSettings::get_singleton()->get("locale/locale_filter");
+
+		if (l_filter_all.size() == 2) {
+
+			translation_locale_filter_mode->select(l_filter_all[0]);
+			is_arr_empty = false;
+		}
+	}
+	if (is_arr_empty) {
+
+		l_filter_all.append(0);
+		l_filter_all.append(Array());
+		translation_locale_filter_mode->select(0);
+	}
+
+	int filter_mode = l_filter_all[0];
+	Array l_filter = l_filter_all[1];
+
+	int s = names.size();
+	if (!translation_locales_list_created) {
+
+		translation_locales_list_created = true;
+		translation_filter->clear();
+		root = translation_filter->create_item(NULL);
+		translation_filter->set_hide_root(true);
+		translation_filter_treeitems.resize(s);
+
+		for (int i = 0; i < s; i++) {
+			String n = names[i];
+			String l = langs[i];
+			TreeItem *t = translation_filter->create_item(root);
+			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+			t->set_text(0, n);
+			t->set_editable(0, true);
+			t->set_tooltip(0, l);
+			t->set_checked(0, l_filter.has(l));
+			translation_filter_treeitems[i] = t;
+		}
+	} else {
+		for (int i = 0; i < s; i++) {
+
+			TreeItem *t = translation_filter_treeitems[i];
+			t->set_checked(0, l_filter.has(t->get_tooltip(0)));
+		}
+	}
+
 	//update translation remaps
 
 	String remap_selected;
@@ -1244,13 +1391,30 @@ void ProjectSettingsEditor::_update_translations() {
 	translation_remap_options->set_hide_root(true);
 	translation_res_option_add_button->set_disabled(true);
 
-	Vector<String> langs = TranslationServer::get_all_locales();
-	Vector<String> names = TranslationServer::get_all_locale_names();
-	String langnames;
+	translation_locales_idxs_remap.clear();
+	translation_locales_idxs_remap.resize(l_filter.size());
+	int fl_idx_count = translation_locales_idxs_remap.size();
+
+	String langnames = "";
+	int l_idx = 0;
 	for (int i = 0; i < names.size(); i++) {
-		if (i > 0)
-			langnames += ",";
-		langnames += names[i];
+
+		if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && fl_idx_count != 0) {
+			if (l_filter.size() > 0) {
+
+				if (l_filter.find(langs[i]) != -1) {
+					if (langnames.length() > 0)
+						langnames += ",";
+					langnames += names[i];
+					translation_locales_idxs_remap[l_idx] = i;
+					l_idx++;
+				}
+			}
+		} else {
+			if (i > 0)
+				langnames += ",";
+			langnames += names[i];
+		}
 	}
 
 	if (ProjectSettings::get_singleton()->has_setting("locale/translation_remaps")) {
@@ -1295,11 +1459,18 @@ void ProjectSettingsEditor::_update_translations() {
 					t2->set_editable(1, true);
 					t2->set_metadata(1, path);
 					int idx = langs.find(locale);
-					print_line("find " + locale + " at " + itos(idx));
+					//print_line("find " + locale + " at " + itos(idx));
 					if (idx < 0)
 						idx = 0;
 
-					t2->set_range(1, idx);
+					int f_idx = translation_locales_idxs_remap.find(idx);
+					if (f_idx != -1 && fl_idx_count > 0 && filter_mode == SHOW_ONLY_SELECTED_LOCALES) {
+
+						t2->set_range(1, f_idx);
+					} else {
+
+						t2->set_range(1, idx);
+					}
 				}
 			}
 		}
@@ -1380,6 +1551,9 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_translation_res_option_changed"), &ProjectSettingsEditor::_translation_res_option_changed);
 	ClassDB::bind_method(D_METHOD("_translation_res_delete"), &ProjectSettingsEditor::_translation_res_delete);
 	ClassDB::bind_method(D_METHOD("_translation_res_option_delete"), &ProjectSettingsEditor::_translation_res_option_delete);
+
+	ClassDB::bind_method(D_METHOD("_translation_filter_option_changed"), &ProjectSettingsEditor::_translation_filter_option_changed);
+	ClassDB::bind_method(D_METHOD("_translation_filter_mode_changed"), &ProjectSettingsEditor::_translation_filter_mode_changed);
 
 	ClassDB::bind_method(D_METHOD("_clear_search_box"), &ProjectSettingsEditor::_clear_search_box);
 	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
@@ -1528,6 +1702,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	action_name->connect("text_entered", this, "_action_adds");
 	action_name->connect("text_changed", this, "_action_check");
 
+	action_add_error = memnew(Label);
+	hbc->add_child(action_add_error);
+	action_add_error->hide();
+
 	add = memnew(Button);
 	hbc->add_child(add);
 	add->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
@@ -1601,6 +1779,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	translations->set_tab_align(TabContainer::ALIGN_LEFT);
 	translations->set_name(TTR("Localization"));
 	tab_container->add_child(translations);
+	//remap for properly select language in popup
+	translation_locales_idxs_remap = Vector<int>();
 
 	{
 
@@ -1681,6 +1861,29 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		add_child(translation_res_option_file_open);
 		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		translation_res_option_file_open->connect("file_selected", this, "_translation_res_option_add");
+	}
+
+	{
+		VBoxContainer *tvb = memnew(VBoxContainer);
+		translations->add_child(tvb);
+		tvb->set_name(TTR("Locales Filter"));
+		VBoxContainer *tmc = memnew(VBoxContainer);
+		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(tmc);
+
+		translation_locale_filter_mode = memnew(OptionButton);
+		translation_locale_filter_mode->add_item(TTR("Show all locales"), SHOW_ALL_LOCALES);
+		translation_locale_filter_mode->add_item(TTR("Show only selected locales"), SHOW_ONLY_SELECTED_LOCALES);
+		translation_locale_filter_mode->select(0);
+		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
+		translation_locale_filter_mode->connect("item_selected", this, "_translation_filter_mode_changed");
+
+		translation_filter = memnew(Tree);
+		translation_filter->set_v_size_flags(SIZE_EXPAND_FILL);
+		translation_filter->set_columns(1);
+		tmc->add_child(memnew(Label(TTR("Locales:"))));
+		tmc->add_child(translation_filter);
+		translation_filter->connect("item_edited", this, "_translation_filter_option_changed");
 	}
 
 	{

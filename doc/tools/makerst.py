@@ -189,8 +189,11 @@ def rstize_text(text, cclass):
         post_text = text[endq_pos + 1:]
         tag_text = text[pos + 1:endq_pos]
 
+        escape_post = False
+
         if tag_text in class_names:
             tag_text = make_type(tag_text)
+            escape_post = True
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(' ')
@@ -209,7 +212,7 @@ def rstize_text(text, cclass):
                 cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
                 tag_text = param
-            elif cmd.find('method') == 0:
+            elif cmd.find('method') == 0 or cmd.find('member') == 0 or cmd.find('signal') == 0:
                 cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
 
@@ -218,12 +221,14 @@ def rstize_text(text, cclass):
                     tag_text = ':ref:`' + class_param + '.' + method_param + '<class_' + class_param + '_' + method_param + '>`'
                 else:
                     tag_text = ':ref:`' + param + '<class_' + cclass + "_" + param + '>`'
+                escape_post = True
             elif cmd.find('image=') == 0:
                 tag_text = ""  # '![](' + cmd[6:] + ')'
             elif cmd.find('url=') == 0:
                 tag_text = ':ref:`' + cmd[4:] + '<' + cmd[4:] + ">`"
             elif cmd == '/url':
-                tag_text = ')'
+                tag_text = ''
+                escape_post = True
             elif cmd == 'center':
                 tag_text = ''
             elif cmd == '/center':
@@ -248,6 +253,11 @@ def rstize_text(text, cclass):
                 inside_code = True
             else:
                 tag_text = make_type(tag_text)
+                escape_post = True
+
+        # Properly escape things like `[Node]s`
+        if escape_post and post_text and post_text[0].isalnum(): # not punctuation, escape
+            post_text = '\ ' + post_text
 
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
@@ -300,11 +310,11 @@ def make_method(
 
     if declare or pp == None:
 
-        s = ' **' + m.attrib['name'] + '** '
+        s = '**' + m.attrib['name'] + '** '
     else:
         s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
 
-    s += ' **(**'
+    s += '**(**'
     argfound = False
     for a in mdata['argidx']:
         arg = mdata[a]
@@ -324,10 +334,6 @@ def make_method(
         if 'default' in arg.attrib:
             s += '=' + arg.attrib['default']
 
-        argfound = True
-
-    if argfound:
-        s += ' '
     s += ' **)**'
 
     if 'qualifiers' in m.attrib:
@@ -440,6 +446,7 @@ def make_rst_class(node):
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, node.attrib['name'], m, True, name, True)
             f.write('\n')
             d = m.find('description')
@@ -455,12 +462,14 @@ def make_rst_class(node):
         f.write(make_heading('Member Variables', '-'))
 
         for c in list(members):
+            # Leading two spaces necessary to prevent breaking the <ul>
+            f.write("  .. _class_" + name + "_" + c.attrib['name'] + ":\n\n")
             s = '- '
             s += make_type(c.attrib['type']) + ' '
             s += '**' + c.attrib['name'] + '**'
             if c.text.strip() != '':
-                s += ' - ' + c.text.strip()
-            f.write(s + '\n')
+                s += ' - ' + rstize_text(c.text.strip(), name)
+            f.write(s + '\n\n')
         f.write('\n')
 
     constants = node.find('constants')

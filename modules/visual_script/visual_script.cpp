@@ -974,11 +974,6 @@ bool VisualScript::is_tool() const {
 	return false;
 }
 
-String VisualScript::get_node_type() const {
-
-	return String();
-}
-
 ScriptLanguage *VisualScript::get_language() const {
 
 	return VisualScriptLanguage::singleton;
@@ -2411,6 +2406,10 @@ Script *VisualScriptLanguage::create_script() const {
 bool VisualScriptLanguage::has_named_classes() const {
 
 	return false;
+}
+bool VisualScriptLanguage::supports_builtin_mode() const {
+
+	return true;
 }
 int VisualScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 

@@ -8,6 +8,7 @@ files = [
     '#platform/windows/packet_peer_udp_winsock.cpp',
     '#platform/windows/stream_peer_winsock.cpp',
     '#platform/windows/key_mapping_win.cpp',
+    '#platform/windows/windows_terminal_logger.cpp',
     'joypad_uwp.cpp',
     'power_uwp.cpp',
     'gl_context_egl.cpp',

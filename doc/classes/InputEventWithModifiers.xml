@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventWithModifiers" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Base class for input events with modifiers.
+		Base class for keys events with modifiers.
 	</brief_description>
 	<description>
+		Contains keys events informations with modifiers support like [code]SHIFT[/code] or [code]ALT[/code]. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>

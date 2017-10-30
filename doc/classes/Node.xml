@@ -13,7 +13,7 @@
 		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
-		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [Node] receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
+		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [code]Node[/code] receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -100,7 +100,7 @@
 			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
+				Add a child [code]Node[/code]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
 				The optional boolean argument enforces creating child nodes with human-readable names, based on the name of the node being instanced instead of its type only.
 			</description>
 		</method>
@@ -124,7 +124,7 @@
 			<argument index="1" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
-				Add a node to a group. Groups are helpers to name and organize a subset of nodes, like for example "enemies" or "collectables". A [Node] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
+				Add a node to a group. Groups are helpers to name and organize a subset of nodes, like for example "enemies" or "collectables". A [code]Node[/code] can be in any number of groups. Nodes can be assigned a group at any time, but will not be added to it until they are inside the scene tree (see [method is_inside_tree]).
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -140,7 +140,7 @@
 			<argument index="0" name="flags" type="int" default="15">
 			</argument>
 			<description>
-				Duplicate the node, returning a new [Node].
+				Duplicate the node, returning a new [code]Node[/code].
 				You can fine-tune the behavior using the [code]flags[/code], which are based on the DUPLICATE_* constants.
 			</description>
 		</method>
@@ -177,7 +177,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return an array of references ([Node]) to the child nodes.
+				Return an array of references ([code]Node[/code]) to the child nodes.
 			</description>
 		</method>
 		<method name="get_filename" qualifiers="const">
@@ -261,7 +261,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Return the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Return the parent node of the current node, or an empty [code]Node[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -470,7 +470,7 @@
 			<argument index="2" name="parent_first" type="bool" default="false">
 			</argument>
 			<description>
-				Calls the method (if present) with the arguments given in "args" on this Node and recursively on all children. If the parent_first argument is true then the method will be called on the current [Node] first, then on all children. If it is false then the children will get called first.
+				Calls the method (if present) with the arguments given in "args" on this Node and recursively on all children. If the parent_first argument is true then the method will be called on the current [code]Node[/code] first, then on all children. If it is false then the children will get called first.
 			</description>
 		</method>
 		<method name="propagate_notification">
@@ -509,7 +509,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-				Remove a child [Node]. Node is NOT deleted and will have to be deleted manually.
+				Remove a child [code]Node[/code]. Node is NOT deleted and will have to be deleted manually.
 			</description>
 		</method>
 		<method name="remove_from_group">
@@ -672,7 +672,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Set the name of the [Node]. Name must be unique within parent, and setting an already existing name will cause for the node to be automatically renamed.
+				Set the name of the [code]Node[/code]. Name must be unique within parent, and setting an already existing name will cause for the node to be automatically renamed.
 			</description>
 		</method>
 		<method name="set_network_master">
@@ -806,6 +806,10 @@
 		</constant>
 		<constant name="NOTIFICATION_READY" value="13" enum="">
 		</constant>
+		<constant name="NOTIFICATION_PAUSED" value="14" enum="">
+		</constant>
+		<constant name="NOTIFICATION_UNPAUSED" value="15" enum="">
+		</constant>
 		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16" enum="">
 			Notification received every frame when the physics process flag is set (see [method set_physics_process]).
 		</constant>
@@ -817,10 +821,6 @@
 		</constant>
 		<constant name="NOTIFICATION_UNPARENTED" value="19" enum="">
 			Notification received when a node is unparented (parent removed it from the list of children).
-		</constant>
-		<constant name="NOTIFICATION_PAUSED" value="14" enum="">
-		</constant>
-		<constant name="NOTIFICATION_UNPAUSED" value="15" enum="">
 		</constant>
 		<constant name="NOTIFICATION_INSTANCED" value="20" enum="">
 		</constant>

@@ -50,6 +50,7 @@
 				
 				as.add_point(1, Vector3(1,0,0), 4) # Adds the point (1,0,0) with weight_scale=4 and id=1
 				[/codeblock]
+				If there already exists a point for the given id, its position and weight scale are updated to the given values.
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -107,7 +108,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns an id with no point associated to it.
+				Returns the next available point id with no point associated to it.
 			</description>
 		</method>
 		<method name="get_closest_point" qualifiers="const">
@@ -218,6 +219,28 @@
 			</argument>
 			<description>
 				Removes the point associated with the given id from the points pool.
+			</description>
+		</method>
+		<method name="set_point_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="position" type="Vector3">
+			</argument>
+			<description>
+				Sets the position for the point with the given id.
+			</description>
+		</method>
+		<method name="set_point_weight_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="weight_scale" type="float">
+			</argument>
+			<description>
+				Sets the [code]weight_scale[/code] for the point with the given id.
 			</description>
 		</method>
 	</methods>

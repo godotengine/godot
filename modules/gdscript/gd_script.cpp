@@ -609,11 +609,6 @@ Error GDScript::reload(bool p_keep_state) {
 	return OK;
 }
 
-String GDScript::get_node_type() const {
-
-	return ""; // ?
-}
-
 ScriptLanguage *GDScript::get_language() const {
 
 	return GDScriptLanguage::get_singleton();

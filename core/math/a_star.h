@@ -33,6 +33,8 @@
 #include "reference.h"
 #include "self_list.h"
 /**
+	A* pathfinding algorithm
+
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
@@ -53,7 +55,7 @@ class AStar : public Reference {
 
 		Vector<Point *> neighbours;
 
-		//used for pathfinding
+		// Used for pathfinding
 		Point *prev_point;
 		real_t distance;
 
@@ -102,7 +104,9 @@ public:
 
 	void add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale = 1);
 	Vector3 get_point_position(int p_id) const;
+	void set_point_position(int p_id, const Vector3 &p_pos);
 	real_t get_point_weight_scale(int p_id) const;
+	void set_point_weight_scale(int p_id, real_t p_weight_scale);
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
 	Array get_points();

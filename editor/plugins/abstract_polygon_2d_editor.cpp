@@ -195,9 +195,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-		cpoint = canvas_item_editor->snap_point(cpoint);
-		cpoint = _get_node()->get_global_transform().affine_inverse().xform(cpoint);
+		Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		//first check if a point is to be added (segment split)
 		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
@@ -425,15 +423,14 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		if (edited_point != -1 && (wip_active || (mm->get_button_mask() & BUTTON_MASK_LEFT))) {
 
 			Vector2 gpoint = mm->get_position();
-			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint = canvas_item_editor->snap_point(cpoint);
-			edited_point_pos = _get_node()->get_global_transform().affine_inverse().xform(cpoint);
+			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position())));
+			edited_point_pos = cpoint;
 
 			if (!wip_active) {
 
 				Vector<Vector2> vertices = _get_polygon(edited_polygon);
 				ERR_FAIL_INDEX_V(edited_point, vertices.size(), false);
-				vertices[edited_point] = edited_point_pos - _get_offset(edited_polygon);
+				vertices[edited_point] = cpoint - _get_offset(edited_polygon);
 				_set_polygon(edited_polygon, vertices);
 			}
 
@@ -444,8 +441,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	return false;
 }
 
-void AbstractPolygon2DEditor::_canvas_draw() {
-
+void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 	if (!_get_node())
 		return;
 
@@ -527,9 +523,6 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		if (_is_empty())
 			_menu_option(MODE_CREATE);
 
-		if (!canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->get_viewport_control()->connect("draw", this, "_canvas_draw");
-
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
@@ -539,15 +532,11 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 	} else {
 
 		_set_node(NULL);
-
-		if (canvas_item_editor->get_viewport_control()->is_connected("draw", this, "_canvas_draw"))
-			canvas_item_editor->get_viewport_control()->disconnect("draw", this, "_canvas_draw");
 	}
 }
 
 void AbstractPolygon2DEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_canvas_draw"), &AbstractPolygon2DEditor::_canvas_draw);
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AbstractPolygon2DEditor::_node_removed);
 	ClassDB::bind_method(D_METHOD("_menu_option"), &AbstractPolygon2DEditor::_menu_option);
 	ClassDB::bind_method(D_METHOD("_create_resource"), &AbstractPolygon2DEditor::_create_resource);

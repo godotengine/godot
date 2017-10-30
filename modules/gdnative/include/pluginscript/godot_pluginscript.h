@@ -129,6 +129,7 @@ typedef struct {
 	const char **comment_delimiters; // NULL terminated array
 	const char **string_delimiters; // NULL terminated array
 	godot_bool has_named_classes;
+	godot_bool supports_builtin_mode;
 
 	godot_string (*get_template_source_code)(godot_pluginscript_language_data *p_data, const godot_string *p_class_name, const godot_string *p_base_class_name);
 	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, int *r_line_error, int *r_col_error, godot_string *r_test_error, const godot_string *p_path, godot_pool_string_array *r_functions);

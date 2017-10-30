@@ -47,22 +47,22 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ENABLER_FREEZE_BODIES" value="1">
-			This enabler will freeze [RigidBody2D] nodes.
-		</constant>
 		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
 			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
+		<constant name="ENABLER_FREEZE_BODIES" value="1">
+			This enabler will freeze [RigidBody2D] nodes.
+		</constant>
 		<constant name="ENABLER_PAUSE_PARTICLES" value="2">
 			This enabler will stop [Particles2D] nodes.
-		</constant>
-		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
 		</constant>
 		<constant name="ENABLER_PARENT_PROCESS" value="3">
 			This enabler will stop the parent's _process function.
 		</constant>
 		<constant name="ENABLER_PARENT_PHYSICS_PROCESS" value="4">
 			This enabler will stop the parent's _physics_process function.
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5">
 		</constant>
 		<constant name="ENABLER_MAX" value="6">
 		</constant>

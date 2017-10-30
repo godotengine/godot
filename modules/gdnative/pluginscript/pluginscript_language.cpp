@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <stdlib.h>
 // Godot imports
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -132,6 +131,10 @@ Script *PluginScriptLanguage::create_script() const {
 
 bool PluginScriptLanguage::has_named_classes() const {
 	return _desc.has_named_classes;
+}
+
+bool PluginScriptLanguage::supports_builtin_mode() const {
+	return _desc.supports_builtin_mode;
 }
 
 int PluginScriptLanguage::find_function(const String &p_function, const String &p_code) const {

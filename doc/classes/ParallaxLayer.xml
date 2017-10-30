@@ -4,7 +4,8 @@
 		A parallax scrolling layer to be used with [ParallaxBackground].
 	</brief_description>
 	<description>
-		A ParallaxLayer must be the child of a [ParallaxBackground] node. All child nodes will be affected by the parallax scrolling of this layer.
+		A ParallaxLayer must be the child of a [ParallaxBackground] node. Each ParallaxLayer can be set to move at different speeds relative to the camera movement or the [member ParallaxBackground.scroll_offset] value.
+		This node's children will be affected by its scroll offset.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -60,10 +61,13 @@
 	</methods>
 	<members>
 		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring">
+			The ParallaxLayer's [Texture] mirroring. Useful for creating an infinite scrolling background. If an axis is set to [code]0[/code] the [Texture] will not be mirrored. Default value: [code](0, 0)[/code].
 		</member>
 		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset">
+			The ParallaxLayer's offset relative to the parent ParallaxBackground's [member ParallaxBackground.scroll_offset].
 		</member>
 		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale">
+			Multiplies the ParallaxLayer's motion. If an axis is set to [code]0[/code] it will not scroll.
 		</member>
 	</members>
 	<constants>

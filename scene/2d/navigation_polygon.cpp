@@ -329,7 +329,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 					break;
 				}
 
-				c = Object::cast_to<Node2D>(get_parent());
+				c = Object::cast_to<Node2D>(c->get_parent());
 			}
 
 		} break;
@@ -452,7 +452,7 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 			return String();
 		}
 
-		c = Object::cast_to<Node2D>(get_parent());
+		c = Object::cast_to<Node2D>(c->get_parent());
 	}
 
 	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");

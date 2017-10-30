@@ -107,7 +107,7 @@ public:
 
 	virtual int get_minimum_buffer_size() const;
 
-	virtual int mix(int16_t *p_bufer, int p_frames);
+	virtual int mix(int16_t *p_buffer, int p_frames);
 
 	AudioStreamPlaybackOpus();
 	~AudioStreamPlaybackOpus();

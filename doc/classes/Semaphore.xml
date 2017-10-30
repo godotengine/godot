@@ -15,14 +15,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [Semaphore], allowing one more thread in.
+				Lowers the [code]Semaphore[/code], allowing one more thread in.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero.
+				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero.
 			</description>
 		</method>
 	</methods>

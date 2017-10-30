@@ -270,10 +270,6 @@ bool NativeScript::is_tool() const {
 	return false;
 }
 
-String NativeScript::get_node_type() const {
-	return ""; // NOTE(karroffel): uhm?
-}
-
 ScriptLanguage *NativeScript::get_language() const {
 	return NativeScriptLanguage::get_singleton();
 }
@@ -906,6 +902,9 @@ Script *NativeScriptLanguage::create_script() const {
 	return script;
 }
 bool NativeScriptLanguage::has_named_classes() const {
+	return true;
+}
+bool NativeScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
 int NativeScriptLanguage::find_function(const String &p_function, const String &p_code) const {

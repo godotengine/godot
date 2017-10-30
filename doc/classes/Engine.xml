@@ -4,7 +4,7 @@
 		Access to basic engine properties.
 	</brief_description>
 	<description>
-		The [Engine] class allows you to query and modify the game's run-time parameters, such as frames per second, time scale, and others.
+		The [code]Engine[/code] class allows you to query and modify the game's run-time parameters, such as frames per second, time scale, and others.
 	</description>
 	<tutorials>
 	</tutorials>

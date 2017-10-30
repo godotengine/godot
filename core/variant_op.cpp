@@ -1655,13 +1655,13 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 			} else if (p_index == CoreStringNames::singleton->a) {
 				return v->a;
 			} else if (p_index == CoreStringNames::singleton->r8) {
-				return v->r * 255.0;
+				return int(v->r * 255.0);
 			} else if (p_index == CoreStringNames::singleton->g8) {
-				return v->g * 255.0;
+				return int(v->g * 255.0);
 			} else if (p_index == CoreStringNames::singleton->b8) {
-				return v->b * 255.0;
+				return int(v->b * 255.0);
 			} else if (p_index == CoreStringNames::singleton->a8) {
-				return v->a * 255.0;
+				return int(v->a * 255.0);
 			} else if (p_index == CoreStringNames::singleton->h) {
 				return v->get_h();
 			} else if (p_index == CoreStringNames::singleton->s) {

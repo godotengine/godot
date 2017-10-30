@@ -277,13 +277,22 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "        // Initialization here\n"
 							 "        \n"
 							 "    }\n"
+							 "\n"
+							 "//    public override void _Process(float delta)\n"
+							 "//    {\n"
+							 "//        // Called every frame. Delta is time since last frame.\n"
+							 "//        // Update game logic here.\n"
+							 "//        \n"
+							 "//    }\n"
 							 "}\n";
 
-	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name).replace("%CLASS_NAME%", p_class_name);
+	script_template = script_template.replace("%BASE_CLASS_NAME%", p_base_class_name)
+							  .replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
 	script->set_source_code(script_template);
+	script->set_name(p_class_name);
 
 	return script;
 }
@@ -295,7 +304,12 @@ Script *CSharpLanguage::create_script() const {
 
 bool CSharpLanguage::has_named_classes() const {
 
-	return true;
+	return false;
+}
+
+bool CSharpLanguage::supports_builtin_mode() const {
+
+	return false;
 }
 
 static String variant_type_to_managed_name(const String &p_var_type_name) {
@@ -463,6 +477,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 	(void)p_script; // UNUSED
 
 #ifdef TOOLS_ENABLED
+	MonoReloadNode::get_singleton()->restart_reload_timer();
 	reload_assemblies_if_needed(p_soft_reload);
 #endif
 }
@@ -474,13 +489,17 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 
 		GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
+		String name = ProjectSettings::get_singleton()->get("application/config/name");
+		if (name.empty()) {
+			name = "UnnamedProject";
+		}
+
 		if (proj_assembly) {
 			String proj_asm_path = proj_assembly->get_path();
 
 			if (!FileAccess::exists(proj_assembly->get_path())) {
 				// Maybe it wasn't loaded from the default path, so check this as well
-				String proj_asm_name = ProjectSettings::get_singleton()->get("application/config/name");
-				proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(proj_asm_name);
+				proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name);
 				if (!FileAccess::exists(proj_asm_path))
 					return; // No assembly to load
 			}
@@ -488,8 +507,7 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 			if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time())
 				return; // Already up to date
 		} else {
-			String proj_asm_name = ProjectSettings::get_singleton()->get("application/config/name");
-			if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(proj_asm_name)))
+			if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name)))
 				return; // No assembly to load
 		}
 	}
@@ -607,6 +625,9 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 
 		//if instance states were saved, set them!
 	}
+
+	if (Engine::get_singleton()->is_editor_hint())
+		EditorNode::get_singleton()->get_property_editor()->update_tree();
 }
 #endif
 
@@ -1704,11 +1725,6 @@ Error CSharpScript::reload(bool p_keep_state) {
 	}
 
 	return ERR_FILE_MISSING_DEPENDENCIES;
-}
-
-String CSharpScript::get_node_type() const {
-
-	return ""; // ?
 }
 
 ScriptLanguage *CSharpScript::get_language() const {

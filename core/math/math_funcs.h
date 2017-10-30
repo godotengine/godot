@@ -387,6 +387,23 @@ public:
 
 		return hf;
 	}
+
+	static _ALWAYS_INLINE_ float snap_scalar(float p_offset, float p_step, float p_target) {
+		return p_step != 0 ? Math::stepify(p_target - p_offset, p_step) + p_offset : p_target;
+	}
+
+	static _ALWAYS_INLINE_ float snap_scalar_seperation(float p_offset, float p_step, float p_target, float p_separation) {
+		if (p_step != 0) {
+			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
+			float b = a;
+			if (p_target >= 0)
+				b -= p_separation;
+			else
+				b += p_step;
+			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
+		}
+		return p_target;
+	}
 };
 
 #endif // MATH_FUNCS_H

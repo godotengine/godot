@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Physics Body whose position is determined through physics simulation in 2D space.
+		A body that is controlled by the 2D physics engine.
 	</brief_description>
 	<description>
-		This is the node that implements full 2D physics. This means that you do not control a RigidBody2D directly. Instead you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
-		This node can use custom force integration, for writing complex physics motion behavior per node.
-		This node can shift state between regular Rigid body, Kinematic, Character or Static.
-		Character mode forbids this node from being rotated.
-		As a warning, don't change RigidBody2D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
+		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
+		A RigidBody2D has 4 behavior modes (see [member mode]):
+		- [b]Rigid[/b]: The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
+		- [b]Static[/b]: The body behaves like a [StaticBody2D] and does not move.
+		- [b]Character[/b]: Similar to [code]Rigid[/code] mode, but the body can not rotate.
+		- [b]Kinematic[/b]: The body behaves like a [KinematicBody2D], and must be moved by code.
+		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +24,7 @@
 			<argument index="0" name="state" type="Physics2DDirectBodyState">
 			</argument>
 			<description>
-				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
+				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_force">
@@ -32,7 +35,7 @@
 			<argument index="1" name="force" type="Vector2">
 			</argument>
 			<description>
-				Add a positioned force to the applied force and torque. As with [method apply_impulse], both the force and the offset from the body origin are in global coordinates.
+				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -43,7 +46,7 @@
 			<argument index="1" name="impulse" type="Vector2">
 			</argument>
 			<description>
-				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the offset from the body origin are in global coordinates.
+				Applies a positioned impulse to the body (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied instantaneously. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="get_angular_damp" qualifiers="const">
@@ -64,14 +67,14 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the applied force vector.
+				Returns the body's total applied force.
 			</description>
 		</method>
 		<method name="get_applied_torque" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the torque which is being applied to this body.
+				Returns the body's total applied torque.
 			</description>
 		</method>
 		<method name="get_bounce" qualifiers="const">
@@ -85,7 +88,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it. You must also enable contact monitor, see [method set_contact_monitor]
+				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -113,7 +116,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the body's moment of inertia. This is usually automatically computed from the mass and the shapes. Note that this doesn't seem to work in a [code]_ready[/code] function: it apparently has not been auto-computed yet.
+				Returns the body's moment of inertia, which is computed automatically from the body's mass and assigned [Shape2D]s during the physics frame. Note that it will not yet have a value in the [code]_ready()[/code] function.
 			</description>
 		</method>
 		<method name="get_linear_damp" qualifiers="const">
@@ -127,7 +130,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the body linear velocity. This changes by physics granularity. See [method set_linear_velocity].
+				Returns the body's linear velocity. This changes when a physics frame has passed, not during a normal update. See [method set_linear_velocity].
 			</description>
 		</method>
 		<method name="get_mass" qualifiers="const">
@@ -210,7 +213,7 @@
 			<argument index="0" name="force" type="Vector2">
 			</argument>
 			<description>
-				Set the applied force vector. This is the equivalent of pushing a box over the ground: the force applied is applied constantly.
+				Sets the applied force vector. This is the equivalent of firing a rocket: the force is applied constantly.
 			</description>
 		</method>
 		<method name="set_applied_torque">
@@ -219,7 +222,7 @@
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
-				Set a constant torque which will be applied to this body.
+				Sets the applied torque.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -228,7 +231,7 @@
 			<argument index="0" name="axis_velocity" type="Vector2">
 			</argument>
 			<description>
-				Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+				Sets the body's velocity on the given axis. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 		<method name="set_bounce">
@@ -378,59 +381,59 @@
 			<argument index="2" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
 			<description>
-				Return whether the body would collide, if it tried to move in the given vector. This method allows two extra parameters: A margin, which increases slightly the size of the shapes involved in the collision detection, and an object of type [Physics2DTestMotionResult], which will store additional information about the collision (should there be one).
+				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [Physics2DTestMotionResult], which contains additional information about the collision (should there be one).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp">
-			Damps RigidBody2D's rotational forces.
+			Damps the body's [member angular_velocity]. If [code]-1[/code] the body will use the "Default Angular Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity">
-			RigidBody2D's rotational velocity.
+			The body's rotational velocity.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			RigidBody2D's bounciness.
+			The body's bounciness. Default value: [code]0[/code].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code] RigidBody2D will not calculate forces and will act as a static body while there is no movement. It will wake up when other forces are applied through other collisions or when the [code]apply_impulse[/code] method is used. Default value: [code]true[/code]
+			If [code]true[/code] the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force]. Default value: [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If [code]true[/code] RigidBody2D will emit signals when it collides with another RigidBody2D.
+			If [code]true[/code] the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported]. Default value: [code]false[/code].
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
-			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+			The maximum number of contacts to report. Default value: [code]0[/code].
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
-			If [code]true[/code] continuous collision detection is used. Default value: [code]false[/code]
-			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+			Continuous collision detection mode. Default value: [code]CCD_MODE_DISABLED[/code].
+			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [code]CCD_MODE_[/code] constants for details.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
-			If [code]true[/code] internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+			If [code]true[/code] internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body friction, from 0 (frictionless) to 1 (max friction).
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
-			This is multiplied by the global 2D gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 2d" to produce RigidBody2D's gravity. E.g. a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d" and/or any additional gravity vector applied by [Area2D]s. Default value: [code]1[/code].
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			RigidBody2D's linear damp. Default of -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
+			Damps the body's [member linear_velocity]. If [code]-1[/code] the body will use the "Default Linear Damp" in "Project &gt; Project Settings &gt; Physics &gt; 2d". Default value: [code]-1[/code].
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity">
-			RigidBody2D's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+			The body's linear velocity.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass">
-			RigidBody2D's mass.
+			The body's mass. Default value: [code]1[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
-			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
+			The body's mode. See [code]MODE_*[/code] constants. Default value: [code]MODE_RIGID[/code].
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
-			If [code]true[/code] RigidBody2D is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
+			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
-			RigidBody2D's weight based on its mass and the global 2D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 2d".
+			The body's weight based on its mass and the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d".
 		</member>
 	</members>
 	<signals>
@@ -438,14 +441,14 @@
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+				Emitted when a body enters into contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-				Emitted when a body exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+				Emitted when a body exits contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -458,8 +461,7 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
+				Emitted when a body enters into contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -472,37 +474,36 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
-				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
+				Emitted when a body shape exits contact with this one. Reports colliding shape information. See [CollisionObject2D] for shape index information. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
+				Emitted when [member sleeping] changes.
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_STATIC" value="1">
-			Static mode. The body behaves like a [StaticBody2D], and can only move by user code.
-		</constant>
-		<constant name="MODE_KINEMATIC" value="3">
-			Kinematic body. The body behaves like a [KinematicBody2D], and can only move by user code.
-		</constant>
 		<constant name="MODE_RIGID" value="0">
-			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
+		</constant>
+		<constant name="MODE_STATIC" value="1">
+			Static mode. The body behaves like a [StaticBody2D] and does not move.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
-			Character body. This behaves like a rigid body, but can not rotate.
+			Character mode. Similar to [code]MODE_RIGID[/code], but the body can not rotate.
+		</constant>
+		<constant name="MODE_KINEMATIC" value="3">
+			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0">
-			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
+			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
 		<constant name="CCD_MODE_CAST_RAY" value="1">
-			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
+			Continuous collision detection enabled using raycasting. This is faster than shapecasting but less precise.
 		</constant>
 		<constant name="CCD_MODE_CAST_SHAPE" value="2">
-			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
+			Continuous collision detection enabled using shapecasting. This is the slowest CCD method and the most precise.
 		</constant>
 	</constants>
 </class>

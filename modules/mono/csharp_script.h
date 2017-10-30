@@ -138,7 +138,6 @@ public:
 
 	virtual bool is_tool() const { return tool; }
 	virtual Ref<Script> get_base_script() const;
-	virtual String get_node_type() const;
 	virtual ScriptLanguage *get_language() const;
 
 	/* TODO */ virtual void get_script_method_list(List<MethodInfo> *p_list) const {}
@@ -270,6 +269,7 @@ public:
 	/* TODO */ virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const { return true; }
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
+	virtual bool supports_builtin_mode() const;
 	/* TODO? */ virtual int find_function(const String &p_function, const String &p_code) const { return -1; }
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
 	/* TODO? */ Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }

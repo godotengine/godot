@@ -97,3 +97,10 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 		_err_error_exists = false;
 	}
 }
+
+void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, bool fatal) {
+
+	String fstr(fatal ? "FATAL: " : "");
+	String err(fstr + "Index" + p_index_str + "=" + itos(p_index) + " out of size (" + p_size_str + "=" + itos(p_size) + ")");
+	_err_print_error(p_function, p_file, p_line, err.utf8().get_data());
+}

@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorScript" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Simple script to perform changes in the currently edited scene.
+		Base script that can be used to add extension functions to the editor.
 	</brief_description>
 	<description>
-		This script can be run from the Scene -&gt; Run Script menu option.
+		Scripts extending this class and implementing its [code]_run()[/code] method can be executed from the Script Editor's [code]File -&gt; Run[/code] menu option (or by pressing [code]CTRL+Shift+X[/code]) while the editor is running. This is useful for adding custom in-editor functionality to Godot. For more complex additions, consider using [EditorPlugin]s instead. Note that extending scripts need to have [code]tool mode[/code] enabled.
+		Example script:
+		[codeblock]
+		tool
+		extends EditorScript
+		
+		func _run():
+		    print("Hello from the Godot Editor!")
+		[/codeblock]
+		Note that the script is run in the Editor context, which means the output is visible in the console window started with the Editor (STDOUT) instead of the usual Godot [i]Output[/i] dock.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +24,7 @@
 			<return type="void">
 			</return>
 			<description>
+				This method is executed by the Editor when [code]File -&gt; Run[/code] is used.
 			</description>
 		</method>
 		<method name="add_root_node">
@@ -29,12 +39,14 @@
 			<return type="EditorInterface">
 			</return>
 			<description>
+				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
 		<method name="get_scene">
 			<return type="Node">
 			</return>
 			<description>
+				Returns the Editor's currently active scene.
 			</description>
 		</method>
 	</methods>

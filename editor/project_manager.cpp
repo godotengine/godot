@@ -48,6 +48,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+#include "translation.h"
 #include "version.h"
 #include "version_hash.gen.h"
 
@@ -124,7 +125,7 @@ private:
 		}
 
 		if (valid_path == "") {
-			set_message(TTR("The path does not exists."), MESSAGE_ERROR);
+			set_message(TTR("The path does not exist."), MESSAGE_ERROR);
 			memdelete(d);
 			return "";
 		}
@@ -1325,6 +1326,28 @@ void ProjectManager::_erase_project() {
 	erase_ask->popup_centered_minsize();
 }
 
+void ProjectManager::_language_selected(int p_id) {
+
+	String lang = language_btn->get_item_metadata(p_id);
+	EditorSettings::get_singleton()->set("interface/editor/editor_language", lang);
+	language_btn->set_text(lang);
+	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+
+	language_restart_ask->set_text(TTR("Language changed.\nThe UI will update next time the editor or project manager starts."));
+	language_restart_ask->popup_centered();
+}
+
+void ProjectManager::_restart_confirm() {
+
+	List<String> args = OS::get_singleton()->get_cmdline_args();
+	String exec = OS::get_singleton()->get_executable_path();
+	OS::ProcessID pid = 0;
+	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+	ERR_FAIL_COND(err);
+
+	get_tree()->quit();
+}
+
 void ProjectManager::_exit_dialog() {
 
 	get_tree()->quit();
@@ -1398,6 +1421,8 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
+	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
 	ClassDB::bind_method("_load_recent_projects", &ProjectManager::_load_recent_projects);
 	ClassDB::bind_method("_on_project_renamed", &ProjectManager::_on_project_renamed);
@@ -1482,9 +1507,13 @@ ProjectManager::ProjectManager() {
 	//vb->add_child(memnew(HSeparator));
 	//vb->add_margin_child("\n",memnew(Control));
 
+	Control *center_box = memnew(Control);
+	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_child(center_box);
+
 	tabs = memnew(TabContainer);
-	vb->add_child(tabs);
-	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
+	center_box->add_child(tabs);
+	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	HBoxContainer *tree_hb = memnew(HBoxContainer);
 	projects_hb = tree_hb;
@@ -1585,6 +1614,40 @@ ProjectManager::ProjectManager() {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
 
+	HBoxContainer *settings_hb = memnew(HBoxContainer);
+	settings_hb->set_alignment(BoxContainer::ALIGN_END);
+	settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+
+	language_btn = memnew(OptionButton);
+
+	Vector<String> editor_languages;
+	List<PropertyInfo> editor_settings_properties;
+	EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
+	for (List<PropertyInfo>::Element *E = editor_settings_properties.front(); E; E = E->next()) {
+		PropertyInfo &pi = E->get();
+		if (pi.name == "interface/editor/editor_language") {
+			editor_languages = pi.hint_string.split(",");
+		}
+	}
+	String current_lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
+	for (int i = 0; i < editor_languages.size(); i++) {
+		String lang = editor_languages[i];
+		String lang_name = TranslationServer::get_singleton()->get_locale_name(lang);
+		language_btn->add_item(lang_name + " [" + lang + "]", i);
+		language_btn->set_item_metadata(i, lang);
+		if (current_lang == lang) {
+			language_btn->select(i);
+			language_btn->set_text(lang);
+		}
+	}
+	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
+
+	settings_hb->add_child(language_btn);
+	language_btn->connect("item_selected", this, "_language_selected");
+
+	center_box->add_child(settings_hb);
+	settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+
 	CenterContainer *cc = memnew(CenterContainer);
 	Button *cancel = memnew(Button);
 	cancel->set_text(TTR("Exit"));
@@ -1594,6 +1657,13 @@ ProjectManager::ProjectManager() {
 	vb->add_child(cc);
 
 	//
+
+	language_restart_ask = memnew(ConfirmationDialog);
+	language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
+	language_restart_ask->get_ok()->connect("pressed", this, "_restart_confirm");
+	language_restart_ask->get_cancel()->set_text(TTR("Continue"));
+
+	gui_base->add_child(language_restart_ask);
 
 	erase_ask = memnew(ConfirmationDialog);
 	erase_ask->get_ok()->set_text(TTR("Remove"));

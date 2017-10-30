@@ -38,7 +38,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	String header = f->get_token();
 
-	print_line("HEADER: " + header);
 	ERR_FAIL_COND_V(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED);
 
 	while (true) {
@@ -63,8 +62,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	ERR_FAIL_COND_V(token != "+X", ERR_FILE_CORRUPT);
 
 	int width = f->get_line().to_int();
-
-	print_line("HDR w: " + itos(width) + " h:" + itos(height));
 
 	PoolVector<uint8_t> imgdata;
 
@@ -102,7 +99,6 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 				len <<= 8;
 				len |= f->get_8();
 
-				print_line("line: " + itos(len));
 				if (len != width) {
 					ERR_EXPLAIN("invalid decoded scanline length, corrupt HDR");
 					ERR_FAIL_V(ERR_FILE_CORRUPT);

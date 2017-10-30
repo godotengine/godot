@@ -4,7 +4,7 @@
 		UDP packet peer.
 	</brief_description>
 	<description>
-		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]\ s.
+		UDP packet peer. Can be used to send raw UDP packets as well as [Variant]s.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Close the UDP socket the [PacketPeerUDP] is currently listening on.
+				Close the UDP socket the [code]PacketPeerUDP[/code] is currently listening on.
 			</description>
 		</method>
 		<method name="get_packet_ip" qualifiers="const">
@@ -36,7 +36,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [PacketPeerUDP] is listening.
+				Return whether this [code]PacketPeerUDP[/code] is listening.
 			</description>
 		</method>
 		<method name="listen">
@@ -49,7 +49,7 @@
 			<argument index="2" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
+				Make this [code]PacketPeerUDP[/code] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
 				If "bind_address" is set as "*" (default), the peer will listen on all available addresses (both IPv4 and IPv6).
 				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the peer will listen on all available addresses matching that IP type.
 				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).

@@ -31,7 +31,6 @@
 #ifndef PLUGINSCRIPT_SCRIPT_H
 #define PLUGINSCRIPT_SCRIPT_H
 
-#include <iostream>
 // Godot imports
 #include "core/script_language.h"
 // PluginScript imports
@@ -103,8 +102,6 @@ public:
 	PropertyInfo get_property_info(const StringName &p_property) const;
 
 	bool is_tool() const { return _tool; }
-
-	virtual String get_node_type() const;
 
 	virtual ScriptLanguage *get_language() const;
 

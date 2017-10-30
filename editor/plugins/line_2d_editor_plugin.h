@@ -40,27 +40,11 @@ class CanvasItemEditor;
 
 class Line2DEditor : public HBoxContainer {
 	GDCLASS(Line2DEditor, HBoxContainer)
-
-public:
-	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void edit(Node *p_line2d);
-	Line2DEditor(EditorNode *p_editor);
-
-protected:
-	void _node_removed(Node *p_node);
-	void _notification(int p_what);
-
-	Vector2 mouse_to_local_pos(Vector2 mpos);
-
-	static void _bind_methods();
-
 private:
 	void _mode_selected(int p_mode);
-	void _canvas_draw();
 	void _node_visibility_changed();
 
-	int get_point_index_at(Vector2 gpos);
-	Vector2 mouse_to_local_pos(Vector2 gpos, bool alt);
+	int get_point_index_at(const Transform2D &xform, Vector2 gpos);
 
 	UndoRedo *undo_redo;
 
@@ -86,17 +70,26 @@ private:
 	int action_point;
 	Point2 moving_from;
 	Point2 moving_screen_from;
+
+protected:
+	void _node_removed(Node *p_node);
+	void _notification(int p_what);
+
+	static void _bind_methods();
+
+public:
+	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
+	void forward_draw_over_canvas(Control *p_canvas);
+	void edit(Node *p_line2d);
+	Line2DEditor(EditorNode *p_editor);
 };
 
 class Line2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Line2DEditorPlugin, EditorPlugin)
 
 public:
-	virtual bool forward_canvas_gui_input(
-			const Transform2D &p_canvas_xform,
-			const Ref<InputEvent> &p_event) {
-		return line2d_editor->forward_gui_input(p_event);
-	}
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return line2d_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_draw_over_canvas(Control *p_canvas) { return line2d_editor->forward_draw_over_canvas(p_canvas); }
 
 	virtual String get_name() const { return "Line2D"; }
 	bool has_main_screen() const { return false; }

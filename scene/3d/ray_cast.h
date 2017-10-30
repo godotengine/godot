@@ -47,7 +47,7 @@ class RayCast : public Spatial {
 
 	Set<RID> exclude;
 
-	uint32_t collision_layer;
+	uint32_t collision_mask;
 	uint32_t type_mask;
 
 	Node *debug_shape;
@@ -69,8 +69,11 @@ public:
 	void set_cast_to(const Vector3 &p_point);
 	Vector3 get_cast_to() const;
 
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
 
 	void set_type_mask(uint32_t p_mask);
 	uint32_t get_type_mask() const;

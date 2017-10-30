@@ -70,7 +70,7 @@
 				collider_id: Id of the object the point is in.
 				collider: Object the point is inside of.
 				rid: [RID] of the object the point is in.
-				Additionally, the method can take an array of objects or [RID]\ s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -96,7 +96,7 @@
 				collider: Object against which the ray was stopped.
 				rid: [RID] of the object against which the ray was stopped.
 				If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
-				Additionally, the method can take an array of objects or [RID]\ s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -130,11 +130,11 @@
 		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
 			Check for collisions with rigid bodies in character mode.
 		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-			Check for collisions with areas.
-		</constant>
 		<constant name="TYPE_MASK_COLLISION" value="15">
 			Check for collisions with any kind of bodies (but not areas).
+		</constant>
+		<constant name="TYPE_MASK_AREA" value="16">
+			Check for collisions with areas.
 		</constant>
 	</constants>
 </class>

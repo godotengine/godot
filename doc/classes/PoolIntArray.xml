@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolIntArray">
 			</argument>
 			<description>
-				Append an [PoolIntArray] at the end of this array.
+				Append an [code]PoolIntArray[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

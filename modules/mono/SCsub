@@ -53,41 +53,124 @@ if env['tools']:
 
 vars = Variables()
 vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))
+vars.Add(BoolVariable('xbuild_fallback', 'If MSBuild is not found, fallback to xbuild', False))
 vars.Update(env)
 
 # Glue sources
 if env['mono_glue']:
     env.add_source_files(env.modules_sources, 'glue/*.cpp')
 else:
-    env.Append(CPPDEFINES = [ 'MONO_GLUE_DISABLED' ])
+    env.Append(CPPDEFINES=['MONO_GLUE_DISABLED'])
 
 if ARGUMENTS.get('yolo_copy', False):
-    env.Append(CPPDEFINES = [ 'YOLO_COPY' ])
+    env.Append(CPPDEFINES=['YOLO_COPY'])
+
 
 # Build GodotSharpTools solution
 
+
 import os
-import subprocess
-import mono_reg_utils as monoreg
+
+
+def find_msbuild_unix(filename):
+    import os.path
+    import sys
+
+    hint_dirs = ['/opt/novell/mono/bin']
+    if sys.platform == "darwin":
+        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin'] + hint_dirs
+
+    for hint_dir in hint_dirs:
+        hint_path = os.path.join(hint_dir, filename)
+        if os.path.isfile(hint_path):
+            return hint_path
+
+    for hint_dir in os.environ["PATH"].split(os.pathsep):
+        hint_dir = hint_dir.strip('"')
+        hint_path = os.path.join(hint_dir, filename)
+        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+            return hint_path
+
+    return None
+
+
+def find_msbuild_windows():
+    import mono_reg_utils as monoreg
+
+    bits = env['bits']
+
+    if bits == '32':
+        if os.getenv('MONO32_PREFIX'):
+            mono_root = os.getenv('MONO32_PREFIX')
+        else:
+            mono_root = monoreg.find_mono_root_dir(bits)
+    else:
+        if os.getenv('MONO64_PREFIX'):
+            mono_root = os.getenv('MONO64_PREFIX')
+        else:
+            mono_root = monoreg.find_mono_root_dir(bits)
+
+    if not mono_root:
+        raise RuntimeError('Cannot find mono root directory')
+
+    msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
+
+    if msbuild_tools_path:
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), os.path.join(mono_root, 'lib', 'mono', '4.5'))
+    else:
+        msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
+
+        if os.path.isfile(msbuild_mono):
+            return (msbuild_mono, '')
+
+    return None
 
 
 def mono_build_solution(source, target, env):
-    if os.name == 'nt':
-        msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
-        if not msbuild_tools_path:
-            raise RuntimeError('Cannot find MSBuild Tools Path in the registry')
-        msbuild_path = os.path.join(msbuild_tools_path, 'MSBuild.exe')
-    else:
-        msbuild_path = 'msbuild'
+    import subprocess
+    import mono_reg_utils as monoreg
+    from shutil import copyfile
 
-    output_path = os.path.abspath(os.path.join(str(target[0]), os.pardir))
+    framework_path_override = ''
+
+    if os.name == 'nt':
+        msbuild_info = find_msbuild_windows()
+        if msbuild_info is None:
+            raise RuntimeError('Cannot find MSBuild executable')
+        msbuild_path = msbuild_info[0]
+        framework_path_override = msbuild_info[1]
+    else:
+        msbuild_path = find_msbuild_unix('msbuild')
+        if msbuild_path is None:
+            xbuild_fallback = env['xbuild_fallback']
+
+            if xbuild_fallback and os.name == 'nt':
+                print("Option 'xbuild_fallback' not supported on Windows")
+                xbuild_fallback = False
+
+            if xbuild_fallback:
+                print('Cannot find MSBuild executable, trying with xbuild')
+                print('Warning: xbuild is deprecated')
+
+                msbuild_path = find_msbuild_unix('xbuild')
+
+                if msbuild_path is None:
+                    raise RuntimeError('Cannot find xbuild executable')
+            else:
+                raise RuntimeError('Cannot find MSBuild executable')
+
+    print('MSBuild path: ' + msbuild_path)
+
+    build_config = 'Release'
 
     msbuild_args = [
         msbuild_path,
         os.path.abspath(str(source[0])),
-        '/p:Configuration=Release',
-        '/p:OutputPath=' + output_path
+        '/p:Configuration=' + build_config,
     ]
+
+    if framework_path_override:
+        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path_override]
 
     msbuild_env = os.environ.copy()
 
@@ -95,26 +178,26 @@ def mono_build_solution(source, target, env):
     if 'PLATFORM' in msbuild_env:
         del msbuild_env['PLATFORM']
 
-    msbuild_alt_paths = [ 'xbuild' ]
+    try:
+        subprocess.check_call(msbuild_args, env=msbuild_env)
+    except subprocess.CalledProcessError:
+        raise RuntimeError('GodotSharpTools build failed')
 
-    while True:
-        try:
-            subprocess.check_call(msbuild_args, env = msbuild_env)
-            break
-        except subprocess.CalledProcessError:
-            raise RuntimeError('GodotSharpTools build failed')
-        except OSError:
-            if os.name != 'nt':
-                if not msbuild_alt_paths:
-                    raise RuntimeError('Could not find commands msbuild or xbuild')
-                # Try xbuild
-                msbuild_args[0] = msbuild_alt_paths.pop(0)
-            else:
-                raise RuntimeError('Could not find command MSBuild.exe')
+    src_dir = os.path.abspath(os.path.join(str(source[0]), os.pardir, 'bin', build_config))
+    dst_dir = os.path.abspath(os.path.join(str(target[0]), os.pardir))
+
+    if not os.path.isdir(dst_dir):
+        if os.path.exists(dst_dir):
+            raise RuntimeError('Target directory is a file')
+        os.makedirs(dst_dir)
+
+    asm_file = 'GodotSharpTools.dll'
+
+    copyfile(os.path.join(src_dir, asm_file), os.path.join(dst_dir, asm_file))
 
 
 mono_sln_builder = Builder(action = mono_build_solution)
-env.Append(BUILDERS = { 'MonoBuildSolution' : mono_sln_builder })
+env.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
 env.MonoBuildSolution(
     os.path.join(Dir('#bin').abspath, 'GodotSharpTools.dll'),
     'editor/GodotSharpTools/GodotSharpTools.sln'

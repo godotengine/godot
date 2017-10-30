@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using Microsoft.Build.Framework;
 
@@ -12,22 +13,27 @@ namespace GodotSharpTools.Build
     public class BuildInstance : IDisposable
     {
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_BuildInstance_ExitCallback(string solution, string config, int exitCode);
+        private extern static void godot_icall_BuildInstance_ExitCallback(string solution, string config, int exitCode);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static string godot_icall_BuildInstance_get_MSBuildPath();
+        private extern static void godot_icall_BuildInstance_get_MSBuildInfo(ref string msbuildPath, ref string frameworkPath);
 
-        private static string MSBuildPath
+        private struct MSBuildInfo
         {
-            get
-            {
-                string ret = godot_icall_BuildInstance_get_MSBuildPath();
+            public string path;
+            public string frameworkPathOverride;
+        }
 
-                if (ret == null)
-                    throw new FileNotFoundException("Cannot find the MSBuild executable.");
+        private static MSBuildInfo GetMSBuildInfo()
+        {
+            MSBuildInfo msbuildInfo = new MSBuildInfo();
 
-                return ret;
-            }
+            godot_icall_BuildInstance_get_MSBuildInfo(ref msbuildInfo.path, ref msbuildInfo.frameworkPathOverride);
+
+            if (msbuildInfo.path == null)
+                throw new FileNotFoundException("Cannot find the MSBuild executable.");
+
+            return msbuildInfo;
         }
 
         private string solution;
@@ -48,9 +54,19 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
-            string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customProperties);
+            MSBuildInfo msbuildInfo = GetMSBuildInfo();
 
-            ProcessStartInfo startInfo = new ProcessStartInfo(MSBuildPath, compilerArgs);
+            List<string> customPropertiesList = new List<string>();
+
+            if (customProperties != null)
+                customPropertiesList.AddRange(customProperties);
+
+            if (msbuildInfo.frameworkPathOverride != null)
+                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
+
+            string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
+
+            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
@@ -82,9 +98,19 @@ namespace GodotSharpTools.Build
             if (process != null)
                 throw new InvalidOperationException("Already in use");
 
-            string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customProperties);
+            MSBuildInfo msbuildInfo = GetMSBuildInfo();
 
-            ProcessStartInfo startInfo = new ProcessStartInfo("msbuild", compilerArgs);
+            List<string> customPropertiesList = new List<string>();
+
+            if (customProperties != null)
+                customPropertiesList.AddRange(customProperties);
+
+            if (msbuildInfo.frameworkPathOverride.Length > 0)
+                customPropertiesList.Add("FrameworkPathOverride=" + msbuildInfo.frameworkPathOverride);
+
+            string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
+
+            ProcessStartInfo startInfo = new ProcessStartInfo(msbuildInfo.path, compilerArgs);
 
             // No console output, thanks
             startInfo.RedirectStandardOutput = true;
@@ -101,10 +127,13 @@ namespace GodotSharpTools.Build
 
             process.Start();
 
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
             return true;
         }
 
-        private string BuildArguments(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties)
+        private string BuildArguments(string loggerAssemblyPath, string loggerOutputDir, List<string> customProperties)
         {
             string arguments = string.Format(@"""{0}"" /v:normal /t:Build ""/p:{1}"" ""/l:{2},{3};{4}""",
                 solution,
@@ -114,12 +143,9 @@ namespace GodotSharpTools.Build
                 loggerOutputDir
             );
 
-            if (customProperties != null)
+            foreach (string customProperty in customProperties)
             {
-                foreach (string customProperty in customProperties)
-                {
-                    arguments += " /p:" + customProperty;
-                }
+                arguments += " \"/p:" + customProperty + "\"";
             }
 
             return arguments;

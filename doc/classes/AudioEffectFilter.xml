@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
+		Adds a filter to the Audio Bus.
 	</brief_description>
 	<description>
+		Allows frequencies other than the [member cutoff_hz] to pass.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -68,12 +70,15 @@
 	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
+			Threshold frequency for the filter.
 		</member>
-		<member name="dB" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
+		<member name="db" type="int" setter="set_db" getter="get_db" enum="AudioEffectFilter.FilterDB">
 		</member>
 		<member name="gain" type="float" setter="set_gain" getter="get_gain">
+			Gain amount of the frequencies after the filter.
 		</member>
 		<member name="resonance" type="float" setter="set_resonance" getter="get_resonance">
+			Amount of boost in the overtones near the cutoff frequency.
 		</member>
 	</members>
 	<constants>

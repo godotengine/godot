@@ -16,7 +16,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Cloces the current connection, allows for reusal of [HTTPClient].
+				Cloces the current connection, allows for reusal of [code]HTTPClient[/code].
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -84,7 +84,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [HTTPClient] has a response available.
+				Return whether this [code]HTTPClient[/code] has a response available.
 			</description>
 		</method>
 		<method name="is_blocking_mode_enabled" qualifiers="const">
@@ -98,7 +98,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether this [HTTPClient] has a response that is chunked.
+				Return whether this [code]HTTPClient[/code] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">
@@ -167,24 +167,6 @@
 				Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
 				Headers are HTTP request headers.
 				Sends body raw, as a byte array, does not encode it in any way.
-			</description>
-		</method>
-		<method name="send_body_data">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="body" type="PoolByteArray">
-			</argument>
-			<description>
-				Stub function
-			</description>
-		</method>
-		<method name="send_body_text">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="body" type="String">
-			</argument>
-			<description>
-				Stub function
 			</description>
 		</method>
 		<method name="set_blocking_mode">

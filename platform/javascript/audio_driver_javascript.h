@@ -35,7 +35,23 @@
 #include "os/mutex.h"
 
 class AudioDriverJavaScript : public AudioDriver {
+
+	enum {
+		INTERNAL_BUFFER_SIZE = 4096,
+		STREAM_SCALE_BITS = 12
+
+	};
+
+	int mix_rate;
+	float *internal_buffer;
+	int internal_buffer_channels;
+	int internal_buffer_size;
+	int32_t *stream_buffer;
+
 public:
+	void mix_to_js(int p_frames);
+	static AudioDriverJavaScript *singleton_js;
+
 	virtual const char *get_name() const;
 
 	virtual Error init();

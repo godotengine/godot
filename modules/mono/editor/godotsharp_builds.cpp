@@ -32,6 +32,7 @@
 #include "main/main.h"
 
 #include "../godotsharp_dirs.h"
+#include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
@@ -71,7 +72,7 @@ String _find_build_engine_on_unix(const String &p_name) {
 }
 #endif
 
-MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
+void godot_icall_BuildInstance_get_MSBuildInfo(MonoString **r_msbuild_path, MonoString **r_framework_path) {
 
 	GodotSharpBuilds::BuildTool build_tool = GodotSharpBuilds::BuildTool(int(EditorSettings::get_singleton()->get("mono/builds/build_tool")));
 
@@ -84,11 +85,23 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 				if (!msbuild_tools_path.ends_with("\\"))
 					msbuild_tools_path += "\\";
 
-				return GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+				// FrameworkPathOverride
+				const MonoRegInfo &mono_reg_info = GDMono::get_singleton()->get_mono_reg_info();
+				if (mono_reg_info.assembly_dir.length()) {
+					*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+
+					String framework_path = path_join(mono_reg_info.assembly_dir, "mono", "4.5");
+					*r_framework_path = GDMonoMarshal::mono_string_from_godot(framework_path);
+				} else {
+					ERR_PRINT("Cannot find Mono's assemblies directory in the registry");
+				}
+
+				return;
 			}
 
-			OS::get_singleton()->print("Cannot find System's MSBuild. Trying with Mono's...\n");
-		}
+			if (OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("Cannot find System's MSBuild. Trying with Mono's...\n");
+		} // fall through
 		case GodotSharpBuilds::MSBUILD_MONO: {
 			String msbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("msbuild.bat");
 
@@ -96,17 +109,10 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 				WARN_PRINTS("Cannot find msbuild ('mono/builds/build_tool'). Tried with path: " + msbuild_path);
 			}
 
-			return GDMonoMarshal::mono_string_from_godot(msbuild_path);
-		}
-		case GodotSharpBuilds::XBUILD: {
-			String xbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("xbuild.bat");
+			*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(msbuild_path);
 
-			if (!FileAccess::exists(xbuild_path)) {
-				WARN_PRINTS("Cannot find xbuild ('mono/builds/build_tool'). Tried with path: " + xbuild_path);
-			}
-
-			return GDMonoMarshal::mono_string_from_godot(xbuild_path);
-		}
+			return;
+		} break;
 		default:
 			ERR_EXPLAIN("You don't deserve to live");
 			CRASH_NOW();
@@ -118,25 +124,28 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 	if (build_tool != GodotSharpBuilds::XBUILD) {
 		if (msbuild_path.empty()) {
 			WARN_PRINT("Cannot find msbuild ('mono/builds/build_tool').");
-			return NULL;
+			return;
 		}
 	} else {
 		if (xbuild_path.empty()) {
 			WARN_PRINT("Cannot find xbuild ('mono/builds/build_tool').");
-			return NULL;
+			return;
 		}
 	}
 
-	return GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+	*r_msbuild_path = GDMonoMarshal::mono_string_from_godot(build_tool != GodotSharpBuilds::XBUILD ? msbuild_path : xbuild_path);
+
+	return;
 #else
-	return NULL;
+	ERR_PRINT("Not implemented on this platform");
+	return;
 #endif
 }
 
 void GodotSharpBuilds::_register_internal_calls() {
 
 	mono_add_internal_call("GodotSharpTools.Build.BuildSystem::godot_icall_BuildInstance_ExitCallback", (void *)godot_icall_BuildInstance_ExitCallback);
-	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildPath", (void *)godot_icall_BuildInstance_get_MSBuildPath);
+	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildInfo", (void *)godot_icall_BuildInstance_get_MSBuildInfo);
 }
 
 void GodotSharpBuilds::show_build_error_dialog(const String &p_message) {
@@ -269,7 +278,7 @@ bool GodotSharpBuilds::make_api_sln(GodotSharpBuilds::APIType p_api_type) {
 	return true;
 }
 
-bool godotsharp_build_callback() {
+bool GodotSharpBuilds::build_project_blocking() {
 
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
@@ -348,14 +357,27 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	singleton = this;
 
-	EditorNode::get_singleton()->add_build_callback(&godotsharp_build_callback);
+	EditorNode::get_singleton()->add_build_callback(&GodotSharpBuilds::build_project_blocking);
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	if (!ed_settings->has_setting("mono/builds/build_tool")) {
-		ed_settings->set_setting("mono/builds/build_tool", MSBUILD);
+		ed_settings->set_setting("mono/builds/build_tool",
+#ifdef WINDOWS_ENABLED
+				// TODO: Default to MSBUILD_MONO if its csc.exe issue is fixed in the installed mono version
+				MSBUILD
+#else
+				MSBUILD_MONO
+#endif
+				);
 	}
-	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM, "MSBuild (System),MSBuild (Mono),xbuild"));
+	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM,
+#ifdef WINDOWS_ENABLED
+			"MSBuild (Mono),MSBuild (System)"
+#else
+			"MSBuild (Mono),xbuild (Deprecated)"
+#endif
+			));
 }
 
 GodotSharpBuilds::~GodotSharpBuilds() {
@@ -395,10 +417,11 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	}
 
 	if (!exited) {
-		ERR_PRINT("BuildProcess::start called, but process still running");
 		exited = true;
-		build_tab->on_build_exec_failed("!exited");
-		return;
+		String message = "Tried to start build process, but it is already running";
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
+		ERR_FAIL();
 	}
 
 	exited = false;
@@ -410,10 +433,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	if (d->file_exists(issues_file)) {
 		Error err = d->remove(issues_file);
 		if (err != OK) {
-			ERR_PRINTS("Cannot remove file: " + logs_dir.plus_file(issues_file));
 			exited = true;
-			build_tab->on_build_exec_failed("Cannot remove file: " + issues_file);
-			return;
+			String file_path = ProjectSettings::get_singleton()->localize_path(logs_dir).plus_file(issues_file);
+			String message = "Cannot remove issues file: " + file_path;
+			build_tab->on_build_exec_failed(message);
+			ERR_EXPLAIN(message);
+			ERR_FAIL();
 		}
 	}
 
@@ -434,7 +459,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
-		build_tab->on_build_exec_failed("The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex));
+		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
 		ERR_FAIL();
 	}
 
@@ -452,7 +479,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (ex) {
 		exited = true;
-		build_tab->on_build_exec_failed("The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex));
+		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		build_tab->on_build_exec_failed(message);
+		ERR_EXPLAIN(message);
 		ERR_FAIL();
 	}
 

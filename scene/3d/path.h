@@ -67,10 +67,10 @@ public:
 
 private:
 	Path *path;
+	real_t delta_offset; // change in offset since last _update_transform
 	real_t offset;
 	real_t h_offset;
 	real_t v_offset;
-	real_t lookahead;
 	bool cubic;
 	bool loop;
 	RotationMode rotation_mode;
@@ -97,9 +97,6 @@ public:
 
 	void set_unit_offset(float p_unit_offset);
 	float get_unit_offset() const;
-
-	void set_lookahead(float p_lookahead);
-	float get_lookahead() const;
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;

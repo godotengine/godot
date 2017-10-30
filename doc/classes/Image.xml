@@ -4,7 +4,7 @@
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a texture, and several functions to interact with it.
+		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [code]Image[/code] is 16384 pixels.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +21,7 @@
 			<argument index="2" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dest[/code].
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -36,7 +36,7 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Alpha-blends a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channels are required for both "src" and "mask", dest pixels and src pixels will blend if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+				Alpha-blends [code]src_rect[/code] from [code]src[/code] image to this image using [code]mask[/code] image at coordinates [code]dst[/code]. Alpha channels are required for both [code]src[/code] and [code]mask[/code]. [code]dst[/code] pixels and [code]src[/code] pixels will blend if the corresponding mask pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
 		<method name="blit_rect">
@@ -49,7 +49,7 @@
 			<argument index="2" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Copy a "src_rect" [Rect2] from "src" [Image] to this [Image] on coordinates "dest".
+				Copies [code]src_rect[/code] from [code]src[/code] image to this image at coordinates [code]dst[/code].
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -64,13 +64,14 @@
 			<argument index="3" name="dst" type="Vector2">
 			</argument>
 			<description>
-				Blits a "src_rect" [Rect2] from "src" [Image] to this [Image] using a "mask" [Image] on coordinates "dest". Alpha channel is required for "mask", will copy src pixel onto dest if the corresponding mask pixel's alpha value is not 0. "src" [Image] and "mask" [Image] *must* have the same size (width and height) but they can have different formats
+				Blits [code]src_rect[/code] area from [code]src[/code] image to this image at the coordinates given by [code]dst[/code]. [code]src[/code] pixel is copied onto [code]dst[/code] if the corresponding [code]mask[/code] pixel's alpha value is not 0. [code]src[/code] image and [code]mask[/code] image [b]must[/b] have the same size (width and height) but they can have different formats.
 			</description>
 		</method>
 		<method name="clear_mipmaps">
 			<return type="void">
 			</return>
 			<description>
+				Removes the image's mipmaps.
 			</description>
 		</method>
 		<method name="compress">
@@ -83,6 +84,7 @@
 			<argument index="2" name="lossy_quality" type="float">
 			</argument>
 			<description>
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [code]COMPRESS_*[/code] constants.
 			</description>
 		</method>
 		<method name="convert">
@@ -91,6 +93,7 @@
 			<argument index="0" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
+				Converts the image's format. See [code]FORMAT_*[/code] constants.
 			</description>
 		</method>
 		<method name="copy_from">
@@ -99,6 +102,7 @@
 			<argument index="0" name="src" type="Image">
 			</argument>
 			<description>
+				Copies [code]src[/code] image to this image.
 			</description>
 		</method>
 		<method name="create">
@@ -113,7 +117,7 @@
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Create an empty image of a specific size and format.
+				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -130,6 +134,7 @@
 			<argument index="4" name="data" type="PoolByteArray">
 			</argument>
 			<description>
+				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
 			</description>
 		</method>
 		<method name="crop">
@@ -140,24 +145,28 @@
 			<argument index="1" name="height" type="int">
 			</argument>
 			<description>
+				Crops the image to the given [code]width[/code] and [code]height[/code]. If the specified size is larger than the current size, the extra area is filled with black pixels.
 			</description>
 		</method>
 		<method name="decompress">
 			<return type="int" enum="Error">
 			</return>
 			<description>
+				Decompresses the image if it is compressed. Returns an error if decompress function is not available.
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
 			<return type="int" enum="Image.AlphaMode">
 			</return>
 			<description>
+				Returns ALPHA_BLEND if the image has data for alpha values. Returns ALPHA_BIT if all the alpha values are below a certain threshold or the maximum value. Returns ALPHA_NONE if no data for alpha values is found.
 			</description>
 		</method>
 		<method name="expand_x2_hq2x">
 			<return type="void">
 			</return>
 			<description>
+				Stretches the image and enlarges it by a factor of 2. No interpolation is done.
 			</description>
 		</method>
 		<method name="fill">
@@ -166,52 +175,56 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Fills an [Image] with a specified [Color]
+				Fills the image with a given [Color].
 			</description>
 		</method>
 		<method name="fix_alpha_edges">
 			<return type="void">
 			</return>
 			<description>
+				Blends low-alpha pixels with nearby pixels.
 			</description>
 		</method>
 		<method name="flip_x">
 			<return type="void">
 			</return>
 			<description>
+				Flips the image horizontally.
 			</description>
 		</method>
 		<method name="flip_y">
 			<return type="void">
 			</return>
 			<description>
+				Flips the image vertically.
 			</description>
 		</method>
 		<method name="generate_mipmaps">
 			<return type="int" enum="Error">
 			</return>
 			<description>
+				Generates mipmaps for the image. Mipmaps are pre-calculated and lower resolution copies of the image. Mipmaps are automatically used if the image needs to be scaled down when rendered. This improves image quality and the performance of the rendering. Returns an error if the image is compressed, in a custom format or if the image's width/height is 0.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Return the raw data of the [Image].
+				Returns the image's raw data.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [Image], one of [Image].FORMAT_*.
+				Returns the image's raw data.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the height of the [Image].
+				Returns the image's height.
 			</description>
 		</method>
 		<method name="get_mipmap_offset" qualifiers="const">
@@ -220,6 +233,7 @@
 			<argument index="0" name="mipmap" type="int">
 			</argument>
 			<description>
+				Returns the offset where the image's mipmap with index [code]mipmap[/code] is stored in the [code]data[/code] dictionary.
 			</description>
 		</method>
 		<method name="get_pixel" qualifiers="const">
@@ -230,6 +244,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
+				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code].
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -238,51 +253,56 @@
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<description>
-				Return a new [Image] that is a copy of "area" in this [Image].
+				Returns a new image that is a copy of the image's area specified with [code]rect[/code].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the image's size (width and height).
 			</description>
 		</method>
 		<method name="get_used_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-				Return the area of this [Image] that is used/visibly colored/opaque.
+				Returns a [Rect2] enclosing the visible portion of the image.
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the width of the [Image].
+				Returns the image's width.
 			</description>
 		</method>
 		<method name="has_mipmaps" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the image has generated mipmaps.
 			</description>
 		</method>
 		<method name="is_compressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the image is compressed.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the image has no data.
 			</description>
 		</method>
 		<method name="is_invisible" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
 			</description>
 		</method>
 		<method name="load">
@@ -291,25 +311,28 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [Image].
+				Loads an image from file [code]path[/code].
 			</description>
 		</method>
 		<method name="lock">
 			<return type="void">
 			</return>
 			<description>
+				Locks the data and prevents changes.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
 			<return type="void">
 			</return>
 			<description>
+				Converts the image's data to represent coordinates on a 3D plane. This is used when the image represents a normalmap. A normalmap can add lots of detail to a 3D surface without increasing the polygon count.
 			</description>
 		</method>
 		<method name="premultiply_alpha">
 			<return type="void">
 			</return>
 			<description>
+				Multiplies color values with alpha values. Resulting color values for a pixel are [code](color * alpha)/256[/code].
 			</description>
 		</method>
 		<method name="resize">
@@ -322,6 +345,7 @@
 			<argument index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1">
 			</argument>
 			<description>
+				Resizes the image to the given [code]width[/code] and [code]height[/code]. New pixels are calculated using [code]interpolation[/code]. See [code]interpolation[/code] constants.
 			</description>
 		</method>
 		<method name="resize_to_po2">
@@ -330,6 +354,7 @@
 			<argument index="0" name="square" type="bool" default="false">
 			</argument>
 			<description>
+				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
@@ -338,7 +363,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Save this [Image] as a png.
+				Saves the image as a PNG file to [code]path[/code].
 			</description>
 		</method>
 		<method name="set_pixel">
@@ -351,29 +376,41 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is unlocked. Example:
+				[code]
+				var img = Image.new()
+				img.lock()
+				img.set_pixel(x, y, color) # Does not have an effect
+				img.unlock()
+				img.set_pixel(x, y, color) # Works
+				[/code].
 			</description>
 		</method>
 		<method name="shrink_x2">
 			<return type="void">
 			</return>
 			<description>
+				Shrinks the image by a factor of 2.
 			</description>
 		</method>
 		<method name="srgb_to_linear">
 			<return type="void">
 			</return>
 			<description>
+				Converts the raw data from the sRGB colorspace to a linear scale.
 			</description>
 		</method>
 		<method name="unlock">
 			<return type="void">
 			</return>
 			<description>
+				Unlocks the data for writing access.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
 		</member>
 	</members>
 	<constants>

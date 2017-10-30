@@ -92,7 +92,7 @@ long AudioStreamPlaybackOGGVorbis::_ov_tell_func(void *_f) {
 	return fa->get_position();
 }
 
-int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_bufer, int p_frames) {
+int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 
 	if (!playing)
 		return 0;
@@ -109,9 +109,9 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_bufer, int p_frames) {
 //printf("to mix %i - mix me %i bytes\n",to_mix,to_mix*stream_channels*sizeof(int16_t));
 
 #ifdef BIG_ENDIAN_ENABLED
-		long ret = ov_read(&vf, (char *)p_bufer, todo * stream_channels * sizeof(int16_t), 1, 2, 1, &current_section);
+		long ret = ov_read(&vf, (char *)p_buffer, todo * stream_channels * sizeof(int16_t), 1, 2, 1, &current_section);
 #else
-		long ret = ov_read(&vf, (char *)p_bufer, todo * stream_channels * sizeof(int16_t), 0, 2, 1, &current_section);
+		long ret = ov_read(&vf, (char *)p_buffer, todo * stream_channels * sizeof(int16_t), 0, 2, 1, &current_section);
 #endif
 
 		if (ret < 0) {
@@ -162,7 +162,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_bufer, int p_frames) {
 
 		frames_mixed += ret;
 
-		p_bufer += ret * stream_channels;
+		p_buffer += ret * stream_channels;
 		p_frames -= ret;
 	}
 

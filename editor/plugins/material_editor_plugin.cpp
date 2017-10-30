@@ -32,6 +32,7 @@
 // Waiting for PropertyEditor rewrite (planned for 3.1) to be refactored.
 
 #include "material_editor_plugin.h"
+#include "scene/3d/particles.h"
 
 #if 0
 
@@ -431,6 +432,52 @@ bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) c
 Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
 
 	Ref<SpatialMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+
+		// Texture parameter has to be treated specially since SpatialMaterial saved it
+		// as RID but ShaderMaterial needs Texture itself
+		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
+		if (texture.is_valid()) {
+			smat->set_shader_param(E->get().name, texture);
+		} else {
+			Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+			smat->set_shader_param(E->get().name, value);
+		}
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String ParticlesMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<ParticlesMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
+
+	Ref<ParticlesMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

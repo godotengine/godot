@@ -4,8 +4,10 @@
 		Tabbed Container.
 	</brief_description>
 	<description>
-		Tabbed Container. Contains several children controls, but shows only one at the same time. Clicking on the top tabs allows to change the currently visible one.
-		Children controls of this one automatically.
+		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
+		Ignores non-[Control] children.
+		Individual tabs are always visible unless you use [method set_tab_disabled] and [method set_tab_title] to hide it.
+		To hide only a tab's content, nest the content inside a child [Control], so it receives the [code]TabContainer[/code]'s visibility setting instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,33 +25,35 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the current tab index that is being shown.
+				Returns the currently visible tab's index.
 			</description>
 		</method>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
+				Returns the child [Control] node located at the active tab index.
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
 			<return type="Popup">
 			</return>
 			<description>
+				Returns the [Popup] node instance if one has been set already with [method set_popup].
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the previous tab index that was being shown.
+				Returns the previously active tab index.
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
 			<return type="int" enum="TabContainer.TabAlign">
 			</return>
 			<description>
-				Returns the tab alignment.See the ALIGN_* constants.
+				Returns the tab alignment. See the [code]ALIGN_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_tab_control" qualifiers="const">
@@ -58,14 +62,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the current tab control that is being shown.
+				Returns the currently visible tab's [Control] node.
 			</description>
 		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of tabs.
+				Returns the number of tabs.
 			</description>
 		</method>
 		<method name="get_tab_disabled" qualifiers="const">
@@ -92,7 +96,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the title for the tab at index [code]tab_idx[/code]. Tab titles are by default the children node name, but this can be overridden.
+				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_current_tab">
@@ -101,7 +105,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Bring a tab (and the Control it represents) to the front, and hide the rest.
+				Sets to [code]false[/code] the [code]visible[/code] property for all [Control] children except for the tab at [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_popup">
@@ -110,6 +114,7 @@
 			<argument index="0" name="popup" type="Node">
 			</argument>
 			<description>
+				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [code]TabContainer[/code]. Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_align">
@@ -118,7 +123,7 @@
 			<argument index="0" name="align" type="int" enum="TabContainer.TabAlign">
 			</argument>
 			<description>
-				Set tab alignment, from the ALIGN_* enum. Moves tabs to the left, right or center.
+				Sets tab alignment, from the [code]ALIGN_*[/code] constants. Moves tabs to the left, right, or center.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -129,7 +134,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Set tab at index [code]tab_idx[/code] disabled.
+				If [code]disabled[/code] is false, hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -140,7 +145,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Set an icon for a tab at index [code]tab_idx[/code].
+				Sets an icon for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -151,7 +156,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Set a title for the tab at index [code]tab_idx[/code]. Tab titles are by default the children node name, but this can be overridden.
+				Sets a title for the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tabs_visible">
@@ -160,38 +165,39 @@
 			<argument index="0" name="visible" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] all the tabs will be visible.
+				If [code]true[/code] tabs are visible. If [code]false[/code] tabs' content and titles are hidden. Default value: [code]true[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
-			The current tab.
+			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign">
-			The alignment of all the tabs of the tab container. See the [code]ALIGN_*[/code] constants.
+			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible">
-			If [code]true[/code] all tabs that are children of the TabContainer will be visible.
+			If [code]true[/code] tabs are visible. If [code]false[/code] tabs' content and titles are hidden. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>
 		<signal name="pre_popup_pressed">
 			<description>
+				Emitted when the [code]TabContainer[/code]'s [Popup] button is clicked. See [method set_popup] for details.
 			</description>
 		</signal>
 		<signal name="tab_changed">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
-				Emitted only when the current tab changes.
+				Emitted when switching to another tab.
 			</description>
 		</signal>
 		<signal name="tab_selected">
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
-				Emitted when a tab is being selected, even if it is the same tab.
+				Emitted when a tab is selected, even if it is the current tab.
 			</description>
 		</signal>
 	</signals>

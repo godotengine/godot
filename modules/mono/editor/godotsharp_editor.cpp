@@ -46,21 +46,6 @@
 #include "../utils/mono_reg_utils.h"
 #endif
 
-class MonoReloadNode : public Node {
-	GDCLASS(MonoReloadNode, Node)
-
-protected:
-	void _notification(int p_what) {
-		switch (p_what) {
-			case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
-				CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
-			} break;
-			default: {
-			} break;
-		};
-	}
-};
-
 GodotSharpEditor *GodotSharpEditor::singleton = NULL;
 
 bool GodotSharpEditor::_create_project_solution() {
@@ -71,6 +56,10 @@ bool GodotSharpEditor::_create_project_solution() {
 
 	String path = OS::get_singleton()->get_resource_dir();
 	String name = ProjectSettings::get_singleton()->get("application/config/name");
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
+
 	String guid = CSharpProject::generate_game_project(path, name);
 
 	if (guid.length()) {
@@ -253,4 +242,50 @@ GodotSharpEditor::~GodotSharpEditor() {
 		memdelete(monodevel_instance);
 		monodevel_instance = NULL;
 	}
+}
+
+MonoReloadNode *MonoReloadNode::singleton = NULL;
+
+void MonoReloadNode::_reload_timer_timeout() {
+
+	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(false);
+}
+
+void MonoReloadNode::restart_reload_timer() {
+
+	reload_timer->stop();
+	reload_timer->start();
+}
+
+void MonoReloadNode::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_reload_timer_timeout"), &MonoReloadNode::_reload_timer_timeout);
+}
+
+void MonoReloadNode::_notification(int p_what) {
+	switch (p_what) {
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+			restart_reload_timer();
+			CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
+		} break;
+		default: {
+		} break;
+	};
+}
+
+MonoReloadNode::MonoReloadNode() {
+
+	singleton = this;
+
+	reload_timer = memnew(Timer);
+	add_child(reload_timer);
+	reload_timer->set_one_shot(false);
+	reload_timer->set_wait_time(EDITOR_DEF("mono/assembly_watch_interval_sec", 0.5));
+	reload_timer->connect("timeout", this, "_reload_timer_timeout");
+	reload_timer->start();
+}
+
+MonoReloadNode::~MonoReloadNode() {
+
+	singleton = NULL;
 }

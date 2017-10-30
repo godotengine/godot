@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "gd_mono.h"
 
+#include <mono/metadata/exception.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/mono-gc.h>
@@ -46,6 +47,15 @@
 #ifdef TOOLS_ENABLED
 #include "../editor/godotsharp_editor.h"
 #endif
+
+void gdmono_unhandled_exception_hook(MonoObject *exc, void *user_data) {
+
+	(void)user_data; // UNUSED
+
+	ERR_PRINT(GDMonoUtils::get_exception_name_and_message(exc).utf8());
+	mono_print_unhandled_exception(exc);
+	abort();
+}
 
 #ifdef MONO_PRINT_HANDLER_ENABLED
 void gdmono_MonoPrintCallback(const char *string, mono_bool is_stdout) {
@@ -132,7 +142,7 @@ void GDMono::initialize() {
 
 	ERR_FAIL_NULL(Engine::get_singleton());
 
-	OS::get_singleton()->print("Initializing mono...\n");
+	OS::get_singleton()->print("Mono: Initializing module...\n");
 
 #ifdef DEBUG_METHODS_ENABLED
 	_initialize_and_check_api_hashes();
@@ -214,7 +224,9 @@ void GDMono::initialize() {
 	// The following assemblies are not required at initialization
 	_load_all_script_assemblies();
 
-	OS::get_singleton()->print("Mono: EVERYTHING OK\n");
+	mono_install_unhandled_exception_hook(gdmono_unhandled_exception_hook, NULL);
+
+	OS::get_singleton()->print("Mono: ALL IS GOOD\n");
 }
 
 #ifndef MONO_GLUE_DISABLED
@@ -357,9 +369,12 @@ bool GDMono::_load_project_assembly() {
 	if (project_assembly)
 		return true;
 
-	String project_assembly_name = ProjectSettings::get_singleton()->get("application/config/name");
+	String name = ProjectSettings::get_singleton()->get("application/config/name");
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
 
-	bool success = _load_assembly(project_assembly_name, &project_assembly);
+	bool success = _load_assembly(name, &project_assembly);
 
 	if (success)
 		mono_assembly_set_main(project_assembly->get_assembly());
@@ -610,6 +625,8 @@ GDMono::~GDMono() {
 
 	if (gdmono_log)
 		memdelete(gdmono_log);
+
+	singleton = NULL;
 }
 
 _GodotSharp *_GodotSharp::singleton = NULL;

@@ -121,6 +121,7 @@
 	</methods>
 	<members>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">
+			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 meter in the real world.
 		</member>
 	</members>
 	<signals>
@@ -171,11 +172,11 @@
 		<constant name="TRACKER_ANCHOR" value="4">
 			Our tracker tracks the location and size of an AR anchor.
 		</constant>
-		<constant name="TRACKER_UNKNOWN" value="128">
-			Used internally if we haven't set the tracker type yet.
-		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127">
 			Used internally to filter trackers of any known type.
+		</constant>
+		<constant name="TRACKER_UNKNOWN" value="128">
+			Used internally if we haven't set the tracker type yet.
 		</constant>
 		<constant name="TRACKER_ANY" value="255">
 			Used internally to select all trackers.

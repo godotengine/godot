@@ -4,8 +4,10 @@
 		Input event type for mouse button events.
 	</brief_description>
 	<description>
+		Contains mouse click informations. See [method Node._input].
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -66,12 +68,13 @@
 			Mouse button identifier, one of the BUTTON_* or BUTTON_WHEEL_* constants in [@Global Scope].
 		</member>
 		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick">
-			Whether the event is a double-click.
+			If [code]true[/code] the mouse button's state is a double-click. If [code]false[/code] the mouse button's state is released.
 		</member>
 		<member name="factor" type="float" setter="set_factor" getter="get_factor">
+			TO TALK in PR, reduz said : i think it's used for apple touch but i don't remember what it does
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			Pressed state of the mouse button.
+			If [code]true[/code] the mouse button's state is pressed. If [code]false[/code] the mouse button's state is released.
 		</member>
 	</members>
 	<constants>

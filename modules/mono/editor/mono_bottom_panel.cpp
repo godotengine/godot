@@ -139,6 +139,14 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 	build_tab->_update_issues_list();
 }
 
+void MonoBottomPanel::_build_project_pressed() {
+
+	GodotSharpBuilds::get_singleton()->build_project_blocking();
+
+	MonoReloadNode::get_singleton()->restart_reload_timer();
+	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
+}
+
 void MonoBottomPanel::_notification(int p_what) {
 
 	switch (p_what) {
@@ -153,6 +161,7 @@ void MonoBottomPanel::_notification(int p_what) {
 
 void MonoBottomPanel::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_build_project_pressed"), &MonoBottomPanel::_build_project_pressed);
 	ClassDB::bind_method(D_METHOD("_warnings_toggled", "pressed"), &MonoBottomPanel::_warnings_toggled);
 	ClassDB::bind_method(D_METHOD("_errors_toggled", "pressed"), &MonoBottomPanel::_errors_toggled);
 	ClassDB::bind_method(D_METHOD("_build_tab_item_selected", "idx"), &MonoBottomPanel::_build_tab_item_selected);
@@ -186,6 +195,12 @@ MonoBottomPanel::MonoBottomPanel(EditorNode *p_editor) {
 		HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 		toolbar_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 		panel_builds_tab->add_child(toolbar_hbc);
+
+		ToolButton *build_project_btn = memnew(ToolButton);
+		build_project_btn->set_text("Build Project");
+		build_project_btn->set_focus_mode(FOCUS_NONE);
+		build_project_btn->connect("pressed", this, "_build_project_pressed");
+		toolbar_hbc->add_child(build_project_btn);
 
 		toolbar_hbc->add_spacer();
 
@@ -280,7 +295,11 @@ void MonoBuildTab::_update_issues_list() {
 
 		String tooltip;
 		tooltip += String("Message: ") + issue.message;
-		tooltip += String("\nCode: ") + issue.code;
+
+		if (issue.code.length()) {
+			tooltip += String("\nCode: ") + issue.code;
+		}
+
 		tooltip += String("\nType: ") + (issue.warning ? "warning" : "error");
 
 		String text;
@@ -356,23 +375,21 @@ void MonoBuildTab::on_build_exit(BuildResult result) {
 	MonoBottomPanel::get_singleton()->raise_build_tab(this);
 }
 
-void MonoBuildTab::on_build_exec_failed(const String &p_cause, const String &p_detailed) {
+void MonoBuildTab::on_build_exec_failed(const String &p_cause) {
 
 	build_exited = true;
 	build_result = RESULT_ERROR;
 
 	issues_list->clear();
 
-	String tooltip;
+	BuildIssue issue;
+	issue.message = p_cause;
+	issue.warning = false;
 
-	tooltip += "Message: " + (p_detailed.length() ? p_detailed : p_cause);
-	tooltip += "\nType: error";
+	error_count += 1;
+	issues.push_back(issue);
 
-	int line_break_idx = p_cause.find("\n");
-	issues_list->add_item(line_break_idx == -1 ? p_cause : p_cause.substr(0, line_break_idx),
-			get_icon("Error", "EditorIcons"));
-	int index = issues_list->get_item_count() - 1;
-	issues_list->set_item_tooltip(index, tooltip);
+	_update_issues_list();
 
 	MonoBottomPanel::get_singleton()->raise_build_tab(this);
 }

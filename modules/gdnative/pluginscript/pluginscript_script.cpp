@@ -346,11 +346,6 @@ bool PluginScript::get_property_default_value(const StringName &p_property, Vari
 	return false;
 }
 
-String PluginScript::get_node_type() const {
-	// Even GDscript doesn't know what to put here !
-	return ""; // ?
-}
-
 ScriptLanguage *PluginScript::get_language() const {
 	return _language;
 }

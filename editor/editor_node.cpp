@@ -308,6 +308,8 @@ void EditorNode::_notification(int p_what) {
 		}
 		_update_scene_tabs();
 
+		recent_scenes->set_as_minsize();
+
 		// debugger area
 		if (ScriptEditor::get_singleton()->get_debugger()->is_visible())
 			bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
@@ -406,7 +408,6 @@ void EditorNode::_fs_changed() {
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
 
 				if (mt != E->get()->get_import_last_modified_time()) {
-					print_line("success");
 					changed.push_back(E->get());
 				}
 #endif
@@ -431,7 +432,7 @@ void EditorNode::_fs_changed() {
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
-	print_line("reimporting");
+
 	List<String> scenes; //will load later
 
 	for (int i = 0; i < p_resources.size(); i++) {
@@ -463,7 +464,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		if (defer_load_scene != "") {
 
-			print_line("loading scene DEFERRED");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -781,7 +781,6 @@ bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, i
 	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
 			//save
-			print_line("Also saving modified external resource: " + p_res->get_path());
 			ResourceSaver::save(p_res->get_path(), p_res, flags);
 		}
 		processed[p_res] = false; //because it's a file
@@ -1454,7 +1453,7 @@ void EditorNode::_edit_current() {
 			}
 		} else if (current_res->get_path().is_resource_file()) {
 			if (FileAccess::exists(current_res->get_path() + ".import")) {
-				editable_warning = TTR("This resource was imported, so it's not editable. Change it's settings in the import panel and re-import.");
+				editable_warning = TTR("This resource was imported, so it's not editable. Change its settings in the import panel and then re-import.");
 			}
 		}
 	} else if (is_node) {
@@ -1991,7 +1990,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDIT_UNDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				print_line("no because state");
 				break; // can't undo while mouse buttons are pressed
 			}
 
@@ -2672,12 +2670,12 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	String addon_path = "res://addons/" + p_addon + "/plugin.cfg";
 	Error err = cf->load(addon_path);
 	if (err != OK) {
-		show_warning(TTR("Unable to enable addon plugin at: '") + addon_path + TTR("' parsing of config failed."));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(TTR("Unable to find script field for addon plugin at: 'res://addons/") + p_addon + "''.");
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: 'res://addons/%s'."), p_addon));
 		return;
 	}
 
@@ -2687,18 +2685,18 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	Ref<Script> script = ResourceLoader::load(path);
 
 	if (script.is_null()) {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "'.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), path));
 		return;
 	}
 
 	//could check inheritance..
 	if (String(script->get_instance_base_type()) != "EditorPlugin") {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "' Base type is not EditorPlugin.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), path));
 		return;
 	}
 
 	if (!script->is_tool()) {
-		show_warning(TTR("Unable to load addon script from path: '") + path + "' Script is not in tool mode.");
+		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), path));
 		return;
 	}
 
@@ -2960,7 +2958,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	dependency_errors.clear();
 
-	print_line("actually loading it");
 	Error err;
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", true, &err);
 	if (!sdata.is_valid()) {
@@ -4297,15 +4294,11 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
-	print_line("reloading: " + p_path);
 	List<Ref<Resource> > cached;
 	ResourceCache::get_cached_resources(&cached);
 	List<Ref<Resource> > to_clear; //clear internal resources from previous scene from being used
 	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
 
-		if (E->get()->get_path().find("::") != -1) {
-			print_line(E->get()->get_path());
-		}
 		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
 			to_clear.push_back(E->get());
 		}
@@ -4313,7 +4306,6 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	//so reload reloads everything, clear subresources of previous scene
 	while (to_clear.front()) {
-		print_line("bye bye: " + to_clear.front()->get()->get_path());
 		to_clear.front()->get()->set_path("");
 		to_clear.pop_front();
 	}
@@ -5541,6 +5533,10 @@ EditorNode::EditorNode() {
 		Ref<SpatialMaterialConversionPlugin> spatial_mat_convert;
 		spatial_mat_convert.instance();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
+
+		Ref<ParticlesMaterialConversionPlugin> particles_mat_convert;
+		particles_mat_convert.instance();
+		resource_conversion_plugins.push_back(particles_mat_convert);
 	}
 	circle_step_msec = OS::get_singleton()->get_ticks_msec();
 	circle_step_frame = Engine::get_singleton()->get_frames_drawn();
@@ -5691,12 +5687,12 @@ void EditorPluginList::edit(Object *p_object) {
 	}
 }
 
-bool EditorPluginList::forward_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) {
+bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_canvas_gui_input(p_canvas_xform, p_event)) {
+		if (plugins_list[i]->forward_canvas_gui_input(p_event)) {
 			discard = true;
 		}
 	}
@@ -5720,10 +5716,10 @@ bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 	return discard;
 }
 
-void EditorPluginList::forward_draw_over_canvas(const Transform2D &p_canvas_xform, Control *p_canvas) {
+void EditorPluginList::forward_draw_over_canvas(Control *p_canvas) {
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_draw_over_canvas(p_canvas_xform, p_canvas);
+		plugins_list[i]->forward_draw_over_canvas(p_canvas);
 	}
 }
 

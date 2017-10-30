@@ -54,6 +54,7 @@ class ProjectManager : public Control {
 
 	ProjectListFilter *project_filter;
 
+	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
@@ -71,6 +72,8 @@ class ProjectManager : public Control {
 
 	TabContainer *tabs;
 
+	OptionButton *language_btn;
+
 	Control *gui_base;
 
 	void _scan_projects();
@@ -84,6 +87,8 @@ class ProjectManager : public Control {
 	void _erase_project();
 	void _erase_project_confirm();
 	void _update_project_buttons();
+	void _language_selected(int p_id);
+	void _restart_confirm();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
 

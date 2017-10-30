@@ -17,6 +17,7 @@
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
 			</return>
 			<description>
+				Returns the hand holding this tracker, if known. See TRACKER_* constants.
 			</description>
 		</method>
 		<method name="get_joy_id" qualifiers="const">
@@ -80,10 +81,13 @@
 	</methods>
 	<constants>
 		<constant name="TRACKER_HAND_UNKNOWN" value="0">
+			The hand this tracker is held in is unknown or not applicable.
 		</constant>
 		<constant name="TRACKER_LEFT_HAND" value="1">
+			This tracker is the left hand controller.
 		</constant>
 		<constant name="TRACKER_RIGHT_HAND" value="2">
+			This tracker is the right hand controller.
 		</constant>
 	</constants>
 </class>

@@ -4,7 +4,7 @@
 		2D Axis-aligned bounding box.
 	</brief_description>
 	<description>
-		Rect2 provides an 2D Axis-Aligned Bounding Box. It consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		Rect2 consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,7 +19,7 @@
 			<argument index="1" name="size" type="Vector2">
 			</argument>
 			<description>
-				Construct a [Rect2] by position and size.
+				Constructs a [code]Rect2[/code] by position and size.
 			</description>
 		</method>
 		<method name="Rect2">
@@ -34,7 +34,7 @@
 			<argument index="3" name="height" type="float">
 			</argument>
 			<description>
-				Construct a [Rect2] by x, y, width and height.
+				Constructs a [code]Rect2[/code] by x, y, width, and height.
 			</description>
 		</method>
 		<method name="clip">
@@ -43,7 +43,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns the intersection of this [Rect2] and b.
+				Returns the intersection of this [code]Rect2[/code] and b.
 			</description>
 		</method>
 		<method name="encloses">
@@ -52,7 +52,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns true if this [Rect2] completely encloses another one.
+				Returns [code]true[/code] if this [code]Rect2[/code] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand">
@@ -61,14 +61,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Return this [Rect2] expanded to include a given point.
+				Returns this [code]Rect2[/code] expanded to include a given point.
 			</description>
 		</method>
 		<method name="get_area">
 			<return type="float">
 			</return>
 			<description>
-				Get the area of the [Rect2].
+				Returns the area of the [code]Rect2[/code].
 			</description>
 		</method>
 		<method name="grow">
@@ -77,7 +77,7 @@
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
-				Return a copy of the [Rect2] grown a given amount of units towards all the sides.
+				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards all the sides.
 			</description>
 		</method>
 		<method name="grow_individual">
@@ -92,6 +92,7 @@
 			<argument index="3" name=" bottom" type="float">
 			</argument>
 			<description>
+				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards each direction individually.
 			</description>
 		</method>
 		<method name="grow_margin">
@@ -102,13 +103,14 @@
 			<argument index="1" name="by" type="float">
 			</argument>
 			<description>
+				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards the [Margin] direction.
 			</description>
 		</method>
 		<method name="has_no_area">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the [Rect2] is flat or empty.
+				Returns [code]true[/code] if the [code]Rect2[/code] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point">
@@ -117,7 +119,7 @@
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
-				Return true if the [Rect2] contains a point.
+				Returns [code]true[/code] if the [code]Rect2[/code] contains a point.
 			</description>
 		</method>
 		<method name="intersects">
@@ -126,7 +128,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Return true if the [Rect2] overlaps with another.
+				Returns [code]true[/code] if the [code]Rect2[/code] overlaps with another.
 			</description>
 		</method>
 		<method name="merge">
@@ -135,7 +137,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Combine this [Rect2] with another, a larger one is returned that contains both.
+				Returns a larger Rect2 that contains this Rect2 and [code]with[/code].
 			</description>
 		</method>
 	</methods>

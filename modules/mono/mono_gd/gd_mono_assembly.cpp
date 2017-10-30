@@ -95,7 +95,9 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 	(void)user_data; // UNUSED
 
 	if (search_dirs.empty()) {
+#ifdef TOOLS_DOMAIN
 		search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
+#endif
 		search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
 		search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 		search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
@@ -105,10 +107,11 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 			search_dirs.push_back(String(rootdir).plus_file("mono").plus_file("4.5"));
 		}
 
-		while (assemblies_path) {
-			if (*assemblies_path)
+		if (assemblies_path) {
+			while (*assemblies_path) {
 				search_dirs.push_back(*assemblies_path);
-			++assemblies_path;
+				++assemblies_path;
+			}
 		}
 	}
 

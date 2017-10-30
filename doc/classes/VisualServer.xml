@@ -12,6 +12,820 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="black_bars_set_images">
+			<return type="void">
+			</return>
+			<argument index="0" name="left" type="RID">
+			</argument>
+			<argument index="1" name="top" type="RID">
+			</argument>
+			<argument index="2" name="right" type="RID">
+			</argument>
+			<argument index="3" name="bottom" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="black_bars_set_margins">
+			<return type="void">
+			</return>
+			<argument index="0" name="left" type="int">
+			</argument>
+			<argument index="1" name="top" type="int">
+			</argument>
+			<argument index="2" name="right" type="int">
+			</argument>
+			<argument index="3" name="bottom" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_circle">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="radius" type="float">
+			</argument>
+			<argument index="3" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_clip_ignore">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="ignore" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="from" type="Vector2">
+			</argument>
+			<argument index="2" name="to" type="Vector2">
+			</argument>
+			<argument index="3" name="color" type="Color">
+			</argument>
+			<argument index="4" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="5" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="mesh" type="RID">
+			</argument>
+			<argument index="2" name="skeleton" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_multimesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="mesh" type="RID">
+			</argument>
+			<argument index="2" name="skeleton" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_nine_patch">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="source" type="Rect2">
+			</argument>
+			<argument index="3" name="texture" type="RID">
+			</argument>
+			<argument index="4" name="topleft" type="Vector2">
+			</argument>
+			<argument index="5" name="bottomright" type="Vector2">
+			</argument>
+			<argument index="6" name="x_axis_mode" type="int" enum="VisualServer.NinePatchAxisMode" default="0">
+			</argument>
+			<argument index="7" name="y_axis_mode" type="int" enum="VisualServer.NinePatchAxisMode" default="0">
+			</argument>
+			<argument index="8" name="draw_center" type="bool" default="true">
+			</argument>
+			<argument index="9" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="10" name="normal_map" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_particles">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="particles" type="RID">
+			</argument>
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<argument index="3" name="normal_map" type="RID">
+			</argument>
+			<argument index="4" name="h_frames" type="int">
+			</argument>
+			<argument index="5" name="v_frames" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="2" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="3" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="4" name="texture" type="RID">
+			</argument>
+			<argument index="5" name="normal_map" type="RID">
+			</argument>
+			<argument index="6" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_polyline">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="2" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="3" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_primitive">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="2" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="3" name="uvs" type="PoolVector2Array">
+			</argument>
+			<argument index="4" name="texture" type="RID">
+			</argument>
+			<argument index="5" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="6" name="normal_map" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_texture_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<argument index="3" name="tile" type="bool" default="false">
+			</argument>
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="6" name="normal_map" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_texture_rect_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<argument index="3" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="transpose" type="bool" default="false">
+			</argument>
+			<argument index="6" name="normal_map" type="RID">
+			</argument>
+			<argument index="7" name="clip_uv" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_add_triangle_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="indices" type="PoolIntArray">
+			</argument>
+			<argument index="2" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="3" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="4" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			</argument>
+			<argument index="5" name="texture" type="RID">
+			</argument>
+			<argument index="6" name="count" type="int" default="-1">
+			</argument>
+			<argument index="7" name="normal_map" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_clip">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="clip" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_copy_to_backbuffer">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<argument index="2" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_custom_rect">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="use_custom_rect" type="bool">
+			</argument>
+			<argument index="2" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_distance_field_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_draw_behind_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_draw_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_light_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="parent" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_self_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_sort_children_by_y">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_use_parent_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="visible" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_z">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="z" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_item_set_z_as_relative_to_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="item" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_attach_to_canvas">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_attach_to_canvas">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_light_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder" type="RID">
+			</argument>
+			<argument index="1" name="polygon" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_energy">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_height">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="height" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_item_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_item_shadow_cull_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mask" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_layer_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="min_layer" type="int">
+			</argument>
+			<argument index="2" name="max_layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasLightMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_buffer_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_filter">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="filter" type="int" enum="VisualServer.CanvasLightShadowFilter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_gradient_length">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="length" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_shadow_smooth">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="smooth" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_texture_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_light_set_z_range">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="min_z" type="int">
+			</argument>
+			<argument index="2" name="max_z" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_occluder_polygon_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_occluder_polygon_set_cull_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder_polygon" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasOccluderPolygonCullMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_occluder_polygon_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder_polygon" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="PoolVector2Array">
+			</argument>
+			<argument index="2" name="closed" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_occluder_polygon_set_shape_as_lines">
+			<return type="void">
+			</return>
+			<argument index="0" name="occluder_polygon" type="RID">
+			</argument>
+			<argument index="1" name="shape" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_set_item_mirroring">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas" type="RID">
+			</argument>
+			<argument index="1" name="item" type="RID">
+			</argument>
+			<argument index="2" name="mirroring" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="canvas_set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas" type="RID">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="finish">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="force_draw">
 			<return type="void">
 			</return>
@@ -21,6 +835,380 @@
 		<method name="force_sync">
 			<return type="void">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="free">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_render_info">
+			<return type="int">
+			</return>
+			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_test_cube">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_test_texture">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_white_texture">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_changed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="int" enum="VisualServer.Features">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_os_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="init">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_sphere_mesh">
+			<return type="RID">
+			</return>
+			<argument index="0" name="latitudes" type="int">
+			</argument>
+			<argument index="1" name="longitudes" type="int">
+			</argument>
+			<argument index="2" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="material_get_param" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="parameter" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_get_shader" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="shader_material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_set_line_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="width" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_set_next_pass">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="next_material" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="parameter" type="String">
+			</argument>
+			<argument index="2" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_set_render_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="priority" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="material_set_shader">
+			<return type="void">
+			</return>
+			<argument index="0" name="shader_material" type="RID">
+			</argument>
+			<argument index="1" name="shader" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_add_surface_from_arrays">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="primtive" type="int" enum="VisualServer.PrimitiveType">
+			</argument>
+			<argument index="2" name="arrays" type="Array">
+			</argument>
+			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
+			</argument>
+			<argument index="4" name="compress_format" type="int" default="97792">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_get_blend_shape_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_get_blend_shape_mode" qualifiers="const">
+			<return type="int" enum="VisualServer.BlendShapeMode">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_get_custom_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_get_surface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_remove_surface">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_set_blend_shape_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_set_blend_shape_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="mode" type="int" enum="VisualServer.BlendShapeMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="aabb" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_array" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_array_index_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_array_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_blend_shape_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_format" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_index_array" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_material" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_primitive_type" qualifiers="const">
+			<return type="int" enum="VisualServer.PrimitiveType">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_skeleton_aabb" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="material" type="RID">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -36,6 +1224,128 @@
 			<description>
 				Schedules a callback to the corresponding named 'method' on 'where' after a frame has been drawn.
 				The callback method must use only 1 argument which will be called with 'userdata'.
+			</description>
+		</method>
+		<method name="set_boot_image">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="scale" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_debug_generate_wireframes">
+			<return type="void">
+			</return>
+			<argument index="0" name="generate" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_default_clear_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="shader_get_code" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_get_default_texture_param" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_get_param_list" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_set_code">
+			<return type="void">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<argument index="1" name="code" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="shader_set_default_texture_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="shader" type="RID">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<argument index="2" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="sky_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="sky_set_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="sky" type="RID">
+			</argument>
+			<argument index="1" name="cube_map" type="RID">
+			</argument>
+			<argument index="2" name="radiance_size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="sync">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="texture_allocate">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<argument index="2" name="height" type="int">
+			</argument>
+			<argument index="3" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="4" name="flags" type="int" default="7">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="texture_create">
@@ -54,6 +1364,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_debug_usage">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="texture_get_data" qualifiers="const">
+			<return type="Image">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_flags" qualifiers="const">
 			<return type="int">
 			</return>
@@ -62,7 +1388,31 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_get_format" qualifiers="const">
+			<return type="int" enum="Image.Format">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_get_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_get_texid" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="texture" type="RID">
@@ -78,12 +1428,34 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_set_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="image" type="Image">
+			</argument>
+			<argument index="2" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="texture_set_flags">
 			<return type="void">
 			</return>
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<argument index="1" name="flags" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="texture_set_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="path" type="String">
 			</argument>
 			<description>
 			</description>
@@ -96,7 +1468,639 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_set_size_override">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<argument index="2" name="height" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="textures_keep_original">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_attach_camera">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="camera" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_attach_canvas">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_attach_to_screen">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="2" name="screen" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_detach">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_get_render_info">
+			<return type="int">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="info" type="int" enum="VisualServer.ViewportRenderInfo">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_get_texture" qualifiers="const">
+			<return type="RID">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_remove_canvas">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="active" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_canvas_layer">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<argument index="2" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_canvas_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<argument index="2" name="offset" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_clear_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="clear_mode" type="int" enum="VisualServer.ViewportClearMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_debug_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="draw" type="int" enum="VisualServer.ViewportDebugDraw">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_disable_3d">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_disable_environment">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_global_canvas_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_hdr">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_hide_canvas">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="hidden" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_hide_scenario">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="hidden" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_msaa">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="msaa" type="int" enum="VisualServer.ViewportMSAA">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_parent_viewport">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="parent_viewport" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_scenario">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="scenario" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_shadow_atlas_quadrant_subdivision">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="quadrant" type="int">
+			</argument>
+			<argument index="2" name="subdivision" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_shadow_atlas_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<argument index="2" name="height" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_transparent_background">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_update_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="update_mode" type="int" enum="VisualServer.ViewportUpdateMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_usage">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="usage" type="int" enum="VisualServer.ViewportUsage">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_use_arvr">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="use_arvr" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="viewport_set_vflip">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="NO_INDEX_ARRAY" value="-1" enum="">
+		</constant>
+		<constant name="ARRAY_WEIGHTS_SIZE" value="4" enum="">
+		</constant>
+		<constant name="CANVAS_ITEM_Z_MIN" value="-4096" enum="">
+		</constant>
+		<constant name="CANVAS_ITEM_Z_MAX" value="4096" enum="">
+		</constant>
+		<constant name="MAX_GLOW_LEVELS" value="7" enum="">
+		</constant>
+		<constant name="MAX_CURSORS" value="8" enum="">
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128" enum="">
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127" enum="">
+		</constant>
+		<constant name="CUBEMAP_LEFT" value="0">
+		</constant>
+		<constant name="CUBEMAP_RIGHT" value="1">
+		</constant>
+		<constant name="CUBEMAP_BOTTOM" value="2">
+		</constant>
+		<constant name="CUBEMAP_TOP" value="3">
+		</constant>
+		<constant name="CUBEMAP_FRONT" value="4">
+		</constant>
+		<constant name="CUBEMAP_BACK" value="5">
+		</constant>
+		<constant name="TEXTURE_FLAG_MIPMAPS" value="1">
+		</constant>
+		<constant name="TEXTURE_FLAG_REPEAT" value="2">
+		</constant>
+		<constant name="TEXTURE_FLAG_FILTER" value="4">
+		</constant>
+		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8">
+		</constant>
+		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16">
+		</constant>
+		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32">
+		</constant>
+		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048">
+		</constant>
+		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="4096">
+		</constant>
+		<constant name="TEXTURE_FLAGS_DEFAULT" value="7">
+		</constant>
+		<constant name="SHADER_SPATIAL" value="0">
+		</constant>
+		<constant name="SHADER_CANVAS_ITEM" value="1">
+		</constant>
+		<constant name="SHADER_PARTICLES" value="2">
+		</constant>
+		<constant name="SHADER_MAX" value="3">
+		</constant>
+		<constant name="ARRAY_VERTEX" value="0">
+		</constant>
+		<constant name="ARRAY_NORMAL" value="1">
+		</constant>
+		<constant name="ARRAY_TANGENT" value="2">
+		</constant>
+		<constant name="ARRAY_COLOR" value="3">
+		</constant>
+		<constant name="ARRAY_TEX_UV" value="4">
+		</constant>
+		<constant name="ARRAY_TEX_UV2" value="5">
+		</constant>
+		<constant name="ARRAY_BONES" value="6">
+		</constant>
+		<constant name="ARRAY_WEIGHTS" value="7">
+		</constant>
+		<constant name="ARRAY_INDEX" value="8">
+		</constant>
+		<constant name="ARRAY_MAX" value="9">
+		</constant>
+		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="64">
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		</constant>
+		<constant name="ARRAY_COMPRESS_VERTEX" value="512">
+		</constant>
+		<constant name="ARRAY_COMPRESS_NORMAL" value="1024">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TANGENT" value="2048">
+		</constant>
+		<constant name="ARRAY_COMPRESS_COLOR" value="4096">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192">
+		</constant>
+		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384">
+		</constant>
+		<constant name="ARRAY_COMPRESS_BONES" value="32768">
+		</constant>
+		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536">
+		</constant>
+		<constant name="ARRAY_COMPRESS_INDEX" value="131072">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144">
+		</constant>
+		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288">
+		</constant>
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792">
+		</constant>
+		<constant name="PRIMITIVE_POINTS" value="0">
+		</constant>
+		<constant name="PRIMITIVE_LINES" value="1">
+		</constant>
+		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+		</constant>
+		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLES" value="4">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+		</constant>
+		<constant name="PRIMITIVE_MAX" value="7">
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0">
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1">
+		</constant>
+		<constant name="LIGHT_DIRECTIONAL" value="0">
+		</constant>
+		<constant name="LIGHT_OMNI" value="1">
+		</constant>
+		<constant name="LIGHT_SPOT" value="2">
+		</constant>
+		<constant name="LIGHT_PARAM_ENERGY" value="0">
+		</constant>
+		<constant name="LIGHT_PARAM_SPECULAR" value="1">
+		</constant>
+		<constant name="LIGHT_PARAM_RANGE" value="2">
+		</constant>
+		<constant name="LIGHT_PARAM_ATTENUATION" value="3">
+		</constant>
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="4">
+		</constant>
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="5">
+		</constant>
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="6">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="7">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="8">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="9">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="10">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="11">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="12">
+		</constant>
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="13">
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="14">
+		</constant>
+		<constant name="VIEWPORT_UPDATE_DISABLED" value="0">
+		</constant>
+		<constant name="VIEWPORT_UPDATE_ONCE" value="1">
+		</constant>
+		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2">
+		</constant>
+		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3">
+		</constant>
+		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0">
+		</constant>
+		<constant name="VIEWPORT_CLEAR_NEVER" value="1">
+		</constant>
+		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2">
+		</constant>
+		<constant name="VIEWPORT_MSAA_DISABLED" value="0">
+		</constant>
+		<constant name="VIEWPORT_MSAA_2X" value="1">
+		</constant>
+		<constant name="VIEWPORT_MSAA_4X" value="2">
+		</constant>
+		<constant name="VIEWPORT_MSAA_8X" value="3">
+		</constant>
+		<constant name="VIEWPORT_MSAA_16X" value="4">
+		</constant>
+		<constant name="VIEWPORT_USAGE_2D" value="0">
+		</constant>
+		<constant name="VIEWPORT_USAGE_2D_NO_SAMPLING" value="1">
+		</constant>
+		<constant name="VIEWPORT_USAGE_3D" value="2">
+		</constant>
+		<constant name="VIEWPORT_USAGE_3D_NO_EFFECTS" value="3">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME" value="1">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5">
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="2">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3">
+		</constant>
+		<constant name="SCENARIO_DEBUG_DISABLED" value="0">
+		</constant>
+		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1">
+		</constant>
+		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2">
+		</constant>
+		<constant name="SCENARIO_DEBUG_SHADELESS" value="3">
+		</constant>
+		<constant name="INSTANCE_NONE" value="0">
+		</constant>
+		<constant name="INSTANCE_MESH" value="1">
+		</constant>
+		<constant name="INSTANCE_MULTIMESH" value="2">
+		</constant>
+		<constant name="INSTANCE_IMMEDIATE" value="3">
+		</constant>
+		<constant name="INSTANCE_PARTICLES" value="4">
+		</constant>
+		<constant name="INSTANCE_LIGHT" value="5">
+		</constant>
+		<constant name="INSTANCE_REFLECTION_PROBE" value="6">
+		</constant>
+		<constant name="INSTANCE_GI_PROBE" value="7">
+		</constant>
+		<constant name="INSTANCE_MAX" value="8">
+		</constant>
+		<constant name="INSTANCE_GEOMETRY_MASK" value="30">
+		</constant>
+		<constant name="NINE_PATCH_STRETCH" value="0">
+		</constant>
+		<constant name="NINE_PATCH_TILE" value="1">
+		</constant>
+		<constant name="NINE_PATCH_TILE_FIT" value="2">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_ADD" value="0">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_SUB" value="1">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_MIX" value="2">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_MASK" value="3">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_PCF3" value="1">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="2">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_PCF7" value="3">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_PCF9" value="4">
+		</constant>
+		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5">
+		</constant>
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0">
+		</constant>
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE" value="1">
+		</constant>
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2">
+		</constant>
+		<constant name="INFO_OBJECTS_IN_FRAME" value="0">
+		</constant>
+		<constant name="INFO_VERTICES_IN_FRAME" value="1">
+		</constant>
+		<constant name="INFO_MATERIAL_CHANGES_IN_FRAME" value="2">
+		</constant>
+		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3">
+		</constant>
+		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4">
+		</constant>
+		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5">
+		</constant>
+		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6">
+		</constant>
+		<constant name="INFO_VIDEO_MEM_USED" value="7">
+		</constant>
+		<constant name="INFO_TEXTURE_MEM_USED" value="8">
+		</constant>
+		<constant name="INFO_VERTEX_MEM_USED" value="9">
+		</constant>
+		<constant name="FEATURE_SHADERS" value="0">
+		</constant>
+		<constant name="FEATURE_MULTITHREADED" value="1">
+		</constant>
 	</constants>
 </class>

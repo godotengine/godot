@@ -4,7 +4,10 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between two rotations. Multiplying quaternions also cheaply reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
+		A 4-dimensional vector representing a rotation.
+		The vector represents a 4 dimensional complex number where multiplication of the basis elements is not commutative (multiplying i with j gives a different result than multiplying j with i).
+		Multiplying quaternions reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
+		It can be used to perform SLERP (spherical-linear interpolation) between two rotations.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -23,6 +26,7 @@
 			<argument index="3" name="w" type="float">
 			</argument>
 			<description>
+				Returns a quaternion defined by these values.
 			</description>
 		</method>
 		<method name="Quat">
@@ -57,6 +61,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
+				Performs a cubic spherical-linear interpolation with another quaternion.
 			</description>
 		</method>
 		<method name="dot">
@@ -111,7 +116,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Perform a spherical-linear interpolation with another quaternion.
+				Performs a spherical-linear interpolation with another quaternion.
 			</description>
 		</method>
 		<method name="slerpni">
@@ -122,6 +127,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
+				Performs a spherical-linear interpolation with another quaterion without checking if the rotation path is not bigger than 90°.
 			</description>
 		</method>
 		<method name="xform">
@@ -130,17 +136,22 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
+				Transforms the vector [code]v[/code] by this quaternion.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="w" type="float" setter="" getter="">
+			W component of the quaternion. Default value: [code]1[/code]
 		</member>
 		<member name="x" type="float" setter="" getter="">
+			X component of the quaternion. Default value: [code]0[/code]
 		</member>
 		<member name="y" type="float" setter="" getter="">
+			Y component of the quaternion. Default value: [code]0[/code]
 		</member>
 		<member name="z" type="float" setter="" getter="">
+			Z component of the quaternion. Default value: [code]0[/code]
 		</member>
 	</members>
 	<constants>

@@ -248,7 +248,7 @@ void Light::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_3_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
-
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 }
 
@@ -369,12 +369,6 @@ DirectionalLight::DirectionalLight()
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
 
 	blend_splits = false;
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint())
-		// Create light with a default natural "sun" orientation in editor, instead of looking horizontally on X
-		set_rotation_in_degrees(Vector3(-50, 25, 30));
-#endif
 }
 
 void OmniLight::set_shadow_mode(ShadowMode p_mode) {

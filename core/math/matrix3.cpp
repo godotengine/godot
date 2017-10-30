@@ -538,7 +538,7 @@ Basis::operator String() const {
 	return mtx;
 }
 
-Basis::operator Quat() const {
+Quat Basis::get_quat() const {
 	//commenting this check because precision issues cause it to fail when it shouldn't
 	//#ifdef MATH_CHECKS
 	//ERR_FAIL_COND_V(is_rotation() == false, Quat());
@@ -710,12 +710,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 	r_angle = angle;
 }
 
-Basis::Basis(const Vector3 &p_euler) {
-
-	set_euler(p_euler);
-}
-
-Basis::Basis(const Quat &p_quat) {
+void Basis::set_quat(const Quat &p_quat) {
 
 	real_t d = p_quat.length_squared();
 	real_t s = 2.0 / d;
@@ -749,8 +744,4 @@ void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 	elements[2][0] = p_axis.z * p_axis.x * (1.0 - cosine) - p_axis.y * sine;
 	elements[2][1] = p_axis.y * p_axis.z * (1.0 - cosine) + p_axis.x * sine;
 	elements[2][2] = axis_sq.z + cosine * (1.0 - axis_sq.z);
-}
-
-Basis::Basis(const Vector3 &p_axis, real_t p_phi) {
-	set_axis_angle(p_axis, p_phi);
 }

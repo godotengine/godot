@@ -342,12 +342,10 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 	bool has_system_path = (system_file != "");
 	system_file = system_file.plus_file(base_name);
 
-	print_line("test user file: " + user_file);
 	// Prefer user file
 	if (FileAccess::exists(user_file)) {
 		return user_file;
 	}
-	print_line("test system file: " + system_file);
 
 	// Now check system file
 	if (has_system_path) {
@@ -927,13 +925,10 @@ void EditorExport::_save() {
 	}
 
 	config->save("res://export_presets.cfg");
-
-	print_line("saved ok");
 }
 
 void EditorExport::save_presets() {
 
-	print_line("save presets");
 	if (block_save)
 		return;
 	save_timer->start();

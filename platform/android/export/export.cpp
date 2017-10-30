@@ -267,7 +267,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 				if (different) {
 
-					print_line("DIFFERENT!");
 					Vector<Device> ndevices;
 
 					for (int i = 0; i < ldevices.size(); i++) {

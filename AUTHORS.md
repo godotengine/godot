@@ -47,9 +47,11 @@ name is available.
     Geequlim
     Gen (dbsGen)
     George Marques (vnen)
+    Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
     Guilherme Felipe (guilhermefelipecgs)
     Hein-Pieter van Braam (hpvb)
+    Hiroshi Ogawa (hi-ogawa)
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ignacio Etcheverry (neikeq)

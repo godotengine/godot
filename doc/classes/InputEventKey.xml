@@ -4,8 +4,10 @@
 		Input event type for keyboard events.
 	</brief_description>
 	<description>
+		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -63,16 +65,16 @@
 	</methods>
 	<members>
 		<member name="echo" type="bool" setter="set_echo" getter="is_echo">
-			Echo state of the key, i.e. whether it's a repeat event or not.
+			If [code]true[/code] the key was already pressed before this event. It means the user is holding the key down.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			Pressed state of the key.
+			If [code]true[/code] the key's state is pressed. If [code]false[/code] the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
-			Scancode of the key, one of the KEY_* constants in [@Global Scope].
+			Key scancode, one of the [code]KEY_*[/code] constants in [@global Scope].
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
-			Unicode identifier of the key (when relevant).
+			Key unicode identifier when relevant.
 		</member>
 	</members>
 	<constants>

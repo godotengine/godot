@@ -366,6 +366,8 @@
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
 		</constant>
+		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="6">
+		</constant>
 		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="7">
 		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0">

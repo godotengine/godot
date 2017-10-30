@@ -61,8 +61,8 @@ void ARVRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
 	BIND_ENUM_CONSTANT(TRACKER_ANCHOR);
-	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY_KNOWN);
+	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY);
 
 	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "name")));
@@ -138,7 +138,7 @@ void ARVRServer::add_interface(const Ref<ARVRInterface> &p_interface) {
 		};
 	};
 
-	print_line("Registered interface " + p_interface->get_name());
+	print_line("ARVR: Registered interface: " + p_interface->get_name());
 
 	interfaces.push_back(p_interface);
 	emit_signal("interface_added", p_interface->get_name());

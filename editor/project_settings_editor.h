@@ -49,6 +49,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 		INPUT_MOUSE_BUTTON
 	};
 
+	enum LocaleFilter {
+		SHOW_ALL_LOCALES,
+		SHOW_ONLY_SELECTED_LOCALES,
+	};
+
 	TabContainer *tab_container;
 
 	Timer *timer;
@@ -81,6 +86,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	LineEdit *action_name;
 	Button *action_add;
+	Label *action_add_error;
 	Tree *input_editor;
 	bool setting;
 	bool updating_translations;
@@ -95,6 +101,11 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorFileDialog *translation_res_option_file_open;
 	Tree *translation_remap;
 	Tree *translation_remap_options;
+	Tree *translation_filter;
+	bool translation_locales_list_created;
+	OptionButton *translation_locale_filter_mode;
+	Vector<TreeItem *> translation_filter_treeitems;
+	Vector<int> translation_locales_idxs_remap;
 
 	EditorAutoloadSettings *autoload_settings;
 
@@ -141,6 +152,9 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _translation_res_option_add(const String &p_path);
 	void _translation_res_option_changed();
 	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
+
+	void _translation_filter_option_changed();
+	void _translation_filter_mode_changed(int p_mode);
 
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();

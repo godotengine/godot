@@ -19,12 +19,6 @@
 				Returns true if the script can be instanced.
 			</description>
 		</method>
-		<method name="get_node_type" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_source_code" qualifiers="const">
 			<return type="String">
 			</return>

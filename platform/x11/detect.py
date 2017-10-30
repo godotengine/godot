@@ -101,6 +101,10 @@ def configure(env):
 
     ## Compiler configuration
 
+    if 'CXX' in env and 'clang' in env['CXX']:
+        # Convenience check to enforce the use_llvm overrides when CXX is clang(++)
+        env['use_llvm'] = True
+
     if env['use_llvm']:
         if ('clang++' not in env['CXX']):
             env["CC"] = "clang"
@@ -238,6 +242,9 @@ def configure(env):
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
+
+    if (platform.system().find("BSD") >= 0):
+        env.Append(LIBS=['execinfo'])
 
     ## Cross-compilation
 

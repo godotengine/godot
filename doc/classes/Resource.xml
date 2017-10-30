@@ -81,7 +81,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else. Fails if another [Resource] already has path "path".
+				Set the path of the resource. This is useful mainly for editors when saving/loading, and shouldn't be changed by anything else. Fails if another [code]Resource[/code] already has path "path".
 			</description>
 		</method>
 		<method name="setup_local_to_scene">
@@ -96,7 +96,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Set the path of the resource. Differs from set_path(), if another [Resource] exists with "path" it over-takes it, instead of failing.
+				Set the path of the resource. Differs from set_path(), if another [code]Resource[/code] exists with "path" it over-takes it, instead of failing.
 			</description>
 		</method>
 	</methods>

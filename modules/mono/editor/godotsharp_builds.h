@@ -67,9 +67,12 @@ public:
 	};
 
 	enum BuildTool {
-		MSBUILD,
 		MSBUILD_MONO,
-		XBUILD
+#ifdef WINDOWS_ENABLED
+		MSBUILD
+#else
+		XBUILD // Deprecated
+#endif
 	};
 
 	_FORCE_INLINE_ static GodotSharpBuilds *get_singleton() { return singleton; }
@@ -88,6 +91,8 @@ public:
 	static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name);
 
 	static bool make_api_sln(APIType p_api_type);
+
+	static bool build_project_blocking();
 
 	GodotSharpBuilds();
 	~GodotSharpBuilds();

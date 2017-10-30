@@ -113,12 +113,21 @@ typedef struct {
 } godot_pool_color_array;
 #endif
 
+// reduce extern "C" nesting for VS2013
+#ifdef __cplusplus
+}
+#endif
+
 #include <gdnative/array.h>
 #include <gdnative/color.h>
 #include <gdnative/vector2.h>
 #include <gdnative/vector3.h>
 
 #include <gdnative/gdnative.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // byte
 

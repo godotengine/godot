@@ -84,4 +84,27 @@ public:
 	~GodotSharpEditor();
 };
 
+class MonoReloadNode : public Node {
+	GDCLASS(MonoReloadNode, Node)
+
+	Timer *reload_timer;
+
+	void _reload_timer_timeout();
+
+	static MonoReloadNode *singleton;
+
+protected:
+	static void _bind_methods();
+
+	void _notification(int p_what);
+
+public:
+	_FORCE_INLINE_ static MonoReloadNode *get_singleton() { return singleton; }
+
+	void restart_reload_timer();
+
+	MonoReloadNode();
+	~MonoReloadNode();
+};
+
 #endif // GODOTSHARP_EDITOR_H

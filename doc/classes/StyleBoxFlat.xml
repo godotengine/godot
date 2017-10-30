@@ -202,7 +202,7 @@
 			</argument>
 			<argument index="1" name="radius_top_right" type="int">
 			</argument>
-			<argument index="2" name="radius_botton_right" type="int">
+			<argument index="2" name="radius_bottom_right" type="int">
 			</argument>
 			<argument index="3" name="radius_bottom_left" type="int">
 			</argument>

@@ -544,7 +544,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	vb->add_margin_child(TTR("Scene failed to load due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	get_ok()->set_text(TTR("Open Anyway"));
-	get_cancel()->set_text(TTR("Done"));
+	get_cancel()->set_text(TTR("Close"));
 
 	text = memnew(Label);
 	vb->add_child(text);

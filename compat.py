@@ -12,6 +12,8 @@ if sys.version_info < (3,):
         return cStringIO.StringIO()
     def encode_utf8(x):
         return x
+    def decode_utf8(x):
+        return x
     def iteritems(d):
         return d.iteritems()
     def escape_string(s):
@@ -38,6 +40,8 @@ else:
     import codecs
     def encode_utf8(x):
         return codecs.utf_8_encode(x)[0]
+    def decode_utf8(x):
+        return codecs.utf_8_decode(x)[0]
     def iteritems(d):
         return iter(d.items())
     def charcode_to_c_escapes(c):

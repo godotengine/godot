@@ -107,8 +107,6 @@ public:
 
 	virtual bool is_tool() const = 0;
 
-	virtual String get_node_type() const = 0;
-
 	virtual ScriptLanguage *get_language() const = 0;
 
 	virtual bool has_script_signal(const StringName &p_signal) const = 0;
@@ -202,6 +200,7 @@ public:
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const = 0;
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
+	virtual bool supports_builtin_mode() const = 0;
 	virtual bool can_inherit_from_file() { return false; }
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;

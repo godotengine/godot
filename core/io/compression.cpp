@@ -78,9 +78,16 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 
 		} break;
 		case MODE_ZSTD: {
-
+			ZSTD_CCtx *cctx = ZSTD_createCCtx();
+			ZSTD_CCtx_setParameter(cctx, ZSTD_p_compressionLevel, zstd_level);
+			if (zstd_long_distance_matching) {
+				ZSTD_CCtx_setParameter(cctx, ZSTD_p_enableLongDistanceMatching, 1);
+				ZSTD_CCtx_setParameter(cctx, ZSTD_p_windowLog, zstd_window_log_size);
+			}
 			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
-			return ZSTD_compress(p_dst, max_dst_size, p_src, p_src_size, zstd_level);
+			int ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);
+			ZSTD_freeCCtx(cctx);
+			return ret;
 		} break;
 	}
 
@@ -165,8 +172,11 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 			return total;
 		} break;
 		case MODE_ZSTD: {
-
-			return ZSTD_decompress(p_dst, p_dst_max_size, p_src, p_src_size);
+			ZSTD_DCtx *dctx = ZSTD_createDCtx();
+			if (zstd_long_distance_matching) ZSTD_DCtx_setMaxWindowSize(dctx, 1 << zstd_window_log_size);
+			int ret = ZSTD_decompressDCtx(dctx, p_dst, p_dst_max_size, p_src, p_src_size);
+			ZSTD_freeDCtx(dctx);
+			return ret;
 		} break;
 	}
 
@@ -176,3 +186,5 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
 int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
 int Compression::zstd_level = 3;
+bool Compression::zstd_long_distance_matching = false;
+int Compression::zstd_window_log_size = 27;

@@ -121,7 +121,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.33
+- Version: 1.6.34
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -416,7 +416,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.1
+- Version: 1.3.2
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

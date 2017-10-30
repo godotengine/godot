@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventJoypadMotion" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
-		Input event type for joypad motion/axis events.
+		Input event type for gamepad joysticks and other motions. For buttons see [code]InputEventJoypadMotion[/code].
 	</brief_description>
 	<description>
+		Stores information about joystick motions. One [code]InputEventJoypadMotion[/code] represents one axis at a time.
 	</description>
 	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html
 	</tutorials>
 	<demos>
 	</demos>
@@ -41,10 +43,10 @@
 	</methods>
 	<members>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis">
-			Joypad axis identifier, one of the JOY_AXIS_* constants in [@Global Scope].
+			Axis identifier. Use one of the [code]JOY_AXIS_*[/code] constants in [@global Scope].
 		</member>
 		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value">
-			Position of the axis, ranging from -1.0 to 1.0. A value of 0 means that the axis is in its neutral position.
+			Current position of the joystick on the given axis. The value ranges from [code]-1.0[/code] to [code]1.0[/code]. A value of [code]0[/code] means the axis is in its resting position.
 		</member>
 	</members>
 	<constants>

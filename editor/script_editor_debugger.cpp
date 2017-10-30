@@ -574,7 +574,38 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		for (int i = 0; i < arr.size(); i++) {
 			p[i] = arr[i];
 			if (i < perf_items.size()) {
-				perf_items[i]->set_text(1, rtos(p[i]));
+
+				float v = p[i];
+				String vs = rtos(v);
+				String tt = vs;
+				switch (Performance::MonitorType((int)perf_items[i]->get_metadata(1))) {
+					case Performance::MONITOR_TYPE_MEMORY: {
+						// for the time being, going above GBs is a bad sign.
+						String unit = "B";
+						if ((int)v > 1073741824) {
+							unit = "GB";
+							v /= 1073741824.0;
+						} else if ((int)v > 1048576) {
+							unit = "MB";
+							v /= 1048576.0;
+						} else if ((int)v > 1024) {
+							unit = "KB";
+							v /= 1024.0;
+						}
+						tt += " bytes";
+						vs = rtos(v) + " " + unit;
+					} break;
+					case Performance::MONITOR_TYPE_TIME: {
+						tt += " seconds";
+						vs += " s";
+					} break;
+					default: {
+						tt += " " + perf_items[i]->get_text(0);
+					} break;
+				}
+
+				perf_items[i]->set_text(1, vs);
+				perf_items[i]->set_tooltip(1, tt);
 				if (p[i] > perf_max[i])
 					perf_max[i] = p[i];
 			}
@@ -663,7 +694,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorProfiler::Metric::Category::Item item;
 			item.calls = 1;
 			item.line = 0;
-			item.name = "Fixed Time";
+			item.name = "Physics Time";
 			item.total = metric.physics_time;
 			item.self = item.total;
 			item.signature = "physics_time";
@@ -677,7 +708,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			frame_time.items.push_back(item);
 
-			item.name = "Fixed Frame Time";
+			item.name = "Physics Frame Time";
 			item.total = metric.physics_frame_time;
 			item.self = item.total;
 			item.signature = "physics_frame_time";
@@ -775,7 +806,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 	reason->set_tooltip(p_reason);
 }
 
-void ScriptEditorDebugger::_performance_select(Object *, int, bool) {
+void ScriptEditorDebugger::_performance_select() {
 
 	perf_draw->update();
 }
@@ -785,7 +816,7 @@ void ScriptEditorDebugger::_performance_draw() {
 	Vector<int> which;
 	for (int i = 0; i < perf_items.size(); i++) {
 
-		if (perf_items[i]->is_selected(0))
+		if (perf_items[i]->is_checked(0))
 			which.push_back(i);
 	}
 
@@ -816,14 +847,14 @@ void ScriptEditorDebugger::_performance_draw() {
 		r.position += graph_sb->get_offset();
 		r.size -= graph_sb->get_minimum_size();
 		int pi = which[i];
-		Color c = get_color("success_color", "Editor");
-		c.set_hsv(Math::fmod(c.get_h() + pi * 0.7654, 1), c.get_s(), c.get_v());
-		//c = c.linear_interpolate(get_color("base_color", "Editor"), 0.9);
+		Color c = get_color("accent_color", "Editor");
+		float h = (float)which[i] / (float)(perf_items.size());
+		c.set_hsv(Math::fmod(h + 0.4, 0.9), c.get_s() * 0.9, c.get_v() * 1.4);
 
-		c.a = 0.8;
-		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
 		c.a = 0.6;
-		perf_draw->draw_string(graph_font, r.position + Point2(graph_font->get_char_size('X').width, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
+		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent()), perf_items[pi]->get_text(0), c, r.size.x);
+		c.a = 0.9;
+		perf_draw->draw_string(graph_font, r.position + Point2(0, graph_font->get_ascent() + graph_font->get_height()), perf_items[pi]->get_text(1), c, r.size.y);
 
 		float spacing = point_sep / float(cols);
 		float from = r.size.width;
@@ -1785,13 +1816,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_monitors->set_column_title(1, TTR("Value"));
 		perf_monitors->set_column_titles_visible(true);
 		hsp->add_child(perf_monitors);
-		perf_monitors->set_select_mode(Tree::SELECT_MULTI);
-		perf_monitors->connect("multi_selected", this, "_performance_select");
+		perf_monitors->connect("item_edited", this, "_performance_select");
 		perf_draw = memnew(Control);
 		perf_draw->connect("draw", this, "_performance_draw");
 		hsp->add_child(perf_draw);
 		hsp->set_name(TTR("Monitors"));
-		hsp->set_split_offset(300);
+		hsp->set_split_offset(340 * EDSCALE);
 		tabs->add_child(hsp);
 		perf_max.resize(Performance::MONITOR_MAX);
 
@@ -1801,6 +1831,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
 			String n = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
+			Performance::MonitorType mtype = Performance::get_singleton()->get_monitor_type(Performance::Monitor(i));
 			String base = n.get_slice("/", 0);
 			String name = n.get_slice("/", 1);
 			if (!bases.has(base)) {
@@ -1808,12 +1839,16 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 				b->set_text(0, base.capitalize());
 				b->set_editable(0, false);
 				b->set_selectable(0, false);
+				b->set_expand_right(0, true);
 				bases[base] = b;
 			}
 
 			TreeItem *it = perf_monitors->create_item(bases[base]);
-			it->set_editable(0, false);
-			it->set_selectable(0, true);
+			it->set_metadata(1, mtype);
+			it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+			it->set_editable(0, true);
+			it->set_selectable(0, false);
+			it->set_selectable(1, false);
 			it->set_text(0, name.capitalize());
 			perf_items.push_back(it);
 			perf_max[i] = 0;

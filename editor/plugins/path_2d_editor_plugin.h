@@ -84,7 +84,6 @@ class Path2DEditor : public HBoxContainer {
 
 	void _mode_selected(int p_mode);
 
-	void _canvas_draw();
 	void _node_visibility_changed();
 	friend class Path2DEditorPlugin;
 
@@ -95,6 +94,7 @@ protected:
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
+	void forward_draw_over_canvas(Control *p_canvas);
 	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
@@ -107,7 +107,8 @@ class Path2DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
+	virtual void forward_draw_over_canvas(Control *p_canvas) { return path2d_editor->forward_draw_over_canvas(p_canvas); }
 
 	virtual String get_name() const { return "Path2D"; }
 	bool has_main_screen() const { return false; }

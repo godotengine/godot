@@ -30,6 +30,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_locale_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="locale" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_translation">
 			<return type="void">
 			</return>

@@ -20,28 +20,38 @@ None so far, but your company could be the first! :)
 
 ## Mini sponsors
 
-    Arron Washington
-    Chris Phyffer
+    Andreas
+    Andreas Hirschauer
     Christian Uldall Pedersen
+    E Hewert
     Hein-Pieter van Braam
     Matthieu Huvé
+    Nathan Warden
     Neal Gompa (Conan Kudo)
     Olimpiu Metiu
     Ruslan Mustakov
+    Slobodan Milnovic
 
 ## Gold donors
 
     Alexander Otto
+    Asdf
+    Blair Allen
+    cheese65536
     Jake Bo
     Javier
-    Nathan Warden
+    Manuele Finocchiaro
+    Officine Pixel S.n.c.
     Ranoller
     Rémi Verschelde
     Stephan Lanfermann
 
     Andreas Schüle
+    Austen McRae
     Bernhard Liebl
+    Gerald E Butler
     Jordan M Lucas
+    Kris Michael
 
     BanjoNode2D
     Chris Serino
@@ -53,16 +63,20 @@ None so far, but your company could be the first! :)
     Henrique Alves
     Laurence Bannister
     Leo
+    mhilbrunner
     Przemysław Gołąb (n-pigeon)
     Robert Willes
     Robin Arys
+    ScottMakesGames
     summerblind
     Testus Maximus
     Thomas Bjarnelöf
+    Xavier Tan
 
     Amanda Haldy
     Andreas Haas
     Bryanna M
+    Chris Brown
     Cody Parker
     D
     Ezra Theunissen
@@ -70,25 +84,32 @@ None so far, but your company could be the first! :)
     François Cantin
     Hendrik Mans
     Jeppe Zapp
-    Johannes Wuensch
     Justin Arnold
     Justo Delgado Baudí
     Leandro Voltolino
+    Lucien Boudy
     Myles
-    Robert Podgorski
-    Scott Beacon
+    Noah
+    Trent McPheron
     x1212
 
 ## Silver donors
 
+    1D_Inc
+    Alessandro Senese
     Alex Barsukov
+    Anthony Bongiovanni
     Avencherus
     Bastian Böhm
     Ben Vercammen
     Bryan Stevenson
+    Christian Baune
+    Christian Winter
     Collin Shooltz
+    Dominik Wetzel
     Fabian Becker
     fengjiongmax
+    Fredy Romero Sam
     Geequlim
     Gerrit Großkopf
     Guldoman
@@ -96,14 +117,16 @@ None so far, but your company could be the first! :)
     HeartBeast
     Heribert Hirth
     Hunter Jones
-    imekon
-    Jacob McKenney
     Jonathon
     Josh 'Cheeseness' Bush
+    JuDelCo
     Julian Murgia
     Juraj Móza
+    KC Chan
     Kevin Boyer
+    Kevin Kamper Meejach Petersen
     Klavdij Voncina
+    Kobi Malul
     Lisandro Lorea
     magodev
     Martin Novák
@@ -113,26 +136,36 @@ None so far, but your company could be the first! :)
     Max R.R. Collada
     Michael Gringauz
     Mikael Olsson
+    MoM
     Moritz Laass
     nee
+    Neil Blakey-Milner
+    Nik Lee
+    Niko Leopold
     nvgrod
     Pablo Seibelt
     Pan Ip
+    Patrick Nafarrete
     Paul Mason
     Paweł Kowal
+    Pete Goodwin
     Pietro Vertechi
     rayos
     Richman Stewart
     Roger Smith
+    Ryan Estes
     Sam Van Campenhout
     Sam Vila
     Sasori Olkof
+    Scott D. Yelich
     Sootstone
     Tavo Tell
+    TheHappieCat
+    Theo Cranmore
     Tom Larrow
-    Trent McPheron
     Troy Bonneau
     UltyX
+    Wout Standaert
     Xananax & karroffel
 
 ## Bronze donors
