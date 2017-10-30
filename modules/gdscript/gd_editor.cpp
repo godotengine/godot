@@ -2111,9 +2111,9 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				for (List<String>::Element *E = opts.front(); E; E = E->next()) {
 
 					String opt = E->get().strip_edges();
-					if (opt.begins_with("\"") && opt.ends_with("\"")) {
+					if (opt.is_quoted()) {
 						r_forced = true;
-						String idopt = opt.substr(1, opt.length() - 2);
+						String idopt = opt.unquote();
 						if (idopt.replace("/", "_").is_valid_identifier()) {
 							options.insert(idopt);
 						} else {
