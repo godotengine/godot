@@ -847,6 +847,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		selection_menu->set_invalidate_click_until_motion();
 	}
 }
+
 void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	if (previewing)
@@ -1576,7 +1577,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-		} else if (m->get_button_mask() & BUTTON_MASK_RIGHT) {
+		} else if ((m->get_button_mask() & BUTTON_MASK_RIGHT) || freelook_active) {
 
 			if (nav_scheme == NAVIGATION_MAYA && m->get_alt()) {
 				nav_mode = NAVIGATION_ZOOM;
@@ -1791,6 +1792,13 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_message(TTR("Animation Key Inserted."));
 		}
 
+		if (ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
+			set_freelook_active(!is_freelook_active());
+
+		} else if (k->get_scancode() == KEY_ESCAPE) {
+			set_freelook_active(false);
+		}
+
 		if (k->get_scancode() == KEY_SPACE) {
 			if (!k->is_pressed()) emit_signal("toggle_maximize_view", this);
 		}
@@ -1815,9 +1823,15 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 			freelook_speed = base_speed * cursor.distance;
 		}
 
+		// Hide mouse like in an FPS (warping doesn't work)
+		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_CAPTURED);
+
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
+
+		// Restore mouse
+		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_VISIBLE);
 	}
 
 	freelook_active = active_now;
@@ -4594,6 +4608,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/tool_scale", TTR("Tool Scale"), KEY_R);
 
 	ED_SHORTCUT("spatial_editor/display_wireframe", TTR("Display Wireframe"), KEY_Z);
+
+	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KEY_MASK_SHIFT + KEY_F);
 
 	PopupMenu *p;
 
