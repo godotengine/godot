@@ -147,6 +147,12 @@ public:
 		FEATURE_MAX
 	};
 
+	enum InterpolationMode {
+		INTERPOLATION_SMOOTH,
+		INTERPOLATION_FLAT,
+		INTERPOLATION_NO_PERSPECTIVE
+	};
+
 	enum BlendMode {
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
@@ -222,6 +228,7 @@ private:
 			uint64_t feature_mask : 12;
 			uint64_t detail_uv : 1;
 			uint64_t blend_mode : 2;
+			uint64_t interpolation_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
 			uint64_t flags : 12;
@@ -262,6 +269,7 @@ private:
 			}
 		}
 		mk.detail_uv = detail_uv;
+		mk.interpolation_mode = interpolation_mode;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
 		mk.cull_mode = cull_mode;
@@ -386,6 +394,7 @@ private:
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
 
+	InterpolationMode interpolation_mode;
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
 	DepthDrawMode depth_draw_mode;
@@ -489,6 +498,9 @@ public:
 
 	void set_blend_mode(BlendMode p_mode);
 	BlendMode get_blend_mode() const;
+
+	void set_interpolation_mode(InterpolationMode p_mode);
+	InterpolationMode get_interpolation_mode() const;
 
 	void set_detail_blend_mode(BlendMode p_mode);
 	BlendMode get_detail_blend_mode() const;
@@ -595,6 +607,7 @@ public:
 VARIANT_ENUM_CAST(SpatialMaterial::TextureParam)
 VARIANT_ENUM_CAST(SpatialMaterial::DetailUV)
 VARIANT_ENUM_CAST(SpatialMaterial::Feature)
+VARIANT_ENUM_CAST(SpatialMaterial::InterpolationMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BlendMode)
 VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)

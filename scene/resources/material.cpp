@@ -364,6 +364,12 @@ void SpatialMaterial::_update_shader() {
 		case DEPTH_DRAW_ALPHA_OPAQUE_PREPASS: code += ",depth_draw_alpha_prepass"; break;
 	}
 
+	switch (interpolation_mode) {
+		case INTERPOLATION_FLAT: code += ",interpolation_flat"; break;
+		case INTERPOLATION_SMOOTH: code += ",interpolation_smooth"; break;
+		case INTERPOLATION_NO_PERSPECTIVE: code += ",interpolation_no_perspective"; break;
+	}
+
 	switch (cull_mode) {
 		case CULL_BACK: code += ",cull_back"; break;
 		case CULL_FRONT: code += ",cull_front"; break;
@@ -1129,6 +1135,19 @@ SpatialMaterial::BlendMode SpatialMaterial::get_blend_mode() const {
 	return blend_mode;
 }
 
+void SpatialMaterial::set_interpolation_mode(InterpolationMode p_mode) {
+
+	if (interpolation_mode == p_mode)
+		return;
+
+	interpolation_mode = p_mode;
+	_queue_shader_change();
+}
+SpatialMaterial::InterpolationMode SpatialMaterial::get_interpolation_mode() const {
+
+	return interpolation_mode;
+}
+
 void SpatialMaterial::set_detail_blend_mode(BlendMode p_mode) {
 
 	detail_blend_mode = p_mode;
@@ -1703,6 +1722,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &SpatialMaterial::set_blend_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &SpatialMaterial::get_blend_mode);
 
+	ClassDB::bind_method(D_METHOD("set_interpolation_mode", "interpolation_mode"), &SpatialMaterial::set_interpolation_mode);
+	ClassDB::bind_method(D_METHOD("get_interpolation_mode"), &SpatialMaterial::get_interpolation_mode);
+
 	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &SpatialMaterial::set_depth_draw_mode);
 	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &SpatialMaterial::get_depth_draw_mode);
 
@@ -1821,6 +1843,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_diffuse_mode", PROPERTY_HINT_ENUM, "Burley,Lambert,Lambert Wrap,Oren Nayar,Toon"), "set_diffuse_mode", "get_diffuse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_specular_mode", PROPERTY_HINT_ENUM, "SchlickGGX,Blinn,Phong,Toon,Disabled"), "set_specular_mode", "get_specular_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_interpolation_mode", PROPERTY_HINT_ENUM, "Smooth,Flat,No Perspective"), "set_interpolation_mode", "get_interpolation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
@@ -1977,6 +2000,10 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 
+	BIND_ENUM_CONSTANT(INTERPOLATION_SMOOTH);
+	BIND_ENUM_CONSTANT(INTERPOLATION_FLAT);
+	BIND_ENUM_CONSTANT(INTERPOLATION_NO_PERSPECTIVE);
+
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_OPAQUE_ONLY);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_DISABLED);
@@ -2080,6 +2107,7 @@ SpatialMaterial::SpatialMaterial()
 
 	detail_uv = DETAIL_UV_1;
 	blend_mode = BLEND_MODE_MIX;
+	interpolation_mode = INTERPOLATION_SMOOTH;
 	detail_blend_mode = BLEND_MODE_MIX;
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	cull_mode = CULL_BACK;
