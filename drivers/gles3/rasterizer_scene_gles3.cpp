@@ -2329,7 +2329,9 @@ void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const C
 
 	RasterizerStorageGLES3::Texture *tex = storage->texture_owner.getornull(p_sky->panorama);
 
-	ERR_FAIL_COND(!tex);
+	if (!tex)
+		return;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(tex->target, tex->tex_id);
 
