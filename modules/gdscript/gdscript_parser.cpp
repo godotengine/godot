@@ -2971,18 +2971,37 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 	}
 
 	while (true) {
-		if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER) {
 
-			_set_error("Invalid 'extends' syntax, expected string constant (path) and/or identifier (parent class).");
-			return;
+		switch (tokenizer->get_token()) {
+
+			case GDScriptTokenizer::TK_IDENTIFIER: {
+
+					StringName identifier = tokenizer->get_token_identifier();
+					p_class->extends_class.push_back(identifier);
+				}
+				break;
+
+			case GDScriptTokenizer::TK_PERIOD:
+				break;
+
+			default: {
+
+				_set_error("Invalid 'extends' syntax, expected string constant (path) and/or identifier (parent class).");
+				return;
+			}
 		}
 
-		StringName identifier = tokenizer->get_token_identifier();
-		p_class->extends_class.push_back(identifier);
-
 		tokenizer->advance(1);
-		if (tokenizer->get_token() != GDScriptTokenizer::TK_PERIOD)
-			return;
+
+		switch (tokenizer->get_token()) {
+
+			case GDScriptTokenizer::TK_IDENTIFIER:
+			case GDScriptTokenizer::TK_PERIOD:
+				continue;
+
+			default:
+				return;
+		}
 	}
 }
 
