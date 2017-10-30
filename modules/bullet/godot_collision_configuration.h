@@ -32,48 +32,9 @@
 #ifndef GODOT_COLLISION_CONFIGURATION_H
 #define GODOT_COLLISION_CONFIGURATION_H
 
-#include "BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.h"
-#include "BulletCollision/CollisionDispatch/btCollisionCreateFunc.h"
-#include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
 
 class btDiscreteDynamicsWorld;
-
-class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
-
-	const btDiscreteDynamicsWorld *m_world;
-	btPersistentManifold *m_manifoldPtr;
-	bool m_isSwapped;
-
-public:
-	GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *m_world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped);
-
-	virtual void processCollision(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
-	virtual btScalar calculateTimeOfImpact(btCollisionObject *body0, btCollisionObject *body1, const btDispatcherInfo &dispatchInfo, btManifoldResult *resultOut);
-	virtual void getAllContactManifolds(btManifoldArray &manifoldArray);
-
-	struct CreateFunc : public btCollisionAlgorithmCreateFunc {
-
-		const btDiscreteDynamicsWorld *m_world;
-		CreateFunc(const btDiscreteDynamicsWorld *world);
-
-		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));
-			return new (mem) GodotRayWorldAlgorithm(m_world, ci.m_manifold, ci, body0Wrap, body1Wrap, false);
-		}
-	};
-
-	struct SwappedCreateFunc : public btCollisionAlgorithmCreateFunc {
-
-		const btDiscreteDynamicsWorld *m_world;
-		SwappedCreateFunc(const btDiscreteDynamicsWorld *world);
-
-		virtual btCollisionAlgorithm *CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) {
-			void *mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(GodotRayWorldAlgorithm));
-			return new (mem) GodotRayWorldAlgorithm(m_world, ci.m_manifold, ci, body0Wrap, body1Wrap, true);
-		}
-	};
-};
 
 class GodotCollisionConfiguration : public btDefaultCollisionConfiguration {
 	btCollisionAlgorithmCreateFunc *m_rayWorldCF;

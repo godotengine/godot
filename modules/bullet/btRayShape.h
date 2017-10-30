@@ -34,19 +34,18 @@
 #ifndef BTRAYSHAPE_H
 #define BTRAYSHAPE_H
 
-#include "BulletCollision/CollisionShapes/btConvexShape.h"
+#include "BulletCollision/CollisionShapes/btConvexInternalShape.h"
 
 /// Ray shape around z axis
 ATTRIBUTE_ALIGNED16(class)
-btRayShape : public btCollisionShape {
+btRayShape : public btConvexInternalShape {
 
 	btScalar m_length;
 	/// The default axis is the z
 	btVector3 m_shapeAxis;
-	btVector3 m_localScaling;
-	btScalar m_margin;
 
 	btTransform m_cacheSupportPoint;
+	btScalar m_cacheScaledLength;
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
@@ -58,6 +57,7 @@ public:
 	btScalar getLength() const { return m_length; }
 
 	const btTransform &getSupportPoint() const { return m_cacheSupportPoint; }
+	const btScalar &getScaledLength() const { return m_cacheScaledLength; }
 
 	virtual btVector3 localGetSupportingVertex(const btVector3 &vec) const;
 #ifndef __SPU__
@@ -70,17 +70,12 @@ public:
 	virtual void getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aabbMax) const;
 
 #ifndef __SPU__
-	virtual void setLocalScaling(const btVector3 &scaling);
-	virtual const btVector3 &getLocalScaling() const;
 	virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
 	virtual const char *getName() const {
 		return "RayZ";
 	}
 #endif //__SPU__
-
-	virtual void setMargin(btScalar margin);
-	virtual btScalar getMargin() const;
 
 	virtual int getNumPreferredPenetrationDirections() const;
 	virtual void getPreferredPenetrationDirection(int index, btVector3 &penetrationVector) const;

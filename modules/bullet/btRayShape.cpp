@@ -34,9 +34,7 @@
 #include "math/math_funcs.h"
 
 btRayShape::btRayShape(btScalar length)
-	: btCollisionShape(),
-	  m_margin(0),
-	  m_localScaling(0, 0, 0),
+	: btConvexInternalShape(),
 	  m_shapeAxis(0, 0, 1) {
 	m_shapeType = CUSTOM_CONVEX_SHAPE_TYPE;
 	setLength(length);
@@ -46,18 +44,18 @@ btRayShape::~btRayShape() {
 }
 
 void btRayShape::setLength(btScalar p_length) {
-	m_length = p_length;
 
+	m_length = p_length;
 	reload_cache();
 }
 
 btVector3 btRayShape::localGetSupportingVertex(const btVector3 &vec) const {
-	return localGetSupportingVertexWithoutMargin(vec) * m_margin;
+	return localGetSupportingVertexWithoutMargin(vec) + (m_shapeAxis * m_collisionMargin);
 }
 
 btVector3 btRayShape::localGetSupportingVertexWithoutMargin(const btVector3 &vec) const {
 	if (vec.z() > 0)
-		return m_shapeAxis * m_length;
+		return m_shapeAxis * m_cacheScaledLength;
 	else
 		return btVector3(0, 0, 0);
 }
@@ -75,29 +73,8 @@ void btRayShape::getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aa
 	btTransformAabb(localAabbMin, localAabbMax, MARGIN_BROADPHASE, t, aabbMin, aabbMax);
 }
 
-void btRayShape::setLocalScaling(const btVector3 &scaling) {
-
-	// Can be scaled only by shape axis
-	m_localScaling = m_shapeAxis * scaling;
-
-	reload_cache();
-}
-
-const btVector3 &btRayShape::getLocalScaling() const {
-	return m_localScaling;
-}
-
 void btRayShape::calculateLocalInertia(btScalar mass, btVector3 &inertia) const {
 	inertia.setZero();
-}
-
-void btRayShape::setMargin(btScalar margin) {
-	m_margin = margin;
-	reload_cache();
-}
-
-btScalar btRayShape::getMargin() const {
-	return m_margin;
 }
 
 int btRayShape::getNumPreferredPenetrationDirections() const {
@@ -109,6 +86,9 @@ void btRayShape::getPreferredPenetrationDirection(int index, btVector3 &penetrat
 }
 
 void btRayShape::reload_cache() {
+
+	m_cacheScaledLength = m_length * m_localScaling[2] + m_collisionMargin;
+
 	m_cacheSupportPoint.setIdentity();
-	m_cacheSupportPoint.setOrigin(m_shapeAxis * (m_length * m_localScaling[2] + m_margin));
+	m_cacheSupportPoint.setOrigin(m_shapeAxis * m_cacheScaledLength);
 }
