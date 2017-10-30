@@ -544,6 +544,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
+		host_lang = TranslationServer::standardize_locale(host_lang);
 
 		String best;
 
