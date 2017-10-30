@@ -352,7 +352,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->canvas_end();
 }
 
-void RasterizerGLES3::end_frame() {
+void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 
 #if 0
 	canvas->canvas_begin();
@@ -384,7 +384,10 @@ void RasterizerGLES3::end_frame() {
 
 	canvas->draw_generic_textured_rect(Rect2(0,0,15,15),Rect2(0,0,1,1));
 #endif
-	OS::get_singleton()->swap_buffers();
+	if (p_swap_buffers)
+		OS::get_singleton()->swap_buffers();
+	else
+		glFinish();
 
 	/*	print_line("objects: "+itos(storage->info.render_object_count));
 	print_line("material chages: "+itos(storage->info.render_material_switch_count));

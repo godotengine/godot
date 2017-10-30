@@ -92,7 +92,7 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 	frame_drawn_callbacks.push_back(fdc);
 }
 
-void VisualServerRaster::draw() {
+void VisualServerRaster::draw(bool p_swap_buffers) {
 
 	changes = 0;
 
@@ -103,7 +103,7 @@ void VisualServerRaster::draw() {
 	VSG::viewport->draw_viewports();
 	VSG::scene->render_probes();
 	_draw_margins();
-	VSG::rasterizer->end_frame();
+	VSG::rasterizer->end_frame(p_swap_buffers);
 
 	while (frame_drawn_callbacks.front()) {
 

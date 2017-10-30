@@ -542,7 +542,7 @@ public:
 
 	virtual void init();
 	virtual void finish();
-	virtual void draw();
+	virtual void draw(bool p_swap_buffers);
 	virtual void sync();
 	FUNC0RC(bool, has_changed)
 

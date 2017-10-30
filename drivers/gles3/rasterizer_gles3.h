@@ -59,7 +59,7 @@ public:
 	virtual void restore_render_target();
 	virtual void clear_render_target(const Color &p_color);
 	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0);
-	virtual void end_frame();
+	virtual void end_frame(bool p_swap_buffers);
 	virtual void finalize();
 
 	static void make_current();
