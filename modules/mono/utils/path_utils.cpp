@@ -56,9 +56,6 @@ String path_which(const String &p_name) {
 	for (int i = 0; i < env_path.size(); i++) {
 		String p = path_join(env_path[i], p_name);
 
-		if (FileAccess::exists(p))
-			return p;
-
 #ifdef WINDOWS_ENABLED
 		for (int j = 0; j < exts.size(); j++) {
 			String p2 = p + exts[j];
@@ -66,6 +63,9 @@ String path_which(const String &p_name) {
 			if (FileAccess::exists(p2))
 				return p2;
 		}
+#else
+		if (FileAccess::exists(p))
+			return p;
 #endif
 	}
 
