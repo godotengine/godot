@@ -95,6 +95,10 @@ public:
 
 	};
 
+	typedef void (*BakeBeginFunc)(int);
+	typedef void (*BakeStepFunc)(int, const String &);
+	typedef void (*BakeEndFunc)();
+
 private:
 	//stuff used for bake
 	struct Baker {
@@ -190,6 +194,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	static BakeBeginFunc bake_begin_function;
+	static BakeStepFunc bake_step_function;
+	static BakeEndFunc bake_end_function;
+
 	void set_probe_data(const Ref<GIProbeData> &p_data);
 	Ref<GIProbeData> get_probe_data() const;
 
