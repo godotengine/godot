@@ -87,6 +87,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SNAP_USE_NODE_SIDES,
 		SNAP_USE_OTHER_NODES,
 		SNAP_USE_GRID,
+		SNAP_USE_GUIDES,
 		SNAP_USE_ROTATION,
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
@@ -94,6 +95,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SHOW_GRID,
 		SHOW_HELPERS,
 		SHOW_RULERS,
+		SHOW_GUIDES,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -183,6 +185,9 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 		DRAG_NODE_2D,
+		DRAG_V_GUIDE,
+		DRAG_H_GUIDE,
+		DRAG_DOUBLE_GUIDE,
 	};
 
 	enum KeyMoveMODE {
@@ -213,6 +218,7 @@ class CanvasItemEditor : public VBoxContainer {
 	Transform2D transform;
 	bool show_grid;
 	bool show_rulers;
+	bool show_guides;
 	bool show_helpers;
 	float zoom;
 
@@ -228,6 +234,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_node_sides;
 	bool snap_other_nodes;
 	bool snap_grid;
+	bool snap_guides;
 	bool snap_rotation;
 	bool snap_relative;
 	bool snap_pixel;
@@ -333,6 +340,9 @@ class CanvasItemEditor : public VBoxContainer {
 	Point2 display_rotate_from;
 	Point2 display_rotate_to;
 
+	int edited_guide_index;
+	Point2 edited_guide_pos;
+
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture> select_handle;
 	Ref<Texture> anchor_handle;
@@ -402,6 +412,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 
 	void _draw_rulers();
+	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
 	void _draw_selection();
@@ -417,8 +428,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _focus_selection(int p_op);
 
-	void _snap_if_closer(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
-	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap);
+	void _snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius = 10.0);
+	void _snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
+	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap = NULL);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_margins_preset(Control::LayoutPreset p_preset);
@@ -476,13 +488,14 @@ protected:
 public:
 	enum SnapMode {
 		SNAP_GRID = 1 << 0,
-		SNAP_PIXEL = 1 << 1,
-		SNAP_NODE_PARENT = 1 << 2,
-		SNAP_NODE_ANCHORS = 1 << 3,
-		SNAP_NODE_SIDES = 1 << 4,
-		SNAP_OTHER_NODES = 1 << 5,
+		SNAP_GUIDES = 1 << 1,
+		SNAP_PIXEL = 1 << 2,
+		SNAP_NODE_PARENT = 1 << 3,
+		SNAP_NODE_ANCHORS = 1 << 4,
+		SNAP_NODE_SIDES = 1 << 5,
+		SNAP_OTHER_NODES = 1 << 6,
 
-		SNAP_DEFAULT = 0x03,
+		SNAP_DEFAULT = 0x07,
 	};
 
 	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);
