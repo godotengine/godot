@@ -542,6 +542,7 @@ void register_scene_types() {
 	ClassDB::register_class<StyleBoxEmpty>();
 	ClassDB::register_class<StyleBoxTexture>();
 	ClassDB::register_class<StyleBoxFlat>();
+	ClassDB::register_class<StyleBoxLine>();
 	ClassDB::register_class<Theme>();
 
 	ClassDB::register_class<PolygonPathFinder>();
