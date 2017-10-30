@@ -275,6 +275,8 @@ public:
 
 	virtual Error move_to_trash(const String &p_path);
 
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+
 	OS_X11();
 };
 
