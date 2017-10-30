@@ -127,7 +127,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 		group_map.erase(E);
 }
 
-void SceneTree::_flush_transform_notifications() {
+void SceneTree::flush_transform_notifications() {
 
 	SelfList<Node> *n = xform_change_list.first();
 	while (n) {
@@ -448,7 +448,7 @@ bool SceneTree::iteration(float p_time) {
 
 	current_frame++;
 
-	_flush_transform_notifications();
+	flush_transform_notifications();
 
 	MainLoop::iteration(p_time);
 	physics_process_time = p_time;
@@ -459,7 +459,7 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
-	_flush_transform_notifications();
+	flush_transform_notifications();
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
 
@@ -487,7 +487,7 @@ bool SceneTree::idle(float p_time) {
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
-	_flush_transform_notifications();
+	flush_transform_notifications();
 
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
@@ -503,7 +503,7 @@ bool SceneTree::idle(float p_time) {
 
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
-	_flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
+	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 
 	root_lock--;

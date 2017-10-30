@@ -33,6 +33,17 @@
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+void AnimatedValuesBackup::update_skeletons() {
+
+	for (int i = 0; i < entries.size(); i++) {
+		if (entries[i].bone_idx != -1) {
+			Object::cast_to<Skeleton>(entries[i].object)->notification(Skeleton::NOTIFICATION_UPDATE_SKELETON);
+		}
+	}
+}
+#endif
+
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;

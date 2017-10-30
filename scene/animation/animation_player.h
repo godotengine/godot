@@ -50,6 +50,9 @@ class AnimatedValuesBackup {
 	Vector<Entry> entries;
 
 	friend class AnimationPlayer;
+
+public:
+	void update_skeletons();
 };
 #endif
 
