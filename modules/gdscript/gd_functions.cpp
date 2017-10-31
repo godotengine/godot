@@ -83,6 +83,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"rad2deg",
 		"linear2db",
 		"db2linear",
+		"polar2cartesian",
+		"cartesian2polar",
 		"max",
 		"min",
 		"clamp",
@@ -404,6 +406,22 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::db2linear((double)*p_args[0]);
+		} break;
+		case MATH_POLAR2CARTESIAN: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			double r = *p_args[0];
+			double th = *p_args[1];
+			r_ret = Vector2(r * Math::cos(th), r * Math::sin(th));
+		} break;
+		case MATH_CARTESIAN2POLAR: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			double x = *p_args[0];
+			double y = *p_args[1];
+			r_ret = Vector2(Math::sqrt(x * x + y * y), Math::atan2(y, x));
 		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);
@@ -1285,6 +1303,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_DB2LINEAR:
+		case MATH_POLAR2CARTESIAN:
+		case MATH_CARTESIAN2POLAR:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP:
@@ -1511,6 +1531,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case MATH_DB2LINEAR: {
 			MethodInfo mi("db2linear", PropertyInfo(Variant::REAL, "db"));
 			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_POLAR2CARTESIAN: {
+			MethodInfo mi("polar2cartesian", PropertyInfo(Variant::REAL, "r"), PropertyInfo(Variant::REAL, "th"));
+			mi.return_val.type = Variant::VECTOR2;
+			return mi;
+		} break;
+		case MATH_CARTESIAN2POLAR: {
+			MethodInfo mi("cartesian2polar", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			mi.return_val.type = Variant::VECTOR2;
 			return mi;
 		} break;
 		case LOGIC_MAX: {
