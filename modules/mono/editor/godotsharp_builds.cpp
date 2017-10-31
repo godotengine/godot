@@ -61,10 +61,10 @@ String _find_build_engine_on_unix(const String &p_name) {
 	};
 
 	for (int i = 0; i < sizeof(locations) / sizeof(const char *); i++) {
-		String location = locations[i];
+		String hint_path = locations[i] + p_name;
 
-		if (FileAccess::exists(location + p_name)) {
-			return location;
+		if (FileAccess::exists(hint_path)) {
+			return hint_path;
 		}
 	}
 
