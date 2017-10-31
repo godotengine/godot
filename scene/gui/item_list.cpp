@@ -781,7 +781,9 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (has_focus()) {
+			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 			draw_style_box(get_stylebox("bg_focus"), Rect2(Point2(), size));
+			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 		}
 
 		if (shape_changed) {
@@ -1427,6 +1429,7 @@ ItemList::ItemList() {
 	allow_rmb_select = false;
 
 	icon_scale = 1.0f;
+	set_clip_contents(true);
 }
 
 ItemList::~ItemList() {
