@@ -876,6 +876,7 @@ void ProjectSettingsEditor::_action_add() {
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();
+	action_name->clear();
 }
 
 void ProjectSettingsEditor::_item_checked(const String &p_item, bool p_check) {
