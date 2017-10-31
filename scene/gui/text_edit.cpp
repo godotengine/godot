@@ -2188,7 +2188,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 					}
 				}
-
+				begin_complex_operation();
 				bool first_line = false;
 				if (k->get_command()) {
 					if (k->get_shift()) {
@@ -2204,8 +2204,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
-				_insert_text_at_cursor(ins);
-				_push_current_op();
+				insert_text_at_cursor(ins);
 
 				if (first_line) {
 					cursor_set_line(0);
@@ -2213,7 +2212,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					cursor_set_line(cursor.line - 1);
 					cursor_set_column(text[cursor.line].length());
 				}
-
+				end_complex_operation();
 			} break;
 			case KEY_ESCAPE: {
 				if (completion_hint != "") {
