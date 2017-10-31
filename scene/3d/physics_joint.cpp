@@ -32,13 +32,8 @@
 void Joint::_update_joint(bool p_only_free) {
 
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid()) {
-
-			if (exclude_from_collision)
-				PhysicsServer::get_singleton()->body_add_collision_exception(ba, bb);
-			else
-				PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
-		}
+		if (ba.is_valid() && bb.is_valid())
+			PhysicsServer::get_singleton()->body_remove_collision_exception(ba, bb);
 
 		PhysicsServer::get_singleton()->free(joint);
 		joint = RID();
@@ -52,33 +47,31 @@ void Joint::_update_joint(bool p_only_free) {
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
 
-	if (!node_a && !node_b)
+	if (!node_a || !node_b)
 		return;
 
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
 
-	if (!body_a && !body_b)
+	if (!body_a || !body_b)
 		return;
 
 	if (!body_a) {
 		SWAP(body_a, body_b);
-	} else if (body_b) {
-		//add a collision exception between both
-		PhysicsServer::get_singleton()->body_add_collision_exception(body_a->get_rid(), body_b->get_rid());
 	}
 
 	joint = _configure_joint(body_a, body_b);
 
-	if (joint.is_valid())
-		PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
+	if (!joint.is_valid())
+		return;
 
-	if (body_b && joint.is_valid()) {
+	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
-		ba = body_a->get_rid();
-		bb = body_b->get_rid();
+	ba = body_a->get_rid();
+	bb = body_b->get_rid();
+
+	if (exclude_from_collision)
 		PhysicsServer::get_singleton()->body_add_collision_exception(body_a->get_rid(), body_b->get_rid());
-	}
 }
 
 void Joint::set_node_a(const NodePath &p_node_a) {
@@ -129,8 +122,6 @@ void Joint::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_update_joint(true);
-				//PhysicsServer::get_singleton()->free(joint);
-				joint = RID();
 			}
 		} break;
 	}
