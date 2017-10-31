@@ -116,6 +116,9 @@ protected:
 
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void _resource_path_changed();
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
 public:
 	virtual bool can_instance() const;
@@ -228,16 +231,17 @@ class CSharpLanguage : public ScriptLanguage {
 		StringName _set;
 		StringName _get;
 		StringName _notification;
+		StringName _script_source;
 		StringName dotctor; // .ctor
 
 		StringNameCache();
 	};
 
-	StringNameCache string_names;
-
 	int lang_idx;
 
 public:
+	StringNameCache string_names;
+
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
 
@@ -266,6 +270,8 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
+	virtual bool is_using_templates();
+	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
 	/* TODO */ virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const { return true; }
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
@@ -273,6 +279,7 @@ public:
 	/* TODO? */ virtual int find_function(const String &p_function, const String &p_code) const { return -1; }
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
 	/* TODO? */ Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual String _get_indentation() const;
 	/* TODO? */ virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {}
 	/* TODO */ virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) {}
 
