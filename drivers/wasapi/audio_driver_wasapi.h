@@ -64,7 +64,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	static void thread_func(void *p_udata);
 
-	Error init_device();
+	Error init_device(bool reinit = false);
 	Error finish_device();
 	Error reopen();
 
