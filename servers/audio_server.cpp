@@ -226,7 +226,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		static int total = 0;
 
 		ticks = OS::get_singleton()->get_ticks_msec();
-		if ((ticks - first_ticks) > 10 * 1000) {
+		if ((ticks - first_ticks) > 10 * 1000 && count > 0) {
 			print_line("Audio Driver " + String(AudioDriver::get_singleton()->get_name()) + " average latency: " + itos(total / count) + "ms (frame=" + itos(p_frames) + ")");
 			first_ticks = ticks;
 			total = 0;
