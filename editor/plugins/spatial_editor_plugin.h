@@ -83,6 +83,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL,
+		VIEW_HALF_RESOLUTION,
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
@@ -120,6 +121,7 @@ private:
 	UndoRedo *undo_redo;
 
 	Button *preview_camera;
+	ViewportContainer *viewport_container;
 
 	MenuButton *view_menu;
 

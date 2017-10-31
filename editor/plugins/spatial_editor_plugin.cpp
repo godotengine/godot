@@ -267,12 +267,12 @@ Vector3 SpatialEditorViewport::_get_camera_position() const {
 
 Point2 SpatialEditorViewport::_point_to_screen(const Vector3 &p_point) {
 
-	return camera->unproject_position(p_point);
+	return camera->unproject_position(p_point) * viewport_container->get_stretch_shrink();
 }
 
 Vector3 SpatialEditorViewport::_get_ray_pos(const Vector2 &p_pos) const {
 
-	return camera->project_ray_origin(p_pos);
+	return camera->project_ray_origin(p_pos / viewport_container->get_stretch_shrink());
 }
 
 Vector3 SpatialEditorViewport::_get_camera_normal() const {
@@ -282,7 +282,7 @@ Vector3 SpatialEditorViewport::_get_camera_normal() const {
 
 Vector3 SpatialEditorViewport::_get_ray(const Vector2 &p_pos) const {
 
-	return camera->project_ray_normal(p_pos);
+	return camera->project_ray_normal(p_pos / viewport_container->get_stretch_shrink());
 }
 /*
 void SpatialEditorViewport::_clear_id(Spatial *p_node) {
@@ -2050,6 +2050,12 @@ void SpatialEditorViewport::_notification(int p_what) {
 		viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 		viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
+		bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+
+		if (shrink != viewport_container->get_stretch_shrink() > 1) {
+			viewport_container->set_stretch_shrink(shrink ? 2 : 1);
+		}
+
 		//update msaa if changed
 
 		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
@@ -2401,6 +2407,13 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_HALF_RESOLUTION: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			view_menu->get_popup()->set_item_checked(idx, current);
+		} break;
 		case VIEW_INFORMATION: {
 
 			int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
@@ -2630,6 +2643,12 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		camera->set_doppler_tracking(doppler ? Camera::DOPPLER_TRACKING_IDLE_STEP : Camera::DOPPLER_TRACKING_DISABLED);
 		view_menu->get_popup()->set_item_checked(idx, doppler);
 	}
+	if (p_state.has("half_res")) {
+		bool half_res = p_state["half_res"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
+		view_menu->get_popup()->set_item_checked(idx, half_res);
+	}
 
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
@@ -2655,6 +2674,7 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["use_environment"] = camera->get_environment().is_valid();
 	d["use_orthogonal"] = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 	d["listener"] = viewport->is_audio_listener();
+	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
 	}
@@ -3072,6 +3092,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	spatial_editor = p_spatial_editor;
 	ViewportContainer *c = memnew(ViewportContainer);
+	viewport_container = c;
 	c->set_stretch(true);
 	add_child(c);
 	c->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -3117,6 +3138,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_information", TTR("View Information")), VIEW_INFORMATION);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT), true);
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_half_resolution", TTR("Half Resolution")), VIEW_HALF_RESOLUTION);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_listener", TTR("Audio Listener")), VIEW_AUDIO_LISTENER);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_audio_doppler", TTR("Doppler Enable")), VIEW_AUDIO_DOPPLER);
