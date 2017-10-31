@@ -130,15 +130,15 @@ public:
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
-	bool has_setting(String p_var) const;
-	void erase(String p_var);
-	void raise_order(const String &p_name);
-	void set_initial_value(const StringName &p_name, const Variant &p_value);
-	void set_manually(const StringName &p_name, const Variant &p_value, bool p_emit_signal = false) {
-		_set(p_name, p_value, p_emit_signal);
+	bool has_setting(const String &p_setting) const;
+	void erase(const String &p_setting);
+	void raise_order(const String &p_setting);
+	void set_initial_value(const StringName &p_setting, const Variant &p_value);
+	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
+		_set(p_setting, p_value, p_emit_signal);
 	}
-	bool property_can_revert(const String &p_name);
-	Variant property_get_revert(const String &p_name);
+	bool property_can_revert(const String &p_setting);
+	Variant property_get_revert(const String &p_setting);
 	void add_property_hint(const PropertyInfo &p_hint);
 
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
@@ -178,10 +178,10 @@ public:
 //not a macro any longer
 
 #define EDITOR_DEF(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val))
-Variant _EDITOR_DEF(const String &p_var, const Variant &p_default);
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default);
 
 #define EDITOR_GET(m_var) _EDITOR_GET(m_var)
-Variant _EDITOR_GET(const String &p_var);
+Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);

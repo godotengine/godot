@@ -890,63 +890,63 @@ Variant EditorSettings::get_setting(const String &p_setting) const {
 	return get(p_setting);
 }
 
-bool EditorSettings::has_setting(String p_var) const {
+bool EditorSettings::has_setting(const String &p_setting) const {
 
 	_THREAD_SAFE_METHOD_
 
-	return props.has(p_var);
+	return props.has(p_setting);
 }
 
-void EditorSettings::erase(String p_var) {
+void EditorSettings::erase(const String &p_setting) {
 
 	_THREAD_SAFE_METHOD_
 
-	props.erase(p_var);
+	props.erase(p_setting);
 }
 
-void EditorSettings::raise_order(const String &p_name) {
+void EditorSettings::raise_order(const String &p_setting) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!props.has(p_name));
-	props[p_name].order = ++last_order;
+	ERR_FAIL_COND(!props.has(p_setting));
+	props[p_setting].order = ++last_order;
 }
 
-void EditorSettings::set_initial_value(const StringName &p_name, const Variant &p_value) {
+void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value) {
 
-	ERR_FAIL_COND(!props.has(p_name));
-	props[p_name].initial = p_value;
+	ERR_FAIL_COND(!props.has(p_setting));
+	props[p_setting].initial = p_value;
 }
 
-Variant _EDITOR_DEF(const String &p_var, const Variant &p_default) {
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
 
-	if (EditorSettings::get_singleton()->has_setting(p_var))
-		return EditorSettings::get_singleton()->get(p_var);
-	EditorSettings::get_singleton()->set(p_var, p_default);
-	EditorSettings::get_singleton()->set_initial_value(p_var, p_default);
+	if (EditorSettings::get_singleton()->has_setting(p_setting))
+		return EditorSettings::get_singleton()->get(p_setting);
+	EditorSettings::get_singleton()->set(p_setting, p_default);
+	EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
 
 	return p_default;
 }
 
-Variant _EDITOR_GET(const String &p_var) {
+Variant _EDITOR_GET(const String &p_setting) {
 
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_var), Variant())
-	return EditorSettings::get_singleton()->get(p_var);
+	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_setting), Variant())
+	return EditorSettings::get_singleton()->get(p_setting);
 }
 
-bool EditorSettings::property_can_revert(const String &p_name) {
+bool EditorSettings::property_can_revert(const String &p_setting) {
 
-	if (!props.has(p_name))
+	if (!props.has(p_setting))
 		return false;
 
-	return props[p_name].initial != props[p_name].variant;
+	return props[p_setting].initial != props[p_setting].variant;
 }
 
-Variant EditorSettings::property_get_revert(const String &p_name) {
+Variant EditorSettings::property_get_revert(const String &p_setting) {
 
-	if (!props.has(p_name))
+	if (!props.has(p_setting))
 		return Variant();
 
-	return props[p_name].initial;
+	return props[p_setting].initial;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
@@ -1043,7 +1043,7 @@ void EditorSettings::load_favorites() {
 
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Adaptive,Default";
-	DirAccess *d = DirAccess::open(settings_path + "/text_editor_themes");
+	DirAccess *d = DirAccess::open(get_settings_path().plus_file("text_editor_themes"));
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1065,7 +1065,7 @@ void EditorSettings::load_text_editor_theme() {
 		return;
 	}
 
-	String theme_path = get_settings_path() + "/text_editor_themes/" + get("text_editor/theme/color_theme") + ".tet";
+	String theme_path = get_settings_path().plus_file("text_editor_themes").plus_file((String)get("text_editor/theme/color_theme") + ".tet");
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error err = cf->load(theme_path);
@@ -1103,9 +1103,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccess *d = DirAccess::open(settings_path + "/text_editor_themes");
+		DirAccess *d = DirAccess::open(get_settings_path().plus_file("text_editor_themes"));
 		if (d) {
-			d->copy(p_file, settings_path + "/text_editor_themes/" + p_file.get_file());
+			d->copy(p_file, get_settings_path().plus_file("text_editor_themes").plus_file(p_file.get_file()));
 			memdelete(d);
 			return true;
 		}
@@ -1120,7 +1120,7 @@ bool EditorSettings::save_text_editor_theme() {
 	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive") {
 		return false;
 	}
-	String theme_path = get_settings_path() + "/text_editor_themes/" + p_file + ".tet";
+	String theme_path = get_settings_path().plus_file("text_editor_themes").plus_file(p_file + ".tet");
 	return _save_text_editor_theme(theme_path);
 }
 
@@ -1138,7 +1138,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
 
-		if (p_file.get_base_dir() == get_settings_path() + "/text_editor_themes") {
+		if (p_file.get_base_dir() == get_settings_path().plus_file("text_editor_themes")) {
 			_initial_set("text_editor/theme/color_theme", theme_name);
 			load_text_editor_theme();
 		}
@@ -1150,7 +1150,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension) {
 
 	Vector<String> templates;
-	DirAccess *d = DirAccess::open(settings_path + "/script_templates");
+	DirAccess *d = DirAccess::open(get_settings_path().plus_file("script_templates"));
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
