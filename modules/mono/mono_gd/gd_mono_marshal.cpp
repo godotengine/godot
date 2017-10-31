@@ -600,7 +600,7 @@ MonoArray *Array_to_mono_array(const Array &p_array) {
 
 	for (int i = 0; i < p_array.size(); i++) {
 		MonoObject *boxed = variant_to_mono_object(p_array[i]);
-		mono_array_set(ret, MonoObject *, i, boxed);
+		mono_array_setref(ret, i, boxed);
 	}
 
 	return ret;
