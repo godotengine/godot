@@ -98,7 +98,7 @@ private:
 
 	Button *button_reload;
 	Button *button_favorite;
-	Button *button_back;
+	Button *button_tree;
 	Button *button_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
@@ -107,7 +107,7 @@ private:
 	TextureRect *search_icon;
 	HBoxContainer *path_hb;
 
-	bool split_mode;
+	bool low_height_mode;
 	DisplayMode display_mode;
 
 	PopupMenu *file_options;
@@ -138,6 +138,7 @@ private:
 
 	Vector<String> history;
 	int history_pos;
+	int history_max_size;
 
 	String path;
 
@@ -147,15 +148,22 @@ private:
 	Tree *tree; //directories
 	ItemList *files;
 
-	void _file_multi_selected(int p_index, bool p_selected);
-	void _file_selected();
+	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
+	void _update_tree(bool keep_collapse_state);
+
+	void _update_files(bool p_keep_selection);
+	void _update_file_display_toggle_button();
+	void _change_file_display();
+	void _fs_changed();
 
 	void _go_to_tree();
-	void _go_to_dir(const String &p_dir);
-	void _select_file(int p_idx);
+	void _go_to_file_list();
 
-	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+	void _select_file(int p_idx);
+	void _file_multi_selected(int p_index, bool p_selected);
+
+	void _file_selected();
+	void _dir_selected();
 
 	void _get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files) const;
 	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
@@ -168,25 +176,19 @@ private:
 
 	void _file_option(int p_option);
 	void _folder_option(int p_option);
-	void _update_files(bool p_keep_selection);
-	void _update_file_display_toggle_button();
-	void _change_file_display();
 
-	void _fs_changed();
 	void _fw_history();
 	void _bw_history();
+	void _update_history();
 	void _push_to_history();
 
-	void _dir_selected();
-	void _update_tree();
-	void _rescan();
 	void _set_scanning_mode();
+	void _rescan();
 
 	void _favorites_pressed();
-	void _open_pressed();
-	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _search_changed(const String &p_text);
 
+	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
 
 	struct FileInfo {
@@ -209,6 +211,7 @@ private:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _preview_invalidated(const String &p_path);
+	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 
 protected:
 	void _notification(int p_what);
