@@ -83,6 +83,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"rad2deg",
 		"linear2db",
 		"db2linear",
+		"wrapi",
+		"wrapf",
 		"max",
 		"min",
 		"clamp",
@@ -404,6 +406,14 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::db2linear((double)*p_args[0]);
+		} break;
+		case MATH_WRAP: {
+			VALIDATE_ARG_COUNT(3);
+			r_ret = Math::wrapi((int64_t)*p_args[0], (int64_t)*p_args[1], (int64_t)*p_args[2]);
+		} break;
+		case MATH_WRAPF: {
+			VALIDATE_ARG_COUNT(3);
+			r_ret = Math::wrapf((double)*p_args[0], (double)*p_args[1], (double)*p_args[2]);
 		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);
@@ -1285,6 +1295,8 @@ bool GDFunctions::is_deterministic(Function p_func) {
 		case MATH_RAD2DEG:
 		case MATH_LINEAR2DB:
 		case MATH_DB2LINEAR:
+		case MATH_WRAP:
+		case MATH_WRAPF:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP:
@@ -1510,6 +1522,16 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_DB2LINEAR: {
 			MethodInfo mi("db2linear", PropertyInfo(Variant::REAL, "db"));
+			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_WRAP: {
+			MethodInfo mi("wrapi", PropertyInfo(Variant::INT, "value"), PropertyInfo(Variant::INT, "min"), PropertyInfo(Variant::INT, "max"));
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case MATH_WRAPF: {
+			MethodInfo mi("wrapf", PropertyInfo(Variant::REAL, "value"), PropertyInfo(Variant::REAL, "min"), PropertyInfo(Variant::REAL, "max"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
