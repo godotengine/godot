@@ -30,7 +30,10 @@
 #ifndef CONSTRAINT_SW_H
 #define CONSTRAINT_SW_H
 
-#include "body_sw.h"
+#include "math/math_defs.h"
+#include "rid.h"
+
+class BodySW;
 
 class ConstraintSW : public RID_Data {
 
@@ -42,18 +45,28 @@ class ConstraintSW : public RID_Data {
 	int priority;
 
 	RID self;
+	uint64_t _constraint_id;
 
 protected:
 	ConstraintSW(BodySW **p_body_ptr = NULL, int p_body_count = 0) {
+
+		// Assume ConstranitSW objects can only be instantiated from
+		// one thread, used as index in the constraint map
+		// of each body in order for the order to be deterministic.
+		static uint64_t _constranit_id_next = 0;
+
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
 		island_step = 0;
 		priority = 1;
+		_constraint_id = _constranit_id_next++;
 	}
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ uint64_t get_constraint_id() { return _constraint_id; }
 
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }

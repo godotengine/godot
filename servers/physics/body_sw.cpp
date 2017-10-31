@@ -654,15 +654,16 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 
 void BodySW::wakeup_neighbours() {
 
-	for (Map<ConstraintSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
+	for (Map<uint64_t, ConstraintMapVal>::Element *E = constraint_map.front(); E; E = E->next()) {
 
-		const ConstraintSW *c = E->key();
+		const ConstraintMapVal cmv = E->get();
+		const ConstraintSW *c = cmv.constraint;
 		BodySW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
 
-			if (i == E->get())
+			if (i == cmv.index)
 				continue;
 			BodySW *b = n[i];
 			if (b->mode != PhysicsServer::BODY_MODE_RIGID)
