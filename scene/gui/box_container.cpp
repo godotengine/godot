@@ -201,6 +201,44 @@ void BoxContainer::_resort() {
 	}
 }
 
+void BoxContainer::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
+
+	Container::fit_child_in_rect(p_child, p_rect);
+
+	Point2 pos = p_rect.pos;
+	Size2 minsize = p_child->get_combined_minimum_size();
+
+	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
+
+		switch (secondary_align) {
+			case ALIGN_BEGIN:
+				break;
+			case ALIGN_CENTER:
+				pos.x += Math::floor((p_rect.size.x - minsize.x) / 2);
+				break;
+			case ALIGN_END:
+				pos.x += Math::floor(p_rect.size.x - minsize.x);
+				break;
+		}
+	}
+
+	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
+
+		switch (secondary_align) {
+			case ALIGN_BEGIN:
+				break;
+			case ALIGN_CENTER:
+				pos.y += Math::floor((p_rect.size.y - minsize.y) / 2);
+				break;
+			case ALIGN_END:
+				pos.y += Math::floor(p_rect.size.y - minsize.y);
+				break;
+		}
+	}
+
+	p_child->set_pos(pos);
+}
+
 Size2 BoxContainer::get_minimum_size() const {
 
 	/* Calculate MINIMUM SIZE */
@@ -266,6 +304,15 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
+void BoxContainer::set_secondary_alignment(AlignMode p_align) {
+	secondary_align = p_align;
+	_resort();
+}
+
+BoxContainer::AlignMode BoxContainer::get_secondary_alignment() const {
+	return secondary_align;
+}
+
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew(Control);
@@ -284,6 +331,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical = p_vertical;
 	align = ALIGN_BEGIN;
+	secondary_align = ALIGN_CENTER; // Center for backwards compatibility
 	//	set_ignore_mouse(true);
 	set_stop_mouse(false);
 }
@@ -293,12 +341,15 @@ void BoxContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_spacer", "begin"), &BoxContainer::add_spacer);
 	ObjectTypeDB::bind_method(_MD("get_alignment"), &BoxContainer::get_alignment);
 	ObjectTypeDB::bind_method(_MD("set_alignment", "alignment"), &BoxContainer::set_alignment);
+	ObjectTypeDB::bind_method(_MD("get_secondary_alignment"), &BoxContainer::get_secondary_alignment);
+	ObjectTypeDB::bind_method(_MD("set_secondary_alignment", "alignment"), &BoxContainer::set_secondary_alignment);
 
 	BIND_CONSTANT(ALIGN_BEGIN);
 	BIND_CONSTANT(ALIGN_CENTER);
 	BIND_CONSTANT(ALIGN_END);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_alignment"), _SCS("get_alignment"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "secondary_alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_secondary_alignment"), _SCS("get_secondary_alignment"));
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {

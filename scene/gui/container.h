@@ -54,7 +54,7 @@ public:
 		NOTIFICATION_SORT_CHILDREN = 50
 	};
 
-	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
+	virtual void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
 
 	Container();
 };
