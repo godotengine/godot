@@ -30,6 +30,49 @@
 #include "abstract_polygon_2d_editor.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/keyboard.h"
+
+AbstractPolygon2DEditor::Vertex::Vertex()
+	: polygon(-1), vertex(-1) {
+	// invalid vertex
+}
+
+AbstractPolygon2DEditor::Vertex::Vertex(int p_vertex)
+	: polygon(-1), vertex(p_vertex) {
+	// vertex p_vertex of current wip polygon
+}
+
+AbstractPolygon2DEditor::Vertex::Vertex(int p_polygon, int p_vertex)
+	: polygon(p_polygon), vertex(p_vertex) {
+	// vertex p_vertex of polygon p_polygon
+}
+
+bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
+
+	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;
+}
+
+bool AbstractPolygon2DEditor::Vertex::operator!=(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
+
+	return !(*this == p_vertex);
+}
+
+bool AbstractPolygon2DEditor::Vertex::valid() const {
+
+	return vertex >= 0;
+}
+
+AbstractPolygon2DEditor::PosVertex::PosVertex() {
+	// invalid vertex
+}
+
+AbstractPolygon2DEditor::PosVertex::PosVertex(const Vertex &p_vertex, const Vector2 &p_pos)
+	: Vertex(p_vertex.polygon, p_vertex.vertex), pos(p_pos) {
+}
+
+AbstractPolygon2DEditor::PosVertex::PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos)
+	: Vertex(p_polygon, p_vertex), pos(p_pos) {
+}
 
 bool AbstractPolygon2DEditor::_is_empty() const {
 
@@ -171,7 +214,10 @@ void AbstractPolygon2DEditor::_wip_close() {
 
 	wip.clear();
 	wip_active = false;
-	edited_point = -1;
+
+	edited_point = PosVertex();
+	hover_point = Vertex();
+	selected_point = Vertex();
 }
 
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
@@ -197,9 +243,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
-		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
-
 		if (mode == MODE_CREATE) {
 
 			if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
@@ -209,12 +252,15 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					wip.clear();
 					wip.push_back(cpoint);
 					wip_active = true;
-					edited_point_pos = cpoint;
-					edited_polygon = -1;
-					edited_point = 1;
+					edited_point = PosVertex(-1, 1, cpoint);
 					canvas_item_editor->get_viewport_control()->update();
+					hover_point = Vertex();
+					selected_point = Vertex(0);
+					edge_point = PosVertex();
 					return true;
 				} else {
+
+					const real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 
 					if (wip.size() > 1 && xform.xform(wip[0]).distance_to(gpoint) < grab_threshold) {
 						//wip closed
@@ -224,7 +270,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					} else {
 
 						wip.push_back(cpoint);
-						edited_point = wip.size();
+						edited_point = PosVertex(-1, wip.size(), cpoint);
+						selected_point = Vertex(wip.size() - 1);
 						canvas_item_editor->get_viewport_control()->update();
 						return true;
 
@@ -240,66 +287,31 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 				if (mb->is_pressed()) {
 
-					if (mb->get_control()) {
+					const PosVertex insert = closest_edge_point(gpoint);
 
-						const int n_polygons = _get_polygon_count();
+					if (insert.valid()) {
 
-						if (n_polygons >= 1) {
+						Vector<Vector2> vertices = _get_polygon(insert.polygon);
 
-							Vector<Vector2> vertices = _get_polygon(n_polygons - 1);
+						if (vertices.size() < 3) {
 
-							if (vertices.size() < 3) {
+							vertices.push_back(cpoint);
+							undo_redo->create_action(TTR("Edit Poly"));
+							selected_point = Vertex(insert.polygon, vertices.size());
+							_action_set_polygon(insert.polygon, vertices);
+							_commit_action();
+							return true;
+						} else {
 
-								vertices.push_back(cpoint);
-								undo_redo->create_action(TTR("Edit Poly"));
-								_action_set_polygon(n_polygons - 1, vertices);
-								_commit_action();
-								return true;
-							}
-						}
-
-						//search edges
-						int closest_poly = -1;
-						int closest_idx = -1;
-						Vector2 closest_pos;
-						real_t closest_dist = 1e10;
-
-						for (int j = 0; j < n_polygons; j++) {
-
-							PoolVector<Vector2> points = _get_polygon(j);
-							const Vector2 offset = _get_offset(j);
-							const int n_points = points.size();
-
-							for (int i = 0; i < n_points; i++) {
-
-								Vector2 p[2] = { xform.xform(points[i] + offset),
-									xform.xform(points[(i + 1) % n_points] + offset) };
-
-								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint, p);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2)
-									continue; //not valid to reuse point
-
-								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_threshold) {
-									closest_poly = j;
-									closest_dist = d;
-									closest_pos = cp;
-									closest_idx = i;
-								}
-							}
-						}
-
-						if (closest_idx >= 0) {
-
-							Vector<Vector2> vertices = _get_polygon(closest_poly);
+							Vector<Vector2> vertices = _get_polygon(insert.polygon);
 							pre_move_edit = vertices;
-							vertices.insert(closest_idx + 1, xform.affine_inverse().xform(closest_pos));
-							edited_point = closest_idx + 1;
-							edited_polygon = closest_poly;
-							edited_point_pos = xform.affine_inverse().xform(closest_pos);
+							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
+							vertices.insert(edited_point.vertex, edited_point.pos);
+							selected_point = edited_point;
+							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
-							_action_set_polygon(closest_poly, vertices);
+							_action_set_polygon(insert.polygon, vertices);
 							_commit_action();
 
 							return true;
@@ -307,109 +319,46 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					} else {
 
 						//look for points to move
-						int closest_poly = -1;
-						int closest_idx = -1;
-						Vector2 closest_pos;
-						real_t closest_dist = 1e10;
+						const PosVertex closest = closest_point(gpoint);
 
-						const int n_polygons = _get_polygon_count();
+						if (closest.valid()) {
 
-						for (int j = 0; j < n_polygons; j++) {
-
-							PoolVector<Vector2> points = _get_polygon(j);
-							const Vector2 offset = _get_offset(j);
-							const int n_points = points.size();
-
-							for (int i = 0; i < n_points; i++) {
-
-								Vector2 cp = xform.xform(points[i] + offset);
-
-								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_threshold) {
-									closest_poly = j;
-									closest_dist = d;
-									closest_pos = cp;
-									closest_idx = i;
-								}
-							}
-						}
-
-						if (closest_idx >= 0) {
-
-							pre_move_edit = _get_polygon(closest_poly);
-							edited_polygon = closest_poly;
-							edited_point = closest_idx;
-							edited_point_pos = xform.affine_inverse().xform(closest_pos);
+							pre_move_edit = _get_polygon(closest.polygon);
+							edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
+							selected_point = closest;
+							edge_point = PosVertex();
 							canvas_item_editor->get_viewport_control()->update();
 							return true;
+						} else {
+
+							selected_point = Vertex();
 						}
 					}
 				} else {
 
-					if (edited_point != -1) {
+					if (edited_point.valid()) {
 
 						//apply
 
-						Vector<Vector2> vertices = _get_polygon(edited_polygon);
-						ERR_FAIL_INDEX_V(edited_point, vertices.size(), false);
-						vertices[edited_point] = edited_point_pos - _get_offset(edited_polygon);
+						Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
+						ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
+						vertices[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
 
 						undo_redo->create_action(TTR("Edit Poly"));
-						_action_set_polygon(edited_polygon, pre_move_edit, vertices);
+						_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
 						_commit_action();
 
-						edited_point = -1;
+						edited_point = PosVertex();
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
+			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && !edited_point.valid()) {
 
-				int closest_poly = -1;
-				int closest_idx = -1;
-				Vector2 closest_pos;
-				real_t closest_dist = 1e10;
-				const int n_polygons = _get_polygon_count();
+				const PosVertex closest = closest_point(gpoint);
 
-				for (int j = 0; j < n_polygons; j++) {
+				if (closest.valid()) {
 
-					PoolVector<Vector2> points = _get_polygon(j);
-					const int n_points = points.size();
-					const Vector2 offset = _get_offset(j);
-
-					for (int i = 0; i < n_points; i++) {
-
-						Vector2 cp = xform.xform(points[i] + offset);
-
-						real_t d = cp.distance_to(gpoint);
-						if (d < closest_dist && d < grab_threshold) {
-							closest_poly = j;
-							closest_dist = d;
-							closest_pos = cp;
-							closest_idx = i;
-						}
-					}
-				}
-
-				if (closest_idx >= 0) {
-
-					PoolVector<Vector2> vertices = _get_polygon(closest_poly);
-
-					if (vertices.size() > 3) {
-
-						vertices.remove(closest_idx);
-
-						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-						_action_set_polygon(closest_poly, vertices);
-						_commit_action();
-					} else {
-
-						undo_redo->create_action(TTR("Remove Poly And Point"));
-						_action_remove_polygon(closest_poly);
-						_commit_action();
-					}
-
-					if (_is_empty())
-						_menu_option(MODE_CREATE);
+					remove_point(closest);
 					return true;
 				}
 			}
@@ -420,21 +369,70 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 	if (mm.is_valid()) {
 
-		if (edited_point != -1 && (wip_active || (mm->get_button_mask() & BUTTON_MASK_LEFT))) {
+		Vector2 gpoint = mm->get_position();
 
-			Vector2 gpoint = mm->get_position();
-			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position())));
-			edited_point_pos = cpoint;
+		if (edited_point.valid() && (wip_active || (mm->get_button_mask() & BUTTON_MASK_LEFT))) {
+
+			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
+			edited_point = PosVertex(edited_point, cpoint);
 
 			if (!wip_active) {
 
-				Vector<Vector2> vertices = _get_polygon(edited_polygon);
-				ERR_FAIL_INDEX_V(edited_point, vertices.size(), false);
-				vertices[edited_point] = cpoint - _get_offset(edited_polygon);
-				_set_polygon(edited_polygon, vertices);
+				Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
+				ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
+				vertices[edited_point.vertex] = cpoint - _get_offset(edited_point.polygon);
+				_set_polygon(edited_point.polygon, vertices);
 			}
 
 			canvas_item_editor->get_viewport_control()->update();
+		} else if (mode == MODE_EDIT) {
+
+			const PosVertex onEdgeVertex = closest_edge_point(gpoint);
+
+			if (onEdgeVertex.valid()) {
+
+				hover_point = Vertex();
+				edge_point = onEdgeVertex;
+				canvas_item_editor->get_viewport_control()->update();
+			} else {
+
+				if (edge_point.valid()) {
+
+					edge_point = PosVertex();
+					canvas_item_editor->get_viewport_control()->update();
+				}
+
+				const PosVertex new_hover_point = closest_point(gpoint);
+				if (hover_point != new_hover_point) {
+
+					hover_point = new_hover_point;
+					canvas_item_editor->get_viewport_control()->update();
+				}
+			}
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed() && (k->get_scancode() == KEY_DELETE || k->get_scancode() == KEY_BACKSPACE)) {
+		if (wip_active && selected_point.polygon == -1) {
+
+			if (wip.size() > selected_point.vertex) {
+
+				wip.remove(selected_point.vertex);
+				selected_point = wip.size() - 1;
+				canvas_item_editor->get_viewport_control()->update();
+				return true;
+			}
+		} else {
+
+			const Vertex active_point = get_active_point();
+
+			if (active_point.valid()) {
+
+				remove_point(active_point);
+				return true;
+			}
 		}
 	}
 
@@ -448,7 +446,10 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 	Control *vpc = canvas_item_editor->get_viewport_control();
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture> default_handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture> selected_handle = get_icon("EditorHandleSelected", "EditorIcons");
+
+	const Vertex active_point = get_active_point();
 	const int n_polygons = _get_polygon_count();
 
 	for (int j = -1; j < n_polygons; j++) {
@@ -459,7 +460,7 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 		PoolVector<Vector2> points;
 		Vector2 offset;
 
-		if (wip_active && j == edited_polygon) {
+		if (wip_active && j == edited_point.polygon) {
 
 			points = Variant(wip);
 			offset = Vector2(0, 0);
@@ -471,7 +472,7 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 			offset = _get_offset(j);
 		}
 
-		if (!wip_active && j == edited_polygon && edited_point >= 0 && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
+		if (!wip_active && j == edited_point.polygon && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
 
 			const Color col = Color(0.5, 0.5, 0.5); // FIXME polygon->get_outline_color();
 			const int n = pre_move_edit.size();
@@ -493,10 +494,12 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 
 		for (int i = 0; i < n_points; i++) {
 
+			const Vertex vertex(j, i);
+
 			Vector2 p, p2;
-			p = (j == edited_polygon && i == edited_point) ? edited_point_pos : (points[i] + offset);
-			if (j == edited_polygon && ((wip_active && i == n_points - 1) || (((i + 1) % n_points) == edited_point)))
-				p2 = edited_point_pos;
+			p = (vertex == edited_point) ? edited_point.pos : (points[i] + offset);
+			if (j == edited_point.polygon && ((wip_active && i == n_points - 1) || (((i + 1) % n_points) == edited_point.vertex)))
+				p2 = edited_point.pos;
 			else
 				p2 = points[(i + 1) % n_points] + offset;
 
@@ -504,8 +507,15 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 			Vector2 next_point = xform.xform(p2);
 
 			vpc->draw_line(point, next_point, col, 2);
+			Ref<Texture> handle = vertex == active_point ? selected_handle : default_handle;
 			vpc->draw_texture(handle, point - handle->get_size() * 0.5);
 		}
+	}
+
+	if (edge_point.valid()) {
+
+		Ref<Texture> add_handle = get_icon("EditorHandleAdd", "EditorIcons");
+		vpc->draw_texture(add_handle, edge_point.pos - add_handle->get_size() * 0.5);
 	}
 }
 
@@ -525,7 +535,9 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
 		wip.clear();
 		wip_active = false;
-		edited_point = -1;
+		edited_point = PosVertex();
+		hover_point = Vertex();
+		selected_point = Vertex();
 
 		canvas_item_editor->get_viewport_control()->update();
 
@@ -542,6 +554,107 @@ void AbstractPolygon2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_create_resource"), &AbstractPolygon2DEditor::_create_resource);
 }
 
+void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
+
+	PoolVector<Vector2> vertices = _get_polygon(p_vertex.polygon);
+
+	if (vertices.size() > 3) {
+
+		vertices.remove(p_vertex.vertex);
+
+		undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+		_action_set_polygon(p_vertex.polygon, vertices);
+		_commit_action();
+	} else {
+
+		undo_redo->create_action(TTR("Remove Poly And Point"));
+		_action_remove_polygon(p_vertex.polygon);
+		_commit_action();
+	}
+
+	if (_is_empty())
+		_menu_option(MODE_CREATE);
+
+	hover_point = Vertex();
+	if (selected_point == p_vertex)
+		selected_point = Vertex();
+}
+
+AbstractPolygon2DEditor::Vertex AbstractPolygon2DEditor::get_active_point() const {
+
+	return hover_point.valid() ? hover_point : selected_point;
+}
+
+AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const Vector2 &p_pos) const {
+
+	const real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+
+	const int n_polygons = _get_polygon_count();
+	const Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
+
+	PosVertex closest;
+	real_t closest_dist = 1e10;
+
+	for (int j = 0; j < n_polygons; j++) {
+
+		PoolVector<Vector2> points = _get_polygon(j);
+		const Vector2 offset = _get_offset(j);
+		const int n_points = points.size();
+
+		for (int i = 0; i < n_points; i++) {
+
+			Vector2 cp = xform.xform(points[i] + offset);
+
+			real_t d = cp.distance_to(p_pos);
+			if (d < closest_dist && d < grab_threshold) {
+				closest_dist = d;
+				closest = PosVertex(j, i, cp);
+			}
+		}
+	}
+
+	return closest;
+}
+
+AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(const Vector2 &p_pos) const {
+
+	const real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+	const real_t eps = grab_threshold * 2;
+	const real_t eps2 = eps * eps;
+
+	const int n_polygons = _get_polygon_count();
+	const Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
+
+	PosVertex closest;
+	real_t closest_dist = 1e10;
+
+	for (int j = 0; j < n_polygons; j++) {
+
+		PoolVector<Vector2> points = _get_polygon(j);
+		const Vector2 offset = _get_offset(j);
+		const int n_points = points.size();
+
+		for (int i = 0; i < n_points; i++) {
+
+			Vector2 segment[2] = { xform.xform(points[i] + offset),
+				xform.xform(points[(i + 1) % n_points] + offset) };
+
+			Vector2 cp = Geometry::get_closest_point_to_segment_2d(p_pos, segment);
+
+			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2)
+				continue; //not valid to reuse point
+
+			real_t d = cp.distance_to(p_pos);
+			if (d < closest_dist && d < grab_threshold) {
+				closest_dist = d;
+				closest = PosVertex(j, i, cp);
+			}
+		}
+	}
+
+	return closest;
+}
+
 AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive) {
 
 	canvas_item_editor = NULL;
@@ -549,8 +662,12 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	undo_redo = editor->get_undo_redo();
 
 	wip_active = false;
-	edited_polygon = -1;
+	edited_point = PosVertex();
 	wip_destructive = p_wip_destructive;
+
+	hover_point = Vertex();
+	selected_point = Vertex();
+	edge_point = PosVertex();
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
