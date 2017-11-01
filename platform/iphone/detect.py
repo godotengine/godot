@@ -147,8 +147,11 @@ def configure(env):
     if (env["target"].startswith("release")):
 
         env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
-        env.Append(CPPFLAGS=['-O2', '-flto', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
-        env.Append(LINKFLAGS=['-O2', '-flto'])
+        env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
+        env.Append(LINKFLAGS=['-O2'])
+        if env['use_lto'] == 'yes':
+            env.Append(CPPFLAGS=['-flto'])
+            env.Append(LINKFLAGS=['-flto'])
 
         if env["target"] == "release_debug":
             env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
