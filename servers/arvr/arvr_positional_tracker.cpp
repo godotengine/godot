@@ -52,6 +52,11 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_joy_id", "joy_id"), &ARVRPositionalTracker::set_joy_id);
 	ClassDB::bind_method(D_METHOD("_set_orientation", "orientation"), &ARVRPositionalTracker::set_orientation);
 	ClassDB::bind_method(D_METHOD("_set_rw_position", "rw_position"), &ARVRPositionalTracker::set_rw_position);
+
+	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRPositionalTracker::get_rumble);
+	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRPositionalTracker::set_rumble);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble"), "set_rumble", "get_rumble");
 };
 
 void ARVRPositionalTracker::set_type(ARVRServer::TrackerType p_type) {
@@ -170,6 +175,18 @@ Transform ARVRPositionalTracker::get_transform(bool p_adjust_by_reference_frame)
 	return new_transform;
 };
 
+real_t ARVRPositionalTracker::get_rumble() const {
+	return rumble;
+};
+
+void ARVRPositionalTracker::set_rumble(real_t p_rumble) {
+	if (p_rumble > 0.0) {
+		rumble = p_rumble;
+	} else {
+		rumble = 0.0;
+	};
+};
+
 ARVRPositionalTracker::ARVRPositionalTracker() {
 	type = ARVRServer::TRACKER_UNKNOWN;
 	name = "Unknown";
@@ -178,6 +195,7 @@ ARVRPositionalTracker::ARVRPositionalTracker() {
 	tracks_orientation = false;
 	tracks_position = false;
 	hand = TRACKER_HAND_UNKNOWN;
+	rumble = 0.0;
 };
 
 ARVRPositionalTracker::~ARVRPositionalTracker(){

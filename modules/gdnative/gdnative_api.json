@@ -5308,6 +5308,13 @@
         ["godot_real", "p_value"],
         ["godot_bool", "p_can_be_negative"]
       ]
+    },
+    {
+      "name": "godot_arvr_get_controller_rumble",
+      "return_type": "godot_real",
+      "arguments": [
+        ["godot_int", "p_controller_id"]
+      ]
     }
   ]
 }

@@ -231,7 +231,7 @@ void ARVRController::_notification(int p_what) {
 void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_controller_id", "controller_id"), &ARVRController::set_controller_id);
 	ClassDB::bind_method(D_METHOD("get_controller_id"), &ARVRController::get_controller_id);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_id"), "set_controller_id", "get_controller_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_id", PROPERTY_HINT_RANGE, "1,32,1"), "set_controller_id", "get_controller_id");
 	ClassDB::bind_method(D_METHOD("get_controller_name"), &ARVRController::get_controller_name);
 
 	// passthroughs to information about our related joystick
@@ -241,6 +241,10 @@ void ARVRController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &ARVRController::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_hand"), &ARVRController::get_hand);
+
+	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRController::get_rumble);
+	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
 
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
@@ -297,6 +301,30 @@ float ARVRController::get_joystick_axis(int p_axis) const {
 	};
 
 	return Input::get_singleton()->get_joy_axis(joy_id, p_axis);
+};
+
+real_t ARVRController::get_rumble() const {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, 0.0);
+
+	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	if (tracker == NULL) {
+		return 0.0;
+	};
+
+	return tracker->get_rumble();
+};
+
+void ARVRController::set_rumble(real_t p_rumble) {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
+	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, controller_id);
+	if (tracker != NULL) {
+		tracker->set_rumble(p_rumble);
+	};
 };
 
 bool ARVRController::get_is_active() const {
