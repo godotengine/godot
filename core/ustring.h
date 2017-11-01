@@ -176,6 +176,7 @@ public:
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
+	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
 	String get_extension() const;

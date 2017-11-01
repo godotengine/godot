@@ -2757,6 +2757,48 @@ CharType String::ord_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
+String String::dedent() const {
+
+	String new_string;
+	String indent;
+	bool has_indent = false;
+	bool has_text = false;
+	int line_start = 0;
+	int indent_stop = -1;
+
+	for (int i = 0; i < length(); i++) {
+
+		CharType c = operator[](i);
+		if (c == '\n') {
+			if (has_text)
+				new_string += substr(indent_stop, i - indent_stop);
+			new_string += "\n";
+			has_text = false;
+			line_start = i + 1;
+			indent_stop = -1;
+		} else if (!has_text) {
+			if (c > 32) {
+				has_text = true;
+				if (!has_indent) {
+					has_indent = true;
+					indent = substr(line_start, i - line_start);
+					indent_stop = i;
+				}
+			}
+			if (has_indent && indent_stop < 0) {
+				int j = i - line_start;
+				if (j >= indent.length() || c != indent[j])
+					indent_stop = i;
+			}
+		}
+	}
+
+	if (has_text)
+		new_string += substr(indent_stop, length() - indent_stop);
+
+	return new_string;
+}
+
 String String::strip_edges(bool left, bool right) const {
 
 	int len = length();
