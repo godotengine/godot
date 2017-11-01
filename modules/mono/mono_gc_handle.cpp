@@ -59,6 +59,10 @@ Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
 
 void MonoGCHandle::release() {
 
+#ifdef DEBUG_ENABLED
+	CRASH_COND(GDMono::get_singleton() == NULL);
+#endif
+
 	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
 		mono_gchandle_free(handle);
 		released = true;
