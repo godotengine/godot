@@ -2013,6 +2013,30 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventGesture> gesture_event = p_event;
+	if (gesture_event.is_valid()) {
+
+		Size2 pos = gesture_event->get_position();
+
+		Control *over = _gui_find_control(pos);
+		if (over) {
+
+			if (over->can_process()) {
+
+				gesture_event = gesture_event->xformed_by(Transform2D()); //make a copy
+				if (over == gui.mouse_focus) {
+					pos = gui.focus_inv_xform.xform(pos);
+				} else {
+					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
+				}
+				gesture_event->set_position(pos);
+				_gui_call_input(over, gesture_event);
+			}
+			get_tree()->set_input_as_handled();
+			return;
+		}
+	}
+
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
 

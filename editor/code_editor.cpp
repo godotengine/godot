@@ -979,6 +979,23 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+
+		Ref<DynamicFont> font = text_editor->get_font("font");
+
+		if (font.is_valid()) {
+			if (font->get_size() != (int)font_size) {
+				font_size = font->get_size();
+			}
+
+			font_size *= powf(magnify_gesture->get_factor(), 0.25);
+
+			_add_font_size((int)font_size - font->get_size());
+		}
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -999,14 +1016,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_zoom_in() {
 	font_resize_val += EDSCALE;
-
-	if (font_resize_timer->get_time_left() == 0)
-		font_resize_timer->start();
+	_zoom_changed();
 }
 
 void CodeTextEditor::_zoom_out() {
 	font_resize_val -= EDSCALE;
+	_zoom_changed();
+}
 
+void CodeTextEditor::_zoom_changed() {
 	if (font_resize_timer->get_time_left() == 0)
 		font_resize_timer->start();
 }
@@ -1067,16 +1085,25 @@ void CodeTextEditor::_complete_request() {
 
 void CodeTextEditor::_font_resize_timeout() {
 
+	if (_add_font_size(font_resize_val)) {
+		font_resize_val = 0;
+	}
+}
+
+bool CodeTextEditor::_add_font_size(int p_delta) {
+
 	Ref<DynamicFont> font = text_editor->get_font("font");
 
 	if (font.is_valid()) {
-		int new_size = CLAMP(font->get_size() + font_resize_val, 8 * EDSCALE, 96 * EDSCALE);
+		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 		if (new_size != font->get_size()) {
 			EditorSettings::get_singleton()->set("interface/editor/source_font_size", new_size / EDSCALE);
 			font->set_size(new_size);
 		}
 
-		font_resize_val = 0;
+		return true;
+	} else {
+		return false;
 	}
 }
 
@@ -1285,6 +1312,7 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer->connect("timeout", this, "_code_complete_timer_timeout");
 
 	font_resize_val = 0;
+	font_size = -1;
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);

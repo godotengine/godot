@@ -319,6 +319,15 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
 	}
 
+	Ref<InputEventGesture> ge = p_event;
+
+	if (ge.is_valid()) {
+
+		if (main_loop) {
+			main_loop->input_event(ge);
+		}
+	}
+
 	if (!p_event->is_echo()) {
 		for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
 

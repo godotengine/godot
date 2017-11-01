@@ -1694,92 +1694,78 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		switch (nav_mode) {
 			case NAVIGATION_PAN: {
-
-				real_t pan_speed = 1 / 150.0;
-				int pan_speed_modifier = 10;
-				if (nav_scheme == NAVIGATION_MAYA && m->get_shift())
-					pan_speed *= pan_speed_modifier;
-
-				Point2i relative = _get_warped_mouse_motion(m);
-
-				Transform camera_transform;
-
-				camera_transform.translate(cursor.pos);
-				camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-				camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-				Vector3 translation(-relative.x * pan_speed, relative.y * pan_speed, 0);
-				translation *= cursor.distance / DISTANCE_DEFAULT;
-				camera_transform.translate(translation);
-				cursor.pos = camera_transform.origin;
+				_nav_pan(m, _get_warped_mouse_motion(m));
 
 			} break;
 
 			case NAVIGATION_ZOOM: {
-				real_t zoom_speed = 1 / 80.0;
-				int zoom_speed_modifier = 10;
-				if (nav_scheme == NAVIGATION_MAYA && m->get_shift())
-					zoom_speed *= zoom_speed_modifier;
-
-				NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/navigation/zoom_style").operator int();
-				if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
-					if (m->get_relative().x > 0)
-						scale_cursor_distance(1 - m->get_relative().x * zoom_speed);
-					else if (m->get_relative().x < 0)
-						scale_cursor_distance(1.0 / (1 + m->get_relative().x * zoom_speed));
-				} else {
-					if (m->get_relative().y > 0)
-						scale_cursor_distance(1 + m->get_relative().y * zoom_speed);
-					else if (m->get_relative().y < 0)
-						scale_cursor_distance(1.0 / (1 - m->get_relative().y * zoom_speed));
-				}
+				_nav_zoom(m, m->get_relative());
 
 			} break;
 
 			case NAVIGATION_ORBIT: {
-				Point2i relative = _get_warped_mouse_motion(m);
+				_nav_orbit(m, _get_warped_mouse_motion(m));
 
-				real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-				real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
-
-				cursor.x_rot += relative.y * radians_per_pixel;
-				cursor.y_rot += relative.x * radians_per_pixel;
-				if (cursor.x_rot > Math_PI / 2.0)
-					cursor.x_rot = Math_PI / 2.0;
-				if (cursor.x_rot < -Math_PI / 2.0)
-					cursor.x_rot = -Math_PI / 2.0;
-				name = "";
-				_update_name();
 			} break;
 
 			case NAVIGATION_LOOK: {
-				// Freelook only works properly in perspective.
-				// It technically works too in ortho, but it's awful for a user due to fov being near zero
-				if (!orthogonal) {
-					Point2i relative = _get_warped_mouse_motion(m);
+				_nav_look(m, _get_warped_mouse_motion(m));
 
-					real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-					real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+			} break;
 
-					// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-					Transform prev_camera_transform = to_camera_transform(cursor);
+			default: {}
+		}
+	}
 
-					cursor.x_rot += relative.y * radians_per_pixel;
-					cursor.y_rot += relative.x * radians_per_pixel;
-					if (cursor.x_rot > Math_PI / 2.0)
-						cursor.x_rot = Math_PI / 2.0;
-					if (cursor.x_rot < -Math_PI / 2.0)
-						cursor.x_rot = -Math_PI / 2.0;
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
 
-					// Look is like the opposite of Orbit: the focus point rotates around the camera
-					Transform camera_transform = to_camera_transform(cursor);
-					Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-					Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
-					Vector3 diff = prev_pos - pos;
-					cursor.pos += diff;
+		if (is_freelook_active())
+			scale_freelook_speed(magnify_gesture->get_factor());
+		else
+			scale_cursor_distance(1.0 / magnify_gesture->get_factor());
+	}
 
-					name = "";
-					_update_name();
-				}
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+
+		NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+		NavigationMode nav_mode = NAVIGATION_NONE;
+
+		if (nav_scheme == NAVIGATION_GODOT) {
+
+			int mod = _get_key_modifier(pan_gesture);
+
+			if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier"))
+				nav_mode = NAVIGATION_PAN;
+			else if (mod == _get_key_modifier_setting("editors/3d/navigation/zoom_modifier"))
+				nav_mode = NAVIGATION_ZOOM;
+			else if (mod == _get_key_modifier_setting("editors/3d/navigation/orbit_modifier"))
+				nav_mode = NAVIGATION_ORBIT;
+
+		} else if (nav_scheme == NAVIGATION_MAYA) {
+			if (pan_gesture->get_alt())
+				nav_mode = NAVIGATION_PAN;
+		}
+
+		switch (nav_mode) {
+			case NAVIGATION_PAN: {
+				_nav_pan(m, pan_gesture->get_delta());
+
+			} break;
+
+			case NAVIGATION_ZOOM: {
+				_nav_zoom(m, pan_gesture->get_delta());
+
+			} break;
+
+			case NAVIGATION_ORBIT: {
+				_nav_orbit(m, pan_gesture->get_delta());
+
+			} break;
+
+			case NAVIGATION_LOOK: {
+				_nav_look(m, pan_gesture->get_delta());
 
 			} break;
 
@@ -1883,6 +1869,94 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 	// to consider freelook active as end of the line for future events.
 	if (freelook_active)
 		accept_event();
+}
+
+void SpatialEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
+
+	const NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+
+	real_t pan_speed = 1 / 150.0;
+	int pan_speed_modifier = 10;
+	if (nav_scheme == NAVIGATION_MAYA && p_event->get_shift())
+		pan_speed *= pan_speed_modifier;
+
+	Transform camera_transform;
+
+	camera_transform.translate(cursor.pos);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
+	Vector3 translation(-p_relative.x * pan_speed, p_relative.y * pan_speed, 0);
+	translation *= cursor.distance / DISTANCE_DEFAULT;
+	camera_transform.translate(translation);
+	cursor.pos = camera_transform.origin;
+}
+
+void SpatialEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
+
+	const NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+
+	real_t zoom_speed = 1 / 80.0;
+	int zoom_speed_modifier = 10;
+	if (nav_scheme == NAVIGATION_MAYA && p_event->get_shift())
+		zoom_speed *= zoom_speed_modifier;
+
+	NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/navigation/zoom_style").operator int();
+	if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
+		if (p_relative.x > 0)
+			scale_cursor_distance(1 - p_relative.x * zoom_speed);
+		else if (p_relative.x < 0)
+			scale_cursor_distance(1.0 / (1 + p_relative.x * zoom_speed));
+	} else {
+		if (p_relative.y > 0)
+			scale_cursor_distance(1 + p_relative.y * zoom_speed);
+		else if (p_relative.y < 0)
+			scale_cursor_distance(1.0 / (1 - p_relative.y * zoom_speed));
+	}
+}
+
+void SpatialEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
+
+	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
+	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+
+	cursor.x_rot += p_relative.y * radians_per_pixel;
+	cursor.y_rot += p_relative.x * radians_per_pixel;
+	if (cursor.x_rot > Math_PI / 2.0)
+		cursor.x_rot = Math_PI / 2.0;
+	if (cursor.x_rot < -Math_PI / 2.0)
+		cursor.x_rot = -Math_PI / 2.0;
+	name = "";
+	_update_name();
+}
+
+void SpatialEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
+
+	// Freelook only works properly in perspective.
+	// It technically works too in ortho, but it's awful for a user due to fov being near zero
+	if (!orthogonal) {
+		real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
+		real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+
+		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+		Transform prev_camera_transform = to_camera_transform(cursor);
+
+		cursor.x_rot += p_relative.y * radians_per_pixel;
+		cursor.y_rot += p_relative.x * radians_per_pixel;
+		if (cursor.x_rot > Math_PI / 2.0)
+			cursor.x_rot = Math_PI / 2.0;
+		if (cursor.x_rot < -Math_PI / 2.0)
+			cursor.x_rot = -Math_PI / 2.0;
+
+		// Look is like the opposite of Orbit: the focus point rotates around the camera
+		Transform camera_transform = to_camera_transform(cursor);
+		Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
+		Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
+		Vector3 diff = prev_pos - pos;
+		cursor.pos += diff;
+
+		name = "";
+		_update_name();
+	}
 }
 
 void SpatialEditorViewport::set_freelook_active(bool active_now) {
