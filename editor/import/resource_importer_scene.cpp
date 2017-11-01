@@ -1037,6 +1037,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (bool(p_options["animation/import"]))
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION;
 
+	if (int(p_options["meshes/compress"]))
+		import_flags |= EditorSceneImporter::IMPORT_USE_COMPRESSION;
+
 	if (bool(p_options["meshes/ensure_tangents"]))
 		import_flags |= EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 
