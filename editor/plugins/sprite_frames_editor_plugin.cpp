@@ -365,13 +365,11 @@ void SpriteFramesEditor::_animation_name_edited() {
 }
 void SpriteFramesEditor::_animation_add() {
 
-	String new_name = "New Anim";
-
-	String name = new_name;
+	String name = "New Anim";
 	int counter = 0;
 	while (frames->has_animation(name)) {
 		counter++;
-		name = new_name + " " + itos(counter);
+		name = "New Anim " + itos(counter);
 	}
 
 	List<Node *> nodes;
@@ -393,7 +391,7 @@ void SpriteFramesEditor::_animation_add() {
 		undo_redo->add_undo_method(E->get(), "set_animation", current);
 	}
 
-	edited_anim = new_name;
+	edited_anim = name;
 
 	undo_redo->commit_action();
 }
