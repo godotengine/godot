@@ -595,10 +595,10 @@ void FileSystemDock::_select_file(int p_idx) {
 		current_path->set_text(path);
 		_push_to_history();
 	} else {
-		if (ResourceLoader::get_resource_type(path) == "PackedScene") {
-			editor->open_request(path);
+		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
+			editor->open_request(fpath);
 		} else {
-			editor->load_resource(path);
+			editor->load_resource(fpath);
 		}
 	}
 }
