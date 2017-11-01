@@ -149,6 +149,10 @@ void attach_current_thread();
 void detach_current_thread();
 MonoThread *get_current_thread();
 
+_FORCE_INLINE_ bool is_main_thread() {
+	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
+}
+
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);
 GDMonoClass *get_class_native_base(GDMonoClass *p_class);
