@@ -122,6 +122,9 @@ void CSharpLanguage::init() {
 
 void CSharpLanguage::finish() {
 
+	// Release gchandle bindings before finalizing mono runtime
+	gchandle_bindings.clear();
+
 	if (gdmono) {
 		memdelete(gdmono);
 		gdmono = NULL;
@@ -826,6 +829,14 @@ void *CSharpLanguage::alloc_instance_binding_data(Object *p_object) {
 }
 
 void CSharpLanguage::free_instance_binding_data(void *p_data) {
+
+	if (GDMono::get_singleton() == NULL) {
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!gchandle_bindings.empty());
+#endif
+		// Mono runtime finalized, all the gchandle bindings were already released
+		return;
+	}
 
 #ifndef NO_THREADS
 	script_bind_lock->lock();
