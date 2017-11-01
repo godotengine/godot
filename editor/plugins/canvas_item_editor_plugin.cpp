@@ -248,7 +248,7 @@ void CanvasItemEditor::_snap_other_nodes(Point2 p_value, Point2 &r_current_snap,
 	if (canvas_item && (!p_to_snap || p_current != p_to_snap)) {
 		Transform2D ci_transform = canvas_item->get_global_transform_with_canvas();
 		Transform2D to_snap_transform = p_to_snap ? p_to_snap->get_global_transform_with_canvas() : Transform2D();
-		if (fmod(ci_transform.get_rotation() - to_snap_transform.get_rotation(), 360.0) == 0.0) {
+		if (fmod(ci_transform.get_rotation() - to_snap_transform.get_rotation(), (real_t)360.0) == 0.0) {
 			Point2 begin = ci_transform.xform(canvas_item->get_item_rect().get_position());
 			Point2 end = ci_transform.xform(canvas_item->get_item_rect().get_position() + canvas_item->get_item_rect().get_size());
 
@@ -318,7 +318,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		_snap_other_nodes(p_target, output, snapped, get_tree()->get_edited_scene_root(), p_canvas_item);
 	}
 
-	if (((snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, 360.0) == 0.0) {
+	if (((snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
 		// Guides
 		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
@@ -335,7 +335,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		}
 	}
 
-	if (((snap_active && snap_grid && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && fmod(rotation, 360.0) == 0.0) {
+	if (((snap_active && snap_grid && (p_modes & SNAP_GRID)) || (p_forced_modes & SNAP_GRID)) && fmod(rotation, (real_t)360.0) == 0.0) {
 		// Grid
 		Point2 offset = grid_offset;
 		if (snap_relative) {
