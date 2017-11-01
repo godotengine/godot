@@ -39,7 +39,7 @@ const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 const IID IID_IAudioClient = __uuidof(IAudioClient);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 
-Error AudioDriverWASAPI::init_device() {
+Error AudioDriverWASAPI::init_device(bool reinit) {
 
 	WAVEFORMATEX *pwfex;
 	IMMDeviceEnumerator *enumerator = NULL;
@@ -51,10 +51,24 @@ Error AudioDriverWASAPI::init_device() {
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	if (reinit) {
+		// In case we're trying to re-initialize the device prevent throwing this error on the console,
+		// otherwise if there is currently no devie available this will spam the console.
+		if (hr != S_OK) {
+			return ERR_CANT_OPEN;
+		}
+	} else {
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	}
 
 	hr = device->Activate(IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&audio_client);
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	if (reinit) {
+		if (hr != S_OK) {
+			return ERR_CANT_OPEN;
+		}
+	} else {
+		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	}
 
 	hr = audio_client->GetMixFormat(&pwfex);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -150,7 +164,9 @@ Error AudioDriverWASAPI::finish_device() {
 Error AudioDriverWASAPI::init() {
 
 	Error err = init_device();
-	ERR_FAIL_COND_V(err != OK, err);
+	if (err != OK) {
+		ERR_PRINT("WASAPI: init_device error");
+	}
 
 	active = false;
 	exit_thread = false;
@@ -207,7 +223,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 		unsigned int left_frames = ad->buffer_frames;
 		unsigned int buffer_idx = 0;
-		while (left_frames > 0) {
+		while (left_frames > 0 && ad->audio_client) {
 			WaitForSingleObject(ad->event, 1000);
 
 			UINT32 cur_frames;
@@ -269,9 +285,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
 					// Device is not valid anymore, reopen it
 
-					Error err = ad->reopen();
+					Error err = ad->finish_device();
 					if (err != OK) {
-						ad->exit_thread = true;
+						ERR_PRINT("WASAPI: finish_device error");
 					} else {
 						// We reopened the device and samples_in may have resized, so invalidate the current left_frames
 						left_frames = 0;
@@ -283,15 +299,22 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
 				// Device is not valid anymore, reopen it
 
-				Error err = ad->reopen();
+				Error err = ad->finish_device();
 				if (err != OK) {
-					ad->exit_thread = true;
+					ERR_PRINT("WASAPI: finish_device error");
 				} else {
 					// We reopened the device and samples_in may have resized, so invalidate the current left_frames
 					left_frames = 0;
 				}
 			} else {
 				ERR_PRINT("WASAPI: GetCurrentPadding error");
+			}
+		}
+
+		if (!ad->audio_client) {
+			Error err = ad->init_device(true);
+			if (err == OK) {
+				ad->start();
 			}
 		}
 	}
@@ -301,11 +324,13 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 void AudioDriverWASAPI::start() {
 
-	HRESULT hr = audio_client->Start();
-	if (hr != S_OK) {
-		ERR_PRINT("WASAPI: Start failed");
-	} else {
-		active = true;
+	if (audio_client) {
+		HRESULT hr = audio_client->Start();
+		if (hr != S_OK) {
+			ERR_PRINT("WASAPI: Start failed");
+		} else {
+			active = true;
+		}
 	}
 }
 
@@ -355,7 +380,7 @@ AudioDriverWASAPI::AudioDriverWASAPI() {
 
 	buffer_size = 0;
 	channels = 0;
-	mix_rate = 0;
+	mix_rate = 44100;
 	buffer_frames = 0;
 
 	thread_exited = false;
