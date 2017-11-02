@@ -265,6 +265,49 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 	return *this;
 }
 
+template <typename Less>
+_FORCE_INLINE_ int bisect(const Vector<Variant> &p_array, const Variant &p_value, bool p_before, const Less &p_less) {
+
+	int lo = 0;
+	int hi = p_array.size();
+	if (p_before) {
+		while (lo < hi) {
+			const int mid = (lo + hi) / 2;
+			if (p_less(p_array.get(mid), p_value)) {
+				lo = mid + 1;
+			} else {
+				hi = mid;
+			}
+		}
+	} else {
+		while (lo < hi) {
+			const int mid = (lo + hi) / 2;
+			if (p_less(p_value, p_array.get(mid))) {
+				hi = mid;
+			} else {
+				lo = mid + 1;
+			}
+		}
+	}
+	return lo;
+}
+
+int Array::bsearch(const Variant &p_value, bool p_before) {
+
+	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
+}
+
+int Array::bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before) {
+
+	ERR_FAIL_NULL_V(p_obj, 0);
+
+	_ArrayVariantSortCustom less;
+	less.obj = p_obj;
+	less.func = p_function;
+
+	return bisect(_p->array, p_value, p_before, less);
+}
+
 Array &Array::invert() {
 
 	_p->array.invert();
