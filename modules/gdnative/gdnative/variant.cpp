@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _variant_api_anchor() {}
-
 #define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
 
 // Constructors

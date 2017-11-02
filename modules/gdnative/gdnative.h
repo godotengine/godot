@@ -131,8 +131,6 @@ class GDNative : public Reference {
 
 	bool initialized;
 
-	void _compile_dummy_for_api();
-
 public:
 	GDNative();
 	~GDNative();

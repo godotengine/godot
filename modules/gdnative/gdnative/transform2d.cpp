@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _transform2d_api_anchor() {}
-
 void GDAPI godot_transform2d_new(godot_transform2d *r_dest, const godot_real p_rot, const godot_vector2 *p_pos) {
 	const Vector2 *pos = (const Vector2 *)p_pos;
 	Transform2D *dest = (Transform2D *)r_dest;

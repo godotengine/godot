@@ -41,9 +41,6 @@
 extern "C" {
 #endif
 
-void _array_api_anchor() {
-}
-
 void GDAPI godot_array_new(godot_array *r_dest) {
 	Array *dest = (Array *)r_dest;
 	memnew_placement(dest, Array);

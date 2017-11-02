@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _node_path_api_anchor() {}
-
 void GDAPI godot_node_path_new(godot_node_path *r_dest, const godot_string *p_from) {
 	NodePath *dest = (NodePath *)r_dest;
 	const String *from = (const String *)p_from;

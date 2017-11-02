@@ -38,9 +38,6 @@
 extern "C" {
 #endif
 
-void _string_name_api_anchor() {
-}
-
 void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name) {
 	StringName *dest = (StringName *)r_dest;
 	const String *name = (const String *)p_name;

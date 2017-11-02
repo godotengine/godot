@@ -87,12 +87,6 @@ GDNative::GDNative() {
 GDNative::~GDNative() {
 }
 
-extern "C" void _api_anchor();
-
-void GDNative::_compile_dummy_for_api() {
-	_api_anchor();
-}
-
 void GDNative::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &GDNative::set_library);
 	ClassDB::bind_method(D_METHOD("get_library"), &GDNative::get_library);
@@ -224,8 +218,6 @@ bool GDNative::terminate() {
 	godot_gdnative_terminate_fn library_terminate_pointer;
 	library_terminate_pointer = (godot_gdnative_terminate_fn)library_terminate;
 
-	// TODO(karroffel): remove this? Should be part of NativeScript, not
-	// GDNative IMO
 	godot_gdnative_terminate_options options;
 	options.in_editor = Engine::get_singleton()->is_editor_hint();
 
@@ -412,10 +404,6 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 	lib->current_dependencies = dependency_paths;
 	lib->current_library_statically_linked = is_statically_linked;
 
-	print_line(String("lib path: ") + entry_lib_path);
-	print_line(String("dependencies: ") + Variant(dependency_paths));
-	print_line(String("static: ") + (is_statically_linked ? "true" : "false"));
-
 	return lib;
 }
 
@@ -424,7 +412,7 @@ void GDNativeLibraryResourceLoader::get_recognized_extensions(List<String> *p_ex
 }
 
 bool GDNativeLibraryResourceLoader::handles_type(const String &p_type) const {
-	return p_type == "Resource" || p_type == "GDNativeLibrary";
+	return p_type == "GDNativeLibrary";
 }
 
 String GDNativeLibraryResourceLoader::get_resource_type(const String &p_path) const {

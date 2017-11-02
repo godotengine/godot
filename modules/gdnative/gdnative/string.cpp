@@ -39,9 +39,6 @@
 extern "C" {
 #endif
 
-void _string_api_anchor() {
-}
-
 void GDAPI godot_string_new(godot_string *r_dest) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
