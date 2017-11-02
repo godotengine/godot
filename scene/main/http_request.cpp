@@ -579,6 +579,7 @@ HTTPRequest::HTTPRequest() {
 	client.instance();
 	use_threads = false;
 	thread_done = false;
+	downloaded = 0;
 	body_size_limit = -1;
 	file = NULL;
 	status = HTTPClient::STATUS_DISCONNECTED;

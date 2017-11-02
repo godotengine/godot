@@ -47,6 +47,7 @@ def copy_file_no_replace(src_dir, dst_dir, name):
 
 def configure(env):
     env.use_ptrcall = True
+    env.add_module_version_string("mono")
 
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))

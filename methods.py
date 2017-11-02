@@ -1149,7 +1149,10 @@ def build_gles3_headers(target, source, env):
         build_legacygl_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", output_attribs=True)
 
 
-def update_version():
+def add_module_version_string(self,s):
+    self.module_version_string+="."+s
+
+def update_version(module_version_string=""):
 
     rev = "custom_build"
 
@@ -1167,6 +1170,7 @@ def update_version():
         f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
     f.write("#define VERSION_REVISION " + str(rev) + "\n")
     f.write("#define VERSION_STATUS " + str(version.status) + "\n")
+    f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
     import datetime
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
     f.close()
