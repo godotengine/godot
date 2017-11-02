@@ -64,7 +64,6 @@ def get_opts():
     return [
         ('mingw_prefix_32', 'MinGW prefix (Win32)', mingw32),
         ('mingw_prefix_64', 'MinGW prefix (Win64)', mingw64),
-        BoolVariable('use_lto', 'Use link time optimization (when using MingW)', False),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
