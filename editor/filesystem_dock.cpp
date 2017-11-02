@@ -1538,10 +1538,20 @@ void FileSystemDock::select_file(const String &p_file) {
 
 void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 
-	_file_selected();
+	import_dock_needs_update = true;
+	call_deferred("_update_import_dock");
 }
 
 void FileSystemDock::_file_selected() {
+
+	import_dock_needs_update = true;
+	_update_import_dock();
+}
+
+void FileSystemDock::_update_import_dock() {
+
+	if (!import_dock_needs_update)
+		return;
 
 	//check import
 	Vector<String> imports;
@@ -1582,6 +1592,8 @@ void FileSystemDock::_file_selected() {
 	} else {
 		EditorNode::get_singleton()->get_import_dock()->set_edit_multiple_paths(imports);
 	}
+
+	import_dock_needs_update = false;
 }
 
 void FileSystemDock::_bind_methods() {
@@ -1618,6 +1630,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_preview_invalidated"), &FileSystemDock::_preview_invalidated);
 	ClassDB::bind_method(D_METHOD("_file_selected"), &FileSystemDock::_file_selected);
 	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
+	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
@@ -1789,6 +1802,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	updating_tree = false;
 	initialized = false;
+	import_dock_needs_update = false;
 
 	history_pos = 0;
 	history_max_size = 20;
