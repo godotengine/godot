@@ -81,7 +81,7 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 		}
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(p_dir->get_file_path(i));
-		if (lib.is_valid() && lib->is_singleton_gdnative()) {
+		if (lib.is_valid() && lib->is_singleton()) {
 			file_paths.insert(p_dir->get_file_path(i));
 		}
 	}
@@ -141,6 +141,9 @@ GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
 Vector<Ref<GDNative> > singleton_gdnatives;
 
+GDNativeLibraryResourceLoader *resource_loader_gdnlib = NULL;
+GDNativeLibraryResourceSaver *resource_saver_gdnlib = NULL;
+
 void register_gdnative_types() {
 
 #ifdef TOOLS_ENABLED
@@ -152,6 +155,12 @@ void register_gdnative_types() {
 
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
+
+	resource_loader_gdnlib = memnew(GDNativeLibraryResourceLoader);
+	resource_saver_gdnlib = memnew(GDNativeLibraryResourceSaver);
+
+	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
+	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
 
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
 
@@ -185,11 +194,11 @@ void register_gdnative_types() {
 
 		void *proc_ptr;
 		Error err = singleton_gdnatives[i]->get_symbol(
-				"godot_gdnative_singleton",
+				lib->get_symbol_prefix() + "gdnative_singleton",
 				proc_ptr);
 
 		if (err != OK) {
-			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_active_library_path()) + "\" found").utf8().get_data());
+			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_current_library_path()) + "\" found").utf8().get_data());
 		} else {
 			((void (*)())proc_ptr)();
 		}
@@ -223,6 +232,9 @@ void unregister_gdnative_types() {
 		memdelete(discoverer);
 	}
 #endif
+
+	memdelete(resource_loader_gdnlib);
+	memdelete(resource_saver_gdnlib);
 
 	// This is for printing out the sizes of the core types
 

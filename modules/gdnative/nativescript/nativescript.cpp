@@ -108,7 +108,7 @@ void NativeScript::set_library(Ref<GDNativeLibrary> p_library) {
 		return;
 	}
 	library = p_library;
-	lib_path = library->get_active_library_path();
+	lib_path = library->get_current_library_path();
 
 #ifndef NO_THREADS
 	if (Thread::get_caller_id() != Thread::get_main_id()) {
@@ -433,7 +433,7 @@ NativeScript::~NativeScript() {
 #endif
 }
 
-////// ScriptInstance stuff
+	////// ScriptInstance stuff
 
 #define GET_SCRIPT_DESC() script->get_script_desc()
 
@@ -988,7 +988,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 	MutexLock lock(mutex);
 #endif
 	// See if this library was "registered" already.
-	const String &lib_path = lib->get_active_library_path();
+	const String &lib_path = lib->get_current_library_path();
 	ERR_EXPLAIN(lib->get_name() + " does not have a library for the current platform");
 	ERR_FAIL_COND(lib_path.length() == 0);
 	Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
@@ -1010,7 +1010,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 
 		void *proc_ptr;
 
-		Error err = gdn->get_symbol(_init_call_name, proc_ptr);
+		Error err = gdn->get_symbol(lib->get_symbol_prefix() + _init_call_name, proc_ptr);
 
 		if (err != OK) {
 			ERR_PRINT(String("No " + _init_call_name + " in \"" + lib_path + "\" found").utf8().get_data());
@@ -1051,7 +1051,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 		if (L->get()->is_initialized()) {
 
 			void *proc_ptr;
-			Error err = L->get()->get_symbol(name, proc_ptr);
+			Error err = L->get()->get_symbol(L->get()->get_library()->get_symbol_prefix() + name, proc_ptr);
 
 			if (!err) {
 				((void (*)())proc_ptr)();
@@ -1140,7 +1140,7 @@ void NativeReloadNode::_notification(int p_what) {
 				// here the library registers all the classes and stuff.
 
 				void *proc_ptr;
-				Error err = L->get()->get_symbol("godot_nativescript_init", proc_ptr);
+				Error err = L->get()->get_symbol(L->get()->get_library()->get_symbol_prefix() + "nativescript_init", proc_ptr);
 				if (err != OK) {
 					ERR_PRINT(String("No godot_nativescript_init in \"" + L->key() + "\" found").utf8().get_data());
 				} else {
