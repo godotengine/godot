@@ -1195,8 +1195,9 @@ void RichTextLabel::add_newline() {
 		return;
 	ItemNewline *item = memnew(ItemNewline);
 	item->line = current_frame->lines.size();
-	current_frame->lines.resize(current_frame->lines.size() + 1);
 	_add_item(item, false);
+	current_frame->lines.resize(current_frame->lines.size() + 1);
+	_invalidate_current_line(current_frame);
 }
 
 bool RichTextLabel::remove_line(const int p_line) {
