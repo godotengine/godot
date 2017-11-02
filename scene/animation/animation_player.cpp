@@ -202,7 +202,6 @@ void AnimationPlayer::_notification(int p_what) {
 
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
-				set_autoplay(""); //this line is the fix for autoplay issues with animatio
 				_animation_process(0);
 			}
 		} break;
