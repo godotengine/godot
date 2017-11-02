@@ -243,6 +243,28 @@
 				Sets the [code]weight_scale[/code] for the point with the given id.
 			</description>
 		</method>
+		<method name="get_point_connections">
+			<return type="PoolIntArray">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns an array with the ids of the points that form the connect with the given point. 
+				[codeblock]
+				var as = AStar.new()
+				
+				as.add_point(1, Vector3(0,0,0))
+				as.add_point(2, Vector3(0,1,0))
+				as.add_point(3, Vector3(1,1,0))
+				as.add_point(4, Vector3(2,0,0))
+				
+				as.connect_points(1, 2, true)
+				as.connect_points(1, 3, true)
+				
+				var neighbors = as.get_point_connections(1) # returns [2, 3]
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
