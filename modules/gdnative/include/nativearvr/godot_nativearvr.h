@@ -70,6 +70,7 @@ void GDAPI godot_arvr_remove_controller(godot_int p_controller_id);
 void GDAPI godot_arvr_set_controller_transform(godot_int p_controller_id, godot_transform *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int p_button, godot_bool p_is_pressed);
 void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_real p_value, godot_bool p_can_be_negative);
+godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id);
 
 #ifdef __cplusplus
 }

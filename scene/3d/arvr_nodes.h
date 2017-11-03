@@ -89,6 +89,9 @@ public:
 	int is_button_pressed(int p_button) const;
 	float get_joystick_axis(int p_axis) const;
 
+	real_t get_rumble() const;
+	void set_rumble(real_t p_rumble);
+
 	bool get_is_active() const;
 	ARVRPositionalTracker::TrackerHand get_hand() const;
 

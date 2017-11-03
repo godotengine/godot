@@ -383,4 +383,16 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 		}
 	}
 }
+
+godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id) {
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL_V(arvr_server, 0.0);
+
+	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
+	if (tracker != NULL) {
+		return tracker->get_rumble();
+	}
+
+	return 0.0;
+}
 }
