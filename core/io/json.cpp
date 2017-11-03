@@ -43,7 +43,25 @@ const char *JSON::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-String JSON::_print_var(const Variant &p_var) {
+static String _make_indent(const String& p_indent, int p_size) {
+
+	String indent_text = "";
+	if (!p_indent.empty()) {
+		for (int i = 0; i < p_size; i++)
+			indent_text += p_indent;
+	}
+	return indent_text;
+}
+
+String JSON::_print_var(const Variant &p_var, const String& p_indent, int p_cur_indent, bool p_sort_keys) {
+
+	String colon = ":";
+	String end_statement = "";
+
+	if (!p_indent.empty()) {
+		colon += " ";
+		end_statement += "\n";
+	}
 
 	switch (p_var.get_type()) {
 
@@ -57,41 +75,50 @@ String JSON::_print_var(const Variant &p_var) {
 		case Variant::ARRAY: {
 
 			String s = "[";
+			s += end_statement;
 			Array a = p_var;
 			for (int i = 0; i < a.size(); i++) {
-				if (i > 0)
-					s += ", ";
-				s += _print_var(a[i]);
+				if (i > 0) {
+					s += ",";
+					s += end_statement;
+				}
+				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(a[i], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
-			s += "]";
+			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
 			return s;
 		};
 		case Variant::DICTIONARY: {
 
 			String s = "{";
+			s += end_statement;
 			Dictionary d = p_var;
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
+			if (p_sort_keys)
+				keys.sort();
+
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 
-				if (E != keys.front())
-					s += ", ";
-				s += _print_var(String(E->get()));
-				s += ":";
-				s += _print_var(d[E->get()]);
+				if (E != keys.front()) {
+					s += ",";
+					s += end_statement;
+				}
+				s += _make_indent(p_indent, p_cur_indent + 1) + _print_var(String(E->get()), p_indent, p_cur_indent + 1, p_sort_keys);
+				s += colon;
+				s += _print_var(d[E->get()], p_indent, p_cur_indent + 1, p_sort_keys);
 			}
 
-			s += "}";
+			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
 			return s;
 		};
 		default: return "\"" + String(p_var).json_escape() + "\"";
 	}
 }
 
-String JSON::print(const Variant &p_var) {
+String JSON::print(const Variant &p_var, const String& p_indent, bool p_sort_keys) {
 
-	return _print_var(p_var);
+	return _print_var(p_var, p_indent, 0, p_sort_keys);
 }
 
 Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
