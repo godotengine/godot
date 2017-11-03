@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		Provides a reference to the node running the visual script.
+
 		[b]Input Ports:[/b]
 		none
+
 		[b]Output Ports:[/b]
 		- Data (object): [code]instance[/code]
 	</description>

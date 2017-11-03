@@ -228,6 +228,7 @@
 			</argument>
 			<description>
 				Return the absolute world position corresponding to the tilemap (grid-based) coordinates given as an argument.
+
 				Optionally, the tilemap's potential half offset can be ignored.
 			</description>
 		</method>
@@ -248,7 +249,9 @@
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by its grid-based X and Y coordinates.
-				A tile index of -1 clears the cell.
+
+				A [code]tile[/code] index of -1 clears the cell.
+
 				Optionally, the tile can also be flipped over the X and Y coordinates or transposed.
 			</description>
 		</method>
@@ -276,7 +279,9 @@
 			</argument>
 			<description>
 				Set the tile index for the cell referenced by a Vector2 of grid-based coordinates.
-				A tile index of -1 clears the cell.
+
+				A [code]tile[/code] index of -1 clears the cell.
+
 				Optionally, the tile can also be flipped over the X and Y axes or transposed.
 			</description>
 		</method>
@@ -323,6 +328,7 @@
 			</argument>
 			<description>
 				Set the collision layer.
+
 				Layers are referenced by binary indexes, so allowable values to describe the 20 available layers range from 0 to 2^20-1.
 			</description>
 		</method>
@@ -343,6 +349,7 @@
 			</argument>
 			<description>
 				Set the collision masks.
+
 				Masks are referenced by binary indexes, so allowable values to describe the 20 available masks range from 0 to 2^20-1.
 			</description>
 		</method>
@@ -381,6 +388,7 @@
 			</argument>
 			<description>
 				Set a half offset on the X coordinate, Y coordinate, or none (use HALF_OFFSET_* constants as argument).
+
 				Half offset sets every other tile off by a half tile size in the specified direction.
 			</description>
 		</method>
@@ -408,6 +416,7 @@
 			</argument>
 			<description>
 				Set the quadrant size, this optimizes drawing by batching chunks of map at draw/cull time.
+
 				Allowed values are integers ranging from 1 to 128.
 			</description>
 		</method>
@@ -436,6 +445,7 @@
 			</argument>
 			<description>
 				Set the Y sort mode. Enabled Y sort mode means that children of the tilemap will be drawn in the order defined by their Y coordinate.
+
 				A tile with a higher Y coordinate will therefore be drawn later, potentially covering up the tile(s) above it if its sprite is higher than its cell size.
 			</description>
 		</method>

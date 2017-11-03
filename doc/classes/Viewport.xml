@@ -5,10 +5,15 @@
 	</brief_description>
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera 3D nodes will render on it too.
+
 		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
+
 		If a viewport is a child of a [Control], it will automatically take up its same rect and position, otherwise they must be set manually.
+
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
+
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
+
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
@@ -463,8 +468,11 @@
 			</argument>
 			<description>
 				If true this viewport will be bound to our ARVR Server.
+
 				If this is our main Godot viewport our AR/VR output will be displayed on screen.
-				If output is redirected to an HMD we'll see the output of just one of the eyes without any distortion applied else we'll see the stereo buffer with distortion applied if applicable
+
+				If output is redirected to an HMD we'll see the output of just one of the eyes without any distortion applied else we'll see the stereo buffer with distortion applied if applicable.
+
 				If this is an extra viewport output will only work if redirection to an HMD is supported by the interface. The render target will allow you to use the undistorted output for the right eye in the display.
 			</description>
 		</method>

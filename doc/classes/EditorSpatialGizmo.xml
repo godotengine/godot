@@ -41,6 +41,7 @@
 			</argument>
 			<description>
 				Add a list of handles (points) which can be used to deform the object being edited.
+
 				There are virtual functions which will be called upon editing of these handles. Call this function during [method redraw].
 			</description>
 		</method>
@@ -97,6 +98,7 @@
 			</argument>
 			<description>
 				Commit a handle being edited (handles must have been previously added by [method add_handles]).
+
 				If the cancel parameter is true, an option to restore the edited value to the original is provided.
 			</description>
 		</method>
@@ -107,6 +109,7 @@
 			</argument>
 			<description>
 				Get the name of an edited handle (handles must have been previously added by [method add_handles]).
+
 				Handles can be named for reference to the user when editing.
 			</description>
 		</method>
@@ -137,6 +140,7 @@
 			</argument>
 			<description>
 				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
+
 				The [Camera] is also provided so screen coordinates can be converted to raycasts.
 			</description>
 		</method>

@@ -38,6 +38,7 @@
 			</argument>
 			<description>
 				Starts a new [code]Thread[/code] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [code]Thread[/code] can be changed by passing a PRIORITY_* enum.
+
 				Returns OK on success, or ERR_CANT_CREATE on failure.
 			</description>
 		</method>

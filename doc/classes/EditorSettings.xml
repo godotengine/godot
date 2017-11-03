@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Object that holds the project-independent editor settings. These settings are generally visible in the Editor Settings menu.
+
 		Accessing the settings is done by using the regular [Object] API, such as:
 		[codeblock]
 		settings.set(prop,value)
@@ -24,15 +25,16 @@
 			</argument>
 			<description>
 				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
-				Example:
+
+				For example:
 				[codeblock]
 				editor_settings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				editor_settings.add_property_info(property_info)
@@ -82,8 +84,9 @@
 			</return>
 			<description>
 				Get the global settings path for the engine. Inside this path you can find some standard paths such as:
-				settings/tmp - used for temporary storage of files
-				settings/templates - where export templates are located
+
+				[code]settings/tmp[/code] - used for temporary storage of files
+				[code]settings/templates[/code] - where export templates are located
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">

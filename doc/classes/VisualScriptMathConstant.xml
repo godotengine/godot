@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		Provides common math constants, such as Pi or Euler's constant, on an output Data port.
+
 		[b]Input Ports:[/b]
 		none
+
 		[b]Output Ports:[/b]
 		- Data (variant): [code]get[/code]
 	</description>

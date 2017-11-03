@@ -18,6 +18,7 @@
 			</argument>
 			<description>
 				Check whether the function call may be resumed. This is not the case if the function state was already resumed.
+
 				If [code]extended_check[/code] is enabled, it also checks if the associated script and object still exist. The extended check is done in debug mode as part of [method GDFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
 			</description>
 		</method>
@@ -28,7 +29,9 @@
 			</argument>
 			<description>
 				Resume execution of the yielded function call.
+
 				If handed an argument, return the argument from the [method @GDScript.yield] call in the yielded function call. You can pass e.g. an [Array] to hand multiple arguments.
+
 				This function returns what the resumed function call returns, possibly another function state if yielded again.
 			</description>
 		</method>

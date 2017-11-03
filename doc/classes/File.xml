@@ -5,20 +5,21 @@
 	</brief_description>
 	<description>
 		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
+
 		Here's a sample on how to write and read from a file:
 		[codeblock]
 		func save(content):
-		    var file = File.new()
-		    file.open("user://save_game.dat", file.WRITE)
-		    file.store_string(content)
-		    file.close()
+			var file = File.new()
+			file.open("user://save_game.dat", file.WRITE)
+			file.store_string(content)
+			file.close()
 
 		func load():
-		    var file = File.new()
-		    file.open("user://save_game.dat", file.READ)
-		    var content = file.get_as_text()
-		    file.close()
-		    return content
+			var file = File.new()
+			file.open("user://save_game.dat", file.READ)
+			var content = file.get_as_text()
+			file.close()
+			return content
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -281,6 +282,7 @@
 			</argument>
 			<description>
 				If [code]true[/code] the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
+
 				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
 			</description>
 		</method>

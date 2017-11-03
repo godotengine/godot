@@ -1459,7 +1459,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
 	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
 
-	String bbcode = p_bbcode.replace("\t", " ").replace("\r", " ").strip_edges();
+	String bbcode = p_bbcode.replace("\r", "").strip_edges();
 
 	List<String> tag_stack;
 

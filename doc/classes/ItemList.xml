@@ -4,10 +4,9 @@
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
 	<description>
-		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons,
-		or both text and icon.  Tooltips are supported and may be different for every item in the list.  Selectable items in the list
-		may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled
-		to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
+		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are also supported and may be different for every item in the list.
+
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -36,7 +35,8 @@
 			</argument>
 			<description>
 				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
-				If selectable is true the list item will be selectable.
+
+				If [code]selectable[/code] is true the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">
@@ -254,7 +254,8 @@
 			</argument>
 			<description>
 				Select the item at the specified index.
-				Note:  This method does not trigger the item selection signal.
+
+				[b]Note:[/b] This method does not trigger the item selection signal.
 			</description>
 		</method>
 		<method name="set_allow_rmb_select">
@@ -325,8 +326,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Disable (or enable) item at specified index.
-				Disabled items are not be selectable and do not fire activation (Enter or double-click) signals.
+				Disable (or enable) item at specified index. Disabled items can not be selected and do not fire activation (Enter or double-click) signals.
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -494,8 +494,8 @@
 			</argument>
 			<description>
 				Fired when specified list item has been selected via right mouse clicking.
-				The click position is also provided to allow appropriate popup of context menus
-				at the correct location.
+
+				The click position is also provided to allow appropriate popup of context menus at the correct location.
 			</description>
 		</signal>
 		<signal name="item_selected">

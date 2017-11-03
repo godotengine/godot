@@ -16,6 +16,7 @@
 			corner_radius_top_left = 50
 			corner_radius_bottom_left = 100
 			[/codeblock]
+
 			The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
 			[codeblock]
 			corner_radius_top_left: 10
@@ -296,8 +297,9 @@
 		</member>
 		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail">
 			This sets the amount of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value you should take the corner radius ([method set_corner_radius]) into account.
+
 			For corner radius smaller than 10: 4-5 should be enough
-			For corner radius smaller than 30: 8-12 should be enough ...
+			For corner radius smaller than 30: 8-12 should be enough
 		</member>
 		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius">
 			The corner radius of the bottom left corner. When set to 0 the corner is not rounded.

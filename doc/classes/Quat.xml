@@ -5,8 +5,11 @@
 	</brief_description>
 	<description>
 		A 4-dimensional vector representing a rotation.
+
 		The vector represents a 4 dimensional complex number where multiplication of the basis elements is not commutative (multiplying i with j gives a different result than multiplying j with i).
+
 		Multiplying quaternions reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
+
 		It can be used to perform SLERP (spherical-linear interpolation) between two rotations.
 	</description>
 	<tutorials>

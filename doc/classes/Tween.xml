@@ -5,13 +5,16 @@
 	</brief_description>
 	<description>
 		Node useful for animations with unknown start and end points, procedural animations, making one node follow another, and other simple behavior.
+
 		Because it is easy to get it wrong, here is a quick usage example:
 		[codeblock]
 		var tween = get_node("Tween")
 		tween.interpolate_property(get_node("Node2D_to_move"), "transform/origin", Vector2(0,0), Vector2(100,100), 1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 		[/codeblock]
+
 		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
+
 		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
 	</description>
 	<tutorials>
@@ -42,6 +45,7 @@
 			</argument>
 			<description>
 				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -68,6 +72,7 @@
 			</argument>
 			<description>
 				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -159,6 +164,7 @@
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -183,6 +189,7 @@
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -347,6 +354,7 @@
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -373,6 +381,7 @@
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
+
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>

@@ -5,10 +5,12 @@
 	</brief_description>
 	<description>
 		Chooses between two input values based on a Boolean condition.
+
 		[b]Input Ports:[/b]
 		- Data (boolean): [code]cond[/code]
 		- Data (variant): [code]a[/code]
 		- Data (variant): [code]b[/code]
+
 		[b]Output Ports:[/b]
 		- Data (variant): [code]out[/code]
 	</description>

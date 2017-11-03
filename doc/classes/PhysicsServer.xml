@@ -182,6 +182,7 @@
 			</argument>
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
+
 				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
 				2: [RID] of the object that entered/exited the area.
 				3: Instance ID of the object that entered/exited the area.
@@ -513,6 +514,7 @@
 			</argument>
 			<description>
 				Removes a body from the list of bodies exempt from collisions.
+
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -580,6 +582,7 @@
 			</argument>
 			<description>
 				If [code]true[/code] the continuous collision detection mode is enabled.
+
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -1168,12 +1171,10 @@
 			The [Joint] is a [Generic6DOFJoint].
 		</constant>
 		<constant name="PIN_JOINT_BIAS" value="0">
-			The strength with which the pinned objects try to stay in positional relation to each other.
-			The higher, the stronger.
+			The strength with which the pinned objects try to stay in positional relation to each other. The higher, the stronger.
 		</constant>
 		<constant name="PIN_JOINT_DAMPING" value="1">
-			The strength with which the pinned objects try to stay in velocity relation to each other.
-			The higher, the stronger.
+			The strength with which the pinned objects try to stay in velocity relation to each other. The higher, the stronger.
 		</constant>
 		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2">
 			If above 0, this value is the maximum value for an impulse that this Joint puts on it's ends.
@@ -1283,12 +1284,10 @@
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
 		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
-			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
-			Twist is locked if below 0.05.
+			Twist is the rotation around the twist axis, this value defined how far the joint can twist. Twist is locked if below 0.05.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_BIAS" value="2">
-			The speed with which the swing or twist will take place.
-			The higher, the faster.
+			The speed with which the swing or twist will take place. The higher, the faster.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
 			The ease with which the Joint twists, if it's too low, it takes more force to twist the joint.

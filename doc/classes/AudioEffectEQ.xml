@@ -2,6 +2,7 @@
 <class name="AudioEffectEQ" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
 		Base class for audio equalizers. Gives you control over frequencies.
+
 		Use it to create a custom equalizer if [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21] don't fit your needs.
 	</brief_description>
 	<description>

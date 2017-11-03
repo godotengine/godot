@@ -5,8 +5,11 @@
 	</brief_description>
 	<description>
 		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
+
 		Ignores non-[Control] children.
+
 		Individual tabs are always visible unless you use [method set_tab_disabled] and [method set_tab_title] to hide it.
+
 		To hide only a tab's content, nest the content inside a child [Control], so it receives the [code]TabContainer[/code]'s visibility setting instead.
 	</description>
 	<tutorials>

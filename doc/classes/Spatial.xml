@@ -391,6 +391,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
+
 			In order for NOTIFICATION_TRANSFORM_CHANGED to work user first needs to ask for it, with set_notify_transform(true).
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41" enum="">

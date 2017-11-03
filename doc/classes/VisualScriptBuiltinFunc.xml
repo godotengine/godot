@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A built-in function used inside a [VisualScript]. It is usually a math function or an utility function.
+
 		See also [@GDScript], for the same functions in the GDScript language.
 	</description>
 	<tutorials>

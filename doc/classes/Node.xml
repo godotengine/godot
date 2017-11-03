@@ -5,15 +5,29 @@
 	</brief_description>
 	<description>
 		Nodes are the base bricks with which Godot games are developed. They can be set as children of other nodes, resulting in a tree arrangement. A given node can contain any number of nodes as children (but there is only one scene tree root node) with the requirement that all siblings (direct children of a node) should have unique names.
+
 		Any tree of nodes is called a [i]scene[/i]. Scenes can be saved to the disk and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects. Nodes can optionally be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group) to perform grouped actions.
-		[b]Scene tree:[/b] The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Children nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
+
+		[b]Scene tree:[/b]
+
+		The [SceneTree] contains the active tree of nodes. When a node is added to the scene tree, it receives the NOTIFICATION_ENTER_TREE notification and its [method _enter_tree] callback is triggered. Children nodes are always added [i]after[/i] their parent node, i.e. the [method _enter_tree] callback of a parent node will be triggered before its child's.
+
 		Once all nodes have been added in the scene tree, they receive the NOTIFICATION_READY notification and their respective [method _ready] callbacks are triggered. For groups of nodes, the [method _ready] callback is called in reverse order, from the children up to the parent nodes.
+
 		It means that when adding a scene to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (and that recursively for the whole scene).
-		[b]Processing:[/b] Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+
+		[b]Processing:[/b]
+
+		Nodes can be set to the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is variable. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed amount of times per second (by default 60) and is useful to link itself to the physics.
+
 		Nodes can also process input events. When set, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
 		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+
 		Finally, when a node is freed with [method free] or [method queue_free], it will also free all its children.
-		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [code]Node[/code] receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
+
+		[b]Networking with nodes:[/b]
+
+		After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to easily communicate over the network. By calling [method rpc] with a method name, it will be called locally, and in all connected peers (peers = clients and the server that accepts connections), with behaviour varying depending on the network mode ([method set_network_mode]) on the receiving peer. To identify which [code]Node[/code] receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -25,6 +39,7 @@
 			</return>
 			<description>
 				Called when the node enters the [SceneTree] (e.g. upon instancing, scene changing or after calling [method add_child] in a script). If the node has children, its [method _enter_tree] callback will be called first, and then that of the children.
+
 				Corresponds to the NOTIFICATION_ENTER_TREE notification in [method Object._notification].
 			</description>
 		</method>
@@ -33,6 +48,7 @@
 			</return>
 			<description>
 				Called when the node leaves the [SceneTree] (e.g. upon freeing, scene changing or after calling [method remove_child] in a script). If the node has children, its [method _exit_tree] callback will be called last, after all its children have left the tree.
+
 				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification].
 			</description>
 		</method>
@@ -52,7 +68,9 @@
 			</argument>
 			<description>
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [code]delta[/code] variable should be constant.
+
 				It is only called if physics processing has been enabled with [method set_physics_process].
+
 				Corresponds to the NOTIFICATION_PHYSICS_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
@@ -63,7 +81,9 @@
 			</argument>
 			<description>
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [code]delta[/code] time since the previous frame is not constant.
+
 				It is only called if processing has been enabled with [method set_process].
+
 				Corresponds to the NOTIFICATION_PROCESS notification in [method Object._notification].
 			</description>
 		</method>
@@ -72,6 +92,7 @@
 			</return>
 			<description>
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callback gets triggered first, and the node will receive the ready notification only afterwards.
+
 				Corresponds to the NOTIFICATION_READY notification in [method Object._notification].
 			</description>
 		</method>
@@ -101,6 +122,7 @@
 			</argument>
 			<description>
 				Add a child [code]Node[/code]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
+
 				The optional boolean argument enforces creating child nodes with human-readable names, based on the name of the node being instanced instead of its type only.
 			</description>
 		</method>
@@ -141,6 +163,7 @@
 			</argument>
 			<description>
 				Duplicate the node, returning a new [code]Node[/code].
+
 				You can fine-tune the behavior using the [code]flags[/code], which are based on the DUPLICATE_* constants.
 			</description>
 		</method>
@@ -221,8 +244,10 @@
 			</argument>
 			<description>
 				Fetch a node. The [NodePath] must be valid (or else an error will be raised) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.
-				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
-				[i]Example:[/i] Assume your current node is Character and the following tree:
+
+				[b]Note:[/b] fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
+
+				For example, assume your current node is Character and the following tree:
 				[codeblock]
 				/root
 				/root/Character
@@ -233,6 +258,7 @@
 				/root/Swamp/Mosquito
 				/root/Swamp/Goblin
 				[/codeblock]
+
 				Possible paths are:
 				[codeblock]
 				get_node("Sword")

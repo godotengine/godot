@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A Texture capable of storing many smaller Textures with offsets.
+
 		You can dynamically add pieces([Texture]) to this [code]LargeTexture[/code] using different offsets.
 	</description>
 	<tutorials>
@@ -90,6 +91,7 @@
 	<members>
 		<member name="_data" type="Array" setter="_set_data" getter="_get_data">
 			Returns an [Array] with offsets and textures data of each added piece. Schema is [offsets1, texture1, offsets2, texture2, large_texture_size].
+
 			[code]offsets[/code] : [Vector2] offsets of the texture piece.
 			[code]second[/code] : [StreamTexture] data of the texture piece.
 			[code]last entry[/code] : [Vector2] size of the entire large texture.

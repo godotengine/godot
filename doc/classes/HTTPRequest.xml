@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS.
+
 		Can be used to make HTTP requests or download files via HTTP.
 	</description>
 	<tutorials>

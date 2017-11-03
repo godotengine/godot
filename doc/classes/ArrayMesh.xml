@@ -30,6 +30,7 @@
 			</argument>
 			<description>
 				Create a new surface ([method get_surface_count] that will become surf_idx for this.
+
 				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. (As a note, when using indices, it is recommended to only use just points, lines or triangles).
 			</description>
 		</method>

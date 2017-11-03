@@ -46,11 +46,10 @@
 			</argument>
 			<description>
 				Set new color to ColorRect.
-
-			[codeblock]
-			var cr = get_node("colorrect_node")
-			cr.set_frame_color(Color(1, 0, 0, 1)) # Set color rect node to red
-			[/codeblock]
+				[codeblock]
+				var cr = get_node("colorrect_node")
+				cr.set_frame_color(Color(1, 0, 0, 1)) # Set color rect node to red
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

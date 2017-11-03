@@ -5,9 +5,11 @@
 	</brief_description>
 	<description>
 		Ends the execution of a function and returns control to the calling function. Optionally, it can return a [Variant] value.
+
 		[b]Input Ports:[/b]
 		- Sequence
 		- Data (variant): [code]result[/code] (optional)
+
 		[b]Output Ports:[/b]
 		none
 	</description>

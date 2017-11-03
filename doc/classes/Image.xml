@@ -376,7 +376,7 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is unlocked. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is unlocked. For example:
 				[code]
 				var img = Image.new()
 				img.lock()

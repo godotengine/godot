@@ -68,7 +68,9 @@
 			</argument>
 			<description>
 				Set the physics layers this area is in.
+
 				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+
 				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
@@ -107,7 +109,9 @@
 	<members>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 			The physics layers this area is in.
+
 			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
+
 			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">

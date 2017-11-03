@@ -33,8 +33,9 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the result of atan2 when called with the Vector's x and y as parameters (Math::atan2(x,y)).
-				Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling Math::atan2(y,x)).
+				Returns the result of atan2 when called with the Vector's x and y as parameters ([code]Math::atan2(x,y)[/code]).
+
+				Be aware that it therefore returns an angle oriented clockwise with regard to the (0, 1) unit vector, and not an angle oriented counter-clockwise with regard to the (1, 0) unit vector (which would be the typical trigonometric representation of the angle when calling [code]Math::atan2(y,x)[/code]).
 			</description>
 		</method>
 		<method name="angle_to">

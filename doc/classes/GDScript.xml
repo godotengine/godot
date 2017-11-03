@@ -24,6 +24,7 @@
 			</return>
 			<description>
 				Returns a new instance of the script.
+
 				For example:
 				[codeblock]
 				var MyClass = load("myclass.gd")
