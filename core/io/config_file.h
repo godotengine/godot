@@ -30,13 +30,14 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
+#include "core/ordered_hash_map.h"
 #include "reference.h"
 
 class ConfigFile : public Reference {
 
 	GDCLASS(ConfigFile, Reference);
 
-	Map<String, Map<String, Variant> > values;
+	Map<String, OrderedHashMap<String, Variant> > values;
 
 	PoolStringArray _get_sections() const;
 	PoolStringArray _get_section_keys(const String &p_section) const;

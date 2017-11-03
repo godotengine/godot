@@ -181,7 +181,7 @@ public:
 	};
 
 	ConstElement find(const K &p_key) const {
-		typename InternalList::Element **list_element = map.getptr(p_key);
+		typename InternalList::Element *const *list_element = map.getptr(p_key);
 		if (list_element) {
 			return ConstElement(*list_element);
 		}
