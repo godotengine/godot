@@ -61,7 +61,8 @@
 			</argument>
 			<description>
 				Dumps the memory allocation ringlist to a file (only works in debug).
-				Entry format per line: "Address - Size - Description"
+
+				Entry format per line: [code]Address - Size - Description[/code]
 			</description>
 		</method>
 		<method name="dump_resources_to_file">
@@ -71,7 +72,9 @@
 			</argument>
 			<description>
 				Dumps all used resources to file (only works in debug).
-				Entry format per line: "Resource Type : Resource Location"
+
+				Entry format per line: [code]Resource Type : Resource Location[/code]
+
 				At the end of the file is a statistic of all used Resource Types.
 			</description>
 		</method>
@@ -159,6 +162,7 @@
 			</argument>
 			<description>
 				Get a dictionary of time values when given epoch time.
+
 				Dictionary Time values will be a union of values from [method get_time] and [method get_date] dictionaries (with the exception of dst = day light standard time, as it cannot be determined from epoch).
 			</description>
 		</method>
@@ -196,6 +200,7 @@
 			</return>
 			<description>
 				Returns the current latin keyboard variant as a String.
+
 				Possible return values are: "QWERTY", "AZERTY", "QZERTY", "DVORAK", "NEO", "COLEMAK" or "ERROR".
 			</description>
 		</method>
@@ -393,7 +398,9 @@
 			</argument>
 			<description>
 				Get an epoch time value from a dictionary of time values.
+
 				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
+
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
 			</description>
 		</method>
@@ -460,7 +467,9 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the build is a debug build.
+
 				Returns [code]true[/code] when running in the editor.
+
 				Returns [code]false[/code] if the build is a release build.
 			</description>
 		</method>
@@ -812,9 +821,11 @@
 			<argument index="0" name="uri" type="String">
 			</argument>
 			<description>
-				Requests the OS to open a resource with the most appropriate program. For example.
-					[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
-					[code]OS.shell_open("http://godotengine.org")[/code] opens the default web browser on the official Godot website.
+				Requests the OS to open a resource with the most appropriate program. For example:
+
+				[code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the downloads folders of the user.
+
+				[code]OS.shell_open("http://godotengine.org")[/code] opens the default web browser on the official Godot website.
 			</description>
 		</method>
 		<method name="show_virtual_keyboard">

@@ -5,9 +5,11 @@
 	</brief_description>
 	<description>
 		Changes a variable's value to the given input.
+
 		[b]Input Ports:[/b]
 		- Sequence
 		- Data (variant): [code]set[/code]
+
 		[b]Output Ports:[/b]
 		- Sequence
 	</description>

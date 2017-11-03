@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Class for finding text patterns in a string using regular expressions. It can not perform replacements. Regular expressions are a way to define patterns of text to be searched. Details on writing patterns are too long to explain here but the Internet is full of tutorials and detailed explanations.
+
 		Once created, the RegEx object needs to be compiled with the search pattern before it can be used. The search pattern must be escaped first for gdscript before it is escaped for the expression. For example:
 		[code]var exp = RegEx.new()[/code]
 		[code]exp.compile("\\d+")[/code]

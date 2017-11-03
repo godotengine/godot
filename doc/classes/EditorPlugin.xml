@@ -31,7 +31,9 @@
 			</argument>
 			<description>
 				Add a custom control to a container (see CONTAINER_* enum). There are many locations where custom controls can be added in the editor UI.
+
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
+
 				If your plugin is being removed, also make sure to remove your custom controls too.
 			</description>
 		</method>
@@ -44,7 +46,9 @@
 			</argument>
 			<description>
 				Add the control to a specific dock slot (see DOCK_* enum for options).
+
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
+
 				If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_docks].
 			</description>
 		</method>
@@ -60,9 +64,10 @@
 			<argument index="3" name="icon" type="Texture">
 			</argument>
 			<description>
-				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
-				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed. When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+
 				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
+
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
@@ -97,6 +102,7 @@
 			</return>
 			<description>
 				This method is called when the editor is about to save the project, switch to another tab, etc. It asks the plugin to apply any pending state changes to ensure consistency.
+
 				This is used, for example, in shader editors to let the plugin know that it must apply the shader code being written by the user to the object.
 			</description>
 		</method>
@@ -155,6 +161,7 @@
 			</argument>
 			<description>
 				Implement this function if you are interested in 3D view screen input events. It will be called only if currently selected node is handled by your plugin.
+
 				If you would like to always gets those input events then additionally use [method set_input_forwarding_always_enabled].
 			</description>
 		</method>
@@ -237,6 +244,7 @@
 			</argument>
 			<description>
 				This function will be called when the editor is requested to become visible. It is used for plugins that edit a specific object type.
+
 				Remember that you have to manage the visibility of all your editor controls manually.
 			</description>
 		</method>

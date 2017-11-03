@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		Steps through a series of one or more output Sequence ports. The [code]current[/code] data port outputs the currently executing item.
+
 		[b]Input Ports:[/b]
 		- Sequence: [code]in order[/code]
+
 		[b]Output Ports:[/b]
 		- Sequence: [code]1[/code]
 		- Sequence: [code]2 - n[/code] (optional)

@@ -4,8 +4,7 @@
 		Packs multiple small textures in a single, bigger one. Helps to optimize video memory costs and render calls.
 	</brief_description>
 	<description>
-		[Texture] resource aimed at managing big textures files that pack multiple smaller textures. Consists of a [Texture], a margin that defines the border width,
-		and a region that defines the actual area of the AtlasTexture.
+		[Texture] resource aimed at managing big textures files that pack multiple smaller textures. Consists of a [Texture], a margin that defines the border width, and a region that defines the actual area of the AtlasTexture.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -5,8 +5,11 @@
 	</brief_description>
 	<description>
 		A RayCast represents a line from its origin to its destination position, [code]cast_to[/code]. It is used to query the 2D space in order to find the closest object along the path of the ray.
+
 		RayCast2D can ignore some objects by adding them to the exception list via [code]add_exception[/code], by setting proper filtering with collision layers, or by filtering object types with type masks.
+
 		Only enabled raycasts will be able to query the space and report collisions.
+
 		RayCast2D calculates intersection every physics frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between physics frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<tutorials>
@@ -57,8 +60,7 @@
 			<return type="Object">
 			</return>
 			<description>
-				Returns the closest object the ray is pointing to. Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
-				Example:
+				Returns the closest object the ray is pointing to. Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray. For example:
 				[codeblock]
 				if RayCast2D.is_colliding():
 					var collider = RayCast2D.get_collider()
@@ -69,8 +71,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the collision shape of the closest object the ray is pointing to.  Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
-				Example:
+				Returns the collision shape of the closest object the ray is pointing to.  Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray. For example:
 				[codeblock]
 				if RayCast2D.is_colliding():
 					var shape = RayCast2D.get_collider_shape()
@@ -222,8 +223,7 @@
 			If [code]true[/code], the parent node will be excluded from collision detection. Default value: [code]true[/code].
 		</member>
 		<member name="type_mask" type="int" setter="set_type_mask" getter="get_type_mask">
-			Object types to detect using a logical sum (OR operation) of type constants defined in [Physics2DDirectSpaceState].
-			Example:
+			Object types to detect using a logical sum (OR operation) of type constants defined in [Physics2DDirectSpaceState]. For example:
 			[codeblock]
 			RayCast.type_mask = Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY
 			[/codeblock]

@@ -24,10 +24,12 @@
 			</argument>
 			<description>
 				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
+
 				[code]r8[/code] red channel
 				[code]g8[/code] green channel
 				[code]b8[/code] blue channel
 				[code]a8[/code] alpha channel
+
 				[codeblock]
 				red = Color8(255, 0, 0)
 				[/codeblock]
@@ -42,6 +44,7 @@
 			</argument>
 			<description>
 				Returns color [code]name[/code] with [code]alpha[/code] ranging from 0 to 1. Note: [code]name[/code] is defined in color_names.inc.
+
 				[codeblock]
 				red = ColorN('red')
 				[/codeblock]
@@ -54,6 +57,7 @@
 			</argument>
 			<description>
 				Returns the absolute value of parameter [code]s[/code]  (i.e. unsigned value, works for integer and float).
+
 				[codeblock]
 				# a is 1
 				a = abs(-1)
@@ -67,6 +71,7 @@
 			</argument>
 			<description>
 				Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of cosine [code]s[/code].
+
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad2deg(s)
 				c = acos(0.866025)
@@ -80,6 +85,7 @@
 			</argument>
 			<description>
 				Returns the arc sine of [code]s[/code] in radians. Use to get the angle of sine [code]s[/code].
+
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
 				s = asin(0.5)
@@ -93,6 +99,7 @@
 			</argument>
 			<description>
 				Assert that the [code]condition[/code] is true. If the [code]condition[/code] is false a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always true.
+
 				[codeblock]
 				# Speed should always be between 0 and 20
 				speed = -10
@@ -109,6 +116,7 @@
 			</argument>
 			<description>
 				Returns the arc tangent of [code]s[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+
 				The method cannot know in which quadrant the angle should fall. See [method atan2] if you always want an exact angle.
 				[codeblock]
 				a = atan(0.5) # a is 0.463648
@@ -177,6 +185,7 @@
 			</argument>
 			<description>
 				Clamps [code]val[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+
 				[codeblock]
 				speed = 1000
 				# a is 20
@@ -361,9 +370,10 @@
 				[codeblock]
 				var i = -10;
 				while i &lt; 0:
-				    prints(i, fposmod(i, 10))
-				    i += 1
+					prints(i, fposmod(i, 10))
+					i += 1
 				[/codeblock]
+
 				Produces:
 				[codeblock]
 				-10 10
@@ -390,7 +400,7 @@
 				Returns a reference to the specified function [code]funcname[/code] in the [code]instance[/code] node. As functions aren't first-class objects in GDscript, use [code]funcref[/code] to store a [FuncRef] in a variable and call it later.
 				[codeblock]
 				func foo():
-				    return("bar")
+					return("bar")
 
 				a = funcref(self, "foo")
 				print(a.call_func()) # prints bar
@@ -419,10 +429,11 @@
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst2dict(self)
-				    print(d.keys())
-				    print(d.values())
+					var d = inst2dict(self)
+					print(d.keys())
+					print(d.values())
 				[/codeblock]
+
 				Prints out:
 				[codeblock]
 				[@subpath, @path, foo]
@@ -440,9 +451,9 @@
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var id = get_instance_id()
-				    var inst = instance_from_id(id)
-				    print(inst.foo) # prints bar
+					var id = get_instance_id()
+					var inst = instance_from_id(id)
+					print(inst.foo) # prints bar
 				[/codeblock]
 			</description>
 		</method>
@@ -594,13 +605,14 @@
 			</argument>
 			<description>
 				Parse JSON text to a Variant (use [method typeof] to check if it is what you expect).
+
 				Be aware that the JSON specification does not define integer or float types, but only a number type. Therefore, parsing a JSON text will convert all numerical values to [float] types.
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # prints a
+					print(p[0]) # prints a
 				else:
-				    print("unexpected results")
+					print("unexpected results")
 				[/codeblock]
 			</description>
 		</method>
@@ -647,6 +659,7 @@
 			</return>
 			<description>
 				Prints a stack track at code location, only works when running with debugger turned on.
+
 				Output in the console would look something like this:
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
@@ -759,7 +772,7 @@
 				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 				[codeblock]
 				func _ready():
-				    randomize()
+					randomize()
 				[/codeblock]
 			</description>
 		</method>
@@ -770,12 +783,13 @@
 				Returns an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial, final-1, increment).
 				[codeblock]
 				for i in range(4):
-				    print(i)
+					print(i)
 				for i in range(2, 5):
-				    print(i)
+					print(i)
 				for i in range(0, 6, 2):
-				    print(i)
+					print(i)
 				[/codeblock]
+
 				Output:
 				[codeblock]
 				0
@@ -988,9 +1002,9 @@
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:
-				    print(p[0]) # prints a
+					print(p[0]) # prints a
 				else:
-				    print("unexpected results")
+					print("unexpected results")
 				[/codeblock]
 			</description>
 		</method>
@@ -1005,9 +1019,9 @@
 				j = to_json([1, 2, 3])
 				v = validate_json(j)
 				if not v:
-				    print("valid")
+					print("valid")
 				else:
-				    prints("invalid", v)
+					prints("invalid", v)
 				[/codeblock]
 			</description>
 		</method>
@@ -1031,7 +1045,8 @@
 				a = { 'a': 1, 'b': 2 }
 				print(var2str(a))
 				[/codeblock]
-				prints
+
+				Prints:
 				[codeblock]
 				{
 				"a": 1,
@@ -1047,6 +1062,7 @@
 			</argument>
 			<description>
 				Returns a weak reference to an object.
+
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
@@ -1059,6 +1075,7 @@
 			</argument>
 			<description>
 				Stops the function execution and returns the current state. Call [method GDFunctionState.resume] on the state to resume execution. This invalidates the state.
+
 				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
 			</description>
 		</method>
@@ -1072,6 +1089,7 @@
 		</constant>
 		<constant name="NAN" value="nan" enum="">
 			Macro constant that expands to an expression of type float that represents a NaN.
+
 			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>
 	</constants>

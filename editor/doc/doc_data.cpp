@@ -617,7 +617,7 @@ void DocData::generate(bool p_basic_types) {
 
 static String _format_description(const String &string) {
 
-	return string.dedent().strip_edges().replace("\n", "\n\n");
+	return string.dedent().strip_edges();
 }
 
 static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &methods) {
@@ -790,11 +790,11 @@ Error DocData::_load(Ref<XMLParser> parser) {
 				} else if (name == "tutorials") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.tutorials = parser->get_node_data().strip_edges();
+						c.tutorials = _format_description(parser->get_node_data());
 				} else if (name == "demos") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.demos = parser->get_node_data().strip_edges();
+						c.demos = _format_description(parser->get_node_data());
 				} else if (name == "methods") {
 
 					Error err = _parse_methods(parser, c.methods);
@@ -857,7 +857,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								prop.type = parser->get_attribute_value("type");
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									prop.description = parser->get_node_data().strip_edges();
+									prop.description = _format_description(parser->get_node_data());
 								c.theme_properties.push_back(prop);
 							} else {
 								ERR_EXPLAIN("Invalid tag in doc file: " + name);
@@ -888,7 +888,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								}
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									constant.description = parser->get_node_data().strip_edges();
+									constant.description = _format_description(parser->get_node_data());
 								c.constants.push_back(constant);
 							} else {
 								ERR_EXPLAIN("Invalid tag in doc file: " + name);

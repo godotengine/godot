@@ -164,6 +164,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop spinning in this area, if there are not any other forces making it spin. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
+
 				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
@@ -190,7 +191,9 @@
 			</argument>
 			<description>
 				Set the physics layers this area is in.
+
 				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
+
 				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 			</description>
 		</method>
@@ -232,6 +235,7 @@
 			</argument>
 			<description>
 				Set the gravity intensity. This is useful to alter the force of gravity without altering its direction.
+
 				This value multiplies the gravity vector, whether it is the given vector ([method set_gravity_vector]), or a calculated one (when using a center of gravity).
 			</description>
 		</method>
@@ -260,6 +264,7 @@
 			</argument>
 			<description>
 				Set the gravity vector. This vector does not have to be normalized.
+
 				If gravity is a point (see [method is_gravity_a_point]), this will be the attraction center.
 			</description>
 		</method>
@@ -270,6 +275,7 @@
 			</argument>
 			<description>
 				Set the rate at which objects stop moving in this area, if there are not any other forces moving it. The value is a fraction of its current speed, lost per second. Thus, a value of 1.0 should mean stopping immediately, and 0.0 means the object never stops.
+
 				In practice, as the fraction of speed lost gets smaller with each frame, a value of 1.0 does not mean the object will stop in exactly one second. Only when the physics calculations are done at 1 frame per second, it does stop in a second.
 			</description>
 		</method>
@@ -298,6 +304,7 @@
 			</argument>
 			<description>
 				Set the order in which the area is processed. Greater values mean the area gets processed first. This is useful for areas which have a space override different from AREA_SPACE_OVERRIDE_DISABLED or AREA_SPACE_OVERRIDE_COMBINE, as they replace values, and are thus order-dependent.
+
 				Areas with the same priority value get evaluated in an unpredictable order, and should be differentiated if evaluation order is to be important.
 			</description>
 		</method>
@@ -308,11 +315,12 @@
 			</argument>
 			<description>
 				Set the space override mode. This mode controls how an area affects gravity and damp.
-				AREA_SPACE_OVERRIDE_DISABLED: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
-				AREA_SPACE_OVERRIDE_COMBINE: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
-				AREA_SPACE_OVERRIDE_COMBINE_REPLACE: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-				AREA_SPACE_OVERRIDE_REPLACE: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-				AREA_SPACE_OVERRIDE_REPLACE_COMBINE: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+
+				[code]AREA_SPACE_OVERRIDE_DISABLED[/code]: This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+				[code]AREA_SPACE_OVERRIDE_COMBINE[/code]: This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+				[code]AREA_SPACE_OVERRIDE_COMBINE_REPLACE[/code]: This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+				[code]AREA_SPACE_OVERRIDE_REPLACE[/code]: This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+				[code]AREA_SPACE_OVERRIDE_REPLACE_COMBINE[/code]: This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 			</description>
 		</method>
 	</methods>

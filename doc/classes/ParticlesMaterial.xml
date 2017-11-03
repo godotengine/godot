@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [Particles] and [Particles2D] emitter nodes.
+
 		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
 	</description>
 	<tutorials>

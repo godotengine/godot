@@ -64,13 +64,15 @@
 			</argument>
 			<description>
 				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format.
+
 				The following string formats are supported:
-					[code]"#ff00ff00"[/code] - ARGB format with '#'
-					[code]"ff00ff00"[/code] - ARGB format
-					[code]"#ff00ff"[/code] - RGB format with '#'
-					[code]"ff00ff"[/code] - RGB format
+				[code]"#ff00ff00"[/code] - ARGB format with '#'
+				[code]"ff00ff00"[/code] - ARGB format
+				[code]"#ff00ff"[/code] - RGB format with '#'
+				[code]"ff00ff"[/code] - RGB format
+
+				The following code creates the same color of an RGBA(178, 217, 10, 255)
 				[codeblock]
-				# The following code creates the same color of an RGBA(178, 217, 10, 255)
 				var c1 = Color("#ffb2d90a") # ARGB format with '#'
 				var c2 = Color("ffb2d90a")  # ARGB format
 				var c3 = Color("#b2d90a")   # RGB format with '#'
@@ -108,6 +110,7 @@
 			</return>
 			<description>
 				Returns the color's grayscale.
+
 				The gray is calculated by (r + g + b) / 3.
 				[codeblock]
 				var c = Color(0.2, 0.45, 0.82)
@@ -160,6 +163,7 @@
 			</argument>
 			<description>
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
+
 				Optionally flag 'false' to not include alpha in hexadecimal string.
 				[codeblock]
 				var c = Color(1, 1, 1, .5)
@@ -178,7 +182,7 @@
 				print(str(c.to_32())) # prints 4294934323
 				[/codeblock]
 
-				[i]This is same as [method to_ARGB32] but may be changed later to support RGBA format instead[/i].
+				[b]Note:[/b] This is same as [method to_ARGB32] but may be changed later to support RGBA format instead.
 			</description>
 		</method>
 	</methods>

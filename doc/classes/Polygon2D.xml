@@ -198,7 +198,8 @@
 			</argument>
 			<description>
 				Set the color for each vertex of the polygon. There should be one color for every vertex in the polygon. If there are less, the undefined ones will be assumed to be [method get_color]. Extra color entries are ignored.
-	Colors are interpolated between vertices, resulting in smooth gradients when they differ.
+
+				Colors are interpolated between vertices, resulting in smooth gradients when they differ.
 			</description>
 		</method>
 	</methods>

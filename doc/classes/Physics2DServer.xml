@@ -173,6 +173,7 @@
 			</argument>
 			<description>
 				Sets the function to call when any body/area enters or exits the area. This callback will be called for any object interacting with the area, and takes five parameters:
+
 				1: AREA_BODY_ADDED or AREA_BODY_REMOVED, depending on whether the object entered or exited the area.
 				2: [RID] of the object that entered/exited the area.
 				3: Instance ID of the object that entered/exited the area.
@@ -555,6 +556,7 @@
 			</argument>
 			<description>
 				Sets the continuous collision detection mode from any of the CCD_MODE_* constants.
+
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>

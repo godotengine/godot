@@ -158,6 +158,7 @@
 		</member>
 		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees">
 			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [code]FILL_CLOCKWISE[/code] or [code]FILL_COUNTER_CLOCKWISE[/code]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
+
 			See [member Range.value], [member Range.max_value].
 		</member>
 		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle">
@@ -180,6 +181,7 @@
 		</member>
 		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
 			[Texture] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
+
 			The [code]value[/code] property comes from [Range]. See [member Range.value], [member Range.min_value], [member Range.max_value].
 		</member>
 		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">

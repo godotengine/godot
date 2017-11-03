@@ -2,6 +2,7 @@
 <class name="AudioEffectPhaser" inherits="AudioEffect" category="Core" version="3.0.alpha.custom_build">
 	<brief_description>
 		Adds a Phaser audio effect to an Audio bus.
+
 		Combines the original signal with a copy that is slightly out of phase with the original.
 	</brief_description>
 	<description>

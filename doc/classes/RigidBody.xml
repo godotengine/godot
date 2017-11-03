@@ -5,9 +5,13 @@
 	</brief_description>
 	<description>
 		This is the node that implements full 3D physics. This means that you do not control a RigidBody directly. Instead you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
+
 		This node can use custom force integration, for writing complex physics motion behavior per node.
+
 		This node can shift state between regular Rigid body, Kinematic, Character or Static.
+
 		Character mode forbids this node from being rotated.
+
 		As a warning, don't change RigidBody's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
 	<tutorials>
@@ -213,6 +217,7 @@
 			</argument>
 			<description>
 				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+
 				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
@@ -304,6 +309,7 @@
 			</argument>
 			<description>
 				Set the continuous collision detection mode from the enum CCD_MODE_*.
+
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
@@ -350,6 +356,7 @@
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection">
 			If [code]true[/code] continuous collision detection is used.
+
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
@@ -406,6 +413,7 @@
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+
 				This signal not only receives the body that collided with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body collided with.
 			</description>
 		</signal>
@@ -420,6 +428,7 @@
 			</argument>
 			<description>
 				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
+
 				This signal not only receives the body that stopped colliding with this one, but also its [RID] (body_id), the shape index from the colliding body (body_shape), and the shape index from this body (local_shape) the other body stopped colliding with.
 			</description>
 		</signal>

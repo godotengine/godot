@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This node takes its parent [Path2D], and returns the coordinates of a point within it, given a distance from the first vertex.
+
 		It is useful for making other nodes follow a path, without coding the movement pattern. For that, the nodes must be descendants of this node. Then, when setting an offset in this node, the descendant nodes will move accordingly.
 	</description>
 	<tutorials>
@@ -68,7 +69,9 @@
 			</argument>
 			<description>
 				The points along the [Curve2D] of the [Path2D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
+
 				There are two answers to this problem: Either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
+
 				This method controls whether the position between two cached points is interpolated linearly, or cubicly.
 			</description>
 		</method>
@@ -79,6 +82,7 @@
 			</argument>
 			<description>
 				Moves this node horizontally. As this node's position will be set every time its offset is set, this allows many PathFollow2D to share the same curve (and thus the same movement pattern), yet not return the same position for a given path offset.
+
 				A similar effect may be achieved moving this node's descendants.
 			</description>
 		</method>

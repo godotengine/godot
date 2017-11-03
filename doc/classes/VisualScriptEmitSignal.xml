@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		Emits a specified signal when it is executed.
+
 		[b]Input Ports:[/b]
 		- Sequence: [code]emit[/code]
+
 		[b]Output Ports:[/b]
 		- Sequence
 	</description>

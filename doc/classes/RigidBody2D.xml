@@ -5,12 +5,15 @@
 	</brief_description>
 	<description>
 		This node implements simulated 2D physics. You do not control a RigidBody2D directly. Instead you apply forces to it (gravity, impulses, etc.) and the physics simulation calculates the resulting movement based on its mass, friction, and other physical properties.
+
 		A RigidBody2D has 4 behavior modes (see [member mode]):
 		- [b]Rigid[/b]: The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
 		- [b]Static[/b]: The body behaves like a [StaticBody2D] and does not move.
 		- [b]Character[/b]: Similar to [code]Rigid[/code] mode, but the body can not rotate.
 		- [b]Kinematic[/b]: The body behaves like a [KinematicBody2D], and must be moved by code.
+
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+
 		If you need to override the default physics behavior, you can write a custom force integration. See [member custom_integrator].
 	</description>
 	<tutorials>
@@ -250,6 +253,7 @@
 			</argument>
 			<description>
 				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
+
 				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
 			</description>
 		</method>
@@ -269,6 +273,7 @@
 			</argument>
 			<description>
 				Set the continuous collision detection mode from the enum CCD_MODE_*.
+
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
 			</description>
 		</method>
@@ -406,6 +411,7 @@
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode">
 			Continuous collision detection mode. Default value: [code]CCD_MODE_DISABLED[/code].
+
 			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [code]CCD_MODE_[/code] constants for details.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Hyper-text transfer protocol client. Supports SSL and SSL server certificate verification.
+
 		Can be reused to connect to different hosts and make many requests.
 	</description>
 	<tutorials>
@@ -32,8 +33,10 @@
 			</argument>
 			<description>
 				Connect to a host. This needs to be done before any requests are sent.
+
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
-				verify_host will check the SSL identity of the host if set to true.
+
+				[code]verify_host[/code] will check the SSL identity of the host if set to true.
 			</description>
 		</method>
 		<method name="get_connection" qualifiers="const">
@@ -69,8 +72,9 @@
 			</return>
 			<description>
 				Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-				Structure: ("key":"value1; value2")
-				Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
+
+				Structure: [code]("key":"value1; value2")[/code]
+				Example: [code](content-length:12), (Content-Type:application/json; charset=UTF-8)[/code]
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
@@ -141,8 +145,10 @@
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
-				Headers are HTTP request headers.
+				Sends a request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], [code]url[/code] would be "index.php".
+
+				[code]headers[/code] is an array of HTTP request headers.
+
 				To create a POST request with query strings to push to the server, do:
 				[codeblock]
 				var fields = {"username" : "user", "password" : "pass"}
@@ -164,8 +170,10 @@
 			<argument index="3" name="body" type="PoolByteArray">
 			</argument>
 			<description>
-				Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], url would be "index.php".
-				Headers are HTTP request headers.
+				Sends a raw request to the connected host. The url is what is normally behind the hostname, i.e. in [code]http://somehost.com/index.php[/code], [code]url[/code] would be "index.php".
+
+				[code]headers[/code] is an array of HTTP request headers.
+
 				Sends body raw, as a byte array, does not encode it in any way.
 			</description>
 		</method>

@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		This node returns a constant's value.
+
 		[b]Input Ports:[/b]
 		none
+
 		[b]Output Ports:[/b]
 		- Data (variant): [code]get[/code]
 	</description>

@@ -122,8 +122,7 @@
 	</methods>
 	<members>
 		<member name="angular_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
-			The amount of rotational damping across the x-axis.
-			The lower, the longer an impulse from one side takes to travel to the other side.
+			The amount of rotational damping across the x-axis. The lower, the longer an impulse from one side takes to travel to the other side.
 		</member>
 		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
 			If [code]true[/code] rotation across the x-axis is enabled.

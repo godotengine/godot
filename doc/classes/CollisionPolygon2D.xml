@@ -69,6 +69,7 @@
 			</argument>
 			<description>
 				Set the array of points forming the polygon.
+
 				When editing the point list via the editor, depending on [method get_build_mode], it has to be a list of points (for [code]build_mode==0[/code]), or a list of lines (for [code]build_mode==1[/code]). In the second case, the even elements of the array define the start point of the line, and the odd elements the end point.
 			</description>
 		</method>

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc. It's not much.
+
 		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<tutorials>

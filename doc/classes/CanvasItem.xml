@@ -5,9 +5,13 @@
 	</brief_description>
 	<description>
 		Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
+
 		Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrides function, though.
+
 		Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
+
 		Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
+
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<tutorials>
@@ -578,6 +582,7 @@
 			</argument>
 			<description>
 				Set whether this item should be visible or not.
+
 				Note that a hidden CanvasItem will make all children hidden too, so no matter what is set here this item won't be shown if its parent or grandparents nodes are hidden.
 			</description>
 		</method>
