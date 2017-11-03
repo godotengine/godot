@@ -26,7 +26,11 @@ basename = "godot" + env["PROGSUFFIX"]
 target_dir = env.Dir("#bin")
 
 zip_dir = target_dir.Dir('.javascript_zip')
-zip_files = env.InstallAs(zip_dir.File('godot.html'), '#misc/dist/html/default.html')
+if env['tools']:
+    zip_files = env.InstallAs(zip_dir.File('godot.html'), '#misc/dist/html/tools.html')
+    zip_files.append(InstallAs(zip_dir.File('godot.pck'), '#misc/dist/html/tools.pck'))
+else:
+    zip_files = env.InstallAs(zip_dir.File('godot.html'), '#misc/dist/html/default.html')
 
 implicit_targets = []
 if env['wasm']:

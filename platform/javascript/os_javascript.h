@@ -172,6 +172,8 @@ public:
 
 	void set_idbfs_available(bool p_idbfs_available);
 
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
+
 	OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func);
 	~OS_JavaScript();
 };

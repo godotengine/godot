@@ -99,6 +99,7 @@ void AudioDriverJavaScript::start() {
 	internal_buffer = memnew_arr(float, INTERNAL_BUFFER_SIZE *internal_buffer_channels);
 	stream_buffer = memnew_arr(int32_t, INTERNAL_BUFFER_SIZE * 4); //max 4 channels
 
+	return;
 	/* clang-format off */
 	EM_ASM(
 			_as_audioctx = new (window.AudioContext || window.webkitAudioContext)();

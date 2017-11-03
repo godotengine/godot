@@ -27,7 +27,6 @@ def get_opts():
 def get_flags():
 
     return [
-        ('tools', False),
         ('module_theora_enabled', False),
     ]
 

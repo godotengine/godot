@@ -1003,6 +1003,28 @@ bool OS_JavaScript::is_userfs_persistent() const {
 	return idbfs_available;
 }
 
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+
+	if (p_path == get_executable_path()) {
+		String url = get_executable_path() + ".html";
+
+		bool first = true;
+		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
+
+			if (first) {
+				url += String("?") + E->get();
+				first = false;
+			} else {
+				url += String("&") + E->get();
+			}
+		}
+
+		return shell_open(url);
+	}
+
+	return FAILED;
+}
+
 OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;

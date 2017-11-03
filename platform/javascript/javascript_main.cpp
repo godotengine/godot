@@ -27,6 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "emscripten.h"
 #include "io/resource_loader.h"
 #include "main/main.h"
@@ -57,6 +60,29 @@ int main(int argc, char *argv[]) {
 
 	printf("let it go dude!\n");
 
+	/* clang-format off */
+	int nargs = EM_ASM_INT_V(
+		return Module['arguments'].length;
+	);
+	/* clang-format on */
+
+	char **args = NULL;
+	if (nargs > 0) {
+		args = (char**)malloc(sizeof(char*) * nargs);
+		for (int i = 0; i < nargs; i++) {
+			char str[1024];
+
+			/* clang-format off */
+			EM_ASM_INT({
+				Module.stringToUTF8(Module['arguments'][$1], $0, 1024);
+			}, str, i);
+			/* clang-format on */
+
+			args[i] = (char*)malloc(strlen(str)+1);
+			strcpy(args[i], str);
+		}
+	}
+
 	// sync from persistent state into memory and then
 	// run the 'main_after_fs_sync' function
 	/* clang-format off */
@@ -70,8 +96,10 @@ int main(int argc, char *argv[]) {
 	);
 	/* clang-format on */
 
+	setenv("HOME", "/userfs", 1);
+
 	os = new OS_JavaScript(argv[0], NULL);
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+	Error err = Main::setup(argv[0], nargs, args);//argc - 1, &argv[1]);
 
 	return 0;
 	// continued async in main_after_fs_sync() from syncfs() callback
