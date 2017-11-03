@@ -66,6 +66,7 @@ void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_
 void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size);
 
 wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
+wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx);
 const char GDAPI *godot_string_c_str(const godot_string *p_self);
 const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self);
 
