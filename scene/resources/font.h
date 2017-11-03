@@ -63,6 +63,23 @@ public:
 	Font();
 };
 
+class BitmapFontData : public Resource {
+	GDCLASS(BitmapFontData, Resource);
+
+private:
+	String font_path;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_font_path(const String &p_path);
+	String get_font_path() const;
+
+	BitmapFontData();
+	~BitmapFontData();
+};
+
 class BitmapFont : public Font {
 
 	GDCLASS(BitmapFont, Font);
@@ -102,6 +119,7 @@ private:
 	HashMap<CharType, Character> char_map;
 	Map<KerningPairKey, int> kerning_map;
 
+	Ref<BitmapFontData> font_data;
 	float height;
 	float ascent;
 	bool distance_field_hint;
@@ -120,6 +138,9 @@ protected:
 
 public:
 	Error create_from_fnt(const String &p_file);
+
+	Ref<BitmapFontData> get_font_data() const;
+	void set_font_data(const Ref<BitmapFontData> &p_data);
 
 	void set_height(float p_height);
 	float get_height() const;
@@ -156,6 +177,14 @@ public:
 
 	BitmapFont();
 	~BitmapFont();
+};
+
+class ResourceFormatLoaderBitmapFont : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif
