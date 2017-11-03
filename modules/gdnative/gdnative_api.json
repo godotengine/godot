@@ -847,7 +847,7 @@
       "name": "godot_basis_get_elements",
       "return_type": "void",
       "arguments": [
-        ["godot_basis *", "p_self"],
+        ["const godot_basis *", "p_self"],
         ["godot_vector3 *", "p_elements"]
       ]
     },
@@ -3923,6 +3923,14 @@
       "return_type": "wchar_t *",
       "arguments": [
         ["godot_string *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
+      "name": "godot_string_operator_index_const",
+      "return_type": "wchar_t",
+      "arguments": [
+        ["const godot_string *", "p_self"],
         ["const godot_int", "p_idx"]
       ]
     },

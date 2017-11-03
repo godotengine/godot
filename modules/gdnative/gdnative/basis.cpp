@@ -172,7 +172,7 @@ void GDAPI godot_basis_new_with_euler_quat(godot_basis *r_dest, const godot_quat
 }
 
 // p_elements is a pointer to an array of 3 (!!) vector3
-void GDAPI godot_basis_get_elements(godot_basis *p_self, godot_vector3 *p_elements) {
+void GDAPI godot_basis_get_elements(const godot_basis *p_self, godot_vector3 *p_elements) {
 	const Basis *self = (const Basis *)p_self;
 	Vector3 *elements = (Vector3 *)p_elements;
 	elements[0] = self->elements[0];

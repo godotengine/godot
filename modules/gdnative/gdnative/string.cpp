@@ -65,17 +65,31 @@ void GDAPI godot_string_new_unicode_data(godot_string *r_dest, const wchar_t *p_
 
 void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *p_size) {
 	String *self = (String *)p_self;
-	if (p_size != NULL) {
-		*p_size = self->utf8().length();
-	}
-	if (p_dest != NULL) {
-		memcpy(p_dest, self->utf8().get_data(), *p_size);
+
+	if (p_size) {
+		// we have a length pointer, that means we either want to know
+		// the length or want to write *p_size bytes into a buffer
+
+		CharString utf8_string = self->utf8();
+
+		int len = utf8_string.length();
+
+		if (p_dest) {
+			memcpy(p_dest, utf8_string.get_data(), *p_size);
+		} else {
+			*p_size = len;
+		}
 	}
 }
 
 wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
 	String *self = (String *)p_self;
 	return &(self->operator[](p_idx));
+}
+
+wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx) {
+	const String *self = (const String *)p_self;
+	return self->operator[](p_idx);
 }
 
 const char GDAPI *godot_string_c_str(const godot_string *p_self) {
