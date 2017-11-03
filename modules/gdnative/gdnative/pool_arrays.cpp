@@ -106,6 +106,16 @@ void GDAPI godot_pool_byte_array_resize(godot_pool_byte_array *p_self, const god
 	self->resize(p_size);
 }
 
+godot_pool_byte_array_read_access GDAPI *godot_pool_byte_array_read(const godot_pool_byte_array *p_self) {
+	const PoolVector<uint8_t> *self = (const PoolVector<uint8_t> *)p_self;
+	return (godot_pool_byte_array_read_access *)memnew(PoolVector<uint8_t>::Read(self->read()));
+}
+
+godot_pool_byte_array_write_access GDAPI *godot_pool_byte_array_write(godot_pool_byte_array *p_self) {
+	PoolVector<uint8_t> *self = (PoolVector<uint8_t> *)p_self;
+	return (godot_pool_byte_array_write_access *)memnew(PoolVector<uint8_t>::Write(self->write()));
+}
+
 void GDAPI godot_pool_byte_array_set(godot_pool_byte_array *p_self, const godot_int p_idx, const uint8_t p_data) {
 	PoolVector<uint8_t> *self = (PoolVector<uint8_t> *)p_self;
 	self->set(p_idx, p_data);
@@ -185,6 +195,16 @@ void GDAPI godot_pool_int_array_resize(godot_pool_int_array *p_self, const godot
 	self->resize(p_size);
 }
 
+godot_pool_int_array_read_access GDAPI *godot_pool_int_array_read(const godot_pool_int_array *p_self) {
+	const PoolVector<godot_int> *self = (const PoolVector<godot_int> *)p_self;
+	return (godot_pool_int_array_read_access *)memnew(PoolVector<godot_int>::Read(self->read()));
+}
+
+godot_pool_int_array_write_access GDAPI *godot_pool_int_array_write(godot_pool_int_array *p_self) {
+	PoolVector<godot_int> *self = (PoolVector<godot_int> *)p_self;
+	return (godot_pool_int_array_write_access *)memnew(PoolVector<godot_int>::Write(self->write()));
+}
+
 void GDAPI godot_pool_int_array_set(godot_pool_int_array *p_self, const godot_int p_idx, const godot_int p_data) {
 	PoolVector<godot_int> *self = (PoolVector<godot_int> *)p_self;
 	self->set(p_idx, p_data);
@@ -260,8 +280,18 @@ void GDAPI godot_pool_real_array_remove(godot_pool_real_array *p_self, const god
 }
 
 void GDAPI godot_pool_real_array_resize(godot_pool_real_array *p_self, const godot_int p_size) {
-	PoolVector<godot_int> *self = (PoolVector<godot_int> *)p_self;
+	PoolVector<godot_real> *self = (PoolVector<godot_real> *)p_self;
 	self->resize(p_size);
+}
+
+godot_pool_real_array_read_access GDAPI *godot_pool_real_array_read(const godot_pool_real_array *p_self) {
+	const PoolVector<godot_real> *self = (const PoolVector<godot_real> *)p_self;
+	return (godot_pool_real_array_read_access *)memnew(PoolVector<godot_real>::Read(self->read()));
+}
+
+godot_pool_int_array_write_access GDAPI *godot_pool_real_array_write(godot_pool_real_array *p_self) {
+	PoolVector<godot_real> *self = (PoolVector<godot_real> *)p_self;
+	return (godot_pool_real_array_write_access *)memnew(PoolVector<godot_real>::Write(self->write()));
 }
 
 void GDAPI godot_pool_real_array_set(godot_pool_real_array *p_self, const godot_int p_idx, const godot_real p_data) {
@@ -344,6 +374,16 @@ void GDAPI godot_pool_string_array_remove(godot_pool_string_array *p_self, const
 void GDAPI godot_pool_string_array_resize(godot_pool_string_array *p_self, const godot_int p_size) {
 	PoolVector<String> *self = (PoolVector<String> *)p_self;
 	self->resize(p_size);
+}
+
+godot_pool_string_array_read_access GDAPI *godot_pool_string_array_read(const godot_pool_string_array *p_self) {
+	const PoolVector<String> *self = (const PoolVector<String> *)p_self;
+	return (godot_pool_string_array_read_access *)memnew(PoolVector<String>::Read(self->read()));
+}
+
+godot_pool_string_array_write_access GDAPI *godot_pool_string_array_write(godot_pool_string_array *p_self) {
+	PoolVector<String> *self = (PoolVector<String> *)p_self;
+	return (godot_pool_string_array_write_access *)memnew(PoolVector<String>::Write(self->write()));
 }
 
 void GDAPI godot_pool_string_array_set(godot_pool_string_array *p_self, const godot_int p_idx, const godot_string *p_data) {
@@ -433,6 +473,16 @@ void GDAPI godot_pool_vector2_array_resize(godot_pool_vector2_array *p_self, con
 	self->resize(p_size);
 }
 
+godot_pool_vector2_array_read_access GDAPI *godot_pool_vector2_array_read(const godot_pool_vector2_array *p_self) {
+	const PoolVector<Vector2> *self = (const PoolVector<Vector2> *)p_self;
+	return (godot_pool_vector2_array_read_access *)memnew(PoolVector<Vector2>::Read(self->read()));
+}
+
+godot_pool_vector2_array_write_access GDAPI *godot_pool_vector2_array_write(godot_pool_vector2_array *p_self) {
+	PoolVector<Vector2> *self = (PoolVector<Vector2> *)p_self;
+	return (godot_pool_vector2_array_write_access *)memnew(PoolVector<Vector2>::Write(self->write()));
+}
+
 void GDAPI godot_pool_vector2_array_set(godot_pool_vector2_array *p_self, const godot_int p_idx, const godot_vector2 *p_data) {
 	PoolVector<Vector2> *self = (PoolVector<Vector2> *)p_self;
 	Vector2 &s = *(Vector2 *)p_data;
@@ -517,6 +567,16 @@ void GDAPI godot_pool_vector3_array_remove(godot_pool_vector3_array *p_self, con
 void GDAPI godot_pool_vector3_array_resize(godot_pool_vector3_array *p_self, const godot_int p_size) {
 	PoolVector<Vector3> *self = (PoolVector<Vector3> *)p_self;
 	self->resize(p_size);
+}
+
+godot_pool_vector3_array_read_access GDAPI *godot_pool_vector3_array_read(const godot_pool_vector3_array *p_self) {
+	const PoolVector<Vector3> *self = (const PoolVector<Vector3> *)p_self;
+	return (godot_pool_vector3_array_read_access *)memnew(PoolVector<Vector3>::Read(self->read()));
+}
+
+godot_pool_vector3_array_write_access GDAPI *godot_pool_vector3_array_write(godot_pool_vector3_array *p_self) {
+	PoolVector<Vector3> *self = (PoolVector<Vector3> *)p_self;
+	return (godot_pool_vector3_array_write_access *)memnew(PoolVector<Vector3>::Write(self->write()));
 }
 
 void GDAPI godot_pool_vector3_array_set(godot_pool_vector3_array *p_self, const godot_int p_idx, const godot_vector3 *p_data) {
@@ -605,6 +665,16 @@ void GDAPI godot_pool_color_array_resize(godot_pool_color_array *p_self, const g
 	self->resize(p_size);
 }
 
+godot_pool_color_array_read_access GDAPI *godot_pool_color_array_read(const godot_pool_color_array *p_self) {
+	const PoolVector<Color> *self = (const PoolVector<Color> *)p_self;
+	return (godot_pool_color_array_read_access *)memnew(PoolVector<Color>::Read(self->read()));
+}
+
+godot_pool_color_array_write_access GDAPI *godot_pool_color_array_write(godot_pool_color_array *p_self) {
+	PoolVector<Color> *self = (PoolVector<Color> *)p_self;
+	return (godot_pool_color_array_write_access *)memnew(PoolVector<Color>::Write(self->write()));
+}
+
 void GDAPI godot_pool_color_array_set(godot_pool_color_array *p_self, const godot_int p_idx, const godot_color *p_data) {
 	PoolVector<Color> *self = (PoolVector<Color> *)p_self;
 	Color &s = *(Color *)p_data;
@@ -626,6 +696,196 @@ godot_int GDAPI godot_pool_color_array_size(const godot_pool_color_array *p_self
 
 void GDAPI godot_pool_color_array_destroy(godot_pool_color_array *p_self) {
 	((PoolVector<Color> *)p_self)->~PoolVector();
+}
+
+//
+// read accessor functions
+//
+
+const uint8_t GDAPI *godot_pool_byte_array_read_access_ptr(const godot_pool_byte_array_read_access *p_read) {
+	const PoolVector<uint8_t>::Read *read = (const PoolVector<uint8_t>::Read *)p_read;
+	return read->ptr();
+}
+void GDAPI godot_pool_byte_array_read_access_operator_assign(godot_pool_byte_array_read_access *p_read, godot_pool_byte_array_read_access *p_other) {
+	PoolVector<uint8_t>::Read *read = (PoolVector<uint8_t>::Read *)p_read;
+	PoolVector<uint8_t>::Read *other = (PoolVector<uint8_t>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_byte_array_read_access_destroy(godot_pool_byte_array_read_access *p_read) {
+	memdelete((PoolVector<uint8_t>::Read *)p_read);
+}
+
+const godot_int GDAPI *godot_pool_int_array_read_access_ptr(const godot_pool_int_array_read_access *p_read) {
+	const PoolVector<godot_int>::Read *read = (const PoolVector<godot_int>::Read *)p_read;
+	return read->ptr();
+}
+void GDAPI godot_pool_int_array_read_access_operator_assign(godot_pool_int_array_read_access *p_read, godot_pool_int_array_read_access *p_other) {
+	PoolVector<godot_int>::Read *read = (PoolVector<godot_int>::Read *)p_read;
+	PoolVector<godot_int>::Read *other = (PoolVector<godot_int>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_int_array_read_access_destroy(godot_pool_int_array_read_access *p_read) {
+	memdelete((PoolVector<godot_int>::Read *)p_read);
+}
+
+const godot_real GDAPI *godot_pool_real_array_read_access_ptr(const godot_pool_real_array_read_access *p_read) {
+	const PoolVector<godot_real>::Read *read = (const PoolVector<godot_real>::Read *)p_read;
+	return read->ptr();
+}
+void GDAPI godot_pool_real_array_read_access_operator_assign(godot_pool_real_array_read_access *p_read, godot_pool_real_array_read_access *p_other) {
+	PoolVector<godot_real>::Read *read = (PoolVector<godot_real>::Read *)p_read;
+	PoolVector<godot_real>::Read *other = (PoolVector<godot_real>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_real_array_read_access_destroy(godot_pool_real_array_read_access *p_read) {
+	memdelete((PoolVector<godot_real>::Read *)p_read);
+}
+
+const godot_string GDAPI *godot_pool_string_array_read_access_ptr(const godot_pool_string_array_read_access *p_read) {
+	const PoolVector<String>::Read *read = (const PoolVector<String>::Read *)p_read;
+	return (const godot_string *)read->ptr();
+}
+void GDAPI godot_pool_string_array_read_access_operator_assign(godot_pool_string_array_read_access *p_read, godot_pool_string_array_read_access *p_other) {
+	PoolVector<String>::Read *read = (PoolVector<String>::Read *)p_read;
+	PoolVector<String>::Read *other = (PoolVector<String>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_string_array_read_access_destroy(godot_pool_string_array_read_access *p_read) {
+	memdelete((PoolVector<String>::Read *)p_read);
+}
+
+const godot_vector2 GDAPI *godot_pool_vector2_array_read_access_ptr(const godot_pool_vector2_array_read_access *p_read) {
+	const PoolVector<Vector2>::Read *read = (const PoolVector<Vector2>::Read *)p_read;
+	return (const godot_vector2 *)read->ptr();
+}
+void GDAPI godot_pool_vector2_array_read_access_operator_assign(godot_pool_vector2_array_read_access *p_read, godot_pool_vector2_array_read_access *p_other) {
+	PoolVector<Vector2>::Read *read = (PoolVector<Vector2>::Read *)p_read;
+	PoolVector<Vector2>::Read *other = (PoolVector<Vector2>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_vector2_array_read_access_destroy(godot_pool_vector2_array_read_access *p_read) {
+	memdelete((PoolVector<Vector2>::Read *)p_read);
+}
+
+const godot_vector3 GDAPI *godot_pool_vector3_array_read_access_ptr(const godot_pool_vector3_array_read_access *p_read) {
+	const PoolVector<Vector3>::Read *read = (const PoolVector<Vector3>::Read *)p_read;
+	return (const godot_vector3 *)read->ptr();
+}
+void GDAPI godot_pool_vector3_array_read_access_operator_assign(godot_pool_vector3_array_read_access *p_read, godot_pool_vector3_array_read_access *p_other) {
+	PoolVector<Vector3>::Read *read = (PoolVector<Vector3>::Read *)p_read;
+	PoolVector<Vector3>::Read *other = (PoolVector<Vector3>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_vector3_array_read_access_destroy(godot_pool_vector3_array_read_access *p_read) {
+	memdelete((PoolVector<Vector2>::Read *)p_read);
+}
+
+const godot_color GDAPI *godot_pool_color_array_read_access_ptr(const godot_pool_color_array_read_access *p_read) {
+	const PoolVector<Color>::Read *read = (const PoolVector<Color>::Read *)p_read;
+	return (const godot_color *)read->ptr();
+}
+void GDAPI godot_pool_color_array_read_access_operator_assign(godot_pool_color_array_read_access *p_read, godot_pool_color_array_read_access *p_other) {
+	PoolVector<Color>::Read *read = (PoolVector<Color>::Read *)p_read;
+	PoolVector<Color>::Read *other = (PoolVector<Color>::Read *)p_other;
+	read->operator=(*other);
+}
+void GDAPI godot_pool_color_array_read_access_destroy(godot_pool_color_array_read_access *p_read) {
+	memdelete((PoolVector<Color>::Read *)p_read);
+}
+
+//
+// write accessor functions
+//
+
+uint8_t GDAPI *godot_pool_byte_array_write_access_ptr(const godot_pool_byte_array_write_access *p_write) {
+	PoolVector<uint8_t>::Write *write = (PoolVector<uint8_t>::Write *)p_write;
+	return write->ptr();
+}
+void GDAPI godot_pool_byte_array_write_access_operator_assign(godot_pool_byte_array_write_access *p_write, godot_pool_byte_array_write_access *p_other) {
+	PoolVector<uint8_t>::Write *write = (PoolVector<uint8_t>::Write *)p_write;
+	PoolVector<uint8_t>::Write *other = (PoolVector<uint8_t>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_byte_array_write_access_destroy(godot_pool_byte_array_write_access *p_write) {
+	memdelete((PoolVector<uint8_t>::Write *)p_write);
+}
+
+godot_int GDAPI *godot_pool_int_array_write_access_ptr(const godot_pool_int_array_write_access *p_write) {
+	PoolVector<godot_int>::Write *write = (PoolVector<godot_int>::Write *)p_write;
+	return write->ptr();
+}
+void GDAPI godot_pool_int_array_write_access_operator_assign(godot_pool_int_array_write_access *p_write, godot_pool_int_array_write_access *p_other) {
+	PoolVector<godot_int>::Write *write = (PoolVector<godot_int>::Write *)p_write;
+	PoolVector<godot_int>::Write *other = (PoolVector<godot_int>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_int_array_write_access_destroy(godot_pool_int_array_write_access *p_write) {
+	memdelete((PoolVector<godot_int>::Write *)p_write);
+}
+
+godot_real GDAPI *godot_pool_real_array_write_access_ptr(const godot_pool_real_array_write_access *p_write) {
+	PoolVector<godot_real>::Write *write = (PoolVector<godot_real>::Write *)p_write;
+	return write->ptr();
+}
+void GDAPI godot_pool_real_array_write_access_operator_assign(godot_pool_real_array_write_access *p_write, godot_pool_real_array_write_access *p_other) {
+	PoolVector<godot_real>::Write *write = (PoolVector<godot_real>::Write *)p_write;
+	PoolVector<godot_real>::Write *other = (PoolVector<godot_real>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_real_array_write_access_destroy(godot_pool_real_array_write_access *p_write) {
+	memdelete((PoolVector<godot_real>::Write *)p_write);
+}
+
+godot_string GDAPI *godot_pool_string_array_write_access_ptr(const godot_pool_string_array_write_access *p_write) {
+	PoolVector<String>::Write *write = (PoolVector<String>::Write *)p_write;
+	return (godot_string *)write->ptr();
+}
+void GDAPI godot_pool_string_array_write_access_operator_assign(godot_pool_string_array_write_access *p_write, godot_pool_string_array_write_access *p_other) {
+	PoolVector<String>::Write *write = (PoolVector<String>::Write *)p_write;
+	PoolVector<String>::Write *other = (PoolVector<String>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_string_array_write_access_destroy(godot_pool_string_array_write_access *p_write) {
+	memdelete((PoolVector<String>::Write *)p_write);
+}
+
+godot_vector2 GDAPI *godot_pool_vector2_array_write_access_ptr(const godot_pool_vector2_array_write_access *p_write) {
+	PoolVector<Vector2>::Write *write = (PoolVector<Vector2>::Write *)p_write;
+	return (godot_vector2 *)write->ptr();
+}
+void GDAPI godot_pool_vector2_array_write_access_operator_assign(godot_pool_vector2_array_write_access *p_write, godot_pool_vector2_array_write_access *p_other) {
+	PoolVector<Vector2>::Write *write = (PoolVector<Vector2>::Write *)p_write;
+	PoolVector<Vector2>::Write *other = (PoolVector<Vector2>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_vector2_array_write_access_destroy(godot_pool_vector2_array_write_access *p_write) {
+	memdelete((PoolVector<Vector2>::Write *)p_write);
+}
+
+godot_vector3 GDAPI *godot_pool_vector3_array_write_access_ptr(const godot_pool_vector3_array_write_access *p_write) {
+	PoolVector<Vector3>::Write *write = (PoolVector<Vector3>::Write *)p_write;
+	return (godot_vector3 *)write->ptr();
+}
+void GDAPI godot_pool_vector3_array_write_access_operator_assign(godot_pool_vector3_array_write_access *p_write, godot_pool_vector3_array_write_access *p_other) {
+	PoolVector<Vector3>::Write *write = (PoolVector<Vector3>::Write *)p_write;
+	PoolVector<Vector3>::Write *other = (PoolVector<Vector3>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_vector3_array_write_access_destroy(godot_pool_vector3_array_write_access *p_write) {
+	memdelete((PoolVector<Vector3>::Write *)p_write);
+}
+
+godot_color GDAPI *godot_pool_color_array_write_access_ptr(const godot_pool_color_array_write_access *p_write) {
+	PoolVector<Color>::Write *write = (PoolVector<Color>::Write *)p_write;
+	return (godot_color *)write->ptr();
+}
+void GDAPI godot_pool_color_array_write_access_operator_assign(godot_pool_color_array_write_access *p_write, godot_pool_color_array_write_access *p_other) {
+	PoolVector<Color>::Write *write = (PoolVector<Color>::Write *)p_write;
+	PoolVector<Color>::Write *other = (PoolVector<Color>::Write *)p_other;
+	write->operator=(*other);
+}
+void GDAPI godot_pool_color_array_write_access_destroy(godot_pool_color_array_write_access *p_write) {
+	memdelete((PoolVector<Color>::Write *)p_write);
 }
 
 #ifdef __cplusplus
