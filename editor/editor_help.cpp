@@ -1045,11 +1045,16 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			class_desc->pop(); // end monofont
 			if (cd.signals[i].description != "") {
 
+				class_desc->push_font(doc_font);
 				class_desc->push_color(comment_color);
-				class_desc->add_text(" ");
+				class_desc->push_indent(1);
+				// class_desc->add_text(" ");
 				_add_text(cd.signals[i].description);
+				class_desc->pop(); // indent
 				class_desc->pop();
+				class_desc->pop(); // font
 			}
+			class_desc->add_newline();
 			class_desc->add_newline();
 		}
 
@@ -1129,11 +1134,14 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 					class_desc->pop();
 					if (enum_list[i].description != "") {
 						class_desc->push_font(doc_font);
-						class_desc->add_text("  ");
+						//class_desc->add_text("  ");
+						class_desc->push_indent(1);
 						class_desc->push_color(comment_color);
 						_add_text(enum_list[i].description);
 						class_desc->pop();
 						class_desc->pop();
+						class_desc->pop(); // indent
+						class_desc->add_newline();
 					}
 
 					class_desc->add_newline();
@@ -1177,11 +1185,14 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 				class_desc->pop();
 				if (constants[i].description != "") {
 					class_desc->push_font(doc_font);
-					class_desc->add_text("  ");
+					class_desc->push_indent(1);
+					//class_desc->add_text("  ");
 					class_desc->push_color(comment_color);
 					_add_text(constants[i].description);
 					class_desc->pop();
 					class_desc->pop();
+					class_desc->pop(); // indent
+					class_desc->add_newline();
 				}
 
 				class_desc->add_newline();
@@ -1231,53 +1242,61 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			method_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 
+			class_desc->push_table(2);
+			class_desc->set_table_column_expand(1, 1);
+
+			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
-
 			class_desc->add_text(" ");
+			class_desc->pop(); // font
+			class_desc->pop(); // cell
+
+			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
-			class_desc->pop(); //color
+			class_desc->pop(); // color
+			class_desc->pop(); // font
+			class_desc->pop(); // cell
 
-			class_desc->add_text(" ");
-
-			class_desc->pop(); //font
+			//class_desc->add_text(" ");
 
 			if (cd.properties[i].setter != "") {
 
-				class_desc->push_font(doc_font);
+				class_desc->push_cell();
+				class_desc->pop(); // cell
 
-				class_desc->push_indent(2);
-				class_desc->push_color(comment_color);
-				class_desc->add_text("Setter: ");
-				class_desc->pop();
-
+				class_desc->push_cell();
+				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
 				class_desc->add_text(cd.properties[i].setter + "(value)");
-				class_desc->pop(); //color
-
-				class_desc->pop(); //indent
-
-				class_desc->pop(); //font
+				class_desc->pop(); // color
+				class_desc->push_color(comment_color);
+				class_desc->add_text(" setter");
+				class_desc->pop(); // color
+				class_desc->pop(); // font
+				class_desc->pop(); // cell
 			}
 
 			if (cd.properties[i].getter != "") {
 
-				class_desc->push_font(doc_font);
+				class_desc->push_cell();
+				class_desc->pop(); // cell
 
-				class_desc->push_indent(2);
-				class_desc->push_color(comment_color);
-				class_desc->add_text("Getter: ");
-				class_desc->pop();
-
+				class_desc->push_cell();
+				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
 				class_desc->add_text(cd.properties[i].getter + "()");
 				class_desc->pop(); //color
-
-				class_desc->pop(); //indent
-
+				class_desc->push_color(comment_color);
+				class_desc->add_text(" getter");
+				class_desc->pop(); //color
 				class_desc->pop(); //font
+				class_desc->pop(); //cell
 			}
+
+			class_desc->pop(); // table
 
 			class_desc->add_newline();
 
