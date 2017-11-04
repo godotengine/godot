@@ -53,6 +53,10 @@ String _find_build_engine_on_unix(const String &p_name) {
 	if (ret.length())
 		return ret;
 
+	String ret_fallback = path_which(p_name + ".exe");
+	if (ret_fallback.length())
+		return ret_fallback;
+
 	const char *locations[] = {
 #ifdef OSX_ENABLED
 		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
