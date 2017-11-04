@@ -1117,7 +1117,10 @@
 	</methods>
 	<constants>
 		<constant name="PI" value="3.141593" enum="">
-			Constant that represents how many times the diameter of a circumference fits around its perimeter.
+			Constant that represents how many times the diameter of a circle fits around its perimeter.
+		</constant>
+		<constant name="TAU" value="6.2831853" enum="">
+			The circle constant, the circumference of the unit circle.
 		</constant>
 		<constant name="INF" value="inf" enum="">
 			A positive infinity. (For negative infinity, use -INF).

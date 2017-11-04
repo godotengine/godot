@@ -1776,8 +1776,8 @@ VisualScriptBasicTypeConstant::VisualScriptBasicTypeConstant() {
 const char *VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX] = {
 	"One",
 	"PI",
-	"PIx2",
 	"PI/2",
+	"TAU",
 	"E",
 	"Sqrt2",
 	"INF",
@@ -1787,8 +1787,8 @@ const char *VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX] = {
 double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX] = {
 	1.0,
 	Math_PI,
-	Math_PI * 2,
 	Math_PI * 0.5,
+	Math_TAU,
 	2.71828182845904523536,
 	Math::sqrt(2.0),
 	Math_INF,
@@ -1886,8 +1886,8 @@ void VisualScriptMathConstant::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_ONE);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_PI);
-	BIND_ENUM_CONSTANT(MATH_CONSTANT_2PI);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_HALF_PI);
+	BIND_ENUM_CONSTANT(MATH_CONSTANT_TAU);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_E);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_SQRT2);
 	BIND_ENUM_CONSTANT(MATH_CONSTANT_INF);

@@ -564,6 +564,9 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					} else if (id == "PI") {
 						r_token.type = TK_CONSTANT;
 						r_token.value = Math_PI;
+					} else if (id == "TAU") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_TAU;
 					} else if (id == "INF") {
 						r_token.type = TK_CONSTANT;
 						r_token.value = Math_INF;

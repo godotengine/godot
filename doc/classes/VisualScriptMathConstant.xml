@@ -42,11 +42,11 @@
 		<constant name="MATH_CONSTANT_PI" value="1">
 			Pi: [code]3.141593[/code]
 		</constant>
-		<constant name="MATH_CONSTANT_2PI" value="2">
-			Pi times two: [code]6.283185[/code]
-		</constant>
-		<constant name="MATH_CONSTANT_HALF_PI" value="3">
+		<constant name="MATH_CONSTANT_HALF_PI" value="2">
 			Pi divided by two: [code]1.570796[/code]
+		</constant>
+		<constant name="MATH_CONSTANT_TAU" value="3">
+			Tau: [code]6.283185[/code]
 		</constant>
 		<constant name="MATH_CONSTANT_E" value="4">
 			Natural log: [code]2.718282[/code]

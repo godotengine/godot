@@ -1324,6 +1324,7 @@ void GDScriptLanguage::init() {
 	}
 
 	_add_global(StaticCString::create("PI"), Math_PI);
+	_add_global(StaticCString::create("TAU"), Math_TAU);
 	_add_global(StaticCString::create("INF"), Math_INF);
 	_add_global(StaticCString::create("NAN"), Math_NAN);
 
@@ -1700,6 +1701,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"bool",
 		"null",
 		"PI",
+		"TAU",
 		"INF",
 		"NAN",
 		"self",

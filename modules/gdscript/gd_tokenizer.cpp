@@ -123,6 +123,7 @@ const char *GDTokenizer::token_names[TK_MAX] = {
 	"'$'",
 	"'\\n'",
 	"PI",
+	"TAU",
 	"_",
 	"INF",
 	"NAN",
@@ -217,6 +218,7 @@ static const _kws _keyword_list[] = {
 	{ GDTokenizer::TK_CF_PASS, "pass" },
 	{ GDTokenizer::TK_SELF, "self" },
 	{ GDTokenizer::TK_CONST_PI, "PI" },
+	{ GDTokenizer::TK_CONST_TAU, "TAU" },
 	{ GDTokenizer::TK_WILDCARD, "_" },
 	{ GDTokenizer::TK_CONST_INF, "INF" },
 	{ GDTokenizer::TK_CONST_NAN, "NAN" },
@@ -280,6 +282,7 @@ bool GDTokenizer::is_token_literal(int p_offset, bool variable_safe) const {
 		case TK_CF_PASS:
 		case TK_SELF:
 		case TK_CONST_PI:
+		case TK_CONST_TAU:
 		case TK_WILDCARD:
 		case TK_CONST_INF:
 		case TK_CONST_NAN:
