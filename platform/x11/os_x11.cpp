@@ -74,6 +74,8 @@
 
 #include <X11/XKBlib.h>
 
+#include "modules/bullet/bullet_physics_server.h"
+
 int OS_X11::get_video_driver_count() const {
 	return 1;
 }

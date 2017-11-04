@@ -1050,6 +1050,10 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
 	using_datapack = false;
+
+	// Physics settings
+	Compression::zstd_level = GLOBAL_DEF("physics/3d/physics_engine", 0);
+	custom_prop_info["physics/3d/physics_engine"] = PropertyInfo(Variant::INT, "physics/3d/physics_engine", PROPERTY_HINT_ENUM, "GodotDefault,Bullet");
 }
 
 ProjectSettings::~ProjectSettings() {

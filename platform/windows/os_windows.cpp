@@ -53,6 +53,8 @@
 #include <regstr.h>
 #include <shlobj.h>
 
+#include "modules/bullet/bullet_physics_server.h"
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
