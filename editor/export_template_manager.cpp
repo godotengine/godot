@@ -127,7 +127,7 @@ void ExportTemplateManager::_download_template(const String &p_version) {
 	template_list_state->set_text(TTR("Retrieving mirrors, please wait.."));
 	template_download_progress->set_max(100);
 	template_download_progress->set_value(0);
-	request_mirror->request("https://www.godotengine.org/download_mirrors.php?version=" + p_version);
+	request_mirror->request("https://godotengine.org/mirrorlist/" + p_version + ".json");
 	template_list_state->show();
 	template_download_progress->show();
 }
@@ -319,8 +319,16 @@ void ExportTemplateManager::ok_pressed() {
 
 void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data) {
 
-	print_line("mirror complete");
-	String mirror_str = "{ \"mirrors\":[{\"name\":\"Official\",\"url\":\"http://op.godotengine.org:81/downloads/2.1.4/Godot_v2.1.4-stable_linux_server.64.zip\"}] }";
+	if (p_status != HTTPRequest::RESULT_SUCCESS || p_code != 200) {
+		EditorNode::get_singleton()->show_warning("Error getting the list of mirrors.");
+		return;
+	}
+
+	String mirror_str;
+	{
+		PoolByteArray::Read r = p_data.read();
+		mirror_str.parse_utf8((const char *)r.ptr(), p_data.size());
+	}
 
 	template_list_state->hide();
 	template_download_progress->hide();
@@ -330,7 +338,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 	int errline;
 	Error err = JSON::parse(mirror_str, r, errs, errline);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning("Error parsing JSON with mirror list. Please report this issue!");
+		EditorNode::get_singleton()->show_warning("Error parsing JSON of mirror list. Please report this issue!");
 		return;
 	}
 
