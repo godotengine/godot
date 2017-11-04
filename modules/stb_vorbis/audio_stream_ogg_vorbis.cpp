@@ -36,36 +36,54 @@
 #include "thirdparty/misc/stb_vorbis.c"
 #pragma GCC diagnostic pop
 
+#ifndef CLAMP
+#define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
+#endif
+
 void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	ERR_FAIL_COND(!active);
 
 	int todo = p_frames;
 
-	while (todo && active) {
+	int start_buffer = 0;
 
-		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, (float *)p_buffer, todo * 2);
+	while (todo > 0 && active) {
+		float *buffer = (float *)p_buffer;
+		if (start_buffer > 0) {
+			buffer = (buffer + start_buffer * 2);
+		}
+		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, buffer, todo * 2);
 		if (vorbis_stream->channels == 1 && mixed > 0) {
 			//mix mono to stereo
-			for (int i = 0; i < mixed; i++) {
+			for (int i = start_buffer; i < mixed; i++) {
 				p_buffer[i].r = p_buffer[i].l;
 			}
 		}
 		todo -= mixed;
 		frames_mixed += mixed;
 
-		if (todo) {
+		if (todo > 0) {
 			//end of file!
 			if (vorbis_stream->loop) {
-				//loop
-				seek(vorbis_stream->loop_offset);
+				//loop to the loop_beginning
+				seek(vorbis_stream->loop_begin);
 				loops++;
+				// we still have buffer to fill, start from this element in the next iteration.
+				start_buffer = p_frames - todo;
 			} else {
-				for (int i = mixed; i < p_frames; i++) {
+				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
 				}
 				active = false;
+				todo = 0;
 			}
+		} else if (vorbis_stream->loop && frames_mixed >= vorbis_stream->loop_end_frames) {
+			// We reached loop_end. Loop to loop_begin plus whatever extra length we already mixed
+			uint32_t frames_to_advance = uint32_t(frames_mixed - vorbis_stream->loop_end_frames);
+			float start_loop = vorbis_stream->loop_begin + (float(frames_to_advance) / vorbis_stream->sample_rate);
+			seek(start_loop);
+			loops++;
 		}
 	}
 }
@@ -199,6 +217,9 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 			//print_line("succeeded "+itos(ogg_alloc.alloc_buffer_length_in_bytes)+" setup "+itos(info.setup_memory_required)+" setup temp "+itos(info.setup_temp_memory_required)+" temp "+itos(info.temp_memory_required)+" maxframe"+itos(info.max_frame_size));
 
 			length = stb_vorbis_stream_length_in_seconds(ogg_stream);
+			if (loop_end == 0) {
+				set_loop_end(length);
+			}
 			stb_vorbis_close(ogg_stream);
 
 			data = AudioServer::get_singleton()->audio_data_alloc(src_data_len, src_datar.ptr());
@@ -233,12 +254,24 @@ bool AudioStreamOGGVorbis::has_loop() const {
 	return loop;
 }
 
-void AudioStreamOGGVorbis::set_loop_offset(float p_seconds) {
-	loop_offset = p_seconds;
+void AudioStreamOGGVorbis::set_loop_begin(float p_seconds) {
+	p_seconds = CLAMP(p_seconds, 0, length);
+	loop_begin = p_seconds;
+	loop_begin_frames = uint32_t(sample_rate * p_seconds);
 }
 
-float AudioStreamOGGVorbis::get_loop_offset() const {
-	return loop_offset;
+float AudioStreamOGGVorbis::get_loop_begin() const {
+	return loop_begin;
+}
+
+void AudioStreamOGGVorbis::set_loop_end(float p_seconds) {
+	p_seconds = CLAMP(p_seconds, 0, length);
+	loop_end = p_seconds;
+	loop_end_frames = uint32_t(sample_rate * p_seconds);
+}
+
+float AudioStreamOGGVorbis::get_loop_end() const {
+	return loop_end;
 }
 
 void AudioStreamOGGVorbis::_bind_methods() {
@@ -249,12 +282,16 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "enable"), &AudioStreamOGGVorbis::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamOGGVorbis::has_loop);
 
-	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamOGGVorbis::set_loop_offset);
-	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamOGGVorbis::get_loop_offset);
+	ClassDB::bind_method(D_METHOD("set_loop_begin", "seconds"), &AudioStreamOGGVorbis::set_loop_begin);
+	ClassDB::bind_method(D_METHOD("get_loop_begin"), &AudioStreamOGGVorbis::get_loop_begin);
+
+	ClassDB::bind_method(D_METHOD("set_loop_end", "seconds"), &AudioStreamOGGVorbis::set_loop_end);
+	ClassDB::bind_method(D_METHOD("get_loop_end"), &AudioStreamOGGVorbis::get_loop_end);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "loop_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop_offset", "get_loop_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "loop_begin", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop_begin", "get_loop_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "loop_end", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_loop_end", "get_loop_end");
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
@@ -263,7 +300,10 @@ AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 	length = 0;
 	sample_rate = 1;
 	channels = 1;
-	loop_offset = 0;
+	loop_begin = 0;
+	loop_end = 0;
+	loop_begin_frames = 0;
+	loop_end_frames = 0;
 	decode_mem_size = 0;
-	loop = false;
+	loop = true;
 }
