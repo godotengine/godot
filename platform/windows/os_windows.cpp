@@ -42,7 +42,6 @@
 #include "lang_table.h"
 #include "main/main.h"
 #include "packet_peer_udp_winsock.h"
-#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
@@ -1058,12 +1057,6 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
-	physics_server = memnew(PhysicsServerSW);
-	physics_server->init();
-
-	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
-	physics_2d_server->init();
-
 	if (!is_no_window_mode_enabled()) {
 		ShowWindow(hWnd, SW_SHOW); // Show The Window
 		SetForegroundWindow(hWnd); // Slightly Higher Priority
@@ -1225,12 +1218,6 @@ void OS_Windows::finalize() {
 		memdelete(debugger_connection_console);
 	}
 	*/
-
-	physics_server->finish();
-	memdelete(physics_server);
-
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
 }
 
 void OS_Windows::finalize_core() {

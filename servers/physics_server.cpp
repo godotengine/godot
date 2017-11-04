@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_server.h"
+#include "core/project_settings.h"
 #include "print_string.h"
+
 PhysicsServer *PhysicsServer::singleton = NULL;
 
 void PhysicsDirectBodyState::integrate_forces() {
@@ -731,4 +733,69 @@ PhysicsServer::PhysicsServer() {
 PhysicsServer::~PhysicsServer() {
 
 	singleton = NULL;
+}
+
+Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;
+int PhysicsServerManager::default_server_id = -1;
+int PhysicsServerManager::default_server_priority = -1;
+const String PhysicsServerManager::setting_property_name("physics/3d/physics_engine");
+
+void PhysicsServerManager::on_servers_changed() {
+
+	String physics_servers("DEFAULT");
+	for (int i = get_servers_count() - 1; 0 <= i; --i) {
+		physics_servers += "," + get_server_name(i);
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
+}
+
+void PhysicsServerManager::register_server(const String &p_name, CreatePhysicsServerCallback p_creat_callback) {
+
+	ERR_FAIL_COND(!p_creat_callback);
+	ERR_FAIL_COND(find_server_id(p_name) != -1);
+	physics_servers.push_back(ClassInfo(p_name, p_creat_callback));
+	on_servers_changed();
+}
+
+void PhysicsServerManager::set_default_server(const String &p_name, int p_priority) {
+
+	const int id = find_server_id(p_name);
+	ERR_FAIL_COND(id == -1); // Not found
+	if (default_server_priority < p_priority) {
+		default_server_id = id;
+		default_server_priority = p_priority;
+	}
+}
+
+int PhysicsServerManager::find_server_id(const String &p_name) {
+
+	for (int i = physics_servers.size() - 1; 0 <= i; --i) {
+		if (p_name == physics_servers[i].name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int PhysicsServerManager::get_servers_count() {
+	return physics_servers.size();
+}
+
+String PhysicsServerManager::get_server_name(int p_id) {
+	ERR_FAIL_INDEX_V(p_id, get_servers_count(), "");
+	return physics_servers[p_id].name;
+}
+
+PhysicsServer *PhysicsServerManager::new_default_server() {
+	ERR_FAIL_COND_V(default_server_id == -1, NULL);
+	return physics_servers[default_server_id].create_callback();
+}
+
+PhysicsServer *PhysicsServerManager::new_server(const String &p_name) {
+	int id = find_server_id(p_name);
+	if (id == -1) {
+		return NULL;
+	} else {
+		return physics_servers[id].create_callback();
+	}
 }

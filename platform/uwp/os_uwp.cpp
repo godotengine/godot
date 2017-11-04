@@ -264,13 +264,6 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 	}
 	*/
 
-	//
-	physics_server = memnew(PhysicsServerSW);
-	physics_server->init();
-
-	physics_2d_server = memnew(Physics2DServerSW);
-	physics_2d_server->init();
-
 	visual_server->init();
 
 	input = memnew(InputDefault);
@@ -368,12 +361,6 @@ void OSUWP::finalize() {
 #endif
 
 	memdelete(input);
-
-	physics_server->finish();
-	memdelete(physics_server);
-
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
 
 	joypad = nullptr;
 }

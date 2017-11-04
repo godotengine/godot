@@ -42,9 +42,6 @@
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
-#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-#include "servers/physics_server.h"
 #include "servers/visual/rasterizer.h"
 
 #include <X11/Xcursor/Xcursor.h>
@@ -121,10 +118,8 @@ class OS_X11 : public OS_Unix {
 	uint64_t last_click_ms;
 	uint32_t last_button_state;
 
-	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
-	Physics2DServer *physics_2d_server;
 
 	MouseMode mouse_mode;
 	Point2i center;

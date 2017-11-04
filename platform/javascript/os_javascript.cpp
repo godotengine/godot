@@ -480,11 +480,6 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 
 	print_line("Init Physicsserver");
 
-	physics_server = memnew(PhysicsServerSW);
-	physics_server->init();
-	physics_2d_server = memnew(Physics2DServerSW);
-	physics_2d_server->init();
-
 	input = memnew(InputDefault);
 	_input = input;
 

@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "main/main.h"
 #include "os_windows.h"
+#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 

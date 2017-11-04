@@ -29,8 +29,8 @@
 /*************************************************************************/
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
-
 #include "context_gl_win.h"
+#include "core/project_settings.h"
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
@@ -38,7 +38,6 @@
 #include "os/os.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
-#include "servers/physics/physics_server_sw.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 #ifdef XAUDIO2_ENABLED
@@ -47,8 +46,6 @@
 #include "drivers/unix/ip_unix.h"
 #include "key_mapping_win.h"
 #include "main/input_default.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
-#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -90,8 +87,6 @@ class OS_Windows : public OS {
 	ContextGL_Win *gl_context;
 #endif
 	VisualServer *visual_server;
-	PhysicsServer *physics_server;
-	Physics2DServer *physics_2d_server;
 	int pressrc;
 	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application

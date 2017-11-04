@@ -32,7 +32,6 @@
 #include "errno.h"
 #include "key_mapping_x11.h"
 #include "print_string.h"
-#include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -462,12 +461,6 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	requested = None;
 
 	visual_server->init();
-	//
-	physics_server = memnew(PhysicsServerSW);
-	physics_server->init();
-	//physics_2d_server = memnew( Physics2DServerSW );
-	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
-	physics_2d_server->init();
 
 	input = memnew(InputDefault);
 
@@ -522,12 +515,6 @@ void OS_X11::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
-
-	physics_server->finish();
-	memdelete(physics_server);
-
-	physics_2d_server->finish();
-	memdelete(physics_2d_server);
 
 	memdelete(power_manager);
 

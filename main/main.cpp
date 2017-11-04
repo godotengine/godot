@@ -47,6 +47,8 @@
 #include "scene/main/scene_tree.h"
 #include "servers/arvr_server.h"
 #include "servers/audio_server.h"
+#include "servers/physics_2d_server.h"
+#include "servers/physics_server.h"
 
 #include "io/resource_loader.h"
 #include "script_language.h"
@@ -84,6 +86,8 @@ static bool _start_success = false;
 static ScriptDebugger *script_debugger = NULL;
 AudioServer *audio_server = NULL;
 ARVRServer *arvr_server = NULL;
+PhysicsServer *physics_server = NULL;
+Physics2DServer *physics_2d_server = NULL;
 
 static MessageQueue *message_queue = NULL;
 static Performance *performance = NULL;
@@ -119,6 +123,35 @@ static bool disable_render_loop = false;
 static int fixed_fps = -1;
 
 static OS::ProcessID allow_focus_steal_pid = 0;
+
+void initialize_physics() {
+
+	/// 3D Physics Server
+	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
+	if (!physics_server) {
+		// Physics server not found, Use the default physics
+		physics_server = PhysicsServerManager::new_default_server();
+	}
+	ERR_FAIL_COND(!physics_server);
+	physics_server->init();
+
+	/// 2D Physics server
+	physics_2d_server = Physics2DServerManager::new_server(ProjectSettings::get_singleton()->get(Physics2DServerManager::setting_property_name));
+	if (!physics_2d_server) {
+		// Physics server not found, Use the default physics
+		physics_2d_server = Physics2DServerManager::new_default_server();
+	}
+	ERR_FAIL_COND(!physics_2d_server);
+	physics_2d_server->init();
+}
+
+void finalize_physics() {
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+}
 
 static String unescape_cmdline(const String &p_str) {
 
@@ -1072,9 +1105,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
-	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
+	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
 
 	register_module_types();
+
+	initialize_physics();
+	register_server_singletons();
+
 	register_driver_types();
 
 	ScriptServer::init_languages();
@@ -1791,6 +1828,7 @@ void Main::cleanup() {
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
+	finalize_physics();
 
 	if (packed_data)
 		memdelete(packed_data);

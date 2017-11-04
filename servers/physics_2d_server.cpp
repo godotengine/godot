@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_2d_server.h"
+#include "core/project_settings.h"
 #include "print_string.h"
+
 Physics2DServer *Physics2DServer::singleton = NULL;
 
 void Physics2DDirectBodyState::integrate_forces() {
@@ -691,4 +693,69 @@ Physics2DServer::Physics2DServer() {
 Physics2DServer::~Physics2DServer() {
 
 	singleton = NULL;
+}
+
+Vector<Physics2DServerManager::ClassInfo> Physics2DServerManager::physics_2d_servers;
+int Physics2DServerManager::default_server_id = -1;
+int Physics2DServerManager::default_server_priority = -1;
+const String Physics2DServerManager::setting_property_name("physics/2d/physics_engine");
+
+void Physics2DServerManager::on_servers_changed() {
+
+	String physics_servers("DEFAULT");
+	for (int i = get_servers_count() - 1; 0 <= i; --i) {
+		physics_servers += "," + get_server_name(i);
+	}
+	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
+}
+
+void Physics2DServerManager::register_server(const String &p_name, CreatePhysics2DServerCallback p_creat_callback) {
+
+	ERR_FAIL_COND(!p_creat_callback);
+	ERR_FAIL_COND(find_server_id(p_name) != -1);
+	physics_2d_servers.push_back(ClassInfo(p_name, p_creat_callback));
+	on_servers_changed();
+}
+
+void Physics2DServerManager::set_default_server(const String &p_name, int p_priority) {
+
+	const int id = find_server_id(p_name);
+	ERR_FAIL_COND(id == -1); // Not found
+	if (default_server_priority < p_priority) {
+		default_server_id = id;
+		default_server_priority = p_priority;
+	}
+}
+
+int Physics2DServerManager::find_server_id(const String &p_name) {
+
+	for (int i = physics_2d_servers.size() - 1; 0 <= i; --i) {
+		if (p_name == physics_2d_servers[i].name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int Physics2DServerManager::get_servers_count() {
+	return physics_2d_servers.size();
+}
+
+String Physics2DServerManager::get_server_name(int p_id) {
+	ERR_FAIL_INDEX_V(p_id, get_servers_count(), "");
+	return physics_2d_servers[p_id].name;
+}
+
+Physics2DServer *Physics2DServerManager::new_default_server() {
+	ERR_FAIL_COND_V(default_server_id == -1, NULL);
+	return physics_2d_servers[default_server_id].create_callback();
+}
+
+Physics2DServer *Physics2DServerManager::new_server(const String &p_name) {
+	int id = find_server_id(p_name);
+	if (id == -1) {
+		return NULL;
+	} else {
+		return physics_2d_servers[id].create_callback();
+	}
 }
