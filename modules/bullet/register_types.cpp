@@ -33,8 +33,14 @@
 #include "bullet_physics_server.h"
 #include "class_db.h"
 
+PhysicsServer *_createBulletPhysicsCallback() {
+	return memnew(BulletPhysicsServer);
+}
+
 void register_bullet_types() {
-	ClassDB::register_class<BulletPhysicsServer>();
+
+	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
+	PhysicsServerManager::set_default_server("Bullet", 1);
 }
 
 void unregister_bullet_types() {

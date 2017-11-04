@@ -464,21 +464,6 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	visual_server->init();
 
-	//
-
-	if (!int(ProjectSettings::get_singleton()->get("physics/3d/physics_engine"))) {
-		// 0 Godot default
-		physics_server = memnew(PhysicsServerSW);
-	} else {
-		// 1 Bullet
-		physics_server = memnew(BulletPhysicsServer);
-	}
-	physics_server->init();
-
-	//physics_2d_server = memnew( Physics2DServerSW );
-	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
-	physics_2d_server->init();
-
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
