@@ -171,6 +171,9 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
 		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
 		bool current_item_is_preffered = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(to_select_type, preferred_search_result_type);
+		if (*to_select && p_type.length() < (*to_select)->get_text(0).length()) {
+			current_item_is_preffered = true;
+		}
 
 		if (((!*to_select || current_item_is_preffered) && is_search_subsequence) || search_box->get_text() == p_type) {
 			*to_select = item;
@@ -293,6 +296,7 @@ void CreateDialog::_update_search() {
 
 	if (to_select) {
 		to_select->select(0);
+		search_options->scroll_to_item(to_select);
 		favorite->set_disabled(false);
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0)) != -1);
 	}
