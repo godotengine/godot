@@ -37,7 +37,7 @@ class ConfigFile : public Reference {
 
 	GDCLASS(ConfigFile, Reference);
 
-	Map<String, OrderedHashMap<String, Variant> > values;
+	OrderedHashMap<String, OrderedHashMap<String, Variant> > values;
 
 	PoolStringArray _get_sections() const;
 	PoolStringArray _get_section_keys(const String &p_section) const;
