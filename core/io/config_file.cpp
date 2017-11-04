@@ -106,8 +106,8 @@ bool ConfigFile::has_section_key(const String &p_section, const String &p_key) c
 
 void ConfigFile::get_sections(List<String> *r_sections) const {
 
-	for (const Map<String, OrderedHashMap<String, Variant> >::Element *E = values.front(); E; E = E->next()) {
-		r_sections->push_back(E->key());
+	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::ConstElement E = values.front(); E; E = E.next()) {
+		r_sections->push_back(E.key());
 	}
 }
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
@@ -135,13 +135,13 @@ Error ConfigFile::save(const String &p_path) {
 		return err;
 	}
 
-	for (Map<String, OrderedHashMap<String, Variant> >::Element *E = values.front(); E; E = E->next()) {
+	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::Element E = values.front(); E; E = E.next()) {
 
 		if (E != values.front())
 			file->store_string("\n");
-		file->store_string("[" + E->key() + "]\n\n");
+		file->store_string("[" + E.key() + "]\n\n");
 
-		for (OrderedHashMap<String, Variant>::Element F = E->get().front(); F; F = F.next()) {
+		for (OrderedHashMap<String, Variant>::Element F = E.get().front(); F; F = F.next()) {
 
 			String vstr;
 			VariantWriter::write_to_string(F.get(), vstr);

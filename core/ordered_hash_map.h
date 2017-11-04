@@ -93,8 +93,12 @@ public:
 			return *this;
 		}
 
-		friend bool operator==(const Element &, const Element &);
-		friend bool operator!=(const Element &, const Element &);
+		_FORCE_INLINE_ bool operator==(const Element &p_other) const {
+			return this->list_element == p_other.list_element;
+		}
+		_FORCE_INLINE_ bool operator!=(const Element &p_other) const {
+			return this->list_element != p_other.list_element;
+		}
 
 		operator bool() const {
 			return (list_element != NULL);
@@ -157,8 +161,12 @@ public:
 			return ConstElement(list_element ? list_element->prev() : NULL);
 		}
 
-		friend bool operator==(const ConstElement &, const ConstElement &);
-		friend bool operator!=(const ConstElement &, const ConstElement &);
+		_FORCE_INLINE_ bool operator==(const ConstElement &p_other) const {
+			return this->list_element == p_other.list_element;
+		}
+		_FORCE_INLINE_ bool operator!=(const ConstElement &p_other) const {
+			return this->list_element != p_other.list_element;
+		}
 
 		operator bool() const {
 			return (list_element != NULL);
@@ -287,29 +295,5 @@ public:
 	_FORCE_INLINE_ OrderedHashMap() {
 	}
 };
-
-template <class K, class V, class Hasher, class Comparator, uint8_t MIN_HASH_TABLE_POWER, uint8_t RELATIONSHIP>
-bool operator==(const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::Element &first,
-		const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::Element &second) {
-	return (first.list_element == second.list_element);
-}
-
-template <class K, class V, class Hasher, class Comparator, uint8_t MIN_HASH_TABLE_POWER, uint8_t RELATIONSHIP>
-bool operator!=(const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::Element &first,
-		const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::Element &second) {
-	return (first.list_element != second.list_element);
-}
-
-template <class K, class V, class Hasher, class Comparator, uint8_t MIN_HASH_TABLE_POWER, uint8_t RELATIONSHIP>
-bool operator==(const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::ConstElement &first,
-		const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::ConstElement &second) {
-	return (first.list_element == second.list_element);
-}
-
-template <class K, class V, class Hasher, class Comparator, uint8_t MIN_HASH_TABLE_POWER, uint8_t RELATIONSHIP>
-bool operator!=(const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::ConstElement &first,
-		const typename OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>::ConstElement &second) {
-	return (first.list_element != second.list_element);
-}
 
 #endif // ORDERED_HASH_MAP_H
