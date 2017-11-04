@@ -11,15 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="add_interface">
-			<return type="void">
-			</return>
-			<argument index="0" name="interface" type="ARVRInterface">
-			</argument>
-			<description>
-				Mostly exposed for GDNative based interfaces, this is called to register an available interface with the AR/VR server.
-			</description>
-		</method>
 		<method name="center_on_hmd">
 			<return type="void">
 			</return>
@@ -61,6 +52,13 @@
 				Get the number of interfaces currently registered with the AR/VR server. If you're game supports multiple AR/VR platforms you can look throught the available interface and either present the user with a selection or simply try an initialize each interface and use the first one that returns true.
 			</description>
 		</method>
+		<method name="get_interfaces" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns a list of available interfaces with both id and name of the interface.
+			</description>
+		</method>
 		<method name="get_reference_frame" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -89,15 +87,6 @@
 			</return>
 			<description>
 				Returns our world scale (see ARVROrigin for more information).
-			</description>
-		</method>
-		<method name="remove_interface">
-			<return type="void">
-			</return>
-			<argument index="0" name="interface" type="ARVRInterface">
-			</argument>
-			<description>
-				Removes a registered interface, again exposed mostly for GDNative based interfaces.
 			</description>
 		</method>
 		<method name="set_primary_interface">

@@ -323,7 +323,7 @@ void MobileVRInterface::uninitialize() {
 	};
 };
 
-Size2 MobileVRInterface::get_recommended_render_targetsize() {
+Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size

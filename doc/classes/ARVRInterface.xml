@@ -33,7 +33,7 @@
 				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
 			</description>
 		</method>
-		<method name="get_recommended_render_targetsize">
+		<method name="get_render_targetsize">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -139,7 +139,7 @@
 			This interface support AR (video background and real world tracking).
 		</constant>
 		<constant name="ARVR_EXTERNAL" value="8">
-			This interface outputs to an external device, if the main viewport is used the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of get_recommended_render_targetsize. Using a seperate viewport node frees up the main viewport for other purposes.
+			This interface outputs to an external device, if the main viewport is used the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of get_render_targetsize. Using a seperate viewport node frees up the main viewport for other purposes.
 		</constant>
 		<constant name="EYE_MONO" value="0">
 			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.

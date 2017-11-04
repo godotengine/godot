@@ -68,7 +68,7 @@ public:
 	virtual void set_anchor_detection_is_enabled(bool p_enable);
 
 	/** rendering and internal **/
-	virtual Size2 get_recommended_render_targetsize();
+	virtual Size2 get_render_targetsize();
 	virtual bool is_stereo();
 	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform);
 
