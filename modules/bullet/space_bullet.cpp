@@ -361,7 +361,7 @@ void SpaceBullet::flush_queries() {
 }
 
 void SpaceBullet::step(real_t p_delta_time) {
-	dynamicsWorld->stepSimulation(p_delta_time);
+	dynamicsWorld->stepSimulation(p_delta_time, 0, 0);
 }
 
 void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
