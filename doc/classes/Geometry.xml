@@ -15,6 +15,7 @@
 			<argument index="0" name="extents" type="Vector3">
 			</argument>
 			<description>
+				Returns an array with 6 [Plane]s that describe the sides of a box centered at the origin. The box size is defined by [code]extents[/code], which represents one (positive) corner of the box (i.e. half its actual size).
 			</description>
 		</method>
 		<method name="build_capsule_planes">
@@ -31,6 +32,7 @@
 			<argument index="4" name="axis" type="int" enum="Vector3.Axis" default="2">
 			</argument>
 			<description>
+				Returns an array of [Plane]s closely bounding a faceted capsule centered at the origin with radius [code]radius[/code] and height [code]height[/code]. The parameter [code]sides[/code] defines how many planes will be generated for the side part of the capsule, whereas [code]lats[/code] gives the number of latitudinal steps at the bottom and top of the capsule. The parameter [code]axis[/code] describes the axis along which the capsule is oriented (0 for X, 1 for Y, 2 for Z).
 			</description>
 		</method>
 		<method name="build_cylinder_planes">
@@ -45,6 +47,7 @@
 			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="2">
 			</argument>
 			<description>
+				Returns an array of [Plane]s closely bounding a faceted cylinder centered at the origin with radius [code]radius[/code] and height [code]height[/code]. The parameter [code]sides[/code] defines how many planes will be generated for the round part of the cylinder. The parameter [code]axis[/code] describes the axis along which the cylinder is oriented (0 for X, 1 for Y, 2 for Z).
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">
@@ -57,6 +60,7 @@
 			<argument index="2" name="s2" type="Vector3">
 			</argument>
 			<description>
+				Returns the 3d point on the 3d segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_2d">
@@ -69,6 +73,7 @@
 			<argument index="2" name="s2" type="Vector2">
 			</argument>
 			<description>
+				Returns the 2d point on the 2d segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_uncapped">
@@ -81,6 +86,7 @@
 			<argument index="2" name="s2" type="Vector3">
 			</argument>
 			<description>
+				Returns the 3d point on the 3d line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_uncapped_2d">
@@ -93,6 +99,7 @@
 			<argument index="2" name="s2" type="Vector2">
 			</argument>
 			<description>
+				Returns the 2d point on the 2d line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
 		<method name="get_closest_points_between_segments">
@@ -107,6 +114,7 @@
 			<argument index="3" name="q2" type="Vector3">
 			</argument>
 			<description>
+				Given the two 3d segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector3Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="get_closest_points_between_segments_2d">
@@ -121,6 +129,7 @@
 			<argument index="3" name="q2" type="Vector2">
 			</argument>
 			<description>
+				Given the two 2d segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PoolVector2Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
 		<method name="get_uv84_normal_bit">
@@ -137,6 +146,7 @@
 			<argument index="0" name="sizes" type="PoolVector2Array">
 			</argument>
 			<description>
+				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a vector of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
 			</description>
 		</method>
 		<method name="point_is_inside_triangle" qualifiers="const">
@@ -151,6 +161,7 @@
 			<argument index="3" name="c" type="Vector2">
 			</argument>
 			<description>
+				Returns if [code]point[/code] is inside the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code].
 			</description>
 		</method>
 		<method name="ray_intersects_triangle">
@@ -167,6 +178,7 @@
 			<argument index="4" name="c" type="Vector3">
 			</argument>
 			<description>
+				Tests if the 3d ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
 			</description>
 		</method>
 		<method name="segment_intersects_circle">
@@ -181,6 +193,7 @@
 			<argument index="3" name="circle_radius" type="float">
 			</argument>
 			<description>
+				Given the 2d segment ([code]segment_from[/code], [code]segment_to[/code]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [code]circle_position[/code] and has radius [code]circle_radius[/code]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
 			</description>
 		</method>
 		<method name="segment_intersects_convex">
@@ -193,6 +206,7 @@
 			<argument index="2" name="planes" type="Array">
 			</argument>
 			<description>
+				Given a convex hull defined though the [Plane]s in the array [code]planes[/code], tests if the segment ([code]from[/code], [code]to[/code]) intersects with that hull. If an intersection is found, returns a [PoolVector3Array] containing the point the intersection and the hull's normal. If no intersecion is found, an the returned array is empty.
 			</description>
 		</method>
 		<method name="segment_intersects_cylinder">
@@ -207,6 +221,7 @@
 			<argument index="3" name="radius" type="float">
 			</argument>
 			<description>
+				Checks if the segment ([code]from[/code], [code]to[/code]) intersects the cylinder with height [code]height[/code] that is centered at the origin and has radius [code]radius[/code]. If no, returns an empty [PoolVector3Array]. If an intersection takes place, the returned array contains the point of intersection and the cylinder's normal at the point of intersection.
 			</description>
 		</method>
 		<method name="segment_intersects_segment_2d">
@@ -221,6 +236,7 @@
 			<argument index="3" name="to_b" type="Vector2">
 			</argument>
 			<description>
+				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
 			</description>
 		</method>
 		<method name="segment_intersects_sphere">
@@ -235,6 +251,7 @@
 			<argument index="3" name="sphere_radius" type="float">
 			</argument>
 			<description>
+				Checks if the segment ([code]from[/code], [code]to[/code]) intersects the sphere that is located at [code]sphere_position[/code] and has radius [code]sphere_radius[/code]. If no, returns an empty [PoolVector3Array]. If yes, returns a [PoolVector3Array] containing the point of intersection and the sphere's normal at the point of intersection.
 			</description>
 		</method>
 		<method name="segment_intersects_triangle">
@@ -251,6 +268,7 @@
 			<argument index="4" name="c" type="Vector3">
 			</argument>
 			<description>
+				Tests if the segment ([code]from[/code], [code]to[/code]) intersects the triangle [code]a[/code], [code]b[/code], [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
 			</description>
 		</method>
 		<method name="triangulate_polygon">
@@ -259,6 +277,27 @@
 			<argument index="0" name="polygon" type="PoolVector2Array">
 			</argument>
 			<description>
+				Triangulates the polygon specified by the points in [code]polygon[/code]. Returns a [PoolIntArray] where each triangle consists of three consecutive point indices into [code]polygon[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PoolIntArray] is returned.
+			</description>
+		</method>
+		<method name="convex_hull_2d">
+			<return type="PoolVector2Array">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<description>
+				Given an array of [Vector2]s, returns the convex hull as a list of points in counter-clockwise order. The last point is the same as the first one.
+			</description>
+		</method>
+		<method name="clip_polygon">
+			<return type="PoolVector3Array">
+			</return>
+			<argument index="0" name="points" type="PoolVector3Array">
+			</argument>
+			<argument index="1" name="plane" type="Plane">
+			</argument>
+			<description>
+				Clips the polygon defined by the points in [code]points[/code] against the [code]plane[/code] and returns the points of the clipped polygon.
 			</description>
 		</method>
 	</methods>
