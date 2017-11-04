@@ -211,9 +211,6 @@ void CreateDialog::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<StringName> type_list;
-	ClassDB::get_class_list(&type_list);
-
 	HashMap<String, TreeItem *> types;
 
 	TreeItem *root = search_options->create_item();
@@ -614,6 +611,9 @@ void CreateDialog::_bind_methods() {
 }
 
 CreateDialog::CreateDialog() {
+
+	ClassDB::get_class_list(&type_list);
+	type_list.sort_custom<StringName::AlphCompare>();
 
 	set_resizable(true);
 
