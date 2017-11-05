@@ -1924,6 +1924,9 @@ void ScriptEditor::_update_members_overview_visibility() {
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
 
+	if (tab_container->get_child_count() <= 0)
+		return;
+
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	ScriptTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ScriptTextEditor>();
 	if (!ste) {
