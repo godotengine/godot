@@ -51,11 +51,14 @@ class TextEdit : public Control {
 
 			MODE_NONE,
 			MODE_SHIFT,
-			MODE_POINTER
+			MODE_POINTER,
+			MODE_WORD,
+			MODE_LINE
 		};
 
 		Mode selecting_mode;
 		int selecting_line, selecting_column;
+		int selected_word_beg, selected_word_end, selected_word_origin;
 		bool selecting_text;
 
 		bool active;
@@ -304,6 +307,10 @@ class TextEdit : public Control {
 	void _update_scrollbars();
 	void _v_scroll_input();
 	void _click_selection_held();
+
+	void _update_selection_mode_pointer();
+	void _update_selection_mode_word();
+	void _update_selection_mode_line();
 
 	void _pre_shift_selection();
 	void _post_shift_selection();
