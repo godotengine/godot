@@ -42,67 +42,6 @@
 
 #define TAB_PIXELS
 
-static bool _is_text_char(CharType c) {
-
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
-}
-
-static bool _is_symbol(CharType c) {
-
-	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
-}
-
-static bool _is_whitespace(CharType c) {
-	return c == '\t' || c == ' ';
-}
-
-static bool _is_char(CharType c) {
-
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-
-static bool _is_number(CharType c) {
-	return (c >= '0' && c <= '9');
-}
-
-static bool _is_hex_symbol(CharType c) {
-	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static bool _is_pair_right_symbol(CharType c) {
-	return c == '"' ||
-		   c == '\'' ||
-		   c == ')' ||
-		   c == ']' ||
-		   c == '}';
-}
-
-static bool _is_pair_left_symbol(CharType c) {
-	return c == '"' ||
-		   c == '\'' ||
-		   c == '(' ||
-		   c == '[' ||
-		   c == '{';
-}
-
-static bool _is_pair_symbol(CharType c) {
-	return _is_pair_left_symbol(c) || _is_pair_right_symbol(c);
-}
-
-static CharType _get_right_pair_symbol(CharType c) {
-	if (c == '"')
-		return '"';
-	if (c == '\'')
-		return '\'';
-	if (c == '(')
-		return ')';
-	if (c == '[')
-		return ']';
-	if (c == '{')
-		return '}';
-	return 0;
-}
-
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 
 	font = p_font;
@@ -1770,19 +1709,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					int beg = CLAMP(cursor.column, 0, s.length());
 					int end = beg;
 
-					if (s[beg] > 32 || beg == s.length()) {
-
-						bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
-
-						while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
-							beg--;
-						}
-						while (end < s.length() && s[end + 1] > 32 && (symbol == _is_symbol(s[end + 1]))) {
-							end++;
-						}
-
-						if (end < s.length())
-							end += 1;
+					if (_select_word(s, beg, end)) {
 
 						select(cursor.line, beg, cursor.line, end);
 
@@ -4402,11 +4329,6 @@ void TextEdit::_cancel_completion() {
 	update();
 }
 
-static bool _is_completable(CharType c) {
-
-	return !_is_symbol(c) || c == '"' || c == '\'';
-}
-
 void TextEdit::_update_completion_candidates() {
 
 	String l = text[cursor.line];
@@ -4648,19 +4570,7 @@ String TextEdit::get_tooltip(const Point2 &p_pos) const {
 	int beg = CLAMP(col, 0, s.length());
 	int end = beg;
 
-	if (s[beg] > 32 || beg == s.length()) {
-
-		bool symbol = beg < s.length() && _is_symbol(s[beg]); //not sure if right but most editors behave like this
-
-		while (beg > 0 && s[beg - 1] > 32 && (symbol == _is_symbol(s[beg - 1]))) {
-			beg--;
-		}
-		while (end < s.length() && s[end + 1] > 32 && (symbol == _is_symbol(s[end + 1]))) {
-			end++;
-		}
-
-		if (end < s.length())
-			end += 1;
+	if (_select_word(s, beg, end)) {
 
 		String tt = tooltip_obj->call(tooltip_func, s.substr(beg, end - beg), tooltip_ud);
 

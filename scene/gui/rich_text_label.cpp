@@ -793,6 +793,36 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 						}
 					}
 
+				} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
+
+					//doubleclick: select world
+					int line = 0;
+					Item *item = NULL;
+					bool outside;
+
+					_find_click(main, b->get_position(), &item, &line, &outside);
+
+					while (item && item->type != ITEM_TEXT) {
+
+						item = _get_next_item(item, true);
+					}
+
+					if (item && item->type == ITEM_TEXT) {
+
+						String itext = static_cast<ItemText *>(item)->text;
+
+						int beg = CLAMP(line, 0, itext.length());
+						int end = beg;
+						if (_select_word(itext, beg, end)) {
+
+							selection.from = item;
+							selection.to = item;
+							selection.from_char = beg;
+							selection.to_char = end;
+							selection.active = true;
+							update();
+						}
+					}
 				} else if (!b->is_pressed()) {
 
 					selection.click = NULL;
