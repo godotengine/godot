@@ -154,11 +154,12 @@ static bool is_cursor_inside_canvas() {
 
 static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
 
-	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP && event_type != EMSCRIPTEN_EVENT_DBLCLICK, false);
 
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_pressed(event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
+	ev->set_pressed(event_type != EMSCRIPTEN_EVENT_MOUSEUP);
+	ev->set_doubleclick(event_type == EMSCRIPTEN_EVENT_DBLCLICK);
 	ev->set_position(Point2(mouse_event->canvasX, mouse_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(mouse_event, ev);
@@ -499,6 +500,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	SET_EM_CALLBACK("#window", mousemove, _mousemove_callback)
 	SET_EM_CALLBACK("#canvas", mousedown, _mousebutton_callback)
 	SET_EM_CALLBACK("#window", mouseup, _mousebutton_callback)
+	SET_EM_CALLBACK("#window", dblclick, _mousebutton_callback)
 	SET_EM_CALLBACK("#window", wheel, _wheel_callback)
 	SET_EM_CALLBACK("#window", touchstart, _touchpress_callback)
 	SET_EM_CALLBACK("#window", touchmove, _touchmove_callback)
