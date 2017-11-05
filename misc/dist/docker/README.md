@@ -36,5 +36,5 @@ After use and exit, you can use this environment again by open terminal and type
 
 - ssh to VM(can be useful sometimes):
 	- `docker-machine ssh`
-	
+
 Check docker and boot2docker projects for more details.
