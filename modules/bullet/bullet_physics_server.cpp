@@ -720,6 +720,8 @@ void BulletPhysicsServer::body_add_collision_exception(RID p_body, RID p_body_b)
 	ERR_FAIL_COND(!other_body);
 
 	body->add_collision_exception(other_body);
+	body->on_collision_filters_change();
+	body->scratch_space_override_modificator();
 }
 
 void BulletPhysicsServer::body_remove_collision_exception(RID p_body, RID p_body_b) {
@@ -730,6 +732,8 @@ void BulletPhysicsServer::body_remove_collision_exception(RID p_body, RID p_body
 	ERR_FAIL_COND(!other_body);
 
 	body->remove_collision_exception(other_body);
+	body->on_collision_filters_change();
+	body->scratch_space_override_modificator();
 }
 
 void BulletPhysicsServer::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
