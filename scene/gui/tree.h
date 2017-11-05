@@ -570,6 +570,7 @@ public:
 	TreeItem *search_item_text(const String &p_find, int *r_col = NULL, bool p_selectable = false);
 
 	Point2 get_scroll() const;
+	void scroll_to_item(TreeItem *p_item);
 
 	void set_cursor_can_exit_tree(bool p_enable);
 	bool can_cursor_exit_tree() const;
