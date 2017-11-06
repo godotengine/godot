@@ -85,6 +85,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_GIZMOS,
 		VIEW_FPS,
+		VIEW_CAMERAS
 	};
 
 public:
@@ -114,6 +115,7 @@ private:
 	bool transforming;
 	bool orthogonal;
 	float gizmo_scale;
+	String scene_camera_path;
 
 	PanelContainer *fps;
 	Label *fps_label;
@@ -156,6 +158,8 @@ private:
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
+
+	PopupMenu *scene_cameras_menu;
 
 	enum NavigationScheme {
 		NAVIGATION_GODOT,
@@ -249,6 +253,8 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _list_select(InputEventMouseButton b);
+	void _prepare_cameras();
+	void _select_scene_camera(int p_cameraIndex);
 
 protected:
 	void _notification(int p_what);
