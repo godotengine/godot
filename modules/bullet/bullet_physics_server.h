@@ -47,7 +47,8 @@ class BulletPhysicsServer : public PhysicsServer {
 	friend class BulletPhysicsDirectSpaceState;
 
 	bool active;
-	SpaceBullet *activeSpace;
+	char active_spaces_count;
+	Vector<SpaceBullet *> active_spaces;
 
 	mutable RID_Owner<SpaceBullet> space_owner;
 	mutable RID_Owner<ShapeBullet> shape_owner;

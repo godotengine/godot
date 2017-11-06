@@ -81,7 +81,7 @@ void BulletPhysicsServer::_bind_methods() {
 BulletPhysicsServer::BulletPhysicsServer()
 	: PhysicsServer(),
 	  active(true),
-	  activeSpace(NULL) {}
+	  active_spaces_count(0) {}
 
 BulletPhysicsServer::~BulletPhysicsServer() {}
 
@@ -162,27 +162,28 @@ RID BulletPhysicsServer::space_create() {
 }
 
 void BulletPhysicsServer::space_set_active(RID p_space, bool p_active) {
+
+	SpaceBullet *space = space_owner.get(p_space);
+	ERR_FAIL_COND(!space);
+
+	if (space_is_active(p_space) == p_active) {
+		return;
+	}
+
 	if (p_active) {
-		if (activeSpace) {
-			// There is another space and this cannot be activated
-			ERR_PRINT("There is another space, before activate new one deactivate the current space.");
-		} else {
-			SpaceBullet *space = space_owner.get(p_space);
-			if (space) {
-				activeSpace = space;
-			} else {
-				ERR_PRINT("The passed RID is not a valid space. Please provide a RID with SpaceBullet type.");
-			}
-		}
+		++active_spaces_count;
+		active_spaces.push_back(space);
 	} else {
-		if (!space_is_active(p_space)) {
-			activeSpace = NULL;
-		}
+		--active_spaces_count;
+		active_spaces.erase(space);
 	}
 }
 
 bool BulletPhysicsServer::space_is_active(RID p_space) const {
-	return NULL != activeSpace && activeSpace == p_space.get_data();
+	SpaceBullet *space = space_owner.get(p_space);
+	ERR_FAIL_COND_V(!space, false);
+
+	return -1 != active_spaces.find(space);
 }
 
 void BulletPhysicsServer::space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) {
@@ -1296,8 +1297,10 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 		return;
 
 	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
-	if (activeSpace) {
-		activeSpace->step(p_deltaTime);
+
+	for (int i = 0; i < active_spaces_count; ++i) {
+
+		active_spaces[i]->step(p_deltaTime);
 	}
 }
 
