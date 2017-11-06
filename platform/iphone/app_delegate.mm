@@ -632,6 +632,9 @@ static int frame_count = 0;
 
 	mainViewController = view_controller;
 
+	// prevent to stop music in another background app
+	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+
 #ifdef MODULE_GAME_ANALYTICS_ENABLED
 	printf("********************* didFinishLaunchingWithOptions\n");
 	if (!Globals::get_singleton()->has("mobileapptracker/advertiser_id")) {
