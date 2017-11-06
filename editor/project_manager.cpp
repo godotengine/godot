@@ -74,6 +74,7 @@ private:
 	Mode mode;
 	Button *browse;
 	Button *create_dir;
+	Button *default_dir;
 	Container *name_container;
 	Container *path_container;
 	Label *msg;
@@ -238,6 +239,11 @@ private:
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
 		fdialog->popup_centered_ratio();
+	}
+
+	void _set_default_dir() {
+		EditorSettings::get_singleton()->set("filesystem/directories/default_project_path", project_path->get_text());
+		EditorSettings::get_singleton()->save();
 	}
 
 	void _create_folder() {
@@ -465,6 +471,7 @@ protected:
 
 		ClassDB::bind_method("_browse_path", &ProjectDialog::_browse_path);
 		ClassDB::bind_method("_create_folder", &ProjectDialog::_create_folder);
+		ClassDB::bind_method("_set_default_dir", &ProjectDialog::_set_default_dir);
 		ClassDB::bind_method("_text_changed", &ProjectDialog::_text_changed);
 		ClassDB::bind_method("_path_text_changed", &ProjectDialog::_path_text_changed);
 		ClassDB::bind_method("_path_selected", &ProjectDialog::_path_selected);
@@ -512,6 +519,7 @@ public:
 			}
 			project_name->grab_focus();
 
+			default_dir->hide();
 			create_dir->hide();
 			status_btn->hide();
 
@@ -539,6 +547,7 @@ public:
 				set_title(TTR("Import Existing Project"));
 				get_ok()->set_text(TTR("Import"));
 				name_container->hide();
+				default_dir->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
@@ -546,6 +555,7 @@ public:
 				set_title(TTR("Create New Project"));
 				get_ok()->set_text(TTR("Create"));
 				name_container->show();
+				default_dir->show();
 				project_name->grab_focus();
 
 			} else if (mode == MODE_INSTALL) {
@@ -553,6 +563,7 @@ public:
 				set_title(TTR("Install Project:") + " " + zip_title);
 				get_ok()->set_text(TTR("Install"));
 				name_container->hide();
+				default_dir->hide();
 				project_path->grab_focus();
 			}
 
@@ -609,6 +620,11 @@ public:
 		browse->set_text(TTR("Browse"));
 		browse->connect("pressed", this, "_browse_path");
 		pphb->add_child(browse);
+
+		default_dir = memnew(Button);
+		default_dir->set_text(TTR("Set as default"));
+		default_dir->connect("pressed", this, "_set_default_dir");
+		pphb->add_child(default_dir);
 
 		msg = memnew(Label);
 		msg->set_text(TTR("That's a BINGO!"));
