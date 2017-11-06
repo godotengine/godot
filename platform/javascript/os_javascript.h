@@ -31,7 +31,6 @@
 #define OS_JAVASCRIPT_H
 
 #include "audio_driver_javascript.h"
-#include "audio_server_javascript.h"
 #include "drivers/unix/os_unix.h"
 #include "javascript_eval.h"
 #include "main/input_default.h"
