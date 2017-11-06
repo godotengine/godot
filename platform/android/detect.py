@@ -24,7 +24,8 @@ def get_opts():
         ('ndk_platform', 'compile for platform: (android-<api> , example: android-14)', "android-14"),
         ('android_arch', 'select compiler architecture: (armv7/armv6/x86)', "armv7"),
         ('android_neon', 'enable neon (armv7 only)', "yes"),
-        ('android_stl', 'enable STL support in android port (for modules)', "no")
+        ('android_stl', 'enable STL support in android port (for modules)', "no"),
+        ('ndk_unified_headers', 'enable NDK unified headers', "yes")
     ]
 
 
@@ -157,11 +158,26 @@ def configure(env):
     else:
         env['ARCH'] = 'arch-arm'
 
-    sysroot = env["ANDROID_NDK_ROOT"] + \
-        "/platforms/" + ndk_platform + "/" + env['ARCH']
+    ndk_unified_headers = env['ndk_unified_headers'] == 'yes'
+    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
+
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
-    env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
+    if not ndk_unified_headers and ndk_version != None and ndk_version[0] >= 16:
+        ndk_unified_headers = True
+        print("Turning NDK unified headers on (starting from r16)")
+
+    lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + ndk_platform + "/" + env['ARCH']
+
+    if ndk_unified_headers:
+        sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
+        env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
+        env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
+        # For unified headers this define has to be set manually
+        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(int(ndk_platform.split("-")[1]))])
+    else:
+        env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
+
     env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
     env.Append(CPPFLAGS='-DNO_STATVFS -DGLES2_ENABLED'.split())
 
@@ -196,8 +212,7 @@ def configure(env):
     if (sys.platform.startswith("darwin")):
         env['SHLIBSUFFIX'] = '.so'
 
-    env['LINKFLAGS'] = ['-shared', '--sysroot=' +
-                        sysroot, '-Wl,--warn-shared-textrel']
+    env['LINKFLAGS'] = ['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel']
     env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
     env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
     env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
@@ -253,3 +268,19 @@ def configure(env):
         action=methods.build_gles2_headers, suffix='glsl.gen.h', src_suffix='.glsl')})
 
     env.use_windows_spawn_fix()
+
+# Return NDK version as [<major>,<minor>,<build>] or None if cannot be figured out (adapted from the Chromium project).
+def get_ndk_version (path):
+    if path == None:
+        return None
+    prop_file_path = os.path.join(path, "source.properties")
+    try:
+        with open(prop_file_path) as prop_file:
+            for line in prop_file:
+                key_value = map(lambda x: string.strip(x), line.split("="))
+                if key_value[0] == "Pkg.Revision":
+                    version_parts = key_value[1].split("-")[0].split(".")
+                    return map(int, version_parts[0:3])
+    except:
+        print("Could not read source prop file '%s'" % prop_file_path)
+    return None
