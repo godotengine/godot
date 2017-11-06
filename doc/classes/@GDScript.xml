@@ -1050,6 +1050,58 @@
 				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
 			</description>
 		</method>
+		<method name="wrapf">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Wraps float [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# a is 0.5
+				a = wrapf(10.5, 0.0, 10.0)
+				[/codeblock]
+				[codeblock]
+				# a is 9.5
+				a = wrapf(-0.5, 0.0, 10.0)
+				[/codeblock]
+				[codeblock]
+				# infinite loop between 0.0 and 0.99
+				f = wrapf(f + 0.1, 0.0, 1.0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="wrapi">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Wraps integer [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# a is 0
+				a = wrapi(10, 0, 10)
+				[/codeblock]
+				[codeblock]
+				# a is 9
+				a = wrapi(-1, 0, 10)
+				[/codeblock]
+				[codeblock]
+				# infinite loop between 0 and 9
+				frame = wrapi(frame + 1, 0, 10)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="yield">
 			<return type="GDFunctionState">
 			</return>
