@@ -33,9 +33,10 @@
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/gui/text_utils.h"
 #include "scene/main/timer.h"
 
-class TextEdit : public Control {
+class TextEdit : public Control, public TextUtils {
 
 	GDCLASS(TextEdit, Control);
 

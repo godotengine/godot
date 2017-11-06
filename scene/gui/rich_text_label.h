@@ -31,8 +31,9 @@
 #define RICH_TEXT_LABEL_H
 
 #include "scene/gui/scroll_bar.h"
+#include "scene/gui/text_utils.h"
 
-class RichTextLabel : public Control {
+class RichTextLabel : public Control, public TextUtils {
 
 	GDCLASS(RichTextLabel, Control);
 
