@@ -33,10 +33,13 @@
 #include "project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 #include "servers/visual/visual_server_raster.h"
+#include "core/math/math_funcs.h"
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
+
+
 
 static const GLenum _cube_side_enum[6] = {
 
