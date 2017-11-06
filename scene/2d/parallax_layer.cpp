@@ -41,7 +41,7 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 	if (is_inside_tree() && pb) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale);
+		set_base_offset_and_scale(ofs, scale, screen_offset);
 	}
 }
 
@@ -61,7 +61,7 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 	if (is_inside_tree() && pb) {
 		Vector2 ofs = pb->get_final_offset();
 		float scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale);
+		set_base_offset_and_scale(ofs, scale, screen_offset);
 	}
 }
 
@@ -113,26 +113,28 @@ void ParallaxLayer::_notification(int p_what) {
 	}
 }
 
-void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale) {
+void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset) {
+	screen_offset = p_screen_offset;
 
 	if (!is_inside_tree())
 		return;
 	if (get_tree()->is_editor_hint())
 		return;
-	Point2 new_ofs = ((orig_offset + p_offset) * motion_scale) * p_scale + motion_offset;
+
+	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
+
+	Vector2 mirror = Vector2(1, 1);
 
 	if (mirroring.x) {
-		double den = mirroring.x * p_scale;
-		new_ofs.x -= den * ceil(new_ofs.x / den);
+		mirror.x = -1;
 	}
 
 	if (mirroring.y) {
-		double den = mirroring.y * p_scale;
-		new_ofs.y -= den * ceil(new_ofs.y / den);
+		mirror.y = -1;
 	}
 
 	set_pos(new_ofs);
-	set_scale(Vector2(1, 1) * p_scale);
+	set_scale(mirror * p_scale * orig_scale);
 }
 
 String ParallaxLayer::get_configuration_warning() const {
