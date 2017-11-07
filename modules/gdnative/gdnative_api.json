@@ -2489,6 +2489,14 @@
       ]
     },
     {
+      "name": "godot_array_operator_index_const",
+      "return_type": "const godot_variant *",
+      "arguments": [
+        ["const godot_array *", "p_self"],
+        ["const godot_int", "p_idx"]
+      ]
+    },
+    {
       "name": "godot_array_append",
       "return_type": "void",
       "arguments": [
@@ -2783,6 +2791,14 @@
       "return_type": "godot_variant *",
       "arguments": [
         ["godot_dictionary *", "p_self"],
+        ["const godot_variant *", "p_key"]
+      ]
+    },
+    {
+      "name": "godot_dictionary_operator_index_const",
+      "return_type": "const godot_variant *",
+      "arguments": [
+        ["const godot_dictionary *", "p_self"],
         ["const godot_variant *", "p_key"]
       ]
     },
@@ -5642,6 +5658,13 @@
       "return_type": "void *",
       "arguments": [
         ["godot_object *", "p_instance"]
+      ]
+    },
+    {
+      "name": "godot_pluginscript_register_language",
+      "return_type": "void",
+      "arguments": [
+        ["const godot_pluginscript_language_desc *", "language_desc"]
       ]
     },
     {
