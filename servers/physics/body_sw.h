@@ -55,6 +55,7 @@ class BodySW : public CollisionObjectSW {
 
 	PhysicsServer::BodyAxisLock axis_lock;
 
+	real_t kinematic_safe_margin;
 	real_t _inv_mass;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
@@ -148,6 +149,9 @@ class BodySW : public CollisionObjectSW {
 
 public:
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
+
+	void set_kinematic_margin(real_t p_margin);
+	_FORCE_INLINE_ real_t get_kinematic_margin() { return kinematic_safe_margin; }
 
 	_FORCE_INLINE_ void add_area(AreaSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));

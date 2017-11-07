@@ -177,31 +177,21 @@ PhysicsDirectSpaceState *BulletPhysicsDirectBodyState::get_space_state() {
 }
 
 RigidBodyBullet::KinematicUtilities::KinematicUtilities(RigidBodyBullet *p_owner)
-	: m_owner(p_owner), m_margin(0.01) // Godot default margin 0.001
-{
-	m_ghostObject = bulletnew(btPairCachingGhostObject);
-
-	int clearedCurrentFlags = m_ghostObject->getCollisionFlags();
-	clearedCurrentFlags &= ~(btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT);
-
-	m_ghostObject->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
-	m_ghostObject->setUserPointer(p_owner);
-	m_ghostObject->setUserIndex(TYPE_KINEMATIC_GHOST_BODY);
-
-	resetDefShape();
+	: owner(p_owner),
+	  safe_margin(0.001) {
 }
 
 RigidBodyBullet::KinematicUtilities::~KinematicUtilities() {
-	just_delete_shapes(m_shapes.size()); // don't need to resize
-	bulletdelete(m_ghostObject);
+	just_delete_shapes(shapes.size()); // don't need to resize
 }
 
-void RigidBodyBullet::KinematicUtilities::resetDefShape() {
-	m_ghostObject->setCollisionShape(BulletPhysicsServer::get_empty_shape());
+void RigidBodyBullet::KinematicUtilities::setSafeMargin(btScalar p_margin) {
+	safe_margin = p_margin;
+	copyAllOwnerShapes();
 }
 
 void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
-	const Vector<CollisionObjectBullet::ShapeWrapper> &shapes_wrappers(m_owner->get_shapes_wrappers());
+	const Vector<CollisionObjectBullet::ShapeWrapper> &shapes_wrappers(owner->get_shapes_wrappers());
 	const int shapes_count = shapes_wrappers.size();
 
 	just_delete_shapes(shapes_count);
@@ -213,35 +203,35 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 		if (!shape_wrapper->active) {
 			continue;
 		}
-		m_shapes[i].transform = shape_wrapper->transform;
+		shapes[i].transform = shape_wrapper->transform;
 
-		btConvexShape *&kin_shape_ref = m_shapes[i].shape;
+		btConvexShape *&kin_shape_ref = shapes[i].shape;
 
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE: {
 				SphereShapeBullet *sphere = static_cast<SphereShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * m_owner->body_scale[0] + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * owner->body_scale[0] + safe_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_BOX: {
 				BoxShapeBullet *box = static_cast<BoxShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_box((box->get_half_extents() * m_owner->body_scale) + btVector3(m_margin, m_margin, m_margin));
+				kin_shape_ref = ShapeBullet::create_shape_box((box->get_half_extents() * owner->body_scale) + btVector3(safe_margin, safe_margin, safe_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_CAPSULE: {
 				CapsuleShapeBullet *capsule = static_cast<CapsuleShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * m_owner->body_scale[0] + m_margin, capsule->get_height() * m_owner->body_scale[1] + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * owner->body_scale[0] + safe_margin, capsule->get_height() * owner->body_scale[1] + safe_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_CONVEX_POLYGON: {
 				ConvexPolygonShapeBullet *godot_convex = static_cast<ConvexPolygonShapeBullet *>(shape_wrapper->shape);
 				kin_shape_ref = ShapeBullet::create_shape_convex(godot_convex->vertices);
-				kin_shape_ref->setLocalScaling(m_owner->body_scale + btVector3(m_margin, m_margin, m_margin));
+				kin_shape_ref->setLocalScaling(owner->body_scale + btVector3(safe_margin, safe_margin, safe_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_RAY: {
 				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * m_owner->body_scale[1] + m_margin);
+				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * owner->body_scale[1] + safe_margin);
 				break;
 			}
 			default:
@@ -252,12 +242,12 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 }
 
 void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
-	for (int i = m_shapes.size() - 1; 0 <= i; --i) {
-		if (m_shapes[i].shape) {
-			bulletdelete(m_shapes[i].shape);
+	for (int i = shapes.size() - 1; 0 <= i; --i) {
+		if (shapes[i].shape) {
+			bulletdelete(shapes[i].shape);
 		}
 	}
-	m_shapes.resize(new_size);
+	shapes.resize(new_size);
 }
 
 RigidBodyBullet::RigidBodyBullet()

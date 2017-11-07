@@ -50,9 +50,6 @@
 #include "ustring.h"
 #include <assert.h>
 
-// test only
-//#include "scene/3d/immediate_geometry.h"
-
 BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_space)
 	: PhysicsDirectSpaceState(), space(p_space) {}
 
@@ -174,7 +171,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btResult.m_collisionFilterGroup = p_collision_layer;
 	btResult.m_collisionFilterMask = p_object_type_mask;
 
-	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult);
+	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, 0.002);
 
 	if (btResult.hasHit()) {
 		if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
@@ -281,10 +278,6 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 	btVector3 bt_point;
 	G_TO_B(p_point, bt_point);
 
-	btGjkEpaPenetrationDepthSolver gjk_epa_pen_solver;
-	btVoronoiSimplexSolver gjk_simplex_solver;
-	gjk_simplex_solver.setEqualVertexThreshold(0.);
-
 	btSphereShape point_shape(0.);
 
 	btCollisionShape *shape;
@@ -308,7 +301,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 			input.m_transformB = body_transform * child_transform;
 
 			btPointCollector result;
-			btGjkPairDetector gjk_pair_detector(&point_shape, convex_shape, &gjk_simplex_solver, &gjk_epa_pen_solver);
+			btGjkPairDetector gjk_pair_detector(&point_shape, convex_shape, space->gjk_simplex_solver, space->gjk_epa_pen_solver);
 			gjk_pair_detector.getClosestPoints(input, result, 0);
 
 			if (out_distance > result.m_distance) {
@@ -558,13 +551,10 @@ btScalar calculateGodotCombinedRestitution(const btCollisionObject *body0, const
 }
 
 void SpaceBullet::create_empty_world(bool p_create_soft_world) {
-	assert(NULL == broadphase);
-	assert(NULL == dispatcher);
-	assert(NULL == solver);
-	assert(NULL == collisionConfiguration);
-	assert(NULL == dynamicsWorld);
-	assert(NULL == ghostPairCallback);
-	assert(NULL == godotFilterCallback);
+
+	gjk_epa_pen_solver = bulletnew(btGjkEpaPenetrationDepthSolver);
+	gjk_simplex_solver = bulletnew(btVoronoiSimplexSolver);
+	gjk_simplex_solver->setEqualVertexThreshold(0.f);
 
 	void *world_mem;
 	if (p_create_soft_world) {
@@ -611,13 +601,6 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 }
 
 void SpaceBullet::destroy_world() {
-	assert(NULL != broadphase);
-	assert(NULL != dispatcher);
-	assert(NULL != solver);
-	assert(NULL != collisionConfiguration);
-	assert(NULL != dynamicsWorld);
-	assert(NULL != ghostPairCallback);
-	assert(NULL != godotFilterCallback);
 
 	/// The world elements (like: Collision Objects, Constraints, Shapes) are managed by godot
 
@@ -637,14 +620,13 @@ void SpaceBullet::destroy_world() {
 	bulletdelete(dispatcher);
 	bulletdelete(collisionConfiguration);
 	bulletdelete(soft_body_world_info);
+	bulletdelete(gjk_simplex_solver);
+	bulletdelete(gjk_epa_pen_solver);
 }
 
 void SpaceBullet::check_ghost_overlaps() {
 
 	/// Algorith support variables
-	btGjkEpaPenetrationDepthSolver gjk_epa_pen_solver;
-	btVoronoiSimplexSolver gjk_simplex_solver;
-	gjk_simplex_solver.setEqualVertexThreshold(0.f);
 	btConvexShape *other_body_shape;
 	btConvexShape *area_shape;
 	btGjkPairDetector::ClosestPointInput gjk_input;
@@ -701,7 +683,7 @@ void SpaceBullet::check_ghost_overlaps() {
 					gjk_input.m_transformB = otherObject->get_transform__bullet() * otherObject->get_compound_shape()->getChildTransform(z);
 
 					btPointCollector result;
-					btGjkPairDetector gjk_pair_detector(area_shape, other_body_shape, &gjk_simplex_solver, &gjk_epa_pen_solver);
+					btGjkPairDetector gjk_pair_detector(area_shape, other_body_shape, gjk_simplex_solver, gjk_epa_pen_solver);
 					gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
 
 					if (0 >= result.m_distance) {
@@ -743,23 +725,11 @@ void SpaceBullet::check_body_collision() {
 	const int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	for (int i = 0; i < numManifolds; ++i) {
 		btPersistentManifold *contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
-		const btCollisionObject *obA = contactManifold->getBody0();
-		const btCollisionObject *obB = contactManifold->getBody1();
-
-		if (btCollisionObject::CO_RIGID_BODY != obA->getInternalType() || btCollisionObject::CO_RIGID_BODY != obB->getInternalType()) {
-			// This checks is required to be sure the ghost object is skipped
-			// The ghost object "getUserPointer" return the BodyBullet owner so this check is required
-			continue;
-		}
-
-		// Asserts all Godot objects are assigned
-		assert(NULL != obA->getUserPointer());
-		assert(NULL != obB->getUserPointer());
 
 		// I know this static cast is a bit risky. But I'm checking its type just after it.
 		// This allow me to avoid a lot of other cast and checks
-		RigidBodyBullet *bodyA = static_cast<RigidBodyBullet *>(obA->getUserPointer());
-		RigidBodyBullet *bodyB = static_cast<RigidBodyBullet *>(obB->getUserPointer());
+		RigidBodyBullet *bodyA = static_cast<RigidBodyBullet *>(contactManifold->getBody0()->getUserPointer());
+		RigidBodyBullet *bodyB = static_cast<RigidBodyBullet *>(contactManifold->getBody1()->getUserPointer());
 
 		if (CollisionObjectBullet::TYPE_RIGID_BODY == bodyA->getType() && CollisionObjectBullet::TYPE_RIGID_BODY == bodyB->getType()) {
 			if (!bodyA->can_add_collision() && !bodyB->can_add_collision()) {
@@ -784,13 +754,13 @@ void SpaceBullet::check_body_collision() {
 				if (bodyA->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
 					/// pt.m_localPointB Doesn't report the exact point in local space
-					B_TO_G(pt.getPositionWorldOnB() - obB->getWorldTransform().getOrigin(), collisionLocalPosition);
+					B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
 					bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, pt.m_index1, pt.m_index0);
 				}
 				if (bodyB->can_add_collision()) {
 					B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
 					/// pt.m_localPointA Doesn't report the exact point in local space
-					B_TO_G(pt.getPositionWorldOnA() - obA->getWorldTransform().getOrigin(), collisionLocalPosition);
+					B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
 					bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, pt.m_index0, pt.m_index1);
 				}
 
@@ -817,7 +787,12 @@ void SpaceBullet::update_gravity() {
 /// I'm leaving this here just for future tests.
 /// Debug motion and normal vector drawing
 #define debug_test_motion 0
+#define PERFORM_INITIAL_UNSTACK 1
+
 #if debug_test_motion
+
+#include "scene/3d/immediate_geometry.h"
+
 static ImmediateGeometry *motionVec(NULL);
 static ImmediateGeometry *normalLine(NULL);
 static Ref<SpatialMaterial> red_mat;
@@ -825,10 +800,10 @@ static Ref<SpatialMaterial> blue_mat;
 #endif
 
 #define IGNORE_AREAS_TRUE true
-bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, PhysicsServer::MotionResult *r_result) {
 
 #if debug_test_motion
-	/// Yes I know this is not good, but I've used it as fast debugging.
+	/// Yes I know this is not good, but I've used it as fast debugging hack.
 	/// I'm leaving it here just for speedup the other eventual debugs
 	if (!normalLine) {
 		motionVec = memnew(ImmediateGeometry);
@@ -866,43 +841,21 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	//    }
 	//}
 
-	btVector3 recover_initial_position;
-	recover_initial_position.setZero();
+	btVector3 recover_initial_position(0, 0, 0);
 
-/// I'm performing the unstack at the end of movement so I'm sure the player is unstacked even after the movement.
-///  I've removed the initial unstack because this is useful just for the first tick since after the first
-///  the real unstack is performed at the end of process.
-/// However I'm leaving here the old code.
-///  Note: It has a bug when two shapes touches something simultaneously the body is moved too much away (I'm not fixing it for the reason written above).
-#define INITIAL_UNSTACK 0
-#if !INITIAL_UNSTACK
 	btTransform body_safe_position;
 	G_TO_B(p_from, body_safe_position);
-//btTransform body_unsafe_positino;
-//G_TO_B(p_from, body_unsafe_positino);
-#else
-	btTransform body_safe_position;
-	btTransform body_unsafe_positino;
+
 	{ /// Phase one - multi shapes depenetration using margin
-		G_TO_B(p_from, body_safe_position);
-		G_TO_B(p_from, body_unsafe_positino);
+#if PERFORM_INITIAL_UNSTACK
+		if (recover_from_penetration(p_body, body_safe_position, recover_initial_position)) {
 
-		// MAX_PENETRATION_DEPTH Is useful have the ghost a bit penetrated so I can detect the floor easily
-		recover_from_penetration(p_body, body_safe_position, MAX_PENETRATION_DEPTH, /* p_depenetration_speed */ 1, recover_initial_position);
-
-		/// Not required if I put p_depenetration_speed = 1
-		//for(int t = 0; t<4; ++t){
-		//    if(!recover_from_penetration(p_body, body_safe_position, MAX_PENETRATION_DEPTH, /* p_depenetration_speed */0.2, recover_initial_position)){
-		//       break;
-		//    }
-		//}
-
-		// Add recover position to "From" and "To" transforms
-		body_safe_position.getOrigin() += recover_initial_position;
-	}
+			// Add recover position to "From" and "To" transforms
+			body_safe_position.getOrigin() += recover_initial_position;
+		}
 #endif
+	}
 
-	int shape_most_recovered(-1);
 	btVector3 recovered_motion;
 	G_TO_B(p_motion, recovered_motion);
 	const int shape_count(p_body->get_shape_count());
@@ -930,127 +883,53 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				continue;
 			}
 
-			btTransform shape_xform_from;
-			G_TO_B(p_body->get_shape_transform(shIndex), shape_xform_from);
-			//btTransform shape_xform_to(shape_xform_from);
+			btTransform shape_world_from;
+			G_TO_B(p_body->get_shape_transform(shIndex), shape_world_from);
 
 			// Add local shape transform
-			shape_xform_from.getOrigin() += body_safe_position.getOrigin();
-			shape_xform_from.getBasis() *= body_safe_position.getBasis();
+			shape_world_from = body_safe_position * shape_world_from;
 
-			btTransform shape_xform_to(shape_xform_from);
-			//shape_xform_to.getOrigin() += body_unsafe_positino.getOrigin();
-			//shape_xform_to.getBasis() *= body_unsafe_positino.getBasis();
-			shape_xform_to.getOrigin() += recovered_motion;
+			btTransform shape_world_to(shape_world_from);
+			shape_world_to.getOrigin() += recovered_motion;
 
-			GodotKinClosestConvexResultCallback btResult(shape_xform_from.getOrigin(), shape_xform_to.getOrigin(), p_body, IGNORE_AREAS_TRUE);
+			GodotKinClosestConvexResultCallback btResult(shape_world_from.getOrigin(), shape_world_to.getOrigin(), p_body, IGNORE_AREAS_TRUE);
 			btResult.m_collisionFilterGroup = p_body->get_collision_layer();
 			btResult.m_collisionFilterMask = p_body->get_collision_mask();
 
-			dynamicsWorld->convexSweepTest(convex_shape_test, shape_xform_from, shape_xform_to, btResult);
+			dynamicsWorld->convexSweepTest(convex_shape_test, shape_world_from, shape_world_to, btResult, 0.002);
 
 			if (btResult.hasHit()) {
-				//recovered_motion *= btResult.m_closestHitFraction;
 				/// Since for each sweep test I fix the motion of new shapes in base the recover result,
-				/// if another shape will hit something it means that has a deepest recovering respect the previous shape
-				shape_most_recovered = shIndex;
+				/// if another shape will hit something it means that has a deepest penetration respect the previous shape
+				recovered_motion *= btResult.m_closestHitFraction;
 			}
 		}
 	}
 
-	bool hasHit = false;
+	bool hasPenetration = false;
 
-	{ /// Phase three - contact test with margin
+	{ /// Phase three - Recover + contact test with margin
 
-		btGhostObject *ghost = p_body->get_kinematic_utilities()->m_ghostObject;
+		RecoverResult recover_result;
 
-		GodotRecoverAndClosestContactResultCallback result_callabck;
-
-		if (false && 0 <= shape_most_recovered) {
-			result_callabck.m_self_object = p_body;
-			result_callabck.m_ignore_areas = IGNORE_AREAS_TRUE;
-			result_callabck.m_collisionFilterGroup = p_body->get_collision_layer();
-			result_callabck.m_collisionFilterMask = p_body->get_collision_mask();
-
-			const RigidBodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[shape_most_recovered]);
-			ghost->setCollisionShape(kin.shape);
-			ghost->setWorldTransform(body_safe_position);
-
-			ghost->getWorldTransform().getOrigin() += recovered_motion;
-			ghost->getWorldTransform().getOrigin() += kin.transform.getOrigin();
-			ghost->getWorldTransform().getBasis() *= kin.transform.getBasis();
-
-			dynamicsWorld->contactTest(ghost, result_callabck);
-
-			recovered_motion += result_callabck.m_recover_penetration; // Required to avoid all kind of penetration
-
-		} else {
-			// The sweep result does not return a penetrated shape, so I've to check all shapes
-			// Then return the most penetrated shape
-
-			GodotRecoverAndClosestContactResultCallback iter_result_callabck(p_body, IGNORE_AREAS_TRUE);
-			iter_result_callabck.m_collisionFilterGroup = p_body->get_collision_layer();
-			iter_result_callabck.m_collisionFilterMask = p_body->get_collision_mask();
-
-			btScalar max_penetration(99999999999);
-			for (int i = 0; i < shape_count; ++i) {
-
-				const RigidBodyBullet::KinematicShape &kin(p_body->get_kinematic_utilities()->m_shapes[i]);
-				if (!kin.is_active()) {
-					continue;
-				}
-
-				// reset callback each function
-				iter_result_callabck.reset();
-
-				ghost->setCollisionShape(kin.shape);
-				ghost->setWorldTransform(body_safe_position);
-				ghost->getWorldTransform().getOrigin() += recovered_motion;
-				ghost->getWorldTransform().getOrigin() += kin.transform.getOrigin();
-				ghost->getWorldTransform().getBasis() *= kin.transform.getBasis();
-
-				dynamicsWorld->contactTest(ghost, iter_result_callabck);
-
-				if (iter_result_callabck.hasHit()) {
-					if (max_penetration > iter_result_callabck.m_penetration_distance) {
-						max_penetration = iter_result_callabck.m_penetration_distance;
-						shape_most_recovered = i;
-						// This is more penetrated
-						result_callabck.m_pointCollisionObject = iter_result_callabck.m_pointCollisionObject;
-						result_callabck.m_pointNormalWorld = iter_result_callabck.m_pointNormalWorld;
-						result_callabck.m_pointWorld = iter_result_callabck.m_pointWorld;
-						result_callabck.m_penetration_distance = iter_result_callabck.m_penetration_distance;
-						result_callabck.m_other_compound_shape_index = iter_result_callabck.m_other_compound_shape_index;
-
-						recovered_motion += iter_result_callabck.m_recover_penetration; // Required to avoid all kind of penetration
-					}
-				}
-			}
-		}
-
-		hasHit = result_callabck.hasHit();
+		hasPenetration = recover_from_penetration(p_body, body_safe_position, recovered_motion, &recover_result);
 
 		if (r_result) {
 
 			B_TO_G(recovered_motion + recover_initial_position, r_result->motion);
 
-			if (hasHit) {
-
-				if (btCollisionObject::CO_RIGID_BODY != result_callabck.m_pointCollisionObject->getInternalType()) {
-					ERR_PRINT("The collision is not against a rigid body. Please check what's going on.");
-					goto EndExecution;
-				}
-				const btRigidBody *btRigid = static_cast<const btRigidBody *>(result_callabck.m_pointCollisionObject);
+			if (hasPenetration) {
+				const btRigidBody *btRigid = static_cast<const btRigidBody *>(recover_result.other_collision_object);
 				CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
 
 				r_result->remainder = p_motion - r_result->motion; // is the remaining movements
-				B_TO_G(result_callabck.m_pointWorld, r_result->collision_point);
-				B_TO_G(result_callabck.m_pointNormalWorld, r_result->collision_normal);
-				B_TO_G(btRigid->getVelocityInLocalPoint(result_callabck.m_pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
+				B_TO_G(recover_result.pointWorld, r_result->collision_point);
+				B_TO_G(recover_result.pointNormalWorld, r_result->collision_normal);
+				B_TO_G(btRigid->getVelocityInLocalPoint(recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
 				r_result->collider = collisionObject->get_self();
 				r_result->collider_id = collisionObject->get_instance_id();
-				r_result->collider_shape = result_callabck.m_other_compound_shape_index;
-				r_result->collision_local_shape = shape_most_recovered;
+				r_result->collider_shape = recover_result.other_compound_shape_index;
+				r_result->collision_local_shape = recover_result.local_shape_most_recovered;
 
 //{ /// Add manifold point to manage collisions
 //    btPersistentManifold* manifold = dynamicsWorld->getDispatcher()->getNewManifold(p_body->getBtBody(), btRigid);
@@ -1079,85 +958,144 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		}
 	}
 
-EndExecution:
-	p_body->get_kinematic_utilities()->resetDefShape();
-	return hasHit;
+	return hasPenetration;
 }
 
-///  Note: It has a bug when two shapes touches something simultaneously the body is moved too much away
-/// (I'm not fixing it because I don't use it).
-bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position) {
+struct RecoverPenetrationBroadPhaseCallback : public btBroadphaseAabbCallback {
+private:
+	const btCollisionObject *self_collision_object;
+	uint32_t collision_layer;
+	uint32_t collision_mask;
+
+public:
+	Vector<btCollisionObject *> result_collision_objects;
+
+public:
+	RecoverPenetrationBroadPhaseCallback(const btCollisionObject *p_self_collision_object, uint32_t p_collision_layer, uint32_t p_collision_mask)
+		: self_collision_object(p_self_collision_object),
+		  collision_layer(p_collision_layer),
+		  collision_mask(p_collision_mask) {}
+
+	virtual ~RecoverPenetrationBroadPhaseCallback() {}
+
+	virtual bool process(const btBroadphaseProxy *proxy) {
+
+		btCollisionObject *co = static_cast<btCollisionObject *>(proxy->m_clientObject);
+		if (co->getInternalType() <= btCollisionObject::CO_RIGID_BODY) {
+			if (self_collision_object != proxy->m_clientObject && GodotFilterCallback::test_collision_filters(collision_layer, collision_mask, proxy->m_collisionFilterGroup, proxy->m_collisionFilterMask)) {
+				result_collision_objects.push_back(co);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void reset() {
+		result_collision_objects.empty();
+	}
+};
+
+bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btVector3 &out_recover_position, RecoverResult *recover_result) {
+
+	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask());
+
+	btTransform body_shape_position;
+	btTransform body_shape_position_recovered;
+
+	// Broad phase support
+	btVector3 minAabb, maxAabb;
+
+	// GJK support
+	btGjkPairDetector::ClosestPointInput gjk_input;
 
 	bool penetration = false;
-	btPairCachingGhostObject *ghost = p_body->get_kinematic_utilities()->m_ghostObject;
 
-	for (int kinIndex = p_body->get_kinematic_utilities()->m_shapes.size() - 1; 0 <= kinIndex; --kinIndex) {
-		const RigidBodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->m_shapes[kinIndex]);
+	// For each shape
+	for (int kinIndex = p_body->get_kinematic_utilities()->shapes.size() - 1; 0 <= kinIndex; --kinIndex) {
+
+		recover_broad_result.reset();
+
+		const RigidBodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->shapes[kinIndex]);
 		if (!kin_shape.is_active()) {
 			continue;
 		}
 
-		btConvexShape *convexShape = kin_shape.shape;
-		btTransform shape_xform(kin_shape.transform);
+		body_shape_position = p_body_position * kin_shape.transform;
+		body_shape_position_recovered = body_shape_position;
+		body_shape_position_recovered.getOrigin() += out_recover_position;
 
-		// from local to world
-		shape_xform.getOrigin() += p_from.getOrigin();
-		shape_xform.getBasis() *= p_from.getBasis();
+		kin_shape.shape->getAabb(body_shape_position_recovered, minAabb, maxAabb);
+		dynamicsWorld->getBroadphase()->aabbTest(minAabb, maxAabb, recover_broad_result);
 
-		// Apply last recovery to avoid doubling the recovering
-		shape_xform.getOrigin() += out_recover_position;
-
-		ghost->setCollisionShape(convexShape);
-		ghost->setWorldTransform(shape_xform);
-
-		btVector3 minAabb, maxAabb;
-		convexShape->getAabb(shape_xform, minAabb, maxAabb);
-		dynamicsWorld->getBroadphase()->setAabb(ghost->getBroadphaseHandle(),
-				minAabb,
-				maxAabb,
-				dynamicsWorld->getDispatcher());
-
-		dynamicsWorld->getDispatcher()->dispatchAllCollisionPairs(ghost->getOverlappingPairCache(), dynamicsWorld->getDispatchInfo(), dynamicsWorld->getDispatcher());
-
-		for (int i = 0; i < ghost->getOverlappingPairCache()->getNumOverlappingPairs(); ++i) {
-			p_body->get_kinematic_utilities()->m_manifoldArray.resize(0);
-
-			btBroadphasePair *collisionPair = &ghost->getOverlappingPairCache()->getOverlappingPairArray()[i];
-
-			btCollisionObject *obj0 = static_cast<btCollisionObject *>(collisionPair->m_pProxy0->m_clientObject);
-			btCollisionObject *obj1 = static_cast<btCollisionObject *>(collisionPair->m_pProxy1->m_clientObject);
-
-			if ((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()))
+		for (int i = recover_broad_result.result_collision_objects.size() - 1; 0 <= i; --i) {
+			btCollisionObject *otherObject = recover_broad_result.result_collision_objects[i];
+			if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
 				continue;
 
-			// This is not required since the dispatched does all the job
-			//if (!needsCollision(obj0, obj1))
-			//    continue;
+			if (otherObject->getCollisionShape()->isCompound()) { /// Execute GJK test against all shapes
 
-			if (collisionPair->m_algorithm)
-				collisionPair->m_algorithm->getAllContactManifolds(p_body->get_kinematic_utilities()->m_manifoldArray);
+				// Each convex shape
+				btCompoundShape *cs = static_cast<btCompoundShape *>(otherObject->getCollisionShape());
+				for (int x = cs->getNumChildShapes() - 1; 0 <= x; --x) {
 
-			for (int j = 0; j < p_body->get_kinematic_utilities()->m_manifoldArray.size(); ++j) {
+					if (!cs->getChildShape(x)->isConvex())
+						continue;
 
-				btPersistentManifold *manifold = p_body->get_kinematic_utilities()->m_manifoldArray[j];
-				btScalar directionSign = manifold->getBody0() == ghost ? btScalar(-1.0) : btScalar(1.0);
-				for (int p = 0; p < manifold->getNumContacts(); ++p) {
-					const btManifoldPoint &pt = manifold->getContactPoint(p);
+					// Initialize GJK input
+					gjk_input.m_transformA = body_shape_position;
+					gjk_input.m_transformA.getOrigin() += out_recover_position;
+					gjk_input.m_transformB = otherObject->getWorldTransform() * cs->getChildTransform(x);
 
-					btScalar dist = pt.getDistance();
-					if (dist < -p_maxPenetrationDepth) {
+					// Perform GJK test
+					btPointCollector result;
+					btGjkPairDetector gjk_pair_detector(kin_shape.shape, static_cast<const btConvexShape *>(cs->getChildShape(x)), gjk_simplex_solver, gjk_epa_pen_solver);
+					gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+					if (0 > result.m_distance) {
+						// Has penetration
+						out_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
 						penetration = true;
-						out_recover_position += pt.m_normalWorldOnB * directionSign * (dist + p_maxPenetrationDepth) * p_depenetration_speed;
-						//print_line("penetrate distance: " + rtos(dist));
+
+						if (recover_result) {
+
+							recover_result->hasPenetration = true;
+							recover_result->other_collision_object = otherObject;
+							recover_result->other_compound_shape_index = x;
+							recover_result->penetration_distance = result.m_distance;
+							recover_result->pointNormalWorld = result.m_normalOnBInWorld;
+							recover_result->pointWorld = result.m_pointInWorld;
+						}
 					}
-					//else {
-					//    print_line("touching distance: " + rtos(dist));
-					//}
+				}
+
+			} else if (otherObject->getCollisionShape()->isConvex()) { /// Execute GJK test against object shape
+
+				// Initialize GJK input
+				gjk_input.m_transformA = body_shape_position;
+				gjk_input.m_transformA.getOrigin() += out_recover_position;
+				gjk_input.m_transformB = otherObject->getWorldTransform();
+
+				// Perform GJK test
+				btPointCollector result;
+				btGjkPairDetector gjk_pair_detector(kin_shape.shape, static_cast<const btConvexShape *>(otherObject->getCollisionShape()), gjk_simplex_solver, gjk_epa_pen_solver);
+				gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+				if (0 > result.m_distance) {
+					// Has penetration
+					out_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
+					penetration = true;
+
+					if (recover_result) {
+
+						recover_result->hasPenetration = true;
+						recover_result->other_collision_object = otherObject;
+						recover_result->other_compound_shape_index = 0;
+						recover_result->penetration_distance = result.m_distance;
+						recover_result->pointNormalWorld = result.m_normalOnBInWorld;
+						recover_result->pointWorld = result.m_pointInWorld;
+					}
 				}
 			}
 		}
 	}
 
-	p_body->get_kinematic_utilities()->resetDefShape();
 	return penetration;
 }

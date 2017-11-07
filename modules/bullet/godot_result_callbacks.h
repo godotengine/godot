@@ -36,8 +36,6 @@
 #include "btBulletDynamicsCommon.h"
 #include "servers/physics_server.h"
 
-#define MAX_PENETRATION_DEPTH 0.005
-
 class RigidBodyBullet;
 
 /// This class is required to implement custom collision behaviour in the broadphase
@@ -145,41 +143,6 @@ public:
 
 	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude)
 		: m_self_object(p_self_object), m_result(p_result), m_exclude(p_exclude), m_collided(false), m_min_distance(0) {}
-
-	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
-
-	virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1);
-};
-
-struct GodotRecoverAndClosestContactResultCallback : public btCollisionWorld::ContactResultCallback {
-public:
-	btVector3 m_pointNormalWorld;
-	btVector3 m_pointWorld;
-	btScalar m_penetration_distance;
-	int m_other_compound_shape_index;
-	const btCollisionObject *m_pointCollisionObject;
-
-	const RigidBodyBullet *m_self_object;
-	bool m_ignore_areas;
-
-	btScalar m_most_penetrated_distance;
-	btVector3 m_recover_penetration;
-
-	GodotRecoverAndClosestContactResultCallback()
-		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(NULL), m_ignore_areas(true), m_most_penetrated_distance(1e20), m_recover_penetration(0, 0, 0) {}
-
-	GodotRecoverAndClosestContactResultCallback(const RigidBodyBullet *p_self_object, bool p_ignore_areas)
-		: m_pointCollisionObject(NULL), m_penetration_distance(0), m_other_compound_shape_index(0), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas), m_most_penetrated_distance(9999999999), m_recover_penetration(0, 0, 0) {}
-
-	void reset() {
-		m_pointCollisionObject = NULL;
-		m_most_penetrated_distance = 1e20;
-		m_recover_penetration.setZero();
-	}
-
-	bool hasHit() {
-		return m_pointCollisionObject;
-	}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
