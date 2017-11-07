@@ -21,20 +21,21 @@
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
-				Return a property, return null if the property does not exist.
+				Returns the given property. Returns [code]null[/code] if the [code]property[/code] does not exist.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
 			<return type="Array">
 			</return>
 			<description>
-				Return the property list, array of dictionaries, dictionaries must contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
+				Returns the object's property list as an [Array] of dictionaries. Dictionaries must contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
 			<return type="void">
 			</return>
 			<description>
+				The virtual method called upon initialization.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -43,7 +44,7 @@
 			<argument index="0" name="what" type="int">
 			</argument>
 			<description>
-				Notification request, the notification id is received.
+				Notify the object internally using an ID.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -54,7 +55,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Set a property. Return true if the property was found.
+				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
 			</description>
 		</method>
 		<method name="add_user_signal">
@@ -65,7 +66,7 @@
 			<argument index="1" name="arguments" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Add a user signal (can be added anytime). Arguments are optional, but can be added as an array of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
+				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing "name" and "type" (from [@Global Scope] TYPE_*).
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -74,6 +75,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Calls the [code]method[/code] on the object and returns a result. Pass parameters as a comma separated list.
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
@@ -82,6 +84,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Calls the [code]method[/code] on the object during idle time and returns a result. Pass parameters as a comma separated list.
 			</description>
 		</method>
 		<method name="callv">
@@ -92,13 +95,14 @@
 			<argument index="1" name="arg_array" type="Array">
 			</argument>
 			<description>
+				Calls the [code]method[/code] on the object and returns a result. Pass parameters as an [Array].
 			</description>
 		</method>
 		<method name="can_translate_messages" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if this object can translate strings.
+				Returns [code]true[/code] if the object can translate strings.
 			</description>
 		</method>
 		<method name="connect">
@@ -115,7 +119,7 @@
 			<argument index="4" name="flags" type="int" default="0">
 			</argument>
 			<description>
-				Connect a signal to a method at a target (member function). Binds are optional and are passed as extra arguments to the call. Flags specify optional deferred or one shot connections, see enum CONNECT_*. A signal can only be connected once to a method, and it will throw an error if already connected. If you want to avoid this, use [method is_connected] to check.
+				Connects a [code]signal[/code] to a [code]method[/code] on a [code]target[/code] object. Pass optional [code]binds[/code] to the call. Use [code]flags[/code] to set deferred or one shot connections. See [code]CONNECT_*[/code] constants. A [code]signal[/code] can only be connected once to a [code]method[/code]. It will throw an error if already connected. To avoid this, first use [method is_connected] to check for existing connections.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -128,7 +132,7 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Disconnect a signal from a method.
+				Disconnects a [code]signal[/code] from a [code]method[/code] on the given [code]target[/code].
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
@@ -137,12 +141,14 @@
 			<argument index="0" name="signal" type="String">
 			</argument>
 			<description>
+				Emits the given [code]signal[/code].
 			</description>
 		</method>
 		<method name="free">
 			<return type="void">
 			</return>
 			<description>
+				Deletes the object from memory.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
@@ -151,21 +157,21 @@
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
-				Get a property from the object.
+				Returns a [Variant] for a [code]property[/code].
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the class of the object as a string.
+				Returns the object's class as a [String].
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of dictionaries with information about signals that are connected to this object.
+				Returns an [Array] of dictionaries with information about signals that are connected to the object.
 				Inside each [Dictionary] there are 3 fields:
 				- "source" is a reference to signal emitter.
 				- "signal_name" is name of connected signal.
@@ -176,7 +182,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the instance ID. All objects have a unique instance ID.
+				Returns the object's unique instance ID.
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
@@ -185,34 +191,35 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return a metadata from the object.
+				Returns the object's metadata for the given [code]name[/code].
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Return the list of metadata in the object.
+				Returns the object's metadata as a [PoolStringArray].
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the object's methods and their signatures as an [Array].
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of properties as an array of dictionaries, dictionaries contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
+				Returns the list of properties as an [Array] of dictionaries. Dictionaries contain: name:String, type:int (see TYPE_* enum in [@Global Scope]) and optionally: hint:int (see PROPERTY_HINT_* in [@Global Scope]), hint_string:String, usage:int (see PROPERTY_USAGE_* in [@Global Scope]).
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
 			<return type="Reference">
 			</return>
 			<description>
-				Return the object script (or null if it doesn't have one).
+				Returns the object's [Script] or [code]null[/code] if one doesn't exist.
 			</description>
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
@@ -221,13 +228,14 @@
 			<argument index="0" name="signal" type="String">
 			</argument>
 			<description>
+				Returns an [Array] of connections for the given [code]signal[/code].
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of signals as an array of dictionaries.
+				Returns the list of signals as an [Array] of dictionaries.
 			</description>
 		</method>
 		<method name="has_meta" qualifiers="const">
@@ -236,7 +244,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return true if a metadata is found with the requested name.
+				Returns [code]true[/code] if a metadata is found with the given [code]name[/code].
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -245,6 +253,7 @@
 			<argument index="0" name="method" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the object contains the given [code]method[/code].
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
@@ -253,13 +262,14 @@
 			<argument index="0" name="signal" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists.
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if signal emission blocking is enabled.
+				Returns [code]true[/code] if signal emission blocking is enabled.
 			</description>
 		</method>
 		<method name="is_class" qualifiers="const">
@@ -268,7 +278,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Check the class of the object against a string (including inheritance).
+				Returns [code]true[/code] if the object inherits from the given [code]type[/code].
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
@@ -281,13 +291,14 @@
 			<argument index="2" name="method" type="String">
 			</argument>
 			<description>
-				Return true if a connection exists for a given signal and target/method.
+				Returns [code]true[/code] if a connection exists for a given [code]signal[/code], [code]target[/code], and [code]method[/code].
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the [code]queue_free[/code] method was called for the object.
 			</description>
 		</method>
 		<method name="notification">
@@ -333,7 +344,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Define whether this object can translate strings (with calls to [method tr]). Default is true.
+				Define whether the object can translate strings (with calls to [method tr]). Default is true.
 			</description>
 		</method>
 		<method name="set_meta">
