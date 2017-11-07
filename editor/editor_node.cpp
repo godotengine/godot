@@ -1933,6 +1933,15 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case FILE_EXPORT_TILESET: {
 
+			//Make sure that the scene has a root before trying to convert to tileset
+			if (!editor_data.get_edited_scene_root()) {
+				current_option = -1;
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("This operation can't be done without a root node."));
+				accept->popup_centered_minsize();
+				break;
+			}
+
 			List<String> extensions;
 			Ref<TileSet> ml(memnew(TileSet));
 			ResourceSaver::get_recognized_extensions(ml, &extensions);
