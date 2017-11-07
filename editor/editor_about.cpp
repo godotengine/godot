@@ -117,7 +117,7 @@ EditorAbout::EditorAbout() {
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(VERSION_FULL_NAME + hash + String::utf8("\n\u00A9 2007-2017 Juan Linietsky, Ariel Manzur.\n\u00A9 2014-2017 ") +
+	about_text->set_text(VERSION_FULL_NAME + hash + String::utf8("\n\xc2\xa9 2007-2017 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2017 ") +
 						 TTR("Godot Engine contributors") + "\n");
 	hbc->add_child(about_text);
 
@@ -201,7 +201,7 @@ EditorAbout::EditorAbout() {
 		for (int j = 0; j < about_tp_copyright_count[i]; j++) {
 
 			text += "\n    Files:\n        " + String(about_tp_file[read_idx]).replace("\n", "\n        ") + "\n";
-			String copyright = String::utf8("    \u00A9 ") + String::utf8(about_tp_copyright[read_idx]).replace("\n", String::utf8("\n    \u00A9 "));
+			String copyright = String::utf8("    \xc2\xa9 ") + String::utf8(about_tp_copyright[read_idx]).replace("\n", String::utf8("\n    \xc2\xa9 "));
 			text += copyright;
 			long_text += copyright;
 			String license = "\n    License: " + String(about_tp_license[read_idx]) + "\n";
