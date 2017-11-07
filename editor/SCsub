@@ -39,6 +39,8 @@ def make_doc_header(target, source, env):
     docend = ""
     for s in source:
         src = s.srcnode().abspath
+        if not src.endswith(".xml"):
+            continue
         f = open_utf8(src, "r")
         content = f.read()
         buf+=content
