@@ -858,12 +858,11 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
 					if (p_keep_materials && FileAccess::exists(ext_name)) {
 						//if exists, use it
-						Ref<Material> existing = ResourceLoader::load(ext_name);
-						p_materials[mat] = existing;
+						p_materials[mat] = ResourceLoader::load(ext_name);
 					} else {
 
 						ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-						p_materials[mat] = mat;
+						p_materials[mat] = ResourceLoader::load(ext_name);
 					}
 				}
 
@@ -887,7 +886,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 							String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
 
 							ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-							p_meshes[mesh] = mesh;
+							p_meshes[mesh] = ResourceLoader::load(ext_name);
+							p_node->set(E->get().name, p_meshes[mesh]);
 							mesh_just_added = true;
 						}
 					}
@@ -907,18 +907,24 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 									;
 									if (FileAccess::exists(ext_name)) {
 										//if exists, use it
-										Ref<Material> existing = ResourceLoader::load(ext_name);
-										p_materials[mat] = existing;
+										p_materials[mat] = ResourceLoader::load(ext_name);
 									} else {
 
 										ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-										p_materials[mat] = mat;
+										p_materials[mat] = ResourceLoader::load(ext_name);
 									}
 								}
 
 								if (p_materials[mat] != mat) {
 
 									mesh->surface_set_material(i, p_materials[mat]);
+
+									//re-save the mesh since a material is now assigned
+									if (p_make_meshes) {
+										String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+										ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
+										p_meshes[mesh] = ResourceLoader::load(ext_name);
+									}
 								}
 							}
 
