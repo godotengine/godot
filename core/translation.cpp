@@ -966,7 +966,7 @@ Vector<String> TranslationServer::get_all_locale_names() {
 	const char **ptr = locale_names;
 
 	while (*ptr) {
-		locales.push_back(*ptr);
+		locales.push_back(String::utf8(*ptr));
 		ptr++;
 	}
 
@@ -1168,6 +1168,6 @@ TranslationServer::TranslationServer()
 
 	for (int i = 0; locale_list[i]; ++i) {
 
-		locale_name_map.insert(locale_list[i], locale_names[i]);
+		locale_name_map.insert(locale_list[i], String::utf8(locale_names[i]));
 	}
 }
