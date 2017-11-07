@@ -80,7 +80,6 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
 
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
@@ -125,18 +124,6 @@ public:
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
-
-	void add_bone(const NodePath &p_path = NodePath(), const PoolVector<float> &p_weights = PoolVector<float>());
-	int get_bone_count() const;
-	NodePath get_bone_path(int p_index) const;
-	PoolVector<float> get_bone_weights(int p_index) const;
-	void erase_bone(int p_idx);
-	void clear_bones();
-	void set_bone_weights(int p_index, const PoolVector<float> &p_weights);
-	void set_bone_path(int p_index, const NodePath &p_path);
-
-	void set_skeleton(const NodePath &p_skeleton);
-	NodePath get_skeleton() const;
 
 	Polygon2D();
 };

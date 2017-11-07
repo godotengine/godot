@@ -59,19 +59,7 @@ bool Light2D::_edit_use_pivot() const {
 
 Rect2 Light2D::_edit_get_rect() const {
 	if (texture.is_null())
-		return Rect2();
-
-	Size2 s = texture->get_size() * _scale;
-	return Rect2(texture_offset - s / 2.0, s);
-}
-
-bool Light2D::_edit_use_rect() const {
-	return !texture.is_null();
-}
-
-Rect2 Light2D::get_anchorable_rect() const {
-	if (texture.is_null())
-		return Rect2();
+		return Node2D::_edit_get_rect();
 
 	Size2 s = texture->get_size() * _scale;
 	return Rect2(texture_offset - s / 2.0, s);

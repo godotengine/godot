@@ -37,6 +37,12 @@ Dictionary Polygon2D::_edit_get_state() const {
 	return state;
 }
 
+Dictionary Polygon2D::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["offset"] = offset;
+	return state;
+}
+
 void Polygon2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 	set_offset(p_state["offset"]);
@@ -71,10 +77,6 @@ Rect2 Polygon2D::_edit_get_rect() const {
 	}
 
 	return item_rect;
-}
-
-bool Polygon2D::_edit_use_rect() const {
-	return true;
 }
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {

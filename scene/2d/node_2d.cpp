@@ -58,7 +58,9 @@ void Node2D::_edit_set_state(const Dictionary &p_state) {
 }
 
 void Node2D::_edit_set_position(const Point2 &p_position) {
-	set_position(p_position);
+	pos = p_position;
+	_update_transform();
+	_change_notify("position");
 }
 
 Point2 Node2D::_edit_get_position() const {

@@ -94,14 +94,6 @@ Point2 Control::_edit_get_position() const {
 	return get_position();
 };
 
-void Control::_edit_set_scale(const Size2 &p_scale) {
-	set_scale(p_scale);
-}
-
-Size2 Control::_edit_get_scale() const {
-	return data.scale;
-}
-
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
 	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
 	set_size(p_edit_rect.size.snapped(Vector2(1, 1)));
@@ -1334,9 +1326,9 @@ void Control::_size_changed() {
 	}
 
 	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		new_size_cache = new_size_cache.round();
-		new_pos_cache = new_pos_cache.round();
+	if (Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
+		new_size_cache = new_size_cache.floor();
+		new_pos_cache = new_pos_cache.floor();
 	}
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;

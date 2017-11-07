@@ -58,17 +58,6 @@ bool Sprite::_edit_use_pivot() const {
 	return true;
 }
 
-Rect2 Sprite::_edit_get_rect() const {
-	return get_rect();
-}
-
-bool Sprite::_edit_use_rect() const {
-	if (texture.is_null())
-		return false;
-
-	return true;
-}
-
 Rect2 Sprite::get_anchorable_rect() const {
 	return get_rect();
 }
