@@ -49,31 +49,41 @@
 Dictionary Control::_edit_get_state() const {
 
 	Dictionary s;
-	s["rect"] = get_rect();
 	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
+	s["pivot"] = get_pivot_offset();
 	Array anchors;
 	anchors.push_back(get_anchor(MARGIN_LEFT));
 	anchors.push_back(get_anchor(MARGIN_TOP));
 	anchors.push_back(get_anchor(MARGIN_RIGHT));
 	anchors.push_back(get_anchor(MARGIN_BOTTOM));
 	s["anchors"] = anchors;
+	Array margins;
+	margins.push_back(get_margin(MARGIN_LEFT));
+	margins.push_back(get_margin(MARGIN_TOP));
+	margins.push_back(get_margin(MARGIN_RIGHT));
+	margins.push_back(get_margin(MARGIN_BOTTOM));
+	s["margins"] = margins;
 	return s;
 }
 void Control::_edit_set_state(const Dictionary &p_state) {
 
 	Dictionary state = p_state;
 
-	Rect2 rect = state["rect"];
-	set_position(rect.position);
-	set_size(rect.size);
 	set_rotation(state["rotation"]);
 	set_scale(state["scale"]);
+	set_pivot_offset(state["pivot"]);
 	Array anchors = state["anchors"];
-	set_anchor(MARGIN_LEFT, anchors[0]);
-	set_anchor(MARGIN_TOP, anchors[1]);
-	set_anchor(MARGIN_RIGHT, anchors[2]);
-	set_anchor(MARGIN_BOTTOM, anchors[3]);
+	data.anchor[MARGIN_LEFT] = anchors[0];
+	data.anchor[MARGIN_TOP] = anchors[1];
+	data.anchor[MARGIN_RIGHT] = anchors[2];
+	data.anchor[MARGIN_BOTTOM] = anchors[3];
+	Array margins = state["margins"];
+	data.margin[MARGIN_LEFT] = margins[0];
+	data.margin[MARGIN_TOP] = margins[1];
+	data.margin[MARGIN_RIGHT] = margins[2];
+	data.margin[MARGIN_BOTTOM] = margins[3];
+	_size_changed();
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
@@ -85,19 +95,8 @@ Point2 Control::_edit_get_position() const {
 };
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
-
-	Transform2D xform = _get_internal_transform();
-
-	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
-
-	Vector2 pos = get_position() + new_pos;
-
-	Rect2 new_rect = get_rect();
-	new_rect.position = pos.snapped(Vector2(1, 1));
-	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
-
-	set_position(new_rect.position);
-	set_size(new_rect.size);
+	set_position((get_position() + get_transform().basis_xform(p_edit_rect.position)).snapped(Vector2(1, 1)));
+	set_size(p_edit_rect.size.snapped(Vector2(1, 1)));
 }
 
 Rect2 Control::_edit_get_rect() const {
@@ -121,6 +120,9 @@ bool Control::_edit_use_rotation() const {
 }
 
 void Control::_edit_set_pivot(const Point2 &p_pivot) {
+	Vector2 delta_pivot = p_pivot - get_pivot_offset();
+	Vector2 move = Vector2((cos(data.rotation) - 1.0) * delta_pivot.x - sin(data.rotation) * delta_pivot.y, sin(data.rotation) * delta_pivot.x + (cos(data.rotation) - 1.0) * delta_pivot.y);
+	set_position(get_position() + move);
 	set_pivot_offset(p_pivot);
 }
 
@@ -1297,7 +1299,8 @@ void Control::_size_changed() {
 		new_size_cache.height = MAX(minimum_size.height, new_size_cache.height);
 	}
 
-	if (get_viewport()->is_snap_controls_to_pixels_enabled()) {
+	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
+	if (Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
 		new_size_cache = new_size_cache.floor();
 		new_pos_cache = new_pos_cache.floor();
 	}
@@ -1378,7 +1381,6 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bo
 			data.margin[(p_margin + 2) % 4] = _s2a(previous_opposite_margin_pos, data.anchor[(p_margin + 2) % 4], parent_range);
 		}
 	}
-
 	if (is_inside_tree()) {
 		_size_changed();
 	}

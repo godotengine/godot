@@ -34,7 +34,51 @@
 
 #define NORMAL_SUFFIX "_normal"
 
-////////////////////////////
+Dictionary AnimatedSprite::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["offset"] = offset;
+	return state;
+}
+
+void AnimatedSprite::_edit_set_state(const Dictionary &p_state) {
+	Node2D::_edit_set_state(p_state);
+	set_offset(p_state["offset"]);
+}
+
+void AnimatedSprite::_edit_set_pivot(const Point2 &p_pivot) {
+	set_offset(get_offset() - p_pivot);
+	set_position(get_transform().xform(p_pivot));
+}
+
+Point2 AnimatedSprite::_edit_get_pivot() const {
+	return Vector2();
+}
+
+bool AnimatedSprite::_edit_use_pivot() const {
+	return true;
+}
+
+Rect2 AnimatedSprite::_edit_get_rect() const {
+	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+		return Node2D::_edit_get_rect();
+	}
+
+	Ref<Texture> t;
+	if (animation)
+		t = frames->get_frame(animation, frame);
+	if (t.is_null())
+		return Node2D::_edit_get_rect();
+	Size2 s = t->get_size();
+
+	Point2 ofs = offset;
+	if (centered)
+		ofs -= s / 2;
+
+	if (s == Size2(0, 0))
+		s = Size2(1, 1);
+
+	return Rect2(ofs, s);
+}
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture> &p_frame, int p_at_pos) {
 
@@ -246,20 +290,6 @@ void SpriteFrames::_bind_methods() {
 SpriteFrames::SpriteFrames() {
 
 	add_animation(SceneStringNames::get_singleton()->_default);
-}
-
-void AnimatedSprite::_edit_set_pivot(const Point2 &p_pivot) {
-
-	set_offset(p_pivot);
-}
-
-Point2 AnimatedSprite::_edit_get_pivot() const {
-
-	return get_offset();
-}
-bool AnimatedSprite::_edit_use_pivot() const {
-
-	return true;
 }
 
 void AnimatedSprite::_validate_property(PropertyInfo &property) const {
@@ -489,29 +519,6 @@ void AnimatedSprite::set_flip_v(bool p_flip) {
 bool AnimatedSprite::is_flipped_v() const {
 
 	return vflip;
-}
-
-Rect2 AnimatedSprite::_edit_get_rect() const {
-
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
-		return Node2D::_edit_get_rect();
-	}
-
-	Ref<Texture> t;
-	if (animation)
-		t = frames->get_frame(animation, frame);
-	if (t.is_null())
-		return Node2D::_edit_get_rect();
-	Size2i s = t->get_size();
-
-	Point2 ofs = offset;
-	if (centered)
-		ofs -= s / 2;
-
-	if (s == Size2(0, 0))
-		s = Size2(1, 1);
-
-	return Rect2(ofs, s);
 }
 
 void AnimatedSprite::_res_changed() {

@@ -31,8 +31,31 @@
 #include "polygon_2d.h"
 #include "core/math/geometry.h"
 
-Rect2 Polygon2D::_edit_get_rect() const {
+Dictionary Polygon2D::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["offset"] = offset;
+	return state;
+}
 
+void Polygon2D::_edit_set_state(const Dictionary &p_state) {
+	Node2D::_edit_set_state(p_state);
+	set_offset(p_state["offset"]);
+}
+
+void Polygon2D::_edit_set_pivot(const Point2 &p_pivot) {
+	set_position(get_transform().xform(p_pivot));
+	set_offset(get_offset() - p_pivot);
+}
+
+Point2 Polygon2D::_edit_get_pivot() const {
+	return Vector2();
+}
+
+bool Polygon2D::_edit_use_pivot() const {
+	return true;
+}
+
+Rect2 Polygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		int l = polygon.size();
 		PoolVector<Vector2>::Read r = polygon.read();
@@ -52,21 +75,7 @@ Rect2 Polygon2D::_edit_get_rect() const {
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
-	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
-}
-
-void Polygon2D::_edit_set_pivot(const Point2 &p_pivot) {
-
-	set_offset(p_pivot);
-}
-
-Point2 Polygon2D::_edit_get_pivot() const {
-
-	return get_offset();
-}
-bool Polygon2D::_edit_use_pivot() const {
-
-	return true;
+	return Geometry::is_point_in_polygon(p_point - get_offset(), Variant(polygon));
 }
 
 void Polygon2D::_notification(int p_what) {
@@ -324,6 +333,7 @@ void Polygon2D::set_offset(const Vector2 &p_offset) {
 	offset = p_offset;
 	rect_cache_dirty = true;
 	update();
+	_change_notify("offset");
 }
 
 Vector2 Polygon2D::get_offset() const {

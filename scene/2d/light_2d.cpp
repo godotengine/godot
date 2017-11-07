@@ -33,35 +33,36 @@
 #include "engine.h"
 #include "servers/visual_server.h"
 
-void Light2D::_edit_set_pivot(const Point2 &p_pivot) {
+Dictionary Light2D::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["offset"] = get_texture_offset();
+	return state;
+}
 
-	set_texture_offset(p_pivot);
+void Light2D::_edit_set_state(const Dictionary &p_state) {
+	Node2D::_edit_set_state(p_state);
+	set_texture_offset(p_state["offset"]);
+}
+
+void Light2D::_edit_set_pivot(const Point2 &p_pivot) {
+	set_position(get_transform().xform(p_pivot));
+	set_texture_offset(get_texture_offset() - p_pivot);
 }
 
 Point2 Light2D::_edit_get_pivot() const {
-
-	return get_texture_offset();
+	return Vector2();
 }
-bool Light2D::_edit_use_pivot() const {
 
+bool Light2D::_edit_use_pivot() const {
 	return true;
 }
 
 Rect2 Light2D::_edit_get_rect() const {
-
 	if (texture.is_null())
-		return Rect2(0, 0, 1, 1);
+		return Node2D::_edit_get_rect();
 
-	Size2i s;
-
-	s = texture->get_size() * _scale;
-	Point2i ofs = texture_offset;
-	ofs -= s / 2;
-
-	if (s == Size2(0, 0))
-		s = Size2(1, 1);
-
-	return Rect2(ofs, s);
+	Size2 s = texture->get_size() * _scale;
+	return Rect2(texture_offset - s / 2.0, s);
 }
 
 void Light2D::_update_light_visibility() {
@@ -131,6 +132,7 @@ void Light2D::set_texture_offset(const Vector2 &p_offset) {
 	texture_offset = p_offset;
 	VS::get_singleton()->canvas_light_set_texture_offset(canvas_light, texture_offset);
 	item_rect_changed();
+	_change_notify("offset");
 }
 
 Vector2 Light2D::get_texture_offset() const {
