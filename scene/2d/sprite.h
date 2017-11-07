@@ -67,6 +67,9 @@ protected:
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
+	virtual Dictionary _edit_get_state() const;
+	virtual void _edit_set_state(const Dictionary &p_state);
+
 	virtual void _edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;

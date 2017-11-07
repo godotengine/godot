@@ -230,7 +230,7 @@ public:
 	// Used to resize/move/select the node
 	virtual void _edit_set_rect(const Rect2 &p_rect){};
 	virtual Rect2 _edit_get_rect() const { return Rect2(-32, -32, 64, 64); };
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return true; }
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return _edit_get_rect().has_point(p_point); }
 	Rect2 _edit_get_item_and_children_rect() const;
 	virtual bool _edit_use_rect() const { return false; };
 
