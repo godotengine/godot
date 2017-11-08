@@ -129,7 +129,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	PoolVector<uint8_t>::Read r = img->get_data().read();
 
 	int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps() ? -1 : 0);
-	int mmc = p_img->has_mipmaps() ? Image::get_image_required_mipmaps(imgw, imgh, etc_format) : 0;
+	int mmc = 1 + (p_img->has_mipmaps() ? Image::get_image_required_mipmaps(imgw, imgh, etc_format) : 0);
 
 	PoolVector<uint8_t> dst_data;
 	dst_data.resize(target_size);
@@ -155,7 +155,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	print_line("begin encoding, format: " + Image::get_format_name(etc_format));
 	uint64_t t = OS::get_singleton()->get_ticks_msec();
-	for (int i = 0; i < mmc + 1; i++) {
+	for (int i = 0; i < mmc; i++) {
 		// convert source image to internal etc2comp format (which is equivalent to Image::FORMAT_RGBAF)
 		// NOTE: We can alternatively add a case to Image::convert to handle Image::FORMAT_RGBAF conversion.
 		int mipmap_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
@@ -163,9 +163,9 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		const uint8_t *src = &r[mipmap_ofs];
 
 		Etc::ColorFloatRGBA *src_rgba_f = new Etc::ColorFloatRGBA[mipmap_w * mipmap_h];
-		for (int i = 0; i < mipmap_w * mipmap_h; i++) {
-			int si = i * 4; // RGBA8
-			src_rgba_f[i] = Etc::ColorFloatRGBA::ConvertFromRGBA8(src[si], src[si + 1], src[si + 2], src[si + 3]);
+		for (int j = 0; j < mipmap_w * mipmap_h; j++) {
+			int si = j * 4; // RGBA8
+			src_rgba_f[j] = Etc::ColorFloatRGBA::ConvertFromRGBA8(src[si], src[si + 1], src[si + 2], src[si + 3]);
 		}
 
 		unsigned char *etc_data = NULL;
@@ -173,15 +173,17 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		unsigned int extended_width = 0, extended_height = 0;
 		Etc::Encode((float *)src_rgba_f, mipmap_w, mipmap_h, etc2comp_etc_format, error_metric, effort, num_cpus, num_cpus, &etc_data, &etc_data_len, &extended_width, &extended_height, &encoding_time);
 
+		CRASH_COND(wofs + etc_data_len > target_size);
 		memcpy(&w[wofs], etc_data, etc_data_len);
 		wofs += etc_data_len;
 
 		delete[] etc_data;
 		delete[] src_rgba_f;
 	}
+
 	print_line("time encoding: " + rtos(OS::get_singleton()->get_ticks_msec() - t));
 
-	p_img->create(imgw, imgh, mmc > 1 ? true : false, etc_format, dst_data);
+	p_img->create(imgw, imgh, p_img->has_mipmaps(), etc_format, dst_data);
 }
 
 static void _compress_etc1(Image *p_img, float p_lossy_quality) {
