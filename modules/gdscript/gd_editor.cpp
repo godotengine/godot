@@ -1060,7 +1060,7 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 	}
 
 	//use the last assignment, (then backwards?)
-	if (last_assign) {
+	if (last_assign && last_assign_line != p_line) {
 
 		return _guess_expression_type(context, last_assign, last_assign_line, r_type);
 	}
@@ -1194,6 +1194,8 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 					r_type = _get_type_from_pinfo(context._class->variables[i]._export);
 					return true;
 				} else if (context._class->variables[i].expression) {
+					if (p_line <= context._class->variables[i].line)
+						return false;
 
 					bool rtype = _guess_expression_type(context, context._class->variables[i].expression, context._class->variables[i].line, r_type);
 					if (rtype && r_type.type != Variant::NIL)
