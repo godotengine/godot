@@ -122,7 +122,9 @@ enum JoystickList {
 	JOY_AXIS_5 = 5,
 	JOY_AXIS_6 = 6,
 	JOY_AXIS_7 = 7,
-	JOY_AXIS_MAX = 8,
+	JOY_AXIS_8 = 8,
+	JOY_AXIS_9 = 9,
+	JOY_AXIS_MAX = 10,
 
 	JOY_ANALOG_LX = JOY_AXIS_0,
 	JOY_ANALOG_LY = JOY_AXIS_1,
