@@ -46,6 +46,7 @@
 //#define ALLOWED_PENETRATION 0.01
 #define RELAXATION_TIMESTEPS 3
 #define MIN_VELOCITY 0.0001
+#define MAX_BIAS_ROTATION (Math_PI / 8)
 
 void BodyPairSW::_contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
 
@@ -71,6 +72,7 @@ void BodyPairSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 
 
 	contact.acc_normal_impulse = 0;
 	contact.acc_bias_impulse = 0;
+	contact.acc_bias_impulse_center_of_mass = 0;
 	contact.acc_tangent_impulse = Vector3();
 	contact.local_A = local_A;
 	contact.local_B = local_B;
@@ -82,12 +84,12 @@ void BodyPairSW::contact_added_callback(const Vector3 &p_point_A, const Vector3 
 	for (int i = 0; i < contact_count; i++) {
 
 		Contact &c = contacts[i];
-		if (
-				c.local_A.distance_squared_to(local_A) < (contact_recycle_radius * contact_recycle_radius) &&
+		if (c.local_A.distance_squared_to(local_A) < (contact_recycle_radius * contact_recycle_radius) &&
 				c.local_B.distance_squared_to(local_B) < (contact_recycle_radius * contact_recycle_radius)) {
 
 			contact.acc_normal_impulse = c.acc_normal_impulse;
 			contact.acc_bias_impulse = c.acc_bias_impulse;
+			contact.acc_bias_impulse_center_of_mass = c.acc_bias_impulse_center_of_mass;
 			contact.acc_tangent_impulse = c.acc_tangent_impulse;
 			new_index = i;
 			break;
@@ -325,9 +327,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		A->apply_impulse(c.rA + A->get_center_of_mass(), -j_vec);
 		B->apply_impulse(c.rB + B->get_center_of_mass(), j_vec);
 		c.acc_bias_impulse = 0;
-		Vector3 jb_vec = c.normal * c.acc_bias_impulse;
-		A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb_vec);
-		B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb_vec);
+		c.acc_bias_impulse_center_of_mass = 0;
 
 		c.bounce = MAX(A->get_bounce(), B->get_bounce());
 		if (c.bounce) {
@@ -356,7 +356,7 @@ void BodyPairSW::solve(real_t p_step) {
 
 		c.active = false; //try to deactivate, will activate itself if still needed
 
-		//bias impule
+		//bias impulse
 
 		Vector3 crbA = A->get_biased_angular_velocity().cross(c.rA);
 		Vector3 crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -372,8 +372,26 @@ void BodyPairSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb);
-			B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb);
+			A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb, MAX_BIAS_ROTATION / p_step);
+			B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb, MAX_BIAS_ROTATION / p_step);
+
+			crbA = A->get_biased_angular_velocity().cross(c.rA);
+			crbB = B->get_biased_angular_velocity().cross(c.rB);
+			dbv = B->get_biased_linear_velocity() + crbB - A->get_biased_linear_velocity() - crbA;
+
+			vbn = dbv.dot(c.normal);
+
+			if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
+
+				real_t jbn_com = (-vbn + c.bias) / (A->get_inv_mass() + B->get_inv_mass());
+				real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
+				c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);
+
+				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
+
+				A->apply_bias_impulse(A->get_center_of_mass(), -jb_com, 0.0f);
+				B->apply_bias_impulse(B->get_center_of_mass(), jb_com, 0.0f);
+			}
 
 			c.active = true;
 		}
@@ -382,7 +400,7 @@ void BodyPairSW::solve(real_t p_step) {
 		Vector3 crB = B->get_angular_velocity().cross(c.rB);
 		Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
 
-		//normal impule
+		//normal impulse
 		real_t vn = dv.dot(c.normal);
 
 		if (Math::abs(vn) > MIN_VELOCITY) {
@@ -399,7 +417,7 @@ void BodyPairSW::solve(real_t p_step) {
 			c.active = true;
 		}
 
-		//friction impule
+		//friction impulse
 
 		real_t friction = A->get_friction() * B->get_friction();
 
