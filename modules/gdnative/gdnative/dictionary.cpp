@@ -130,6 +130,12 @@ godot_variant GDAPI *godot_dictionary_operator_index(godot_dictionary *p_self, c
 	return (godot_variant *)&self->operator[](*key);
 }
 
+const godot_variant GDAPI *godot_dictionary_operator_index_const(const godot_dictionary *p_self, const godot_variant *p_key) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	const Variant *key = (const Variant *)p_key;
+	return (const godot_variant *)&self->operator[](*key);
+}
+
 godot_variant GDAPI *godot_dictionary_next(const godot_dictionary *p_self, const godot_variant *p_key) {
 	Dictionary *self = (Dictionary *)p_self;
 	const Variant *key = (const Variant *)p_key;

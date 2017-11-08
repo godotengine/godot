@@ -158,6 +158,11 @@ godot_variant GDAPI *godot_array_operator_index(godot_array *p_self, const godot
 	return (godot_variant *)&self->operator[](p_idx);
 }
 
+const godot_variant GDAPI *godot_array_operator_index_const(const godot_array *p_self, const godot_int p_idx) {
+	const Array *self = (const Array *)p_self;
+	return (const godot_variant *)&self->operator[](p_idx);
+}
+
 void GDAPI godot_array_append(godot_array *p_self, const godot_variant *p_value) {
 	Array *self = (Array *)p_self;
 	Variant *val = (Variant *)p_value;
