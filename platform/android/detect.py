@@ -25,8 +25,7 @@ def get_opts():
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
         EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86')),
         BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
-        BoolVariable('android_stl', 'Enable Android STL support (for modules)', True),
-        BoolVariable('ndk_unified_headers', 'Enable NDK unified headers', True)
+        BoolVariable('android_stl', 'Enable Android STL support (for modules)', True)
     ]
 
 
@@ -179,26 +178,22 @@ def configure(env):
     env['RANLIB'] = tools_path + "/ranlib"
     env['AS'] = tools_path + "/as"
 
-    ndk_unified_headers = env['ndk_unified_headers']
-    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
-
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
-
-    if not ndk_unified_headers and ndk_version != None and ndk_version[0] >= 16:
-        ndk_unified_headers = True
-        print("Turning NDK unified headers on (starting from r16)")
 
     lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + env['ndk_platform'] + "/" + env['ARCH']
 
     ## Compile flags
 
-    if ndk_unified_headers:
+    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
+    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
+        print("Using NDK unified headers")
         sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         # For unified headers this define has to be set manually
         env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(int(env['ndk_platform'].split("-")[1]))])
     else:
+        print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
 
     env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
@@ -266,8 +261,8 @@ def configure(env):
             env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
         env.opus_fixed_point = "yes"
 
-# Return NDK version as [<major>,<minor>,<build>] or None if cannot be figured out (adapted from the Chromium project).
-def get_ndk_version (path):
+# Return NDK version string in source.properties (adapted from the Chromium project).
+def get_ndk_version(path):
     if path == None:
         return None
     prop_file_path = os.path.join(path, "source.properties")
@@ -276,8 +271,7 @@ def get_ndk_version (path):
             for line in prop_file:
                 key_value = map(lambda x: string.strip(x), line.split("="))
                 if key_value[0] == "Pkg.Revision":
-                    version_parts = key_value[1].split("-")[0].split(".")
-                    return map(int, version_parts[0:3])
+                    return key_value[1]
     except:
         print("Could not read source prop file '%s'" % prop_file_path)
     return None
