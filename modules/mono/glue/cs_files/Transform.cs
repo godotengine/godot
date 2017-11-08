@@ -11,14 +11,14 @@ namespace Godot
 
         public Transform affine_inverse()
         {
-            Basis basisInv = basis.inverse();
-            return new Transform(basisInv, basisInv.xform(-origin));
+            Basis basisInv = basis.Inverse();
+            return new Transform(basisInv, basisInv.Xform(-origin));
         }
 
         public Transform inverse()
         {
-            Basis basisTr = basis.transposed();
-            return new Transform(basisTr, basisTr.xform(-origin));
+            Basis basisTr = basis.Transposed();
+            return new Transform(basisTr, basisTr.Xform(-origin));
         }
 
         public Transform looking_at(Vector3 target, Vector3 up)
@@ -30,7 +30,7 @@ namespace Godot
 
         public Transform orthonormalized()
         {
-            return new Transform(basis.orthonormalized(), origin);
+            return new Transform(basis.Orthonormalized(), origin);
         }
 
         public Transform rotated(Vector3 axis, float phi)
@@ -40,7 +40,7 @@ namespace Godot
 
         public Transform scaled(Vector3 scale)
         {
-            return new Transform(basis.scaled(scale), origin * scale);
+            return new Transform(basis.Scaled(scale), origin * scale);
         }
 
         public void set_look_at(Vector3 eye, Vector3 target, Vector3 up)
@@ -61,7 +61,7 @@ namespace Godot
             xAxis.normalize();
             yAxis.normalize();
 
-            basis = Basis.create_from_axes(xAxis, yAxis, zAxis);
+            basis = Basis.CreateFromAxis(xAxis, yAxis, zAxis);
 
             origin = eye;
         }
@@ -100,7 +100,7 @@ namespace Godot
 
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
-            this.basis = Basis.create_from_axes(xAxis, yAxis, zAxis);
+            this.basis = Basis.CreateFromAxis(xAxis, yAxis, zAxis);
             this.origin = origin;
         }
 

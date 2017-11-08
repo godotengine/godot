@@ -133,7 +133,14 @@ namespace Godot
             }
         }
 
-        internal static Basis create_from_axes(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
+		/// <summary>
+		/// Create a matrix from 3 axis vectors
+		/// </summary>
+		/// <param name="xAxis">X-axis vector</param>
+		/// <param name="yAxis">Y-axis vector</param>
+		/// <param name="zAxis">Z-axis vector</param>
+		/// <returns>Matrix from vectors</returns>
+        internal static Basis CreateFromAxis(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
         {
             return new Basis
             (
@@ -143,21 +150,31 @@ namespace Godot
             );
         }
 
-        public float determinant()
+		/// <summary>
+		/// Calculate the determinant of the matrix
+		/// </summary>
+		/// <returns>Determinant of the matrix</returns>
+        public float Determinant()
         {
             return this[0, 0] * (this[1, 1] * this[2, 2] - this[2, 1] * this[1, 2]) -
                     this[1, 0] * (this[0, 1] * this[2, 2] - this[2, 1] * this[0, 2]) +
                     this[2, 0] * (this[0, 1] * this[1, 2] - this[1, 1] * this[0, 2]);
         }
 
-        public Vector3 get_axis(int axis)
+		// TODO
+		/// <remarks>Undocumented</remarks>
+		public Vector3 GetAxis(int axis)
         {
             return new Vector3(this[0, axis], this[1, axis], this[2, axis]);
         }
 
-        public Vector3 get_euler()
+		/// <summary>
+		/// Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles
+		/// </summary>
+		/// <returns>Rotation angle in the (x,y,z) format</returns>
+        public Vector3 GetEuler()
         {
-            Basis m = this.orthonormalized();
+            Basis m = this.Orthonormalized();
 
             Vector3 euler;
             euler.z = 0.0f;
@@ -188,7 +205,12 @@ namespace Godot
             return euler;
         }
 
-        public int get_orthogonal_index()
+		/// <summary>
+		/// This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object
+		/// </summary>
+		/// <remarks>Mainly used by grid map editor</remarks>
+		/// <returns>Index of the point best representing the orientation of the object</returns>
+		public int GetOrthagonalIndex()
         {
             Basis orth = this;
 
@@ -218,7 +240,11 @@ namespace Godot
             return 0;
         }
 
-        public Basis inverse()
+		/// <summary>
+		/// Inverts a matrix
+		/// </summary>
+		/// <returns>Inverse of the matrix</returns>
+        public Basis Inverse()
         {
             Basis inv = this;
 
@@ -259,11 +285,16 @@ namespace Godot
             return inv;
         }
 
-        public Basis orthonormalized()
+		/// <summary>
+		/// Performs a Gram-Schmidt orthonormalization on the basis of the matrix
+		/// </summary>
+		/// <remarks>Useful to call from time to time to avoid rounding error for orthogonal matrices</remarks>
+		/// <returns>orthonormalized version of the matrix</returns>
+		public Basis Orthonormalized()
         {
-            Vector3 xAxis = get_axis(0);
-            Vector3 yAxis = get_axis(1);
-            Vector3 zAxis = get_axis(2);
+            Vector3 xAxis = GetAxis(0);
+            Vector3 yAxis = GetAxis(1);
+            Vector3 zAxis = GetAxis(2);
 
             xAxis.normalize();
             yAxis = (yAxis - xAxis * (xAxis.dot(yAxis)));
@@ -271,15 +302,28 @@ namespace Godot
             zAxis = (zAxis - xAxis * (xAxis.dot(zAxis)) - yAxis * (yAxis.dot(zAxis)));
             zAxis.normalize();
 
-            return Basis.create_from_axes(xAxis, yAxis, zAxis);
-        }
+            return Basis.CreateFromAxis(xAxis, yAxis, zAxis);
+		}
 
-        public Basis rotated(Vector3 axis, float phi)
+		/// <summary>
+		/// Introduce an additional rotation around the given axis by phi (radians) 
+		/// </summary>
+		/// <param name="axis">Axis of rotation</param>
+		/// <param name="phi">Amount of rotation (radians)</param>
+		/// <remarks>Only relevant when the matrix is being used as a part of Transform.</remarks>
+		/// <returns>Rotated vector</returns>
+		public Basis Rotated(Vector3 axis, float phi)
         {
             return new Basis(axis, phi) * this;
         }
 
-        public Basis scaled(Vector3 scale)
+		/// <summary>
+		/// Scales a vector by a 3D scaling factor
+		/// </summary>
+		/// <param name="scale">3D scaling factor</param>
+		/// <remarks>Only relevant when the matrix is being used as a part of Transform.</remarks>
+		/// <returns>Scaled vector</returns>
+		public Basis Scaled(Vector3 scale)
         {
             Basis m = this;
 
@@ -296,22 +340,39 @@ namespace Godot
             return m;
         }
 
-        public float tdotx(Vector3 with)
+		/// <summary>
+		/// Transposed dot product with the x axis of the matrix
+		/// </summary>
+		/// <returns>Transposed dot product</returns>
+		public float Tdotx(Vector3 with)
         {
             return this[0, 0] * with[0] + this[1, 0] * with[1] + this[2, 0] * with[2];
         }
 
-        public float tdoty(Vector3 with)
+		/// <summary>
+		/// Transposed dot product with the y axis of the matrix
+		/// </summary>
+		/// <returns>Transposed dot product</returns>
+		public float Tdoty(Vector3 with)
         {
             return this[0, 1] * with[0] + this[1, 1] * with[1] + this[2, 1] * with[2];
         }
 
-        public float tdotz(Vector3 with)
+
+		/// <summary>
+		/// Transposed dot product with the z axis of the matrix
+		/// </summary>
+		/// <returns>Transposed dot product</returns>
+		public float Tdotz(Vector3 with)
         {
             return this[0, 2] * with[0] + this[1, 2] * with[1] + this[2, 2] * with[2];
         }
 
-        public Basis transposed()
+		/// <summary>
+		/// Transpose the matrix
+		/// </summary>
+		/// <returns>Transposed version of the matrix</returns>
+        public Basis Transposed()
         {
             Basis tr = this;
 
@@ -330,7 +391,12 @@ namespace Godot
             return tr;
         }
 
-        public Vector3 xform(Vector3 v)
+		/// <summary>
+		/// Transform a vector by the matrix
+		/// </summary>
+		/// <param name="v">Vector to transform with the matrix</param>
+		/// <returns>Transformed vector</returns>
+        public Vector3 Xform(Vector3 v)
         {
             return new Vector3
             (
@@ -340,7 +406,13 @@ namespace Godot
             );
         }
 
-        public Vector3 xform_inv(Vector3 v)
+		/// <summary>
+		/// Transform a vector by the inverse of matrix
+		/// </summary>
+		/// <param name="v">Vector to transform with the inverse of the matrix</param>
+		/// <remarks>Results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection</remarks>
+		/// <returns>Transformed vector</returns>
+		public Vector3 XformInv(Vector3 v)
         {
             return new Vector3
             (
@@ -461,9 +533,9 @@ namespace Godot
         {
             return new Basis
             (
-                right.tdotx(left[0]), right.tdoty(left[0]), right.tdotz(left[0]),
-                right.tdotx(left[1]), right.tdoty(left[1]), right.tdotz(left[1]),
-                right.tdotx(left[2]), right.tdoty(left[2]), right.tdotz(left[2])
+                right.Tdotx(left[0]), right.Tdoty(left[0]), right.Tdotz(left[0]),
+                right.Tdotx(left[1]), right.Tdoty(left[1]), right.Tdotz(left[1]),
+                right.Tdotx(left[2]), right.Tdoty(left[2]), right.Tdotz(left[2])
             );
         }
 
