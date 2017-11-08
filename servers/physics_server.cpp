@@ -491,7 +491,7 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &PhysicsServer::body_set_axis_velocity);
 
-	ClassDB::bind_method(D_METHOD("body_set_axis_lock", "body", "axis"), &PhysicsServer::body_set_axis_lock);
+	ClassDB::bind_method(D_METHOD("body_set_axis_lock", "body", "axis", "lock"), &PhysicsServer::body_set_axis_lock);
 	ClassDB::bind_method(D_METHOD("body_get_axis_lock", "body"), &PhysicsServer::body_get_axis_lock);
 
 	ClassDB::bind_method(D_METHOD("body_add_collision_exception", "body", "excepted_body"), &PhysicsServer::body_add_collision_exception);
@@ -720,11 +720,6 @@ void PhysicsServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_PARAM_BODY_TIME_TO_SLEEP);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS);
-
-	BIND_ENUM_CONSTANT(BODY_AXIS_LOCK_DISABLED);
-	BIND_ENUM_CONSTANT(BODY_AXIS_LOCK_X);
-	BIND_ENUM_CONSTANT(BODY_AXIS_LOCK_Y);
-	BIND_ENUM_CONSTANT(BODY_AXIS_LOCK_Z);
 }
 
 PhysicsServer::PhysicsServer() {

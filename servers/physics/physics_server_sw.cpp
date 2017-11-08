@@ -794,19 +794,19 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_v
 	body->wakeup();
 };
 
-void PhysicsServerSW::body_set_axis_lock(RID p_body, BodyAxisLock p_lock) {
+void PhysicsServerSW::body_set_axis_lock(RID p_body, int axis, bool lock) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_axis_lock(p_lock);
+	body->set_axis_lock(axis, lock);
 	body->wakeup();
 }
 
-PhysicsServerSW::BodyAxisLock PhysicsServerSW::body_get_axis_lock(RID p_body) const {
+bool PhysicsServerSW::body_get_axis_lock(RID p_body) const {
 
 	const BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, BODY_AXIS_LOCK_DISABLED);
+	ERR_FAIL_COND_V(!body, 0);
 	return body->get_axis_lock();
 }
 

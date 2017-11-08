@@ -184,7 +184,7 @@ private:
 	KinematicUtilities *kinematic_utilities;
 
 	PhysicsServer::BodyMode mode;
-	PhysicsServer::BodyAxisLock axis_lock;
+	bool locked_axis[3] = { false, false, false };
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	real_t mass;
@@ -269,8 +269,8 @@ public:
 	void set_applied_torque(const Vector3 &p_torque);
 	Vector3 get_applied_torque() const;
 
-	void set_axis_lock(PhysicsServer::BodyAxisLock p_lock);
-	PhysicsServer::BodyAxisLock get_axis_lock() const;
+	void set_axis_lock(int axis, bool p_lock);
+	bool get_axis_lock() const;
 
 	/// Doc:
 	/// http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Anti_tunneling_by_Motion_Clamping
