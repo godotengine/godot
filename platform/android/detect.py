@@ -25,7 +25,7 @@ def get_opts():
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
         EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86')),
         BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
-        BoolVariable('android_stl', 'Enable Android STL support (for modules)', False),
+        BoolVariable('android_stl', 'Enable Android STL support (for modules)', True),
         BoolVariable('ndk_unified_headers', 'Enable NDK unified headers', True)
     ]
 
