@@ -122,6 +122,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
 	// make copies of our inputs
+	bool has_grav = false;
 	Vector3 acc = input->get_accelerometer();
 	Vector3 gyro = input->get_gyroscope();
 	Vector3 grav = input->get_gravity();
@@ -143,14 +144,17 @@ void MobileVRInterface::set_position_from_sensors() {
 		// what a stable gravity vector is
 		grav = acc;
 		if (grav.length() > 0.1) {
-			has_gyro = true;
+			has_grav = true;
 		};
 	} else {
-		has_gyro = true;
+		has_grav = true;
 	};
 
 	bool has_magneto = magneto.length() > 0.1;
-	bool has_grav = grav.length() > 0.1;
+	if (gyro.length() > 0.1) {
+		/* this can return to 0.0 if the user doesn't move the phone, so once on, it's on */
+		has_gyro = true;
+	};
 
 #ifdef ANDROID_ENABLED
 	///@TODO needs testing, i don't have a gyro, potentially can be removed depending on what comes out of issue #8101
