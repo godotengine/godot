@@ -187,6 +187,9 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
+	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
+	virtual real_t body_get_kinematic_safe_margin(RID p_body) const;
+
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
 
@@ -221,7 +224,7 @@ public:
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin = 0.001, MotionResult *r_result = NULL);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result = NULL);
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);

@@ -411,6 +411,9 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value) = 0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
+	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin) = 0;
+	virtual real_t body_get_kinematic_safe_margin(RID p_body) const = 0;
+
 	//state
 	enum BodyState {
 		BODY_STATE_TRANSFORM,
@@ -482,7 +485,7 @@ public:
 		Variant collider_metadata;
 	};
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin = 0.001, MotionResult *r_result = NULL) = 0;
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result = NULL) = 0;
 
 	/* JOINT API */
 

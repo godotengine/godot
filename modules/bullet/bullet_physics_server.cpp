@@ -635,6 +635,28 @@ float BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) con
 	return body->get_param(p_param);
 }
 
+void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_margin) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	if (body->get_kinematic_utilities()) {
+
+		body->get_kinematic_utilities()->setSafeMargin(p_margin);
+	}
+}
+
+real_t BulletPhysicsServer::body_get_kinematic_safe_margin(RID p_body) const {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	if (body->get_kinematic_utilities()) {
+
+		return body->get_kinematic_utilities()->safe_margin;
+	}
+
+	return 0;
+}
+
 void BulletPhysicsServer::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -797,12 +819,12 @@ PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
 	return BulletPhysicsDirectBodyState::get_singleton(body);
 }
 
-bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, float p_margin, MotionResult *r_result) {
+bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_margin, r_result);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, r_result);
 }
 
 RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {

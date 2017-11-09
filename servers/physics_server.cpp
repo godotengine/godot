@@ -481,6 +481,9 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer::body_get_param);
 
+	ClassDB::bind_method(D_METHOD("body_set_kinematic_safe_margin", "body", "margin"), &PhysicsServer::body_set_kinematic_safe_margin);
+	ClassDB::bind_method(D_METHOD("body_get_kinematic_safe_margin", "body"), &PhysicsServer::body_get_kinematic_safe_margin);
+
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer::body_get_state);
 

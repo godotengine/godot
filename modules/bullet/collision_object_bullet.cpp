@@ -105,7 +105,7 @@ void CollisionObjectBullet::remove_collision_exception(const CollisionObjectBull
 }
 
 bool CollisionObjectBullet::has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const {
-	return !bt_collision_object->checkCollideWithOverride(p_otherCollisionObject->bt_collision_object);
+	return !bt_collision_object->checkCollideWith(p_otherCollisionObject->bt_collision_object);
 }
 
 void CollisionObjectBullet::set_collision_enabled(bool p_enabled) {

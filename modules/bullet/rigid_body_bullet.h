@@ -162,17 +162,15 @@ public:
 	};
 
 	struct KinematicUtilities {
-		RigidBodyBullet *m_owner;
-		btScalar m_margin;
-		btManifoldArray m_manifoldArray; ///keep track of the contact manifolds
-		class btPairCachingGhostObject *m_ghostObject;
-		Vector<KinematicShape> m_shapes;
+		RigidBodyBullet *owner;
+		btScalar safe_margin;
+		Vector<KinematicShape> shapes;
 
 		KinematicUtilities(RigidBodyBullet *p_owner);
 		~KinematicUtilities();
 
+		void setSafeMargin(btScalar p_margin);
 		/// Used to set the default shape to ghost
-		void resetDefShape();
 		void copyAllOwnerShapes();
 
 	private:

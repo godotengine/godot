@@ -938,7 +938,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, Collision &r_colli
 
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
-	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, margin, &result);
+	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, &result);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1041,12 +1041,13 @@ bool KinematicBody::test_move(const Transform &p_from, const Vector3 &p_motion) 
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return PhysicsServer::get_singleton()->body_test_motion(get_rid(), p_from, p_motion, margin);
+	return PhysicsServer::get_singleton()->body_test_motion(get_rid(), p_from, p_motion);
 }
 
 void KinematicBody::set_safe_margin(float p_margin) {
 
 	margin = p_margin;
+	PhysicsServer::get_singleton()->body_set_kinematic_safe_margin(get_rid(), margin);
 }
 
 float KinematicBody::get_safe_margin() const {

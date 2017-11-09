@@ -59,6 +59,7 @@ class CollisionObjectBullet;
 class RigidBodyBullet;
 class SpaceBullet;
 class SoftBodyBullet;
+class btGjkEpaPenetrationDepthSolver;
 
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState {
 	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState)
@@ -92,6 +93,9 @@ private:
 	btGhostPairCallback *ghostPairCallback;
 	GodotFilterCallback *godotFilterCallback;
 	btSoftBodyWorldInfo *soft_body_world_info;
+
+	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver;
+	btVoronoiSimplexSolver *gjk_simplex_solver;
 
 	BulletPhysicsDirectSpaceState *direct_access;
 	Vector3 gravityDirection;
@@ -164,7 +168,7 @@ public:
 
 	void update_gravity();
 
-	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, real_t p_margin, PhysicsServer::MotionResult *r_result);
+	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, PhysicsServer::MotionResult *r_result);
 
 private:
 	void create_empty_world(bool p_create_soft_world);
@@ -172,6 +176,19 @@ private:
 	void check_ghost_overlaps();
 	void check_body_collision();
 
-	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btScalar p_maxPenetrationDepth, btScalar p_depenetration_speed, btVector3 &out_recover_position);
+	struct RecoverResult {
+		bool hasPenetration;
+		btVector3 pointNormalWorld;
+		btVector3 pointWorld;
+		btScalar penetration_distance; // Negative is penetration
+		int other_compound_shape_index;
+		const btCollisionObject *other_collision_object;
+		int local_shape_most_recovered;
+
+		RecoverResult()
+			: hasPenetration(false) {}
+	};
+
+	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btVector3 &out_recover_position, RecoverResult *recover_result = NULL);
 };
 #endif
