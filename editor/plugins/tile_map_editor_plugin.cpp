@@ -973,7 +973,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				Point2i pos = points[i];
 
-				if (!paint_undo.has(over_tile)) {
+				if (!paint_undo.has(pos)) {
 					paint_undo[pos] = _get_op_from_cell(pos);
 				}
 
@@ -993,7 +993,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				Point2i pos = points[i];
 
-				if (!paint_undo.has(over_tile)) {
+				if (!paint_undo.has(pos)) {
 					paint_undo[pos] = _get_op_from_cell(pos);
 				}
 
