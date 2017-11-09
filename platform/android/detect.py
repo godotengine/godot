@@ -2,6 +2,7 @@ import os
 import sys
 import string
 import platform
+from distutils.version import LooseVersion
 
 
 def is_active():
