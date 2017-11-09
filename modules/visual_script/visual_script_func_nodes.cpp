@@ -858,6 +858,8 @@ public:
 					if (call_mode == VisualScriptFunctionCall::CALL_MODE_INSTANCE) {
 						if (returns >= 2) {
 							*p_outputs[1] = v.call(function, p_inputs + 1, input_args, r_error);
+						} else if (returns == 1) {
+							v.call(function, p_inputs + 1, input_args, r_error);
 						} else {
 							r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 							r_error_str = "Invalid returns count for call_mode == CALL_MODE_INSTANCE";
