@@ -61,7 +61,7 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 
 const Variant &Dictionary::operator[](const Variant &p_key) const {
 
-	return ((const OrderedHashMap<Variant, Variant, _DictionaryVariantHash> *)&_p->variant_map)->operator[](p_key);
+	return _p->variant_map[p_key];
 }
 const Variant *Dictionary::getptr(const Variant &p_key) const {
 
