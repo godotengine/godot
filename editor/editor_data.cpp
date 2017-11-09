@@ -90,7 +90,7 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 		if (obj->is_type("ScriptEditorDebuggerInspectedObject")) {
 			for (int i = current; i >= 0; i--) {
 				Object *pre_obj = ObjectDB::get_instance(get_history_obj(i));
-				if (pre_obj->is_type("ScriptEditorDebuggerInspectedObject")) {
+				if (pre_obj != NULL && pre_obj->is_type("ScriptEditorDebuggerInspectedObject")) {
 					if (pre_obj->call("get_remote_object_id") == obj->call("get_remote_object_id")) {
 						History &pr = history[i];
 						pr.path[pr.path.size() - 1] = o;
