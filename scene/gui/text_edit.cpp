@@ -2040,6 +2040,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						_confirm_completion();
 						accept_event();
+						emit_signal("request_completion");
 						return;
 					}
 
