@@ -35,12 +35,37 @@ def _build_gdnative_api_struct_header(api):
         'extern "C" {',
         '#endif',
         '',
-        'typedef struct godot_gdnative_api_struct {',
-        '\tvoid *next;',
-        '\tconst char *version;',
+        'enum GDNATIVE_API_TYPES {',
+        '\tGDNATIVE_' + api['core']['type'] + ','
     ]
 
-    for funcdef in api['api']:
+    for name in api['extensions']:
+        out += ['\tGDNATIVE_' + api['extensions'][name]['type'] + ',']
+
+    out += ['};', '']
+
+    for name in api['extensions']:
+        out += [
+            'typedef struct godot_gdnative_' + name + '_api_struct {',
+            '\tunsigned int type;',
+            '\tconst void *next;'
+        ]
+
+        for funcdef in api['extensions'][name]['api']:
+            args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
+            out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
+
+        out += ['} godot_gdnative_' + name + '_api_struct;', '']
+
+    out += [
+        'typedef struct godot_gdnative_api_struct {',
+        '\tunsigned int type;',
+        '\tconst void *next;',
+        '\tunsigned int num_extensions;',
+        '\tconst void **extensions;',
+    ]
+
+    for funcdef in api['core']['api']:
         args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
         out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
@@ -61,14 +86,37 @@ def _build_gdnative_api_struct_source(api):
         '/* THIS FILE IS GENERATED DO NOT EDIT */',
         '',
         '#include <gdnative_api_struct.gen.h>',
-        '',
-        'const char *_gdnative_api_version = "%s";' % api['version'],
-        'extern const godot_gdnative_api_struct api_struct = {',
-        '\tNULL,',
-        '\t_gdnative_api_version,',
+        ''
     ]
 
-    for funcdef in api['api']:
+    for name in api['extensions']:
+        out += [
+            'extern const godot_gdnative_' + name + '_api_struct api_extension_' + name + '_struct = {',
+            '\tGDNATIVE_' + api['extensions'][name]['type'] + ',',
+            '\tNULL,'
+        ]
+
+        for funcdef in api['extensions'][name]['api']:
+            out.append('\t%s,' % funcdef['name'])
+
+        out += ['};\n']
+
+    out += ['', 'const void *gdnative_extensions_pointers[] = {']
+
+    for name in api['extensions']:
+        out += ['\t(void *)&api_extension_' + name + '_struct,']
+
+    out += ['};\n']
+
+    out += [
+        'extern const godot_gdnative_api_struct api_struct = {',
+        '\tGDNATIVE_' + api['core']['type'] + ',',
+        '\tNULL,',
+        '\t' + str(len(api['extensions'])) + ',',
+        '\tgdnative_extensions_pointers,',
+    ]
+
+    for funcdef in api['core']['api']:
         out.append('\t%s,' % funcdef['name'])
     out.append('};\n')
 
