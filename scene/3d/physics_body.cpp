@@ -995,7 +995,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						Transform gt = get_global_transform();
 						gt.origin -= collision.travel;
 						set_global_transform(gt);
-						return Vector3();
+						return floor_velocity;
 					}
 				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
 					on_ceiling = true;
