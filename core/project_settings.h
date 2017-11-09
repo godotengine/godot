@@ -168,8 +168,9 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default);
-#define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_override_default);
+#define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
+#define GLOBAL_DEF_MISSING(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

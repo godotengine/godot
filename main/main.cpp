@@ -802,15 +802,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("display/window/size/width", video_mode.width);
-	GLOBAL_DEF("display/window/size/height", video_mode.height);
-	GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
-	GLOBAL_DEF("display/window/size/fullscreen", video_mode.fullscreen);
-	GLOBAL_DEF("display/window/size/resizable", video_mode.resizable);
-	GLOBAL_DEF("display/window/size/borderless", video_mode.borderless_window);
-	use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", use_vsync);
-	GLOBAL_DEF("display/window/size/test_width", 0);
-	GLOBAL_DEF("display/window/size/test_height", 0);
+	// these settings may have been retrieved above, we should not
+	// override their defaults with retrieved values
+	GLOBAL_DEF_MISSING("display/window/size/width", video_mode.width);
+	GLOBAL_DEF_MISSING("display/window/size/height", video_mode.height);
+	GLOBAL_DEF_MISSING("display/window/dpi/allow_hidpi", false);
+	GLOBAL_DEF_MISSING("display/window/dpi/allow_hidpi", false);
+	GLOBAL_DEF_MISSING("display/window/size/fullscreen", video_mode.fullscreen);
+	GLOBAL_DEF_MISSING("display/window/size/resizable", video_mode.resizable);
+	GLOBAL_DEF_MISSING("display/window/size/borderless", video_mode.borderless_window);
+	use_vsync = GLOBAL_DEF_MISSING("display/window/vsync/use_vsync", use_vsync);
+	GLOBAL_DEF_MISSING("display/window/size/test_width", 0);
+	GLOBAL_DEF_MISSING("display/window/size/test_height", 0);
+
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
 
