@@ -571,7 +571,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 						wr[ofs + 0] = 255; //grayscale as 1
 						wr[ofs + 1] = slot->bitmap.buffer[i * slot->bitmap.pitch + j];
 						break;
-						// TODO: FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_BGRA
+					// TODO: FT_PIXEL_MODE_LCD, FT_PIXEL_MODE_BGRA
 					default:
 						ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(slot->bitmap.pixel_mode));
 						ERR_FAIL();

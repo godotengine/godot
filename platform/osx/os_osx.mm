@@ -899,16 +899,6 @@ const char *OS_OSX::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
 
-OS::VideoMode OS_OSX::get_default_video_mode() const {
-
-	VideoMode vm;
-	vm.width = 1024;
-	vm.height = 600;
-	vm.fullscreen = false;
-	vm.resizable = true;
-	return vm;
-}
-
 void OS_OSX::initialize_core() {
 
 	crash_handler.initialize();

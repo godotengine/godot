@@ -62,11 +62,6 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 };
 
-OS::VideoMode OSIPhone::get_default_video_mode() const {
-
-	return video_mode;
-};
-
 uint8_t OSIPhone::get_orientations() const {
 
 	return supported_orientations;

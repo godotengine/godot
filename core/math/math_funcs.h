@@ -271,7 +271,7 @@ public:
 
 #elif defined(_MSC_VER) && _MSC_VER < 1800
 		__asm fld a __asm fistp b
-		/*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
+/*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
 		// use AT&T inline assembly style, document that
 		// we use memory as output (=m) and input (m)
 		__asm__ __volatile__ (
