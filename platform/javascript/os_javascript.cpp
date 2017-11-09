@@ -64,11 +64,6 @@ const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 	return "GLES3";
 }
 
-OS::VideoMode OS_JavaScript::get_default_video_mode() const {
-
-	return OS::VideoMode();
-}
-
 int OS_JavaScript::get_audio_driver_count() const {
 
 	return 1;

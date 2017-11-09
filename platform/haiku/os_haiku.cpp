@@ -79,10 +79,6 @@ const char *OS_Haiku::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
 
-OS::VideoMode OS_Haiku::get_default_video_mode() const {
-	return OS::VideoMode(800, 600, false);
-}
-
 void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = NULL;
 	current_video_mode = p_desired;

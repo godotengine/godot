@@ -66,7 +66,6 @@ class OS_Server : public OS_Unix {
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
-	virtual VideoMode get_default_video_mode() const;
 
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();

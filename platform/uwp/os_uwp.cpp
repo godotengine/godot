@@ -72,11 +72,6 @@ const char *OSUWP::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
 
-OS::VideoMode OSUWP::get_default_video_mode() const {
-
-	return video_mode;
-}
-
 Size2 OSUWP::get_window_size() const {
 	Size2 size;
 	size.width = video_mode.width;

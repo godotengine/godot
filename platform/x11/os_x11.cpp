@@ -82,10 +82,6 @@ const char *OS_X11::get_video_driver_name(int p_driver) const {
 	return "GLES3";
 }
 
-OS::VideoMode OS_X11::get_default_video_mode() const {
-	return OS::VideoMode(1024, 600, false);
-}
-
 int OS_X11::get_audio_driver_count() const {
 	return AudioDriverManager::get_driver_count();
 }

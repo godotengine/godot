@@ -1,4 +1,4 @@
-/*************************************************************************/
+/************************************************************************* /
 /*  os.h                                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -108,8 +108,6 @@ protected:
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const = 0;
 	virtual const char *get_video_driver_name(int p_driver) const = 0;
-
-	virtual VideoMode get_default_video_mode() const = 0;
 
 	virtual int get_audio_driver_count() const = 0;
 	virtual const char *get_audio_driver_name(int p_driver) const = 0;

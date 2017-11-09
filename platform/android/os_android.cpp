@@ -65,12 +65,6 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
-
-OS::VideoMode OS_Android::get_default_video_mode() const {
-
-	return OS::VideoMode();
-}
-
 int OS_Android::get_audio_driver_count() const {
 
 	return 1;
