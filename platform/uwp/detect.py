@@ -84,7 +84,7 @@ def configure(env):
     ## Architecture
 
     arch = ""
-    if os.getenv('Platform') == "ARM":
+    if str(os.getenv('Platform')).lower() == "arm":
 
         print("Compiled program architecture will be an ARM executable. (forcing bits=32).")
 
