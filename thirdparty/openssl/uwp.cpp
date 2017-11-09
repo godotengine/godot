@@ -103,12 +103,14 @@ extern "C"
 		{
 		return 0;
 		}
+#ifndef STD_ERROR_HANDLE
 	int __cdecl GetStdHandle(
 						   _In_  DWORD nStdHandle
 						   )
 		{
 		return 0;
 		}
+#endif
 	BOOL DeregisterEventSource(
 							  _Inout_  HANDLE hEventLog
 							  )
