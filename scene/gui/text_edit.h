@@ -547,6 +547,8 @@ public:
 	bool is_selecting_identifiers_on_hover_enabled() const;
 
 	void set_context_menu_enabled(bool p_enable);
+	bool is_context_menu_enabled();
+
 	PopupMenu *get_menu() const;
 
 	String get_text_for_completion();
