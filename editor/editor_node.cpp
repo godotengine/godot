@@ -1932,7 +1932,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case FILE_EXPORT_TILESET: {
-			
+
 			//Make sure Scene has a root before trying to convert to tileset
 			if (!editor_data.get_edited_scene_root()) {
 				current_option = -1;
