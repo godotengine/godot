@@ -988,12 +988,15 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					on_floor = true;
 					floor_velocity = collision.collider_vel;
 
-					/*if (collision.travel.length() < 0.01 && ABS((lv.x - floor_velocity.x)) < p_slope_stop_min_velocity) {
+					Vector3 rel_v = lv - floor_velocity;
+					Vector3 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
+
+					if (collision.travel.length() < 0.05 && hv.length() < p_slope_stop_min_velocity) {
 						Transform gt = get_global_transform();
-						gt.elements[2] -= collision.travel;
+						gt.origin -= collision.travel;
 						set_global_transform(gt);
 						return Vector3();
-					}*/
+					}
 				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
 					on_ceiling = true;
 				} else {
