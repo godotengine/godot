@@ -777,11 +777,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	//if (video_driver == "") // useless for now, so removing
 	//	video_driver = GLOBAL_DEF("display/driver/name", Variant((const char *)OS::get_singleton()->get_video_driver_name(0)));
 
+	GLOBAL_DEF("display/window/size/width", 1024);
+	GLOBAL_DEF("display/window/size/height", 600);
+	GLOBAL_DEF("display/window/size/resizable", true);
+	GLOBAL_DEF("display/window/size/borderless", false);
+	GLOBAL_DEF("display/window/size/fullscreen", false);
+	GLOBAL_DEF("display/window/size/test_width", 0);
+	GLOBAL_DEF("display/window/size/test_height", 0);
+
 	if (use_custom_res) {
 
 		if (!force_res) {
-			video_mode.width = GLOBAL_DEF("display/window/size/width", 1024);
-			video_mode.height = GLOBAL_DEF("display/window/size/height", 600);
+			video_mode.width = GLOBAL_GET("display/window/size/width");
+			video_mode.height = GLOBAL_GET("display/window/size/height");
 
 			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
 				int tw = globals->get("display/window/size/test_width");
@@ -793,9 +801,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		}
 
-		video_mode.resizable = GLOBAL_DEF("display/window/size/resizable", true);
-		video_mode.borderless_window = GLOBAL_DEF("display/window/size/borderless", false);
-		video_mode.fullscreen = GLOBAL_DEF("display/window/size/fullscreen", false);
+		video_mode.resizable = GLOBAL_GET("display/window/size/resizable");
+		video_mode.borderless_window = GLOBAL_GET("display/window/size/borderless");
+		video_mode.fullscreen = GLOBAL_GET("display/window/size/fullscreen");
 	}
 
 	if (!force_lowdpi) {
@@ -804,8 +812,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
 
-	GLOBAL_DEF("display/window/size/test_width", 0);
-	GLOBAL_DEF("display/window/size/test_height", 0);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
 
