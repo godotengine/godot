@@ -170,7 +170,7 @@ static String _get_var_type(const Variant *p_type) {
 	return basestr;
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__)
 #define OPCODES_TABLE                         \
 	static const void *switch_table_ops[] = { \
 		&&OPCODE_OPERATOR,                    \
@@ -427,8 +427,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = ret;
 #endif
 				ip += 5;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_EXTENDS_TEST) {
 
 				CHECK_SPACE(4);
@@ -492,8 +493,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				*dst = extends_ok;
 				ip += 4;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_SET) {
 
 				CHECK_SPACE(3);
@@ -518,8 +520,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += 4;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_GET) {
 
 				CHECK_SPACE(3);
@@ -550,8 +553,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = ret;
 #endif
 				ip += 4;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_SET_NAMED) {
 
 				CHECK_SPACE(3);
@@ -575,8 +579,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += 4;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_GET_NAMED) {
 
 				CHECK_SPACE(4);
@@ -609,8 +614,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = ret;
 #endif
 				ip += 4;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_SET_MEMBER) {
 
 				CHECK_SPACE(3);
@@ -631,8 +637,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += 3;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_GET_MEMBER) {
 
 				CHECK_SPACE(3);
@@ -649,8 +656,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += 3;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ASSIGN) {
 
 				CHECK_SPACE(3);
@@ -660,8 +668,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = *src;
 
 				ip += 3;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ASSIGN_TRUE) {
 
 				CHECK_SPACE(2);
@@ -670,8 +679,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = true;
 
 				ip += 2;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ASSIGN_FALSE) {
 
 				CHECK_SPACE(2);
@@ -680,8 +690,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = false;
 
 				ip += 2;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CONSTRUCT) {
 
 				CHECK_SPACE(2);
@@ -708,8 +719,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ip += 4 + argc;
 				//construct a basic type
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CONSTRUCT_ARRAY) {
 
 				CHECK_SPACE(1);
@@ -728,8 +740,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = array;
 
 				ip += 3 + argc;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CONSTRUCT_DICTIONARY) {
 
 				CHECK_SPACE(1);
@@ -750,8 +763,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = dict;
 
 				ip += 3 + argc * 2;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CALL_RETURN)
 			OPCODE(OPCODE_CALL) {
 
@@ -830,8 +844,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
 				ip += argc + 1;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CALL_BUILT_IN) {
 
 				CHECK_SPACE(4);
@@ -869,12 +884,14 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += argc + 1;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CALL_SELF) {
 
 				OPCODE_BREAK;
 			}
+
 			OPCODE(OPCODE_CALL_SELF_BASE) {
 
 				CHECK_SPACE(2);
@@ -948,8 +965,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				ip += 4 + argc;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_YIELD)
 			OPCODE(OPCODE_YIELD_SIGNAL) {
 
@@ -1032,6 +1050,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				exit_ok = true;
 				OPCODE_BREAK;
 			}
+
 			OPCODE(OPCODE_YIELD_RESUME) {
 
 				CHECK_SPACE(2);
@@ -1044,8 +1063,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(result, 1);
 				*result = p_state->result;
 				ip += 2;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_JUMP) {
 
 				CHECK_SPACE(2);
@@ -1053,8 +1073,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				GD_ERR_BREAK(to < 0 || to > _code_size);
 				ip = to;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_JUMP_IF) {
 
 				CHECK_SPACE(3);
@@ -1067,11 +1088,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
-					DISPATCH_OPCODE;
+				} else {
+					ip += 3;
 				}
-				ip += 3;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_JUMP_IF_NOT) {
 
 				CHECK_SPACE(3);
@@ -1084,17 +1106,19 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
-					DISPATCH_OPCODE;
+				} else {
+					ip += 3;
 				}
-				ip += 3;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_JUMP_TO_DEF_ARGUMENT) {
 
 				CHECK_SPACE(2);
 				ip = _default_arg_ptr[defarg];
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_RETURN) {
 
 				CHECK_SPACE(2);
@@ -1103,6 +1127,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				exit_ok = true;
 				OPCODE_BREAK;
 			}
+
 			OPCODE(OPCODE_ITERATE_BEGIN) {
 
 				CHECK_SPACE(8); //space for this a regular iterate
@@ -1121,20 +1146,21 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					int jumpto = _code_ptr[ip + 3];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
-					DISPATCH_OPCODE;
-				}
-				GET_VARIANT_PTR(iterator, 4);
+				} else {
+					GET_VARIANT_PTR(iterator, 4);
 
-				*iterator = container->iter_get(*counter, valid);
+					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
-				if (!valid) {
-					err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "'.";
-					OPCODE_BREAK;
-				}
+					if (!valid) {
+						err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "'.";
+						OPCODE_BREAK;
+					}
 #endif
-				ip += 5; //skip regular iterate which is always next
-				DISPATCH_OPCODE;
+					ip += 5; //skip regular iterate which is always next
+				}
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE) {
 
 				CHECK_SPACE(4);
@@ -1153,20 +1179,21 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					int jumpto = _code_ptr[ip + 3];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
-					DISPATCH_OPCODE;
-				}
-				GET_VARIANT_PTR(iterator, 4);
+				} else {
+					GET_VARIANT_PTR(iterator, 4);
 
-				*iterator = container->iter_get(*counter, valid);
+					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
-				if (!valid) {
-					err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
-					OPCODE_BREAK;
-				}
+					if (!valid) {
+						err_text = "Unable to obtain iterator object of type  " + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
+						OPCODE_BREAK;
+					}
 #endif
-				ip += 5; //loop again
-				DISPATCH_OPCODE;
+					ip += 5; //loop again
+				}
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ASSERT) {
 				CHECK_SPACE(2);
 				GET_VARIANT_PTR(test, 1);
@@ -1182,8 +1209,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 #endif
 				ip += 2;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_BREAKPOINT) {
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton()) {
@@ -1191,8 +1219,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip += 1;
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_LINE) {
 				CHECK_SPACE(2);
 
@@ -1220,8 +1249,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 					ScriptDebugger::get_singleton()->line_poll();
 				}
-				DISPATCH_OPCODE;
 			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_END) {
 
 				exit_ok = true;
