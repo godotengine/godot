@@ -41,7 +41,7 @@ const String init_symbol = "godot_gdnative_init";
 const String terminate_symbol = "godot_gdnative_terminate";
 
 // Defined in gdnative_api_struct.gen.cpp
-extern const godot_gdnative_api_struct api_struct;
+extern const godot_gdnative_core_api_struct api_struct;
 
 String GDNativeLibrary::platform_names[NUM_PLATFORMS + 1] = {
 	"X11_32bit",

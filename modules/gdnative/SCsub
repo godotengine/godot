@@ -12,7 +12,7 @@ gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
-SConscript("nativearvr/SCsub")
+SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 
 def _spaced(e):
@@ -25,7 +25,7 @@ def _build_gdnative_api_struct_header(api):
         '#define GODOT_GDNATIVE_API_STRUCT_H',
         '',
         '#include <gdnative/gdnative.h>',
-        '#include <nativearvr/godot_nativearvr.h>',
+        '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '',
@@ -35,34 +35,47 @@ def _build_gdnative_api_struct_header(api):
         'extern "C" {',
         '#endif',
         '',
+        'typedef struct godot_gdnative_api_version {',
+        '\tunsigned int major;',
+        '\tunsigned int minor;',
+        '} godot_gdnative_api_version;',
+        '',
+        'typedef struct godot_gdnative_api_struct {',
+        '\tunsigned int type;',
+        '\tgodot_gdnative_api_version version;',
+        '\tconst godot_gdnative_api_struct *next;',
+        '} godot_gdnative_api_struct;',
+        '',
         'enum GDNATIVE_API_TYPES {',
         '\tGDNATIVE_' + api['core']['type'] + ','
     ]
 
     for name in api['extensions']:
-        out += ['\tGDNATIVE_' + api['extensions'][name]['type'] + ',']
+        out += ['\tGDNATIVE_EXT_' + api['extensions'][name]['type'] + ',']
 
     out += ['};', '']
 
     for name in api['extensions']:
         out += [
-            'typedef struct godot_gdnative_' + name + '_api_struct {',
+            'typedef struct godot_gdnative_ext_' + name + '_api_struct {',
             '\tunsigned int type;',
-            '\tconst void *next;'
+            '\tgodot_gdnative_api_version version;',
+            '\tconst godot_gdnative_api_struct *next;'
         ]
 
         for funcdef in api['extensions'][name]['api']:
             args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
             out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
-        out += ['} godot_gdnative_' + name + '_api_struct;', '']
+        out += ['} godot_gdnative_ext_' + name + '_api_struct;', '']
 
     out += [
-        'typedef struct godot_gdnative_api_struct {',
+        'typedef struct godot_gdnative_core_api_struct {',
         '\tunsigned int type;',
-        '\tconst void *next;',
+        '\tgodot_gdnative_api_version version;',
+        '\tconst godot_gdnative_api_struct *next;',
         '\tunsigned int num_extensions;',
-        '\tconst void **extensions;',
+        '\tconst godot_gdnative_api_struct **extensions;',
     ]
 
     for funcdef in api['core']['api']:
@@ -70,7 +83,7 @@ def _build_gdnative_api_struct_header(api):
         out.append('\t%s(*%s)(%s);' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
     out += [
-        '} godot_gdnative_api_struct;',
+        '} godot_gdnative_core_api_struct;',
         '',
         '#ifdef __cplusplus',
         '}',
@@ -91,8 +104,9 @@ def _build_gdnative_api_struct_source(api):
 
     for name in api['extensions']:
         out += [
-            'extern const godot_gdnative_' + name + '_api_struct api_extension_' + name + '_struct = {',
-            '\tGDNATIVE_' + api['extensions'][name]['type'] + ',',
+            'extern const godot_gdnative_ext_' + name + '_api_struct api_extension_' + name + '_struct = {',
+            '\tGDNATIVE_EXT_' + api['extensions'][name]['type'] + ',',
+            '\t{' + str(api['extensions'][name]['version']['major']) + ', ' + str(api['extensions'][name]['version']['minor']) + '},',
             '\tNULL,'
         ]
 
@@ -101,16 +115,17 @@ def _build_gdnative_api_struct_source(api):
 
         out += ['};\n']
 
-    out += ['', 'const void *gdnative_extensions_pointers[] = {']
+    out += ['', 'const godot_gdnative_api_struct *gdnative_extensions_pointers[] = {']
 
     for name in api['extensions']:
-        out += ['\t(void *)&api_extension_' + name + '_struct,']
+        out += ['\t(godot_gdnative_api_struct *)&api_extension_' + name + '_struct,']
 
     out += ['};\n']
 
     out += [
-        'extern const godot_gdnative_api_struct api_struct = {',
+        'extern const godot_gdnative_core_api_struct api_struct = {',
         '\tGDNATIVE_' + api['core']['type'] + ',',
+        '\t{' + str(api['core']['version']['major']) + ', ' + str(api['core']['version']['minor']) + '},',
         '\tNULL,',
         '\t' + str(len(api['extensions'])) + ',',
         '\tgdnative_extensions_pointers,',
