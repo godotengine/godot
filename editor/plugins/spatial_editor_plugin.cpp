@@ -2917,7 +2917,9 @@ bool SpatialEditorViewport::_create_instance(Node *parent, String &path, const P
 		}
 	}
 
-	instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	if (scene != NULL) {
+		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
+	}
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
 	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
