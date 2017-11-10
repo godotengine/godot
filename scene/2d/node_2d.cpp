@@ -155,14 +155,6 @@ void Node2D::set_rotation_in_degrees(float p_degrees) {
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
-// Kept for compatibility after rename to set_rotd.
-// Could be removed after a couple releases.
-void Node2D::_set_rotd(float p_degrees) {
-
-	WARN_PRINT("Deprecated method Node2D._set_rotd(): This method was renamed to set_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotation_in_degrees(p_degrees);
-}
-
 void Node2D::set_scale(const Size2 &p_scale) {
 
 	if (_xform_dirty)
@@ -182,23 +174,19 @@ Point2 Node2D::get_position() const {
 		((Node2D *)this)->_update_xform_values();
 	return pos;
 }
+
 float Node2D::get_rotation() const {
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 
 	return angle;
 }
+
 float Node2D::get_rotation_in_degrees() const {
 
 	return Math::rad2deg(get_rotation());
 }
-// Kept for compatibility after rename to get_rotd.
-// Could be removed after a couple releases.
-float Node2D::_get_rotd() const {
 
-	WARN_PRINT("Deprecated method Node2D._get_rotd(): This method was renamed to get_rotd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotation_in_degrees();
-}
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
@@ -409,10 +397,6 @@ Point2 Node2D::to_global(Point2 p_local) const {
 }
 
 void Node2D::_bind_methods() {
-
-	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_get_rotd"), &Node2D::_get_rotd);
-	ClassDB::bind_method(D_METHOD("_set_rotd", "degrees"), &Node2D::_set_rotd);
 
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);

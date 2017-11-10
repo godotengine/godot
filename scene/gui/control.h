@@ -226,10 +226,6 @@ private:
 	void _size_changed();
 	String _get_tooltip() const;
 
-	// Deprecated, should be removed in a future version.
-	void _set_rotation_deg(float p_degrees);
-	float _get_rotation_deg() const;
-
 	void _ref_font(Ref<Font> p_sc);
 	void _unref_font(Ref<Font> p_sc);
 	void _font_changed();

@@ -2424,16 +2424,6 @@ float Control::get_rotation_deg() const {
 	return Math::rad2deg(get_rotation());
 }
 
-// Kept for compatibility after rename to {s,g}et_rotation_deg.
-// Could be removed after a couple releases.
-void Control::_set_rotation_deg(float p_degrees) {
-	WARN_PRINT("Deprecated method Control._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotation_deg(p_degrees);
-}
-float Control::_get_rotation_deg() const {
-	WARN_PRINT("Deprecated method Control._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotation_deg();
-}
 //needed to update the control if the font changes..
 void Control::_ref_font(Ref<Font> p_sc) {
 
@@ -2607,8 +2597,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Control::set_global_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_deg", "degrees"), &Control::set_rotation_deg);
-	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_set_rotation_deg", "degrees"), &Control::_set_rotation_deg);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Control::set_scale);
 	ClassDB::bind_method(D_METHOD("set_pivot_offset", "pivot_offset"), &Control::set_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &Control::get_margin);
@@ -2618,8 +2606,6 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &Control::get_size);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Control::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation_deg"), &Control::get_rotation_deg);
-	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_get_rotation_deg"), &Control::_get_rotation_deg);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);

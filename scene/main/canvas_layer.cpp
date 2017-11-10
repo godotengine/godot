@@ -115,20 +115,6 @@ real_t CanvasLayer::get_rotationd() const {
 	return Math::rad2deg(get_rotation());
 }
 
-// Kept for compatibility after rename to {s,g}et_rotationd.
-// Could be removed after a couple releases.
-void CanvasLayer::_set_rotationd(real_t p_degrees) {
-
-	WARN_PRINT("Deprecated method CanvasLayer._set_rotationd(): This method was renamed to set_rotationd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotationd(p_degrees);
-}
-
-real_t CanvasLayer::_get_rotationd() const {
-
-	WARN_PRINT("Deprecated method CanvasLayer._get_rotationd(): This method was renamed to get_rotationd. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotationd();
-}
-
 void CanvasLayer::set_scale(const Vector2 &p_scale) {
 
 	if (locrotscale_dirty)
@@ -254,10 +240,6 @@ void CanvasLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_rotationd", "degrees"), &CanvasLayer::set_rotationd);
 	ClassDB::bind_method(D_METHOD("get_rotationd"), &CanvasLayer::get_rotationd);
-
-	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_set_rotationd", "degrees"), &CanvasLayer::_set_rotationd);
-	ClassDB::bind_method(D_METHOD("_get_rotationd"), &CanvasLayer::_get_rotationd);
 
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &CanvasLayer::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &CanvasLayer::get_scale);
