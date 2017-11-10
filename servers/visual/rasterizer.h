@@ -320,6 +320,10 @@ public:
 
 	virtual RID light_create(VS::LightType p_type) = 0;
 
+	RID directional_light_create() { return light_create(VS::LIGHT_DIRECTIONAL); }
+	RID omni_light_create() { return light_create(VS::LIGHT_OMNI); }
+	RID spot_light_create() { return light_create(VS::LIGHT_SPOT); }
+
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, VS::LightParam p_param, float p_value) = 0;
 	virtual void light_set_shadow(RID p_light, bool p_enabled) = 0;

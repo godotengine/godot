@@ -103,12 +103,12 @@ public:
 
 	/* SKY API */
 
-	FUNC0R(RID, sky_create)
+	FUNCRID(sky)
 	FUNC3(sky_set_texture, RID, RID, int)
 
 	/* SHADER API */
 
-	FUNC0R(RID, shader_create)
+	FUNCRID(shader)
 
 	FUNC2(shader_set_code, RID, const String &)
 	FUNC1RC(String, shader_get_code, RID)
@@ -120,7 +120,7 @@ public:
 
 	/* COMMON MATERIAL API */
 
-	FUNC0R(RID, material_create)
+	FUNCRID(material)
 
 	FUNC2(material_set_shader, RID, RID)
 	FUNC1RC(RID, material_get_shader, RID)
@@ -134,7 +134,7 @@ public:
 
 	/* MESH API */
 
-	FUNC0R(RID, mesh_create)
+	FUNCRID(mesh)
 
 	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const Rect3 &, const Vector<PoolVector<uint8_t> > &, const Vector<Rect3> &)
 
@@ -170,7 +170,7 @@ public:
 
 	/* MULTIMESH API */
 
-	FUNC0R(RID, multimesh_create)
+	FUNCRID(multimesh)
 
 	FUNC4(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat)
 	FUNC1RC(int, multimesh_get_instance_count, RID)
@@ -192,7 +192,7 @@ public:
 
 	/* IMMEDIATE API */
 
-	FUNC0R(RID, immediate_create)
+	FUNCRID(immediate)
 	FUNC3(immediate_begin, RID, PrimitiveType, RID)
 	FUNC2(immediate_vertex, RID, const Vector3 &)
 	FUNC2(immediate_normal, RID, const Vector3 &)
@@ -207,7 +207,7 @@ public:
 
 	/* SKELETON API */
 
-	FUNC0R(RID, skeleton_create)
+	FUNCRID(skeleton)
 	FUNC3(skeleton_allocate, RID, int, bool)
 	FUNC1RC(int, skeleton_get_bone_count, RID)
 	FUNC3(skeleton_bone_set_transform, RID, int, const Transform &)
@@ -217,7 +217,9 @@ public:
 
 	/* Light API */
 
-	FUNC1R(RID, light_create, LightType)
+	FUNCRID(directional_light)
+	FUNCRID(omni_light)
+	FUNCRID(spot_light)
 
 	FUNC2(light_set_color, RID, const Color &)
 	FUNC3(light_set_param, RID, LightParam, float)
@@ -237,7 +239,7 @@ public:
 
 	/* PROBE API */
 
-	FUNC0R(RID, reflection_probe_create)
+	FUNCRID(reflection_probe)
 
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
@@ -254,7 +256,7 @@ public:
 
 	/* BAKED LIGHT API */
 
-	FUNC0R(RID, gi_probe_create)
+	FUNCRID(gi_probe)
 
 	FUNC2(gi_probe_set_bounds, RID, const Rect3 &)
 	FUNC1RC(Rect3, gi_probe_get_bounds, RID)
@@ -291,7 +293,7 @@ public:
 
 	/* PARTICLES */
 
-	FUNC0R(RID, particles_create)
+	FUNCRID(particles)
 
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC2(particles_set_amount, RID, int)
@@ -318,7 +320,7 @@ public:
 
 	/* CAMERA API */
 
-	FUNC0R(RID, camera_create)
+	FUNCRID(camera)
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
@@ -328,7 +330,7 @@ public:
 
 	/* VIEWPORT TARGET API */
 
-	FUNC0R(RID, viewport_create)
+	FUNCRID(viewport)
 
 	FUNC2(viewport_set_use_arvr, RID, bool)
 
@@ -377,7 +379,7 @@ public:
 
 	/* ENVIRONMENT API */
 
-	FUNC0R(RID, environment_create)
+	FUNCRID(environment)
 
 	FUNC2(environment_set_background, RID, EnvironmentBG)
 	FUNC2(environment_set_sky, RID, RID)
@@ -401,7 +403,7 @@ public:
 	FUNC6(environment_set_fog_depth, RID, bool, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
-	FUNC0R(RID, scenario_create)
+	FUNCRID(scenario)
 
 	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
 	FUNC2(scenario_set_environment, RID, RID)
@@ -410,7 +412,7 @@ public:
 
 	/* INSTANCING API */
 	// from can be mesh, light,  area and portal so far.
-	FUNC0R(RID, instance_create)
+	FUNCRID(instance)
 
 	FUNC2(instance_set_base, RID, RID) // from can be mesh, light, poly, area and portal so far.
 	FUNC2(instance_set_scenario, RID, RID) // from can be mesh, light, poly, area and portal so far.
@@ -440,11 +442,11 @@ public:
 
 	/* CANVAS (2D) */
 
-	FUNC0R(RID, canvas_create)
+	FUNCRID(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	FUNC2(canvas_set_modulate, RID, const Color &)
 
-	FUNC0R(RID, canvas_item_create)
+	FUNCRID(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)
 
 	FUNC2(canvas_item_set_visible, RID, bool)
@@ -510,14 +512,14 @@ public:
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
 
-	FUNC0R(RID, canvas_light_occluder_create)
+	FUNCRID(canvas_light_occluder)
 	FUNC2(canvas_light_occluder_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_occluder_set_enabled, RID, bool)
 	FUNC2(canvas_light_occluder_set_polygon, RID, RID)
 	FUNC2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_occluder_set_light_mask, RID, int)
 
-	FUNC0R(RID, canvas_occluder_polygon_create)
+	FUNCRID(canvas_occluder_polygon)
 	FUNC3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
 	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector<Vector2> &)
 

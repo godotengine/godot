@@ -76,11 +76,11 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
-	RID light = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	RID light = VS::get_singleton()->directional_light_create();
 	RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
 	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	RID light2 = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	RID light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
 	RID light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);

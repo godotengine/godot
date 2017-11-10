@@ -87,7 +87,7 @@ void SegmentShape2D::_bind_methods() {
 }
 
 SegmentShape2D::SegmentShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_SEGMENT)) {
+	: Shape2D(Physics2DServer::get_singleton()->segment_shape_create()) {
 
 	a = Vector2();
 	b = Vector2(0, 10);
@@ -146,7 +146,7 @@ real_t RayShape2D::get_length() const {
 }
 
 RayShape2D::RayShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_RAY)) {
+	: Shape2D(Physics2DServer::get_singleton()->ray_shape_create()) {
 
 	length = 20;
 	_update_shape();

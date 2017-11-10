@@ -278,11 +278,11 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	VS::get_singleton()->camera_set_transform(camera, Transform(Basis(), Vector3(0, 0, 3)));
 	VS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
 
-	light = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	light = VS::get_singleton()->directional_light_create();
 	light_instance = VS::get_singleton()->instance_create2(light, scenario);
 	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	//VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 
@@ -850,11 +850,11 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	VS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
-	light = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	light = VS::get_singleton()->directional_light_create();
 	light_instance = VS::get_singleton()->instance_create2(light, scenario);
 	VS::get_singleton()->instance_set_transform(light_instance, Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 
-	light2 = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
+	light2 = VS::get_singleton()->directional_light_create();
 	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	//VS::get_singleton()->light_set_color(light2, VS::LIGHT_COLOR_SPECULAR, Color(0.0, 0.0, 0.0));
 	light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);

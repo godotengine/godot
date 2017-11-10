@@ -255,7 +255,13 @@ void Light::_bind_methods() {
 Light::Light(VisualServer::LightType p_type) {
 
 	type = p_type;
-	light = VisualServer::get_singleton()->light_create(p_type);
+	switch (p_type) {
+		case VS::LIGHT_DIRECTIONAL: light = VisualServer::get_singleton()->directional_light_create(); break;
+		case VS::LIGHT_OMNI: light = VisualServer::get_singleton()->omni_light_create(); break;
+		case VS::LIGHT_SPOT: light = VisualServer::get_singleton()->spot_light_create(); break;
+		default: {};
+	}
+
 	VS::get_singleton()->instance_set_base(get_instance(), light);
 
 	reverse_cull = false;

@@ -799,7 +799,9 @@ public:
 
 	/* Light API */
 
-	BIND1R(RID, light_create, LightType)
+	BIND0R(RID, directional_light_create)
+	BIND0R(RID, omni_light_create)
+	BIND0R(RID, spot_light_create)
 
 	BIND2(light_set_color, RID, const Color &)
 	BIND3(light_set_param, RID, LightParam, float)

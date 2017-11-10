@@ -130,18 +130,22 @@ void Physics2DServerWrapMT::finish() {
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
 
-		/*
-		shape_free_cached_ids();
-		area_free_cached_ids();
-		body_free_cached_ids();
-		pin_joint_free_cached_ids();
-		groove_joint_free_cached_ids();
-		damped_string_free_cached_ids();
-*/
 		thread = NULL;
 	} else {
 		physics_2d_server->finish();
 	}
+
+	line_shape_free_cached_ids();
+	ray_shape_free_cached_ids();
+	segment_shape_free_cached_ids();
+	circle_shape_free_cached_ids();
+	rectangle_shape_free_cached_ids();
+	convex_polygon_shape_free_cached_ids();
+	concave_polygon_shape_free_cached_ids();
+
+	space_free_cached_ids();
+	area_free_cached_ids();
+	body_free_cached_ids();
 
 	if (step_sem)
 		memdelete(step_sem);
@@ -158,12 +162,7 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool 
 	step_thread_up = false;
 	alloc_mutex = Mutex::create();
 
-	shape_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-	area_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-	body_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-	pin_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-	groove_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-	damped_spring_joint_pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
+	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
 
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_id();

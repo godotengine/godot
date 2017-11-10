@@ -252,7 +252,15 @@ public:
 		SHAPE_CUSTOM, ///< Server-Implementation based custom shape, calling shape_create() with this value will result in an error
 	};
 
-	virtual RID shape_create(ShapeType p_shape) = 0;
+	virtual RID line_shape_create() = 0;
+	virtual RID ray_shape_create() = 0;
+	virtual RID segment_shape_create() = 0;
+	virtual RID circle_shape_create() = 0;
+	virtual RID rectangle_shape_create() = 0;
+	virtual RID capsule_shape_create() = 0;
+	virtual RID convex_polygon_shape_create() = 0;
+	virtual RID concave_polygon_shape_create() = 0;
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;
 
@@ -366,7 +374,7 @@ public:
 		//BODY_MODE_SOFT ??
 	};
 
-	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false) = 0;
+	virtual RID body_create() = 0;
 
 	virtual void body_set_space(RID p_body, RID p_space) = 0;
 	virtual RID body_get_space(RID p_body) const = 0;

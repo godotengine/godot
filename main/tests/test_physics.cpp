@@ -299,7 +299,7 @@ public:
 		VisualServer *vs = VisualServer::get_singleton();
 
 		/* LIGHT */
-		RID lightaux = vs->light_create(VisualServer::LIGHT_DIRECTIONAL);
+		RID lightaux = vs->directional_light_create();
 		scenario = vs->scenario_create();
 		vs->light_set_shadow(lightaux, true);
 		light = vs->instance_create2(lightaux, scenario);

@@ -154,13 +154,33 @@ void VisualServerWrapMT::finish() {
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
 
-		texture_free_cached_ids();
-		//mesh_free_cached_ids();
-
 		thread = NULL;
 	} else {
 		visual_server->finish();
 	}
+
+	texture_free_cached_ids();
+	shader_free_cached_ids();
+	material_free_cached_ids();
+	mesh_free_cached_ids();
+	multimesh_free_cached_ids();
+	immediate_free_cached_ids();
+	skeleton_free_cached_ids();
+	directional_light_free_cached_ids();
+	omni_light_free_cached_ids();
+	spot_light_free_cached_ids();
+	reflection_probe_free_cached_ids();
+	gi_probe_free_cached_ids();
+	particles_free_cached_ids();
+	camera_free_cached_ids();
+	viewport_free_cached_ids();
+	environment_free_cached_ids();
+	scenario_free_cached_ids();
+	instance_free_cached_ids();
+	canvas_free_cached_ids();
+	canvas_item_free_cached_ids();
+	canvas_light_occluder_free_cached_ids();
+	canvas_occluder_polygon_free_cached_ids();
 
 	if (draw_mutex)
 		memdelete(draw_mutex);

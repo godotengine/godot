@@ -86,7 +86,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_SEGMENT].image = vs->texture_create_from_image(image);
 
-			RID segment_shape = ps->shape_create(Physics2DServer::SHAPE_SEGMENT);
+			RID segment_shape = ps->segment_shape_create();
 			Rect2 sg(Point2(-16, 0), Point2(16, 0));
 			ps->shape_set_data(segment_shape, sg);
 
@@ -113,7 +113,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
 
-			RID circle_shape = ps->shape_create(Physics2DServer::SHAPE_CIRCLE);
+			RID circle_shape = ps->circle_shape_create();
 			ps->shape_set_data(circle_shape, 16);
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].shape = circle_shape;
@@ -140,7 +140,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].image = vs->texture_create_from_image(image);
 
-			RID rectangle_shape = ps->shape_create(Physics2DServer::SHAPE_RECTANGLE);
+			RID rectangle_shape = ps->rectangle_shape_create();
 			ps->shape_set_data(rectangle_shape, Vector2(16, 16));
 
 			body_shape_data[Physics2DServer::SHAPE_RECTANGLE].shape = rectangle_shape;
@@ -168,7 +168,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_CAPSULE].image = vs->texture_create_from_image(image);
 
-			RID capsule_shape = ps->shape_create(Physics2DServer::SHAPE_CAPSULE);
+			RID capsule_shape = ps->capsule_shape_create();
 			ps->shape_set_data(capsule_shape, Vector2(16, 32));
 
 			body_shape_data[Physics2DServer::SHAPE_CAPSULE].shape = capsule_shape;
@@ -182,7 +182,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image = vs->texture_create_from_image(image);
 
-			RID convex_polygon_shape = ps->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON);
+			RID convex_polygon_shape = ps->convex_polygon_shape_create();
 
 			PoolVector<Vector2> arr;
 			Point2 sb(32, 32);
@@ -277,10 +277,11 @@ protected:
 		arr.push_back(p_normal);
 		arr.push_back(p_d);
 
-		RID plane = ps->shape_create(Physics2DServer::SHAPE_LINE);
+		RID plane = ps->line_shape_create();
 		ps->shape_set_data(plane, arr);
 
-		RID plane_body = ps->body_create(Physics2DServer::BODY_MODE_STATIC);
+		RID plane_body = ps->body_create();
+		ps->body_set_mode(plane_body, Physics2DServer::BODY_MODE_STATIC);
 		ps->body_set_space(plane_body, space);
 		ps->body_add_shape(plane_body, plane);
 	}
@@ -290,9 +291,10 @@ protected:
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 		VisualServer *vs = VisualServer::get_singleton();
 
-		RID concave = ps->shape_create(Physics2DServer::SHAPE_CONCAVE_POLYGON);
+		RID concave = ps->concave_polygon_shape_create();
 		ps->shape_set_data(concave, p_points);
-		RID body = ps->body_create(Physics2DServer::BODY_MODE_STATIC);
+		RID body = ps->body_create();
+		ps->body_set_mode(body, Physics2DServer::BODY_MODE_STATIC);
 		ps->body_set_space(body, space);
 		ps->body_add_shape(body, concave);
 		ps->body_set_state(body, Physics2DServer::BODY_STATE_TRANSFORM, p_xform);

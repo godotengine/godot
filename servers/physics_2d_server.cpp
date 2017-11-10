@@ -475,7 +475,15 @@ bool Physics2DServer::_body_test_motion(RID p_body, const Transform2D &p_from, c
 
 void Physics2DServer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("shape_create", "type"), &Physics2DServer::shape_create);
+	ClassDB::bind_method(D_METHOD("line_shape_create"), &Physics2DServer::line_shape_create);
+	ClassDB::bind_method(D_METHOD("ray_shape_create"), &Physics2DServer::ray_shape_create);
+	ClassDB::bind_method(D_METHOD("segment_shape_create"), &Physics2DServer::segment_shape_create);
+	ClassDB::bind_method(D_METHOD("circle_shape_create"), &Physics2DServer::circle_shape_create);
+	ClassDB::bind_method(D_METHOD("rectangle_shape_create"), &Physics2DServer::rectangle_shape_create);
+	ClassDB::bind_method(D_METHOD("capsule_shape_create"), &Physics2DServer::capsule_shape_create);
+	ClassDB::bind_method(D_METHOD("convex_polygon_shape_create"), &Physics2DServer::convex_polygon_shape_create);
+	ClassDB::bind_method(D_METHOD("concave_polygon_shape_create"), &Physics2DServer::concave_polygon_shape_create);
+
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &Physics2DServer::shape_set_data);
 
 	ClassDB::bind_method(D_METHOD("shape_get_type", "shape"), &Physics2DServer::shape_get_type);

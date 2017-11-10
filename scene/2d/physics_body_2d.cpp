@@ -133,8 +133,9 @@ bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const {
 }
 
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode)
-	: CollisionObject2D(Physics2DServer::get_singleton()->body_create(p_mode), false) {
+	: CollisionObject2D(Physics2DServer::get_singleton()->body_create(), false) {
 
+	Physics2DServer::get_singleton()->body_set_mode(get_rid(), p_mode);
 	collision_layer = 1;
 	collision_mask = 1;
 	set_pickable(false);

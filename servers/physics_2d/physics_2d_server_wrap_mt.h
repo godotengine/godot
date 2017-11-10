@@ -64,21 +64,10 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	void thread_exit();
 
-	Mutex *alloc_mutex;
 	bool first_frame;
 
-	int shape_pool_max_size;
-	List<RID> shape_id_pool;
-	int area_pool_max_size;
-	List<RID> area_id_pool;
-	int body_pool_max_size;
-	List<RID> body_id_pool;
-	int pin_joint_pool_max_size;
-	List<RID> pin_joint_id_pool;
-	int groove_joint_pool_max_size;
-	List<RID> groove_joint_id_pool;
-	int damped_spring_joint_pool_max_size;
-	List<RID> damped_spring_joint_id_pool;
+	Mutex *alloc_mutex;
+	int pool_max_size;
 
 public:
 #define ServerName Physics2DServer
@@ -87,7 +76,15 @@ public:
 #include "servers/server_wrap_mt_common.h"
 
 	//FUNC1RID(shape,ShapeType); todo fix
-	FUNC1R(RID, shape_create, ShapeType);
+	FUNCRID(line_shape)
+	FUNCRID(ray_shape)
+	FUNCRID(segment_shape)
+	FUNCRID(circle_shape)
+	FUNCRID(rectangle_shape)
+	FUNCRID(capsule_shape)
+	FUNCRID(convex_polygon_shape)
+	FUNCRID(concave_polygon_shape)
+
 	FUNC2(shape_set_data, RID, const Variant &);
 	FUNC2(shape_set_custom_solver_bias, RID, real_t);
 
@@ -104,7 +101,7 @@ public:
 
 	/* SPACE API */
 
-	FUNC0R(RID, space_create);
+	FUNCRID(space);
 	FUNC2(space_set_active, RID, bool);
 	FUNC1RC(bool, space_is_active, RID);
 
@@ -134,7 +131,7 @@ public:
 	/* AREA API */
 
 	//FUNC0RID(area);
-	FUNC0R(RID, area_create);
+	FUNCRID(area);
 
 	FUNC2(area_set_space, RID, RID);
 	FUNC1RC(RID, area_get_space, RID);
@@ -174,7 +171,7 @@ public:
 	/* BODY API */
 
 	//FUNC2RID(body,BodyMode,bool);
-	FUNC2R(RID, body_create, BodyMode, bool)
+	FUNCRID(body)
 
 	FUNC2(body_set_space, RID, RID);
 	FUNC1RC(RID, body_get_space, RID);
@@ -268,6 +265,8 @@ public:
 	///FUNC3RID(pin_joint,const Vector2&,RID,RID);
 	///FUNC5RID(groove_joint,const Vector2&,const Vector2&,const Vector2&,RID,RID);
 	///FUNC4RID(damped_spring_joint,const Vector2&,const Vector2&,RID,RID);
+
+	//TODO need to convert this to FUNCRID, but it's a hassle..
 
 	FUNC3R(RID, pin_joint_create, const Vector2 &, RID, RID);
 	FUNC5R(RID, groove_joint_create, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID);

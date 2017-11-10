@@ -180,7 +180,7 @@ public:
 		*/
 		RID lightaux;
 
-		lightaux = vs->light_create(VisualServer::LIGHT_DIRECTIONAL);
+		lightaux = vs->directional_light_create();
 		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		vs->light_set_color(lightaux, Color(1.0, 1.0, 1.0));
 		//vs->light_set_shadow( lightaux, true );
@@ -191,7 +191,7 @@ public:
 
 		vs->instance_set_transform(light, lla);
 
-		lightaux = vs->light_create(VisualServer::LIGHT_OMNI);
+		lightaux = vs->omni_light_create();
 		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
 		vs->light_set_color(lightaux, Color(1.0, 1.0, 0.0));
 		vs->light_set_param(lightaux, VisualServer::LIGHT_PARAM_RANGE, 4);

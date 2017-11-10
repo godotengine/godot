@@ -85,5 +85,5 @@ void ConcavePolygonShape2D::_bind_methods() {
 }
 
 ConcavePolygonShape2D::ConcavePolygonShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CONCAVE_POLYGON)) {
+	: Shape2D(Physics2DServer::get_singleton()->concave_polygon_shape_create()) {
 }
