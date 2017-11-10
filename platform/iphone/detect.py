@@ -76,11 +76,22 @@ def configure(env):
 
     env['ENV']['PATH'] = env['IPHONEPATH'] + "/Developer/usr/bin/:" + env['ENV']['PATH']
 
-    env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
-    env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
-    env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
-    env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
-    env['S_compiler'] = '$IPHONEPATH/Developer/usr/bin/gcc'
+    compiler_path = '$IPHONEPATH/usr/bin/${ios_triple}'
+    s_compiler_path = '$IPHONEPATH/Developer/usr/bin/'
+
+    ccache_path = os.environ.get("CCACHE")
+    if ccache_path == None:
+        env['CC'] = compiler_path + 'clang'
+        env['CXX'] = compiler_path + 'clang++'
+        env['S_compiler'] = s_compiler_path + 'gcc'
+    else:
+        # there aren't any ccache wrappers available for iOS,
+        # to enable caching we need to prepend the path to the ccache binary
+        env['CC'] = ccache_path + ' ' + compiler_path + 'clang'
+        env['CXX'] = ccache_path + ' ' + compiler_path + 'clang++'
+        env['S_compiler'] = ccache_path + ' ' + s_compiler_path + 'gcc'
+    env['AR'] = compiler_path + 'ar'
+    env['RANLIB'] = compiler_path + 'ranlib'
 
     ## Compile flags
 
