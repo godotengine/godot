@@ -54,10 +54,6 @@ class CanvasLayer : public Node {
 
 	int sort_index;
 
-	// Deprecated, should be removed in a future version.
-	void _set_rotationd(real_t p_degrees);
-	real_t _get_rotationd() const;
-
 	void _update_xform();
 	void _update_locrotscale();
 

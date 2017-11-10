@@ -332,12 +332,6 @@ void Spatial::set_rotation_in_degrees(const Vector3 &p_euler_deg) {
 	set_rotation(p_euler_deg * Math_PI / 180.0);
 }
 
-void Spatial::_set_rotation_deg(const Vector3 &p_euler_deg) {
-
-	WARN_PRINT("Deprecated method Spatial._set_rotation_deg(): This method was renamed to set_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	set_rotation_in_degrees(p_euler_deg);
-}
-
 void Spatial::set_scale(const Vector3 &p_scale) {
 
 	if (data.dirty & DIRTY_VECTORS) {
@@ -373,14 +367,6 @@ Vector3 Spatial::get_rotation() const {
 Vector3 Spatial::get_rotation_in_degrees() const {
 
 	return get_rotation() * 180.0 / Math_PI;
-}
-
-// Kept for compatibility after rename to set_rotd.
-// Could be removed after a couple releases.
-Vector3 Spatial::_get_rotation_deg() const {
-
-	WARN_PRINT("Deprecated method Spatial._get_rotation_deg(): This method was renamed to get_rotation_deg. Please adapt your code accordingly, as the old method will be obsoleted.");
-	return get_rotation_in_degrees();
 }
 
 Vector3 Spatial::get_scale() const {
@@ -704,10 +690,6 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Spatial::set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("get_world"), &Spatial::get_world);
-
-	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ClassDB::bind_method(D_METHOD("_set_rotation_deg", "rotation_deg"), &Spatial::_set_rotation_deg);
-	ClassDB::bind_method(D_METHOD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_update_gizmo"), &Spatial::_update_gizmo);
