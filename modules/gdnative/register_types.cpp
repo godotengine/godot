@@ -35,7 +35,7 @@
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 
-#include "nativearvr/register_types.h"
+#include "arvr/register_types.h"
 #include "nativescript/register_types.h"
 #include "pluginscript/register_types.h"
 
@@ -157,7 +157,7 @@ void register_gdnative_types() {
 
 	GDNativeCallRegistry::singleton->register_native_call_type("standard_varcall", cb_standard_varcall);
 
-	register_nativearvr_types();
+	register_arvr_types();
 	register_nativescript_types();
 	register_pluginscript_types();
 
@@ -214,7 +214,7 @@ void unregister_gdnative_types() {
 
 	unregister_pluginscript_types();
 	unregister_nativescript_types();
-	unregister_nativearvr_types();
+	unregister_arvr_types();
 
 	memdelete(GDNativeCallRegistry::singleton);
 

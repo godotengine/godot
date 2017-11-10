@@ -12,7 +12,7 @@ gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
-SConscript("nativearvr/SCsub")
+SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 
 def _spaced(e):
@@ -25,7 +25,7 @@ def _build_gdnative_api_struct_header(api):
         '#define GODOT_GDNATIVE_API_STRUCT_H',
         '',
         '#include <gdnative/gdnative.h>',
-        '#include <nativearvr/godot_nativearvr.h>',
+        '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '',
