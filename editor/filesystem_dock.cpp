@@ -1246,36 +1246,25 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
-		return true;
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		return !to_dir.empty();
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		if (to_dir.empty())
+			return false;
 
+		//Attempting to move a folder into itself will fail later
+		//Rather than bring up a message don't try to do it in the first place
+		to_dir = to_dir.ends_with("/") ? to_dir : (to_dir + "/");
 		Vector<String> fnames = drag_data["files"];
-
-		if (p_from == files) {
-
-			int at_pos = files->get_item_at_position(p_point);
-			if (at_pos != -1) {
-
-				String dir = files->get_item_metadata(at_pos);
-				if (dir.ends_with("/"))
-					return true;
-			}
+		for (int i = 0; i < fnames.size(); ++i) {
+			if (fnames[i].ends_with("/") && to_dir.begins_with(fnames[i]))
+				return false;
 		}
 
-		if (p_from == tree) {
-
-			TreeItem *ti = tree->get_item_at_position(p_point);
-			if (!ti)
-				return false;
-
-			String fpath = ti->get_metadata(0);
-			if (fpath == String())
-				return false;
-
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -1351,66 +1340,16 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		Ref<Resource> res = drag_data["resource"];
-
-		if (!res.is_valid()) {
-			return;
-		}
-
-		if (p_from == tree) {
-
-			TreeItem *ti = tree->get_item_at_position(p_point);
-			if (!ti)
-				return;
-
-			String fpath = ti->get_metadata(0);
-			if (fpath == String())
-				return;
-
-			EditorNode::get_singleton()->save_resource_as(res, fpath);
-			return;
-		}
-
-		if (p_from == files) {
-			String save_path = path;
-
-			int at_pos = files->get_item_at_position(p_point);
-			if (at_pos != -1) {
-				String to_dir = files->get_item_metadata(at_pos);
-				if (to_dir.ends_with("/")) {
-					save_path = to_dir;
-					if (save_path != "res://")
-						save_path = save_path.substr(0, save_path.length() - 1);
-				}
-			}
-
-			EditorNode::get_singleton()->save_resource_as(res, save_path);
-			return;
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		if (res.is_valid() && !to_dir.empty()) {
+			EditorNode::get_singleton()->push_item(res.ptr());
+			EditorNode::get_singleton()->save_resource_as(res, to_dir);
 		}
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
-
-		if (p_from == files || p_from == tree) {
-
-			String to_dir;
-
-			if (p_from == files) {
-
-				int at_pos = files->get_item_at_position(p_point);
-				ERR_FAIL_COND(at_pos == -1);
-				to_dir = files->get_item_metadata(at_pos);
-			} else {
-				TreeItem *ti = tree->get_item_at_position(p_point);
-				if (!ti)
-					return;
-				to_dir = ti->get_metadata(0);
-				ERR_FAIL_COND(to_dir == String());
-			}
-
-			if (to_dir != "res://" && to_dir.ends_with("/")) {
-				to_dir = to_dir.substr(0, to_dir.length() - 1);
-			}
-
+		String to_dir = _get_drag_target_folder(p_point, p_from);
+		if (!to_dir.empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
 			for (int i = 0; i < fnames.size(); i++) {
@@ -1419,6 +1358,25 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			_move_operation_confirm(to_dir);
 		}
 	}
+}
+
+String FileSystemDock::_get_drag_target_folder(const Point2 &p_point, Control *p_from) const {
+	if (p_from == files) {
+		int pos = files->get_item_at_position(p_point, true);
+		if (pos == -1)
+			return path;
+
+		String target = files->get_item_metadata(pos);
+		return target.ends_with("/") ? target : path;
+	}
+
+	if (p_from == tree) {
+		TreeItem *ti = tree->get_item_at_position(p_point);
+		if (ti && ti != tree->get_root()->get_children())
+			return ti->get_metadata(0);
+	}
+
+	return String();
 }
 
 void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
