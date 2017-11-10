@@ -180,9 +180,4 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	df_output_code->set_font_data(dfmono);
 	MAKE_FALLBACKS(df_output_code);
 	p_theme->set_font("status_source", "EditorFonts", df_output_code);
-
-	//replace default theme
-	Ref<Texture> di;
-	Ref<StyleBox> ds;
-	fill_default_theme(p_theme, df, df_doc, di, ds, EDSCALE);
 }
