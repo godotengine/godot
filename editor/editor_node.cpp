@@ -4226,61 +4226,53 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	return drag_data;
 }
 
-Variant EditorNode::drag_files(const Vector<String> &p_files, Control *p_from) {
-
-	VBoxContainer *files = memnew(VBoxContainer);
-
-	int max_files = 6;
-
-	for (int i = 0; i < MIN(max_files, p_files.size()); i++) {
-
-		Label *label = memnew(Label);
-		label->set_text(p_files[i].get_file());
-		files->add_child(label);
+Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *p_from) {
+	bool has_folder = false;
+	bool has_file = false;
+	for (int i = 0; i < p_paths.size(); i++) {
+		bool is_folder = p_paths[i].ends_with("/");
+		has_folder |= is_folder;
+		has_file |= !is_folder;
 	}
 
-	if (p_files.size() > max_files) {
-
+	int max_rows = 6;
+	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); //Don't waste a row to say "1 more file" - list it instead.
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	for (int i = 0; i < num_rows; i++) {
+		HBoxContainer *hbox = memnew(HBoxContainer);
+		TextureRect *icon = memnew(TextureRect);
 		Label *label = memnew(Label);
-		label->set_text(vformat(TTR("%d more file(s)"), p_files.size() - max_files));
-		files->add_child(label);
+
+		if (p_paths[i].ends_with("/")) {
+			label->set_text(p_paths[i].substr(0, p_paths[i].length() - 1).get_file());
+			icon->set_texture(gui_base->get_icon("Folder", "EditorIcons"));
+		} else {
+			label->set_text(p_paths[i].get_file());
+			icon->set_texture(gui_base->get_icon("File", "EditorIcons"));
+		}
+		icon->set_size(Size2(16, 16));
+		hbox->add_child(icon);
+		hbox->add_child(label);
+		vbox->add_child(hbox);
 	}
+
+	if (p_paths.size() > num_rows) {
+		Label *label = memnew(Label);
+		if (has_file && has_folder) {
+			label->set_text(vformat(TTR("%d more files or folders"), p_paths.size() - num_rows));
+		} else if (has_folder) {
+			label->set_text(vformat(TTR("%d more folders"), p_paths.size() - num_rows));
+		} else {
+			label->set_text(vformat(TTR("%d more files"), p_paths.size() - num_rows));
+		}
+		vbox->add_child(label);
+	}
+	p_from->set_drag_preview(vbox); //wait until it enters scene
+
 	Dictionary drag_data;
-	drag_data["type"] = "files";
-	drag_data["files"] = p_files;
+	drag_data["type"] = has_folder ? "files_and_dirs" : "files";
+	drag_data["files"] = p_paths;
 	drag_data["from"] = p_from;
-
-	p_from->set_drag_preview(files); //wait until it enters scene
-
-	return drag_data;
-}
-
-Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_files, Control *p_from) {
-
-	VBoxContainer *files = memnew(VBoxContainer);
-
-	int max_files = 6;
-
-	for (int i = 0; i < MIN(max_files, p_files.size()); i++) {
-
-		Label *label = memnew(Label);
-		label->set_text(p_files[i].get_file());
-		files->add_child(label);
-	}
-
-	if (p_files.size() > max_files) {
-
-		Label *label = memnew(Label);
-		label->set_text(vformat(TTR("%d more file(s) or folder(s)"), p_files.size() - max_files));
-		files->add_child(label);
-	}
-	Dictionary drag_data;
-	drag_data["type"] = "files_and_dirs";
-	drag_data["files"] = p_files;
-	drag_data["from"] = p_from;
-
-	p_from->set_drag_preview(files); //wait until it enters scene
-
 	return drag_data;
 }
 
