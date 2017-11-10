@@ -374,6 +374,104 @@ void FileSystemDock::_thumbnail_done(const String &p_path, const Ref<Texture> &p
 	}
 }
 
+void FileSystemDock::_gui_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+		Vector2 pos = mb->get_position() + get_global_position();
+		if (tree->get_global_rect().has_point(pos)) {
+			_dirs_list_rmb_menu(pos);
+		} else if (files->get_global_rect().has_point(pos)) {
+			_files_list_rmb_menu(pos);
+		}
+	}
+}
+
+void FileSystemDock::_dirs_list_rmb_menu(const Vector2 &p_pos) {
+	folder_options->clear();
+	folder_options->set_size(Size2(1, 1));
+
+	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
+	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
+
+	TreeItem *item = tree->get_selected();
+	if (item) {
+		String fpath = item->get_metadata(tree->get_selected_column());
+		folder_options->add_separator();
+		folder_options->add_item(TTR("Copy Path"), FOLDER_COPY_PATH);
+		if (fpath != "res://") {
+			folder_options->add_item(TTR("Rename.."), FOLDER_RENAME);
+			folder_options->add_item(TTR("Move To.."), FOLDER_MOVE);
+			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
+		}
+		folder_options->add_separator();
+	}
+	folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
+	folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+	folder_options->set_position(p_pos);
+	folder_options->popup();
+}
+
+void FileSystemDock::_files_list_rmb_menu(const Vector2 &p_pos) {
+	Vector<String> filenames;
+	Vector<String> foldernames;
+
+	bool all_files = true;
+	bool all_files_scenes = true;
+	bool all_folders = true;
+	for (int i = 0; i < files->get_item_count(); i++) {
+		if (!files->is_selected(i)) {
+			continue;
+		}
+
+		String fpath = files->get_item_metadata(i);
+		if (fpath.ends_with("/")) {
+			foldernames.push_back(fpath);
+			all_files = false;
+		} else {
+			filenames.push_back(fpath);
+			all_folders = false;
+			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
+		}
+	}
+
+	file_options->clear();
+	file_options->set_size(Size2(1, 1));
+	if (all_files && filenames.size() > 0) {
+		file_options->add_item(TTR("Open"), FILE_OPEN);
+		if (all_files_scenes) {
+			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
+		}
+
+		file_options->add_separator();
+		if (filenames.size() == 1) {
+			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
+			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
+			file_options->add_separator();
+		}
+	} else if (all_folders && foldernames.size() > 0) {
+		file_options->add_item(TTR("Open"), FILE_OPEN);
+		file_options->add_separator();
+	}
+
+	int num_items = filenames.size() + foldernames.size();
+	if (num_items >= 1) {
+		if (num_items == 1) {
+			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
+			file_options->add_item(TTR("Rename.."), FILE_RENAME);
+		}
+		file_options->add_item(TTR("Move To.."), FILE_MOVE);
+		file_options->add_item(TTR("Delete"), FILE_REMOVE);
+		file_options->add_separator();
+	}
+
+	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
+	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
+
+	file_options->set_position(p_pos);
+	file_options->popup();
+}
+
 void FileSystemDock::_update_file_display_toggle_button() {
 
 	if (button_display_mode->is_pressed()) {
@@ -1101,7 +1199,7 @@ void FileSystemDock::_folder_option(int p_option) {
 			OS::get_singleton()->set_clipboard(fpath);
 		} break;
 		case FOLDER_SHOW_IN_EXPLORER: {
-			String fpath = selected->get_metadata(tree->get_selected_column());
+			String fpath = selected ? selected->get_metadata(tree->get_selected_column()) : this->path;
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
@@ -1121,31 +1219,6 @@ void FileSystemDock::_go_to_file_list() {
 	_update_files(false);
 
 	//emit_signal("open",path);
-}
-
-void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
-	folder_options->clear();
-	folder_options->set_size(Size2(1, 1));
-
-	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
-	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
-
-	TreeItem *item = tree->get_selected();
-	if (item) {
-		String fpath = item->get_metadata(tree->get_selected_column());
-		folder_options->add_separator();
-		folder_options->add_item(TTR("Copy Path"), FOLDER_COPY_PATH);
-		if (fpath != "res://") {
-			folder_options->add_item(TTR("Rename.."), FOLDER_RENAME);
-			folder_options->add_item(TTR("Move To.."), FOLDER_MOVE);
-			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
-		}
-		folder_options->add_separator();
-		folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
-		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
-	}
-	folder_options->set_position(tree->get_global_position() + p_pos);
-	folder_options->popup();
 }
 
 void FileSystemDock::_search_changed(const String &p_text) {
@@ -1421,74 +1494,6 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	}
 }
 
-void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
-
-	//Right clicking ".." should clear current selection
-	if (files->get_item_text(p_item) == "..") {
-		for (int i = 0; i < files->get_item_count(); i++) {
-			files->unselect(i);
-		}
-	}
-
-	Vector<String> filenames;
-	Vector<String> foldernames;
-
-	bool all_files = true;
-	bool all_files_scenes = true;
-	bool all_folders = true;
-	for (int i = 0; i < files->get_item_count(); i++) {
-		if (!files->is_selected(i)) {
-			continue;
-		}
-
-		String fpath = files->get_item_metadata(i);
-		if (fpath.ends_with("/")) {
-			foldernames.push_back(fpath);
-			all_files = false;
-		} else {
-			filenames.push_back(fpath);
-			all_folders = false;
-			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
-		}
-	}
-
-	file_options->clear();
-	file_options->set_size(Size2(1, 1));
-	if (all_files && filenames.size() > 0) {
-		file_options->add_item(TTR("Open"), FILE_OPEN);
-		if (all_files_scenes) {
-			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
-		}
-
-		if (filenames.size() == 1) {
-			file_options->add_separator();
-			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
-			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
-		}
-	} else if (all_folders && foldernames.size() > 0) {
-		file_options->add_item(TTR("Open"), FILE_OPEN);
-	}
-
-	file_options->add_separator();
-
-	int num_items = filenames.size() + foldernames.size();
-	if (num_items >= 1) {
-		if (num_items == 1) {
-			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-			file_options->add_item(TTR("Rename.."), FILE_RENAME);
-		}
-		file_options->add_item(TTR("Move To.."), FILE_MOVE);
-		file_options->add_item(TTR("Delete"), FILE_REMOVE);
-		file_options->add_separator();
-	}
-
-	file_options->add_item(TTR("New Folder.."), FILE_NEW_FOLDER);
-	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
-
-	file_options->set_position(files->get_global_position() + p_pos);
-	file_options->popup();
-}
-
 void FileSystemDock::select_file(const String &p_file) {
 
 	navigate_to_path(p_file);
@@ -1549,7 +1554,6 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_favorites_pressed"), &FileSystemDock::_favorites_pressed);
 	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(D_METHOD("_go_to_file_list"), &FileSystemDock::_go_to_file_list);
-	ClassDB::bind_method(D_METHOD("_dir_rmb_pressed"), &FileSystemDock::_dir_rmb_pressed);
 
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &FileSystemDock::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
@@ -1571,11 +1575,12 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &FileSystemDock::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &FileSystemDock::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &FileSystemDock::drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_files_list_rmb_select"), &FileSystemDock::_files_list_rmb_select);
 
 	ClassDB::bind_method(D_METHOD("_preview_invalidated"), &FileSystemDock::_preview_invalidated);
 	ClassDB::bind_method(D_METHOD("_file_selected"), &FileSystemDock::_file_selected);
 	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
+
+	ClassDB::bind_method(D_METHOD("_gui_input"), &FileSystemDock::_gui_input);
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
@@ -1652,6 +1657,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	split_box = memnew(VSplitContainer);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	split_box->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
 	add_child(split_box);
 
 	tree = memnew(Tree);
@@ -1659,16 +1665,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	tree->set_drag_forwarding(this);
 	tree->set_allow_rmb_select(true);
+	tree->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
 	tree->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 	split_box->add_child(tree);
 
 	tree->connect("item_edited", this, "_favorite_toggled");
 	tree->connect("item_activated", this, "_go_to_file_list");
 	tree->connect("cell_selected", this, "_dir_selected");
-	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	file_list_vb->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
 	split_box->add_child(file_list_vb);
 
 	path_hb = memnew(HBoxContainer);
@@ -1691,10 +1698,10 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
-	files->connect("item_rmb_selected", this, "_files_list_rmb_select");
 	files->connect("item_selected", this, "_file_selected");
 	files->connect("multi_selected", this, "_file_multi_selected");
 	files->set_allow_rmb_select(true);
+	files->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
 	file_list_vb->add_child(files);
 
 	scanning_vb = memnew(VBoxContainer);

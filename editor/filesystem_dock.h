@@ -188,9 +188,6 @@ private:
 	void _favorites_pressed();
 	void _search_changed(const String &p_text);
 
-	void _dir_rmb_pressed(const Vector2 &p_pos);
-	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
-
 	struct FileInfo {
 		String name;
 		String path;
@@ -212,6 +209,10 @@ private:
 
 	void _preview_invalidated(const String &p_path);
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+
+	void _gui_input(const Ref<InputEvent> &p_event);
+	void _dirs_list_rmb_menu(const Vector2 &p_pos);
+	void _files_list_rmb_menu(const Vector2 &p_pos);
 
 protected:
 	void _notification(int p_what);
