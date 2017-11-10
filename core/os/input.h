@@ -51,6 +51,28 @@ public:
 		MOUSE_MODE_CONFINED
 	};
 
+#undef CursorShape
+	enum CursorShape {
+		CURSOR_ARROW,
+		CURSOR_IBEAM,
+		CURSOR_POINTING_HAND,
+		CURSOR_CROSS,
+		CURSOR_WAIT,
+		CURSOR_BUSY,
+		CURSOR_DRAG,
+		CURSOR_CAN_DROP,
+		CURSOR_FORBIDDEN,
+		CURSOR_VSIZE,
+		CURSOR_HSIZE,
+		CURSOR_BDIAGSIZE,
+		CURSOR_FDIAGSIZE,
+		CURSOR_MOVE,
+		CURSOR_VSPLIT,
+		CURSOR_HSPLIT,
+		CURSOR_HELP,
+		CURSOR_MAX
+	};
+
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
@@ -96,7 +118,7 @@ public:
 
 	virtual bool is_emulating_touchscreen() const = 0;
 
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p_hotspot = Vector2()) = 0;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) = 0;
 	virtual void set_mouse_in_window(bool p_in_window) = 0;
 
 	virtual String get_joy_button_string(int p_button) = 0;
@@ -110,5 +132,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Input::MouseMode);
+VARIANT_ENUM_CAST(Input::CursorShape);
 
 #endif // INPUT_H

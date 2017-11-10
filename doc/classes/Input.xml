@@ -275,9 +275,12 @@
 			</return>
 			<argument index="0" name="image" type="Resource">
 			</argument>
-			<argument index="1" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="cursor_shape" type="int" default="CURSOR_ARROW">
+			</argument>
+			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. See enum [code]CURSOR_*[/code] for the list of shapes.
 			</description>
 		</method>
 		<method name="set_mouse_mode">

@@ -113,6 +113,7 @@ class OS_Windows : public OS {
 	bool window_has_focus;
 	uint32_t last_button_state;
 
+	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
 
 	InputDefault *input;
@@ -244,6 +245,8 @@ public:
 	virtual String get_clipboard() const;
 
 	void set_cursor_shape(CursorShape p_shape);
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
+	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
 	void set_icon(const Ref<Image> &p_icon);
 
 	virtual String get_executable_path() const;
