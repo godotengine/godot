@@ -529,7 +529,7 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("area_set_monitor_callback", "area", "receiver", "method"), &Physics2DServer::area_set_monitor_callback);
 
-	ClassDB::bind_method(D_METHOD("body_create", "mode", "init_sleeping"), &Physics2DServer::body_create, DEFVAL(BODY_MODE_RIGID), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("body_create"), &Physics2DServer::body_create);
 
 	ClassDB::bind_method(D_METHOD("body_set_space", "body", "space"), &Physics2DServer::body_set_space);
 	ClassDB::bind_method(D_METHOD("body_get_space", "body"), &Physics2DServer::body_get_space);

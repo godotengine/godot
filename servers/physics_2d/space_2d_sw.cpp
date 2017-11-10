@@ -969,15 +969,15 @@ void Space2DSW::call_queries() {
 	while (state_query_list.first()) {
 
 		Body2DSW *b = state_query_list.first()->self();
-		b->call_queries();
 		state_query_list.remove(state_query_list.first());
+		b->call_queries();
 	}
 
 	while (monitor_query_list.first()) {
 
 		Area2DSW *a = monitor_query_list.first()->self();
-		a->call_queries();
 		monitor_query_list.remove(monitor_query_list.first());
+		a->call_queries();
 	}
 }
 
