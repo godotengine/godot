@@ -54,6 +54,7 @@ class ImportDock : public VBoxContainer {
 	ImportDockParameters *params;
 
 	void _preset_selected(int p_idx);
+	void _importer_selected(int i_idx);
 
 	void _reimport();
 
