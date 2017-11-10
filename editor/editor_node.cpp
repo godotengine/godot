@@ -5388,12 +5388,12 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("confirmed", this, "_menu_confirm_current");
 	save_confirmation->connect("custom_action", this, "_discard_changes");
 
-	file_templates = memnew(FileDialog);
+	file_templates = memnew(EditorFileDialog);
 	file_templates->set_title(TTR("Import Templates From ZIP File"));
 
 	gui_base->add_child(file_templates);
-	file_templates->set_mode(FileDialog::MODE_OPEN_FILE);
-	file_templates->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_templates->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_templates->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
 	file_templates->add_filter("*.tpz ; Template Package");
 
@@ -5401,15 +5401,15 @@ EditorNode::EditorNode() {
 	gui_base->add_child(file);
 	file->set_current_dir("res://");
 
-	file_export = memnew(FileDialog);
-	file_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_export = memnew(EditorFileDialog);
+	file_export->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	gui_base->add_child(file_export);
 	file_export->set_title(TTR("Export Project"));
 	file_export->connect("file_selected", this, "_dialog_action");
 
-	file_export_lib = memnew(FileDialog);
+	file_export_lib = memnew(EditorFileDialog);
 	file_export_lib->set_title(TTR("Export Library"));
-	file_export_lib->set_mode(FileDialog::MODE_SAVE_FILE);
+	file_export_lib->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", this, "_dialog_action");
 	file_export_lib_merge = memnew(CheckButton);
 	file_export_lib_merge->set_text(TTR("Merge With Existing"));
@@ -5422,10 +5422,10 @@ EditorNode::EditorNode() {
 	file_export_password->set_editable(false);
 	file_export->get_vbox()->add_margin_child(TTR("Password:"), file_export_password);
 
-	file_script = memnew(FileDialog);
+	file_script = memnew(EditorFileDialog);
 	file_script->set_title(TTR("Open & Run a Script"));
-	file_script->set_access(FileDialog::ACCESS_FILESYSTEM);
-	file_script->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_script->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_script->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	List<String> sexts;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
 	for (List<String>::Element *E = sexts.front(); E; E = E->next()) {
