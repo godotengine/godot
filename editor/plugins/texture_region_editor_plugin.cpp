@@ -860,6 +860,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_tools->add_child(separator);
 
 	icon_zoom = memnew(TextureRect);
+	icon_zoom->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	hb_tools->add_child(icon_zoom);
 
 	zoom_out = memnew(ToolButton);
