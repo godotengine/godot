@@ -3263,11 +3263,11 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorScript>();
 	ClassDB::register_class<EditorSelection>();
 	ClassDB::register_class<EditorFileDialog>();
-	ClassDB::register_class<EditorSettings>();
+	ClassDB::register_virtual_class<EditorSettings>();
 	ClassDB::register_class<EditorSpatialGizmo>();
-	ClassDB::register_class<EditorResourcePreview>();
+	ClassDB::register_virtual_class<EditorResourcePreview>();
 	ClassDB::register_class<EditorResourcePreviewGenerator>();
-	ClassDB::register_class<EditorFileSystem>();
+	ClassDB::register_virtual_class<EditorFileSystem>();
 	ClassDB::register_class<EditorFileSystemDirectory>();
 	ClassDB::register_virtual_class<ScriptEditor>();
 	ClassDB::register_virtual_class<EditorInterface>();
