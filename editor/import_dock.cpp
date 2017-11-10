@@ -356,6 +356,11 @@ void ImportDock::_notification(int p_what) {
 
 			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+
+			import_opts->edit(params);
+		} break;
 	}
 }
 void ImportDock::_bind_methods() {
