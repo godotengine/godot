@@ -448,13 +448,12 @@ void TileMap::_update_dirty_quadrants() {
 			if (r == Rect2()) {
 				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
 
 			for (int i = 0; i < shapes.size(); i++) {
-
 				Ref<Shape2D> shape = shapes[i].shape;
 				if (shape.is_valid()) {
 					Transform2D xform;
@@ -1236,6 +1235,21 @@ void TileMap::set_light_mask(int p_light_mask) {
 	}
 }
 
+void TileMap::set_clip_uv(bool p_enable) {
+
+	if (clip_uv == p_enable)
+		return;
+
+	_clear_quadrants();
+	clip_uv = p_enable;
+	_recreate_quadrants();
+}
+
+bool TileMap::get_clip_uv() const {
+
+	return clip_uv;
+}
+
 void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
@@ -1267,6 +1281,9 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_center_y", "enable"), &TileMap::set_center_y);
 	ClassDB::bind_method(D_METHOD("get_center_y"), &TileMap::get_center_y);
+
+	ClassDB::bind_method(D_METHOD("set_clip_uv", "enable"), &TileMap::set_clip_uv);
+	ClassDB::bind_method(D_METHOD("get_clip_uv"), &TileMap::get_clip_uv);
 
 	ClassDB::bind_method(D_METHOD("set_y_sort_mode", "enable"), &TileMap::set_y_sort_mode);
 	ClassDB::bind_method(D_METHOD("is_y_sort_mode_enabled"), &TileMap::is_y_sort_mode_enabled);
@@ -1329,6 +1346,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_kinematic", PROPERTY_HINT_NONE, ""), "set_collision_use_kinematic", "get_collision_use_kinematic");
@@ -1379,6 +1397,7 @@ TileMap::TileMap() {
 	navigation = NULL;
 	y_sort_mode = false;
 	occluder_light_mask = 1;
+	clip_uv = false;
 
 	fp_adjust = 0.00001;
 	tile_origin = TILE_ORIGIN_TOP_LEFT;

@@ -161,6 +161,7 @@ private:
 	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
 	bool y_sort_mode;
+	bool clip_uv;
 	float fp_adjust;
 	float friction;
 	float bounce;
@@ -284,6 +285,9 @@ public:
 	virtual void set_material(const Ref<Material> &p_material);
 
 	virtual void set_use_parent_material(bool p_use_parent_material);
+
+	void set_clip_uv(bool p_enable);
+	bool get_clip_uv() const;
 
 	void clear();
 
