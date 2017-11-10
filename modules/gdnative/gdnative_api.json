@@ -1,6 +1,10 @@
 {
   "core": {
-    "type": "CORE_1_0_0",
+    "type": "CORE",
+    "version": {
+      "major": 1,
+      "minor": 0
+    },
     "api": [
       {
         "name": "godot_color_new_rgba",
@@ -5604,7 +5608,11 @@
   },
   "extensions": {
     "nativescript": {
-      "type": "NATIVESCRIPT_1_0_0",
+      "type": "NATIVESCRIPT",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
       "api": [
         {
           "name": "godot_nativescript_register_class",
@@ -5670,7 +5678,11 @@
       ]
     },
     "pluginscript": {
-      "type": "PLUGINSCRIPT_1_0_0",
+      "type": "PLUGINSCRIPT",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
       "api": [
         {
           "name": "godot_pluginscript_register_language",
@@ -5682,7 +5694,11 @@
       ]
     },
     "nativearvr": {
-      "type": "NATIVEARVR_1_0_0",
+      "type": "NATIVEARVR",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
       "api": [
         {
           "name": "godot_arvr_register_interface",

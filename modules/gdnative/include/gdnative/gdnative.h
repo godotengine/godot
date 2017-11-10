@@ -237,7 +237,7 @@ typedef struct {
 	uint64_t editor_api_hash;
 	uint64_t no_api_hash;
 	godot_object *gd_native_library; // pointer to GDNativeLibrary that is being initialized
-	const struct godot_gdnative_api_struct *api_struct;
+	const struct godot_gdnative_core_api_struct *api_struct;
 	const godot_string *active_library_path;
 } godot_gdnative_init_options;
 
