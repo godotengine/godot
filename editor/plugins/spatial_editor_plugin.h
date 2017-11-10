@@ -93,6 +93,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
+		VIEW_CAMERAS,
 	};
 
 public:
@@ -132,6 +133,7 @@ private:
 	bool transforming;
 	bool orthogonal;
 	float gizmo_scale;
+	String scene_camera_path;
 
 	bool freelook_active;
 	real_t freelook_speed;
@@ -185,6 +187,8 @@ private:
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
+
+	PopupMenu *scene_cameras_menu;
 
 	enum NavigationScheme {
 		NAVIGATION_GODOT,
@@ -293,6 +297,8 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _list_select(Ref<InputEventMouseButton> b);
+	void _prepare_cameras();
+	void _select_scene_camera(int p_cameraIndex);
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
