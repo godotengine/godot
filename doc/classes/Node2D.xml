@@ -52,7 +52,7 @@
 				Returns the node's global rotation in radians.
 			</description>
 		</method>
-		<method name="get_global_rotation_in_degrees" qualifiers="const">
+		<method name="get_global_rotation_degrees" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -89,7 +89,7 @@
 				Returns the node's rotation in radians.
 			</description>
 		</method>
-		<method name="get_rotation_in_degrees" qualifiers="const">
+		<method name="get_rotation_degrees" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -184,7 +184,7 @@
 				Sets the node's global rotation in radians.
 			</description>
 		</method>
-		<method name="set_global_rotation_in_degrees">
+		<method name="set_global_rotation_degrees">
 			<return type="void">
 			</return>
 			<argument index="0" name="degrees" type="float">
@@ -229,7 +229,7 @@
 				Sets the node's rotation in radians.
 			</description>
 		</method>
-		<method name="set_rotation_in_degrees">
+		<method name="set_rotation_degrees">
 			<return type="void">
 			</return>
 			<argument index="0" name="degrees" type="float">
@@ -309,7 +309,7 @@
 		<member name="global_rotation" type="float" setter="set_global_rotation" getter="get_global_rotation">
 			Global rotation in radians.
 		</member>
-		<member name="global_rotation_deg" type="float" setter="set_global_rotation_in_degrees" getter="get_global_rotation_in_degrees">
+		<member name="global_rotation_degrees" type="float" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
 			Global rotation in degrees.
 		</member>
 		<member name="global_scale" type="Vector2" setter="set_global_scale" getter="get_global_scale">
@@ -324,7 +324,7 @@
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation">
 			Rotation in radians, relative to the node's parent.
 		</member>
-		<member name="rotation_deg" type="float" setter="set_rotation_in_degrees" getter="get_rotation_in_degrees">
+		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
 			Rotation in degrees, relative to the node's parent.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale">

@@ -39,7 +39,7 @@
 				Returns the rotation (in radians).
 			</description>
 		</method>
-		<method name="get_rotation_deg" qualifiers="const">
+		<method name="get_rotation_degrees" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -267,16 +267,16 @@
 		<method name="set_rotation">
 			<return type="void">
 			</return>
-			<argument index="0" name="rotation_rad" type="Vector3">
+			<argument index="0" name="radians" type="Vector3">
 			</argument>
 			<description>
 				Set the rotation (in radians).
 			</description>
 		</method>
-		<method name="set_rotation_deg">
+		<method name="set_rotation_degrees">
 			<return type="void">
 			</return>
-			<argument index="0" name="rotation_deg" type="Vector3">
+			<argument index="0" name="degrees" type="Vector3">
 			</argument>
 			<description>
 				Set the rotation (in degrees).
@@ -365,7 +365,7 @@
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation">
 			Local euler rotation in radians of this node.
 		</member>
-		<member name="rotation_deg" type="Vector3" setter="set_rotation_deg" getter="get_rotation_deg">
+		<member name="rotation_degrees" type="Vector3" setter="set_rotation_degrees" getter="get_rotation_degrees">
 			Local euler rotation in degrees of this node.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale">

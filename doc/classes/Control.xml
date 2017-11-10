@@ -347,7 +347,7 @@
 				Return the rotation (in radians)
 			</description>
 		</method>
-		<method name="get_rotation_deg" qualifiers="const">
+		<method name="get_rotation_degrees" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -763,7 +763,7 @@
 				Set the rotation (in radians).
 			</description>
 		</method>
-		<method name="set_rotation_deg">
+		<method name="set_rotation_degrees">
 			<return type="void">
 			</return>
 			<argument index="0" name="degrees" type="float">
@@ -910,7 +910,7 @@
 		<member name="rect_position" type="Vector2" setter="set_position" getter="get_position">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation_deg" getter="get_rotation_deg">
+		<member name="rect_rotation" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
 			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
 		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale">

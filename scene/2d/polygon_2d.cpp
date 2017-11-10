@@ -264,11 +264,11 @@ float Polygon2D::get_texture_rotation() const {
 	return tex_rot;
 }
 
-void Polygon2D::_set_texture_rotationd(float p_rot) {
+void Polygon2D::set_texture_rotation_degrees(float p_rot) {
 
 	set_texture_rotation(Math::deg2rad(p_rot));
 }
-float Polygon2D::_get_texture_rotationd() const {
+float Polygon2D::get_texture_rotation_degrees() const {
 
 	return Math::rad2deg(get_texture_rotation());
 }
@@ -348,8 +348,8 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rotation", "texture_rotation"), &Polygon2D::set_texture_rotation);
 	ClassDB::bind_method(D_METHOD("get_texture_rotation"), &Polygon2D::get_texture_rotation);
 
-	ClassDB::bind_method(D_METHOD("_set_texture_rotationd", "texture_rotation"), &Polygon2D::_set_texture_rotationd);
-	ClassDB::bind_method(D_METHOD("_get_texture_rotationd"), &Polygon2D::_get_texture_rotationd);
+	ClassDB::bind_method(D_METHOD("set_texture_rotation_degrees", "texture_rotation"), &Polygon2D::set_texture_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_texture_rotation_degrees"), &Polygon2D::get_texture_rotation_degrees);
 
 	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &Polygon2D::set_texture_scale);
 	ClassDB::bind_method(D_METHOD("get_texture_scale"), &Polygon2D::get_texture_scale);
@@ -377,7 +377,7 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale"), "set_texture_scale", "get_texture_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation", PROPERTY_HINT_RANGE, "-1440,1440,0.1"), "_set_texture_rotationd", "_get_texture_rotationd");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation", PROPERTY_HINT_RANGE, "-1440,1440,0.1"), "set_texture_rotation_degrees", "get_texture_rotation_degrees");
 
 	ADD_GROUP("Invert", "invert_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enable"), "set_invert", "get_invert");

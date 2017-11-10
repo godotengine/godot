@@ -66,7 +66,7 @@ public:
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(float p_radians);
-	void set_rotation_in_degrees(float p_degrees);
+	void set_rotation_degrees(float p_degrees);
 	void set_scale(const Size2 &p_scale);
 
 	void rotate(float p_radians);
@@ -78,12 +78,12 @@ public:
 
 	Point2 get_position() const;
 	float get_rotation() const;
-	float get_rotation_in_degrees() const;
+	float get_rotation_degrees() const;
 	Size2 get_scale() const;
 
 	Point2 get_global_position() const;
 	float get_global_rotation() const;
-	float get_global_rotation_in_degrees() const;
+	float get_global_rotation_degrees() const;
 	Size2 get_global_scale() const;
 	virtual Rect2 get_item_rect() const;
 
@@ -91,7 +91,7 @@ public:
 	void set_global_transform(const Transform2D &p_transform);
 	void set_global_position(const Point2 &p_pos);
 	void set_global_rotation(float p_radians);
-	void set_global_rotation_in_degrees(float p_degrees);
+	void set_global_rotation_degrees(float p_degrees);
 	void set_global_scale(const Size2 &p_scale);
 
 	void set_z(int p_z);
