@@ -365,14 +365,14 @@ GodotSharpBuilds::GodotSharpBuilds() {
 
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
-	EDITOR_DEF("mono/builds/build_tool",
+
 #ifdef WINDOWS_ENABLED
-			// TODO: Default to MSBUILD_MONO if its csc.exe issue is fixed in the installed mono version
-			MSBUILD
+	// TODO: Default to MSBUILD_MONO if its csc.exe issue is fixed in the installed mono version
+	EDITOR_DEF("mono/builds/build_tool", MSBUILD);
 #else
-			MSBUILD_MONO
+	EDITOR_DEF("mono/builds/build_tool", MSBUILD_MONO);
 #endif
-			);
+
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM,
 #ifdef WINDOWS_ENABLED
 			"MSBuild (Mono),MSBuild (System)"
