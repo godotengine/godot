@@ -4258,7 +4258,7 @@ PropertyEditor::PropertyEditor() {
 	use_filter = false;
 	subsection_selectable = false;
 	property_selectable = false;
-	show_type_icons = EDITOR_DEF("interface/editor/show_type_icons", false);
+	show_type_icons = false; // maybe one day will return.
 }
 
 PropertyEditor::~PropertyEditor() {

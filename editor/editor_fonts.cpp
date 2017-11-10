@@ -122,20 +122,24 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	MAKE_DEFAULT_FONT(df, int(EditorSettings::get_singleton()->get("interface/editor/font_size")) * EDSCALE);
+	int default_font_size = int(EditorSettings::get_singleton()->get("interface/editor/font_size")) * EDSCALE;
+	MAKE_DEFAULT_FONT(df, default_font_size);
 
 	p_theme->set_default_theme_font(df);
+
+	MAKE_DEFAULT_FONT(df_title, default_font_size + 2 * EDSCALE);
+	p_theme->set_font("title", "EditorFonts", df_title);
 
 	//Ref<BitmapFont> doc_font = make_font(_bi_font_doc_font_height,_bi_font_doc_font_ascent,0,_bi_font_doc_font_charcount,_bi_font_doc_font_characters,p_theme->get_icon("DocFont","EditorIcons"));
 	//Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 	//Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
 
-	MAKE_DEFAULT_FONT(df_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 16)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_doc_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 16)) * EDSCALE);
 
 	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("text_editor/help/help_font_size", 14)) * EDSCALE);
 
 	p_theme->set_font("doc", "EditorFonts", df_doc);
-	p_theme->set_font("doc_title", "EditorFonts", df_title);
+	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 
 	MAKE_DEFAULT_FONT(df_rulers, int(EDITOR_DEF("canvas_item_editor/rulers", 8)) * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
@@ -176,9 +180,4 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	df_output_code->set_font_data(dfmono);
 	MAKE_FALLBACKS(df_output_code);
 	p_theme->set_font("status_source", "EditorFonts", df_output_code);
-
-	//replace default theme
-	Ref<Texture> di;
-	Ref<StyleBox> ds;
-	fill_default_theme(p_theme, df, df_doc, di, ds, EDSCALE);
 }
