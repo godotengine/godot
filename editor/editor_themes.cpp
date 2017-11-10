@@ -801,6 +801,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("close_h_ofs", "WindowDialog", 22 * EDSCALE);
 	theme->set_constant("close_v_ofs", "WindowDialog", 20 * EDSCALE);
 	theme->set_constant("title_height", "WindowDialog", 24 * EDSCALE);
+	theme->set_font("title_font", "WindowDialog", theme->get_font("title", "EditorFonts"));
 
 	// complex window, for now only Editor settings and Project settings
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
