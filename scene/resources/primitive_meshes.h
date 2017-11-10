@@ -263,7 +263,7 @@ class QuadMesh : public PrimitiveMesh {
 	GDCLASS(QuadMesh, PrimitiveMesh)
 
 private:
-	// nothing? really? Maybe add size some day atleast... :)
+	Size2 size;
 
 protected:
 	static void _bind_methods();
@@ -271,6 +271,9 @@ protected:
 
 public:
 	QuadMesh();
+
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 };
 
 /**
