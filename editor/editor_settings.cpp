@@ -135,6 +135,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_value) {
 	set(p_name, p_value);
 	props[p_name].initial = p_value;
+	props[p_name].initial_set = true;
 }
 
 struct _EVCSort {
@@ -214,6 +215,14 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 }
 
 // Default configs
+bool EditorSettings::has_default_value(const String &p_setting) const {
+
+	_THREAD_SAFE_METHOD_
+
+	if (!props.has(p_setting))
+		return false;
+	return props[p_setting].initial_set;
+}
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
@@ -834,10 +843,10 @@ void EditorSettings::setup_network() {
 		hint += ip;
 	}
 
-	set("network/debug/remote_host", lip);
+	_initial_set("network/debug/remote_host", lip);
 	add_property_hint(PropertyInfo(Variant::STRING, "network/debug/remote_host", PROPERTY_HINT_ENUM, hint));
 
-	set("network/debug/remote_port", port);
+	_initial_set("network/debug/remote_port", port);
 	add_property_hint(PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 }
 
@@ -915,16 +924,20 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 
 	ERR_FAIL_COND(!props.has(p_setting));
 	props[p_setting].initial = p_value;
+	props[p_setting].initial_set = true;
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
 
+	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting))
-		return EditorSettings::get_singleton()->get(p_setting);
-	EditorSettings::get_singleton()->set(p_setting, p_default);
-	EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+		ret = EditorSettings::get_singleton()->get(p_setting);
+	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
+		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+		EditorSettings::get_singleton()->set(p_setting, p_default);
+	}
 
-	return p_default;
+	return ret;
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
