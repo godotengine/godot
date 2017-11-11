@@ -3900,7 +3900,12 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 
 	update();
 }
-
+void TextEdit::swap_lines(int line1, int line2) {
+	String tmp = get_line(line1);
+	String tmp2 = get_line(line2);
+	set_line(line2, tmp);
+	set_line(line1, tmp2);
+}
 bool TextEdit::is_selection_active() const {
 
 	return selection.active;
