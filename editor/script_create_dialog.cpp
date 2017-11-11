@@ -703,9 +703,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	internal = memnew(CheckButton);
 	internal->connect("pressed", this, "_built_in_pressed");
 	hb = memnew(HBoxContainer);
-	Control *empty = memnew(Control);
 	hb->add_child(internal);
-	hb->add_child(empty);
 	l = memnew(Label);
 	l->set_text(TTR("Built-in Script"));
 	l->set_align(Label::ALIGN_RIGHT);

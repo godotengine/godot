@@ -294,10 +294,10 @@ private:
 	ProjectSettingsEditor *project_settings;
 	EditorFileDialog *file;
 	ExportTemplateManager *export_template_manager;
-	FileDialog *file_templates;
-	FileDialog *file_export;
-	FileDialog *file_export_lib;
-	FileDialog *file_script;
+	EditorFileDialog *file_templates;
+	EditorFileDialog *file_export;
+	EditorFileDialog *file_export_lib;
+	EditorFileDialog *file_script;
 	CheckButton *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;

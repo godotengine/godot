@@ -568,6 +568,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("modulate_arrow", "OptionButton", true);
 
 	// CheckButton
+	theme->set_stylebox("normal", "CheckButton", style_menu);
+	theme->set_stylebox("pressed", "CheckButton", style_menu);
+	theme->set_stylebox("disabled", "CheckButton", style_menu);
+	theme->set_stylebox("hover", "CheckButton", style_menu);
+
 	theme->set_icon("on", "CheckButton", theme->get_icon("GuiToggleOn", "EditorIcons"));
 	theme->set_icon("off", "CheckButton", theme->get_icon("GuiToggleOff", "EditorIcons"));
 
