@@ -615,11 +615,6 @@ void DocData::generate(bool p_basic_types) {
 	}
 }
 
-static String _format_description(const String &string) {
-
-	return string.dedent().strip_edges().replace("\n", "\n\n");
-}
-
 static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &methods) {
 
 	String section = parser->get_node_name();
@@ -666,7 +661,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 
 							parser->read();
 							if (parser->get_node_type() == XMLParser::NODE_TEXT)
-								method.description = _format_description(parser->get_node_data());
+								method.description = parser->get_node_data();
 						}
 
 					} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == element)
@@ -781,20 +776,20 @@ Error DocData::_load(Ref<XMLParser> parser) {
 
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.brief_description = _format_description(parser->get_node_data());
+						c.brief_description = parser->get_node_data();
 
 				} else if (name == "description") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.description = _format_description(parser->get_node_data());
+						c.description = parser->get_node_data();
 				} else if (name == "tutorials") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.tutorials = parser->get_node_data().strip_edges();
+						c.tutorials = parser->get_node_data();
 				} else if (name == "demos") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.demos = parser->get_node_data().strip_edges();
+						c.demos = parser->get_node_data();
 				} else if (name == "methods") {
 
 					Error err = _parse_methods(parser, c.methods);
@@ -828,7 +823,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop.enumeration = parser->get_attribute_value("enum");
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									prop.description = _format_description(parser->get_node_data());
+									prop.description = parser->get_node_data();
 								c.properties.push_back(prop);
 							} else {
 								ERR_EXPLAIN("Invalid tag in doc file: " + name);
@@ -857,7 +852,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								prop.type = parser->get_attribute_value("type");
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									prop.description = parser->get_node_data().strip_edges();
+									prop.description = parser->get_node_data();
 								c.theme_properties.push_back(prop);
 							} else {
 								ERR_EXPLAIN("Invalid tag in doc file: " + name);
@@ -888,7 +883,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								}
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									constant.description = parser->get_node_data().strip_edges();
+									constant.description = parser->get_node_data();
 								c.constants.push_back(constant);
 							} else {
 								ERR_EXPLAIN("Invalid tag in doc file: " + name);
@@ -915,6 +910,8 @@ Error DocData::_load(Ref<XMLParser> parser) {
 
 static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
 
+	if (p_string == "")
+		return;
 	String tab;
 	for (int i = 0; i < p_tablevel; i++)
 		tab += "\t";
@@ -957,20 +954,16 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		header += ">";
 		_write_string(f, 0, header);
 		_write_string(f, 1, "<brief_description>");
-		if (c.brief_description != "")
-			_write_string(f, 2, c.brief_description.xml_escape());
+		_write_string(f, 2, c.brief_description.strip_edges().xml_escape());
 		_write_string(f, 1, "</brief_description>");
 		_write_string(f, 1, "<description>");
-		if (c.description != "")
-			_write_string(f, 2, c.description.xml_escape());
+		_write_string(f, 2, c.description.strip_edges().xml_escape());
 		_write_string(f, 1, "</description>");
 		_write_string(f, 1, "<tutorials>");
-		if (c.tutorials != "")
-			_write_string(f, 2, c.tutorials.xml_escape());
+		_write_string(f, 2, c.tutorials.strip_edges().xml_escape());
 		_write_string(f, 1, "</tutorials>");
 		_write_string(f, 1, "<demos>");
-		if (c.demos != "")
-			_write_string(f, 2, c.demos.xml_escape());
+		_write_string(f, 2, c.demos.strip_edges().xml_escape());
 		_write_string(f, 1, "</demos>");
 		_write_string(f, 1, "<methods>");
 
@@ -1014,8 +1007,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			}
 
 			_write_string(f, 3, "<description>");
-			if (m.description != "")
-				_write_string(f, 4, m.description.xml_escape());
+			_write_string(f, 4, m.description.strip_edges().xml_escape());
 			_write_string(f, 3, "</description>");
 
 			_write_string(f, 2, "</method>");
@@ -1036,8 +1028,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				}
 				PropertyDoc &p = c.properties[i];
 				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + enum_text + ">");
-				if (p.description != "")
-					_write_string(f, 3, p.description.xml_escape());
+				_write_string(f, 3, p.description.strip_edges().xml_escape());
 				_write_string(f, 2, "</member>");
 			}
 			_write_string(f, 1, "</members>");
@@ -1060,8 +1051,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				}
 
 				_write_string(f, 3, "<description>");
-				if (m.description != "")
-					_write_string(f, 4, m.description.xml_escape());
+				_write_string(f, 4, m.description.strip_edges().xml_escape());
 				_write_string(f, 3, "</description>");
 
 				_write_string(f, 2, "</signal>");
@@ -1080,8 +1070,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			} else {
 				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
 			}
-			if (k.description != "")
-				_write_string(f, 3, k.description.xml_escape());
+			_write_string(f, 3, k.description.strip_edges().xml_escape());
 			_write_string(f, 2, "</constant>");
 		}
 

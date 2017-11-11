@@ -1478,9 +1478,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
 	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
 
-	String bbcode = p_bbcode.replace("\t", " ").replace("\r", " ").strip_edges();
+	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
 	List<String> tag_stack;
+	bool code_tag = false;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -1491,7 +1492,10 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			brk_pos = bbcode.length();
 
 		if (brk_pos > pos) {
-			p_rt->add_text(bbcode.substr(pos, brk_pos - pos));
+			String text = bbcode.substr(pos, brk_pos - pos);
+			if (!code_tag)
+				text = text.replace("\n", "\n\n");
+			p_rt->add_text(text);
 		}
 
 		if (brk_pos == bbcode.length())
@@ -1500,7 +1504,11 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		int brk_end = bbcode.find("]", brk_pos + 1);
 
 		if (brk_end == -1) {
-			p_rt->add_text(bbcode.substr(brk_pos, bbcode.length() - brk_pos));
+
+			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+			if (!code_tag)
+				text = text.replace("\n", "\n\n");
+			p_rt->add_text(text);
 
 			break;
 		}
@@ -1509,20 +1517,23 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		if (tag.begins_with("/")) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
-			if (tag_stack.size()) {
-			}
 
 			if (!tag_ok) {
 
 				p_rt->add_text("[");
-				pos++;
+				pos = brk_pos + 1;
 				continue;
 			}
 
 			tag_stack.pop_front();
 			pos = brk_end + 1;
+			code_tag = false;
 			if (tag != "/img")
 				p_rt->pop();
+		} else if (code_tag) {
+
+			p_rt->add_text("[");
+			pos = brk_pos + 1;
 
 		} else if (tag.begins_with("method ")) {
 
@@ -1559,6 +1570,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			//use monospace font
 			p_rt->push_font(doc_code_font);
+			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
