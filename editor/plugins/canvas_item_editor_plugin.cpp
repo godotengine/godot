@@ -4373,7 +4373,7 @@ void CanvasItemEditorViewport::_on_mouse_exit() {
 void CanvasItemEditorViewport::_on_select_type(Object *selected) {
 	CheckBox *check = Object::cast_to<CheckBox>(selected);
 	String type = check->get_text();
-	selector_label->set_text(vformat(TTR("Add %s"), type));
+	selector->set_title(vformat(TTR("Add %s"), type));
 	label->set_text(vformat(TTR("Adding %s..."), type));
 }
 
@@ -4698,7 +4698,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 			CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
 			check->set_pressed(check->get_text() == default_type);
 		}
-		selector_label->set_text(vformat(TTR("Add %s"), default_type));
+		selector->set_title(vformat(TTR("Add %s"), default_type));
 		selector->popup_centered_minsize();
 	} else {
 		_perform_drop_data();
@@ -4756,12 +4756,6 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->set_custom_minimum_size(Size2(200, 260) * EDSCALE);
-
-	selector_label = memnew(Label);
-	vbc->add_child(selector_label);
-	selector_label->set_align(Label::ALIGN_CENTER);
-	selector_label->set_valign(Label::VALIGN_BOTTOM);
-	selector_label->set_custom_minimum_size(Size2(0, 30) * EDSCALE);
 
 	btn_group = memnew(VBoxContainer);
 	vbc->add_child(btn_group);

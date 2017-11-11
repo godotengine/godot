@@ -284,9 +284,10 @@ void EditorNode::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/editor/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+		Ref<Theme> theme = create_custom_theme(theme_base->get_theme());
 
 		theme_base->set_theme(theme);
+		gui_base->set_theme(theme);
 
 		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
@@ -4691,9 +4692,9 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	Ref<Theme> theme = create_editor_theme();
+	Ref<Theme> theme = create_custom_theme();
 	theme_base->set_theme(theme);
-	gui_base->set_theme(create_custom_theme());
+	gui_base->set_theme(theme);
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 
 	resource_preview = memnew(EditorResourcePreview);
