@@ -3668,6 +3668,11 @@ void TextEdit::set_readonly(bool p_readonly) {
 	readonly = p_readonly;
 }
 
+bool TextEdit::is_readonly() const {
+
+	return readonly;
+}
+
 void TextEdit::set_wrap(bool p_wrap) {
 
 	wrap = p_wrap;
@@ -4914,6 +4919,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_is_block_mode"), &TextEdit::cursor_is_block_mode);
 
 	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
+	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
+
 	ClassDB::bind_method(D_METHOD("set_wrap", "enable"), &TextEdit::set_wrap);
 	ClassDB::bind_method(D_METHOD("set_max_chars", "amount"), &TextEdit::set_max_chars);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
@@ -4964,6 +4971,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
