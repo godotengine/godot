@@ -1318,7 +1318,7 @@ void ProjectSettingsEditor::_update_translations() {
 			t->set_text(0, translations[i].replace_first("res://", ""));
 			t->set_tooltip(0, translations[i]);
 			t->set_metadata(0, i);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
+			t->add_button(0, get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 		}
 	}
 
@@ -1436,7 +1436,7 @@ void ProjectSettingsEditor::_update_translations() {
 			t->set_text(0, keys[i].replace_first("res://", ""));
 			t->set_tooltip(0, keys[i]);
 			t->set_metadata(0, keys[i]);
-			t->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
+			t->add_button(0, get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 			if (keys[i] == remap_selected) {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
@@ -1454,7 +1454,7 @@ void ProjectSettingsEditor::_update_translations() {
 					t2->set_text(0, path.replace_first("res://", ""));
 					t2->set_tooltip(0, path);
 					t2->set_metadata(0, j);
-					t2->add_button(0, get_icon("Del", "EditorIcons"), 0, false, TTR("Remove"));
+					t2->add_button(0, get_icon("Remove", "EditorIcons"), 0, false, TTR("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
 					t2->set_text(1, langnames);
 					t2->set_editable(1, true);
