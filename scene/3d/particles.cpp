@@ -761,11 +761,11 @@ void ParticlesMaterial::_update_shader() {
 	code += "		force += length(diff) > 0.0 ? normalize(diff) * (radial_accel+tex_radial_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random) : vec3(0.0);\n";
 	code += "		//apply tangential acceleration;\n";
 	if (flags[FLAG_DISABLE_Z]) {
-		code += "		force += length(diff.yx) > 0.0 ? vec3(normalize(diff.yx * vec2(-1.0,1.0)),0.0) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random)) : vec3(0.0);\n";
+		code += "		force += length(diff.yx) > 0.0 ? vec3(normalize(diff.yx * vec2(-1.0,1.0)),0.0) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),tangent_accel_random)) : vec3(0.0);\n";
 
 	} else {
 		code += "		vec3 crossDiff = cross(normalize(diff),normalize(gravity));\n";
-		code += "		force += length(crossDiff) > 0.0 ? normalize(crossDiff) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random)) : vec3(0.0);\n";
+		code += "		force += length(crossDiff) > 0.0 ? normalize(crossDiff) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),tangent_accel_random)) : vec3(0.0);\n";
 	}
 	code += "		//apply attractor forces\n";
 	code += "		VELOCITY += force * DELTA;\n";
