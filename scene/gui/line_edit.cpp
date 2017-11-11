@@ -48,7 +48,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 	if (b.is_valid()) {
 
-		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT) {
+		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
 			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
 			menu->popup();
@@ -1286,6 +1286,14 @@ void LineEdit::menu_option(int p_option) {
 	}
 }
 
+void LineEdit::set_context_menu_enabled(bool p_enable) {
+	context_menu_enabled = p_enable;
+}
+
+bool LineEdit::is_context_menu_enabled() {
+	return context_menu_enabled;
+}
+
 PopupMenu *LineEdit::get_menu() const {
 	return menu;
 }
@@ -1395,6 +1403,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
+	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "text")));
@@ -1426,6 +1436,7 @@ void LineEdit::_bind_methods() {
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.1"), "cursor_set_blink_speed", "cursor_get_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 }
 
 LineEdit::LineEdit() {
@@ -1455,6 +1466,7 @@ LineEdit::LineEdit() {
 	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
 
+	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->add_item(TTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);

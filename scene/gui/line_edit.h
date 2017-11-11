@@ -74,6 +74,7 @@ private:
 	String ime_text;
 	Point2 ime_selection;
 
+	bool context_menu_enabled;
 	PopupMenu *menu;
 
 	int cursor_pos;
@@ -150,6 +151,8 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
 	void menu_option(int p_option);
+	void set_context_menu_enabled(bool p_enable);
+	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
 
 	void select_all();

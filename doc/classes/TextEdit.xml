@@ -239,6 +239,14 @@
 				Returns true if highlight all occurrences is enabled.
 			</description>
 		</method>
+		</method>
+		<method name="is_context_menu_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the context menu is enabled.
+			</description>
+		</method>
 		<method name="is_highlight_current_line_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -335,6 +343,15 @@
 			</return>
 			<description>
 				Select all the text.
+			</description>
+		</method>
+		<method name="set_context_menu_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Set the status of the context menu. When enabled, the context menu will appear when the [code]TextEdit[/code] is right clicked.
 			</description>
 		</method>
 		<method name="set_highlight_all_occurrences">
@@ -454,6 +471,8 @@
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 		</member>
 		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
+		</member>
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
 		</member>
