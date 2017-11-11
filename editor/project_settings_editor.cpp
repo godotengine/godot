@@ -1782,6 +1782,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(translations);
 	//remap for properly select language in popup
 	translation_locales_idxs_remap = Vector<int>();
+	translation_locales_list_created = false;
 
 	{
 
