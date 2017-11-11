@@ -328,9 +328,9 @@ public:
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 
 	void set_rotation(float p_radians);
-	void set_rotation_deg(float p_degrees);
+	void set_rotation_degrees(float p_degrees);
 	float get_rotation() const;
-	float get_rotation_deg() const;
+	float get_rotation_degrees() const;
 
 	void set_h_grow_direction(GrowDirection p_direction);
 	GrowDirection get_h_grow_direction() const;

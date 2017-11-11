@@ -233,7 +233,7 @@ void Spatial::set_transform(const Transform &p_transform) {
 	data.dirty |= DIRTY_VECTORS;
 	_change_notify("translation");
 	_change_notify("rotation");
-	_change_notify("rotation_deg");
+	_change_notify("rotation_degrees");
 	_change_notify("scale");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
@@ -327,7 +327,7 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 	}
 }
 
-void Spatial::set_rotation_in_degrees(const Vector3 &p_euler_deg) {
+void Spatial::set_rotation_degrees(const Vector3 &p_euler_deg) {
 
 	set_rotation(p_euler_deg * Math_PI / 180.0);
 }
@@ -364,7 +364,7 @@ Vector3 Spatial::get_rotation() const {
 	return data.rotation;
 }
 
-Vector3 Spatial::get_rotation_in_degrees() const {
+Vector3 Spatial::get_rotation_degrees() const {
 
 	return get_rotation() * 180.0 / Math_PI;
 }
@@ -677,10 +677,10 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
 	ClassDB::bind_method(D_METHOD("set_translation", "translation"), &Spatial::set_translation);
 	ClassDB::bind_method(D_METHOD("get_translation"), &Spatial::get_translation);
-	ClassDB::bind_method(D_METHOD("set_rotation", "rotation_rad"), &Spatial::set_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Spatial::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Spatial::get_rotation);
-	ClassDB::bind_method(D_METHOD("set_rotation_deg", "rotation_deg"), &Spatial::set_rotation_in_degrees);
-	ClassDB::bind_method(D_METHOD("get_rotation_deg"), &Spatial::get_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Spatial::set_rotation_degrees);
+	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Spatial::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Spatial::set_scale);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Spatial::get_scale);
 	ClassDB::bind_method(D_METHOD("set_global_transform", "global"), &Spatial::set_global_transform);
@@ -746,7 +746,7 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::TRANSFORM, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_translation", "get_translation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_deg", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_deg", "get_rotation_deg");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
 	ADD_GROUP("Visibility", "");

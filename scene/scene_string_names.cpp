@@ -143,7 +143,7 @@ SceneStringNames::SceneStringNames() {
 	v_offset = StaticCString::create("v_offset");
 
 	transform_pos = StaticCString::create("position");
-	transform_rot = StaticCString::create("rotation_deg");
+	transform_rot = StaticCString::create("rotation_degrees");
 	transform_scale = StaticCString::create("scale");
 
 	_update_remote = StaticCString::create("_update_remote");
