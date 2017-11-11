@@ -926,10 +926,6 @@ void ScriptEditor::_menu_option(int p_option) {
 	if (current) {
 
 		switch (p_option) {
-			case FILE_NEW: {
-				script_create_dialog->config("Node", ".gd");
-				script_create_dialog->popup_centered(Size2(300, 300) * EDSCALE);
-			} break;
 			case FILE_SAVE: {
 
 				if (_test_script_times_on_disk())
@@ -1919,6 +1915,54 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
+	Ref<InputEventMouseButton> mb = ev;
+
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
+
+		_make_script_list_context_menu();
+	}
+}
+
+void ScriptEditor::_make_script_list_context_menu() {
+
+	context_menu->clear();
+
+	int selected = tab_container->get_current_tab();
+	if (selected < 0 || selected >= tab_container->get_child_count())
+		return;
+
+	// SAVE, SAVE AS, SOFT RELOAD, CLOSE, RUN, TOGGLE
+
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
+	if (se) {
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+		context_menu->add_separator();
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
+
+		Ref<Script> scr = se->get_edited_script();
+		if (!scr.is_null() && scr->is_tool()) {
+			context_menu->add_separator();
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
+		}
+	} else {
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+	}
+
+	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(selected));
+	if (eh) {
+		// nothing
+	}
+	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
+
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_size(Vector2(1, 1));
+	context_menu->popup();
+}
+
 void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	if (!bool(EDITOR_DEF("text_editor/files/restore_scripts_on_load", true))) {
@@ -2243,6 +2287,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_history_back", &ScriptEditor::_history_back);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
 	ClassDB::bind_method("_unhandled_input", &ScriptEditor::_unhandled_input);
+	ClassDB::bind_method("_script_list_gui_input", &ScriptEditor::_script_list_gui_input);
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
@@ -2286,6 +2331,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
 	//list_split->set_split_offset(500);
+
+	script_list->connect("gui_input", this, "_script_list_gui_input");
+	script_list->set_allow_rmb_select(true);
+	context_menu = memnew(PopupMenu);
+	add_child(context_menu);
+	context_menu->connect("id_pressed", this, "_menu_option");
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);

@@ -173,6 +173,7 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *edit_menu;
 	MenuButton *script_search_menu;
 	MenuButton *debug_menu;
+	PopupMenu *context_menu;
 	Timer *autosave_timer;
 	uint64_t idle;
 
@@ -307,6 +308,9 @@ class ScriptEditor : public PanelContainer {
 	void _script_split_dragged(float);
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
+
+	void _script_list_gui_input(const Ref<InputEvent> &ev);
+	void _make_script_list_context_menu();
 
 	void _help_search(String p_text);
 	void _help_index(String p_text);
