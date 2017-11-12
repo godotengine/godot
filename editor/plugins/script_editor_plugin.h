@@ -150,10 +150,11 @@ class ScriptEditor : public PanelContainer {
 		SEARCH_WEBSITE,
 		HELP_SEARCH_FIND,
 		HELP_SEARCH_FIND_NEXT,
-		WINDOW_MOVE_LEFT,
-		WINDOW_MOVE_RIGHT,
+		WINDOW_MOVE_UP,
+		WINDOW_MOVE_DOWN,
 		WINDOW_NEXT,
 		WINDOW_PREV,
+		WINDOW_SORT,
 		WINDOW_SELECT_BASE = 100
 	};
 
@@ -293,6 +294,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _update_script_names();
+	bool _sort_list_on_update;
 
 	void _members_overview_selected(int p_idx);
 	void _script_selected(int p_idx);
@@ -306,6 +308,10 @@ class ScriptEditor : public PanelContainer {
 	void _tree_changed();
 
 	void _script_split_dragged(float);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
 

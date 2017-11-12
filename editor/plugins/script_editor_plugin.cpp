@@ -890,7 +890,12 @@ void ScriptEditor::_menu_option(int p_option) {
 			_history_forward();
 		} break;
 		case WINDOW_PREV: {
+
 			_history_back();
+		} break;
+		case WINDOW_SORT: {
+			_sort_list_on_update = true;
+			_update_script_names();
 		} break;
 		case DEBUG_SHOW: {
 			if (debugger) {
@@ -1037,26 +1042,22 @@ void ScriptEditor::_menu_option(int p_option) {
 					debugger->debug_continue();
 
 			} break;
-			case WINDOW_MOVE_LEFT: {
+			case WINDOW_MOVE_UP: {
 
 				if (tab_container->get_current_tab() > 0) {
-					tab_container->call_deferred("set_current_tab", tab_container->get_current_tab() - 1);
-					script_list->call_deferred("select", tab_container->get_current_tab() - 1);
 					tab_container->move_child(current, tab_container->get_current_tab() - 1);
+					tab_container->set_current_tab(tab_container->get_current_tab() - 1);
 					_update_script_names();
 				}
 			} break;
-			case WINDOW_MOVE_RIGHT: {
+			case WINDOW_MOVE_DOWN: {
 
 				if (tab_container->get_current_tab() < tab_container->get_child_count() - 1) {
-					tab_container->call_deferred("set_current_tab", tab_container->get_current_tab() + 1);
-					script_list->call_deferred("select", tab_container->get_current_tab() + 1);
 					tab_container->move_child(current, tab_container->get_current_tab() + 1);
+					tab_container->set_current_tab(tab_container->get_current_tab() + 1);
 					_update_script_names();
 				}
-
 			} break;
-
 			default: {
 
 				if (p_option >= WINDOW_SELECT_BASE) {
@@ -1087,6 +1088,22 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 				case CLOSE_ALL: {
 					_close_all_tabs();
+				} break;
+				case WINDOW_MOVE_UP: {
+
+					if (tab_container->get_current_tab() > 0) {
+						tab_container->move_child(help, tab_container->get_current_tab() - 1);
+						tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+						_update_script_names();
+					}
+				} break;
+				case WINDOW_MOVE_DOWN: {
+
+					if (tab_container->get_current_tab() < tab_container->get_child_count() - 1) {
+						tab_container->move_child(help, tab_container->get_current_tab() + 1);
+						tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+						_update_script_names();
+					}
 				} break;
 			}
 		}
@@ -1357,6 +1374,7 @@ struct _ScriptEditorItemData {
 	String tooltip;
 	bool used;
 	int category;
+	Node *ref;
 
 	bool operator<(const _ScriptEditorItemData &id) const {
 
@@ -1522,6 +1540,7 @@ void ScriptEditor::_update_script_names() {
 			sd.index = i;
 			sd.used = used.has(se->get_edited_script());
 			sd.category = 0;
+			sd.ref = se;
 
 			switch (sort_by) {
 				case SORT_BY_NAME: {
@@ -1561,16 +1580,38 @@ void ScriptEditor::_update_script_names() {
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
 			sd.name = name;
-			sd.sort_key = name;
+			sd.sort_key = name.to_lower();
 			sd.tooltip = tooltip;
 			sd.index = i;
 			sd.used = false;
 			sd.category = split_script_help ? 1 : 0;
+			sd.ref = eh;
+
 			sedata.push_back(sd);
 		}
 	}
 
-	sedata.sort();
+	if (_sort_list_on_update) {
+		sedata.sort();
+
+		// change actual order of tab_container so that the order can be rearranged by user
+		int cur_tab = tab_container->get_current_tab();
+		int prev_tab = tab_container->get_previous_tab();
+		int new_cur_tab = -1;
+		int new_prev_tab = -1;
+		for (int i = 0; i < sedata.size(); i++) {
+			tab_container->move_child(sedata[i].ref, i);
+			if (new_prev_tab == -1 && sedata[i].index == prev_tab) {
+				new_prev_tab = i;
+			}
+			if (new_cur_tab == -1 && sedata[i].index == cur_tab) {
+				new_cur_tab = i;
+			}
+		}
+		tab_container->call_deferred("set_current_tab", new_prev_tab);
+		tab_container->call_deferred("set_current_tab", new_cur_tab);
+		_sort_list_on_update = false;
+	}
 
 	for (int i = 0; i < sedata.size(); i++) {
 
@@ -1899,8 +1940,27 @@ void ScriptEditor::_script_split_dragged(float) {
 	_save_layout();
 }
 
+// void ScriptEditor::_script_list_dragged(float) {
+
+// 	_save_layout();
+// }
+
+Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from){
+	WARN_PRINT("get_drag_data_fw");
+	return Variant();
+}
+bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	WARN_PRINT("can_drop_data_fw");
+	return false;
+}
+void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	WARN_PRINT("drop_data_fw");
+
+}
+
 void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
-	if (p_event->is_pressed() || !is_visible_in_tree()) return;
+	if (!is_visible_in_tree() || !p_event->is_pressed() ||  p_event->is_echo())
+		return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
 		int next_tab = script_list->get_current() + 1;
 		next_tab %= script_list->get_item_count();
@@ -1913,12 +1973,20 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 		_go_to_tab(script_list->get_item_metadata(next_tab));
 		_update_script_names();
 	}
+	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
+		_menu_option(WINDOW_MOVE_UP);
+	}
+	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
+		_menu_option(WINDOW_MOVE_DOWN);
+	}
+	ERR_EXPLAIN("uh: "+p_event->as_text());
+	ERR_FAIL_COND(true);
 }
 
 void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
+	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 		_make_script_list_context_menu();
 	}
@@ -1931,8 +1999,6 @@ void ScriptEditor::_make_script_list_context_menu() {
 	int selected = tab_container->get_current_tab();
 	if (selected < 0 || selected >= tab_container->get_child_count())
 		return;
-
-	// SAVE, SAVE AS, SOFT RELOAD, CLOSE, RUN, TOGGLE
 
 	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 	if (se) {
@@ -1955,7 +2021,11 @@ void ScriptEditor::_make_script_list_context_menu() {
 	if (eh) {
 		// nothing
 	}
+
 	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), WINDOW_MOVE_DOWN);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), WINDOW_SORT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_scripts_panel"), TOGGLE_SCRIPTS_PANEL);
 
 	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
@@ -2332,8 +2402,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->set_split_offset(140);
 	//list_split->set_split_offset(500);
 
+	_sort_list_on_update=true;
 	script_list->connect("gui_input", this, "_script_list_gui_input");
 	script_list->set_allow_rmb_select(true);
+	script_list->set_drag_forwarding(this);
+
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_menu_option");
@@ -2353,9 +2426,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->add_child(tab_container);
 
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	ED_SHORTCUT("script_editor/next_script", TTR("Next script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_GREATER);
-	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_LESS);
+	
+	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
+	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
+	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
+	ED_SHORTCUT("script_editor/next_script", TTR("Next script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_PERIOD); // these should be KEY_GREATER and KEY_LESS but those don't work
+	ED_SHORTCUT("script_editor/prev_script", TTR("Previous script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_COLON);
 	set_process_unhandled_input(true);
 
 	file_menu = memnew(MenuButton);
