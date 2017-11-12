@@ -2764,6 +2764,23 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 
 	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
 	default_value_edit->set_size(Size2(1, 1));
+
+	if (pinfo.type == Variant::NODE_PATH) {
+
+		Node *edited_scene = get_tree()->get_edited_scene_root();
+		Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+
+		if (script_node) {
+			//pick a node relative to the script, IF the script exists
+			pinfo.hint = PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE;
+			pinfo.hint_string = script_node->get_path();
+		} else {
+			//pick a path relative to edited scene
+			pinfo.hint = PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE;
+			pinfo.hint_string = get_tree()->get_edited_scene_root()->get_path();
+		}
+	}
+
 	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)
 			default_value_edit->popup_centered_ratio();
