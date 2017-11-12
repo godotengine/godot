@@ -310,6 +310,19 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			}
 		}
 
+		//Compatible with version 2.1
+		if (!found) {
+			datapack_name = exec_path.get_base_dir().plus_file("data") + ".pck";
+			if (_load_resource_pack(datapack_name)) {
+				found = true;
+			} else {
+				datapack_name = "data.pck";
+				if (_load_resource_pack(datapack_name)) {
+					found = true;
+				}
+			}
+		}
+
 		// if we opened our package, try and load our project...
 		if (found) {
 			if (_load_settings("res://project.godot") == OK || _load_settings_binary("res://project.binary") == OK) {
