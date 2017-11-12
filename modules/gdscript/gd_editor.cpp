@@ -2771,31 +2771,31 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				}
 
 				//global
-				for (Map<StringName, int>::Element *E = GDScriptLanguage::get_singleton()->get_global_map().front(); E; E = E->next()) {
-					if (E->key() == p_symbol) {
-
-						Variant value = GDScriptLanguage::get_singleton()->get_global_array()[E->get()];
-						if (value.get_type() == Variant::OBJECT) {
-							Object *obj = value;
-							if (obj) {
-
-								if (Object::cast_to<GDNativeClass>(obj)) {
-									r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
-									r_result.class_name = Object::cast_to<GDNativeClass>(obj)->get_name();
-
-								} else {
-									r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
-									r_result.class_name = obj->get_class();
-								}
-								return OK;
+				Map<StringName, int> classes = GDScriptLanguage::get_singleton()->get_global_map();
+				if (classes.has(p_symbol)) {
+					Variant value = GDScriptLanguage::get_singleton()->get_global_array()[classes[p_symbol]];
+					if (value.get_type() == Variant::OBJECT) {
+						Object *obj = value;
+						if (obj) {
+							if (Object::cast_to<GDNativeClass>(obj)) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
+								r_result.class_name = Object::cast_to<GDNativeClass>(obj)->get_name();
+							} else {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
+								r_result.class_name = obj->get_class();
 							}
-						} else {
 
-							r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
-							r_result.class_name = "@Global Scope";
-							r_result.class_member = p_symbol;
+							// proxy class remove the underscore.
+							if (r_result.class_name.begins_with("_")) {
+								r_result.class_name = r_result.class_name.right(1);
+							}
 							return OK;
 						}
+					} else {
+						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+						r_result.class_name = "@Global Scope";
+						r_result.class_member = p_symbol;
+						return OK;
 					}
 				}
 			}
