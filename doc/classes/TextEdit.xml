@@ -465,6 +465,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+			String value of the [TextEdit].
+		</member>
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
 			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
