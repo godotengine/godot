@@ -1296,6 +1296,7 @@ void SceneTreeDock::_delete_confirm() {
 		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", (Object *)NULL);
 		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", edited_scene);
 		editor_data->get_undo_redo().add_undo_method(edited_scene, "set_owner", edited_scene->get_owner());
+		editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
 		editor_data->get_undo_redo().add_undo_reference(edited_scene);
 
 	} else {
