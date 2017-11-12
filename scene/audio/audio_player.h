@@ -59,6 +59,7 @@ private:
 
 	MixTarget mix_target;
 
+	void _mix_internal(bool p_fadeout);
 	void _mix_audio();
 	static void _mix_audios(void *self) { reinterpret_cast<AudioStreamPlayer *>(self)->_mix_audio(); }
 

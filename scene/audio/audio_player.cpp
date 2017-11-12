@@ -31,20 +31,7 @@
 
 #include "engine.h"
 
-void AudioStreamPlayer::_mix_audio() {
-
-	if (!stream_playback.is_valid()) {
-		return;
-	}
-
-	if (!active) {
-		return;
-	}
-
-	if (setseek >= 0.0) {
-		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
-	}
+void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
 	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
@@ -52,19 +39,24 @@ void AudioStreamPlayer::_mix_audio() {
 	AudioFrame *buffer = mix_buffer.ptr();
 	int buffer_size = mix_buffer.size();
 
+	if (p_fadeout) {
+		buffer_size = MIN(buffer_size, 16); //short fadeout ramp
+	}
+
 	//mix
 	stream_playback->mix(buffer, 1.0, buffer_size);
 
 	//multiply volume interpolating to avoid clicks if this changes
+	float target_volume = p_fadeout ? -80.0 : volume_db;
 	float vol = Math::db2linear(mix_volume_db);
-	float vol_inc = (Math::db2linear(volume_db) - vol) / float(buffer_size);
+	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
 
 	for (int i = 0; i < buffer_size; i++) {
 		buffer[i] *= vol;
 		vol += vol_inc;
 	}
 	//set volume for next mix
-	mix_volume_db = volume_db;
+	mix_volume_db = target_volume;
 
 	AudioFrame *targets[4] = { NULL, NULL, NULL, NULL };
 
@@ -93,6 +85,30 @@ void AudioStreamPlayer::_mix_audio() {
 			targets[c][i] += buffer[i];
 		}
 	}
+}
+
+void AudioStreamPlayer::_mix_audio() {
+
+	if (!stream_playback.is_valid()) {
+		return;
+	}
+
+	if (!active) {
+		return;
+	}
+
+	if (setseek >= 0.0) {
+		if (stream_playback->is_playing()) {
+
+			//fade out to avoid pops
+			_mix_internal(true);
+		}
+		stream_playback->start(setseek);
+		setseek = -1.0; //reset seek
+		mix_volume_db = volume_db; //reset ramp
+	}
+
+	_mix_internal(false);
 }
 
 void AudioStreamPlayer::_notification(int p_what) {
@@ -163,7 +179,7 @@ float AudioStreamPlayer::get_volume_db() const {
 void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
-		mix_volume_db = volume_db; //reset volume ramp
+		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
 		active = true;
 		set_process_internal(true);
