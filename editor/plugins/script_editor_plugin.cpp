@@ -865,20 +865,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case SEARCH_CLASSES: {
 
-			String current;
-
-			if (tab_container->get_tab_count() > 0) {
-				EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(tab_container->get_current_tab()));
-				if (eh) {
-					current = eh->get_class();
-				}
-			}
-
 			help_index->popup();
-
-			if (current != "") {
-				help_index->call_deferred("select_class", current);
-			}
 		} break;
 		case SEARCH_WEBSITE: {
 
@@ -1074,6 +1061,11 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			switch (p_option) {
 
+				case SEARCH_CLASSES: {
+
+					help_index->popup();
+					help_index->call_deferred("select_class", help->get_class());
+				} break;
 				case HELP_SEARCH_FIND: {
 					help->popup_search();
 				} break;
@@ -1940,26 +1932,170 @@ void ScriptEditor::_script_split_dragged(float) {
 	_save_layout();
 }
 
-// void ScriptEditor::_script_list_dragged(float) {
+Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-// 	_save_layout();
-// }
+	// return Variant(); // return this if drag disabled
 
-Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from){
-	WARN_PRINT("get_drag_data_fw");
-	return Variant();
+	Node *cur_node = tab_container->get_child(tab_container->get_current_tab());
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+	String preview_name = "";
+	Ref<Texture> preview_icon;
+
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(cur_node);
+	if (se) {
+		preview_name = se->get_name();
+		preview_icon = se->get_icon();
+	}
+	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
+	if (eh) {
+		preview_name = eh->get_class();
+		preview_icon = get_icon("Help", "EditorIcons");
+	}
+
+	if (!preview_icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(preview_icon);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(preview_name));
+	drag_preview->add_child(label);
+	set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "script_list_element"; // using a custom type because node caused problems when dragging to scene tree
+	drag_data["script_list_element"] = cur_node;
+
+	return drag_data;
 }
+
 bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	WARN_PRINT("can_drop_data_fw");
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return false;
+
+	if (String(d["type"]) == "script_list_element") {
+
+		Node *node = d["script_list_element"];
+
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
+		if (se) {
+			return true;
+		}
+		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
+		if (eh) {
+			return true;
+		}
+	}
+
+	if (String(d["type"]) == "nodes") {
+
+		Array nodes = d["nodes"];
+		if (nodes.size() == 0)
+			return false;
+		Node *node = get_node((nodes[0]));
+
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
+		if (se) {
+			return true;
+		}
+		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
+		if (eh) {
+			return true;
+		}
+	}
+
+	if (String(d["type"]) == "files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size() == 0)
+			return false; //weird
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (file == "" || !FileAccess::exists(file))
+				continue;
+			Ref<Script> scr = ResourceLoader::load(file);
+			if (scr.is_valid()) {
+				return true;
+			}
+		}
+		return true;
+	}
+
 	return false;
 }
-void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	WARN_PRINT("drop_data_fw");
 
+void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	Dictionary d = p_data;
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "script_list_element") {
+
+		Node *node = d["script_list_element"];
+
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
+		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
+		if (se || eh) {
+			int new_index = script_list->get_item_at_position(p_point);
+			tab_container->move_child(node, new_index);
+			tab_container->set_current_tab(new_index);
+			_update_script_names();
+		}
+	}
+
+	if (String(d["type"]) == "nodes") {
+
+		Array nodes = d["nodes"];
+		if (nodes.size() == 0)
+			return;
+		Node *node = get_node(nodes[0]);
+
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(node);
+		EditorHelp *eh = Object::cast_to<EditorHelp>(node);
+		if (se || eh) {
+			int new_index = script_list->get_item_at_position(p_point);
+			tab_container->move_child(node, new_index);
+			tab_container->set_current_tab(new_index);
+			_update_script_names();
+		}
+	}
+
+	if (String(d["type"]) == "files") {
+
+		Vector<String> files = d["files"];
+
+		int new_index = script_list->get_item_at_position(p_point);
+		int num_tabs_before = tab_container->get_child_count();
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (file == "" || !FileAccess::exists(file))
+				continue;
+			Ref<Script> scr = ResourceLoader::load(file);
+			if (scr.is_valid()) {
+				edit(scr);
+				if (tab_container->get_child_count() > num_tabs_before) {
+					tab_container->move_child(tab_container->get_child(tab_container->get_child_count() - 1), new_index);
+					num_tabs_before = tab_container->get_child_count();
+				} else {
+					tab_container->move_child(tab_container->get_child(tab_container->get_current_tab()), new_index);
+				}
+			}
+		}
+		tab_container->set_current_tab(new_index);
+		_update_script_names();
+	}
 }
 
 void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
-	if (!is_visible_in_tree() || !p_event->is_pressed() ||  p_event->is_echo())
+	if (!is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo())
 		return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
 		int next_tab = script_list->get_current() + 1;
@@ -1979,13 +2115,13 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(WINDOW_MOVE_DOWN);
 	}
-	ERR_EXPLAIN("uh: "+p_event->as_text());
+	ERR_EXPLAIN("uh: " + p_event->as_text());
 	ERR_FAIL_COND(true);
 }
 
 void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
-	Ref<InputEventMouseButton> mb = ev;
 
+	Ref<InputEventMouseButton> mb = ev;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 		_make_script_list_context_menu();
@@ -2361,6 +2497,10 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_script_changed", &ScriptEditor::_script_changed);
 	ClassDB::bind_method("_update_recent_scripts", &ScriptEditor::_update_recent_scripts);
 
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ScriptEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ScriptEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ScriptEditor::drop_data_fw);
+
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 
@@ -2402,7 +2542,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->set_split_offset(140);
 	//list_split->set_split_offset(500);
 
-	_sort_list_on_update=true;
+	_sort_list_on_update = true;
 	script_list->connect("gui_input", this, "_script_list_gui_input");
 	script_list->set_allow_rmb_select(true);
 	script_list->set_drag_forwarding(this);
@@ -2426,7 +2566,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_split->add_child(tab_container);
 
 	tab_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	
+
 	ED_SHORTCUT("script_editor/window_sort", TTR("Sort"));
 	ED_SHORTCUT("script_editor/window_move_up", TTR("Move Up"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_editor/window_move_down", TTR("Move Down"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN);
