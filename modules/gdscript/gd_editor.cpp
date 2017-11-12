@@ -337,6 +337,11 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_cons
 	pi.second = Math_PI;
 	p_constants->push_back(pi);
 
+	Pair<String, Variant> tau;
+	tau.first = "TAU";
+	tau.second = Math_TAU;
+	p_constants->push_back(tau);
+
 	Pair<String, Variant> infinity;
 	infinity.first = "INF";
 	infinity.second = Math_INF;
