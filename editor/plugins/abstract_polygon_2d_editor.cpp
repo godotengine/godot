@@ -164,6 +164,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 			button_create->set_pressed(true);
 			button_edit->set_pressed(false);
 			button_delete->set_pressed(false);
+			button_lock->set_visible(false);
 		} break;
 		case MODE_EDIT: {
 
@@ -172,6 +173,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 			button_create->set_pressed(false);
 			button_edit->set_pressed(true);
 			button_delete->set_pressed(false);
+			button_lock->set_visible(true);
 		} break;
 		case MODE_DELETE: {
 
@@ -180,6 +182,11 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 			button_create->set_pressed(false);
 			button_edit->set_pressed(false);
 			button_delete->set_pressed(true);
+			button_lock->set_visible(false);
+		} break;
+		default: {
+
+			button_lock->set_visible(false);
 		} break;
 	}
 }
@@ -190,10 +197,21 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
+			if (button_lock->get_parent() == 0) { // always make this the last, rightmost button
+
+				HBoxContainer *separator = memnew(HBoxContainer);
+				separator->set_h_size_flags(SIZE_EXPAND_FILL);
+				add_child(separator);
+
+				add_child(button_lock);
+			}
+
 			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCreate", "EditorIcons"));
 			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveEdit", "EditorIcons"));
 			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
+			button_lock->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Lock", "EditorIcons"));
 			button_edit->set_pressed(true);
+			button_lock->set_visible(true);
 
 			get_tree()->connect("node_removed", this, "_node_removed");
 
@@ -318,7 +336,12 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 				if (mb->is_pressed()) {
 
-					const PosVertex insert = closest_edge_point(gpoint);
+					PosVertex insert;
+
+					if (!edited_point.valid() && !button_lock->is_pressed()) {
+
+						insert = closest_edge_point(gpoint);
+					}
 
 					if (insert.valid()) {
 
@@ -337,6 +360,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							Vector<Vector2> vertices = _get_polygon(insert.polygon);
 							pre_move_edit = vertices;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
+							edited_point_moved = true; // do not delete
 							vertices.insert(edited_point.vertex, edited_point.pos);
 							selected_point = edited_point;
 							edge_point = PosVertex();
@@ -354,6 +378,12 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 						if (closest.valid()) {
 
+							if (closest != edited_point) {
+
+								edited_point_click_time = OS::get_singleton()->get_ticks_msec();
+								edited_point_click_gpoint = gpoint;
+								edited_point_moved = false;
+							}
 							pre_move_edit = _get_polygon(closest.polygon);
 							edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 							selected_point = closest;
@@ -368,6 +398,13 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				} else {
 
 					if (edited_point.valid()) {
+
+						if (EDITOR_DEF("editors/poly_editor/delete_points_with_lmb", false) && !button_lock->is_pressed() &&
+							!edited_point_moved && OS::get_singleton()->get_ticks_msec() - edited_point_click_time < 250) {
+
+							remove_point(edited_point);
+							return true;
+						}
 
 						//apply
 
@@ -419,6 +456,11 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)));
 			edited_point = PosVertex(edited_point, cpoint);
 
+			if (edited_point_click_gpoint != gpoint) {
+
+				edited_point_moved = true;
+			}
+
 			if (!wip_active) {
 
 				Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
@@ -430,7 +472,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			canvas_item_editor->get_viewport_control()->update();
 		} else if (mode == MODE_EDIT) {
 
-			const PosVertex onEdgeVertex = closest_edge_point(gpoint);
+			const PosVertex onEdgeVertex = button_lock->is_pressed() ? PosVertex() : closest_edge_point(gpoint);
 
 			if (onEdgeVertex.valid()) {
 
@@ -544,6 +586,9 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 		const int n_points = points.size();
 		const Color col = Color(1, 0.3, 0.1, 0.8);
 
+		Ref<Texture> handle0;
+		Vector2 handle0_pos;
+
 		for (int i = 0; i < n_points; i++) {
 
 			const Vertex vertex(j, i);
@@ -565,7 +610,21 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 			}
 
 			Ref<Texture> handle = vertex == active_point ? selected_handle : default_handle;
-			vpc->draw_texture(handle, point - handle->get_size() * 0.5);
+			Vector2 handle_pos = point - handle->get_size() * 0.5;
+			if (i > 0) {
+
+				vpc->draw_texture(handle, handle_pos);
+			} else {
+
+				handle0 = handle;
+				handle0_pos = handle_pos;
+			}
+		}
+
+		if (n_points > 0) {
+
+			// draw last, as otherwise it will get overdrawn by the last line connecting to the start pt
+			vpc->draw_texture(handle0, handle0_pos);
 		}
 	}
 
@@ -635,6 +694,8 @@ void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
 	hover_point = Vertex();
 	if (selected_point == p_vertex)
 		selected_point = Vertex();
+	if (edited_point == p_vertex)
+		edited_point = PosVertex();
 }
 
 AbstractPolygon2DEditor::Vertex AbstractPolygon2DEditor::get_active_point() const {
@@ -726,6 +787,8 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	selected_point = Vertex();
 	edge_point = PosVertex();
 
+	set_h_size_flags(SIZE_EXPAND_FILL);
+
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
 	add_child(button_create);
@@ -744,6 +807,10 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	button_delete->connect("pressed", this, "_menu_option", varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
 	button_delete->set_tooltip(TTR("Delete points"));
+
+	button_lock = memnew(ToolButton);
+	button_lock->set_toggle_mode(true);
+	button_lock->set_tooltip(TTR("Lock edges for mouse editing, i.e. disable adding and deleting points via mouse"));
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);
