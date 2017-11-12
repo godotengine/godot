@@ -503,7 +503,7 @@ private:
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
-	void _save_scene_with_preview(String p_file);
+	void _save_scene_with_preview(String p_file, int p_idx = -1);
 
 	Map<String, Set<String> > dependency_errors;
 

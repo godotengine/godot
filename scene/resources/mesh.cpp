@@ -574,7 +574,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			ERR_FAIL_COND_V(!d.has("format"), false);
 			uint32_t format = d["format"];
 
-			ERR_FAIL_COND_V(!d.has("primitive"), false);
 			uint32_t primitive = d["primitive"];
 
 			ERR_FAIL_COND_V(!d.has("vertex_count"), false);
@@ -598,8 +597,8 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			Rect3 aabb = d["aabb"];
 
 			Vector<Rect3> bone_aabb;
-			if (d.has("bone_aabb")) {
-				Array baabb = d["bone_aabb"];
+			if (d.has("skeleton_aabb")) {
+				Array baabb = d["skeleton_aabb"];
 				bone_aabb.resize(baabb.size());
 
 				for (int i = 0; i < baabb.size(); i++) {
@@ -1088,6 +1087,14 @@ void ArrayMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
 	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
+}
+
+void ArrayMesh::reload_from_file() {
+	for (int i = 0; i < get_surface_count(); i++) {
+		surface_remove(i);
+	}
+	Resource::reload_from_file();
+	String path = get_path();
 }
 
 ArrayMesh::ArrayMesh() {
