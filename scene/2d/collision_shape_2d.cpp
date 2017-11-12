@@ -58,7 +58,8 @@ void CollisionShape2D::_notification(int p_what) {
 				}
 				parent->shape_owner_set_transform(owner_id, get_transform());
 				parent->shape_owner_set_disabled(owner_id, disabled);
-				parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+				parent->shape_owner_set_one_way_collision_enabled(owner_id, one_way_collision_enabled);
+				parent->shape_owner_set_one_way_collision_angle(owner_id, one_way_collision_angle);
 			}
 
 			/*if (Engine::get_singleton()->is_editor_hint()) {
@@ -114,16 +115,22 @@ void CollisionShape2D::_notification(int p_what) {
 			rect = shape->get_rect();
 			rect = rect.grow(3);
 
-			if (one_way_collision) {
+			if (one_way_collision_enabled) {
+				// draw arrow pointing in solid direction
 				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
+				dcol.a = dcol.r;
+				dcol.r = dcol.b;
+				dcol.b = dcol.a;
 				dcol.a = 1.0;
-				Vector2 line_to(0, 20);
+				Vector2 line_to(0, -(rect.size.x + rect.size.y) / 6);
+				line_to = line_to.rotated(one_way_collision_angle);
 				draw_line(Vector2(), line_to, dcol, 3);
+
 				Vector<Vector2> pts;
-				float tsize = 8;
-				pts.push_back(line_to + (Vector2(0, tsize)));
-				pts.push_back(line_to + (Vector2(0.707 * tsize, 0)));
-				pts.push_back(line_to + (Vector2(-0.707 * tsize, 0)));
+				float tip_size = 8;
+				pts.push_back(line_to + (Vector2(0, -tip_size).rotated(one_way_collision_angle)));
+				pts.push_back(line_to + (Vector2(0.707 * tip_size, 0).rotated(one_way_collision_angle)));
+				pts.push_back(line_to + (Vector2(-0.707 * tip_size, 0).rotated(one_way_collision_angle)));
 				Vector<Color> cols;
 				for (int i = 0; i < 3; i++)
 					cols.push_back(dcol);
@@ -188,17 +195,41 @@ bool CollisionShape2D::is_disabled() const {
 	return disabled;
 }
 
-void CollisionShape2D::set_one_way_collision(bool p_enable) {
-	one_way_collision = p_enable;
+void CollisionShape2D::set_one_way_collision_enabled(bool p_enable) {
+	one_way_collision_enabled = p_enable;
 	update();
 	if (parent) {
-		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
+		parent->shape_owner_set_one_way_collision_enabled(owner_id, p_enable);
 	}
 }
 
 bool CollisionShape2D::is_one_way_collision_enabled() const {
 
-	return one_way_collision;
+	return one_way_collision_enabled;
+}
+
+void CollisionShape2D::set_one_way_collision_angle(float p_angle) {
+	one_way_collision_angle = p_angle;
+	update();
+	if (parent) {
+		parent->shape_owner_set_one_way_collision_angle(owner_id, p_angle);
+	}
+}
+
+float CollisionShape2D::get_one_way_collision_angle() const {
+	return one_way_collision_angle;
+}
+
+void CollisionShape2D::set_one_way_collision_angle_degrees(float p_angle_degrees) {
+	one_way_collision_angle = p_angle_degrees * Math_PI / 180.0;
+	update();
+	if (parent) {
+		parent->shape_owner_set_one_way_collision_angle(owner_id, one_way_collision_angle);
+	}
+}
+
+float CollisionShape2D::get_one_way_collision_angle_degrees() const {
+	return one_way_collision_angle * 180.0 / Math_PI;
 }
 
 void CollisionShape2D::_bind_methods() {
@@ -207,13 +238,18 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionShape2D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_enabled", "enabled"), &CollisionShape2D::set_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_angle", "angle"), &CollisionShape2D::set_one_way_collision_angle);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_angle"), &CollisionShape2D::get_one_way_collision_angle);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_angle_degrees", "angle_degrees"), &CollisionShape2D::set_one_way_collision_angle_degrees);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_angle_degrees"), &CollisionShape2D::get_one_way_collision_angle_degrees);
 	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape2D::_shape_changed);
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision_enabled"), "set_one_way_collision_enabled", "is_one_way_collision_enabled");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "one_way_collision_angle"), "set_one_way_collision_angle_degrees", "get_one_way_collision_angle_degrees");
 }
 
 CollisionShape2D::CollisionShape2D() {
@@ -223,5 +259,6 @@ CollisionShape2D::CollisionShape2D() {
 	owner_id = 0;
 	parent = NULL;
 	disabled = false;
-	one_way_collision = false;
+	one_way_collision_enabled = false;
+	one_way_collision_angle = 0.0;
 }

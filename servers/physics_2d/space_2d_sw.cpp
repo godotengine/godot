@@ -557,9 +557,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					const CollisionObject2DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
-					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
+					if (col_obj->is_shape_one_way_collision_enabled(shape_idx)) {
 
-						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
+						float col_total_rotation = col_obj->get_shape_one_way_collision_angle(shape_idx) + col_obj->get_transform().get_rotation() + col_obj->get_shape_transform(shape_idx).get_rotation();
+						cbk.valid_dir = Vector2(0, 1).rotated(col_total_rotation);
 						cbk.valid_depth = p_margin; //only valid depth is the collision margin
 						cbk.invalid_by_dir = 0;
 
@@ -669,7 +670,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				//test initial overlap
 				if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_xform, Vector2(), NULL, NULL, NULL, 0)) {
 
-					if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+					if (col_obj->is_shape_one_way_collision_enabled(col_shape_idx)) {
 						continue;
 					}
 
@@ -698,14 +699,16 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					}
 				}
 
-				if (col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
+				if (col_obj->is_shape_one_way_collision_enabled(col_shape_idx)) {
 
 					Vector2 cd[2];
 					Physics2DServerSW::CollCbkData cbk;
 					cbk.max = 1;
 					cbk.amount = 0;
 					cbk.ptr = cd;
-					cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
+
+					float col_total_rotation = col_obj->get_shape_one_way_collision_angle(col_shape_idx) + col_obj->get_transform().get_rotation() + col_obj->get_shape_transform(col_shape_idx).get_rotation();
+					cbk.valid_dir = Vector2(0, 1).rotated(col_total_rotation);
 
 					cbk.valid_depth = 10e20;
 
@@ -788,9 +791,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			if (excluded)
 				continue;
 
-			if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-
-				rcd.valid_dir = body_shape_xform.get_axis(1).normalized();
+			if (col_obj->is_shape_one_way_collision_enabled(shape_idx)) {
+				float col_total_rotation = col_obj->get_shape_one_way_collision_angle(shape_idx) + col_obj->get_transform().get_rotation() + col_obj->get_shape_transform(shape_idx).get_rotation();
+				rcd.valid_dir = Vector2(0, 1).rotated(col_total_rotation);
 				rcd.valid_depth = 10e20;
 			} else {
 				rcd.valid_dir = Vector2();

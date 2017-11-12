@@ -69,7 +69,9 @@
 			</argument>
 			<argument index="2" name="shape_transform" type="Transform2D">
 			</argument>
-			<argument index="3" name="one_way" type="bool" default="false">
+			<argument index="3" name="one_way_enabled" type="bool" default="false">
+			</argument>
+			<argument index="4" name="one_way_angle" type="float" default="0">
 			</argument>
 			<description>
 			</description>
@@ -163,7 +165,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="tile_get_shape_one_way" qualifiers="const">
+		<method name="tile_get_shape_one_way_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -171,6 +173,29 @@
 			<argument index="1" name="shape_id" type="int">
 			</argument>
 			<description>
+				Returns whether the given shape of the given tile uses one-way collision.
+			</description>
+		</method>
+		<method name="tile_get_shape_one_way_angle" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Returns the angle (in radians) from which the given shape of the given tile is solid from to other objects, when using one-way collision.
+			</description>
+		</method>
+		<method name="tile_get_shape_one_way_angle_degrees" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+				Returns the angle (in degrees) from which the given shape of the given tile is solid from to other objects, when using one-way collision.
 			</description>
 		</method>
 		<method name="tile_get_shape_transform" qualifiers="const">
@@ -309,16 +334,43 @@
 			<description>
 			</description>
 		</method>
-		<method name="tile_set_shape_one_way">
+		<method name="tile_set_shape_one_way_enabled">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="shape_id" type="int">
 			</argument>
-			<argument index="2" name="one_way" type="bool">
+			<argument index="2" name="one_way_enabled" type="bool">
 			</argument>
 			<description>
+				Sets the given shape of the given tile to use one-way collision.
+			</description>
+		</method>
+		<method name="tile_set_shape_one_way_angle">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="one_way_angle" type="float">
+			</argument>
+			<description>
+				Sets the angle (in radians) at which the given shape of the given tile is solid to other objects from when one-way collision is used.
+			</description>
+		</method>
+		<method name="tile_set_shape_one_way_angle_degrees">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="one_way_angle_degrees" type="float">
+			</argument>
+			<description>
+				Sets the angle (in degrees) at which the given shape of the given tile is solid to other objects from when one-way collision is used.
 			</description>
 		</method>
 		<method name="tile_set_shape_transform">

@@ -274,18 +274,19 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		}
 
 		if (!collided) {
-			oneway_disabled = false;
+			one_way_disabled = false;
 			return false;
 		}
 	}
 
-	if (oneway_disabled)
+	if (one_way_disabled)
 		return false;
 
 	//if (!prev_collided) {
 	{
 
-		if (A->is_shape_set_as_one_way_collision(shape_A)) {
+		// COLLISION ONE WAY USED
+		if (A->is_shape_one_way_collision_enabled(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
 			if (B->get_linear_velocity().dot(direction) >= 0) {
@@ -303,12 +304,13 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 			if (!valid) {
 				collided = false;
-				oneway_disabled = true;
+				one_way_disabled = true;
 				return false;
 			}
 		}
 
-		if (B->is_shape_set_as_one_way_collision(shape_B)) {
+		// COLLISION ONE WAY USED
+		if (B->is_shape_one_way_collision_enabled(shape_B)) {
 			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
 			if (A->get_linear_velocity().dot(direction) >= 0) {
@@ -325,7 +327,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			}
 			if (!valid) {
 				collided = false;
-				oneway_disabled = true;
+				one_way_disabled = true;
 				return false;
 			}
 		}
@@ -512,7 +514,7 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 	B->add_constraint(this, 1);
 	contact_count = 0;
 	collided = false;
-	oneway_disabled = false;
+	one_way_disabled = false;
 }
 
 BodyPair2DSW::~BodyPair2DSW() {

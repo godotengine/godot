@@ -190,7 +190,8 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC3(body_set_shape_as_one_way_collision, RID, int, bool);
+	FUNC3(body_set_shape_one_way_collision_enabled, RID, int, bool);
+	FUNC3(body_set_shape_one_way_collision_angle, RID, int, float);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -305,7 +306,7 @@ public:
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
 		if (tm == 0) //single unsafe
 			return memnew(T);
-		else if (tm == 1) //single saef
+		else if (tm == 1) //single safe
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
 		else //single unsafe
 			return memnew(Physics2DServerWrapMT(memnew(T), true));

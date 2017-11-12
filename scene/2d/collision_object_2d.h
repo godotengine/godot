@@ -52,11 +52,13 @@ class CollisionObject2D : public Node2D {
 
 		Vector<Shape> shapes;
 		bool disabled;
-		bool one_way_collision;
+		bool one_way_collision_enabled;
+		float one_way_collision_angle;
 
 		ShapeData() {
 			disabled = false;
-			one_way_collision = false;
+			one_way_collision_enabled = false;
+			one_way_collision_angle = 0.0;
 			owner = NULL;
 		}
 	};
@@ -90,8 +92,10 @@ public:
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
 
-	void shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable);
+	void shape_owner_set_one_way_collision_enabled(uint32_t p_owner, bool p_enable);
 	bool is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const;
+	void shape_owner_set_one_way_collision_angle(uint32_t p_owner, float p_angle);
+	float shape_owner_get_one_way_collision_angle(uint32_t p_owner) const;
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;

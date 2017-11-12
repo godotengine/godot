@@ -59,10 +59,12 @@ private:
 		Shape2DSW *shape;
 		Variant metadata;
 		bool disabled;
-		bool one_way_collision;
+		bool one_way_collision_enabled;
+		float one_way_collision_angle;
 		Shape() {
 			disabled = false;
-			one_way_collision = false;
+			one_way_collision_enabled = false;
+			one_way_collision_angle = 0.0;
 		}
 	};
 
@@ -144,14 +146,23 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) {
+	_FORCE_INLINE_ void set_shape_one_way_collision_enabled(int p_idx, bool p_one_way_collision) {
 		ERR_FAIL_INDEX(p_idx, shapes.size());
-		shapes[p_idx].one_way_collision = p_one_way_collision;
+		shapes[p_idx].one_way_collision_enabled = p_one_way_collision;
 	}
-	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
+	_FORCE_INLINE_ bool is_shape_one_way_collision_enabled(int p_idx) const {
 		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
-		return shapes[p_idx].one_way_collision;
+		return shapes[p_idx].one_way_collision_enabled;
 	}
+	_FORCE_INLINE_ void set_shape_one_way_collision_angle(int p_idx, float p_one_way_angle) {
+		ERR_FAIL_INDEX(p_idx, shapes.size());
+		shapes[p_idx].one_way_collision_angle = p_one_way_angle;
+	}
+	_FORCE_INLINE_ float get_shape_one_way_collision_angle(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx, shapes.size(), false);
+		return shapes[p_idx].one_way_collision_angle;
+	}
+
 
 	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
