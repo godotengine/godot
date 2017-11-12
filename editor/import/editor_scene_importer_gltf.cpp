@@ -1,5 +1,6 @@
 #include "editor_scene_importer_gltf.h"
 #include "io/json.h"
+#include "math_defs.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "scene/3d/camera.h"
@@ -1378,8 +1379,8 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 
 				state.nodes[skin_node]->skeleton_children.push_back(i);
 			}
-			state.skins.push_back(skin);
 		}
+		state.skins.push_back(skin);
 	}
 	print_line("total skins: " + itos(state.skins.size()));
 
@@ -1419,7 +1420,8 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 			camera.perspective = true;
 			if (d.has("perspective")) {
 				Dictionary ppt = d["perspective"];
-				camera.fov_size = ppt["yfov"];
+				// GLTF spec is in radians, Godot's camera is in degrees.
+				camera.fov_size = (double)ppt["yfov"] * 180.0 / Math_PI;
 				camera.zfar = ppt["zfar"];
 				camera.znear = ppt["znear"];
 			} else {
