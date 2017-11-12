@@ -448,6 +448,7 @@ public:
 	bool cursor_is_block_mode() const;
 
 	void set_readonly(bool p_readonly);
+	bool is_readonly() const;
 
 	void set_max_chars(int p_max_chars);
 	void set_wrap(bool p_wrap);

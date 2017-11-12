@@ -259,6 +259,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_readonly" qualifiers="const">
++			<return type="bool">
++			</return>
++			<description>
++				Return true if the text editor is in read-only mode (see [method set_readonly]).
++			</description>
++		</method>
 		<method name="is_selection_active" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -458,6 +465,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
+			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
+		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
