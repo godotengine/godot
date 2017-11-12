@@ -872,7 +872,7 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 		_find_node_types(p_node->get_child(i), count_2d, count_3d);
 }
 
-void EditorNode::_save_scene_with_preview(String p_file) {
+void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	EditorProgress save("save", TTR("Saving Scene"), 4);
 	save.step(TTR("Analyzing"), 0);
@@ -938,7 +938,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	}
 
 	save.step(TTR("Saving Scene"), 4);
-	_save_scene(p_file);
+	_save_scene(p_file, p_idx);
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
@@ -1096,10 +1096,7 @@ void EditorNode::_dialog_action(String p_file) {
 			if (file->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
 
 				_save_default_environment();
-				if (scene_idx != editor_data.get_edited_scene())
-					_save_scene(p_file, scene_idx);
-				else
-					_save_scene_with_preview(p_file);
+				_save_scene_with_preview(p_file, scene_idx);
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -1826,7 +1823,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene && scene->get_filename() != "") {
 
 				if (scene_idx != editor_data.get_edited_scene())
-					_save_scene(scene->get_filename(), scene_idx);
+					_save_scene_with_preview(scene->get_filename(), scene_idx);
 				else
 					_save_scene_with_preview(scene->get_filename());
 

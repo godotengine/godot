@@ -821,8 +821,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				scan_actions.push_back(ia);
 			}
 		}
-
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_dir->get_file_path(i));
 	}
 
 	for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -1266,7 +1264,6 @@ void EditorFileSystem::update_file(const String &p_file) {
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
 
-	EditorResourcePreview::get_singleton()->call_deferred("check_for_invalidation", p_file);
 	call_deferred("emit_signal", "filesystem_changed"); //update later
 }
 
@@ -1436,6 +1433,8 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 			r->set_import_last_modified_time(0);
 		}
 	}
+
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {

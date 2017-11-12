@@ -213,6 +213,8 @@ public:
 	void center_geometry();
 	void regen_normalmaps();
 
+	virtual void reload_from_file();
+
 	ArrayMesh();
 
 	~ArrayMesh();
