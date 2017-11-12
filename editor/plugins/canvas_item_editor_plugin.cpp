@@ -4377,7 +4377,7 @@ void CanvasItemEditorViewport::_on_select_type(Object *selected) {
 	label->set_text(vformat(TTR("Adding %s..."), type));
 }
 
-void CanvasItemEditorViewport::_on_change_type() {
+void CanvasItemEditorViewport::_on_change_type_confirmed() {
 	if (!button_group->get_pressed_button())
 		return;
 
@@ -4385,6 +4385,11 @@ void CanvasItemEditorViewport::_on_change_type() {
 	default_type = check->get_text();
 	_perform_drop_data();
 	selector->hide();
+}
+
+void CanvasItemEditorViewport::_on_change_type_closed() {
+
+	_remove_preview();
 }
 
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
@@ -4721,7 +4726,8 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 void CanvasItemEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_select_type"), &CanvasItemEditorViewport::_on_select_type);
-	ClassDB::bind_method(D_METHOD("_on_change_type"), &CanvasItemEditorViewport::_on_change_type);
+	ClassDB::bind_method(D_METHOD("_on_change_type_confirmed"), &CanvasItemEditorViewport::_on_change_type_confirmed);
+	ClassDB::bind_method(D_METHOD("_on_change_type_closed"), &CanvasItemEditorViewport::_on_change_type_closed);
 	ClassDB::bind_method(D_METHOD("_on_mouse_exit"), &CanvasItemEditorViewport::_on_mouse_exit);
 }
 
@@ -4749,7 +4755,8 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	selector = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(selector);
 	selector->set_title(TTR("Change default type"));
-	selector->connect("confirmed", this, "_on_change_type");
+	selector->connect("confirmed", this, "_on_change_type_confirmed");
+	selector->connect("popup_hide", this, "_on_change_type_closed");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	selector->add_child(vbc);
