@@ -48,16 +48,7 @@ typedef void (*GFXInitFunc)(void *ud, bool gl2, int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
 
 class OS_JavaScript : public OS_Unix {
-public:
-	struct TouchPos {
-		int id;
-		Point2 pos;
-	};
 
-private:
-	Vector<TouchPos> touch;
-	Point2 last_mouse;
-	int last_button_mask;
 	unsigned int last_id;
 	GFXInitFunc gfx_init_func;
 	void *gfx_init_ud;
@@ -167,7 +158,6 @@ public:
 	virtual String get_resource_dir() const;
 
 	void process_accelerometer(const Vector3 &p_accelerometer);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
 	void push_input(const InputEvent &p_ev);
 
 	virtual bool is_joy_known(int p_device);
