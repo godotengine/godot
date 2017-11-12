@@ -73,6 +73,8 @@ class TextEdit : public Control {
 	struct Cache {
 
 		Ref<Texture> tab_icon;
+		Ref<Texture> can_fold_icon;
+		Ref<Texture> folded_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
@@ -105,6 +107,7 @@ class TextEdit : public Control {
 		int line_spacing;
 		int line_number_w;
 		int breakpoint_gutter_width;
+		int fold_gutter_width;
 		Size2 size;
 	} cache;
 
@@ -136,6 +139,7 @@ class TextEdit : public Control {
 			int width_cache : 24;
 			bool marked : 1;
 			bool breakpoint : 1;
+			bool hidden : 1;
 			Map<int, ColorRegionInfo> region_info;
 			String data;
 		};
@@ -160,6 +164,8 @@ class TextEdit : public Control {
 		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text[p_line].breakpoint = p_breakpoint; }
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
+		void set_hidden(int p_line, bool p_hidden) { text[p_line].hidden = p_hidden; }
+		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
@@ -251,6 +257,9 @@ class TextEdit : public Control {
 	int line_length_guideline_col;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
+	bool draw_fold_gutter;
+	int fold_gutter_width;
+	bool hiding_enabled;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -324,6 +333,8 @@ class TextEdit : public Control {
 	Size2 get_minimum_size() const;
 
 	int get_row_height() const;
+
+	// int _get_fold_offset(int p_line_from, int p_line_to) const;
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -405,6 +416,16 @@ public:
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;
+	void set_line_as_hidden(int p_line, bool p_hidden);
+	bool is_line_hidden(int p_line) const;
+	void unhide_all_lines();
+	int num_lines_from(int p_line_from, int unhidden_amount) const;
+	int get_whitespace_level(int p_line) const;
+	bool can_fold(int p_line) const;
+	bool is_folded(int p_line) const;
+	void fold_line(int p_line);
+	void unfold_line(int p_line);
+
 	String get_text();
 	String get_line(int line) const;
 	void set_line(int line, String new_text);
@@ -433,7 +454,7 @@ public:
 	void center_viewport_to_cursor();
 
 	void cursor_set_column(int p_col, bool p_adjust_viewport = true);
-	void cursor_set_line(int p_row, bool p_adjust_viewport = true);
+	void cursor_set_line(int p_row, bool p_adjust_viewport = true, bool p_can_be_hidden = true);
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
@@ -537,6 +558,15 @@ public:
 
 	void set_breakpoint_gutter_width(int p_gutter_width);
 	int get_breakpoint_gutter_width() const;
+
+	void set_draw_fold_gutter(bool p_draw);
+	bool is_drawing_fold_gutter() const;
+
+	void set_fold_gutter_width(int p_gutter_width);
+	int get_fold_gutter_width() const;
+
+	void set_hiding_enabled(int p_enabled);
+	int is_hiding_enabled() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
 

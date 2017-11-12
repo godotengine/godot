@@ -712,15 +712,6 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 	ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_edit()->is_line_set_as_breakpoint(p_row));
 }
 
-static void swap_lines(TextEdit *tx, int line1, int line2) {
-	String tmp = tx->get_line(line1);
-	String tmp2 = tx->get_line(line2);
-	tx->set_line(line2, tmp);
-	tx->set_line(line1, tmp2);
-
-	tx->cursor_set_line(line2);
-}
-
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
 
 	Node *base = get_tree()->get_edited_scene_root();
@@ -850,6 +841,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					if (line_id == 0 || next_id < 0)
 						return;
 
+					if (tx->is_line_hidden(next_id))
+						tx->unfold_line(next_id);
+
 					tx->swap_lines(line_id, next_id);
 					tx->cursor_set_line(next_id);
 				}
@@ -862,6 +856,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				if (line_id == 0 || next_id < 0)
 					return;
+
+				if (tx->is_line_hidden(next_id))
+					tx->unfold_line(next_id);
 
 				tx->swap_lines(line_id, next_id);
 				tx->cursor_set_line(next_id);
@@ -891,6 +888,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
 						return;
 
+					if (tx->is_folded(next_id) || tx->is_line_hidden(next_id))
+						tx->unfold_line(next_id);
+
 					tx->swap_lines(line_id, next_id);
 					tx->cursor_set_line(next_id);
 				}
@@ -903,6 +903,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 				if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
 					return;
+
+				if (tx->is_folded(next_id) || tx->is_line_hidden(next_id))
+					tx->unfold_line(next_id);
 
 				tx->swap_lines(line_id, next_id);
 				tx->cursor_set_line(next_id);
@@ -1013,6 +1016,24 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			tx->end_complex_operation();
 			tx->update();
 
+		} break;
+		case EDIT_FOLD_LINE: {
+
+			TextEdit *tx = code_editor->get_text_edit();
+			tx->fold_line(tx->cursor_get_line());
+			tx->update();
+		} break;
+		case EDIT_UNFOLD_LINE: {
+
+			TextEdit *tx = code_editor->get_text_edit();
+			tx->unfold_line(tx->cursor_get_line());
+			tx->update();
+		} break;
+		case EDIT_UNFOLD_ALL_LINES: {
+
+			TextEdit *tx = code_editor->get_text_edit();
+			tx->unhide_all_lines();
+			tx->update();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
@@ -1398,6 +1419,9 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
+			int fold_state = 0;
+			if (row > 0 && row < tx->get_line_count() - 1)
+				fold_state = tx->can_fold(row) ? 1 : tx->is_folded(row) ? 2 : 0;
 			if (have_color) {
 
 				String line = tx->get_line(row);
@@ -1428,7 +1452,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					have_color = false;
 				}
 			}
-			_make_context_menu(have_selection, have_color);
+			_make_context_menu(have_selection, have_color, fold_state);
 		}
 	}
 }
@@ -1447,7 +1471,7 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	code_editor->get_text_edit()->set_line(color_line, new_line);
 }
 
-void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
+void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, int p_fold_state) {
 
 	context_menu->clear();
 	if (p_selection) {
@@ -1466,6 +1490,13 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+	}
+	if (p_fold_state == 1) {
+		// can fold
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_line"), EDIT_FOLD_LINE);
+	} else if (p_fold_state == 2) {
+		// can unfold
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_line"), EDIT_UNFOLD_LINE);
 	}
 	if (p_color) {
 		context_menu->add_separator();
@@ -1530,6 +1561,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_line"), EDIT_FOLD_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_line"), EDIT_UNFOLD_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 #ifdef OSX_ENABLED
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
@@ -1607,6 +1641,9 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), 0);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD | KEY_K);
 	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_B);
+	ED_SHORTCUT("script_text_editor/fold_line", TTR("Fold Line"), KEY_MASK_ALT | KEY_LEFT);
+	ED_SHORTCUT("script_text_editor/unfold_line", TTR("Unfold Line"), KEY_MASK_ALT | KEY_RIGHT);
+	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CTRL | KEY_SPACE);
 #else
