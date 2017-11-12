@@ -669,6 +669,14 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 				ASensorEventQueue_setEventRate(engine->sensorEventQueue,
 						engine->accelerometerSensor, (1000L / 60) * 1000);
 			}
+			// start monitoring gravity
+			if (engine->gravitySensor != NULL) {
+				ASensorEventQueue_enableSensor(engine->sensorEventQueue,
+						engine->gravitySensor);
+				// We'd like to get 60 events per second (in us).
+				ASensorEventQueue_setEventRate(engine->sensorEventQueue,
+						engine->gravitySensor, (1000L / 60) * 1000);
+			}
 			// Also start monitoring the magnetometer.
 			if (engine->magnetometerSensor != NULL) {
 				ASensorEventQueue_enableSensor(engine->sensorEventQueue,
@@ -693,6 +701,10 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 			if (engine->accelerometerSensor != NULL) {
 				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
 						engine->accelerometerSensor);
+			}
+			if (engine->gravitySensor != NULL) {
+				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
+						engine->gravitySensor);
 			}
 			if (engine->magnetometerSensor != NULL) {
 				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
@@ -729,6 +741,8 @@ void android_main(struct android_app *app) {
 	engine.sensorManager = ASensorManager_getInstance();
 	engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 			ASENSOR_TYPE_ACCELEROMETER);
+	engine.gravitySensor = ASensorManager_getDefaultSensor(engine.sensorManager,
+			ASENSOR_TYPE_GRAVITY);
 	engine.magnetometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 			ASENSOR_TYPE_MAGNETIC_FIELD);
 	engine.gyroscopeSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
