@@ -785,12 +785,12 @@ void ProjectSettingsEditor::_item_del() {
 	String property = globals_editor->get_current_section().plus_file(path);
 
 	if (!ProjectSettings::get_singleton()->has_setting(property)) {
-		EditorNode::get_singleton()->show_warning(TTR("No property '" + property + "' exists."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("No property '%s' exists."), property));
 		return;
 	}
 
 	if (ProjectSettings::get_singleton()->get_order(property) < ProjectSettings::NO_BUILTIN_ORDER_BASE) {
-		EditorNode::get_singleton()->show_warning(TTR("Setting '" + property + "' is internal, and it can't be deleted."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Setting '%s' is internal, and it can't be deleted."), property));
 		return;
 	}
 
