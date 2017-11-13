@@ -114,7 +114,7 @@
 				Return the text in the [code]LineEdit[/code].
 			</description>
 		</method>
-		<method name="is_context_menu_enabled" qualifiers="const">
+		<method name="is_context_menu_enabled">
 			<return type="bool">
 			</return>
 			<description>
@@ -180,7 +180,7 @@
 		<method name="set_context_menu_enabled">
 			<return type="void">
 			</return>
-			<argument index="0" name="enabled" type="bool">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 				Set the status of the context menu. When enabled, the context menu will appear when the [code]LineEdit[/code] is right clicked.
@@ -268,6 +268,9 @@
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+			If [code]true[/code] the context menu will appear when right clicked.
+		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 			If [code]false[/code] existing text cannot be modified and new text cannot be added.
 		</member>
@@ -291,9 +294,6 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
 			String value of the [LineEdit].
-		</member>
-		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
-			If [code]true[/code] the context menu will appear when right clicked.
 		</member>
 	</members>
 	<signals>
@@ -343,7 +343,9 @@
 		<constant name="MENU_UNDO" value="5">
 			Undoes the previous action.
 		</constant>
-		<constant name="MENU_MAX" value="6">
+		<constant name="MENU_REDO" value="6">
+		</constant>
+		<constant name="MENU_MAX" value="7">
 		</constant>
 	</constants>
 	<theme_items>

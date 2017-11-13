@@ -273,6 +273,12 @@
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
 			</description>
 		</method>
+		<method name="dedent">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>

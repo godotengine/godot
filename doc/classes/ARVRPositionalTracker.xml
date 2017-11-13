@@ -48,6 +48,12 @@
 				Returns the position of the controller adjusted by world scale.
 			</description>
 		</method>
+		<method name="get_rumble" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_tracks_orientation" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -78,7 +84,19 @@
 				Type of tracker.
 			</description>
 		</method>
+		<method name="set_rumble">
+			<return type="void">
+			</return>
+			<argument index="0" name="rumble" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble">
+		</member>
+	</members>
 	<constants>
 		<constant name="TRACKER_HAND_UNKNOWN" value="0">
 			The hand this tracker is held in is unknown or not applicable.

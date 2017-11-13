@@ -232,19 +232,18 @@
 				Insert a given text at the cursor position.
 			</description>
 		</method>
+		<method name="is_context_menu_enabled">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if the context menu is enabled.
+			</description>
+		</method>
 		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns true if highlight all occurrences is enabled.
-			</description>
-		</method>
-		</method>
-		<method name="is_context_menu_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the context menu is enabled.
 			</description>
 		</method>
 		<method name="is_highlight_current_line_enabled" qualifiers="const">
@@ -260,12 +259,12 @@
 			</description>
 		</method>
 		<method name="is_readonly" qualifiers="const">
-+			<return type="bool">
-+			</return>
-+			<description>
-+				Return true if the text editor is in read-only mode (see [method set_readonly]).
-+			</description>
-+		</method>
+			<return type="bool">
+			</return>
+			<description>
+				Return true if the text editor is in read-only mode (see [method set_readonly]).
+			</description>
+		</method>
 		<method name="is_selection_active" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -355,7 +354,7 @@
 		<method name="set_context_menu_enabled">
 			<return type="void">
 			</return>
-			<argument index="0" name="enabled" type="bool">
+			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
 				Set the status of the context menu. When enabled, the context menu will appear when the [code]TextEdit[/code] is right clicked.
@@ -465,17 +464,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="text" type="String" setter="set_text" getter="get_text">
-			String value of the [TextEdit].
-		</member>
-		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
-			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
-		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
 		</member>
 		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
+		</member>
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>
@@ -483,13 +478,17 @@
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 		</member>
-		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
+		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly">
+			If [code]true[/code] read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled">
 		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled">
 		</member>
 		<member name="syntax_highlighting" type="bool" setter="set_syntax_coloring" getter="is_syntax_coloring_enabled">
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text">
+			String value of the [TextEdit].
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
 		</member>

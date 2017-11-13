@@ -388,6 +388,14 @@
 				Returns the [PhysicsDirectBodyState] of the body.
 			</description>
 		</method>
+		<method name="body_get_kinematic_safe_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_get_max_contacts_reported" qualifiers="const">
 			<return type="int">
 			</return>
@@ -596,6 +604,16 @@
 			</argument>
 			<description>
 				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+			</description>
+		</method>
+		<method name="body_set_kinematic_safe_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="margin" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -1422,7 +1440,9 @@
 		<constant name="BODY_MODE_RIGID" value="2">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3">
+		<constant name="BODY_MODE_SOFT" value="3">
+		</constant>
+		<constant name="BODY_MODE_CHARACTER" value="4">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0">

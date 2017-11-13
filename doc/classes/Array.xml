@@ -82,6 +82,8 @@
 			</description>
 		</method>
 		<method name="back">
+			<return type="var">
+			</return>
 			<description>
 				Returns the last element of the array if the array is not empty (size&gt;0).
 			</description>
@@ -142,6 +144,8 @@
 			</description>
 		</method>
 		<method name="front">
+			<return type="var">
+			</return>
 			<description>
 				Returns the first element of the array if the array is not empty (size&gt;0).
 			</description>
@@ -183,11 +187,15 @@
 			</description>
 		</method>
 		<method name="pop_back">
+			<return type="var">
+			</return>
 			<description>
 				Remove the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
+			<return type="var">
+			</return>
 			<description>
 				Remove the first element of the array.
 			</description>

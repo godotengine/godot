@@ -1038,7 +1038,11 @@
 		<constant name="JOY_AXIS_7" value="7">
 			Joypad Right Trigger Analog Axis
 		</constant>
-		<constant name="JOY_AXIS_MAX" value="8">
+		<constant name="JOY_AXIS_8" value="8">
+		</constant>
+		<constant name="JOY_AXIS_9" value="9">
+		</constant>
+		<constant name="JOY_AXIS_MAX" value="10">
 		</constant>
 		<constant name="JOY_ANALOG_LX" value="0">
 			Joypad Left Stick Horizontal Axis

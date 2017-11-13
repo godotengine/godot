@@ -151,64 +151,68 @@
 		<constant name="MATH_DB2LINEAR" value="39">
 			Convert the input from decibel volume to linear volume.
 		</constant>
-		<constant name="LOGIC_MAX" value="40">
+		<constant name="MATH_WRAP" value="40">
+		</constant>
+		<constant name="MATH_WRAPF" value="41">
+		</constant>
+		<constant name="LOGIC_MAX" value="42">
 			Return the greater of the two numbers, also known as their maximum.
 		</constant>
-		<constant name="LOGIC_MIN" value="41">
+		<constant name="LOGIC_MIN" value="43">
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
-		<constant name="LOGIC_CLAMP" value="42">
+		<constant name="LOGIC_CLAMP" value="44">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to `min(max(input, range_low), range_high)`
 		</constant>
-		<constant name="LOGIC_NEAREST_PO2" value="43">
+		<constant name="LOGIC_NEAREST_PO2" value="45">
 			Return the nearest power of 2 to the input.
 		</constant>
-		<constant name="OBJ_WEAKREF" value="44">
+		<constant name="OBJ_WEAKREF" value="46">
 			Create a [WeakRef] from the input.
 		</constant>
-		<constant name="FUNC_FUNCREF" value="45">
+		<constant name="FUNC_FUNCREF" value="47">
 			Create a [FuncRef] from the input.
 		</constant>
-		<constant name="TYPE_CONVERT" value="46">
+		<constant name="TYPE_CONVERT" value="48">
 			Convert between types.
 		</constant>
-		<constant name="TYPE_OF" value="47">
+		<constant name="TYPE_OF" value="49">
 			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
-		<constant name="TYPE_EXISTS" value="48">
+		<constant name="TYPE_EXISTS" value="50">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
-		<constant name="TEXT_CHAR" value="49">
+		<constant name="TEXT_CHAR" value="51">
 			Return a character with the given ascii value.
 		</constant>
-		<constant name="TEXT_STR" value="50">
+		<constant name="TEXT_STR" value="52">
 			Convert the input to a string.
 		</constant>
-		<constant name="TEXT_PRINT" value="51">
+		<constant name="TEXT_PRINT" value="53">
 			Print the given string to the output window.
 		</constant>
-		<constant name="TEXT_PRINTERR" value="52">
+		<constant name="TEXT_PRINTERR" value="54">
 			Print the given string to the standard error output.
 		</constant>
-		<constant name="TEXT_PRINTRAW" value="53">
+		<constant name="TEXT_PRINTRAW" value="55">
 			Print the given string to the standard output, without adding a newline.
 		</constant>
-		<constant name="VAR_TO_STR" value="54">
+		<constant name="VAR_TO_STR" value="56">
 			Serialize a [Variant] to a string.
 		</constant>
-		<constant name="STR_TO_VAR" value="55">
+		<constant name="STR_TO_VAR" value="57">
 			Deserialize a [Variant] from a string serialized using [VAR_TO_STR].
 		</constant>
-		<constant name="VAR_TO_BYTES" value="56">
+		<constant name="VAR_TO_BYTES" value="58">
 			Serialize a [Variant] to a [PoolByteArray].
 		</constant>
-		<constant name="BYTES_TO_VAR" value="57">
+		<constant name="BYTES_TO_VAR" value="59">
 			Deserialize a [Variant] from a [PoolByteArray] serialized using [VAR_TO_BYTES].
 		</constant>
-		<constant name="COLORN" value="58">
+		<constant name="COLORN" value="60">
 			Return the [Color] with the given name and alpha ranging from 0 to 1. Note: names are defined in color_names.inc.
 		</constant>
-		<constant name="FUNC_MAX" value="59">
+		<constant name="FUNC_MAX" value="61">
 			The maximum value the [member function] property can have.
 		</constant>
 	</constants>

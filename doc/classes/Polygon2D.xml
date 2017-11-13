@@ -73,6 +73,12 @@
 				Return the rotation in radians of the texture polygon.
 			</description>
 		</method>
+		<method name="get_texture_rotation_degrees" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_texture_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -171,6 +177,14 @@
 			</argument>
 			<description>
 				Set the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in radians and clockwise rotation.
+			</description>
+		</method>
+		<method name="set_texture_rotation_degrees">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture_rotation" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_texture_scale">

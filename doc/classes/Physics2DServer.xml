@@ -338,10 +338,6 @@
 		<method name="body_create">
 			<return type="RID">
 			</return>
-			<argument index="0" name="mode" type="int" enum="Physics2DServer.BodyMode" default="2">
-			</argument>
-			<argument index="1" name="init_sleeping" type="bool" default="false">
-			</argument>
 			<description>
 				Creates a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
 			</description>
@@ -725,6 +721,30 @@
 				Returns whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
+		<method name="capsule_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="circle_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="concave_polygon_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="convex_polygon_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="damped_spring_joint_create">
 			<return type="RID">
 			</return>
@@ -832,6 +852,12 @@
 				Sets a joint parameter. Parameters are explained in the JOINT_PARAM* constants.
 			</description>
 		</method>
+		<method name="line_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="pin_joint_create">
 			<return type="RID">
 			</return>
@@ -845,6 +871,24 @@
 				Creates a pin joint between two bodies. If not specified, the second body is assumed to be the joint itself.
 			</description>
 		</method>
+		<method name="ray_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="rectangle_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="segment_shape_create">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void">
 			</return>
@@ -852,15 +896,6 @@
 			</argument>
 			<description>
 				Activates or deactivates the 2D physics engine.
-			</description>
-		</method>
-		<method name="shape_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="type" type="int" enum="Physics2DServer.ShapeType">
-			</argument>
-			<description>
-				Creates a shape of type SHAPE_*. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">

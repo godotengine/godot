@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBoxLine" inherits="StyleBox" category="Core" version="3.0.alpha.custom_build">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_grow" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_thickness" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_vertical" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_grow">
+			<return type="void">
+			</return>
+			<argument index="0" name="grow" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_thickness">
+			<return type="void">
+			</return>
+			<argument index="0" name="thickness" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertical">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertical" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color">
+		</member>
+		<member name="thickness" type="int" setter="set_thickness" getter="get_thickness">
+		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

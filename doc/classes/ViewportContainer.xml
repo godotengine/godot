@@ -9,6 +9,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_stretch_shrink" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_stretch_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -23,9 +29,19 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_stretch_shrink">
+			<return type="void">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled">
+		</member>
+		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink">
 		</member>
 	</members>
 	<constants>

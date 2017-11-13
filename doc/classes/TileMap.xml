@@ -59,6 +59,12 @@
 				Return true if tiles are to be centered in y coordinate (by default this is false and they are drawn from upper left cell corner).
 			</description>
 		</method>
+		<method name="get_clip_uv" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_collision_bounce" qualifiers="const">
 			<return type="float">
 			</return>
@@ -298,6 +304,14 @@
 				Set tiles to be centered in y coordinate. (by default this is false and they are drawn from upper left cell corner).
 			</description>
 		</method>
+		<method name="set_clip_uv">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_collision_bounce">
 			<return type="void">
 			</return>
@@ -450,6 +464,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_clip_uv" type="bool" setter="set_clip_uv" getter="get_clip_uv">
+		</member>
 		<member name="cell_custom_transform" type="Transform2D" setter="set_custom_transform" getter="get_custom_transform">
 			The custom [Transform2D] to be applied to the TileMap's cells.
 		</member>
