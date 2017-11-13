@@ -563,6 +563,14 @@ void AbstractPolygon2DEditor::forward_draw_over_canvas(Control *p_canvas) {
 				const Vector2 next_point = xform.xform(p2);
 				vpc->draw_line(point, next_point, col, 2);
 			}
+		}
+
+		for (int i = 0; i < n_points; i++) {
+
+			const Vertex vertex(j, i);
+
+			const Vector2 p = (vertex == edited_point) ? edited_point.pos : (points[i] + offset);
+			const Vector2 point = xform.xform(p);
 
 			Ref<Texture> handle = vertex == active_point ? selected_handle : default_handle;
 			vpc->draw_texture(handle, point - handle->get_size() * 0.5);
