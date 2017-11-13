@@ -165,7 +165,7 @@ Error ContextGL_Win::initialize() {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
 			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 			//and it shall be forward compatible so that we can only use up to date functionality
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | _WGL_CONTEXT_DEBUG_BIT_ARB,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,
 			0
 		}; //zero indicates the end of the array
 
