@@ -137,6 +137,7 @@ public:
 	int get_interface_count() const;
 	Ref<ARVRInterface> get_interface(int p_index) const;
 	Ref<ARVRInterface> find_interface(const String &p_name) const;
+	Array get_interfaces() const;
 
 	/*
 		note, more then one interface can technically be active, especially on mobile, but only one interface is used for

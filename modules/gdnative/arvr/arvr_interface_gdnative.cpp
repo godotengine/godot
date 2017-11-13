@@ -166,11 +166,11 @@ void ARVRInterfaceGDNative::uninitialize() {
 	interface->uninitialize(data);
 }
 
-Size2 ARVRInterfaceGDNative::get_recommended_render_targetsize() {
+Size2 ARVRInterfaceGDNative::get_render_targetsize() {
 
 	ERR_FAIL_COND_V(interface == NULL, Size2());
 
-	godot_vector2 result = interface->get_recommended_render_targetsize(data);
+	godot_vector2 result = interface->get_render_targetsize(data);
 	Vector2 *vec = (Vector2 *)&result;
 
 	return *vec;

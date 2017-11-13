@@ -43,7 +43,7 @@ void ARVRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &ARVRInterface::get_tracking_status);
 
-	ClassDB::bind_method(D_METHOD("get_recommended_render_targetsize"), &ARVRInterface::get_recommended_render_targetsize);
+	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &ARVRInterface::get_render_targetsize);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &ARVRInterface::is_stereo);
 
 	ADD_GROUP("Interface", "interface_");
