@@ -2115,8 +2115,6 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(WINDOW_MOVE_DOWN);
 	}
-	ERR_EXPLAIN("uh: " + p_event->as_text());
-	ERR_FAIL_COND(true);
 }
 
 void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
