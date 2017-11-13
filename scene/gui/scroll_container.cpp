@@ -347,11 +347,10 @@ void ScrollContainer::update_scrollbars() {
 	} else {
 
 		v_scroll->show();
+		v_scroll->set_max(min.height);
+		v_scroll->set_page(size.height - hmin.height);
 		scroll.y = v_scroll->get_value();
 	}
-
-	v_scroll->set_max(min.height);
-	v_scroll->set_page(size.height - hmin.height);
 
 	if (!scroll_h || min.width <= size.width - vmin.width) {
 
