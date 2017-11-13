@@ -308,7 +308,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 	if (p_id == 0) {
 		Vector<String> patches = current->get_patches();
 		ERR_FAIL_INDEX(patch_index, patches.size());
-		patch_erase->set_text(vformat(TTR("Delete patch '" + patches[patch_index].get_file() + "' from list?")));
+		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), patches[patch_index].get_file()));
 		patch_erase->popup_centered_minsize();
 	} else {
 		patch_dialog->popup_centered_ratio();

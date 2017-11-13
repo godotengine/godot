@@ -333,7 +333,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	} else if (dirAccess->dir_exists(p_path)) {
 		path = p_path;
 	} else {
-		ERR_EXPLAIN(TTR("Cannot navigate to '" + p_path + "' as it has not been found in the file system!"));
+		ERR_EXPLAIN(vformat(TTR("Cannot navigate to '%s' as it has not been found in the file system!"), p_path));
 		ERR_FAIL();
 	}
 
