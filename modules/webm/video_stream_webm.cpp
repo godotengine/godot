@@ -35,9 +35,12 @@
 #include "mkvparser/mkvparser.h"
 
 #include "os/file_access.h"
+#include "os/os.h"
 #include "project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
+
+#include "servers/audio_server.h"
 
 #include <string.h>
 
@@ -47,6 +50,8 @@ public:
 	MkvReader(const String &p_file) {
 
 		file = FileAccess::open(p_file, FileAccess::READ);
+
+		ERR_EXPLAIN("Failed loading resource: '" + p_file + "';");
 		ERR_FAIL_COND(!file);
 	}
 	~MkvReader() {
@@ -113,14 +118,14 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 	webm = memnew(WebMDemuxer(new MkvReader(file_name), 0, audio_track));
 	if (webm->isOpen()) {
 
-		video = memnew(VPXDecoder(*webm, 8)); //TODO: Detect CPU threads
+		video = memnew(VPXDecoder(*webm, OS::get_singleton()->get_processor_count()));
 		if (video->isOpen()) {
 
 			audio = memnew(OpusVorbisDecoder(*webm));
 			if (audio->isOpen()) {
 
 				audio_frame = memnew(WebMFrame);
-				pcm = (int16_t *)memalloc(sizeof(int16_t) * audio->getBufferSamples() * webm->getChannels());
+				pcm = (float *)memalloc(sizeof(float) * audio->getBufferSamples() * webm->getChannels());
 			} else {
 
 				memdelete(audio);
@@ -183,7 +188,7 @@ void VideoStreamPlaybackWebm::set_paused(bool p_paused) {
 
 	paused = p_paused;
 }
-bool VideoStreamPlaybackWebm::is_paused(bool p_paused) const {
+bool VideoStreamPlaybackWebm::is_paused() const {
 
 	return paused;
 }
@@ -222,10 +227,17 @@ Ref<Texture> VideoStreamPlaybackWebm::get_texture() {
 
 	return texture;
 }
+
 void VideoStreamPlaybackWebm::update(float p_delta) {
 
 	if ((!playing || paused) || !video)
 		return;
+
+	time += p_delta;
+
+	if (time < video_pos) {
+		return;
+	}
 
 	bool audio_buffer_full = false;
 
@@ -245,13 +257,15 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 	}
 
 	const bool hasAudio = (audio && mix_callback);
-	while ((hasAudio && (!audio_buffer_full || !has_enough_video_frames())) || (!hasAudio && video_frames_pos == 0)) {
+	while ((hasAudio && !audio_buffer_full && !has_enough_video_frames()) ||
+			(!hasAudio && video_frames_pos == 0)) {
 
-		if (hasAudio && !audio_buffer_full && audio_frame->isValid() && audio->getPCMS16(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
+		if (hasAudio && !audio_buffer_full && audio_frame->isValid() &&
+				audio->getPCMF(*audio_frame, pcm, num_decoded_samples) && num_decoded_samples > 0) {
 
 			const int mixed = mix_callback(mix_udata, pcm, num_decoded_samples);
-			if (mixed != num_decoded_samples) {
 
+			if (mixed != num_decoded_samples) {
 				samples_offset = mixed;
 				audio_buffer_full = true;
 			}
@@ -273,72 +287,61 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 			++video_frames_pos;
 	};
 
-	const double video_delay = video->getFramesDelay() * video_frame_delay;
-
-	bool want_this_frame = false;
-	while (video_frames_pos > 0 && !want_this_frame) {
+	bool video_frame_done = false;
+	while (video_frames_pos > 0 && !video_frame_done) {
 
 		WebMFrame *video_frame = video_frames[0];
-		if (video_frame->time <= time + video_delay) {
 
-			if (video->decode(*video_frame)) {
+		// It seems VPXDecoder::decode has to be executed even though we might skip this frame
+		if (video->decode(*video_frame)) {
 
-				VPXDecoder::IMAGE_ERROR err;
-				VPXDecoder::Image image;
+			VPXDecoder::IMAGE_ERROR err;
+			VPXDecoder::Image image;
 
-				while ((err = video->getImage(image)) != VPXDecoder::NO_FRAME) {
+			if (should_process(*video_frame)) {
 
-					want_this_frame = (time - video_frame->time <= video_frame_delay);
+				if ((err = video->getImage(image)) != VPXDecoder::NO_FRAME) {
 
-					if (want_this_frame) {
+					if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-						if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
+						PoolVector<uint8_t>::Write w = frame_data.write();
+						bool converted = false;
 
-							PoolVector<uint8_t>::Write w = frame_data.write();
-							bool converted = false;
+						if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
-							if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
+							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							converted = true;
+						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-								yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-								// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-								converted = true;
-							} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
+							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							converted = true;
+						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-								yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-								// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-								converted = true;
-							} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
+							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							converted = true;
+						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
 
-								yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-								// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-								converted = true;
-							} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
-
-								// 								libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-								// 								converted = true;
-							}
-
-							if (converted)
-								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data)); //Zero copy send to visual server
+							// 								libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							// 								converted = true;
 						}
 
-						break;
+						if (converted) {
+							Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
+							texture->set_data(img); //Zero copy send to visual server
+							video_frame_done = true;
+						}
 					}
 				}
 			}
-
-			video_frame_delay = video_frame->time - video_pos;
-			video_pos = video_frame->time;
-
-			memmove(video_frames, video_frames + 1, (--video_frames_pos) * sizeof(void *));
-			video_frames[video_frames_pos] = video_frame;
-		} else {
-
-			break;
 		}
-	}
 
-	time += p_delta;
+		video_pos = video_frame->time;
+		memmove(video_frames, video_frames + 1, (--video_frames_pos) * sizeof(void *));
+		video_frames[video_frames_pos] = video_frame;
+	}
 
 	if (video_frames_pos == 0 && webm->isEOS())
 		stop();
@@ -372,6 +375,11 @@ inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 	return false;
 }
 
+bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
+	const double audio_delay = AudioServer::get_singleton()->get_output_delay();
+	return video_frame.time >= time + audio_delay + delay_compensation;
+}
+
 void VideoStreamPlaybackWebm::delete_pointers() {
 
 	if (pcm)
@@ -395,34 +403,6 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 
 /**/
 
-RES ResourceFormatLoaderVideoStreamWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
-
-	Ref<VideoStreamWebm> stream = memnew(VideoStreamWebm);
-	stream->set_file(p_path);
-	if (r_error)
-		*r_error = OK;
-	return stream;
-}
-
-void ResourceFormatLoaderVideoStreamWebm::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("webm");
-}
-bool ResourceFormatLoaderVideoStreamWebm::handles_type(const String &p_type) const {
-
-	return (p_type == "VideoStream" || p_type == "VideoStreamWebm");
-}
-
-String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_path) const {
-
-	const String exl = p_path.get_extension().to_lower();
-	if (exl == "webm")
-		return "VideoStreamWebm";
-	return "";
-}
-
-/**/
-
 VideoStreamWebm::VideoStreamWebm()
 	: audio_track(0) {}
 
@@ -439,6 +419,19 @@ void VideoStreamWebm::set_file(const String &p_file) {
 
 	file = p_file;
 }
+String VideoStreamWebm::get_file() {
+
+	return file;
+}
+
+void VideoStreamWebm::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamWebm::set_file);
+	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamWebm::get_file);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_file", "get_file");
+}
+
 void VideoStreamWebm::set_audio_track(int p_track) {
 
 	audio_track = p_track;

@@ -3,6 +3,9 @@
 Import('env')
 Import('env_modules')
 
+
+stub = True
+
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
@@ -212,5 +215,9 @@ if env['builtin_opus']:
     if env['builtin_libogg']:
         env_opus.Append(CPPPATH=["#thirdparty/libogg"])
 
-# Module files
-env_opus.add_source_files(env.modules_sources, "*.cpp")
+if not stub:
+    # Module files
+    env_opus.add_source_files(env.modules_sources, "*.cpp")
+else:
+    # Module files
+    env_opus.add_source_files(env.modules_sources, "stub/register_types.cpp")

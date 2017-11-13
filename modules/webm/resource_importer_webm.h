@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_importer_webm.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,19 +27,29 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "resource_importer_webm.h"
-#include "video_stream_webm.h"
+#ifndef RESOURCEIMPORTERWEBM_H
+#define RESOURCEIMPORTERWEBM_H
 
-void register_webm_types() {
+#include "io/resource_import.h"
 
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterWebm> webm_import;
-	webm_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(webm_import);
-#endif
-	ClassDB::register_class<VideoStreamWebm>();
-}
+class ResourceImporterWebm : public ResourceImporter {
+	GDCLASS(ResourceImporterWebm, ResourceImporter)
+public:
+	virtual String get_importer_name() const;
+	virtual String get_visible_name() const;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual String get_save_extension() const;
+	virtual String get_resource_type() const;
 
-void unregister_webm_types() {
-}
+	virtual int get_preset_count() const;
+	virtual String get_preset_name(int p_idx) const;
+
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
+
+	ResourceImporterWebm();
+};
+
+#endif // RESOURCEIMPORTERWEBM_H

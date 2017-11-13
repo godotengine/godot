@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,19 +27,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
-#include "resource_importer_webm.h"
-#include "video_stream_webm.h"
-
-void register_webm_types() {
-
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterWebm> webm_import;
-	webm_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(webm_import);
-#endif
-	ClassDB::register_class<VideoStreamWebm>();
-}
-
-void unregister_webm_types() {
-}
+void register_opus_types();
+void unregister_opus_types();

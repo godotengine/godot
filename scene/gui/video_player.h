@@ -33,17 +33,24 @@
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
+#include "servers/audio_server.h"
 
 class VideoPlayer : public Control {
 
 	GDCLASS(VideoPlayer, Control);
 
+	struct Output {
+
+		AudioFrame vol;
+		int bus_index;
+		Viewport *viewport; //pointer only used for reference to previous mix
+	};
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
 
 	int sp_get_channel_count() const;
 	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer, int p_frames);
+	bool mix(AudioFrame *p_buffer, int p_frames);
 
 	RID stream_rid;
 
@@ -51,6 +58,8 @@ class VideoPlayer : public Control {
 	Ref<Image> last_frame;
 
 	AudioRBResampler resampler;
+	Vector<AudioFrame> mix_buffer;
+	int wait_resampler, wait_resampler_limit;
 
 	bool paused;
 	bool autoplay;
@@ -61,12 +70,18 @@ class VideoPlayer : public Control {
 	int buffering_ms;
 	int server_mix_rate;
 	int audio_track;
+	int bus_index;
 
-	static int _audio_mix_callback(void *p_udata, const int16_t *p_data, int p_frames);
+	StringName bus;
+
+	void _mix_audio();
+	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
+	static void _mix_audios(void *self) { reinterpret_cast<VideoPlayer *>(self)->_mix_audio(); }
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	Size2 get_minimum_size() const;
@@ -103,6 +118,9 @@ public:
 
 	void set_buffering_msec(int p_msec);
 	int get_buffering_msec() const;
+
+	void set_bus(const StringName &p_bus);
+	StringName get_bus() const;
 
 	VideoPlayer();
 	~VideoPlayer();

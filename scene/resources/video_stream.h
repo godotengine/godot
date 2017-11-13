@@ -40,7 +40,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	typedef int (*AudioMixCallback)(void *p_udata, const int16_t *p_data, int p_frames);
+	typedef int (*AudioMixCallback)(void *p_udata, const float *p_data, int p_frames);
 
 	virtual void stop() = 0;
 	virtual void play() = 0;
@@ -48,7 +48,7 @@ public:
 	virtual bool is_playing() const = 0;
 
 	virtual void set_paused(bool p_paused) = 0;
-	virtual bool is_paused(bool p_paused) const = 0;
+	virtual bool is_paused() const = 0;
 
 	virtual void set_loop(bool p_enable) = 0;
 	virtual bool has_loop() const = 0;

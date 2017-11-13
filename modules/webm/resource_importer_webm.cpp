@@ -1,9 +1,9 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  resource_importer_webm.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
@@ -27,19 +27,69 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "register_types.h"
 #include "resource_importer_webm.h"
+
+#include "io/resource_saver.h"
+#include "os/file_access.h"
+#include "scene/resources/texture.h"
 #include "video_stream_webm.h"
 
-void register_webm_types() {
+String ResourceImporterWebm::get_importer_name() const {
 
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterWebm> webm_import;
-	webm_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(webm_import);
-#endif
-	ClassDB::register_class<VideoStreamWebm>();
+	return "Webm";
 }
 
-void unregister_webm_types() {
+String ResourceImporterWebm::get_visible_name() const {
+
+	return "Webm";
+}
+void ResourceImporterWebm::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("webm");
+}
+
+String ResourceImporterWebm::get_save_extension() const {
+	return "webmstr";
+}
+
+String ResourceImporterWebm::get_resource_type() const {
+
+	return "VideoStreamWebm";
+}
+
+bool ResourceImporterWebm::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+
+	return true;
+}
+
+int ResourceImporterWebm::get_preset_count() const {
+	return 0;
+}
+String ResourceImporterWebm::get_preset_name(int p_idx) const {
+
+	return String();
+}
+
+void ResourceImporterWebm::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), true));
+}
+
+Error ResourceImporterWebm::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+
+	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
+	if (!f) {
+		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	}
+	memdelete(f);
+
+	VideoStreamWebm *stream = memnew(VideoStreamWebm);
+	stream->set_file(p_source_file);
+
+	Ref<VideoStreamWebm> webm_stream = Ref<VideoStreamWebm>(stream);
+
+	return ResourceSaver::save(p_save_path + ".webmstr", webm_stream);
+}
+
+ResourceImporterWebm::ResourceImporterWebm() {
 }
