@@ -754,7 +754,7 @@ void ItemList::_notification(int p_what) {
 
 		int width = size.width - bg->get_minimum_size().width;
 		if (scroll_bar->is_visible()) {
-			width -= mw + bg->get_margin(MARGIN_RIGHT);
+			width -= mw;
 		}
 
 		draw_style_box(bg, Rect2(Point2(), size));
@@ -1107,7 +1107,7 @@ void ItemList::_notification(int p_what) {
 		}
 
 		for (int i = 0; i < separators.size(); i++) {
-			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), Vector2(size.width - bg->get_margin(MARGIN_RIGHT), base_ofs.y + separators[i]), guide_color);
+			draw_line(Vector2(bg->get_margin(MARGIN_LEFT), base_ofs.y + separators[i]), Vector2(width, base_ofs.y + separators[i]), guide_color);
 		}
 	}
 }
