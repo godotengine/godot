@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 98, 1)
