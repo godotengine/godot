@@ -2067,7 +2067,7 @@ int Node::get_position_in_parent() const {
 	return data.pos;
 }
 
-Node *Node::_duplicate(int p_flags) const {
+Node *Node::duplicate(int p_flags) const {
 
 	Node *node = NULL;
 
@@ -2168,17 +2168,6 @@ Node *Node::_duplicate(int p_flags) const {
 	}
 
 	return node;
-}
-
-Node *Node::duplicate(int p_flags) const {
-
-	Node *dupe = _duplicate(p_flags);
-
-	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
-		_duplicate_signals(this, dupe);
-	}
-
-	return dupe;
 }
 
 void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const {

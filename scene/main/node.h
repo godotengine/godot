@@ -169,7 +169,6 @@ private:
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
-	Node *_duplicate(int p_flags) const;
 
 	Array _get_children() const;
 	Array _get_groups() const;
