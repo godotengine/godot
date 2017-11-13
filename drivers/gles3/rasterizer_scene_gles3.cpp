@@ -1888,6 +1888,11 @@ void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_disabled, bool p_rever
 void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows) {
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.scene_ubo); //bind globals ubo
+	#ifdef IPHONE_ENABLED
+		state.scene_shader.set_conditional(SceneShaderGLES3::PLATFORM_IOS, true);
+	#else
+		state.scene_shader.set_conditional(SceneShaderGLES3::PLATFORM_IOS, false);
+	#endif
 
 	bool use_radiance_map = false;
 	if (!p_shadow && !p_directional_add) {
