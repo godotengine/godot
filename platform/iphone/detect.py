@@ -48,10 +48,19 @@ def configure(env):
 
     env['ENV']['PATH'] = env['IPHONEPATH'] + "/Developer/usr/bin/:" + env['ENV']['PATH']
 
-    env['CC'] = '$IPHONEPATH/usr/bin/${ios_triple}clang'
-    env['CXX'] = '$IPHONEPATH/usr/bin/${ios_triple}clang++'
-    env['AR'] = '$IPHONEPATH/usr/bin/${ios_triple}ar'
-    env['RANLIB'] = '$IPHONEPATH/usr/bin/${ios_triple}ranlib'
+    compiler_path = '$IPHONEPATH/usr/bin/${ios_triple}'
+
+    ccache_path = os.environ.get("CCACHE")
+    if ccache_path == None:
+        env['CC'] = compiler_path + 'clang'
+        env['CXX'] = compiler_path + 'clang++'
+    else:
+        # there aren't any ccache wrappers available for iOS,
+        # to enable caching we need to prepend the path to the ccache binary
+        env['CC'] = ccache_path + ' ' + compiler_path + 'clang'
+        env['CXX'] = ccache_path + ' ' + compiler_path + 'clang++'
+    env['AR'] = compiler_path + 'ar'
+    env['RANLIB'] = compiler_path + 'ranlib'
 
     import string
     if (env["ios_sim"] == "yes" or env["arch"] == "x86"):  # i386, simulator
