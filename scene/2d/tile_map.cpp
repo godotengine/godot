@@ -459,9 +459,9 @@ void TileMap::_update_dirty_quadrants() {
 					Transform2D xform;
 					xform.set_origin(offset.floor());
 
-					_fix_cell_transform(xform, c, center_ofs, s);
+					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id, i);
 
-					xform *= shapes[i].shape_transform;
+					_fix_cell_transform(xform, c, shape_ofs + center_ofs, s);
 
 					if (debug_canvas_item.is_valid()) {
 						vs->canvas_item_add_set_transform(debug_canvas_item, xform);

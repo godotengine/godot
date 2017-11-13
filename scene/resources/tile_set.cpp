@@ -57,11 +57,9 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_region(id, p_value);
 	else if (what == "shape")
 		tile_set_shape(id, 0, p_value);
-	else if (what == "shape_offset") {
-		Transform2D xform = tile_get_shape_transform(id, 0);
-		xform.set_origin(p_value);
-		tile_set_shape_transform(id, 0, xform);
-	} else if (what == "shape_transform")
+	else if (what == "shape_offset")
+		tile_set_shape_offset(id, 0, p_value);
+	else if (what == "shape_transform")
 		tile_set_shape_transform(id, 0, p_value);
 	else if (what == "shape_one_way")
 		tile_set_shape_one_way(id, 0, p_value);
@@ -110,7 +108,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	else if (what == "shape")
 		r_ret = tile_get_shape(id, 0);
 	else if (what == "shape_offset")
-		r_ret = tile_get_shape_transform(id, 0).get_origin();
+		r_ret = tile_get_shape_offset(id, 0);
 	else if (what == "shape_transform")
 		r_ret = tile_get_shape_transform(id, 0);
 	else if (what == "shape_one_way")
@@ -311,6 +309,16 @@ Transform2D TileSet::tile_get_shape_transform(int p_id, int p_shape_id) const {
 		return tile_map[p_id].shapes_data[p_shape_id].shape_transform;
 
 	return Transform2D();
+}
+
+void TileSet::tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset) {
+	Transform2D transform = tile_get_shape_transform(p_id, p_shape_id);
+	transform.set_origin(p_offset);
+	tile_set_shape_transform(p_id, p_shape_id, transform);
+}
+
+Vector2 TileSet::tile_get_shape_offset(int p_id, int p_shape_id) const {
+	return tile_get_shape_transform(p_id, p_shape_id).get_origin();
 }
 
 void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_way) {
