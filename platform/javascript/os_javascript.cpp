@@ -166,14 +166,15 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	}
 
 	int mask = _input->get_mouse_button_mask();
+	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
 		// since the event is consumed, focus manually
 		if (!is_canvas_focused()) {
 			focus_canvas();
 		}
-		mask |= ev->get_button_index();
-	} else if (mask & ev->get_button_index()) {
-		mask &= ~ev->get_button_index();
+		mask |= button_flag;
+	} else if (mask & button_flag) {
+		mask &= ~button_flag;
 	} else {
 		// release event, but press was outside the canvas, so ignore
 		return false;
