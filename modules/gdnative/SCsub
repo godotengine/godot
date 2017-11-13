@@ -43,7 +43,7 @@ def _build_gdnative_api_struct_header(api):
         'typedef struct godot_gdnative_api_struct {',
         '\tunsigned int type;',
         '\tgodot_gdnative_api_version version;',
-        '\tconst godot_gdnative_api_struct *next;',
+        '\tconst struct godot_gdnative_api_struct *next;',
         '} godot_gdnative_api_struct;',
         '',
         'enum GDNATIVE_API_TYPES {',
