@@ -860,6 +860,14 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node *, Node *> &duplimap) {
 		node->set(name, value);
 	}
 
+	List<Connection> conns;
+	p_node->get_all_signal_connections(&conns);
+	for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
+		if (E->get().flags & CONNECT_PERSIST) {
+			node->connect(E->get().signal, E->get().target, E->get().method, E->get().binds, E->get().flags);
+		}
+	}
+
 	List<Node::GroupInfo> group_info;
 	p_node->get_groups(&group_info);
 	for (List<Node::GroupInfo>::Element *E = group_info.front(); E; E = E->next()) {
