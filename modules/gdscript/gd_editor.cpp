@@ -365,7 +365,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 		}
 		s += " ";
 	}
-	s += "):\n\tpass # replace with function body\n";
+	s += "):\n" + _get_indentation() + "pass # replace with function body\n";
 
 	return s;
 }
