@@ -55,6 +55,7 @@ class ImportDock : public VBoxContainer {
 
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
+	void _update_options(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 
 	void _reimport();
 
