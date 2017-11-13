@@ -848,7 +848,7 @@ void Object::notification(int p_notification, bool p_reversed) {
 
 	_notificationv(p_notification, p_reversed);
 
-	if (script_instance) {
+	if (script_instance && p_notification != NOTIFICATION_PREDELETE) {
 		script_instance->notification(p_notification);
 	}
 }
