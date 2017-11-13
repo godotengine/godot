@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "gd_script.h"
 
+#include "engine.h"
 #include "gd_compiler.h"
 #include "global_constants.h"
 #include "io/file_access_encrypted.h"
@@ -1347,9 +1348,9 @@ void GDScriptLanguage::init() {
 
 	//populate singletons
 
-	List<ProjectSettings::Singleton> singletons;
-	ProjectSettings::get_singleton()->get_singletons(&singletons);
-	for (List<ProjectSettings::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+	List<Engine::Singleton> singletons;
+	Engine::get_singleton()->get_singletons(&singletons);
+	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 
 		_add_global(E->get().name, E->get().ptr);
 	}

@@ -45,14 +45,6 @@ class ProjectSettings : public Object {
 public:
 	typedef Map<String, Variant> CustomMap;
 
-	struct Singleton {
-		StringName name;
-		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL)
-			: name(p_name),
-			  ptr(p_ptr) {
-		}
-	};
 	enum {
 		//properties that are not for built in values begin from this value, so builtin ones are displayed first
 		NO_BUILTIN_ORDER_BASE = 1 << 16
@@ -106,9 +98,6 @@ protected:
 	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
-	List<Singleton> singletons;
-	Map<StringName, Object *> singleton_ptrs;
-
 	Error _save_custom_bnd(const String &p_file);
 
 	bool _load_resource_pack(const String &p_pack);
@@ -145,17 +134,11 @@ public:
 	Error save();
 	void set_custom_property_info(const String &p_prop, const PropertyInfo &p_info);
 
-	void add_singleton(const Singleton &p_singleton);
-	void get_singletons(List<Singleton> *p_singletons);
-
-	bool has_singleton(const String &p_name) const;
-
 	Vector<String> get_optimizer_presets() const;
 
 	List<String> get_input_presets() const { return input_presets; }
 
 	void set_disable_feature_overrides(bool p_disable);
-	Object *get_singleton_object(const String &p_name) const;
 
 	void register_global_defaults();
 

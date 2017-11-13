@@ -100,6 +100,32 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
+void Engine::add_singleton(const Singleton &p_singleton) {
+
+	singletons.push_back(p_singleton);
+	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
+}
+
+Object *Engine::get_singleton_object(const String &p_name) const {
+
+	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
+	if (!E)
+		return NULL;
+	else
+		return E->get();
+};
+
+bool Engine::has_singleton(const String &p_name) const {
+
+	return get_singleton_object(p_name) != NULL;
+};
+
+void Engine::get_singletons(List<Singleton> *p_singletons) {
+
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
+		p_singletons->push_back(E->get());
+}
+
 Engine *Engine::singleton = NULL;
 
 Engine *Engine::get_singleton() {

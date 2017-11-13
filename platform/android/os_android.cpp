@@ -641,7 +641,7 @@ String OS_Android::get_data_dir() const {
 	}
 
 	return ".";
-	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return Engine::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
