@@ -1300,7 +1300,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && motion_mask != Vector3()); // Disable local transformation for TRANSFORM_VIEW
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
 						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1309,10 +1309,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 							Vector3 motion_snapped = motion;
 							motion_snapped.snap(Vector3(snap, snap, snap));
-							set_message(TTR("Scaling XYZ: ") + motion_snapped);
+							set_message(TTR("Scaling: ") + motion_snapped);
 
 						} else {
-							set_message(TTR("Scaling XYZ: ") + motion);
+							set_message(TTR("Scaling: ") + motion);
 						}
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -1426,7 +1426,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && motion_mask != Vector3()); // Disable local transformation for TRANSFORM_VIEW
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
 						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1536,7 +1536,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = spatial_editor->are_local_coords_enabled();
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
 						for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
