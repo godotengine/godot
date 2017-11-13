@@ -1255,7 +1255,6 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						Vector3 motion_mask;
 						Plane plane;
-						bool plane_mv;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
@@ -1376,7 +1375,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						Vector3 motion_mask;
 						Plane plane;
-						bool plane_mv;
+						bool plane_mv = false;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
