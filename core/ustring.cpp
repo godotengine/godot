@@ -564,7 +564,7 @@ void String::erase(int p_pos, int p_chars) {
 
 String String::capitalize() const {
 
-	String aux = this->replace("_", " ").to_lower();
+	String aux = this->camelcase_to_underscore(true).replace("_", " ").strip_edges();
 	String cap;
 	for (int i = 0; i < aux.get_slice_count(" "); i++) {
 
