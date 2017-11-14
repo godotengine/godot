@@ -109,15 +109,14 @@ void Engine::add_singleton(const Singleton &p_singleton) {
 Object *Engine::get_singleton_object(const String &p_name) const {
 
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	if (!E)
-		return NULL;
-	else
-		return E->get();
+	ERR_EXPLAIN("Failed to retrieve non-existent singleton '" + p_name + "'");
+	ERR_FAIL_COND_V(!E, NULL);
+	return E->get();
 };
 
 bool Engine::has_singleton(const String &p_name) const {
 
-	return get_singleton_object(p_name) != NULL;
+	return singleton_ptrs.has(p_name);
 };
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
