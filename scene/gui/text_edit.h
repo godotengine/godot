@@ -464,6 +464,7 @@ public:
 	void select_all();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 	void deselect();
+	void swap_lines(int line1, int line2);
 
 	void set_search_text(const String &p_search_text);
 	void set_search_flags(uint32_t p_flags);
