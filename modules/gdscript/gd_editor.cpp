@@ -58,6 +58,24 @@ String GDScriptLanguage::get_template(const String &p_class_name, const String &
 	return _template.replace("%BASE%", p_base_class_name);
 }
 
+String GDScriptLanguage::get_empty_template(const String &p_class_name, const String &p_base_class_name) const {
+
+	String _template = String() +
+		"extends %BASE%\n\n";
+
+	return _template.replace("%BASE%", p_base_class_name);
+}
+
+String GDScriptLanguage::get_nocomment_template(const String &p_class_name, const String &p_base_class_name) const {
+
+	String _template = String() +
+		"extends %BASE%\n\n" +
+		"func _ready():\n" +
+		"\tpass\n";
+
+	return _template.replace("%BASE%", p_base_class_name);
+}
+
 bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
 
 	GDParser parser;

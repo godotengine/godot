@@ -123,7 +123,17 @@ void ScriptCreateDialog::_create_new() {
 	if (class_name->is_editable())
 		cname = class_name->get_text();
 
-	String text = ScriptServer::get_language(language_menu->get_selected())->get_template(cname, parent_name->get_text());
+	String text;
+	if (template_select==0) {
+		text = ScriptServer::get_language(language_menu->get_selected())->get_template(cname, parent_name->get_text());
+	} else if (template_select==1) {
+		text = ScriptServer::get_language(language_menu->get_selected())->get_empty_template(cname, parent_name->get_text());
+	} else if (template_select == 2) {
+		text = ScriptServer::get_language(language_menu->get_selected())->get_nocomment_template(cname, parent_name->get_text());
+	} else {
+		text = ScriptServer::get_language(language_menu->get_selected())->get_template(cname, parent_name->get_text());
+	}
+
 	Script *script = ScriptServer::get_language(language_menu->get_selected())->create_script();
 	script->set_source_code(text);
 	if (cname != "")
@@ -207,6 +217,11 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	}
 	file_path->set_text(path);
 	_class_name_changed(class_name->get_text());
+}
+
+void ScriptCreateDialog::_template_changed(int p_template) {
+
+	template_select = p_template;
 }
 
 void ScriptCreateDialog::_built_in_pressed() {
@@ -330,6 +345,7 @@ void ScriptCreateDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_class_name_changed", &ScriptCreateDialog::_class_name_changed);
 	ObjectTypeDB::bind_method("_lang_changed", &ScriptCreateDialog::_lang_changed);
+	ObjectTypeDB::bind_method("_template_changed", &ScriptCreateDialog::_template_changed);
 	ObjectTypeDB::bind_method("_built_in_pressed", &ScriptCreateDialog::_built_in_pressed);
 	ObjectTypeDB::bind_method("_browse_path", &ScriptCreateDialog::_browse_path);
 	ObjectTypeDB::bind_method("_file_selected", &ScriptCreateDialog::_file_selected);
@@ -370,6 +386,15 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu->select(0);
 	language_menu->connect("item_selected", this, "_lang_changed");
 
+	template_menu = memnew(OptionButton);
+	vb->add_margin_child(TTR("Template"), template_menu);
+
+	template_menu->add_item(TTR("Default"));
+	template_menu->add_item(TTR("Empty GD File"));
+	template_menu->add_item(TTR("No Comment GD File"));
+
+	template_menu->select(0);
+	template_menu->connect("item_selected", this, "_template_changed");
 	//parent_name->set_text();
 
 	vb2 = memnew(VBoxContainer);

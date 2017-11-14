@@ -44,6 +44,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *path_error_label;
 	LineEdit *parent_name;
 	OptionButton *language_menu;
+	OptionButton *template_menu;
 	LineEdit *file_path;
 	EditorFileDialog *file_browse;
 	CheckButton *internal;
@@ -52,9 +53,11 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool path_valid;
 	bool create_new;
 	String initial_bp;
+	int template_select;
 
 	void _path_changed(const String &p_path = String());
 	void _lang_changed(int l = 0);
+	void _template_changed(int l = 0);
 	void _built_in_pressed();
 	bool _validate(const String &p_strin);
 	void _class_name_changed(const String &p_name);
