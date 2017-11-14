@@ -30,6 +30,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/print_string.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_about.h"
@@ -609,6 +610,9 @@ private:
 	void _license_tree_selected();
 
 	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
+
+	PrintHandlerList print_handler;
+	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 
 protected:
 	void _notification(int p_what);
