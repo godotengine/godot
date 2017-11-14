@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "visual_script_nodes.h"
 
+#include "engine.h"
 #include "global_constants.h"
 #include "os/input.h"
 #include "os/os.h"
@@ -1976,13 +1977,13 @@ public:
 VisualScriptNodeInstance *VisualScriptEngineSingleton::instance(VisualScriptInstance *p_instance) {
 
 	VisualScriptNodeInstanceEngineSingleton *instance = memnew(VisualScriptNodeInstanceEngineSingleton);
-	instance->singleton = ProjectSettings::get_singleton()->get_singleton_object(singleton);
+	instance->singleton = Engine::get_singleton()->get_singleton_object(singleton);
 	return instance;
 }
 
 VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output_type(TypeGuess *p_inputs, int p_output) const {
 
-	Object *obj = ProjectSettings::get_singleton()->get_singleton_object(singleton);
+	Object *obj = Engine::get_singleton()->get_singleton_object(singleton);
 	TypeGuess tg;
 	tg.type = Variant::OBJECT;
 	if (obj) {
@@ -2000,11 +2001,11 @@ void VisualScriptEngineSingleton::_bind_methods() {
 
 	String cc;
 
-	List<ProjectSettings::Singleton> singletons;
+	List<Engine::Singleton> singletons;
 
-	ProjectSettings::get_singleton()->get_singletons(&singletons);
+	Engine::get_singleton()->get_singletons(&singletons);
 
-	for (List<ProjectSettings::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
+	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		if (E->get().name == "VS" || E->get().name == "PS" || E->get().name == "PS2D" || E->get().name == "AS" || E->get().name == "TS" || E->get().name == "SS" || E->get().name == "SS2D")
 			continue; //skip these, too simple named
 

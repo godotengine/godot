@@ -31,12 +31,12 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
+#include "engine.h"
 #include "global_constants.h"
 #include "io/compression.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "project_settings.h"
 #include "ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
@@ -1169,7 +1169,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 			output.push_back("Object* ");
 			output.push_back(singleton_icall_name);
-			output.push_back("() " OPEN_BLOCK "\treturn ProjectSettings::get_singleton()->get_singleton_object(\"");
+			output.push_back("() " OPEN_BLOCK "\treturn Engine::get_singleton()->get_singleton_object(\"");
 			output.push_back(itype.proxy_name);
 			output.push_back("\");\n" CLOSE_BLOCK "\n");
 		}
@@ -1505,7 +1505,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
-		itype.is_singleton = ProjectSettings::get_singleton()->has_singleton(itype.proxy_name);
+		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
 		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
 		itype.is_reference = ClassDB::is_parent_class(type_cname, refclass_name);
 		itype.memory_own = itype.is_reference;

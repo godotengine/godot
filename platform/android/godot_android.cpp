@@ -35,6 +35,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include "engine.h"
 #include "file_access_android.h"
 #include "main/main.h"
 #include "os_android.h"
@@ -842,7 +843,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerSingleton(JNIEnv
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname] = s;
 
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton(singname, s));
+	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
 }
 
 static Variant::Type get_jni_type(const String &p_type) {

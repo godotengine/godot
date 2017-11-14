@@ -670,6 +670,9 @@ public:
 
 	bool is_in_physics_frame() const;
 
+	bool has_singleton(const String &p_name) const;
+	Object *get_singleton_object(const String &p_name) const;
+
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
