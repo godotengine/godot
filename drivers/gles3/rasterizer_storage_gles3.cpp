@@ -2866,7 +2866,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 		glGenBuffers(1, &surface->vertex_id);
 		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
 		if (p_format & VS::ARRAY_FORMAT_INDEX) {
@@ -3102,6 +3102,22 @@ VS::BlendShapeMode RasterizerStorageGLES3::mesh_get_blend_shape_mode(RID p_mesh)
 	ERR_FAIL_COND_V(!mesh, VS::BLEND_SHAPE_MODE_NORMALIZED);
 
 	return mesh->blend_shape_mode;
+}
+
+void RasterizerStorageGLES3::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_surface, mesh->surfaces.size());
+
+	int total_size = p_data.size();
+	ERR_FAIL_COND(p_offset + total_size > mesh->surfaces[p_surface]->array_byte_size);
+
+	PoolVector<uint8_t>::Read r = p_data.read();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->array_id);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, total_size, r.ptr());
+	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 }
 
 void RasterizerStorageGLES3::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
