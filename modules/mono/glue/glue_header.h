@@ -35,10 +35,10 @@
 
 #include "bind/core_bind.h"
 #include "class_db.h"
+#include "engine.h"
 #include "io/marshalls.h"
 #include "object.h"
 #include "os/os.h"
-#include "project_settings.h"
 #include "reference.h"
 #include "variant_parser.h"
 

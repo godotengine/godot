@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "os_javascript.h"
 
+#include "core/engine.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "core/project_settings.h"
 #include "dom_keys.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -514,7 +514,7 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaScript", javascript_eval));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaScript", javascript_eval));
 #endif
 
 	visual_server->init();
@@ -896,7 +896,6 @@ String OS_JavaScript::get_data_dir() const {
 		return get_data_dir_func();
 	*/
 	return "/userfs";
-	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 String OS_JavaScript::get_executable_path() const {

@@ -33,6 +33,7 @@
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
@@ -61,9 +62,9 @@ public:
 	ShaderTextEditor();
 };
 
-class ShaderEditor : public VBoxContainer {
+class ShaderEditor : public PanelContainer {
 
-	GDCLASS(ShaderEditor, VBoxContainer);
+	GDCLASS(ShaderEditor, PanelContainer);
 
 	enum {
 
@@ -73,6 +74,14 @@ class ShaderEditor : public VBoxContainer {
 		EDIT_COPY,
 		EDIT_PASTE,
 		EDIT_SELECT_ALL,
+		EDIT_MOVE_LINE_UP,
+		EDIT_MOVE_LINE_DOWN,
+		EDIT_INDENT_LEFT,
+		EDIT_INDENT_RIGHT,
+		EDIT_DELETE_LINE,
+		EDIT_CLONE_DOWN,
+		EDIT_TOGGLE_COMMENT,
+		EDIT_COMPLETE,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -84,6 +93,7 @@ class ShaderEditor : public VBoxContainer {
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
 	MenuButton *settings_menu;
+	PopupMenu *context_menu;
 	uint64_t idle;
 
 	GotoLineDialog *goto_line_dialog;
@@ -100,6 +110,8 @@ class ShaderEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _make_context_menu(bool p_selection);
+	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 
 public:
 	void apply_shaders();
@@ -110,7 +122,7 @@ public:
 	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
 
-	ShaderEditor();
+	ShaderEditor(EditorNode *p_node);
 };
 
 class ShaderEditorPlugin : public EditorPlugin {

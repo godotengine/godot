@@ -38,66 +38,69 @@
 #include "gdnative/gdnative.h"
 #include "gdnative_api_struct.gen.h"
 
+#include "io/config_file.h"
+
+class GDNativeLibraryResourceLoader;
+class GDNative;
+
 class GDNativeLibrary : public Resource {
 	GDCLASS(GDNativeLibrary, Resource)
 
-	enum Platform {
-		X11_32BIT,
-		X11_64BIT,
-		WINDOWS_32BIT,
-		WINDOWS_64BIT,
-		// NOTE(karroffel): I heard OSX 32 bit is dead, so 64 only
-		OSX,
+	static Map<String, Vector<Ref<GDNative> > > *loaded_libraries;
 
-		// Android .so files must be located in directories corresponding to Android ABI names:
-		// https://developer.android.com/ndk/guides/abis.html
-		// Android runtime will select the matching library depending on the device.
-		// The value here must simply point to the .so name, for example:
-		// "res://libmy_gdnative.so" or "libmy_gdnative.so",
-		// while in the project the actual paths can be "lib/android/armeabi-v7a/libmy_gdnative.so",
-		// "lib/android/arm64-v8a/libmy_gdnative.so".
-		ANDROID,
+	friend class GDNativeLibraryResourceLoader;
+	friend class GDNative;
 
-		IOS_32BIT,
-		IOS_64BIT,
+	Ref<ConfigFile> config_file;
 
-		// TODO(karroffel): figure out how to deal with web stuff at all...
-		WASM,
+	String current_library_path;
+	Vector<String> current_dependencies;
+	bool current_library_statically_linked;
 
-		// TODO(karroffel): does UWP have different libs??
-		// UWP,
-
-		NUM_PLATFORMS
-
-	};
-
-	static String platform_names[NUM_PLATFORMS + 1];
-	static String platform_lib_ext[NUM_PLATFORMS + 1];
-
-	static Platform current_platform;
-
-	String library_paths[NUM_PLATFORMS];
-
-	bool singleton_gdnative;
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool singleton;
+	bool load_once;
+	String symbol_prefix;
 
 public:
 	GDNativeLibrary();
 	~GDNativeLibrary();
 
+	_FORCE_INLINE_ Ref<ConfigFile> get_config_file() { return config_file; }
+
+	// things that change per-platform
+	// so there are no setters for this
+	_FORCE_INLINE_ String get_current_library_path() const {
+		return current_library_path;
+	}
+	_FORCE_INLINE_ Vector<String> get_current_dependencies() const {
+		return current_dependencies;
+	}
+	_FORCE_INLINE_ bool is_current_library_statically_linked() const {
+		return current_library_statically_linked;
+	}
+
+	// things that are a property of the library itself, not platform specific
+	_FORCE_INLINE_ bool should_load_once() const {
+		return load_once;
+	}
+	_FORCE_INLINE_ bool is_singleton() const {
+		return singleton;
+	}
+	_FORCE_INLINE_ String get_symbol_prefix() const {
+		return symbol_prefix;
+	}
+
+	_FORCE_INLINE_ void set_load_once(bool p_load_once) {
+		load_once = p_load_once;
+	}
+	_FORCE_INLINE_ void set_singleton(bool p_singleton) {
+		singleton = p_singleton;
+	}
+	_FORCE_INLINE_ void set_symbol_prefix(String p_symbol_prefix) {
+		symbol_prefix = p_symbol_prefix;
+	}
+
 	static void _bind_methods();
-
-	void set_library_path(StringName p_platform, String p_path);
-	String get_library_path(StringName p_platform) const;
-
-	String get_active_library_path() const;
-
-	_FORCE_INLINE_ bool is_singleton_gdnative() const { return singleton_gdnative; }
-	_FORCE_INLINE_ void set_singleton_gdnative(bool p_singleton) { singleton_gdnative = p_singleton; }
 };
 
 typedef godot_variant (*native_call_cb)(void *, godot_array *);
@@ -124,10 +127,9 @@ class GDNative : public Reference {
 
 	Ref<GDNativeLibrary> library;
 
-	// TODO(karroffel): different platforms? WASM????
 	void *native_handle;
 
-	void _compile_dummy_for_api();
+	bool initialized;
 
 public:
 	GDNative();
@@ -146,6 +148,21 @@ public:
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 
 	Error get_symbol(StringName p_procedure_name, void *&r_handle);
+};
+
+class GDNativeLibraryResourceLoader : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
+
+class GDNativeLibraryResourceSaver : public ResourceFormatSaver {
+public:
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
+	virtual bool recognize(const RES &p_resource) const;
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 };
 
 #endif // GDNATIVE_H

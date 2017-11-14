@@ -5533,6 +5533,10 @@ EditorNode::EditorNode() {
 		spatial_mat_convert.instance();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
 
+		Ref<CanvasItemMaterialConversionPlugin> canvas_item_mat_convert;
+		canvas_item_mat_convert.instance();
+		resource_conversion_plugins.push_back(canvas_item_mat_convert);
+
 		Ref<ParticlesMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instance();
 		resource_conversion_plugins.push_back(particles_mat_convert);

@@ -4,7 +4,7 @@
 		Contains the results of a regex search.
 	</brief_description>
 	<description>
-		Contains the results of a regex search. [method RegEx.search] returns an instance of [code]RegExMatch[/code] if it finds the search pattern in the [source] string.
+		Contains the results of a single regex match returned by [method RegEx.search] and [method.RegEx.search_all]. It can be used to find the position and range of the match and its capturing groups, and it can extract its sub-string for you.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,21 +17,22 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the end position of the match in the [source] string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the end position of the match within the source string. The end position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns -1 if the group did not match or doesn't exist.
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of numeric capturing groups.
+				Returns the number of capturing groups.
 			</description>
 		</method>
 		<method name="get_names" qualifiers="const">
 			<return type="Dictionary">
 			</return>
 			<description>
-				Returns an array of names of named capturing groups.
+				Returns a dictionary of named groups and its corresponding group number. Only groups with that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
 			</description>
 		</method>
 		<method name="get_start" qualifiers="const">
@@ -40,7 +41,8 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the starting position of the match in the [source] string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the starting position of the match within the source string. The starting position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns -1 if the group did not match or doesn't exist.
 			</description>
 		</method>
 		<method name="get_string" qualifiers="const">
@@ -49,21 +51,22 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the result of the match in the [source] string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the substring of the match from the source string. Capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns an empty string if the group did not match or doesn't exist.
 			</description>
 		</method>
 		<method name="get_strings" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of the matches in the [source] string.
+				Returns an [Array] of the match and its capturing groups.
 			</description>
 		</method>
 		<method name="get_subject" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the [source] string used with the search pattern to find this matching result.
+				Returns the source string used with the search pattern to find this matching result.
 			</description>
 		</method>
 	</methods>

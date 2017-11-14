@@ -850,7 +850,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					if (line_id == 0 || next_id < 0)
 						return;
 
-					swap_lines(tx, line_id, next_id);
+					tx->swap_lines(line_id, next_id);
+					tx->cursor_set_line(next_id);
 				}
 				int from_line_up = from_line > 0 ? from_line - 1 : from_line;
 				int to_line_up = to_line > 0 ? to_line - 1 : to_line;
@@ -862,7 +863,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (line_id == 0 || next_id < 0)
 					return;
 
-				swap_lines(tx, line_id, next_id);
+				tx->swap_lines(line_id, next_id);
+				tx->cursor_set_line(next_id);
 			}
 			tx->end_complex_operation();
 			tx->update();
@@ -889,7 +891,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
 						return;
 
-					swap_lines(tx, line_id, next_id);
+					tx->swap_lines(line_id, next_id);
+					tx->cursor_set_line(next_id);
 				}
 				int from_line_down = from_line < tx->get_line_count() ? from_line + 1 : from_line;
 				int to_line_down = to_line < tx->get_line_count() ? to_line + 1 : to_line;
@@ -901,7 +904,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
 					return;
 
-				swap_lines(tx, line_id, next_id);
+				tx->swap_lines(line_id, next_id);
+				tx->cursor_set_line(next_id);
 			}
 			tx->end_complex_operation();
 			tx->update();

@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _rect3_api_anchor() {}
-
 void GDAPI godot_rect3_new(godot_rect3 *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size) {
 	const Vector3 *pos = (const Vector3 *)p_pos;
 	const Vector3 *size = (const Vector3 *)p_size;

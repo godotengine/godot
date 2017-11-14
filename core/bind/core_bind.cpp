@@ -2592,6 +2592,16 @@ bool _Engine::is_in_physics_frame() const {
 	return Engine::get_singleton()->is_in_physics_frame();
 }
 
+bool _Engine::has_singleton(const String &p_name) const {
+
+	return Engine::get_singleton()->has_singleton(p_name);
+}
+
+Object *_Engine::get_singleton_object(const String &p_name) const {
+
+	return Engine::get_singleton()->get_singleton_object(p_name);
+}
+
 void _Engine::set_editor_hint(bool p_enabled) {
 
 	Engine::get_singleton()->set_editor_hint(p_enabled);
@@ -2620,6 +2630,9 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
 
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &_Engine::is_in_physics_frame);
+
+	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &_Engine::has_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &_Engine::get_singleton_object);
 
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);

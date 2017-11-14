@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "script_debugger_remote.h"
 
+#include "engine.h"
 #include "io/ip.h"
 #include "io/marshalls.h"
 #include "os/input.h"
@@ -939,7 +940,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote()
 	  tcp_client(StreamPeerTCP::create_ref()),
 	  packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
 	  last_perf_time(0),
-	  performance(ProjectSettings::get_singleton()->get_singleton_object("Performance")),
+	  performance(Engine::get_singleton()->get_singleton_object("Performance")),
 	  requested_quit(false),
 	  mutex(Mutex::create()),
 	  max_cps(GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second")),

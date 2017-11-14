@@ -37,159 +37,54 @@
 
 #include "scene/main/scene_tree.h"
 
-const String init_symbol = "godot_gdnative_init";
-const String terminate_symbol = "godot_gdnative_terminate";
+const String init_symbol = "gdnative_init";
+const String terminate_symbol = "gdnative_terminate";
+const String default_symbol_prefix = "godot_";
 
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
 
-String GDNativeLibrary::platform_names[NUM_PLATFORMS + 1] = {
-	"X11_32bit",
-	"X11_64bit",
-	"Windows_32bit",
-	"Windows_64bit",
-	"OSX",
+Map<String, Vector<Ref<GDNative> > > *GDNativeLibrary::loaded_libraries = NULL;
 
-	"Android",
+GDNativeLibrary::GDNativeLibrary() {
+	config_file.instance();
 
-	"iOS_32bit",
-	"iOS_64bit",
+	symbol_prefix = default_symbol_prefix;
 
-	"WebAssembly",
-
-	""
-};
-String GDNativeLibrary::platform_lib_ext[NUM_PLATFORMS + 1] = {
-	"so",
-	"so",
-	"dll",
-	"dll",
-	"dylib",
-
-	"so",
-
-	"dylib",
-	"dylib",
-
-	"wasm",
-
-	""
-};
-
-GDNativeLibrary::Platform GDNativeLibrary::current_platform =
-#if defined(X11_ENABLED)
-		(sizeof(void *) == 8 ? X11_64BIT : X11_32BIT);
-#elif defined(WINDOWS_ENABLED)
-		(sizeof(void *) == 8 ? WINDOWS_64BIT : WINDOWS_32BIT);
-#elif defined(OSX_ENABLED)
-		OSX;
-#elif defined(IPHONE_ENABLED)
-		(sizeof(void *) == 8 ? IOS_64BIT : IOS_32BIT);
-#elif defined(ANDROID_ENABLED)
-		ANDROID;
-#elif defined(JAVASCRIPT_ENABLED)
-		WASM;
-#else
-		NUM_PLATFORMS;
-#endif
-
-GDNativeLibrary::GDNativeLibrary()
-	: library_paths(), singleton_gdnative(false) {
+	if (GDNativeLibrary::loaded_libraries == NULL) {
+		GDNativeLibrary::loaded_libraries = memnew((Map<String, Vector<Ref<GDNative> > >));
+	}
 }
 
 GDNativeLibrary::~GDNativeLibrary() {
 }
 
 void GDNativeLibrary::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_library_path", "platform", "path"), &GDNativeLibrary::set_library_path);
-	ClassDB::bind_method(D_METHOD("get_library_path", "platform"), &GDNativeLibrary::get_library_path);
-	ClassDB::bind_method(D_METHOD("get_active_library_path"), &GDNativeLibrary::get_active_library_path);
+	ClassDB::bind_method(D_METHOD("get_config_file"), &GDNativeLibrary::get_config_file);
 
-	ClassDB::bind_method(D_METHOD("is_singleton_gdnative"), &GDNativeLibrary::is_singleton_gdnative);
-	ClassDB::bind_method(D_METHOD("set_singleton_gdnative", "singleton"), &GDNativeLibrary::set_singleton_gdnative);
+	ClassDB::bind_method(D_METHOD("get_current_library_path"), &GDNativeLibrary::get_current_library_path);
+	ClassDB::bind_method(D_METHOD("get_current_dependencies"), &GDNativeLibrary::get_current_dependencies);
+	ClassDB::bind_method(D_METHOD("is_current_library_statically_linked"), &GDNativeLibrary::is_current_library_statically_linked);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton_gdnative"), "set_singleton_gdnative", "is_singleton_gdnative");
-}
+	ClassDB::bind_method(D_METHOD("should_load_once"), &GDNativeLibrary::should_load_once);
+	ClassDB::bind_method(D_METHOD("is_singleton"), &GDNativeLibrary::is_singleton);
+	ClassDB::bind_method(D_METHOD("get_symbol_prefix"), &GDNativeLibrary::get_symbol_prefix);
 
-bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.begins_with("platform/")) {
-		set_library_path(name.get_slice("/", 1), p_value);
-		return true;
-	}
-	return false;
-}
+	ClassDB::bind_method(D_METHOD("set_load_once", "load_once"), &GDNativeLibrary::set_load_once);
+	ClassDB::bind_method(D_METHOD("set_singleton", "singleton"), &GDNativeLibrary::set_singleton);
+	ClassDB::bind_method(D_METHOD("set_symbol_prefix", "symbol_prefix"), &GDNativeLibrary::set_symbol_prefix);
 
-bool GDNativeLibrary::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.begins_with("platform/")) {
-		r_ret = get_library_path(name.get_slice("/", 1));
-		return true;
-	}
-	return false;
-}
-
-void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < NUM_PLATFORMS; i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING,
-				"platform/" + platform_names[i],
-				PROPERTY_HINT_FILE,
-				"*." + platform_lib_ext[i]));
-	}
-}
-
-void GDNativeLibrary::set_library_path(StringName p_platform, String p_path) {
-	int i;
-	for (i = 0; i <= NUM_PLATFORMS; i++) {
-		if (i == NUM_PLATFORMS) break;
-		if (platform_names[i] == p_platform) {
-			break;
-		}
-	}
-
-	if (i == NUM_PLATFORMS) {
-		ERR_EXPLAIN(String("No such platform: ") + p_platform);
-		ERR_FAIL();
-	}
-
-	library_paths[i] = p_path;
-}
-
-String GDNativeLibrary::get_library_path(StringName p_platform) const {
-	int i;
-	for (i = 0; i <= NUM_PLATFORMS; i++) {
-		if (i == NUM_PLATFORMS) break;
-		if (platform_names[i] == p_platform) {
-			break;
-		}
-	}
-
-	if (i == NUM_PLATFORMS) {
-		ERR_EXPLAIN(String("No such platform: ") + p_platform);
-		ERR_FAIL_V("");
-	}
-
-	return library_paths[i];
-}
-
-String GDNativeLibrary::get_active_library_path() const {
-	if (GDNativeLibrary::current_platform != NUM_PLATFORMS) {
-		return library_paths[GDNativeLibrary::current_platform];
-	}
-	return "";
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "symbol_prefix"), "set_symbol_prefix", "get_symbol_prefix");
 }
 
 GDNative::GDNative() {
 	native_handle = NULL;
+	initialized = false;
 }
 
 GDNative::~GDNative() {
-}
-
-extern "C" void _api_anchor();
-
-void GDNative::_compile_dummy_for_api() {
-	_api_anchor();
 }
 
 void GDNative::_bind_methods() {
@@ -220,8 +115,8 @@ bool GDNative::initialize() {
 		return false;
 	}
 
-	String lib_path = library->get_active_library_path();
-	if (lib_path.empty()) {
+	String lib_path = library->get_current_library_path();
+	if (lib_path.empty() && !library->is_current_library_statically_linked()) {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
@@ -230,16 +125,34 @@ bool GDNative::initialize() {
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif
+
+	if (library->should_load_once()) {
+		if (GDNativeLibrary::loaded_libraries->has(lib_path)) {
+			// already loaded. Don't load again.
+			// copy some of the stuff instead
+			this->native_handle = (*GDNativeLibrary::loaded_libraries)[lib_path][0]->native_handle;
+			initialized = true;
+			return true;
+		}
+	}
+
 	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle);
-	if (err != OK) {
+	if (err != OK && !library->is_current_library_statically_linked()) {
 		return false;
 	}
 
 	void *library_init;
-	err = get_symbol(init_symbol, library_init);
+
+	// we cheat here a little bit. you saw nothing
+	initialized = true;
+
+	err = get_symbol(library->get_symbol_prefix() + init_symbol, library_init);
+
+	initialized = false;
 
 	if (err || !library_init) {
-		OS::get_singleton()->close_dynamic_library(native_handle);
+		if (!library->is_current_library_statically_linked())
+			OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
 		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
 		return false;
@@ -260,18 +173,42 @@ bool GDNative::initialize() {
 
 	library_init_fpointer(&options);
 
+	initialized = true;
+
+	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries->has(lib_path)) {
+		Vector<Ref<GDNative> > gdnatives;
+		gdnatives.resize(1);
+		gdnatives[0] = Ref<GDNative>(this);
+		GDNativeLibrary::loaded_libraries->insert(lib_path, gdnatives);
+	}
+
 	return true;
 }
 
 bool GDNative::terminate() {
 
-	if (native_handle == NULL) {
+	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't terminate GDNative object");
 		return false;
 	}
 
+	if (library->should_load_once()) {
+		Vector<Ref<GDNative> > *gdnatives = &(*GDNativeLibrary::loaded_libraries)[library->get_current_library_path()];
+		if (gdnatives->size() > 1) {
+			// there are other GDNative's still using this library, so we actually don't terminte
+			gdnatives->erase(Ref<GDNative>(this));
+			initialized = false;
+			return true;
+		} else if (gdnatives->size() == 1) {
+			// we're the last one, terminate!
+			gdnatives->clear();
+			// wew this looks scary, but all it does is remove the entry completely
+			GDNativeLibrary::loaded_libraries->erase(GDNativeLibrary::loaded_libraries->find(library->get_current_library_path()));
+		}
+	}
+
 	void *library_terminate;
-	Error error = get_symbol(terminate_symbol, library_terminate);
+	Error error = get_symbol(library->get_symbol_prefix() + terminate_symbol, library_terminate);
 	if (error || !library_terminate) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
@@ -281,12 +218,12 @@ bool GDNative::terminate() {
 	godot_gdnative_terminate_fn library_terminate_pointer;
 	library_terminate_pointer = (godot_gdnative_terminate_fn)library_terminate;
 
-	// TODO(karroffel): remove this? Should be part of NativeScript, not
-	// GDNative IMO
 	godot_gdnative_terminate_options options;
 	options.in_editor = Engine::get_singleton()->is_editor_hint();
 
 	library_terminate_pointer(&options);
+
+	initialized = false;
 
 	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
 
@@ -297,7 +234,7 @@ bool GDNative::terminate() {
 }
 
 bool GDNative::is_initialized() {
-	return (native_handle != NULL);
+	return initialized;
 }
 
 void GDNativeCallRegistry::register_native_call_type(StringName p_call_type, native_call_cb p_callback) {
@@ -342,7 +279,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 
 Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
 
-	if (native_handle == NULL) {
+	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");
 		return ERR_CANT_OPEN;
 	}
@@ -354,4 +291,160 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
 			true);
 
 	return result;
+}
+
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	Ref<GDNativeLibrary> lib;
+	lib.instance();
+
+	Ref<ConfigFile> config = lib->get_config_file();
+
+	Error err = config->load(p_path);
+
+	if (r_error) {
+		*r_error = err;
+	}
+
+	lib->set_singleton(config->get_value("general", "singleton", false));
+	lib->set_load_once(config->get_value("general", "load_once", true));
+	lib->set_symbol_prefix(config->get_value("general", "symbol_prefix", default_symbol_prefix));
+
+	String entry_lib_path;
+	{
+
+		List<String> entry_keys;
+		config->get_section_keys("entry", &entry_keys);
+
+		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			entry_lib_path = config->get_value("entry", key);
+			break;
+		}
+	}
+
+	Vector<String> dependency_paths;
+	{
+
+		List<String> dependency_keys;
+		config->get_section_keys("dependencies", &dependency_keys);
+
+		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			dependency_paths = config->get_value("dependencies", key);
+			break;
+		}
+	}
+
+	bool is_statically_linked = false;
+	{
+
+		List<String> static_linking_keys;
+		config->get_section_keys("static_linking", &static_linking_keys);
+
+		for (List<String>::Element *E = static_linking_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			is_statically_linked = config->get_value("static_linking", key);
+			break;
+		}
+	}
+
+	lib->current_library_path = entry_lib_path;
+	lib->current_dependencies = dependency_paths;
+	lib->current_library_statically_linked = is_statically_linked;
+
+	return lib;
+}
+
+void GDNativeLibraryResourceLoader::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("gdnlib");
+}
+
+bool GDNativeLibraryResourceLoader::handles_type(const String &p_type) const {
+	return p_type == "GDNativeLibrary";
+}
+
+String GDNativeLibraryResourceLoader::get_resource_type(const String &p_path) const {
+	String el = p_path.get_extension().to_lower();
+	if (el == "gdnlib")
+		return "GDNativeLibrary";
+	return "";
+}
+
+Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+
+	Ref<GDNativeLibrary> lib = p_resource;
+
+	if (lib.is_null()) {
+		return ERR_INVALID_DATA;
+	}
+
+	Ref<ConfigFile> config = lib->get_config_file();
+
+	config->set_value("general", "singleton", lib->is_singleton());
+	config->set_value("general", "load_once", lib->should_load_once());
+	config->set_value("general", "symbol_prefix", lib->get_symbol_prefix());
+
+	return config->save(p_path);
+}
+
+bool GDNativeLibraryResourceSaver::recognize(const RES &p_resource) const {
+	return Object::cast_to<GDNativeLibrary>(*p_resource) != NULL;
+}
+
+void GDNativeLibraryResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
+	if (Object::cast_to<GDNativeLibrary>(*p_resource) != NULL) {
+		p_extensions->push_back("gdnlib");
+	}
 }

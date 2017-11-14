@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "register_types.h"
 
-#include "project_settings.h"
+#include "engine.h"
 
 #include "csharp_script.h"
 
@@ -45,7 +45,7 @@ void register_mono_types() {
 	_godotsharp = memnew(_GodotSharp);
 
 	ClassDB::register_class<_GodotSharp>();
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("GodotSharp", _GodotSharp::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GodotSharp", _GodotSharp::get_singleton()));
 
 	script_language_cs = memnew(CSharpLanguage);
 	script_language_cs->set_language_index(ScriptServer::get_language_count());

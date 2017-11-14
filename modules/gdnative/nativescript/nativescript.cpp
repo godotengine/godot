@@ -40,6 +40,8 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/scene_format_text.h"
 
+#include <stdlib.h>
+
 #ifndef NO_THREADS
 #include "os/thread.h"
 #endif
@@ -52,7 +54,11 @@
 #include "editor/editor_node.h"
 #endif
 
-////// Script stuff
+//
+//
+// Script stuff
+//
+//
 
 void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_class_name", "class_name"), &NativeScript::set_class_name);
@@ -108,7 +114,7 @@ void NativeScript::set_library(Ref<GDNativeLibrary> p_library) {
 		return;
 	}
 	library = p_library;
-	lib_path = library->get_active_library_path();
+	lib_path = library->get_current_library_path();
 
 #ifndef NO_THREADS
 	if (Thread::get_caller_id() != Thread::get_main_id()) {
@@ -414,7 +420,6 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 	}
 }
 
-// TODO(karroffel): implement this
 NativeScript::NativeScript() {
 	library = Ref<GDNative>();
 	lib_path = "";
@@ -424,7 +429,6 @@ NativeScript::NativeScript() {
 #endif
 }
 
-// TODO(karroffel): implement this
 NativeScript::~NativeScript() {
 	NSL->unregister_script(this);
 
@@ -433,7 +437,11 @@ NativeScript::~NativeScript() {
 #endif
 }
 
-////// ScriptInstance stuff
+//
+//
+// ScriptInstance stuff
+//
+//
 
 #define GET_SCRIPT_DESC() script->get_script_desc()
 
@@ -691,7 +699,6 @@ NativeScriptInstance::RPCMode NativeScriptInstance::get_rpc_mode(const StringNam
 	return RPC_MODE_DISABLED;
 }
 
-// TODO(karroffel): implement this
 NativeScriptInstance::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_variable) const {
 
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
@@ -774,14 +781,13 @@ NativeScriptInstance::~NativeScriptInstance() {
 	}
 }
 
-////// ScriptingLanguage stuff
+//
+//
+// ScriptingLanguage stuff
+//
+//
 
 NativeScriptLanguage *NativeScriptLanguage::singleton;
-
-extern "C" void _native_script_hook();
-void NativeScriptLanguage::_hacky_api_anchor() {
-	_native_script_hook();
-}
 
 void NativeScriptLanguage::_unload_stuff() {
 	for (Map<String, Map<StringName, NativeScriptDesc> >::Element *L = library_classes.front(); L; L = L->next()) {
@@ -819,9 +825,7 @@ NativeScriptLanguage::NativeScriptLanguage() {
 #endif
 }
 
-// TODO(karroffel): implement this
 NativeScriptLanguage::~NativeScriptLanguage() {
-	// _unload_stuff(); // NOTE(karroffel): This gets called in ::finish()
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
@@ -847,7 +851,6 @@ void _add_reload_node() {
 #endif
 }
 
-// TODO(karroffel): implement this
 void NativeScriptLanguage::init() {
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
@@ -860,6 +863,7 @@ void NativeScriptLanguage::init() {
 		if (generate_c_api(E->next()->get()) != OK) {
 			ERR_PRINT("Failed to generate C API\n");
 		}
+		exit(0);
 	}
 #endif
 
@@ -886,11 +890,9 @@ void NativeScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) co
 void NativeScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
-// TODO(karroffel): implement this
 Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	NativeScript *s = memnew(NativeScript);
 	s->set_class_name(p_class_name);
-	// TODO(karroffel): use p_base_class_name
 	return Ref<NativeScript>(s);
 }
 bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
@@ -988,7 +990,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 	MutexLock lock(mutex);
 #endif
 	// See if this library was "registered" already.
-	const String &lib_path = lib->get_active_library_path();
+	const String &lib_path = lib->get_current_library_path();
 	ERR_EXPLAIN(lib->get_name() + " does not have a library for the current platform");
 	ERR_FAIL_COND(lib_path.length() == 0);
 	Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
@@ -998,7 +1000,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 		gdn.instance();
 		gdn->set_library(lib);
 
-		// TODO(karroffel): check the return value?
+		// TODO check the return value?
 		gdn->initialize();
 
 		library_gdnatives.insert(lib_path, gdn);
@@ -1010,7 +1012,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 
 		void *proc_ptr;
 
-		Error err = gdn->get_symbol(_init_call_name, proc_ptr);
+		Error err = gdn->get_symbol(lib->get_symbol_prefix() + _init_call_name, proc_ptr);
 
 		if (err != OK) {
 			ERR_PRINT(String("No " + _init_call_name + " in \"" + lib_path + "\" found").utf8().get_data());
@@ -1051,7 +1053,7 @@ void NativeScriptLanguage::call_libraries_cb(const StringName &name) {
 		if (L->get()->is_initialized()) {
 
 			void *proc_ptr;
-			Error err = L->get()->get_symbol(name, proc_ptr);
+			Error err = L->get()->get_symbol(L->get()->get_library()->get_symbol_prefix() + name, proc_ptr);
 
 			if (!err) {
 				((void (*)())proc_ptr)();
@@ -1140,7 +1142,7 @@ void NativeReloadNode::_notification(int p_what) {
 				// here the library registers all the classes and stuff.
 
 				void *proc_ptr;
-				Error err = L->get()->get_symbol("godot_nativescript_init", proc_ptr);
+				Error err = L->get()->get_symbol(L->get()->get_library()->get_symbol_prefix() + "nativescript_init", proc_ptr);
 				if (err != OK) {
 					ERR_PRINT(String("No godot_nativescript_init in \"" + L->key() + "\" found").utf8().get_data());
 				} else {

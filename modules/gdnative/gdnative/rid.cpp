@@ -37,8 +37,6 @@
 extern "C" {
 #endif
 
-void _rid_api_anchor() {}
-
 void GDAPI godot_rid_new(godot_rid *r_dest) {
 	RID *dest = (RID *)r_dest;
 	memnew_placement(dest, RID);

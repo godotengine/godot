@@ -88,6 +88,7 @@ public:
 	void _init(const String &p_pattern = "");
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	Array search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
 
 	bool is_valid() const;
