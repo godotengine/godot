@@ -40,47 +40,6 @@
 extern "C" {
 #endif
 
-extern "C" void _string_api_anchor();
-extern "C" void _string_name_api_anchor();
-extern "C" void _vector2_api_anchor();
-extern "C" void _rect2_api_anchor();
-extern "C" void _vector3_api_anchor();
-extern "C" void _transform2d_api_anchor();
-extern "C" void _plane_api_anchor();
-extern "C" void _quat_api_anchor();
-extern "C" void _basis_api_anchor();
-extern "C" void _rect3_api_anchor();
-extern "C" void _transform_api_anchor();
-extern "C" void _color_api_anchor();
-extern "C" void _node_path_api_anchor();
-extern "C" void _rid_api_anchor();
-extern "C" void _dictionary_api_anchor();
-extern "C" void _array_api_anchor();
-extern "C" void _pool_arrays_api_anchor();
-extern "C" void _variant_api_anchor();
-
-void _api_anchor() {
-
-	_string_api_anchor();
-	_string_name_api_anchor();
-	_vector2_api_anchor();
-	_rect2_api_anchor();
-	_vector3_api_anchor();
-	_transform2d_api_anchor();
-	_plane_api_anchor();
-	_quat_api_anchor();
-	_rect3_api_anchor();
-	_basis_api_anchor();
-	_transform_api_anchor();
-	_color_api_anchor();
-	_node_path_api_anchor();
-	_rid_api_anchor();
-	_dictionary_api_anchor();
-	_array_api_anchor();
-	_pool_arrays_api_anchor();
-	_variant_api_anchor();
-}
-
 void GDAPI godot_object_destroy(godot_object *p_o) {
 	memdelete((Object *)p_o);
 }
@@ -132,14 +91,6 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 
 	return ret;
 }
-
-// @Todo
-/*
-void GDAPI godot_method_bind_varcall(godot_method_bind *p_method_bind)
-{
-
-}
-*/
 
 godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));

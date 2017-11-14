@@ -229,15 +229,15 @@ public:
 	Map<String, Set<NativeScript *> > library_script_users;
 
 	const StringName _init_call_type = "nativescript_init";
-	const StringName _init_call_name = "godot_nativescript_init";
+	const StringName _init_call_name = "nativescript_init";
 
 	const StringName _noarg_call_type = "nativescript_no_arg";
 
-	const StringName _frame_call_name = "godot_nativescript_frame";
+	const StringName _frame_call_name = "nativescript_frame";
 
 #ifndef NO_THREADS
-	const StringName _thread_enter_call_name = "godot_nativescript_thread_enter";
-	const StringName _thread_exit_call_name = "godot_nativescript_thread_exit";
+	const StringName _thread_enter_call_name = "nativescript_thread_enter";
+	const StringName _thread_exit_call_name = "nativescript_thread_exit";
 #endif
 
 	NativeScriptLanguage();

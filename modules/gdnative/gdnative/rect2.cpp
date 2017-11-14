@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _rect2_api_anchor() {}
-
 void GDAPI godot_rect2_new_with_position_and_size(godot_rect2 *r_dest, const godot_vector2 *p_pos, const godot_vector2 *p_size) {
 	const Vector2 *position = (const Vector2 *)p_pos;
 	const Vector2 *size = (const Vector2 *)p_size;
