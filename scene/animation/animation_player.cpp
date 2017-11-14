@@ -545,7 +545,14 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 	} else {
 
-		next_pos = Math::fposmod(next_pos, len);
+		float looped_next_pos = Math::fposmod(next_pos, len);
+		if (looped_next_pos == 0 && next_pos != 0) {
+			// Loop multiples of the length to it, rather than 0
+			// so state at time=length is previewable in the editor
+			next_pos = len;
+		} else {
+			next_pos = looped_next_pos;
+		}
 	}
 
 	cd.pos = next_pos;
