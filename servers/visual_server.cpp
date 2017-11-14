@@ -1856,6 +1856,8 @@ void VisualServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
 	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
+
+	ADD_SIGNAL(MethodInfo("frame_drawn_in_thread"));
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {

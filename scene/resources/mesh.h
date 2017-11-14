@@ -95,6 +95,7 @@ public:
 
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
+		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
 
 		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_VERTEX | ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
 
@@ -184,6 +185,8 @@ public:
 
 	void set_blend_shape_mode(BlendShapeMode p_mode);
 	BlendShapeMode get_blend_shape_mode() const;
+
+	void surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
 
 	int get_surface_count() const;
 	void surface_remove(int p_idx);

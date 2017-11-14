@@ -120,6 +120,8 @@ void VisualServerRaster::draw() {
 
 		frame_drawn_callbacks.pop_front();
 	}
+
+	emit_signal("frame_drawn_in_thread");
 }
 void VisualServerRaster::sync() {
 }
