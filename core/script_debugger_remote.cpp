@@ -832,7 +832,7 @@ void ScriptDebuggerRemote::send_message(const String &p_message, const Array &p_
 	mutex->unlock();
 }
 
-void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string) {
+void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, bool p_error) {
 
 	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)p_this;
 

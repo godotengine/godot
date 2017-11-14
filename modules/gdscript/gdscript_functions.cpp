@@ -642,7 +642,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 			//str+="\n";
-			OS::get_singleton()->printerr("%s\n", str.utf8().get_data());
+			print_error(str);
 			r_ret = Variant();
 
 		} break;

@@ -1109,7 +1109,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			String str = *p_inputs[0];
 
 			//str+="\n";
-			OS::get_singleton()->printerr("%s\n", str.utf8().get_data());
+			print_error(str);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINTRAW: {
