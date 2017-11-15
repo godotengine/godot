@@ -34,6 +34,8 @@
 extern "C" {
 #endif
 
+#include "stddef.h"
+
 typedef enum {
 	XHR_READY_STATE_UNSENT = 0,
 	XHR_READY_STATE_OPENED = 1,
