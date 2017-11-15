@@ -1599,17 +1599,18 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 				Object *obj = E->get()->placeholders.front()->get()->get_owner();
 
 				//save instance info
-				List<Pair<StringName, Variant> > state;
 				if (obj->get_script_instance()) {
 
+					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant> >());
+					List<Pair<StringName, Variant> > &state = map[obj->get_instance_id()];
 					obj->get_script_instance()->get_property_state(state);
-					map[obj->get_instance_id()] = state;
 					obj->set_script(RefPtr());
 				} else {
 					// no instance found. Let's remove it so we don't loop forever
 					E->get()->placeholders.erase(E->get()->placeholders.front()->get());
 				}
 			}
+
 #endif
 
 			for (Map<ObjectID, List<Pair<StringName, Variant> > >::Element *F = E->get()->pending_reload_state.front(); F; F = F->next()) {

@@ -354,7 +354,11 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
-	_update_tree();
+	if (tree_dirty)
+		return;
+
+	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	tree_dirty = true;
 	/*
 	changes the order :|
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
