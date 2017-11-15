@@ -243,7 +243,7 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 	return build_mode;
 }
 
-Rect2 CollisionPolygon2D::get_item_rect() const {
+Rect2 CollisionPolygon2D::_edit_get_rect() const {
 
 	return aabb;
 }

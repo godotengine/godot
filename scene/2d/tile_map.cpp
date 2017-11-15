@@ -883,7 +883,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	return data;
 }
 
-Rect2 TileMap::get_item_rect() const {
+Rect2 TileMap::_edit_get_rect() const {
 
 	const_cast<TileMap *>(this)->_update_dirty_quadrants();
 	return rect_cache;

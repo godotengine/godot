@@ -42,7 +42,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Rect2 get_item_rect() const;
+	virtual Rect2 _edit_get_rect() const;
 	Position2D();
 };
 

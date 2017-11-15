@@ -54,12 +54,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
 
 	bool is_on_screen() const;
-
-	virtual Rect2 get_item_rect() const;
 
 	VisibilityNotifier2D();
 };

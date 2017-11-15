@@ -149,9 +149,9 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	virtual void edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 edit_get_pivot() const;
-	virtual bool edit_has_pivot() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot);
+	virtual Point2 _edit_get_pivot() const;
+	virtual bool _edit_use_pivot() const;
 
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
@@ -181,7 +181,7 @@ public:
 	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
-	virtual Rect2 get_item_rect() const;
+	virtual Rect2 _edit_get_rect() const;
 
 	virtual String get_configuration_warning() const;
 	AnimatedSprite();

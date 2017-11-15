@@ -51,9 +51,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+
 	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
-	virtual Rect2 get_item_rect() const;
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;

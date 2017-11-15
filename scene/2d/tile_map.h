@@ -229,7 +229,7 @@ public:
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
 
-	Rect2 get_item_rect() const;
+	Rect2 _edit_get_rect() const;
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

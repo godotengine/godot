@@ -52,13 +52,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	Rect2 _edit_get_rect() const;
+
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
 
 	void set_copy_mode(CopyMode p_mode);
 	CopyMode get_copy_mode() const;
-
-	Rect2 get_item_rect() const;
 
 	BackBufferCopy();
 	~BackBufferCopy();
