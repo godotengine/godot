@@ -982,7 +982,7 @@ void EditorExport::remove_export_preset(int p_idx) {
 
 void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 
-	if (export_plugins.find(p_plugin) == 1) {
+	if (export_plugins.find(p_plugin) == -1) {
 		export_plugins.push_back(p_plugin);
 	}
 }
