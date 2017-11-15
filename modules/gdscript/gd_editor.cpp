@@ -2798,7 +2798,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 						}
 					} else {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
-						r_result.class_name = "@Global Scope";
+						r_result.class_name = "@GlobalScope";
 						r_result.class_member = p_symbol;
 						return OK;
 					}

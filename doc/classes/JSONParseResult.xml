@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSONParseResult" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+<class name="JSONParseResult" inherits="Reference" category="Core" version="3.0-alpha">
 	<brief_description>
 		Data class wrapper for decoded JSON.
 	</brief_description>
@@ -70,13 +70,13 @@
 	</methods>
 	<members>
 		<member name="error" type="int" setter="set_error" getter="get_error" enum="Error">
-			The error type if JSON source was not successfully parsed. See [@Global Scope]ERR_* constants.
+			The error type if JSON source was not successfully parsed. See [@GlobalScope]ERR_* constants.
 		</member>
 		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line">
 			The line number where the error occurred if JSON source was not successfully parsed.
 		</member>
 		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string">
-			The error message if JSON source was not successfully parsed. See [@Global Scope]ERR_* constants.
+			The error message if JSON source was not successfully parsed. See [@GlobalScope]ERR_* constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">
 			A [Variant] containing the parsed JSON. Use typeof() to check if it is what you expect. For example, if JSON source starts with braces [code]{}[/code] a [Dictionary] will be returned, if JSON source starts with array braces [code][][/code] an [Array] will be returned.

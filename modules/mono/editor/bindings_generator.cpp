@@ -320,9 +320,9 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 	int global_constants_count = GlobalConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
-		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@Global Scope");
+		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
 
-		ERR_EXPLAIN("Could not find `@Global Scope` in DocData");
+		ERR_EXPLAIN("Could not find `@GlobalScope` in DocData");
 		ERR_FAIL_COND_V(!match, ERR_BUG);
 
 		const DocData::ClassDoc &global_scope_doc = match->value();

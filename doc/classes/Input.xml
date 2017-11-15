@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+<class name="Input" inherits="Object" category="Core" version="3.0-alpha">
 	<brief_description>
 		A Singleton that deals with inputs.
 	</brief_description>
@@ -75,7 +75,7 @@
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
-				Returns the current value of the joypad axis at given index (see [code]JOY_*[/code] constants in [@Global Scope])
+				Returns the current value of the joypad axis at given index (see [code]JOY_*[/code] constants in [@GlobalScope])
 			</description>
 		</method>
 		<method name="get_joy_axis_index_from_string">
@@ -209,7 +209,7 @@
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button. (see [code]JOY_*[/code] constants in [@Global Scope])
+				Returns [code]true[/code] if you are pressing the joypad button. (see [code]JOY_*[/code] constants in [@GlobalScope])
 			</description>
 		</method>
 		<method name="is_joy_known">
@@ -218,7 +218,7 @@
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@Global Scope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@GlobalScope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
@@ -227,7 +227,7 @@
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the key. You can pass [code]KEY_*[/code], which are pre-defined constants listed in [@Global Scope].
+				Returns [code]true[/code] if you are pressing the key. You can pass [code]KEY_*[/code], which are pre-defined constants listed in [@GlobalScope].
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -236,7 +236,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the mouse button. You can pass [code]BUTTON_*[/code], which are pre-defined constants listed in [@Global Scope].
+				Returns [code]true[/code] if you are pressing the mouse button. You can pass [code]BUTTON_*[/code], which are pre-defined constants listed in [@GlobalScope].
 			</description>
 		</method>
 		<method name="joy_connection_changed">

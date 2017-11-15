@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VideoStreamWebm" inherits="VideoStream" category="Core" version="3.0-alpha">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_file">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="file" type="String" setter="set_file" getter="get_file">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
