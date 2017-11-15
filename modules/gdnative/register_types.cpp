@@ -48,7 +48,7 @@
 #include "gd_native_library_editor.h"
 // Class used to discover singleton gdnative files
 
-void actual_discoverer_handler();
+static void actual_discoverer_handler();
 
 class GDNativeSingletonDiscover : public Object {
 	// GDCLASS(GDNativeSingletonDiscover, Object)
@@ -66,7 +66,7 @@ class GDNativeSingletonDiscover : public Object {
 	}
 };
 
-Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
+static Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 
 	Set<String> file_paths;
 
@@ -98,7 +98,7 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 	return file_paths;
 }
 
-void actual_discoverer_handler() {
+static void actual_discoverer_handler() {
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
 	Set<String> file_paths = get_gdnative_singletons(dir);
@@ -115,7 +115,125 @@ void actual_discoverer_handler() {
 	ProjectSettings::get_singleton()->save();
 }
 
-GDNativeSingletonDiscover *discoverer = NULL;
+static GDNativeSingletonDiscover *discoverer = NULL;
+
+class GDNativeExportPlugin : public EditorExportPlugin {
+
+protected:
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+};
+
+void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+	if (p_type != "GDNativeLibrary") {
+		return;
+	}
+
+	Ref<GDNativeLibrary> lib = ResourceLoader::load(p_path);
+
+	if (lib.is_null()) {
+		return;
+	}
+
+	Ref<ConfigFile> config = lib->get_config_file();
+
+	String entry_lib_path;
+	{
+
+		List<String> entry_keys;
+		config->get_section_keys("entry", &entry_keys);
+
+		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			entry_lib_path = config->get_value("entry", key);
+			break;
+		}
+	}
+
+	Vector<String> dependency_paths;
+	{
+
+		List<String> dependency_keys;
+		config->get_section_keys("dependencies", &dependency_keys);
+
+		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			dependency_paths = config->get_value("dependencies", key);
+			break;
+		}
+	}
+
+	bool is_statically_linked = false;
+	{
+
+		List<String> static_linking_keys;
+		config->get_section_keys("static_linking", &static_linking_keys);
+
+		for (List<String>::Element *E = static_linking_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			is_statically_linked = config->get_value("static_linking", key);
+			break;
+		}
+	}
+
+	if (!is_statically_linked)
+		add_shared_object(entry_lib_path);
+
+	for (int i = 0; i < dependency_paths.size(); i++) {
+		add_shared_object(dependency_paths[i]);
+	}
+}
 
 static void editor_init_callback() {
 
@@ -125,11 +243,16 @@ static void editor_init_callback() {
 
 	discoverer = memnew(GDNativeSingletonDiscover);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");
+
+	Ref<GDNativeExportPlugin> export_plugin;
+	export_plugin.instance();
+
+	EditorExport::get_singleton()->add_export_plugin(export_plugin);
 }
 
 #endif
 
-godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *p_args) {
+static godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *p_args) {
 
 	godot_gdnative_procedure_fn proc;
 	proc = (godot_gdnative_procedure_fn)p_procedure_handle;
