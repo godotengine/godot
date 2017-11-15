@@ -2644,6 +2644,11 @@ void VisualScriptLanguage::add_register_func(const String &p_name, VisualScriptN
 	register_funcs[p_name] = p_func;
 }
 
+void VisualScriptLanguage::remove_register_func(const String &p_name) {
+	ERR_FAIL_COND(!register_funcs.has(p_name));
+	register_funcs.erase(p_name);
+}
+
 Ref<VisualScriptNode> VisualScriptLanguage::create_node_from_name(const String &p_name) {
 
 	ERR_FAIL_COND_V(!register_funcs.has(p_name), Ref<VisualScriptNode>());

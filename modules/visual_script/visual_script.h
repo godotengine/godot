@@ -600,6 +600,7 @@ public:
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
 
 	void add_register_func(const String &p_name, VisualScriptNodeRegisterFunc p_func);
+	void remove_register_func(const String &p_name);
 	Ref<VisualScriptNode> create_node_from_name(const String &p_name);
 	void get_registered_node_names(List<String> *r_names);
 
