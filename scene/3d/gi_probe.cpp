@@ -891,7 +891,7 @@ void GIProbe::_fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z, Bak
 	}
 }
 
-Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_color) {
+Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_color, bool p_color_add) {
 
 	Vector<Color> ret;
 
@@ -919,9 +919,16 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 		Color c;
-		c.r = (r[i * 4 + 0] / 255.0) * p_color.r;
-		c.g = (r[i * 4 + 1] / 255.0) * p_color.g;
-		c.b = (r[i * 4 + 2] / 255.0) * p_color.b;
+		if (p_color_add) {
+			c.r = (r[i * 4 + 0] / 255.0) + p_color.r;
+			c.g = (r[i * 4 + 1] / 255.0) + p_color.g;
+			c.b = (r[i * 4 + 2] / 255.0) + p_color.b;
+		} else {
+			c.r = (r[i * 4 + 0] / 255.0) * p_color.r;
+			c.g = (r[i * 4 + 1] / 255.0) * p_color.g;
+			c.b = (r[i * 4 + 2] / 255.0) * p_color.b;
+		}
+
 		c.a = r[i * 4 + 3] / 255.0;
 
 		ret[i] = c;
@@ -954,7 +961,7 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 		} else {
 		}
 
-		mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo());
+		mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), false);
 
 		Ref<ImageTexture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 
@@ -970,7 +977,7 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 			img_emission = emission_tex->get_data();
 		}
 
-		mc.emission = _get_bake_texture(img_emission, emission_col);
+		mc.emission = _get_bake_texture(img_emission, emission_col, mat->get_emission_operator() == SpatialMaterial::EMISSION_OP_ADD);
 
 	} else {
 		Ref<Image> empty;
