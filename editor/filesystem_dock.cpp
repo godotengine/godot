@@ -1670,7 +1670,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	deps_editor = memnew(DependencyEditor);
 	add_child(deps_editor);
 
-	owners_editor = memnew(DependencyEditorOwners);
+	owners_editor = memnew(DependencyEditorOwners(editor));
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);

@@ -281,6 +281,47 @@ DependencyEditor::DependencyEditor() {
 }
 
 /////////////////////////////////////
+void DependencyEditorOwners::_list_rmb_select(int p_item, const Vector2 &p_pos) {
+
+	file_options->clear();
+	file_options->set_size(Size2(1, 1));
+	if (p_item >= 0) {
+		file_options->add_item(TTR("Open"), FILE_OPEN);
+	}
+
+	file_options->set_position(owners->get_global_position() + p_pos);
+	file_options->popup();
+}
+
+void DependencyEditorOwners::_select_file(int p_idx) {
+
+	String fpath = owners->get_item_text(p_idx);
+
+	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
+		editor->open_request(fpath);
+		hide();
+		emit_signal("confirmed");
+	}
+}
+
+void DependencyEditorOwners::_file_option(int p_option) {
+
+	switch (p_option) {
+		case FILE_OPEN: {
+			int idx = owners->get_current();
+			if (idx < 0 || idx >= owners->get_item_count())
+				break;
+			_select_file(idx);
+		} break;
+	}
+}
+
+void DependencyEditorOwners::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_list_rmb_select"), &DependencyEditorOwners::_list_rmb_select);
+	ClassDB::bind_method(D_METHOD("_file_option"), &DependencyEditorOwners::_file_option);
+	ClassDB::bind_method(D_METHOD("_select_file"), &DependencyEditorOwners::_select_file);
+}
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 
@@ -329,9 +370,19 @@ void DependencyEditorOwners::show(const String &p_path) {
 	set_title(TTR("Owners Of:") + " " + p_path.get_file());
 }
 
-DependencyEditorOwners::DependencyEditorOwners() {
+DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
+
+	editor = p_editor;
+
+	file_options = memnew(PopupMenu);
+	add_child(file_options);
+	file_options->connect("id_pressed", this, "_file_option");
 
 	owners = memnew(ItemList);
+	owners->set_select_mode(ItemList::SELECT_SINGLE);
+	owners->connect("item_rmb_selected", this, "_list_rmb_select");
+	owners->connect("item_activated", this, "_select_file");
+	owners->set_allow_rmb_select(true);
 	add_child(owners);
 }
 

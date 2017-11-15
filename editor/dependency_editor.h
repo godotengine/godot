@@ -36,6 +36,7 @@
 #include "scene/gui/tree.h"
 
 class EditorFileSystemDirectory;
+class EditorNode;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
@@ -71,12 +72,25 @@ class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
 	ItemList *owners;
+	PopupMenu *file_options;
+	EditorNode *editor;
 	String editing;
+
 	void _fill_owners(EditorFileSystemDirectory *efsd);
+
+	static void _bind_methods();
+	void _list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _select_file(int p_idx);
+	void _file_option(int p_option);
+
+private:
+	enum FileMenu {
+		FILE_OPEN
+	};
 
 public:
 	void show(const String &p_path);
-	DependencyEditorOwners();
+	DependencyEditorOwners(EditorNode *p_editor);
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {
