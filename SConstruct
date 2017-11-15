@@ -366,7 +366,7 @@ if selected_platform in platform_list:
     sys.modules.pop('detect')
 
     env.module_list = []
-    env.doc_class_path={}
+    env.doc_class_path = {}
 
     for x in module_list:
         if not env['module_' + x + '_enabled']:
@@ -382,10 +382,9 @@ if selected_platform in platform_list:
                  doc_classes = config.get_doc_classes()
                  doc_path = config.get_doc_path()
                  for c in doc_classes:
-                     env.doc_class_path[c]="modules/"+x+"/"+doc_path
+                     env.doc_class_path[c] = "modules/" + x + "/" + doc_path
             except:
                 pass
-
 
         sys.path.remove(tmppath)
         sys.modules.pop('config')
