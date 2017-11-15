@@ -1791,6 +1791,12 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="frame_drawn_in_thread">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="NO_INDEX_ARRAY" value="-1" enum="">
 		</constant>

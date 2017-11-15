@@ -39,6 +39,14 @@
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
 			</description>
 		</method>
+		<method name="get_singleton" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_target_fps" qualifiers="const">
 			<return type="float">
 			</return>
@@ -65,6 +73,14 @@
 				"status"   - Holds the status (e.g. "beta", "rc1", "rc2", ... "stable") as a String
 				"revision" - Holds the revision (e.g. "custom-build") as a String
 				"string"   - major + minor + patch + status + revision in a single String
+			</description>
+		</method>
+		<method name="has_singleton" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="is_editor_hint" qualifiers="const">

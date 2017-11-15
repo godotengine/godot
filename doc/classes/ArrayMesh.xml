@@ -199,6 +199,18 @@
 				Set a [Material] for a given surface. Surface will be rendered using this material.
 			</description>
 		</method>
+		<method name="surface_update_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="NO_INDEX_ARRAY" value="-1" enum="">

@@ -59,14 +59,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_singleton" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="globalize_path" qualifiers="const">
 			<return type="String">
 			</return>
@@ -83,14 +75,6 @@
 			</argument>
 			<description>
 				Return true if a configuration value is present.
-			</description>
-		</method>
-		<method name="has_singleton" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="load_resource_pack">
