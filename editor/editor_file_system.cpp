@@ -913,7 +913,8 @@ void EditorFileSystem::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			scan();
+			call_deferred("scan"); //this should happen after every editor node entered the tree
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (use_threads && thread) {
