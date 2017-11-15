@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConcavePolygonShape2D" inherits="Shape2D" category="Core" version="3.0.alpha.custom_build">
+<class name="ConcavePolygonShape2D" inherits="Shape2D" category="Core" version="3.0-alpha">
 	<brief_description>
 		Concave polygon 2D shape resource for physics.
 	</brief_description>

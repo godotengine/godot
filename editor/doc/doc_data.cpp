@@ -951,7 +951,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		if (c.category == "")
 			category = "Core";
 		header += " category=\"" + category + "\"";
-		header += " version=\"" + String(VERSION_MKSTRING) + "\"";
+		header += String(" version=\"") + _MKSTR(VERSION_MAJOR) + "." + _MKSTR(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + "\"";
 		header += ">";
 		_write_string(f, 0, header);
 		_write_string(f, 1, "<brief_description>");
