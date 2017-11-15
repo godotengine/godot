@@ -95,7 +95,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@Global Scope]. If the load was successful, the return value is [code]OK[/code].
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [code]OK[/code].
 			</description>
 		</method>
 		<method name="save">
@@ -104,7 +104,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@Global Scope]. If the load was successful, the return value is [code]OK[/code].
+				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [code]OK[/code].
 			</description>
 		</method>
 		<method name="set_value">

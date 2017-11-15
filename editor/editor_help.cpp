@@ -555,7 +555,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		if (select.find(".") != -1) {
 			class_name = select.get_slice(".", 0);
 		} else {
-			class_name = "@Global Scope";
+			class_name = "@GlobalScope";
 		}
 		emit_signal("go_to_help", "class_enum:" + class_name + ":" + select);
 		return;

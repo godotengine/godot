@@ -196,7 +196,7 @@
 			<argument index="1" name="type" type="int">
 			</argument>
 			<description>
-				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum TYPE_* in [@Global Scope].
+				Converts from a type to another in the best way possible. The [code]type[/code] parameter uses the enum TYPE_* in [@GlobalScope].
 				[codeblock]
 				a = Vector2(1, 0)
 				# prints 1
@@ -984,7 +984,7 @@
 			<argument index="0" name="what" type="Variant">
 			</argument>
 			<description>
-				Returns the internal type of the given Variant object, using the TYPE_* enum in [@Global Scope].
+				Returns the internal type of the given Variant object, using the TYPE_* enum in [@GlobalScope].
 				[codeblock]
 				p = parse_json('["a", "b", "c"]')
 				if typeof(p) == TYPE_ARRAY:

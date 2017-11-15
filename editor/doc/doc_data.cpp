@@ -530,7 +530,7 @@ void DocData::generate(bool p_basic_types) {
 
 	{
 
-		String cname = "@Global Scope";
+		String cname = "@GlobalScope";
 		class_list[cname] = ClassDoc();
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
