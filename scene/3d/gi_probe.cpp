@@ -410,7 +410,7 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
 	if (min > rad || max < -rad) return false;
 
-/*======================== Z-tests ========================*/
+	/*======================== Z-tests ========================*/
 
 #define AXISTEST_Z12(a, b, fa, fb)                 \
 	p1 = a * v1.x - b * v1.y;                      \
@@ -891,7 +891,7 @@ void GIProbe::_fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z, Bak
 	}
 }
 
-Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_color) {
+Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_color_mul, const Color &p_color_add) {
 
 	Vector<Color> ret;
 
@@ -899,7 +899,7 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
-			ret[i] = p_color;
+			ret[i] = p_color_add;
 		}
 
 		return ret;
@@ -907,7 +907,6 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 	p_image = p_image->duplicate();
 
 	if (p_image->is_compressed()) {
-		print_line("DECOMPRESSING!!!!");
 
 		p_image->decompress();
 	}
@@ -919,9 +918,9 @@ Vector<Color> GIProbe::_get_bake_texture(Ref<Image> p_image, const Color &p_colo
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 		Color c;
-		c.r = (r[i * 4 + 0] / 255.0) * p_color.r;
-		c.g = (r[i * 4 + 1] / 255.0) * p_color.g;
-		c.b = (r[i * 4 + 2] / 255.0) * p_color.b;
+		c.r = (r[i * 4 + 0] / 255.0) * p_color_mul.r + p_color_add.r;
+		c.g = (r[i * 4 + 1] / 255.0) * p_color_mul.g + p_color_add.g;
+		c.b = (r[i * 4 + 2] / 255.0) * p_color_mul.b + p_color_add.b;
 		c.a = r[i * 4 + 3] / 255.0;
 
 		ret[i] = c;
@@ -949,34 +948,31 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
-
 			img_albedo = albedo_tex->get_data();
+			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // multiply albedo color with albedo texture
 		} else {
+			mc.albedo = _get_bake_texture(img_albedo, Color(0, 0, 0), mat->get_albedo()); // just return albedo color when texture is missing
 		}
 
-		mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo());
-
-		Ref<ImageTexture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
+		Ref<Texture> emission_tex = mat->get_texture(SpatialMaterial::TEXTURE_EMISSION);
 
 		Color emission_col = mat->get_emission();
-		emission_col.r *= mat->get_emission_energy();
-		emission_col.g *= mat->get_emission_energy();
-		emission_col.b *= mat->get_emission_energy();
 
 		Ref<Image> img_emission;
+		float emission_energy = mat->get_emission_energy();
 
 		if (emission_tex.is_valid()) {
-
 			img_emission = emission_tex->get_data();
+			mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1) * emission_energy, emission_col * emission_energy); // always add emissive texture to emissive color
+		} else {
+			mc.emission = _get_bake_texture(img_emission, Color(0, 0, 0), emission_col * emission_energy);
 		}
-
-		mc.emission = _get_bake_texture(img_emission, emission_col);
 
 	} else {
 		Ref<Image> empty;
 
-		mc.albedo = _get_bake_texture(empty, Color(0.7, 0.7, 0.7));
-		mc.emission = _get_bake_texture(empty, Color(0, 0, 0));
+		mc.albedo = _get_bake_texture(empty, Color(0, 0, 0), Color(1, 1, 1));
+		mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 	}
 
 	p_baker->material_cache[p_material] = mc;
