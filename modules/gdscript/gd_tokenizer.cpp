@@ -885,6 +885,9 @@ void GDTokenizerText::_advance() {
 								return;
 							}
 							sign_found = true;
+						} else if (GETCHAR(i) == '_') {
+							i++;
+							continue; // Included for readability, shouldn't be a part of the string
 						} else
 							break;
 
@@ -897,7 +900,7 @@ void GDTokenizerText::_advance() {
 						return;
 					}
 
-					INCPOS(str.length());
+					INCPOS(i);
 					if (hexa_found) {
 						int64_t val = str.hex_to_int64();
 						_make_constant(val);

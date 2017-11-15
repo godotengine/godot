@@ -894,17 +894,18 @@ void TextEdit::_notification(int p_what) {
 							is_hex_notation = false;
 						}
 
-						// check for dot or 'x' for hex notation in floating point number
-						if ((str[j] == '.' || str[j] == 'x') && !in_word && prev_is_number && !is_number) {
+						// check for dot or underscore or 'x' for hex notation in floating point number
+						if ((str[j] == '.' || str[j] == 'x' || str[j] == '_') && !in_word && prev_is_number && !is_number) {
 							is_number = true;
 							is_symbol = false;
+							is_char = false;
 
 							if (str[j] == 'x' && str[j - 1] == '0') {
 								is_hex_notation = true;
 							}
 						}
 
-						if (!in_word && _is_char(str[j])) {
+						if (!in_word && _is_char(str[j]) && !is_number) {
 							in_word = true;
 						}
 
