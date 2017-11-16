@@ -300,9 +300,9 @@ void TextEdit::_update_scrollbars() {
 	int visible_rows = get_visible_rows();
 	int num_rows = MAX(visible_rows, num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(visible_rows, text.size() - 1 - cursor.line_ofs)));
 
-	int total_rows = text.size();
+	int total_rows = (is_hiding_enabled() ? get_total_unhidden_rows() : text.size());
 	if (scroll_past_end_of_file_enabled) {
-		total_rows += get_visible_rows() - 1;
+		total_rows += visible_rows - 1;
 	}
 
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
@@ -347,19 +347,18 @@ void TextEdit::_update_scrollbars() {
 
 		v_scroll->show();
 		v_scroll->set_max(total_rows);
-		v_scroll->set_page(num_rows);
+		v_scroll->set_page(visible_rows);
 		if (smooth_scroll_enabled) {
 			v_scroll->set_step(0.25);
 		} else {
 			v_scroll->set_step(1);
 		}
 
-		if (fabs(v_scroll->get_value() - (double)cursor.line_ofs) >= 1) {
-			v_scroll->set_value(cursor.line_ofs);
-		}
-
+		update_line_scroll_pos();
 	} else {
 		cursor.line_ofs = 0;
+		line_scroll_pos = 0;
+		v_scroll->set_value(0);
 		v_scroll->hide();
 	}
 
@@ -794,6 +793,7 @@ void TextEdit::_notification(int p_what) {
 			String highlighted_text = get_selection_text();
 
 			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
+			update_line_scroll_pos();
 
 			int line = cursor.line_ofs - 1;
 			for (int i = 0; i < visible_rows; i++) {
@@ -819,7 +819,7 @@ void TextEdit::_notification(int p_what) {
 				int char_ofs = 0;
 				int ofs_y = (i * get_row_height() + cache.line_spacing / 2);
 				if (smooth_scroll_enabled) {
-					ofs_y -= (v_scroll->get_value() - cursor.line_ofs) * get_row_height();
+					ofs_y -= (v_scroll->get_value() - get_line_scroll_pos()) * get_row_height();
 				}
 
 				bool prev_is_char = false;
@@ -882,18 +882,18 @@ void TextEdit::_notification(int p_what) {
 					}
 				}
 
-				// draw fold marker
+				// draw fold markers
 				if (draw_fold_gutter) {
-					int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
+					int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
 					int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + cache.line_number_w;
 					if (is_folded(line)) {
-						int xofs = -cache.can_fold_icon->get_width() / 2 - horizontal_gap;
+						int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 						int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
-						cache.folded_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs));
+						cache.folded_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
 					} else if (can_fold(line)) {
-						int xofs = (cache.fold_gutter_width - cache.can_fold_icon->get_width()) / 2;
+						int xofs = -cache.can_fold_icon->get_width() / 2 - horizontal_gap + 3;
 						int yofs = (get_row_height() - cache.can_fold_icon->get_height()) / 2;
-						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs));
+						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
 					}
 				}
 
@@ -1236,6 +1236,10 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					char_ofs += char_w;
+
+					if (j == str.length() - 1 && is_folded(line)) {
+						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin, ofs_y), Color(1, 1, 1, 1), true);
+					}
 				}
 
 				if (cursor.column == str.length() && cursor.line == line && (char_ofs + char_margin) >= xmargin_beg) {
@@ -1697,21 +1701,15 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	float rows = p_mouse.y;
 	rows -= cache.style_normal->get_margin(MARGIN_TOP);
 	rows /= get_row_height();
-	int row = cursor.line_ofs + (rows + (v_scroll->get_value() - cursor.line_ofs));
+	int lsp = get_line_scroll_pos(true);
+	int row = cursor.line_ofs + (rows + (v_scroll->get_value() - lsp));
 
 	if (is_hiding_enabled()) {
 		// row will be offset by the hidden rows
-		int f_ofs = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(rows, text.size() - 1 - cursor.line_ofs));
-		row = cursor.line_ofs + (f_ofs + (v_scroll->get_value() - cursor.line_ofs));
-		// set row to spot below folded area
-		while (is_line_hidden(row)) {
-			row++;
-			if (row >= text.size() - 1)
-				break;
-		}
+		int f_ofs = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(rows + 1, text.size() - cursor.line_ofs)) - 1;
+		row = cursor.line_ofs + (f_ofs + (v_scroll->get_value() - lsp));
+		row = CLAMP(row, 0, text.size() - num_lines_from(text.size() - 1, -1));
 	}
-	if (rows <= 1)
-		row = CLAMP(cursor.line_ofs, 0, text.size() - 1);
 
 	if (row < 0)
 		row = 0; //todo
@@ -1784,13 +1782,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					target_v_scroll = (v_scroll->get_value() - scroll_factor);
 				}
 
-				int hidden_lines = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), -(int)scroll_factor) - scroll_factor - 1;
-				if (hiding_enabled && hidden_lines > 0) {
-					target_v_scroll -= hidden_lines;
-					if (smooth_scroll_enabled)
-						v_scroll->set_value(v_scroll->get_value() - hidden_lines);
-				}
-
 				if (smooth_scroll_enabled) {
 					if (target_v_scroll <= 0) {
 						target_v_scroll = 0;
@@ -1809,19 +1800,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					target_v_scroll = (v_scroll->get_value() + scroll_factor);
 				}
 
-				// todo fix scrolling down over large hidden sections
-				int hidden_lines = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MAX((int)scroll_factor, 1)) - scroll_factor - 1;
-				if (hiding_enabled && hidden_lines > 0) { // && !is_line_hidden(cursor.line_ofs)) {
-					target_v_scroll += hidden_lines;
-					if (smooth_scroll_enabled) {
-						v_scroll->set_value(v_scroll->get_value() + hidden_lines);
-					}
-				}
-
 				if (smooth_scroll_enabled) {
-					int max_v_scroll = get_line_count() - 1;
+					int max_v_scroll = get_total_unhidden_rows();
 					if (!scroll_past_end_of_file_enabled) {
-						max_v_scroll -= num_lines_from(text.size() - 1, -get_visible_rows()) - 1;
+						max_v_scroll -= get_visible_rows();
+						max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 					}
 
 					if (target_v_scroll > max_v_scroll) {
@@ -1844,6 +1827,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_reset_caret_blink_timer();
 
 				int row, col;
+				update_line_scroll_pos();
 				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
 
 				if (mb->get_command() && highlighted_word != String()) {
@@ -1867,13 +1851,22 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
 					int gutter_left = left_margin + cache.breakpoint_gutter_width + cache.line_number_w;
-					if (mb->get_position().x > gutter_left - 3 && mb->get_position().x <= gutter_left + cache.fold_gutter_width + 3) {
+					if (mb->get_position().x > gutter_left - 6 && mb->get_position().x <= gutter_left + cache.fold_gutter_width - 3) {
 						if (is_folded(row)) {
 							unfold_line(row);
 						} else if (can_fold(row)) {
 							fold_line(row);
 						}
-						//emit_signal("fold_toggled", row);
+						return;
+					}
+				}
+
+				// unfold on folded icon click
+				if (is_folded(row)) {
+					int line_width = text.get_line_width(row);
+					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
+					if (mb->get_position().x > line_width - 3 && mb->get_position().x <= line_width + cache.folded_eol_icon->get_width() + 3) {
+						unfold_line(row);
 						return;
 					}
 				}
@@ -2124,7 +2117,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						_confirm_completion();
 						accept_event();
-						emit_signal("request_completion");
 						return;
 					}
 
@@ -2537,9 +2529,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else if (cursor.column == 0) {
 
 					if (cursor.line > 0) {
-						if (is_line_hidden(cursor.line - 1))
-							unfold_line(cursor.line - 1);
-						cursor_set_line(cursor.line - 1);
+						cursor_set_line(cursor.line - num_lines_from(CLAMP(cursor.line - 1, 0, text.size() - 1), -1));
 						cursor_set_column(text[cursor.line].length());
 					}
 				} else {
@@ -2602,10 +2592,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else if (cursor.column == text[cursor.line].length()) {
 
 					if (cursor.line < text.size() - 1) {
-						if (is_folded(cursor.line + 1))
-							unfold_line(cursor.line + 1);
-						cursor_set_line(cursor.line + 1);
-
+						cursor_set_line(cursor_get_line() + num_lines_from(CLAMP(cursor.line + 1, 0, text.size() - 1), 1), true, false);
 						cursor_set_column(0);
 					}
 				} else {
@@ -2646,7 +2633,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					cursor_set_line(0);
 				else
 #endif
-				cursor_set_line(cursor_get_line() - num_lines_from(cursor.line - 1, -1));
+				cursor_set_line(cursor_get_line() - num_lines_from(CLAMP(cursor.line - 1, 0, text.size() - 1), -1));
 
 				if (k->get_shift())
 					_post_shift_selection();
@@ -2683,7 +2670,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					cursor_set_line(text.size() - 1, true, false);
 				else
 #endif
-				cursor_set_line(cursor_get_line() + num_lines_from(cursor.line + 1, 1));
+				cursor_set_line(cursor_get_line() + num_lines_from(CLAMP(cursor.line + 1, 0, text.size() - 1), 1), true, false);
 
 				if (k->get_shift())
 					_post_shift_selection();
@@ -3105,12 +3092,13 @@ void TextEdit::_scroll_lines_up() {
 
 	// adjust the vertical scroll
 	if (get_v_scroll() > 0) {
-		set_v_scroll(get_v_scroll() - num_lines_from(get_v_scroll(), -1));
+		set_v_scroll(get_v_scroll() - 1);
 	}
 
 	// adjust the cursor
-	if (cursor_get_line() >= (get_visible_rows() + get_v_scroll()) && !selection.active) {
-		cursor_set_line((get_visible_rows() + get_v_scroll()) - 1, false, false);
+	int num_lines = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), get_visible_rows()) - 1;
+	if (cursor.line >= cursor.line_ofs + num_lines && !selection.active) {
+		cursor_set_line(cursor.line_ofs + num_lines, false, false);
 	}
 }
 
@@ -3118,19 +3106,20 @@ void TextEdit::_scroll_lines_down() {
 	scrolling = false;
 
 	// calculate the maximum vertical scroll position
-	int max_v_scroll = get_line_count() - 1;
+	int max_v_scroll = get_total_unhidden_rows();
 	if (!scroll_past_end_of_file_enabled) {
-		max_v_scroll -= get_visible_rows() - 1;
+		max_v_scroll -= get_visible_rows();
+		max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 	}
 
 	// adjust the vertical scroll
 	if (get_v_scroll() < max_v_scroll) {
-		set_v_scroll(get_v_scroll() + num_lines_from(get_v_scroll(), 1));
+		set_v_scroll(get_v_scroll() + 1);
 	}
 
 	// adjust the cursor
-	if ((cursor_get_line()) <= get_v_scroll() - 1 && !selection.active) {
-		cursor_set_line(get_v_scroll(), false, false);
+	if (cursor.line <= cursor.line_ofs - 1 && !selection.active) {
+		cursor_set_line(cursor.line_ofs, false, false);
 	}
 }
 
@@ -3391,11 +3380,58 @@ int TextEdit::get_visible_rows() const {
 	return total;
 }
 
+int TextEdit::get_total_unhidden_rows() const {
+	if (!is_hiding_enabled())
+		return text.size();
+
+	int total_unhidden = 0;
+	for (int i = 0; i < text.size(); i++) {
+		if (!text.is_hidden(i))
+			total_unhidden++;
+	}
+	return total_unhidden;
+}
+
+double TextEdit::get_line_scroll_pos(bool p_recalculate) const {
+
+	if (!is_hiding_enabled())
+		return cursor.line_ofs;
+	if (!p_recalculate)
+		return line_scroll_pos;
+
+	// count num unhidden lines to the cursor line ofs
+	double new_line_scroll_pos = 0;
+	int to = CLAMP(cursor.line_ofs, 0, text.size() - 1);
+	for (int i = 0; i < to; i++) {
+		if (!text.is_hidden(i))
+			new_line_scroll_pos++;
+	}
+	return new_line_scroll_pos;
+}
+
+void TextEdit::update_line_scroll_pos() {
+
+	if (!is_hiding_enabled()) {
+		line_scroll_pos = cursor.line_ofs;
+		return;
+	}
+
+	// count num unhidden lines to the cursor line ofs
+	double new_line_scroll_pos = 0;
+	int to = CLAMP(cursor.line_ofs, 0, text.size() - 1);
+	for (int i = 0; i < to; i++) {
+		if (!text.is_hidden(i))
+			new_line_scroll_pos++;
+	}
+	line_scroll_pos = new_line_scroll_pos;
+}
+
 void TextEdit::adjust_viewport_to_cursor() {
 	scrolling = false;
 
-	if (cursor.line_ofs > cursor.line)
+	if (cursor.line_ofs > cursor.line) {
 		cursor.line_ofs = cursor.line;
+	}
 
 	int visible_width = cache.size.width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width;
 	if (v_scroll->is_visible_in_tree())
@@ -3405,16 +3441,19 @@ void TextEdit::adjust_viewport_to_cursor() {
 	int visible_rows = get_visible_rows();
 	if (h_scroll->is_visible_in_tree())
 		visible_rows -= ((h_scroll->get_combined_minimum_size().height - 1) / get_row_height());
-
 	int num_rows = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(visible_rows, text.size() - 1 - cursor.line_ofs));
-	if (cursor.line >= (cursor.line_ofs + MAX(num_rows, visible_rows)))
-		cursor.line_ofs = cursor.line - MAX(num_lines_from(CLAMP(cursor.line, 0, text.size() - 1), -visible_rows), visible_rows);
-	if (cursor.line < cursor.line_ofs)
-		cursor.line_ofs = cursor.line;
 
-	if (cursor.line_ofs + visible_rows > text.size() && !scroll_past_end_of_file_enabled) {
-		cursor.line_ofs = text.size() - MAX(num_lines_from(text.size() - 1, -visible_rows), visible_rows);
-		v_scroll->set_value(text.size() - MAX(num_lines_from(text.size() - 1, -visible_rows), visible_rows));
+	// if the cursor is off the screen
+	if (cursor.line >= (cursor.line_ofs + MAX(num_rows, visible_rows))) {
+		cursor.line_ofs = cursor.line - (num_lines_from(CLAMP(cursor.line, 0, text.size() - 1), -visible_rows) - 1);
+	}
+	if (cursor.line < cursor.line_ofs) {
+		cursor.line_ofs = cursor.line;
+	}
+
+	// fixes deleting lines from moving the line ofs in a bad way
+	if (!scroll_past_end_of_file_enabled && get_total_unhidden_rows() > visible_rows && num_rows < visible_rows) {
+		cursor.line_ofs = text.size() - 1 - (num_lines_from(text.size() - 1, -visible_rows) - 1);
 	}
 
 	int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
@@ -3425,6 +3464,8 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
 
+	update_line_scroll_pos();
+	v_scroll->set_value(get_line_scroll_pos() + 1);
 	update();
 	/*
 	get_range()->set_max(text.size());
@@ -3455,7 +3496,6 @@ void TextEdit::center_viewport_to_cursor() {
 
 	int max_ofs = text.size() - (scroll_past_end_of_file_enabled ? 1 : num_lines_from(text.size() - 1, -visible_rows));
 	cursor.line_ofs = CLAMP(cursor.line - num_lines_from(cursor.line - visible_rows / 2, -visible_rows / 2), 0, max_ofs);
-
 	int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
 
 	if (cursor_x > (cursor.x_ofs + visible_width))
@@ -3463,6 +3503,9 @@ void TextEdit::center_viewport_to_cursor() {
 
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
+
+	update_line_scroll_pos();
+	v_scroll->set_value(get_line_scroll_pos());
 
 	update();
 }
@@ -3501,26 +3544,16 @@ void TextEdit::cursor_set_line(int p_row, bool p_adjust_viewport, bool p_can_be_
 		p_row = (int)text.size() - 1;
 
 	if (!p_can_be_hidden) {
-		if (is_line_hidden(p_row)) {
-			WARN_PRINTS(("Cursor set to hidden line " + itos(p_row)));
-			// search in a direction until we are not in a hidden line anymore
-			bool search_down = (p_row == 0 || cursor.line < p_row) && p_row != text.size() - 1;
-			bool orig_search_down = search_down;
-			while (is_line_hidden(p_row)) {
-				if (search_down)
-					p_row++;
-				else
-					p_row--;
-				// hit end of file, change dir
-				if (p_row >= text.size() - 1) {
-					search_down = false;
-					if (orig_search_down == search_down)
-						break;
-				}
-				if (p_row <= 0) {
-					search_down = true;
-					if (orig_search_down == search_down)
-						break;
+		if (is_line_hidden(CLAMP(p_row, 0, text.size() - 1))) {
+			int move_down = num_lines_from(p_row, 1) - 1;
+			if (p_row + move_down <= text.size() - 1 && !is_line_hidden(p_row + move_down)) {
+				p_row += move_down;
+			} else {
+				int move_up = num_lines_from(p_row, -1) - 1;
+				if (p_row - move_up > 0 && !is_line_hidden(p_row - move_up)) {
+					p_row -= move_up;
+				} else {
+					WARN_PRINTS(("Cursor set to hidden line " + itos(p_row) + " and there are no nonhidden lines."));
 				}
 			}
 		}
@@ -3594,8 +3627,11 @@ void TextEdit::_scroll_moved(double p_to_val) {
 
 	if (h_scroll->is_visible_in_tree())
 		cursor.x_ofs = h_scroll->get_value();
-	if (v_scroll->is_visible_in_tree())
-		cursor.line_ofs = v_scroll->get_value();
+	if (v_scroll->is_visible_in_tree()) {
+		double val = v_scroll->get_value();
+		cursor.line_ofs = num_lines_from(0, (int)floor(val)) - 1;
+		line_scroll_pos = (int)floor(val);
+	}
 	update();
 }
 
@@ -3685,9 +3721,42 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 
 	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width;
-	if ((completion_active && completion_rect.has_point(p_pos)) || p_pos.x < gutter) {
+	if ((completion_active && completion_rect.has_point(p_pos))) {
 		return CURSOR_ARROW;
 	}
+	if (p_pos.x < gutter) {
+
+		int row, col;
+		_get_mouse_pos(p_pos, row, col);
+		int left_margin = cache.style_normal->get_margin(MARGIN_LEFT);
+
+		// breakpoint icon
+		if (draw_breakpoint_gutter && p_pos.x > left_margin && p_pos.x <= left_margin + cache.breakpoint_gutter_width + 3) {
+			return CURSOR_POINTING_HAND;
+		}
+
+		// fold icon
+		int gutter_left = left_margin + cache.breakpoint_gutter_width + cache.line_number_w;
+		if (draw_fold_gutter && p_pos.x > gutter_left - 6 && p_pos.x <= gutter_left + cache.fold_gutter_width - 3) {
+			if (is_folded(row) || can_fold(row))
+				return CURSOR_POINTING_HAND;
+			else
+				return CURSOR_ARROW;
+		}
+		return CURSOR_ARROW;
+	} else {
+		int row, col;
+		_get_mouse_pos(p_pos, row, col);
+		// eol fold icon
+		if (is_folded(row)) {
+			int line_width = text.get_line_width(row);
+			line_width += cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
+			if (p_pos.x > line_width - 3 && p_pos.x <= line_width + cache.folded_eol_icon->get_width() + 3) {
+				return CURSOR_POINTING_HAND;
+			}
+		}
+	}
+
 	return CURSOR_IBEAM;
 }
 
@@ -3701,6 +3770,7 @@ void TextEdit::set_text(String p_text) {
 	cursor.line = 0;
 	cursor.x_ofs = 0;
 	cursor.line_ofs = 0;
+	line_scroll_pos = 0;
 	cursor.last_fit_x = 0;
 	cursor_set_line(0);
 	cursor_set_column(0);
@@ -3786,6 +3856,7 @@ void TextEdit::_clear() {
 	cursor.line = 0;
 	cursor.x_ofs = 0;
 	cursor.line_ofs = 0;
+	line_scroll_pos = 0;
 	cursor.last_fit_x = 0;
 }
 
@@ -3864,8 +3935,9 @@ void TextEdit::_update_caches() {
 	cache.line_spacing = get_constant("line_spacing");
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon = get_icon("tab");
-	cache.folded_icon = get_icon("Collapse", "EditorIcons");
-	cache.can_fold_icon = get_icon("Forward", "EditorIcons");
+	cache.folded_icon = get_icon("GuiTreeArrowRight", "EditorIcons");
+	cache.can_fold_icon = get_icon("GuiTreeArrowDown", "EditorIcons");
+	cache.folded_eol_icon = get_icon("GuiTabMenu", "EditorIcons");
 	text.set_font(cache.font);
 }
 
@@ -4326,11 +4398,21 @@ bool TextEdit::is_line_hidden(int p_line) const {
 	return text.is_hidden(p_line);
 }
 
+void TextEdit::fold_all_lines() {
+
+	for (int i = 0; i < text.size(); i++) {
+		fold_line(i);
+	}
+	_update_scrollbars();
+	update();
+}
+
 void TextEdit::unhide_all_lines() {
 
 	for (int i = 0; i < text.size(); i++) {
 		text.set_hidden(i, false);
 	}
+	_update_scrollbars();
 	update();
 }
 
@@ -4377,9 +4459,7 @@ int TextEdit::get_whitespace_level(int p_line) const {
 		} else if (text[p_line][i] == ' ') {
 			whitespace_count++;
 		} else if (text[p_line][i] == '#') {
-			if (whitespace_count != 0) {
-				break;
-			}
+			break;
 		} else {
 			break;
 		}
@@ -4392,13 +4472,13 @@ bool TextEdit::can_fold(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	if (!is_hiding_enabled())
 		return false;
-	if (!draw_fold_gutter)
-		return false;
-	if (p_line + 2 >= text.size())
+	if (p_line + 1 >= text.size())
 		return false;
 	if (text[p_line].size() == 0)
 		return false;
 	if (is_folded(p_line))
+		return false;
+	if (is_line_hidden(p_line))
 		return false;
 
 	int start_indent = get_whitespace_level(p_line);
@@ -4434,6 +4514,7 @@ void TextEdit::fold_line(int p_line) {
 	if (!can_fold(p_line))
 		return;
 
+	// hide lines below this one
 	int start_indent = get_whitespace_level(p_line);
 	for (int i = p_line + 1; i < text.size(); i++) {
 		int cur_indent = get_whitespace_level(i);
@@ -4447,13 +4528,27 @@ void TextEdit::fold_line(int p_line) {
 				else
 					break;
 			}
-			if (is_line_hidden(cursor.line)) {
-				cursor_set_line(i, true, false);
-			}
 			break;
 		}
 	}
-	adjust_viewport_to_cursor();
+
+	// fix selection
+	if (is_selection_active()) {
+		if (is_line_hidden(selection.from_line) && is_line_hidden(selection.to_line)) {
+			deselect();
+		} else if (is_line_hidden(selection.from_line)) {
+			select(p_line, 9999, selection.to_line, selection.to_column);
+		} else if (is_line_hidden(selection.to_line)) {
+			select(selection.from_line, selection.from_column, p_line, 9999);
+		}
+	}
+
+	// reset cursor
+	if (is_line_hidden(cursor.line)) {
+		cursor_set_line(p_line, false, false);
+		cursor_set_column(get_line(p_line).length(), false);
+	}
+	_update_scrollbars();
 	update();
 }
 
@@ -4461,6 +4556,8 @@ void TextEdit::unfold_line(int p_line) {
 
 	ERR_FAIL_INDEX(p_line, text.size());
 
+	if (!is_folded(p_line) && !is_line_hidden(p_line))
+		return;
 	int fold_start = p_line;
 	for (fold_start = p_line; fold_start > 0; fold_start--) {
 		if (is_folded(fold_start))
@@ -4475,7 +4572,7 @@ void TextEdit::unfold_line(int p_line) {
 			break;
 		}
 	}
-	adjust_viewport_to_cursor();
+	_update_scrollbars();
 	update();
 }
 
@@ -4705,13 +4802,14 @@ void TextEdit::set_v_scroll(int p_scroll) {
 		p_scroll = 0;
 	}
 	if (!scroll_past_end_of_file_enabled) {
-		if (p_scroll + get_visible_rows() > get_line_count()) {
+		if (p_scroll + get_visible_rows() > get_total_unhidden_rows()) {
 			int num_rows = num_lines_from(CLAMP(p_scroll, 0, text.size() - 1), MIN(get_visible_rows(), text.size() - 1 - p_scroll));
-			p_scroll = get_line_count() - num_rows;
+			p_scroll = text.size() - num_rows;
 		}
 	}
 	v_scroll->set_value(p_scroll);
-	cursor.line_ofs = p_scroll;
+	cursor.line_ofs = num_lines_from(0, p_scroll);
+	line_scroll_pos = p_scroll;
 }
 
 int TextEdit::get_h_scroll() const {
@@ -5123,10 +5221,6 @@ int TextEdit::get_breakpoint_gutter_width() const {
 
 void TextEdit::set_draw_fold_gutter(bool p_draw) {
 	draw_fold_gutter = p_draw;
-	if (draw_fold_gutter)
-		set_hiding_enabled(true);
-	else
-		unhide_all_lines();
 	update();
 }
 
@@ -5144,9 +5238,9 @@ int TextEdit::get_fold_gutter_width() const {
 }
 
 void TextEdit::set_hiding_enabled(int p_enabled) {
+	if (!p_enabled)
+		unhide_all_lines();
 	hiding_enabled = p_enabled;
-	if (!hiding_enabled)
-		set_draw_fold_gutter(false);
 	update();
 }
 
@@ -5293,6 +5387,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_hiding_enabled"), &TextEdit::is_hiding_enabled);
 	ClassDB::bind_method(D_METHOD("set_line_as_hidden", "line", "enable"), &TextEdit::set_line_as_hidden);
 	ClassDB::bind_method(D_METHOD("is_line_hidden"), &TextEdit::is_line_hidden);
+	ClassDB::bind_method(D_METHOD("fold_all_lines"), &TextEdit::fold_all_lines);
 	ClassDB::bind_method(D_METHOD("unhide_all_lines"), &TextEdit::unhide_all_lines);
 	ClassDB::bind_method(D_METHOD("fold_line", "line"), &TextEdit::fold_line);
 	ClassDB::bind_method(D_METHOD("unfold_line", "line"), &TextEdit::unfold_line);

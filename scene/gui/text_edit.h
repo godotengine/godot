@@ -75,6 +75,7 @@ class TextEdit : public Control {
 		Ref<Texture> tab_icon;
 		Ref<Texture> can_fold_icon;
 		Ref<Texture> folded_icon;
+		Ref<Texture> folded_eol_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<Font> font;
@@ -302,9 +303,14 @@ class TextEdit : public Control {
 	int search_result_line;
 	int search_result_col;
 
+	double line_scroll_pos;
+
 	bool context_menu_enabled;
 
 	int get_visible_rows() const;
+	int get_total_unhidden_rows() const;
+	double get_line_scroll_pos(bool p_recalculate = false) const;
+	void update_line_scroll_pos();
 
 	int get_char_count();
 
@@ -312,6 +318,7 @@ class TextEdit : public Control {
 	int get_column_x_offset(int p_char, String p_str);
 
 	void adjust_viewport_to_cursor();
+	double get_scroll_line_diff() const;
 	void _scroll_moved(double);
 	void _update_scrollbars();
 	void _v_scroll_input();
@@ -333,8 +340,6 @@ class TextEdit : public Control {
 	Size2 get_minimum_size() const;
 
 	int get_row_height() const;
-
-	// int _get_fold_offset(int p_line_from, int p_line_to) const;
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -416,8 +421,10 @@ public:
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;
+
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
+	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int unhidden_amount) const;
 	int get_whitespace_level(int p_line) const;
