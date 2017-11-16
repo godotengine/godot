@@ -226,6 +226,12 @@ public:
 	virtual Error move_to_trash(const String &p_path);
 
 	OS_OSX();
+
+private:
+	Point2 get_native_screen_position(int p_screen) const;
+	Point2 get_native_window_position() const;
+	void set_native_window_position(const Point2 &p_position);
+	Point2 get_screens_origin() const;
 };
 
 #endif
