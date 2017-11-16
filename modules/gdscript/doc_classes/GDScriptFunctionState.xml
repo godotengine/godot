@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDFunctionState" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="GDScriptFunctionState" inherits="Reference" category="Core" version="3.0-alpha">
 	<brief_description>
 		State of a function call after yielding.
 	</brief_description>
@@ -18,7 +18,7 @@
 			</argument>
 			<description>
 				Check whether the function call may be resumed. This is not the case if the function state was already resumed.
-				If [code]extended_check[/code] is enabled, it also checks if the associated script and object still exist. The extended check is done in debug mode as part of [method GDFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
+				If [code]extended_check[/code] is enabled, it also checks if the associated script and object still exist. The extended check is done in debug mode as part of [method GDScriptFunctionState.resume], but you can use this if you know you may be trying to resume without knowing for sure the object and/or script have survived up to that point.
 			</description>
 		</method>
 		<method name="resume">

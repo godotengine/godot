@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_script.h                                                          */
+/*  gdscript.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,16 +27,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GD_SCRIPT_H
-#define GD_SCRIPT_H
+#ifndef GDSCRIPT_H
+#define GDSCRIPT_H
 
-#include "gd_function.h"
+#include "gdscript_function.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "script_language.h"
-class GDNativeClass : public Reference {
 
-	GDCLASS(GDNativeClass, Reference);
+class GDScriptNativeClass : public Reference {
+
+	GDCLASS(GDScriptNativeClass, Reference);
 
 	StringName name;
 
@@ -48,7 +49,7 @@ public:
 	_FORCE_INLINE_ const StringName &get_name() const { return name; }
 	Variant _new();
 	Object *instance();
-	GDNativeClass(const StringName &p_name);
+	GDScriptNativeClass(const StringName &p_name);
 };
 
 class GDScript : public Script {
@@ -64,21 +65,21 @@ class GDScript : public Script {
 		ScriptInstance::RPCMode rpc_mode;
 	};
 
-	friend class GDInstance;
-	friend class GDFunction;
-	friend class GDCompiler;
-	friend class GDFunctions;
+	friend class GDScriptInstance;
+	friend class GDScriptFunction;
+	friend class GDScriptCompiler;
+	friend class GDScriptFunctions;
 	friend class GDScriptLanguage;
 
 	Variant _static_ref; //used for static call
-	Ref<GDNativeClass> native;
+	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
 	GDScript *_base; //fast pointer access
 	GDScript *_owner; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName, Variant> constants;
-	Map<StringName, GDFunction *> member_functions;
+	Map<StringName, GDScriptFunction *> member_functions;
 	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName, Ref<GDScript> > subclasses;
 	Map<StringName, Vector<StringName> > _signals;
@@ -99,7 +100,7 @@ class GDScript : public Script {
 #endif
 	Map<StringName, PropertyInfo> member_info;
 
-	GDFunction *initializer; //direct pointer to _init , faster to locate
+	GDScriptFunction *initializer; //direct pointer to _init , faster to locate
 
 	int subclass_count;
 	Set<Object *> instances;
@@ -109,7 +110,7 @@ class GDScript : public Script {
 	String name;
 	SelfList<GDScript> script_list;
 
-	GDInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 
@@ -143,8 +144,8 @@ public:
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
-	const Map<StringName, GDFunction *> &get_member_functions() const { return member_functions; }
-	const Ref<GDNativeClass> &get_native() const { return native; }
+	const Map<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
+	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
 	virtual bool has_script_signal(const StringName &p_signal) const;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
@@ -153,7 +154,7 @@ public:
 	Ref<GDScript> get_base() const;
 
 	const Map<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const Map<StringName, GDFunction *> &debug_get_member_functions() const; //this is debug only
+	const Map<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
@@ -201,11 +202,11 @@ public:
 	~GDScript();
 };
 
-class GDInstance : public ScriptInstance {
+class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;
-	friend class GDFunction;
-	friend class GDFunctions;
-	friend class GDCompiler;
+	friend class GDScriptFunction;
+	friend class GDScriptFunctions;
+	friend class GDScriptCompiler;
 
 	Object *owner;
 	Ref<GDScript> script;
@@ -246,8 +247,8 @@ public:
 	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
 	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
 
-	GDInstance();
-	~GDInstance();
+	GDScriptInstance();
+	~GDScriptInstance();
 };
 
 class GDScriptLanguage : public ScriptLanguage {
@@ -261,8 +262,8 @@ class GDScriptLanguage : public ScriptLanguage {
 	struct CallLevel {
 
 		Variant *stack;
-		GDFunction *function;
-		GDInstance *instance;
+		GDScriptFunction *function;
+		GDScriptInstance *instance;
 		int *ip;
 		int *line;
 	};
@@ -276,16 +277,16 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 
-	friend class GDInstance;
+	friend class GDScriptInstance;
 
 	Mutex *lock;
 
 	friend class GDScript;
 
 	SelfList<GDScript>::List script_list;
-	friend class GDFunction;
+	friend class GDScriptFunction;
 
-	SelfList<GDFunction>::List function_list;
+	SelfList<GDScriptFunction>::List function_list;
 	bool profiling;
 	uint64_t script_frame_time;
 
@@ -295,7 +296,7 @@ public:
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
-	_FORCE_INLINE_ void enter_function(GDInstance *p_instance, GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
+	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
 
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
@@ -446,4 +447,4 @@ public:
 	virtual bool recognize(const RES &p_resource) const;
 };
 
-#endif // GD_SCRIPT_H
+#endif // GDSCRIPT_H

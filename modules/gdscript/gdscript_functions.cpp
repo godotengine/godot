@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_functions.cpp                                                     */
+/*  gdscript_functions.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,10 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "gd_functions.h"
+#include "gdscript_functions.h"
+
 #include "class_db.h"
 #include "func_ref.h"
-#include "gd_script.h"
+#include "gdscript.h"
 #include "io/json.h"
 #include "io/marshalls.h"
 #include "math_funcs.h"
@@ -38,7 +39,7 @@
 #include "reference.h"
 #include "variant_parser.h"
 
-const char *GDFunctions::get_func_name(Function p_func) {
+const char *GDScriptFunctions::get_func_name(Function p_func) {
 
 	ERR_FAIL_INDEX_V(p_func, FUNC_MAX, "");
 
@@ -123,7 +124,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 	return _names[p_func];
 }
 
-void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error) {
+void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error) {
 
 	r_error.error = Variant::CallError::CALL_OK;
 #ifdef DEBUG_ENABLED
@@ -899,7 +900,7 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 					return;
 				} else {
 
-					GDInstance *ins = static_cast<GDInstance *>(obj->get_script_instance());
+					GDScriptInstance *ins = static_cast<GDScriptInstance *>(obj->get_script_instance());
 					Ref<GDScript> base = ins->get_script();
 					if (base.is_null()) {
 
@@ -1030,7 +1031,7 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 
 			r_ret = gdscr->_new(NULL, 0, r_error);
 
-			GDInstance *ins = static_cast<GDInstance *>(static_cast<Object *>(r_ret)->get_script_instance());
+			GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(r_ret)->get_script_instance());
 			Ref<GDScript> gd_ref = ins->get_script();
 
 			for (Map<StringName, GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
@@ -1254,7 +1255,7 @@ void GDFunctions::call(Function p_func, const Variant **p_args, int p_arg_count,
 	}
 }
 
-bool GDFunctions::is_deterministic(Function p_func) {
+bool GDScriptFunctions::is_deterministic(Function p_func) {
 
 	//man i couldn't have chosen a worse function name,
 	//way too controversial..
@@ -1317,7 +1318,7 @@ bool GDFunctions::is_deterministic(Function p_func) {
 	return false;
 }
 
-MethodInfo GDFunctions::get_info(Function p_func) {
+MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 #ifdef TOOLS_ENABLED
 	//using a switch, so the compiler generates a jumptable

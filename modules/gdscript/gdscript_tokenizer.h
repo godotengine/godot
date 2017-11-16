@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_tokenizer.h                                                       */
+/*  gdscript_tokenizer.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,16 +27,16 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GD_TOKENIZER_H
-#define GD_TOKENIZER_H
+#ifndef GDSCRIPT_TOKENIZER_H
+#define GDSCRIPT_TOKENIZER_H
 
-#include "gd_functions.h"
+#include "gdscript_functions.h"
 #include "string_db.h"
 #include "ustring.h"
 #include "variant.h"
 #include "vmap.h"
 
-class GDTokenizer {
+class GDScriptTokenizer {
 public:
 	enum Token {
 
@@ -156,7 +156,7 @@ public:
 	virtual const Variant &get_token_constant(int p_offset = 0) const = 0;
 	virtual Token get_token(int p_offset = 0) const = 0;
 	virtual StringName get_token_identifier(int p_offset = 0) const = 0;
-	virtual GDFunctions::Function get_token_built_in_func(int p_offset = 0) const = 0;
+	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const = 0;
 	virtual Variant::Type get_token_type(int p_offset = 0) const = 0;
 	virtual int get_token_line(int p_offset = 0) const = 0;
 	virtual int get_token_column(int p_offset = 0) const = 0;
@@ -164,10 +164,10 @@ public:
 	virtual String get_token_error(int p_offset = 0) const = 0;
 	virtual void advance(int p_amount = 1) = 0;
 
-	virtual ~GDTokenizer(){};
+	virtual ~GDScriptTokenizer(){};
 };
 
-class GDTokenizerText : public GDTokenizer {
+class GDScriptTokenizerText : public GDScriptTokenizer {
 
 	enum {
 		MAX_LOOKAHEAD = 4,
@@ -181,7 +181,7 @@ class GDTokenizerText : public GDTokenizer {
 		Variant constant; //for constant types
 		union {
 			Variant::Type vtype; //for type types
-			GDFunctions::Function func; //function for built in functions
+			GDScriptFunctions::Function func; //function for built in functions
 		};
 		int line, col;
 		TokenData() {
@@ -194,7 +194,7 @@ class GDTokenizerText : public GDTokenizer {
 	void _make_token(Token p_type);
 	void _make_newline(int p_spaces = 0);
 	void _make_identifier(const StringName &p_identifier);
-	void _make_built_in_func(GDFunctions::Function p_func);
+	void _make_built_in_func(GDScriptFunctions::Function p_func);
 	void _make_constant(const Variant &p_constant);
 	void _make_type(const Variant::Type &p_type);
 	void _make_error(const String &p_error);
@@ -216,7 +216,7 @@ public:
 	void set_code(const String &p_code);
 	virtual Token get_token(int p_offset = 0) const;
 	virtual StringName get_token_identifier(int p_offset = 0) const;
-	virtual GDFunctions::Function get_token_built_in_func(int p_offset = 0) const;
+	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
 	virtual Variant::Type get_token_type(int p_offset = 0) const;
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;
@@ -226,7 +226,7 @@ public:
 	virtual void advance(int p_amount = 1);
 };
 
-class GDTokenizerBuffer : public GDTokenizer {
+class GDScriptTokenizerBuffer : public GDScriptTokenizer {
 
 	enum {
 
@@ -249,7 +249,7 @@ public:
 	static Vector<uint8_t> parse_code_string(const String &p_code);
 	virtual Token get_token(int p_offset = 0) const;
 	virtual StringName get_token_identifier(int p_offset = 0) const;
-	virtual GDFunctions::Function get_token_built_in_func(int p_offset = 0) const;
+	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
 	virtual Variant::Type get_token_type(int p_offset = 0) const;
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;
@@ -257,7 +257,7 @@ public:
 	virtual const Variant &get_token_constant(int p_offset = 0) const;
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
-	GDTokenizerBuffer();
+	GDScriptTokenizerBuffer();
 };
 
-#endif // TOKENIZER_H
+#endif // GDSCRIPT_TOKENIZER_H

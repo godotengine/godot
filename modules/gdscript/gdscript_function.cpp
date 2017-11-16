@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_function.cpp                                                      */
+/*  gdscript_function.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,13 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "gd_function.h"
+#include "gdscript_function.h"
 
-#include "gd_functions.h"
-#include "gd_script.h"
+#include "gdscript.h"
+#include "gdscript_functions.h"
 #include "os/os.h"
 
-Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const {
+Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const {
 
 	int address = p_address & ADDR_MASK;
 
@@ -85,7 +85,7 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 				o = o->_owner;
 			}
 
-			ERR_EXPLAIN("GDCompiler bug..");
+			ERR_EXPLAIN("GDScriptCompiler bug..");
 			ERR_FAIL_V(NULL);
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
@@ -117,7 +117,7 @@ Variant *GDFunction::_get_variant(int p_address, GDInstance *p_instance, GDScrip
 	return NULL;
 }
 
-String GDFunction::_get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const {
+String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const {
 
 	String err_text;
 
@@ -231,7 +231,7 @@ static String _get_var_type(const Variant *p_type) {
 #define OPCODE_OUT break
 #endif
 
-Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state) {
+Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state) {
 
 	OPCODES_TABLE;
 
@@ -479,7 +479,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				} else {
 
-					GDNativeClass *nc = Object::cast_to<GDNativeClass>(obj_B);
+					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(obj_B);
 
 #ifdef DEBUG_ENABLED
 					if (!nc) {
@@ -851,7 +851,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(4);
 
-				GDFunctions::Function func = GDFunctions::Function(_code_ptr[ip + 1]);
+				GDScriptFunctions::Function func = GDScriptFunctions::Function(_code_ptr[ip + 1]);
 				int argc = _code_ptr[ip + 2];
 				GD_ERR_BREAK(argc < 0);
 
@@ -868,12 +868,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				Variant::CallError err;
 
-				GDFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
+				GDScriptFunctions::call(func, (const Variant **)argptrs, argc, *dst, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Variant::CallError::CALL_OK) {
 
-					String methodstr = GDFunctions::get_func_name(func);
+					String methodstr = GDScriptFunctions::get_func_name(func);
 					if (dst->get_type() == Variant::STRING) {
 						//call provided error string
 						err_text = "Error calling built-in function '" + methodstr + "': " + String(*dst);
@@ -921,7 +921,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				const GDScript *gds = _script;
 
-				const Map<StringName, GDFunction *>::Element *E = NULL;
+				const Map<StringName, GDScriptFunction *>::Element *E = NULL;
 				while (gds->base.ptr()) {
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
@@ -979,7 +979,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					CHECK_SPACE(2);
 				}
 
-				Ref<GDFunctionState> gdfs = memnew(GDFunctionState);
+				Ref<GDScriptFunctionState> gdfs = memnew(GDScriptFunctionState);
 				gdfs->function = this;
 
 				gdfs->state.stack.resize(alloca_size);
@@ -1321,43 +1321,43 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 	return retvalue;
 }
 
-const int *GDFunction::get_code() const {
+const int *GDScriptFunction::get_code() const {
 
 	return _code_ptr;
 }
-int GDFunction::get_code_size() const {
+int GDScriptFunction::get_code_size() const {
 
 	return _code_size;
 }
 
-Variant GDFunction::get_constant(int p_idx) const {
+Variant GDScriptFunction::get_constant(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
 }
 
-StringName GDFunction::get_global_name(int p_idx) const {
+StringName GDScriptFunction::get_global_name(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
 }
 
-int GDFunction::get_default_argument_count() const {
+int GDScriptFunction::get_default_argument_count() const {
 
 	return default_arguments.size();
 }
-int GDFunction::get_default_argument_addr(int p_idx) const {
+int GDScriptFunction::get_default_argument_addr(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), -1);
 	return default_arguments[p_idx];
 }
 
-StringName GDFunction::get_name() const {
+StringName GDScriptFunction::get_name() const {
 
 	return name;
 }
 
-int GDFunction::get_max_stack_size() const {
+int GDScriptFunction::get_max_stack_size() const {
 
 	return _stack_size;
 }
@@ -1380,7 +1380,7 @@ struct _GDFKCS {
 	}
 };
 
-void GDFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const {
+void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const {
 
 	int oc = 0;
 	Map<StringName, _GDFKC> sdmap;
@@ -1432,7 +1432,7 @@ void GDFunction::debug_get_stack_member_state(int p_line, List<Pair<StringName, 
 	}
 }
 
-GDFunction::GDFunction()
+GDScriptFunction::GDScriptFunction()
 	: function_list(this) {
 
 	_stack_size = 0;
@@ -1464,7 +1464,7 @@ GDFunction::GDFunction()
 #endif
 }
 
-GDFunction::~GDFunction() {
+GDScriptFunction::~GDScriptFunction() {
 #ifdef DEBUG_ENABLED
 	if (GDScriptLanguage::get_singleton()->lock) {
 		GDScriptLanguage::get_singleton()->lock->lock();
@@ -1479,7 +1479,7 @@ GDFunction::~GDFunction() {
 
 /////////////////////
 
-Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 #ifdef DEBUG_ENABLED
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
@@ -1514,7 +1514,7 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 		arg = extra_args;
 	}
 
-	Ref<GDFunctionState> self = *p_args[p_argcount - 1];
+	Ref<GDScriptFunctionState> self = *p_args[p_argcount - 1];
 
 	if (self.is_null()) {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -1528,10 +1528,10 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 
 	bool completed = true;
 
-	// If the return value is a GDFunctionState reference,
+	// If the return value is a GDScriptFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>(ret);
+		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}
@@ -1546,7 +1546,7 @@ Variant GDFunctionState::_signal_callback(const Variant **p_args, int p_argcount
 	return ret;
 }
 
-bool GDFunctionState::is_valid(bool p_extended_check) const {
+bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 
 	if (function == NULL)
 		return false;
@@ -1563,7 +1563,7 @@ bool GDFunctionState::is_valid(bool p_extended_check) const {
 	return true;
 }
 
-Variant GDFunctionState::resume(const Variant &p_arg) {
+Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
 #ifdef DEBUG_ENABLED
@@ -1584,10 +1584,10 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 
 	bool completed = true;
 
-	// If the return value is a GDFunctionState reference,
+	// If the return value is a GDScriptFunctionState reference,
 	// then the function did yield again after resuming.
 	if (ret.is_ref()) {
-		GDFunctionState *gdfs = Object::cast_to<GDFunctionState>(ret);
+		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function)
 			completed = false;
 	}
@@ -1602,21 +1602,21 @@ Variant GDFunctionState::resume(const Variant &p_arg) {
 	return ret;
 }
 
-void GDFunctionState::_bind_methods() {
+void GDScriptFunctionState::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDFunctionState::resume, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDFunctionState::is_valid, DEFVAL(false));
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDFunctionState::_signal_callback, MethodInfo("_signal_callback"));
+	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
-GDFunctionState::GDFunctionState() {
+GDScriptFunctionState::GDScriptFunctionState() {
 
 	function = NULL;
 }
 
-GDFunctionState::~GDFunctionState() {
+GDScriptFunctionState::~GDScriptFunctionState() {
 
 	if (function != NULL) {
 		//never called, deinitialize stack

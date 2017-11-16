@@ -1103,14 +1103,14 @@
 			</description>
 		</method>
 		<method name="yield">
-			<return type="GDFunctionState">
+			<return type="GDScriptFunctionState">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<argument index="1" name="signal" type="String">
 			</argument>
 			<description>
-				Stops the function execution and returns the current state. Call [method GDFunctionState.resume] on the state to resume execution. This invalidates the state.
+				Stops the function execution and returns the current state. Call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state.
 				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
 			</description>
 		</method>
