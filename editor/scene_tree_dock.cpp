@@ -1415,6 +1415,7 @@ void SceneTreeDock::_create() {
 		} else {
 
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_do_reference(child);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
 		}
