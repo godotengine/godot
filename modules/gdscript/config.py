@@ -6,9 +6,9 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "GDFunctionState",
-        "GDNativeClass",
         "GDScript",
+        "GDScriptFunctionState",
+        "GDScriptNativeClass",
     ]
 
 def get_doc_path():

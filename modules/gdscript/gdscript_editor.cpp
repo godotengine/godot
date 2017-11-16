@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_editor.cpp                                                        */
+/*  gdscript_editor.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "gd_script.h"
+#include "gdscript.h"
 
 #include "editor/editor_settings.h"
-#include "gd_compiler.h"
+#include "gdscript_compiler.h"
 #include "global_constants.h"
 #include "os/file_access.h"
 #include "project_settings.h"
@@ -92,7 +92,7 @@ void GDScriptLanguage::make_template(const String &p_class_name, const String &p
 
 bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
 
-	GDParser parser;
+	GDScriptParser parser;
 
 	Error err = parser.parse(p_script, p_path.get_base_dir(), true, p_path);
 	if (err) {
@@ -102,10 +102,10 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 		return false;
 	} else {
 
-		const GDParser::Node *root = parser.get_parse_tree();
-		ERR_FAIL_COND_V(root->type != GDParser::Node::TYPE_CLASS, false);
+		const GDScriptParser::Node *root = parser.get_parse_tree();
+		ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, false);
 
-		const GDParser::ClassNode *cl = static_cast<const GDParser::ClassNode *>(root);
+		const GDScriptParser::ClassNode *cl = static_cast<const GDScriptParser::ClassNode *>(root);
 		Map<int, String> funcs;
 		for (int i = 0; i < cl->functions.size(); i++) {
 
@@ -138,16 +138,16 @@ bool GDScriptLanguage::supports_builtin_mode() const {
 
 int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 
-	GDTokenizerText tokenizer;
+	GDScriptTokenizerText tokenizer;
 	tokenizer.set_code(p_code);
 	int indent = 0;
-	while (tokenizer.get_token() != GDTokenizer::TK_EOF && tokenizer.get_token() != GDTokenizer::TK_ERROR) {
+	while (tokenizer.get_token() != GDScriptTokenizer::TK_EOF && tokenizer.get_token() != GDScriptTokenizer::TK_ERROR) {
 
-		if (tokenizer.get_token() == GDTokenizer::TK_NEWLINE) {
+		if (tokenizer.get_token() == GDScriptTokenizer::TK_NEWLINE) {
 			indent = tokenizer.get_token_line_indent();
 		}
-		//print_line("TOKEN: "+String(GDTokenizer::get_token_name(tokenizer.get_token())));
-		if (indent == 0 && tokenizer.get_token() == GDTokenizer::TK_PR_FUNCTION && tokenizer.get_token(1) == GDTokenizer::TK_IDENTIFIER) {
+		//print_line("TOKEN: "+String(GDScriptTokenizer::get_token_name(tokenizer.get_token())));
+		if (indent == 0 && tokenizer.get_token() == GDScriptTokenizer::TK_PR_FUNCTION && tokenizer.get_token(1) == GDScriptTokenizer::TK_IDENTIFIER) {
 
 			String identifier = tokenizer.get_token_identifier(1);
 			if (identifier == p_function) {
@@ -155,7 +155,7 @@ int GDScriptLanguage::find_function(const String &p_function, const String &p_co
 			}
 		}
 		tokenizer.advance();
-		//print_line("NEXT: "+String(GDTokenizer::get_token_name(tokenizer.get_token())));
+		//print_line("NEXT: "+String(GDScriptTokenizer::get_token_name(tokenizer.get_token())));
 	}
 	return -1;
 }
@@ -245,7 +245,7 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
 	int l = _debug_call_stack_pos - p_level - 1;
 
-	GDFunction *f = _call_stack[l].function;
+	GDScriptFunction *f = _call_stack[l].function;
 
 	List<Pair<StringName, int> > locals;
 
@@ -264,7 +264,7 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
 	int l = _debug_call_stack_pos - p_level - 1;
 
-	GDInstance *instance = _call_stack[l].instance;
+	GDScriptInstance *instance = _call_stack[l].instance;
 
 	if (!instance)
 		return;
@@ -298,9 +298,9 @@ void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) con
 
 void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
 
-	for (int i = 0; i < GDFunctions::FUNC_MAX; i++) {
+	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
 
-		p_functions->push_back(GDFunctions::get_info(GDFunctions::Function(i)));
+		p_functions->push_back(GDScriptFunctions::get_info(GDScriptFunctions::Function(i)));
 	}
 
 	//not really "functions", but..
@@ -318,7 +318,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		mi.arguments.push_back(PropertyInfo(Variant::STRING, "signal"));
 		mi.default_arguments.push_back(Variant::NIL);
 		mi.default_arguments.push_back(Variant::STRING);
-		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDFunctionState");
+		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDScriptFunctionState");
 		p_functions->push_back(mi);
 	}
 	{
@@ -372,7 +372,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-struct GDCompletionIdentifier {
+struct GDScriptCompletionIdentifier {
 
 	String enumeration;
 	StringName obj_type;
@@ -381,17 +381,17 @@ struct GDCompletionIdentifier {
 	Variant value; //im case there is a value, also return it
 };
 
-static GDCompletionIdentifier _get_type_from_variant(const Variant &p_variant, bool p_allow_gdnative_class = false) {
+static GDScriptCompletionIdentifier _get_type_from_variant(const Variant &p_variant, bool p_allow_gdnative_class = false) {
 
-	GDCompletionIdentifier t;
+	GDScriptCompletionIdentifier t;
 	t.type = p_variant.get_type();
 	t.value = p_variant;
 	if (p_variant.get_type() == Variant::OBJECT) {
 		Object *obj = p_variant;
 		if (obj) {
 
-			if (p_allow_gdnative_class && Object::cast_to<GDNativeClass>(obj)) {
-				t.obj_type = Object::cast_to<GDNativeClass>(obj)->get_name();
+			if (p_allow_gdnative_class && Object::cast_to<GDScriptNativeClass>(obj)) {
+				t.obj_type = Object::cast_to<GDScriptNativeClass>(obj)->get_name();
 				t.value = Variant();
 			} else {
 
@@ -402,9 +402,9 @@ static GDCompletionIdentifier _get_type_from_variant(const Variant &p_variant, b
 	return t;
 }
 
-static GDCompletionIdentifier _get_type_from_pinfo(const PropertyInfo &p_info) {
+static GDScriptCompletionIdentifier _get_type_from_pinfo(const PropertyInfo &p_info) {
 
-	GDCompletionIdentifier t;
+	GDScriptCompletionIdentifier t;
 	t.type = p_info.type;
 	if (p_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		t.obj_type = p_info.hint_string;
@@ -412,23 +412,23 @@ static GDCompletionIdentifier _get_type_from_pinfo(const PropertyInfo &p_info) {
 	return t;
 }
 
-struct GDCompletionContext {
+struct GDScriptCompletionContext {
 
-	const GDParser::ClassNode *_class;
-	const GDParser::FunctionNode *function;
-	const GDParser::BlockNode *block;
+	const GDScriptParser::ClassNode *_class;
+	const GDScriptParser::FunctionNode *function;
+	const GDScriptParser::BlockNode *block;
 	Object *base;
 	String base_path;
 };
 
-static Ref<Reference> _get_parent_class(GDCompletionContext &context) {
+static Ref<Reference> _get_parent_class(GDScriptCompletionContext &context) {
 
 	if (context._class->extends_used) {
 		//do inheritance
 		String path = context._class->extends_file;
 
 		Ref<GDScript> script;
-		Ref<GDNativeClass> native;
+		Ref<GDScriptNativeClass> native;
 
 		if (path != "") {
 			//path (and optionally subclasses)
@@ -498,17 +498,17 @@ static Ref<Reference> _get_parent_class(GDCompletionContext &context) {
 	return Ref<Reference>();
 }
 
-static GDCompletionIdentifier _get_native_class(GDCompletionContext &context) {
+static GDScriptCompletionIdentifier _get_native_class(GDScriptCompletionContext &context) {
 
 	//eeh...
-	GDCompletionIdentifier id;
+	GDScriptCompletionIdentifier id;
 	id.type = Variant::NIL;
 
 	REF pc = _get_parent_class(context);
 	if (!pc.is_valid()) {
 		return id;
 	}
-	Ref<GDNativeClass> nc = pc;
+	Ref<GDScriptNativeClass> nc = pc;
 	Ref<GDScript> s = pc;
 
 	if (s.is_null() && nc.is_null()) {
@@ -529,28 +529,28 @@ static GDCompletionIdentifier _get_native_class(GDCompletionContext &context) {
 	return id;
 }
 
-static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type, bool p_for_indexing);
+static bool _guess_identifier_type(GDScriptCompletionContext &context, int p_line, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type, bool p_for_indexing);
 
-static bool _guess_expression_type(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, GDCompletionIdentifier &r_type, bool p_for_indexing = false) {
+static bool _guess_expression_type(GDScriptCompletionContext &context, const GDScriptParser::Node *p_node, int p_line, GDScriptCompletionIdentifier &r_type, bool p_for_indexing = false) {
 
-	if (p_node->type == GDParser::Node::TYPE_CONSTANT) {
+	if (p_node->type == GDScriptParser::Node::TYPE_CONSTANT) {
 
-		const GDParser::ConstantNode *cn = static_cast<const GDParser::ConstantNode *>(p_node);
+		const GDScriptParser::ConstantNode *cn = static_cast<const GDScriptParser::ConstantNode *>(p_node);
 
 		r_type = _get_type_from_variant(cn->value);
 
 		return true;
-	} else if (p_node->type == GDParser::Node::TYPE_DICTIONARY) {
+	} else if (p_node->type == GDScriptParser::Node::TYPE_DICTIONARY) {
 
 		r_type.type = Variant::DICTIONARY;
 
 		//what the heck, fill it anyway
-		const GDParser::DictionaryNode *an = static_cast<const GDParser::DictionaryNode *>(p_node);
+		const GDScriptParser::DictionaryNode *an = static_cast<const GDScriptParser::DictionaryNode *>(p_node);
 		Dictionary d;
 		for (int i = 0; i < an->elements.size(); i++) {
-			GDCompletionIdentifier k;
+			GDScriptCompletionIdentifier k;
 			if (_guess_expression_type(context, an->elements[i].key, p_line, k) && k.value.get_type() != Variant::NIL) {
-				GDCompletionIdentifier v;
+				GDScriptCompletionIdentifier v;
 				if (_guess_expression_type(context, an->elements[i].value, p_line, v)) {
 					d[k.value] = v.value;
 				}
@@ -558,15 +558,15 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 		}
 		r_type.value = d;
 		return true;
-	} else if (p_node->type == GDParser::Node::TYPE_ARRAY) {
+	} else if (p_node->type == GDScriptParser::Node::TYPE_ARRAY) {
 
 		r_type.type = Variant::ARRAY;
 		//what the heck, fill it anyway
-		const GDParser::ArrayNode *an = static_cast<const GDParser::ArrayNode *>(p_node);
+		const GDScriptParser::ArrayNode *an = static_cast<const GDScriptParser::ArrayNode *>(p_node);
 		Array arr;
 		arr.resize(an->elements.size());
 		for (int i = 0; i < an->elements.size(); i++) {
-			GDCompletionIdentifier ci;
+			GDScriptCompletionIdentifier ci;
 			if (_guess_expression_type(context, an->elements[i], p_line, ci)) {
 				arr[i] = ci.value;
 			}
@@ -574,44 +574,44 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 		r_type.value = arr;
 		return true;
 
-	} else if (p_node->type == GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+	} else if (p_node->type == GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION) {
 
-		MethodInfo mi = GDFunctions::get_info(static_cast<const GDParser::BuiltInFunctionNode *>(p_node)->function);
+		MethodInfo mi = GDScriptFunctions::get_info(static_cast<const GDScriptParser::BuiltInFunctionNode *>(p_node)->function);
 		r_type = _get_type_from_pinfo(mi.return_val);
 
 		return true;
-	} else if (p_node->type == GDParser::Node::TYPE_IDENTIFIER) {
+	} else if (p_node->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 
-		return _guess_identifier_type(context, p_line - 1, static_cast<const GDParser::IdentifierNode *>(p_node)->name, r_type, p_for_indexing);
-	} else if (p_node->type == GDParser::Node::TYPE_SELF) {
+		return _guess_identifier_type(context, p_line - 1, static_cast<const GDScriptParser::IdentifierNode *>(p_node)->name, r_type, p_for_indexing);
+	} else if (p_node->type == GDScriptParser::Node::TYPE_SELF) {
 		//eeh...
 
 		r_type = _get_native_class(context);
 		return r_type.type != Variant::NIL;
 
-	} else if (p_node->type == GDParser::Node::TYPE_OPERATOR) {
+	} else if (p_node->type == GDScriptParser::Node::TYPE_OPERATOR) {
 
-		const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_node);
-		if (op->op == GDParser::OperatorNode::OP_CALL) {
+		const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_node);
+		if (op->op == GDScriptParser::OperatorNode::OP_CALL) {
 
-			if (op->arguments[0]->type == GDParser::Node::TYPE_TYPE) {
+			if (op->arguments[0]->type == GDScriptParser::Node::TYPE_TYPE) {
 
-				const GDParser::TypeNode *tn = static_cast<const GDParser::TypeNode *>(op->arguments[0]);
+				const GDScriptParser::TypeNode *tn = static_cast<const GDScriptParser::TypeNode *>(op->arguments[0]);
 				r_type.type = tn->vtype;
 				return true;
-			} else if (op->arguments[0]->type == GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+			} else if (op->arguments[0]->type == GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION) {
 
-				const GDParser::BuiltInFunctionNode *bin = static_cast<const GDParser::BuiltInFunctionNode *>(op->arguments[0]);
+				const GDScriptParser::BuiltInFunctionNode *bin = static_cast<const GDScriptParser::BuiltInFunctionNode *>(op->arguments[0]);
 				return _guess_expression_type(context, bin, p_line, r_type);
 
-			} else if (op->arguments.size() > 1 && op->arguments[1]->type == GDParser::Node::TYPE_IDENTIFIER) {
+			} else if (op->arguments.size() > 1 && op->arguments[1]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 
-				StringName id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1])->name;
+				StringName id = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[1])->name;
 
-				if (op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER && String(id) == "new") {
+				if (op->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER && String(id) == "new") {
 
 					//shortcut
-					StringName identifier = static_cast<const GDParser::IdentifierNode *>(op->arguments[0])->name;
+					StringName identifier = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[0])->name;
 
 					if (ClassDB::class_exists(identifier)) {
 						r_type.type = Variant::OBJECT;
@@ -621,7 +621,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 					}
 				}
 
-				GDCompletionIdentifier base;
+				GDScriptCompletionIdentifier base;
 				if (!_guess_expression_type(context, op->arguments[0], p_line, base))
 					return false;
 
@@ -630,8 +630,8 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 					if (id.operator String() == "new" && base.value.get_type() == Variant::OBJECT) {
 
 						Object *obj = base.value;
-						if (obj && Object::cast_to<GDNativeClass>(obj)) {
-							GDNativeClass *gdnc = Object::cast_to<GDNativeClass>(obj);
+						if (obj && Object::cast_to<GDScriptNativeClass>(obj)) {
+							GDScriptNativeClass *gdnc = Object::cast_to<GDScriptNativeClass>(obj);
 							r_type.type = Variant::OBJECT;
 							r_type.value = Variant();
 							r_type.obj_type = gdnc->get_name();
@@ -662,7 +662,7 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 							bool all_valid = true;
 							Vector<Variant> args;
 							for (int i = 2; i < op->arguments.size(); i++) {
-								GDCompletionIdentifier arg;
+								GDScriptCompletionIdentifier arg;
 
 								if (_guess_expression_type(context, op->arguments[i], p_line, arg)) {
 									if (arg.value.get_type() != Variant::NIL && arg.value.get_type() != Variant::OBJECT) { // calling with object seems dangerous, i don' t know
@@ -785,15 +785,15 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 					}
 				}
 			}
-		} else if (op->op == GDParser::OperatorNode::OP_INDEX || op->op == GDParser::OperatorNode::OP_INDEX_NAMED) {
+		} else if (op->op == GDScriptParser::OperatorNode::OP_INDEX || op->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED) {
 
-			GDCompletionIdentifier p1;
-			GDCompletionIdentifier p2;
+			GDScriptCompletionIdentifier p1;
+			GDScriptCompletionIdentifier p2;
 
-			if (op->op == GDParser::OperatorNode::OP_INDEX_NAMED) {
+			if (op->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED) {
 
-				if (op->arguments[1]->type == GDParser::Node::TYPE_IDENTIFIER) {
-					String id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1])->name;
+				if (op->arguments[1]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
+					String id = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[1])->name;
 					p2.type = Variant::STRING;
 					p2.value = id;
 				}
@@ -807,9 +807,9 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 				}
 			}
 
-			if (op->arguments[0]->type == GDParser::Node::TYPE_ARRAY) {
+			if (op->arguments[0]->type == GDScriptParser::Node::TYPE_ARRAY) {
 
-				const GDParser::ArrayNode *an = static_cast<const GDParser::ArrayNode *>(op->arguments[0]);
+				const GDScriptParser::ArrayNode *an = static_cast<const GDScriptParser::ArrayNode *>(op->arguments[0]);
 				if (p2.value.is_num()) {
 					int index = p2.value;
 					if (index < 0 || index >= an->elements.size())
@@ -817,16 +817,16 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 					return _guess_expression_type(context, an->elements[index], p_line, r_type);
 				}
 
-			} else if (op->arguments[0]->type == GDParser::Node::TYPE_DICTIONARY) {
+			} else if (op->arguments[0]->type == GDScriptParser::Node::TYPE_DICTIONARY) {
 
-				const GDParser::DictionaryNode *dn = static_cast<const GDParser::DictionaryNode *>(op->arguments[0]);
+				const GDScriptParser::DictionaryNode *dn = static_cast<const GDScriptParser::DictionaryNode *>(op->arguments[0]);
 
 				if (p2.value.get_type() == Variant::NIL)
 					return false;
 
 				for (int i = 0; i < dn->elements.size(); i++) {
 
-					GDCompletionIdentifier k;
+					GDScriptCompletionIdentifier k;
 
 					if (!_guess_expression_type(context, dn->elements[i].key, p_line, k)) {
 
@@ -858,9 +858,9 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 						StringName base_type = p1.obj_type;
 
-						if (p1.obj_type == "GDNativeClass") {
+						if (p1.obj_type == "GDScriptNativeClass") {
 							//native enum
-							Ref<GDNativeClass> gdn = p1.value;
+							Ref<GDScriptNativeClass> gdn = p1.value;
 							if (gdn.is_valid()) {
 
 								base_type = gdn->get_name();
@@ -921,24 +921,24 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 
 			Variant::Operator vop = Variant::OP_MAX;
 			switch (op->op) {
-				case GDParser::OperatorNode::OP_ADD: vop = Variant::OP_ADD; break;
-				case GDParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBTRACT; break;
-				case GDParser::OperatorNode::OP_MUL: vop = Variant::OP_MULTIPLY; break;
-				case GDParser::OperatorNode::OP_DIV: vop = Variant::OP_DIVIDE; break;
-				case GDParser::OperatorNode::OP_MOD: vop = Variant::OP_MODULE; break;
-				case GDParser::OperatorNode::OP_SHIFT_LEFT: vop = Variant::OP_SHIFT_LEFT; break;
-				case GDParser::OperatorNode::OP_SHIFT_RIGHT: vop = Variant::OP_SHIFT_RIGHT; break;
-				case GDParser::OperatorNode::OP_BIT_AND: vop = Variant::OP_BIT_AND; break;
-				case GDParser::OperatorNode::OP_BIT_OR: vop = Variant::OP_BIT_OR; break;
-				case GDParser::OperatorNode::OP_BIT_XOR: vop = Variant::OP_BIT_XOR; break;
+				case GDScriptParser::OperatorNode::OP_ADD: vop = Variant::OP_ADD; break;
+				case GDScriptParser::OperatorNode::OP_SUB: vop = Variant::OP_SUBTRACT; break;
+				case GDScriptParser::OperatorNode::OP_MUL: vop = Variant::OP_MULTIPLY; break;
+				case GDScriptParser::OperatorNode::OP_DIV: vop = Variant::OP_DIVIDE; break;
+				case GDScriptParser::OperatorNode::OP_MOD: vop = Variant::OP_MODULE; break;
+				case GDScriptParser::OperatorNode::OP_SHIFT_LEFT: vop = Variant::OP_SHIFT_LEFT; break;
+				case GDScriptParser::OperatorNode::OP_SHIFT_RIGHT: vop = Variant::OP_SHIFT_RIGHT; break;
+				case GDScriptParser::OperatorNode::OP_BIT_AND: vop = Variant::OP_BIT_AND; break;
+				case GDScriptParser::OperatorNode::OP_BIT_OR: vop = Variant::OP_BIT_OR; break;
+				case GDScriptParser::OperatorNode::OP_BIT_XOR: vop = Variant::OP_BIT_XOR; break;
 				default: {}
 			}
 
 			if (vop == Variant::OP_MAX)
 				return false;
 
-			GDCompletionIdentifier p1;
-			GDCompletionIdentifier p2;
+			GDScriptCompletionIdentifier p1;
+			GDScriptCompletionIdentifier p2;
 
 			if (op->arguments[0]) {
 				if (!_guess_expression_type(context, op->arguments[0], p_line, p1)) {
@@ -985,15 +985,15 @@ static bool _guess_expression_type(GDCompletionContext &context, const GDParser:
 	return false;
 }
 
-static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type) {
+static bool _guess_identifier_type_in_block(GDScriptCompletionContext &context, int p_line, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
 
-	if (context.block->if_condition && context.block->if_condition->type == GDParser::Node::TYPE_OPERATOR && static_cast<const GDParser::OperatorNode *>(context.block->if_condition)->op == GDParser::OperatorNode::OP_IS) {
+	if (context.block->if_condition && context.block->if_condition->type == GDScriptParser::Node::TYPE_OPERATOR && static_cast<const GDScriptParser::OperatorNode *>(context.block->if_condition)->op == GDScriptParser::OperatorNode::OP_IS) {
 		//is used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
 		//super dirty hack, but very useful
 		//credit: Zylann
 		//TODO: this could be hacked to detect ANDed conditions too..
-		const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(context.block->if_condition);
-		if (op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER && static_cast<const GDParser::IdentifierNode *>(op->arguments[0])->name == p_identifier) {
+		const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(context.block->if_condition);
+		if (op->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[0])->name == p_identifier) {
 			//bingo
 			if (_guess_expression_type(context, op->arguments[1], op->line, r_type)) {
 				return true;
@@ -1001,7 +1001,7 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 		}
 	}
 
-	GDCompletionIdentifier gdi = _get_native_class(context);
+	GDScriptCompletionIdentifier gdi = _get_native_class(context);
 	if (gdi.obj_type != StringName()) {
 		bool valid;
 		Variant::Type t = ClassDB::get_property_type(gdi.obj_type, p_identifier, &valid);
@@ -1027,7 +1027,7 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 		}
 	}
 
-	const GDParser::Node *last_assign = NULL;
+	const GDScriptParser::Node *last_assign = NULL;
 	int last_assign_line = -1;
 
 	for (int i = 0; i < context.block->statements.size(); i++) {
@@ -1035,9 +1035,9 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 		if (context.block->statements[i]->line > p_line)
 			continue;
 
-		if (context.block->statements[i]->type == GDParser::BlockNode::TYPE_LOCAL_VAR) {
+		if (context.block->statements[i]->type == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
 
-			const GDParser::LocalVarNode *lv = static_cast<const GDParser::LocalVarNode *>(context.block->statements[i]);
+			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(context.block->statements[i]);
 
 			if (lv->assign && lv->name == p_identifier) {
 
@@ -1046,13 +1046,13 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 			}
 		}
 
-		if (context.block->statements[i]->type == GDParser::BlockNode::TYPE_OPERATOR) {
-			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(context.block->statements[i]);
-			if (op->op == GDParser::OperatorNode::OP_ASSIGN) {
+		if (context.block->statements[i]->type == GDScriptParser::BlockNode::TYPE_OPERATOR) {
+			const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(context.block->statements[i]);
+			if (op->op == GDScriptParser::OperatorNode::OP_ASSIGN) {
 
-				if (op->arguments.size() && op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER) {
+				if (op->arguments.size() && op->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 
-					const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[0]);
+					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[0]);
 
 					if (id->name == p_identifier) {
 
@@ -1073,9 +1073,9 @@ static bool _guess_identifier_type_in_block(GDCompletionContext &context, int p_
 	return false;
 }
 
-static bool _guess_identifier_from_assignment_in_function(GDCompletionContext &context, int p_src_line, const StringName &p_identifier, const StringName &p_function, GDCompletionIdentifier &r_type) {
+static bool _guess_identifier_from_assignment_in_function(GDScriptCompletionContext &context, int p_src_line, const StringName &p_identifier, const StringName &p_function, GDScriptCompletionIdentifier &r_type) {
 
-	const GDParser::FunctionNode *func = NULL;
+	const GDScriptParser::FunctionNode *func = NULL;
 	for (int i = 0; i < context._class->functions.size(); i++) {
 		if (context._class->functions[i]->name == p_function) {
 			func = context._class->functions[i];
@@ -1092,13 +1092,13 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext &c
 			break;
 		}
 
-		if (func->body->statements[i]->type == GDParser::BlockNode::TYPE_OPERATOR) {
-			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
-			if (op->op == GDParser::OperatorNode::OP_ASSIGN) {
+		if (func->body->statements[i]->type == GDScriptParser::BlockNode::TYPE_OPERATOR) {
+			const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(func->body->statements[i]);
+			if (op->op == GDScriptParser::OperatorNode::OP_ASSIGN) {
 
-				if (op->arguments.size() && op->arguments[0]->type == GDParser::Node::TYPE_IDENTIFIER) {
+				if (op->arguments.size() && op->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 
-					const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[0]);
+					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[0]);
 
 					if (id->name == p_identifier) {
 
@@ -1112,15 +1112,15 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext &c
 	return false;
 }
 
-static bool _guess_identifier_type(GDCompletionContext &context, int p_line, const StringName &p_identifier, GDCompletionIdentifier &r_type, bool p_for_indexing) {
+static bool _guess_identifier_type(GDScriptCompletionContext &context, int p_line, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type, bool p_for_indexing) {
 
 	//go to block first
 
-	const GDParser::BlockNode *block = context.block;
+	const GDScriptParser::BlockNode *block = context.block;
 
 	while (block) {
 
-		GDCompletionContext c = context;
+		GDScriptCompletionContext c = context;
 		c.block = block;
 
 		if (_guess_identifier_type_in_block(c, p_line, p_identifier, r_type)) {
@@ -1144,7 +1144,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 		}
 
 		if (argindex != -1) {
-			GDCompletionIdentifier id = _get_native_class(context);
+			GDScriptCompletionIdentifier id = _get_native_class(context);
 			if (id.type == Variant::OBJECT && id.obj_type != StringName()) {
 				//this kinda sucks but meh
 
@@ -1182,8 +1182,8 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 
 		if (context._class->constant_expressions[i].identifier == p_identifier) {
 
-			ERR_FAIL_COND_V(context._class->constant_expressions[i].expression->type != GDParser::Node::TYPE_CONSTANT, false);
-			r_type = _get_type_from_variant(static_cast<const GDParser::ConstantNode *>(context._class->constant_expressions[i].expression)->value);
+			ERR_FAIL_COND_V(context._class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT, false);
+			r_type = _get_type_from_variant(static_cast<const GDScriptParser::ConstantNode *>(context._class->constant_expressions[i].expression)->value);
 			return true;
 		}
 	}
@@ -1275,7 +1275,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 	return false;
 }
 
-static void _find_identifiers_in_block(GDCompletionContext &context, int p_line, bool p_only_functions, Set<String> &result) {
+static void _find_identifiers_in_block(GDScriptCompletionContext &context, int p_line, bool p_only_functions, Set<String> &result) {
 
 	if (p_only_functions)
 		return;
@@ -1285,15 +1285,15 @@ static void _find_identifiers_in_block(GDCompletionContext &context, int p_line,
 		if (context.block->statements[i]->line > p_line)
 			continue;
 
-		if (context.block->statements[i]->type == GDParser::BlockNode::TYPE_LOCAL_VAR) {
+		if (context.block->statements[i]->type == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
 
-			const GDParser::LocalVarNode *lv = static_cast<const GDParser::LocalVarNode *>(context.block->statements[i]);
+			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(context.block->statements[i]);
 			result.insert(lv->name.operator String());
 		}
 	}
 }
 
-static void _find_identifiers_in_class(GDCompletionContext &context, bool p_static, bool p_only_functions, Set<String> &result) {
+static void _find_identifiers_in_class(GDScriptCompletionContext &context, bool p_static, bool p_only_functions, Set<String> &result) {
 
 	if (!p_static && !p_only_functions) {
 
@@ -1336,7 +1336,7 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 	while (true) {
 
 		Ref<GDScript> script = base;
-		Ref<GDNativeClass> nc = base;
+		Ref<GDScriptNativeClass> nc = base;
 		if (script.is_valid()) {
 
 			if (!p_static && !p_only_functions) {
@@ -1351,7 +1351,7 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 				}
 			}
 
-			for (const Map<StringName, GDFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
+			for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
 				if (!p_static || E->get()->is_static()) {
 					if (E->get()->get_argument_count())
 						result.insert(E->key().operator String() + "(");
@@ -1410,13 +1410,13 @@ static void _find_identifiers_in_class(GDCompletionContext &context, bool p_stat
 	}
 }
 
-static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_only_functions, Set<String> &result) {
+static void _find_identifiers(GDScriptCompletionContext &context, int p_line, bool p_only_functions, Set<String> &result) {
 
-	const GDParser::BlockNode *block = context.block;
+	const GDScriptParser::BlockNode *block = context.block;
 
 	if (context.function) {
 
-		const GDParser::FunctionNode *f = context.function;
+		const GDScriptParser::FunctionNode *f = context.function;
 
 		for (int i = 0; i < f->arguments.size(); i++) {
 			result.insert(f->arguments[i].operator String());
@@ -1425,19 +1425,19 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 
 	while (block) {
 
-		GDCompletionContext c = context;
+		GDScriptCompletionContext c = context;
 		c.block = block;
 
 		_find_identifiers_in_block(c, p_line, p_only_functions, result);
 		block = block->parent_block;
 	}
 
-	const GDParser::ClassNode *clss = context._class;
+	const GDScriptParser::ClassNode *clss = context._class;
 
 	bool _static = context.function && context.function->_static;
 
 	while (clss) {
-		GDCompletionContext c = context;
+		GDScriptCompletionContext c = context;
 		c._class = clss;
 		c.block = NULL;
 		c.function = NULL;
@@ -1445,9 +1445,9 @@ static void _find_identifiers(GDCompletionContext &context, int p_line, bool p_o
 		clss = clss->owner;
 	}
 
-	for (int i = 0; i < GDFunctions::FUNC_MAX; i++) {
+	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
 
-		result.insert(GDFunctions::get_func_name(GDFunctions::Function(i)));
+		result.insert(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)));
 	}
 
 	static const char *_type_names[Variant::VARIANT_MAX] = {
@@ -1501,7 +1501,7 @@ static String _get_visual_datatype(const PropertyInfo &p_info, bool p_isarg = tr
 	return Variant::get_type_name(p_info.type);
 }
 
-static void _make_function_hint(const GDParser::FunctionNode *p_func, int p_argidx, String &arghint) {
+static void _make_function_hint(const GDScriptParser::FunctionNode *p_func, int p_argidx, String &arghint) {
 
 	arghint = "func " + p_func->name + "(";
 	for (int i = 0; i < p_func->arguments.size(); i++) {
@@ -1521,11 +1521,11 @@ static void _make_function_hint(const GDParser::FunctionNode *p_func, int p_argi
 
 			if (defidx >= 0 && defidx < p_func->default_values.size()) {
 
-				if (p_func->default_values[defidx]->type == GDParser::Node::TYPE_OPERATOR) {
+				if (p_func->default_values[defidx]->type == GDScriptParser::Node::TYPE_OPERATOR) {
 
-					const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_func->default_values[defidx]);
-					if (op->op == GDParser::OperatorNode::OP_ASSIGN) {
-						const GDParser::ConstantNode *cn = static_cast<const GDParser::ConstantNode *>(op->arguments[1]);
+					const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_func->default_values[defidx]);
+					if (op->op == GDScriptParser::OperatorNode::OP_ASSIGN) {
+						const GDScriptParser::ConstantNode *cn = static_cast<const GDScriptParser::ConstantNode *>(op->arguments[1]);
 						arghint += "=" + cn->value.get_construct_string();
 					}
 				} else {
@@ -1553,7 +1553,7 @@ void get_directory_contents(EditorFileSystemDirectory *p_dir, Set<String> &r_lis
 	}
 }
 
-static void _find_type_arguments(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, const StringName &p_method, const GDCompletionIdentifier &id, int p_argidx, Set<String> &result, bool &r_forced, String &arghint) {
+static void _find_type_arguments(GDScriptCompletionContext &context, const GDScriptParser::Node *p_node, int p_line, const StringName &p_method, const GDScriptCompletionIdentifier &id, int p_argidx, Set<String> &result, bool &r_forced, String &arghint) {
 
 	//print_line("find type arguments?");
 	if (id.type == Variant::OBJECT && id.obj_type != StringName()) {
@@ -1572,7 +1572,7 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 				if (scr) {
 					while (scr) {
 
-						for (const Map<StringName, GDFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
+						for (const Map<StringName, GDScriptFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
 							if (E->get()->is_static() && p_method == E->get()->get_name()) {
 								arghint = "static func " + String(p_method) + "(";
 								for (int i = 0; i < E->get()->get_argument_count(); i++) {
@@ -1629,7 +1629,7 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 
 						if (code != "") {
 							//if there is code, parse it. This way is slower but updates in real-time
-							GDParser p;
+							GDScriptParser p;
 							//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 
 							Error err = p.parse(scr->get_source_code(), scr->get_path().get_base_dir(), true, "", false);
@@ -1637,13 +1637,13 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 							if (err == OK) {
 								//print_line("checking the functions...");
 								//only if ok, otherwise use what is cached on the script
-								//GDParser::ClassNode *base = p.
-								const GDParser::Node *root = p.get_parse_tree();
-								ERR_FAIL_COND(root->type != GDParser::Node::TYPE_CLASS);
+								//GDScriptParser::ClassNode *base = p.
+								const GDScriptParser::Node *root = p.get_parse_tree();
+								ERR_FAIL_COND(root->type != GDScriptParser::Node::TYPE_CLASS);
 
-								const GDParser::ClassNode *cl = static_cast<const GDParser::ClassNode *>(root);
+								const GDScriptParser::ClassNode *cl = static_cast<const GDScriptParser::ClassNode *>(root);
 
-								const GDParser::FunctionNode *func = NULL;
+								const GDScriptParser::FunctionNode *func = NULL;
 								bool st = false;
 
 								for (int i = 0; i < cl->functions.size(); i++) {
@@ -1681,10 +1681,10 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 
 											int defidx = deffrom - i;
 
-											if (defidx >= 0 && defidx < func->default_values.size() && func->default_values[defidx]->type == GDParser::Node::TYPE_OPERATOR) {
-												const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->default_values[defidx]);
-												if (op->op == GDParser::OperatorNode::OP_ASSIGN) {
-													const GDParser::ConstantNode *cn = static_cast<const GDParser::ConstantNode *>(op->arguments[1]);
+											if (defidx >= 0 && defidx < func->default_values.size() && func->default_values[defidx]->type == GDScriptParser::Node::TYPE_OPERATOR) {
+												const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(func->default_values[defidx]);
+												if (op->op == GDScriptParser::OperatorNode::OP_ASSIGN) {
+													const GDScriptParser::ConstantNode *cn = static_cast<const GDScriptParser::ConstantNode *>(op->arguments[1]);
 													arghint += "=" + cn->value.get_construct_string();
 												}
 											}
@@ -1705,7 +1705,7 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 
 						if (code == "") {
 
-							for (const Map<StringName, GDFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
+							for (const Map<StringName, GDScriptFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
 								if (p_method == E->get()->get_name()) {
 									arghint = "func " + String(p_method) + "(";
 									for (int i = 0; i < E->get()->get_argument_count(); i++) {
@@ -1814,8 +1814,8 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 				}
 				/*if (p_argidx==2) {
 
-					ERR_FAIL_COND(p_node->type!=GDParser::Node::TYPE_OPERATOR);
-					const GDParser::OperatorNode *op=static_cast<const GDParser::OperatorNode *>(p_node);
+					ERR_FAIL_COND(p_node->type!=GDScriptParser::Node::TYPE_OPERATOR);
+					const GDScriptParser::OperatorNode *op=static_cast<const GDScriptParser::OperatorNode *>(p_node);
 					if (op->arguments.size()>)
 
 				}*/
@@ -1890,30 +1890,30 @@ static void _find_type_arguments(GDCompletionContext &context, const GDParser::N
 	}
 }
 
-static void _find_call_arguments(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, int p_argidx, Set<String> &result, bool &r_forced, String &arghint) {
+static void _find_call_arguments(GDScriptCompletionContext &context, const GDScriptParser::Node *p_node, int p_line, int p_argidx, Set<String> &result, bool &r_forced, String &arghint) {
 
-	if (!p_node || p_node->type != GDParser::Node::TYPE_OPERATOR) {
-
-		return;
-	}
-
-	const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_node);
-
-	if (op->op != GDParser::OperatorNode::OP_CALL) {
+	if (!p_node || p_node->type != GDScriptParser::Node::TYPE_OPERATOR) {
 
 		return;
 	}
 
-	if (op->arguments[0]->type == GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+	const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_node);
+
+	if (op->op != GDScriptParser::OperatorNode::OP_CALL) {
+
+		return;
+	}
+
+	if (op->arguments[0]->type == GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION) {
 		//complete built-in function
-		const GDParser::BuiltInFunctionNode *fn = static_cast<const GDParser::BuiltInFunctionNode *>(op->arguments[0]);
-		MethodInfo mi = GDFunctions::get_info(fn->function);
+		const GDScriptParser::BuiltInFunctionNode *fn = static_cast<const GDScriptParser::BuiltInFunctionNode *>(op->arguments[0]);
+		MethodInfo mi = GDScriptFunctions::get_info(fn->function);
 
 		if (mi.name == "load" && bool(EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))) {
 			get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), result);
 		}
 
-		arghint = _get_visual_datatype(mi.return_val, false) + " " + GDFunctions::get_func_name(fn->function) + String("(");
+		arghint = _get_visual_datatype(mi.return_val, false) + " " + GDScriptFunctions::get_func_name(fn->function) + String("(");
 		for (int i = 0; i < mi.arguments.size(); i++) {
 			if (i > 0)
 				arghint += ", ";
@@ -1931,9 +1931,9 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 			arghint += " ";
 		arghint += ")";
 
-	} else if (op->arguments[0]->type == GDParser::Node::TYPE_TYPE) {
+	} else if (op->arguments[0]->type == GDScriptParser::Node::TYPE_TYPE) {
 		//complete constructor
-		const GDParser::TypeNode *tn = static_cast<const GDParser::TypeNode *>(op->arguments[0]);
+		const GDScriptParser::TypeNode *tn = static_cast<const GDScriptParser::TypeNode *>(op->arguments[0]);
 
 		List<MethodInfo> mil;
 		Variant::get_constructor_list(tn->vtype, &mil);
@@ -1964,11 +1964,11 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 			arghint += ")";
 		}
 
-	} else if (op->arguments.size() >= 2 && op->arguments[1]->type == GDParser::Node::TYPE_IDENTIFIER) {
+	} else if (op->arguments.size() >= 2 && op->arguments[1]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
 		//make sure identifier exists...
 
-		const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[1]);
-		if (op->arguments[0]->type == GDParser::Node::TYPE_SELF) {
+		const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[1]);
+		if (op->arguments[0]->type == GDScriptParser::Node::TYPE_SELF) {
 			//self, look up
 
 			for (int i = 0; i < context._class->static_functions.size(); i++) {
@@ -1993,10 +1993,10 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 			while (true) {
 
 				Ref<GDScript> script = base;
-				Ref<GDNativeClass> nc = base;
+				Ref<GDScriptNativeClass> nc = base;
 				if (script.is_valid()) {
 
-					for (const Map<StringName, GDFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
+					for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
 
 						if (E->key() == id->name) {
 
@@ -2038,7 +2038,7 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 
 					if (!(context.function && context.function->_static)) {
 
-						GDCompletionIdentifier ci;
+						GDScriptCompletionIdentifier ci;
 						ci.type = Variant::OBJECT;
 						ci.obj_type = nc->get_name();
 						if (!context._class->owner)
@@ -2063,7 +2063,7 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 		} else {
 			//indexed lookup
 
-			GDCompletionIdentifier ci;
+			GDScriptCompletionIdentifier ci;
 			if (_guess_expression_type(context, op->arguments[0], p_line, ci)) {
 
 				_find_type_arguments(context, p_node, p_line, id->name, ci, p_argidx, result, r_forced, arghint);
@@ -2075,13 +2075,13 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 
 Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 
-	GDParser p;
+	GDScriptParser p;
 
 	p.parse(p_code, p_base_path, false, "", true);
 	bool isfunction = false;
 	Set<String> options;
 	r_forced = false;
-	GDCompletionContext context;
+	GDScriptCompletionContext context;
 	context._class = p.get_completion_class();
 	context.block = p.get_completion_block();
 	context.function = p.get_completion_function();
@@ -2090,9 +2090,9 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 	switch (p.get_completion_type()) {
 
-		case GDParser::COMPLETION_NONE: {
+		case GDScriptParser::COMPLETION_NONE: {
 		} break;
-		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
+		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
 			List<StringName> constants;
 			Variant::get_numeric_constants_for_type(p.get_completion_built_in_constant(), &constants);
 			for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
@@ -2100,16 +2100,16 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 			}
 
 		} break;
-		case GDParser::COMPLETION_FUNCTION:
+		case GDScriptParser::COMPLETION_FUNCTION:
 			isfunction = true;
-		case GDParser::COMPLETION_IDENTIFIER: {
+		case GDScriptParser::COMPLETION_IDENTIFIER: {
 
 			_find_identifiers(context, p.get_completion_line(), isfunction, options);
 		} break;
-		case GDParser::COMPLETION_PARENT_FUNCTION: {
+		case GDScriptParser::COMPLETION_PARENT_FUNCTION: {
 
 		} break;
-		case GDParser::COMPLETION_GET_NODE: {
+		case GDScriptParser::COMPLETION_GET_NODE: {
 
 			if (p_owner) {
 				List<String> opts;
@@ -2130,20 +2130,20 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				}
 			}
 		} break;
-		case GDParser::COMPLETION_METHOD:
+		case GDScriptParser::COMPLETION_METHOD:
 			isfunction = true;
-		case GDParser::COMPLETION_INDEX: {
+		case GDScriptParser::COMPLETION_INDEX: {
 
-			const GDParser::Node *node = p.get_completion_node();
-			if (node->type != GDParser::Node::TYPE_OPERATOR)
+			const GDScriptParser::Node *node = p.get_completion_node();
+			if (node->type != GDScriptParser::Node::TYPE_OPERATOR)
 				break;
 
-			GDCompletionIdentifier t;
-			if (_guess_expression_type(context, static_cast<const GDParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t, true)) {
+			GDScriptCompletionIdentifier t;
+			if (_guess_expression_type(context, static_cast<const GDScriptParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t, true)) {
 
-				if (t.type == Variant::OBJECT && t.obj_type == "GDNativeClass") {
+				if (t.type == Variant::OBJECT && t.obj_type == "GDScriptNativeClass") {
 					//native enum
-					Ref<GDNativeClass> gdn = t.value;
+					Ref<GDScriptNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
 						StringName cn = gdn->get_name();
 						List<String> cnames;
@@ -2179,7 +2179,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 										options.insert(E->key());
 									}
 								}
-								for (const Map<StringName, GDFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
+								for (const Map<StringName, GDScriptFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
 									if (E->get()->is_static())
 										options.insert(E->key());
 								}
@@ -2210,17 +2210,17 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 								if (code != "") {
 									//if there is code, parse it. This way is slower but updates in real-time
-									GDParser p;
+									GDScriptParser p;
 
 									Error err = p.parse(scr->get_source_code(), scr->get_path().get_base_dir(), true, "", false);
 
 									if (err == OK) {
 										//only if ok, otherwise use what is cached on the script
-										//GDParser::ClassNode *base = p.
-										const GDParser::Node *root = p.get_parse_tree();
-										ERR_FAIL_COND_V(root->type != GDParser::Node::TYPE_CLASS, ERR_PARSE_ERROR);
+										//GDScriptParser::ClassNode *base = p.
+										const GDScriptParser::Node *root = p.get_parse_tree();
+										ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_PARSE_ERROR);
 
-										const GDParser::ClassNode *cl = static_cast<const GDParser::ClassNode *>(root);
+										const GDScriptParser::ClassNode *cl = static_cast<const GDScriptParser::ClassNode *>(root);
 
 										for (int i = 0; i < cl->functions.size(); i++) {
 
@@ -2262,7 +2262,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 											options.insert(E->key());
 										}
 									}
-									for (const Map<StringName, GDFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
+									for (const Map<StringName, GDScriptFunction *>::Element *E = scr->get_member_functions().front(); E; E = E->next()) {
 										if (E->get()->get_argument_count())
 											options.insert(String(E->key()) + "()");
 										else
@@ -2341,13 +2341,13 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 			}
 
 		} break;
-		case GDParser::COMPLETION_CALL_ARGUMENTS: {
+		case GDScriptParser::COMPLETION_CALL_ARGUMENTS: {
 
 			_find_call_arguments(context, p.get_completion_node(), p.get_completion_line(), p.get_completion_argument_index(), options, r_forced, r_call_hint);
 		} break;
-		case GDParser::COMPLETION_VIRTUAL_FUNC: {
+		case GDScriptParser::COMPLETION_VIRTUAL_FUNC: {
 
-			GDCompletionIdentifier cid = _get_native_class(context);
+			GDScriptCompletionIdentifier cid = _get_native_class(context);
 
 			if (cid.obj_type != StringName()) {
 				List<MethodInfo> vm;
@@ -2376,11 +2376,11 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				}
 			}
 		} break;
-		case GDParser::COMPLETION_YIELD: {
+		case GDScriptParser::COMPLETION_YIELD: {
 
-			const GDParser::Node *node = p.get_completion_node();
+			const GDScriptParser::Node *node = p.get_completion_node();
 
-			GDCompletionIdentifier t;
+			GDScriptCompletionIdentifier t;
 			if (!_guess_expression_type(context, node, p.get_completion_line(), t))
 				break;
 
@@ -2395,15 +2395,15 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 			}
 
 		} break;
-		case GDParser::COMPLETION_RESOURCE_PATH: {
+		case GDScriptParser::COMPLETION_RESOURCE_PATH: {
 
 			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))
 				get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
 		} break;
-		case GDParser::COMPLETION_ASSIGN: {
+		case GDScriptParser::COMPLETION_ASSIGN: {
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-			GDCompletionIdentifier ci;
+			GDScriptCompletionIdentifier ci;
 			if (_guess_expression_type(context, p.get_completion_node(), p.get_completion_line(), ci)) {
 
 				String enumeration = ci.enumeration;
@@ -2556,8 +2556,8 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
-	for (int i = 0; i < GDFunctions::FUNC_MAX; i++) {
-		if (GDFunctions::get_func_name(GDFunctions::Function(i)) == p_symbol) {
+	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
+		if (GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)) == p_symbol) {
 			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_METHOD;
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;
@@ -2565,13 +2565,13 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		}
 	}
 
-	GDParser p;
+	GDScriptParser p;
 	p.parse(p_code, p_base_path, false, "", true);
 
-	if (p.get_completion_type() == GDParser::COMPLETION_NONE)
+	if (p.get_completion_type() == GDScriptParser::COMPLETION_NONE)
 		return ERR_CANT_RESOLVE;
 
-	GDCompletionContext context;
+	GDScriptCompletionContext context;
 
 	context._class = p.get_completion_class();
 	context.block = p.get_completion_block();
@@ -2582,10 +2582,10 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 
 	switch (p.get_completion_type()) {
 
-		case GDParser::COMPLETION_GET_NODE:
-		case GDParser::COMPLETION_NONE: {
+		case GDScriptParser::COMPLETION_GET_NODE:
+		case GDScriptParser::COMPLETION_NONE: {
 		} break;
-		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
+		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
 
 			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 			r_result.class_name = Variant::get_type_name(p.get_completion_built_in_constant());
@@ -2593,7 +2593,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			return OK;
 
 		} break;
-		case GDParser::COMPLETION_FUNCTION: {
+		case GDScriptParser::COMPLETION_FUNCTION: {
 
 			if (context._class && context._class->functions.size()) {
 				for (int i = 0; i < context._class->functions.size(); i++) {
@@ -2618,7 +2618,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				parent = parent->get_base();
 			}
 
-			GDCompletionIdentifier identifier = _get_native_class(context);
+			GDScriptCompletionIdentifier identifier = _get_native_class(context);
 			print_line("identifier: " + String(identifier.obj_type));
 
 			if (ClassDB::has_method(identifier.obj_type, p_symbol)) {
@@ -2630,7 +2630,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			}
 
 		} break;
-		case GDParser::COMPLETION_IDENTIFIER: {
+		case GDScriptParser::COMPLETION_IDENTIFIER: {
 
 			//check if a function
 			if (p.get_completion_identifier_is_function()) {
@@ -2657,7 +2657,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 					parent = parent->get_base();
 				}
 
-				GDCompletionIdentifier identifier = _get_native_class(context);
+				GDScriptCompletionIdentifier identifier = _get_native_class(context);
 
 				if (ClassDB::has_method(identifier.obj_type, p_symbol)) {
 
@@ -2668,7 +2668,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				}
 			} else {
 
-				GDCompletionIdentifier gdi = _get_native_class(context);
+				GDScriptCompletionIdentifier gdi = _get_native_class(context);
 				if (gdi.obj_type != StringName()) {
 					bool valid;
 					Variant::Type t = ClassDB::get_property_type(gdi.obj_type, p_symbol, &valid);
@@ -2680,7 +2680,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 					}
 				}
 
-				const GDParser::BlockNode *block = context.block;
+				const GDScriptParser::BlockNode *block = context.block;
 				//search in blocks going up (local var?)
 				while (block) {
 
@@ -2689,9 +2689,9 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 						if (block->statements[i]->line > p.get_completion_line())
 							continue;
 
-						if (block->statements[i]->type == GDParser::BlockNode::TYPE_LOCAL_VAR) {
+						if (block->statements[i]->type == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
 
-							const GDParser::LocalVarNode *lv = static_cast<const GDParser::LocalVarNode *>(block->statements[i]);
+							const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(block->statements[i]);
 
 							if (lv->assign && lv->name == p_symbol) {
 
@@ -2782,9 +2782,9 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 					if (value.get_type() == Variant::OBJECT) {
 						Object *obj = value;
 						if (obj) {
-							if (Object::cast_to<GDNativeClass>(obj)) {
+							if (Object::cast_to<GDScriptNativeClass>(obj)) {
 								r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
-								r_result.class_name = Object::cast_to<GDNativeClass>(obj)->get_name();
+								r_result.class_name = Object::cast_to<GDScriptNativeClass>(obj)->get_name();
 							} else {
 								r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
 								r_result.class_name = obj->get_class();
@@ -2806,23 +2806,23 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			}
 
 		} break;
-		case GDParser::COMPLETION_PARENT_FUNCTION: {
+		case GDScriptParser::COMPLETION_PARENT_FUNCTION: {
 
 		} break;
-		case GDParser::COMPLETION_METHOD:
+		case GDScriptParser::COMPLETION_METHOD:
 			isfunction = true;
-		case GDParser::COMPLETION_INDEX: {
+		case GDScriptParser::COMPLETION_INDEX: {
 
-			const GDParser::Node *node = p.get_completion_node();
-			if (node->type != GDParser::Node::TYPE_OPERATOR)
+			const GDScriptParser::Node *node = p.get_completion_node();
+			if (node->type != GDScriptParser::Node::TYPE_OPERATOR)
 				break;
 
-			GDCompletionIdentifier t;
-			if (_guess_expression_type(context, static_cast<const GDParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t)) {
+			GDScriptCompletionIdentifier t;
+			if (_guess_expression_type(context, static_cast<const GDScriptParser::OperatorNode *>(node)->arguments[0], p.get_completion_line(), t)) {
 
-				if (t.type == Variant::OBJECT && t.obj_type == "GDNativeClass") {
+				if (t.type == Variant::OBJECT && t.obj_type == "GDScriptNativeClass") {
 					//native enum
-					Ref<GDNativeClass> gdn = t.value;
+					Ref<GDScriptNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 						r_result.class_name = gdn->get_name();
@@ -2914,13 +2914,13 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 			}
 
 		} break;
-		case GDParser::COMPLETION_CALL_ARGUMENTS: {
+		case GDScriptParser::COMPLETION_CALL_ARGUMENTS: {
 
 			return ERR_CANT_RESOLVE;
 		} break;
-		case GDParser::COMPLETION_VIRTUAL_FUNC: {
+		case GDScriptParser::COMPLETION_VIRTUAL_FUNC: {
 
-			GDCompletionIdentifier cid = _get_native_class(context);
+			GDScriptCompletionIdentifier cid = _get_native_class(context);
 
 			if (cid.obj_type != StringName()) {
 				List<MethodInfo> vm;
@@ -2937,7 +2937,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				}
 			}
 		} break;
-		case GDParser::COMPLETION_YIELD: {
+		case GDScriptParser::COMPLETION_YIELD: {
 
 			return ERR_CANT_RESOLVE;
 

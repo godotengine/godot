@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_parser.h                                                          */
+/*  gdscript_parser.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,16 +27,16 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GD_PARSER_H
-#define GD_PARSER_H
+#ifndef GDSCRIPT_PARSER_H
+#define GDSCRIPT_PARSER_H
 
-#include "gd_functions.h"
-#include "gd_tokenizer.h"
+#include "gdscript_functions.h"
+#include "gdscript_tokenizer.h"
 #include "map.h"
 #include "object.h"
 #include "script_language.h"
 
-class GDParser {
+class GDScriptParser {
 public:
 	struct Node {
 
@@ -166,7 +166,7 @@ public:
 		TypeNode() { type = TYPE_TYPE; }
 	};
 	struct BuiltInFunctionNode : public Node {
-		GDFunctions::Function function;
+		GDScriptFunctions::Function function;
 		BuiltInFunctionNode() { type = TYPE_BUILT_IN_FUNCTION; }
 	};
 
@@ -448,7 +448,7 @@ public:
 	};
 
 private:
-	GDTokenizer *tokenizer;
+	GDScriptTokenizer *tokenizer;
 
 	Node *head;
 	Node *list;
@@ -540,8 +540,8 @@ public:
 	int get_completion_identifier_is_function();
 
 	void clear();
-	GDParser();
-	~GDParser();
+	GDScriptParser();
+	~GDScriptParser();
 };
 
-#endif // PARSER_H
+#endif // GDSCRIPT_PARSER_H

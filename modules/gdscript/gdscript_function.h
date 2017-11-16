@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_function.h                                                        */
+/*  gdscript_function.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GD_FUNCTION_H
-#define GD_FUNCTION_H
+#ifndef GDSCRIPT_FUNCTION_H
+#define GDSCRIPT_FUNCTION_H
 
 #include "os/thread.h"
 #include "pair.h"
@@ -38,10 +38,10 @@
 #include "string_db.h"
 #include "variant.h"
 
-class GDInstance;
+class GDScriptInstance;
 class GDScript;
 
-class GDFunction {
+class GDScriptFunction {
 public:
 	enum Opcode {
 		OPCODE_OPERATOR,
@@ -111,7 +111,7 @@ public:
 	};
 
 private:
-	friend class GDCompiler;
+	friend class GDScriptCompiler;
 
 	StringName source;
 
@@ -145,12 +145,12 @@ private:
 
 	List<StackDebug> stack_debug;
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
+	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
 
-	SelfList<GDFunction> function_list;
+	SelfList<GDScriptFunction> function_list;
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
 	const char *_func_cname;
@@ -176,7 +176,7 @@ public:
 		ObjectID instance_id; //by debug only
 		ObjectID script_id;
 
-		GDInstance *instance;
+		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
@@ -219,19 +219,19 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
 
 	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
-	GDFunction();
-	~GDFunction();
+	GDScriptFunction();
+	~GDScriptFunction();
 };
 
-class GDFunctionState : public Reference {
+class GDScriptFunctionState : public Reference {
 
-	GDCLASS(GDFunctionState, Reference);
-	friend class GDFunction;
-	GDFunction *function;
-	GDFunction::CallState state;
+	GDCLASS(GDScriptFunctionState, Reference);
+	friend class GDScriptFunction;
+	GDScriptFunction *function;
+	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 protected:
@@ -240,8 +240,8 @@ protected:
 public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
-	GDFunctionState();
-	~GDFunctionState();
+	GDScriptFunctionState();
+	~GDScriptFunctionState();
 };
 
-#endif // GD_FUNCTION_H
+#endif // GDSCRIPT_FUNCTION_H

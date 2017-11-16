@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_functions.h                                                       */
+/*  gdscript_functions.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GD_FUNCTIONS_H
-#define GD_FUNCTIONS_H
+#ifndef GDSCRIPT_FUNCTIONS_H
+#define GDSCRIPT_FUNCTIONS_H
 
 #include "variant.h"
 
-class GDFunctions {
+class GDScriptFunctions {
 public:
 	enum Function {
 		MATH_SIN,
@@ -120,4 +120,4 @@ public:
 	static MethodInfo get_info(Function p_func);
 };
 
-#endif // GD_FUNCTIONS_H
+#endif // GDSCRIPT_FUNCTIONS_H
