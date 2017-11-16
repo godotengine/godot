@@ -854,8 +854,13 @@ void OS_OSX::initialize_core() {
 }
 
 static bool keyboard_layout_dirty = true;
-static void keyboardLayoutChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+static void keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info) {
 	keyboard_layout_dirty = true;
+}
+
+static bool displays_arrangement_dirty = true;
+static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info) {
+	displays_arrangement_dirty = true;
 }
 
 void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -865,12 +870,16 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	/*** OSX INITIALIZATION ***/
 
 	keyboard_layout_dirty = true;
+	displays_arrangement_dirty = true;
 
 	// Register to be notified on keyboard layout changes
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
-			NULL, keyboardLayoutChanged,
+			NULL, keyboard_layout_changed,
 			kTISNotifySelectedKeyboardInputSourceChanged, NULL,
 			CFNotificationSuspensionBehaviorDeliverImmediately);
+
+	// Register to be notified on displays arrangement changes
+	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, NULL);
 
 	if (is_hidpi_allowed() && [[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
 		for (NSScreen *screen in [NSScreen screens]) {
@@ -1055,6 +1064,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 void OS_OSX::finalize() {
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
+	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
+
 	delete_main_loop();
 
 	spatial_sound_server->finish();
@@ -1362,17 +1373,43 @@ int OS_OSX::get_screen_count() const {
 	return [screenArray count];
 };
 
-int OS_OSX::get_current_screen() const {
-	Vector2 wpos = get_window_position();
+// Returns the native top-left screen coordinate of the smallest rectangle
+// that encompasses all screens. Needed in get_screen_position(),
+// get_window_position, and set_window_position()
+// to convert between OS X native screen coordinates and the ones expected by Godot
+Point2 OS_OSX::get_screens_origin() const {
+	static Point2 origin;
 
-	int count = get_screen_count();
-	for (int i = 0; i < count; i++) {
-		Point2 pos = get_screen_position(i);
-		Size2 size = get_screen_size(i);
-		if ((wpos.x >= pos.x && wpos.x < pos.x + size.width) && (wpos.y >= pos.y && wpos.y < pos.y + size.height))
-			return i;
+	if (displays_arrangement_dirty) {
+		origin = Point2();
+
+		for (int i = 0; i < get_screen_count(); i++) {
+			Point2 position = get_native_screen_position(i);
+			if (position.x < origin.x) {
+				origin.x = position.x;
+			}
+			if (position.y > origin.y) {
+				origin.y = position.y;
+			}
+		}
+
+		displays_arrangement_dirty = false;
 	}
-	return 0;
+
+	return origin;
+}
+
+static int get_screen_index(NSScreen *screen) {
+	const NSUInteger index = [[NSScreen screens] indexOfObject:screen];
+	return index == NSNotFound ? 0 : index;
+}
+
+int OS_OSX::get_current_screen() const {
+	if (window_object) {
+		return get_screen_index([window_object screen]);
+	} else {
+		return get_screen_index([NSScreen mainScreen]);
+	}
 };
 
 void OS_OSX::set_current_screen(int p_screen) {
@@ -1380,7 +1417,7 @@ void OS_OSX::set_current_screen(int p_screen) {
 	set_window_position(wpos + get_screen_position(p_screen));
 };
 
-Point2 OS_OSX::get_screen_position(int p_screen) const {
+Point2 OS_OSX::get_native_screen_position(int p_screen) const {
 	NSArray *screenArray = [NSScreen screens];
 	if (p_screen < [screenArray count]) {
 		float displayScale = 1.0;
@@ -1390,10 +1427,19 @@ Point2 OS_OSX::get_screen_position(int p_screen) const {
 		}
 
 		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		return Point2(nsrect.origin.x, nsrect.origin.y) * displayScale;
+		// Return the top-left corner of the screen, for OS X the y starts at the bottom
+		return Point2(nsrect.origin.x, nsrect.origin.y + nsrect.size.height) * displayScale;
 	}
 
 	return Point2();
+}
+
+Point2 OS_OSX::get_screen_position(int p_screen) const {
+	Point2 position = get_native_screen_position(p_screen) - get_screens_origin();
+	// OS X native y-coordinate relative to get_screens_origin() is negative,
+	// Godot expects a positive value
+	position.y *= -1;
+	return position;
 }
 
 int OS_OSX::get_screen_dpi(int p_screen) const {
@@ -1433,12 +1479,25 @@ Size2 OS_OSX::get_screen_size(int p_screen) const {
 	return Size2();
 }
 
-Point2 OS_OSX::get_window_position() const {
+Point2 OS_OSX::get_native_window_position() const {
+	NSRect nsrect = [window_object frame];
 
-	Size2 wp([window_object frame].origin.x, [window_object frame].origin.y);
-	wp *= display_scale;
-	return wp;
+	Point2 pos;
+
+	// Return the position of the top-left corner, for OS X the y starts at the bottom
+	pos.x = nsrect.origin.x * display_scale;
+	pos.y = (nsrect.origin.y + nsrect.size.height) * display_scale;
+
+	return pos;
 };
+
+Point2 OS_OSX::get_window_position() const {
+	Point2 position = get_native_window_position() - get_screens_origin();
+	// OS X native y-coordinate relative to get_screens_origin() is negative,
+	// Godot expects a positive value
+	position.y *= -1;
+	return position;
+}
 
 void OS_OSX::_update_window() {
 	bool borderless_full = false;
@@ -1465,18 +1524,24 @@ void OS_OSX::_update_window() {
 	}
 }
 
-void OS_OSX::set_window_position(const Point2 &p_position) {
+void OS_OSX::set_native_window_position(const Point2 &p_position) {
 
-	Size2 scr = get_screen_size();
 	NSPoint pos;
 
 	pos.x = p_position.x / display_scale;
-	// For OS X the y starts at the bottom
-	pos.y = (scr.height - p_position.y) / display_scale;
+	pos.y = p_position.y / display_scale;
 
 	[window_object setFrameTopLeftPoint:pos];
 
 	_update_window();
+};
+
+void OS_OSX::set_window_position(const Point2 &p_position) {
+	Point2 position = p_position;
+	// OS X native y-coordinate relative to get_screens_origin() is negative,
+	// Godot passes a positive value
+	position.y *= -1;
+	set_native_window_position(get_screens_origin() + position);
 };
 
 Size2 OS_OSX::get_window_size() const {
