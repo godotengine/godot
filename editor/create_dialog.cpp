@@ -97,6 +97,15 @@ void CreateDialog::popup_create(bool p_dontclear) {
 	search_box->grab_focus();
 
 	_update_search();
+
+	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+
+	if (enable_rl) {
+		search_options->add_constant_override("draw_relationship_lines", 1);
+		search_options->add_color_override("relationship_line_color", rl_color);
+	} else
+		search_options->add_constant_override("draw_relationship_lines", 0);
 }
 
 void CreateDialog::_text_changed(const String &p_newtext) {
