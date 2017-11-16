@@ -270,9 +270,12 @@ if selected_platform in platform_list:
                 if len(pieces) > 0:
                     basename = pieces[0]
                     basename = basename.replace('\\\\', '/')
-                    env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-                    env.vs_incs = env.vs_incs + [basename + ".h"]
-                    # print basename
+                    if os.path.isfile(basename + ".h"):
+                        env.vs_incs = env.vs_incs + [basename + ".h"]
+                    if os.path.isfile(basename + ".c"):
+                        env.vs_srcs = env.vs_srcs + [basename + ".c"]
+                    elif os.path.isfile(basename + ".cpp"):
+                        env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
         env.AddToVSProject = AddToVSProject
 
     env.extra_suffix = ""
