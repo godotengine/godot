@@ -19,6 +19,20 @@ def _spaced(e):
     return e if e[-1] == '*' else e + ' '
 
 def _build_gdnative_api_struct_header(api):
+    ext_wrappers = ''
+
+    for name in api['extensions']:
+        ext_wrappers += ' extern const godot_gdnative_ext_' + name + '_api_struct *_gdnative_wrapper_' + name + '_api_struct;'
+
+    ext_init = 'for (int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { '
+    ext_init += 'switch (_gdnative_wrapper_api_struct->extensions[i]->type) {'
+
+    for name in api['extensions']:
+        ext_init += 'case GDNATIVE_EXT_' + api['extensions'][name]['type'] + ': '
+        ext_init += '_gdnative_wrapper_' + name + '_api_struct = (' + 'godot_gdnative_ext_' + name + '_api_struct *) _gdnative_wrapper_api_struct->extensions[i]; break;'
+
+    ext_init += '}'
+
     out = [
         '/* THIS FILE IS GENERATED DO NOT EDIT */',
         '#ifndef GODOT_GDNATIVE_API_STRUCT_H',
@@ -29,7 +43,7 @@ def _build_gdnative_api_struct_header(api):
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '',
-        '#define GDNATIVE_API_INIT(options) do { extern const godot_gdnative_api_struct *_gdnative_wrapper_api_struct; _gdnative_wrapper_api_struct = options->api_struct; } while (0)',
+        '#define GDNATIVE_API_INIT(options) do { extern const godot_gdnative_api_struct *_gdnative_wrapper_api_struct;' + ext_wrappers + ' _gdnative_wrapper_api_struct = options->api_struct; ' + ext_init + ' } while (0)',
         '',
         '#ifdef __cplusplus',
         'extern "C" {',
@@ -166,18 +180,23 @@ def _build_gdnative_wrapper_code(api):
         '#include <gdnative/gdnative.h>',
         '#include <nativescript/godot_nativescript.h>',
         '#include <pluginscript/godot_pluginscript.h>',
+        '#include <arvr/godot_arvr.h>',
         '',
         '#include <gdnative_api_struct.gen.h>',
-        '',
-        'godot_gdnative_api_struct *_gdnative_wrapper_api_struct = 0;',
         '',
         '#ifdef __cplusplus',
         'extern "C" {',
         '#endif',
-        ''
+        '',
+        'godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct = 0;',
     ]
 
-    for funcdef in api['api']:
+    for name in api['extensions']:
+        out.append('godot_gdnative_ext_' + name + '_api_struct *_gdnative_wrapper_' + name + '_api_struct;')
+
+    out += ['']
+
+    for funcdef in api['core']['api']:
         args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
         out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
 
@@ -189,6 +208,20 @@ def _build_gdnative_wrapper_code(api):
         out.append(return_line)
         out.append('}')
         out.append('')
+
+    for name in api['extensions']:
+        for funcdef in api['extensions'][name]['api']:
+            args = ', '.join(['%s%s' % (_spaced(t), n) for t, n in funcdef['arguments']])
+            out.append('%s%s(%s) {' % (_spaced(funcdef['return_type']), funcdef['name'], args))
+
+            args = ', '.join(['%s' % n for t, n in funcdef['arguments']])
+
+            return_line = '\treturn ' if funcdef['return_type'] != 'void' else '\t'
+            return_line += '_gdnative_wrapper_' + name + '_api_struct->' + funcdef['name'] + '(' + args + ');'
+
+            out.append(return_line)
+            out.append('}')
+            out.append('')
 
     out += [
         '#ifdef __cplusplus',
