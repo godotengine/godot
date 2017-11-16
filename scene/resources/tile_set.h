@@ -108,6 +108,9 @@ public:
 	void tile_set_shape_transform(int p_id, int p_shape_id, const Transform2D &p_offset);
 	Transform2D tile_get_shape_transform(int p_id, int p_shape_id) const;
 
+	void tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset);
+	Vector2 tile_get_shape_offset(int p_id, int p_shape_id) const;
+
 	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
 	bool tile_get_shape_one_way(int p_id, int p_shape_id) const;
 
