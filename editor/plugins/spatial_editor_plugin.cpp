@@ -2148,6 +2148,10 @@ static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture> icon)
 	real_t h = surface_size.y / 2.0;
 	real_t y = (surface_size.y - h) / 2.0;
 
+	// Use floor to be pixel-perfect
+	h = Math::floor(h);
+	y = Math::floor(y);
+
 	Rect2 r(10, y, 6, h);
 	real_t sy = r.size.y * fill;
 
@@ -2158,7 +2162,8 @@ static void draw_indicator_bar(Control &surface, real_t fill, Ref<Texture> icon)
 	stroke_rect(surface, r.grow(1), Color(0, 0, 0, 0.7));
 
 	Vector2 icon_size = icon->get_size();
-	Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 2);
+	Vector2 icon_pos = Vector2(r.position.x - (icon_size.x - r.size.x) / 2, r.position.y + r.size.y + 3);
+	icon_pos = Vector2(Math::floor(icon_pos.x), Math::floor(icon_pos.y));
 	surface.draw_texture(icon, icon_pos);
 }
 
