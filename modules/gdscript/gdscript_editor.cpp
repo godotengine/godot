@@ -33,7 +33,7 @@
 #include "gdscript_compiler.h"
 #include "global_constants.h"
 #include "os/file_access.h"
-#include "project_settings.h"
+#include "core/engine.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
@@ -287,7 +287,7 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
 
 	int l = _debug_call_stack_pos - p_level - 1;
-	GDInstance *instance = _call_stack[l].instance;
+	ScriptInstance *instance = _call_stack[l].instance;
 
 	return instance;
 }
@@ -297,14 +297,27 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	const Map<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
 	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
 
+	List<Pair<String, Variant> > cinfo;
+	get_public_constants(&cinfo);
+
 	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
 
-		if (ClassDB::class_exists(E->key()) || ProjectSettings::get_singleton()->has_singleton(E->key()) || E->key() == "PI" || E->key() == "INF" || E->key() == "NAN")
+		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key()))
+			continue;
+
+		bool is_script_constant = false;
+		for (List<Pair<String, Variant> >::Element *CE = cinfo.front(); CE; CE = CE->next()) {
+			if (CE->get().first == E->key()) {
+				is_script_constant = true;
+				break;
+			}
+		}
+		if (is_script_constant)
 			continue;
 
 		const Variant &var = globals[E->value()];
 		if (Object *obj = var) {
-			if (Object::cast_to<GDNativeClass>(obj))
+			if (Object::cast_to<GDScriptNativeClass>(obj))
 				continue;
 		}
 

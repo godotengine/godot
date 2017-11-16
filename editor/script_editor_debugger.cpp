@@ -1150,6 +1150,8 @@ void ScriptEditorDebugger::start() {
 		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), true);
 		return;
 	}
+
+	EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
 	set_process(true);
 }
 
@@ -1186,6 +1188,7 @@ void ScriptEditorDebugger::stop() {
 
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
+	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
 
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
@@ -1662,6 +1665,9 @@ void ScriptEditorDebugger::_set_remote_object(ObjectID p_id, ScriptEditorDebugge
 void ScriptEditorDebugger::_clear_remote_objects() {
 
 	for (Map<ObjectID, ScriptEditorDebuggerInspectedObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
+		if (editor->get_editor_history()->get_current() == E->value()->get_instance_id()) {
+			editor->push_item(NULL);
+		}
 		memdelete(E->value());
 	}
 	remote_objects.clear();
@@ -1825,18 +1831,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		tabs->add_child(error_split);
 	}
 
-	{ // inquire
-
-		inspect_info = memnew(HSplitContainer);
-		inspect_info->set_name(TTR("Remote Inspector"));
-		tabs->add_child(inspect_info);
-
-		VBoxContainer *info_left = memnew(VBoxContainer);
-		info_left->set_h_size_flags(SIZE_EXPAND_FILL);
-		inspect_info->add_child(info_left);
+	{ // remote scene tree
 
 		inspect_scene_tree = memnew(Tree);
-		info_left->add_margin_child(TTR("Live Scene Tree:"), inspect_scene_tree, true);
+		EditorNode::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(inspect_scene_tree);
+		inspect_scene_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
 

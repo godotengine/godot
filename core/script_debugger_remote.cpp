@@ -609,13 +609,24 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 		Array prop;
 		prop.push_back(pi.name);
 		prop.push_back(pi.type);
-		prop.push_back(pi.hint);
-		if (res.is_null())
-			prop.push_back(pi.hint_string);
-		else
-			prop.push_back(String("RES:") + res->get_path());
-		prop.push_back(pi.usage);
-		prop.push_back(var);
+
+		//only send information that can be sent..
+		int len = 0; //test how big is this to encode
+		encode_variant(var, NULL, len);
+		if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+			prop.push_back(PROPERTY_HINT_OBJECT_TOO_BIG);
+			prop.push_back("");
+			prop.push_back(pi.usage);
+			prop.push_back(Variant());
+		} else {
+			prop.push_back(pi.hint);
+			if (res.is_null())
+				prop.push_back(pi.hint_string);
+			else
+				prop.push_back(String("RES:") + res->get_path());
+			prop.push_back(pi.usage);
+			prop.push_back(var);
+		}
 		send_props.push_back(prop);
 	}
 

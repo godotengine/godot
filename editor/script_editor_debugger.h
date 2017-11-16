@@ -72,9 +72,6 @@ class ScriptEditorDebugger : public Control {
 	Button *le_set;
 	Button *le_clear;
 
-	Tree *inspect_scene_tree;
-	HSplitContainer *inspect_info;
-
 	bool updating_scene_tree;
 	float inspect_scene_tree_timeout;
 	float inspect_edited_object_timeout;
@@ -86,6 +83,7 @@ class ScriptEditorDebugger : public Control {
 	HSplitContainer *error_split;
 	ItemList *error_list;
 	ItemList *error_stack;
+	Tree *inspect_scene_tree;
 
 	int error_count;
 	int last_error_count;
