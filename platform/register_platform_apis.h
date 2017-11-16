@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  javascript_eval.h                                                    */
+/*  register_platform_apis.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,29 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef JAVASCRIPT_EVAL_ENABLED
+#ifndef REGISTER_APIS_H
+#define REGISTER_APIS_H
 
-#ifndef JAVASCRIPT_EVAL_H
-#define JAVASCRIPT_EVAL_H
+void register_platform_apis();
+void unregister_platform_apis();
 
-#include "object.h"
-
-class JavaScript : public Object {
-private:
-	GDCLASS(JavaScript, Object);
-
-	static JavaScript *singleton;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant eval(const String &p_code, bool p_use_global_exec_context = false);
-
-	static JavaScript *get_singleton();
-	JavaScript();
-	~JavaScript();
-};
-
-#endif // JAVASCRIPT_EVAL_H
-#endif // JAVASCRIPT_EVAL_ENABLED
+#endif

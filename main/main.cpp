@@ -35,6 +35,7 @@
 #include "message_queue.h"
 #include "modules/register_module_types.h"
 #include "os/os.h"
+#include "platform/register_platform_apis.h"
 #include "project_settings.h"
 #include "scene/register_scene_types.h"
 #include "script_debugger_local.h"
@@ -1108,6 +1109,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Load Modules, Physics, Drivers, Scripts");
 
+	register_platform_apis();
 	register_module_types();
 
 	initialize_physics();
@@ -1825,6 +1827,7 @@ void Main::cleanup() {
 
 	unregister_driver_types();
 	unregister_module_types();
+	unregister_platform_apis();
 	unregister_scene_types();
 	unregister_server_types();
 

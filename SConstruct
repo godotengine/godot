@@ -22,6 +22,7 @@ platform_flags = {}  # flags for each platform
 active_platforms = []
 active_platform_ids = []
 platform_exporters = []
+platform_apis = []
 global_defaults = []
 
 for x in glob.glob("platform/*"):
@@ -34,6 +35,8 @@ for x in glob.glob("platform/*"):
 
     if (os.path.exists(x + "/export/export.cpp")):
         platform_exporters.append(x[9:])
+    if (os.path.exists(x + "/api/api.cpp")):
+        platform_apis.append(x[9:])
     if (os.path.exists(x + "/globals/global_defaults.cpp")):
         global_defaults.append(x[9:])
     if (detect.is_active()):
@@ -215,6 +218,7 @@ env_base.Append(CPPPATH=['#core', '#core/math', '#editor', '#drivers', '#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
+env_base.platform_apis = platform_apis
 
 """
 sys.path.append("./platform/"+env_base["platform"])
@@ -435,6 +439,7 @@ if selected_platform in platform_list:
     SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
+    SConscript("platform/SCsub")
     SConscript("modules/SCsub")
     SConscript("main/SCsub")
 
