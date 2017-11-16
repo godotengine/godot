@@ -191,6 +191,8 @@ private:
 		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
+		NodePath focus_next;
+		NodePath focus_prev;
 
 		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
 		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
@@ -373,6 +375,11 @@ public:
 
 	void set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour);
 	NodePath get_focus_neighbour(Margin p_margin) const;
+
+	void set_focus_next(const NodePath &p_next);
+	NodePath get_focus_next() const;
+	void set_focus_previous(const NodePath &p_prev);
+	NodePath get_focus_previous() const;
 
 	Control *get_focus_owner() const;
 
