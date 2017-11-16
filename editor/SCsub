@@ -416,8 +416,18 @@ if env['tools']:
 
     # API documentation
     docs = []
-    for f in os.listdir(os.path.join(env.Dir('#').abspath, "doc/classes")):
-        docs.append("#doc/classes/" + f)
+    doc_dirs = ["doc/classes"]
+
+    for p in env.doc_class_path.values():
+        if p not in doc_dirs:
+            doc_dirs.append(p)
+
+    for d in doc_dirs:
+        try:
+            for f in os.listdir(os.path.join(env.Dir('#').abspath, d)):
+                docs.append("#" + os.path.join(d, f))
+        except OSError:
+            pass
 
     _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor/doc"))
 
