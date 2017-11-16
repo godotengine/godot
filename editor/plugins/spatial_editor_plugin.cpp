@@ -1808,6 +1808,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (!k->is_pressed()) emit_signal("toggle_maximize_view", this);
 		}
 	}
+
+	// freelook uses most of the useful shortcuts, like save, so its ok
+	// to consider freelook active as end of the line for future events.
+	if (freelook_active)
+		accept_event();
 }
 
 void SpatialEditorViewport::set_freelook_active(bool active_now) {
