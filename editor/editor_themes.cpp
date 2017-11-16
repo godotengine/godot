@@ -444,9 +444,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup->set_default_margin(MARGIN_BOTTOM, popup_margin_size);
 	style_popup->set_border_color_all(contrast_color_1);
 	style_popup->set_border_width_all(MAX(EDSCALE, border_width));
-	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
-	style_popup->set_shadow_color(shadow_color);
-	style_popup->set_shadow_size(4 * EDSCALE);
+
+	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.2 : 0.05);
 
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
@@ -817,6 +816,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_window->set_border_color_all(tab_color);
 	style_window->set_border_width(MARGIN_TOP, 24 * EDSCALE);
 	style_window->set_expand_margin_size(MARGIN_TOP, 24 * EDSCALE);
+	style_window->set_shadow_color(shadow_color);
+	style_window->set_shadow_size(20 * EDSCALE);
 	theme->set_stylebox("panel", "WindowDialog", style_window);
 	theme->set_color("title_color", "WindowDialog", font_color);
 	theme->set_icon("close", "WindowDialog", theme->get_icon("GuiClose", "EditorIcons"));
