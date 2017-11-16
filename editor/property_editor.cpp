@@ -39,6 +39,7 @@
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "editor/array_property_edit.h"
+#include "editor/dictionary_property_edit.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_export.h"
 #include "editor/editor_file_system.h"
@@ -3212,8 +3213,8 @@ void PropertyEditor::update_tree() {
 			case Variant::DICTIONARY: {
 
 				item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
-				item->set_editable(1, false);
 				item->set_text(1, obj->get(p.name).operator String());
+				item->add_button(1, get_icon("EditResource", "EditorIcons"));
 
 			} break;
 
@@ -3981,6 +3982,19 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			ape->edit(obj, n, ht, Variant::Type(t));
 
 			EditorNode::get_singleton()->push_item(ape.ptr());
+		} else if (t == Variant::DICTIONARY) {
+
+			Variant v = obj->get(n);
+
+			if (v.get_type() != t) {
+				Variant::CallError ce;
+				v = Variant::construct(Variant::Type(t), NULL, 0, ce);
+			}
+
+			Ref<DictionaryPropertyEdit> dpe = memnew(DictionaryPropertyEdit);
+			dpe->edit(obj, n, ht, Variant::Type(t));
+
+			EditorNode::get_singleton()->push_item(dpe.ptr());
 		}
 	}
 }
