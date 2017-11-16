@@ -1887,6 +1887,43 @@ void SceneTreeDock::open_script_dialog(Node *p_for_node) {
 	_tool_selected(TOOL_ATTACH_SCRIPT);
 }
 
+void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
+	ERR_FAIL_COND(remote_tree != NULL);
+	add_child(p_remote);
+	remote_tree = p_remote;
+	remote_tree->hide();
+}
+
+void SceneTreeDock::show_remote_tree() {
+
+	button_hb->show();
+	_remote_tree_selected();
+}
+
+void SceneTreeDock::hide_remote_tree() {
+
+	button_hb->hide();
+	_local_tree_selected();
+}
+
+void SceneTreeDock::_remote_tree_selected() {
+
+	scene_tree->hide();
+	if (remote_tree)
+		remote_tree->show();
+	edit_remote->set_pressed(true);
+	edit_local->set_pressed(false);
+}
+
+void SceneTreeDock::_local_tree_selected() {
+
+	scene_tree->show();
+	if (remote_tree)
+		remote_tree->hide();
+	edit_remote->set_pressed(false);
+	edit_local->set_pressed(true);
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_tool_selected"), &SceneTreeDock::_tool_selected, DEFVAL(false));
@@ -1912,6 +1949,8 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_tree_rmb"), &SceneTreeDock::_tree_rmb);
 	ClassDB::bind_method(D_METHOD("_filter_changed"), &SceneTreeDock::_filter_changed);
 	ClassDB::bind_method(D_METHOD("_focus_node"), &SceneTreeDock::_focus_node);
+	ClassDB::bind_method(D_METHOD("_remote_tree_selected"), &SceneTreeDock::_remote_tree_selected);
+	ClassDB::bind_method(D_METHOD("_local_tree_selected"), &SceneTreeDock::_local_tree_selected);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
 }
@@ -1982,7 +2021,28 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	button_clear_script = tb;
 	tb->hide();
 
+	button_hb = memnew(HBoxContainer);
+	vbc->add_child(button_hb);
+
+	edit_remote = memnew(ToolButton);
+	button_hb->add_child(edit_remote);
+	edit_remote->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_remote->set_text(TTR("Remote"));
+	edit_remote->set_toggle_mode(true);
+	edit_remote->connect("pressed", this, "_remote_tree_selected");
+
+	edit_local = memnew(ToolButton);
+	button_hb->add_child(edit_local);
+	edit_local->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_local->set_text(TTR("Local"));
+	edit_local->set_toggle_mode(true);
+	edit_local->connect("pressed", this, "_local_tree_selected");
+
+	remote_tree = NULL;
+	button_hb->hide();
+
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
+
 	vbc->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", this, "_tree_rmb");

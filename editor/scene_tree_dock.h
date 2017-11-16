@@ -95,7 +95,10 @@ class SceneTreeDock : public VBoxContainer {
 	ToolButton *button_create_script;
 	ToolButton *button_clear_script;
 
+	HBoxContainer *button_hb;
+	ToolButton *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
+	Control *remote_tree;
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
@@ -174,6 +177,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _file_selected(String p_file);
 
+	void _remote_tree_selected();
+	void _local_tree_selected();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -193,6 +199,10 @@ public:
 	void perform_node_renames(Node *p_base, List<Pair<NodePath, NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims = NULL);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
+
+	void add_remote_tree_editor(Control *p_remote);
+	void show_remote_tree();
+	void hide_remote_tree();
 
 	void open_script_dialog(Node *p_for_node);
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
