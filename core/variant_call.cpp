@@ -655,26 +655,26 @@ struct _VariantCall {
 #define VCALL_PTR5R(m_type, m_method) \
 	static void _call_##m_type##_##m_method(Variant &r_ret, Variant &p_self, const Variant **p_args) { r_ret = reinterpret_cast<m_type *>(p_self._data._ptr)->m_method(*p_args[0], *p_args[1], *p_args[2], *p_args[3], *p_args[4]); }
 
-	VCALL_PTR0R(Rect3, get_area);
-	VCALL_PTR0R(Rect3, has_no_area);
-	VCALL_PTR0R(Rect3, has_no_surface);
-	VCALL_PTR1R(Rect3, intersects);
-	VCALL_PTR1R(Rect3, encloses);
-	VCALL_PTR1R(Rect3, merge);
-	VCALL_PTR1R(Rect3, intersection);
-	VCALL_PTR1R(Rect3, intersects_plane);
-	VCALL_PTR2R(Rect3, intersects_segment);
-	VCALL_PTR1R(Rect3, has_point);
-	VCALL_PTR1R(Rect3, get_support);
-	VCALL_PTR0R(Rect3, get_longest_axis);
-	VCALL_PTR0R(Rect3, get_longest_axis_index);
-	VCALL_PTR0R(Rect3, get_longest_axis_size);
-	VCALL_PTR0R(Rect3, get_shortest_axis);
-	VCALL_PTR0R(Rect3, get_shortest_axis_index);
-	VCALL_PTR0R(Rect3, get_shortest_axis_size);
-	VCALL_PTR1R(Rect3, expand);
-	VCALL_PTR1R(Rect3, grow);
-	VCALL_PTR1R(Rect3, get_endpoint);
+	VCALL_PTR0R(AABB, get_area);
+	VCALL_PTR0R(AABB, has_no_area);
+	VCALL_PTR0R(AABB, has_no_surface);
+	VCALL_PTR1R(AABB, intersects);
+	VCALL_PTR1R(AABB, encloses);
+	VCALL_PTR1R(AABB, merge);
+	VCALL_PTR1R(AABB, intersection);
+	VCALL_PTR1R(AABB, intersects_plane);
+	VCALL_PTR2R(AABB, intersects_segment);
+	VCALL_PTR1R(AABB, has_point);
+	VCALL_PTR1R(AABB, get_support);
+	VCALL_PTR0R(AABB, get_longest_axis);
+	VCALL_PTR0R(AABB, get_longest_axis_index);
+	VCALL_PTR0R(AABB, get_longest_axis_size);
+	VCALL_PTR0R(AABB, get_shortest_axis);
+	VCALL_PTR0R(AABB, get_shortest_axis_index);
+	VCALL_PTR0R(AABB, get_shortest_axis_size);
+	VCALL_PTR1R(AABB, expand);
+	VCALL_PTR1R(AABB, grow);
+	VCALL_PTR1R(AABB, get_endpoint);
 
 	VCALL_PTR0R(Transform2D, inverse);
 	VCALL_PTR0R(Transform2D, affine_inverse);
@@ -755,7 +755,7 @@ struct _VariantCall {
 
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
-			case Variant::RECT3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Rect3()); return;
+			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -766,7 +766,7 @@ struct _VariantCall {
 
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
-			case Variant::RECT3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect3()); return;
+			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
 			default: r_ret = Variant();
 		}
 	}
@@ -878,9 +878,9 @@ struct _VariantCall {
 		r_ret = Color::hex(*p_args[0]);
 	}
 
-	static void Rect3_init1(Variant &r_ret, const Variant **p_args) {
+	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Rect3(*p_args[0], *p_args[1]);
+		r_ret = ::AABB(*p_args[0], *p_args[1]);
 	}
 
 	static void Basis_init1(Variant &r_ret, const Variant **p_args) {
@@ -1058,8 +1058,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case TRANSFORM2D: return Transform2D();
 			case PLANE: return Plane();
 			case QUAT: return Quat();
-			case RECT3:
-				return Rect3(); // 10
+			case AABB:
+				return ::AABB(); // 10
 			case BASIS: return Basis();
 			case TRANSFORM:
 				return Transform();
@@ -1138,8 +1138,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case VECTOR3: return (Vector3(*p_args[0]));
 			case PLANE: return (Plane(*p_args[0]));
 			case QUAT: return (Quat(*p_args[0]));
-			case RECT3:
-				return (Rect3(*p_args[0])); // 10
+			case AABB:
+				return (::AABB(*p_args[0])); // 10
 			case BASIS: return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM:
 				return (Transform(p_args[0]->operator Transform()));
@@ -1707,26 +1707,26 @@ void register_variant_methods() {
 
 	//pointerbased
 
-	ADDFUNC0R(RECT3, REAL, Rect3, get_area, varray());
-	ADDFUNC0R(RECT3, BOOL, Rect3, has_no_area, varray());
-	ADDFUNC0R(RECT3, BOOL, Rect3, has_no_surface, varray());
-	ADDFUNC1R(RECT3, BOOL, Rect3, intersects, RECT3, "with", varray());
-	ADDFUNC1R(RECT3, BOOL, Rect3, encloses, RECT3, "with", varray());
-	ADDFUNC1R(RECT3, RECT3, Rect3, merge, RECT3, "with", varray());
-	ADDFUNC1R(RECT3, RECT3, Rect3, intersection, RECT3, "with", varray());
-	ADDFUNC1R(RECT3, BOOL, Rect3, intersects_plane, PLANE, "plane", varray());
-	ADDFUNC2R(RECT3, BOOL, Rect3, intersects_segment, VECTOR3, "from", VECTOR3, "to", varray());
-	ADDFUNC1R(RECT3, BOOL, Rect3, has_point, VECTOR3, "point", varray());
-	ADDFUNC1R(RECT3, VECTOR3, Rect3, get_support, VECTOR3, "dir", varray());
-	ADDFUNC0R(RECT3, VECTOR3, Rect3, get_longest_axis, varray());
-	ADDFUNC0R(RECT3, INT, Rect3, get_longest_axis_index, varray());
-	ADDFUNC0R(RECT3, REAL, Rect3, get_longest_axis_size, varray());
-	ADDFUNC0R(RECT3, VECTOR3, Rect3, get_shortest_axis, varray());
-	ADDFUNC0R(RECT3, INT, Rect3, get_shortest_axis_index, varray());
-	ADDFUNC0R(RECT3, REAL, Rect3, get_shortest_axis_size, varray());
-	ADDFUNC1R(RECT3, RECT3, Rect3, expand, VECTOR3, "to_point", varray());
-	ADDFUNC1R(RECT3, RECT3, Rect3, grow, REAL, "by", varray());
-	ADDFUNC1R(RECT3, VECTOR3, Rect3, get_endpoint, INT, "idx", varray());
+	ADDFUNC0R(AABB, REAL, AABB, get_area, varray());
+	ADDFUNC0R(AABB, BOOL, AABB, has_no_area, varray());
+	ADDFUNC0R(AABB, BOOL, AABB, has_no_surface, varray());
+	ADDFUNC1R(AABB, BOOL, AABB, intersects, AABB, "with", varray());
+	ADDFUNC1R(AABB, BOOL, AABB, encloses, AABB, "with", varray());
+	ADDFUNC1R(AABB, AABB, AABB, merge, AABB, "with", varray());
+	ADDFUNC1R(AABB, AABB, AABB, intersection, AABB, "with", varray());
+	ADDFUNC1R(AABB, BOOL, AABB, intersects_plane, PLANE, "plane", varray());
+	ADDFUNC2R(AABB, BOOL, AABB, intersects_segment, VECTOR3, "from", VECTOR3, "to", varray());
+	ADDFUNC1R(AABB, BOOL, AABB, has_point, VECTOR3, "point", varray());
+	ADDFUNC1R(AABB, VECTOR3, AABB, get_support, VECTOR3, "dir", varray());
+	ADDFUNC0R(AABB, VECTOR3, AABB, get_longest_axis, varray());
+	ADDFUNC0R(AABB, INT, AABB, get_longest_axis_index, varray());
+	ADDFUNC0R(AABB, REAL, AABB, get_longest_axis_size, varray());
+	ADDFUNC0R(AABB, VECTOR3, AABB, get_shortest_axis, varray());
+	ADDFUNC0R(AABB, INT, AABB, get_shortest_axis_index, varray());
+	ADDFUNC0R(AABB, REAL, AABB, get_shortest_axis_size, varray());
+	ADDFUNC1R(AABB, AABB, AABB, expand, VECTOR3, "to_point", varray());
+	ADDFUNC1R(AABB, AABB, AABB, grow, REAL, "by", varray());
+	ADDFUNC1R(AABB, VECTOR3, AABB, get_endpoint, INT, "idx", varray());
 
 	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, inverse, varray());
 	ADDFUNC0R(TRANSFORM2D, TRANSFORM2D, Transform2D, affine_inverse, varray());
@@ -1791,7 +1791,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Rect3_init1, Variant::RECT3, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);

@@ -33,7 +33,7 @@
 Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
 
 	Vector<Vector3> lines;
-	Rect3 aabb;
+	AABB aabb;
 	aabb.position = -get_extents();
 	aabb.size = aabb.position * -2;
 

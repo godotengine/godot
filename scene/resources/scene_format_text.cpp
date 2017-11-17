@@ -33,7 +33,7 @@
 #include "project_settings.h"
 #include "version.h"
 
-//version 2: changed names for basis, rect3, poolvectors, etc.
+//version 2: changed names for basis, aabb, poolvectors, etc.
 #define FORMAT_VERSION 2
 
 #include "os/dir_access.h"

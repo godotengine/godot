@@ -1332,8 +1332,8 @@
 		<constant name="TYPE_QUAT" value="10">
 			Variable is of type [Quat].
 		</constant>
-		<constant name="TYPE_RECT3" value="11">
-			Variable is of type [Rect3].
+		<constant name="TYPE_AABB" value="11">
+			Variable is of type [AABB].
 		</constant>
 		<constant name="TYPE_BASIS" value="12">
 			Variable is of type [Basis].

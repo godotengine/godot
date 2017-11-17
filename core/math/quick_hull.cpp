@@ -38,7 +38,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	/* CREATE AABB VOLUME */
 
-	Rect3 aabb;
+	AABB aabb;
 	for (int i = 0; i < p_points.size(); i++) {
 
 		if (i == 0) {

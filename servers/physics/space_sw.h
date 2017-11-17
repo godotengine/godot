@@ -122,7 +122,7 @@ private:
 
 	friend class PhysicsDirectSpaceStateSW;
 
-	int _cull_aabb_for_body(BodySW *p_body, const Rect3 &p_aabb);
+	int _cull_aabb_for_body(BodySW *p_body, const AABB &p_aabb);
 
 public:
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }

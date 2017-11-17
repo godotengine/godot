@@ -3330,7 +3330,7 @@ int AnimationKeyEditor::_confirm_insert(InsertData p_id, int p_last_track) {
 						h.type == Variant::VECTOR2 ||
 						h.type == Variant::RECT2 ||
 						h.type == Variant::VECTOR3 ||
-						h.type == Variant::RECT3 ||
+						h.type == Variant::AABB ||
 						h.type == Variant::QUAT ||
 						h.type == Variant::COLOR ||
 						h.type == Variant::TRANSFORM) {

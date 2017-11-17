@@ -346,7 +346,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 			Variant::TRANSFORM2D,
 			Variant::PLANE,
 			Variant::QUAT,
-			Variant::RECT3,
+			Variant::AABB,
 			Variant::BASIS,
 			Variant::TRANSFORM,
 			Variant::COLOR,

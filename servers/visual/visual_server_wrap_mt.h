@@ -63,7 +63,7 @@ class VisualServerWrapMT : public VisualServer {
 
 	int pool_max_size;
 
-//#define DEBUG_SYNC
+	//#define DEBUG_SYNC
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -136,7 +136,7 @@ public:
 
 	FUNCRID(mesh)
 
-	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const Rect3 &, const Vector<PoolVector<uint8_t> > &, const Vector<Rect3> &)
+	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
 
 	FUNC2(mesh_set_blend_shape_count, RID, int)
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
@@ -158,15 +158,15 @@ public:
 	FUNC2RC(uint32_t, mesh_surface_get_format, RID, int)
 	FUNC2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
 
-	FUNC2RC(Rect3, mesh_surface_get_aabb, RID, int)
+	FUNC2RC(AABB, mesh_surface_get_aabb, RID, int)
 	FUNC2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	FUNC2RC(Vector<Rect3>, mesh_surface_get_skeleton_aabb, RID, int)
+	FUNC2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
 
 	FUNC2(mesh_remove_surface, RID, int)
 	FUNC1RC(int, mesh_get_surface_count, RID)
 
-	FUNC2(mesh_set_custom_aabb, RID, const Rect3 &)
-	FUNC1RC(Rect3, mesh_get_custom_aabb, RID)
+	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
+	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
 	FUNC1(mesh_clear, RID)
 
@@ -183,7 +183,7 @@ public:
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 
 	FUNC1RC(RID, multimesh_get_mesh, RID)
-	FUNC1RC(Rect3, multimesh_get_aabb, RID)
+	FUNC1RC(AABB, multimesh_get_aabb, RID)
 
 	FUNC2RC(Transform, multimesh_instance_get_transform, RID, int)
 	FUNC2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
@@ -260,8 +260,8 @@ public:
 
 	FUNCRID(gi_probe)
 
-	FUNC2(gi_probe_set_bounds, RID, const Rect3 &)
-	FUNC1RC(Rect3, gi_probe_get_bounds, RID)
+	FUNC2(gi_probe_set_bounds, RID, const AABB &)
+	FUNC1RC(AABB, gi_probe_get_bounds, RID)
 
 	FUNC2(gi_probe_set_cell_size, RID, float)
 	FUNC1RC(float, gi_probe_get_cell_size, RID)
@@ -304,7 +304,7 @@ public:
 	FUNC2(particles_set_pre_process_time, RID, float)
 	FUNC2(particles_set_explosiveness_ratio, RID, float)
 	FUNC2(particles_set_randomness_ratio, RID, float)
-	FUNC2(particles_set_custom_aabb, RID, const Rect3 &)
+	FUNC2(particles_set_custom_aabb, RID, const AABB &)
 	FUNC2(particles_set_speed_scale, RID, float)
 	FUNC2(particles_set_use_local_coordinates, RID, bool)
 	FUNC2(particles_set_process_material, RID, RID)
@@ -318,7 +318,7 @@ public:
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
 	FUNC2(particles_set_emission_transform, RID, const Transform &)
 
-	FUNC1R(Rect3, particles_get_current_aabb, RID)
+	FUNC1R(AABB, particles_get_current_aabb, RID)
 
 	/* CAMERA API */
 
@@ -431,7 +431,7 @@ public:
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 
 	// don't use these in a game!
-	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const Rect3 &, RID)
+	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
 	FUNC3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)
 	FUNC2RC(Vector<ObjectID>, instances_cull_convex, const Vector<Plane> &, RID)
 

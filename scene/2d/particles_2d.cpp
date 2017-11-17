@@ -77,7 +77,7 @@ void Particles2D::set_randomness_ratio(float p_ratio) {
 void Particles2D::set_visibility_rect(const Rect2 &p_aabb) {
 
 	visibility_rect = p_aabb;
-	Rect3 aabb;
+	AABB aabb;
 	aabb.position.x = p_aabb.position.x;
 	aabb.position.y = p_aabb.position.y;
 	aabb.size.x = p_aabb.size.x;
@@ -223,7 +223,7 @@ String Particles2D::get_configuration_warning() const {
 
 Rect2 Particles2D::capture_rect() const {
 
-	Rect3 aabb = VS::get_singleton()->particles_get_current_aabb(particles);
+	AABB aabb = VS::get_singleton()->particles_get_current_aabb(particles);
 	Rect2 r;
 	r.position.x = aabb.position.x;
 	r.position.y = aabb.position.y;
@@ -378,7 +378,7 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Drawing", "");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT3, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Process Material", "process_");

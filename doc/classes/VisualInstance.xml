@@ -10,7 +10,7 @@
 	</demos>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -22,7 +22,7 @@
 			</description>
 		</method>
 		<method name="get_transformed_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>

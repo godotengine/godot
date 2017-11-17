@@ -153,15 +153,15 @@ void ParticlesEditor::_generate_aabb() {
 
 	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
 
-	Rect3 rect;
+	AABB rect;
 	while (running < time) {
 
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 		ep.step("Generating..", int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
-		Rect3 capture = node->capture_aabb();
-		if (rect == Rect3())
+		AABB capture = node->capture_aabb();
+		if (rect == AABB())
 			rect = capture;
 		else
 			rect.merge_with(capture);
@@ -247,7 +247,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 		PoolVector<Face3>::Read r = geometry.read();
 
-		Rect3 aabb;
+		AABB aabb;
 
 		for (int i = 0; i < gcount; i++) {
 

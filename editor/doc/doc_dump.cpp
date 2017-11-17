@@ -182,7 +182,7 @@ void DocDump::dump(const String &p_file) {
 							case Variant::VECTOR3:
 							case Variant::PLANE:
 							case Variant::QUAT:
-							case Variant::RECT3:
+							case Variant::AABB:
 							case Variant::BASIS:
 							case Variant::COLOR:
 							case Variant::POOL_BYTE_ARRAY:

@@ -48,7 +48,7 @@ class BroadPhaseOctree : public BroadPhaseSW {
 public:
 	// 0 is an invalid ID
 	virtual ID create(CollisionObjectSW *p_object, int p_subindex = 0);
-	virtual void move(ID p_id, const Rect3 &p_aabb);
+	virtual void move(ID p_id, const AABB &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 
@@ -58,7 +58,7 @@ public:
 
 	virtual int cull_point(const Vector3 &p_point, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
 	virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
-	virtual int cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
 
 	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
 	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);

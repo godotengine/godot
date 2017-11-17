@@ -34,6 +34,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+#include "aabb.h"
 #include "array.h"
 #include "color.h"
 #include "dictionary.h"
@@ -45,7 +46,6 @@
 #include "node_path.h"
 #include "plane.h"
 #include "quat.h"
-#include "rect3.h"
 #include "ref_ptr.h"
 #include "rid.h"
 #include "transform.h"
@@ -89,7 +89,7 @@ public:
 		TRANSFORM2D,
 		PLANE,
 		QUAT, // 10
-		RECT3,
+		AABB,
 		BASIS,
 		TRANSFORM,
 
@@ -136,7 +136,7 @@ private:
 		int64_t _int;
 		double _real;
 		Transform2D *_transform2d;
-		Rect3 *_rect3;
+		::AABB *_aabb;
 		Basis *_basis;
 		Transform *_transform;
 		RefPtr *_resource;
@@ -184,7 +184,7 @@ public:
 	operator Rect2() const;
 	operator Vector3() const;
 	operator Plane() const;
-	operator Rect3() const;
+	operator ::AABB() const;
 	operator Quat() const;
 	operator Basis() const;
 	operator Transform() const;
@@ -253,7 +253,7 @@ public:
 	Variant(const Rect2 &p_rect2);
 	Variant(const Vector3 &p_vector3);
 	Variant(const Plane &p_plane);
-	Variant(const Rect3 &p_aabb);
+	Variant(const ::AABB &p_aabb);
 	Variant(const Quat &p_quat);
 	Variant(const Basis &p_transform);
 	Variant(const Transform2D &p_transform);

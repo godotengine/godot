@@ -155,7 +155,7 @@ Color MultiMesh::get_instance_color(int p_instance) const {
 	return VisualServer::get_singleton()->multimesh_instance_get_color(multimesh, p_instance);
 }
 
-Rect3 MultiMesh::get_aabb() const {
+AABB MultiMesh::get_aabb() const {
 
 	return VisualServer::get_singleton()->multimesh_get_aabb(multimesh);
 }

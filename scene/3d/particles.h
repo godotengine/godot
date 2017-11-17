@@ -65,7 +65,7 @@ private:
 	float explosiveness_ratio;
 	float randomness_ratio;
 	float speed_scale;
-	Rect3 visibility_aabb;
+	AABB visibility_aabb;
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
@@ -82,7 +82,7 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	Rect3 get_aabb() const;
+	AABB get_aabb() const;
 	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_emitting(bool p_emitting);
@@ -92,7 +92,7 @@ public:
 	void set_pre_process_time(float p_time);
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
-	void set_visibility_aabb(const Rect3 &p_aabb);
+	void set_visibility_aabb(const AABB &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
@@ -104,7 +104,7 @@ public:
 	float get_pre_process_time() const;
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
-	Rect3 get_visibility_aabb() const;
+	AABB get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	float get_speed_scale() const;
@@ -128,7 +128,7 @@ public:
 
 	void restart();
 
-	Rect3 capture_aabb() const;
+	AABB capture_aabb() const;
 	Particles();
 	~Particles();
 };

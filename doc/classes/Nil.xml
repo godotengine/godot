@@ -100,7 +100,7 @@
 			</description>
 		</method>
 		<method name="Nil">
-			<argument index="0" name="from" type="Rect3">
+			<argument index="0" name="from" type="AABB">
 			</argument>
 			<description>
 			</description>

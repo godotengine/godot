@@ -51,6 +51,7 @@ typedef struct {
 }
 #endif
 
+#include <gdnative/array.h>
 #include <gdnative/gdnative.h>
 #include <gdnative/variant.h>
 

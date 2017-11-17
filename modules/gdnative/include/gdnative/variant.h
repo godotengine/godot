@@ -62,7 +62,7 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_TRANSFORM2D,
 	GODOT_VARIANT_TYPE_PLANE,
 	GODOT_VARIANT_TYPE_QUAT, // 10
-	GODOT_VARIANT_TYPE_RECT3,
+	GODOT_VARIANT_TYPE_AABB,
 	GODOT_VARIANT_TYPE_BASIS,
 	GODOT_VARIANT_TYPE_TRANSFORM,
 
@@ -104,6 +104,7 @@ typedef struct godot_variant_call_error {
 }
 #endif
 
+#include <gdnative/aabb.h>
 #include <gdnative/array.h>
 #include <gdnative/basis.h>
 #include <gdnative/color.h>
@@ -113,7 +114,6 @@ typedef struct godot_variant_call_error {
 #include <gdnative/pool_arrays.h>
 #include <gdnative/quat.h>
 #include <gdnative/rect2.h>
-#include <gdnative/rect3.h>
 #include <gdnative/rid.h>
 #include <gdnative/string.h>
 #include <gdnative/transform.h>
@@ -145,7 +145,7 @@ void GDAPI godot_variant_new_vector3(godot_variant *r_dest, const godot_vector3 
 void GDAPI godot_variant_new_transform2d(godot_variant *r_dest, const godot_transform2d *p_t2d);
 void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_plane);
 void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat);
-void GDAPI godot_variant_new_rect3(godot_variant *r_dest, const godot_rect3 *p_rect3);
+void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb);
 void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_basis);
 void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transform *p_trans);
 void GDAPI godot_variant_new_color(godot_variant *r_dest, const godot_color *p_color);
@@ -173,7 +173,7 @@ godot_vector3 GDAPI godot_variant_as_vector3(const godot_variant *p_self);
 godot_transform2d GDAPI godot_variant_as_transform2d(const godot_variant *p_self);
 godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self);
 godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self);
-godot_rect3 GDAPI godot_variant_as_rect3(const godot_variant *p_self);
+godot_aabb GDAPI godot_variant_as_aabb(const godot_variant *p_self);
 godot_basis GDAPI godot_variant_as_basis(const godot_variant *p_self);
 godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self);
 godot_color GDAPI godot_variant_as_color(const godot_variant *p_self);

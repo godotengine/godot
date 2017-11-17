@@ -2011,7 +2011,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			if (se->aabb.has_no_surface()) {
 
-				se->aabb = vi ? vi->get_aabb() : Rect3(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+				se->aabb = vi ? vi->get_aabb() : AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 			}
 
 			Transform t = sp->get_global_transform();
@@ -2756,7 +2756,7 @@ void SpatialEditorViewport::focus_selection() {
 	cursor.pos = center;
 }
 
-void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node, Rect3 *p_preview_bounds, AcceptDialog *p_accept) {
+void SpatialEditorViewport::assign_pending_data_pointers(Spatial *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
 	preview_node = p_preview_node;
 	preview_bounds = p_preview_bounds;
 	accept = p_accept;
@@ -2819,14 +2819,14 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 	return point + offset;
 }
 
-Rect3 SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds) {
-	Rect3 bounds = p_bounds;
+AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds) {
+	AABB bounds = p_bounds;
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
 		Spatial *child = Object::cast_to<Spatial>(p_parent->get_child(i));
 		if (child) {
 			MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(child);
 			if (mesh_instance) {
-				Rect3 mesh_instance_bounds = mesh_instance->get_aabb();
+				AABB mesh_instance_bounds = mesh_instance->get_aabb();
 				mesh_instance_bounds.position += mesh_instance->get_global_transform().origin - p_parent->get_global_transform().origin;
 				bounds.merge_with(mesh_instance_bounds);
 			}
@@ -2858,7 +2858,7 @@ void SpatialEditorViewport::_create_preview(const Vector<String> &files) const {
 			editor->get_scene_root()->add_child(preview_node);
 		}
 	}
-	*preview_bounds = _calculate_spatial_bounds(preview_node, Rect3());
+	*preview_bounds = _calculate_spatial_bounds(preview_node, AABB());
 }
 
 void SpatialEditorViewport::_remove_preview() {
@@ -3534,7 +3534,7 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
-	Rect3 center;
+	AABB center;
 	bool first = true;
 
 	Basis gizmo_basis;
@@ -3595,7 +3595,7 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 
 void SpatialEditor::_generate_selection_box() {
 
-	Rect3 aabb(Vector3(), Vector3(1, 1, 1));
+	AABB aabb(Vector3(), Vector3(1, 1, 1));
 	aabb.grow_by(aabb.get_longest_axis_size() / 20.0);
 
 	Ref<SurfaceTool> st = memnew(SurfaceTool);
@@ -4622,7 +4622,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	// Drag and drop support;
 	preview_node = memnew(Spatial);
-	preview_bounds = Rect3();
+	preview_bounds = AABB();
 
 	ED_SHORTCUT("spatial_editor/bottom_view", TTR("Bottom View"), KEY_MASK_ALT + KEY_KP_7);
 	ED_SHORTCUT("spatial_editor/top_view", TTR("Top View"), KEY_KP_7);

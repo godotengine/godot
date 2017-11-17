@@ -3221,209 +3221,209 @@
         ]
       },
       {
-        "name": "godot_rect3_new",
+        "name": "godot_aabb_new",
         "return_type": "void",
         "arguments": [
-          ["godot_rect3 *", "r_dest"],
+          ["godot_aabb *", "r_dest"],
           ["const godot_vector3 *", "p_pos"],
           ["const godot_vector3 *", "p_size"]
         ]
       },
       {
-        "name": "godot_rect3_get_position",
+        "name": "godot_aabb_get_position",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_set_position",
+        "name": "godot_aabb_set_position",
         "return_type": "void",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_v"]
         ]
       },
       {
-        "name": "godot_rect3_get_size",
+        "name": "godot_aabb_get_size",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_set_size",
+        "name": "godot_aabb_set_size",
         "return_type": "void",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_v"]
         ]
       },
       {
-        "name": "godot_rect3_as_string",
+        "name": "godot_aabb_as_string",
         "return_type": "godot_string",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_area",
+        "name": "godot_aabb_get_area",
         "return_type": "godot_real",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_has_no_area",
+        "name": "godot_aabb_has_no_area",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_has_no_surface",
+        "name": "godot_aabb_has_no_surface",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_intersects",
+        "name": "godot_aabb_intersects",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
-          ["const godot_rect3 *", "p_with"]
+          ["const godot_aabb *", "p_self"],
+          ["const godot_aabb *", "p_with"]
         ]
       },
       {
-        "name": "godot_rect3_encloses",
+        "name": "godot_aabb_encloses",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
-          ["const godot_rect3 *", "p_with"]
+          ["const godot_aabb *", "p_self"],
+          ["const godot_aabb *", "p_with"]
         ]
       },
       {
-        "name": "godot_rect3_merge",
-        "return_type": "godot_rect3",
+        "name": "godot_aabb_merge",
+        "return_type": "godot_aabb",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
-          ["const godot_rect3 *", "p_with"]
+          ["const godot_aabb *", "p_self"],
+          ["const godot_aabb *", "p_with"]
         ]
       },
       {
-        "name": "godot_rect3_intersection",
-        "return_type": "godot_rect3",
+        "name": "godot_aabb_intersection",
+        "return_type": "godot_aabb",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
-          ["const godot_rect3 *", "p_with"]
+          ["const godot_aabb *", "p_self"],
+          ["const godot_aabb *", "p_with"]
         ]
       },
       {
-        "name": "godot_rect3_intersects_plane",
+        "name": "godot_aabb_intersects_plane",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_plane *", "p_plane"]
         ]
       },
       {
-        "name": "godot_rect3_intersects_segment",
+        "name": "godot_aabb_intersects_segment",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_from"],
           ["const godot_vector3 *", "p_to"]
         ]
       },
       {
-        "name": "godot_rect3_has_point",
+        "name": "godot_aabb_has_point",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_point"]
         ]
       },
       {
-        "name": "godot_rect3_get_support",
+        "name": "godot_aabb_get_support",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_dir"]
         ]
       },
       {
-        "name": "godot_rect3_get_longest_axis",
+        "name": "godot_aabb_get_longest_axis",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_longest_axis_index",
+        "name": "godot_aabb_get_longest_axis_index",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_longest_axis_size",
+        "name": "godot_aabb_get_longest_axis_size",
         "return_type": "godot_real",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_shortest_axis",
+        "name": "godot_aabb_get_shortest_axis",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_shortest_axis_index",
+        "name": "godot_aabb_get_shortest_axis_index",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_get_shortest_axis_size",
+        "name": "godot_aabb_get_shortest_axis_size",
         "return_type": "godot_real",
         "arguments": [
-          ["const godot_rect3 *", "p_self"]
+          ["const godot_aabb *", "p_self"]
         ]
       },
       {
-        "name": "godot_rect3_expand",
-        "return_type": "godot_rect3",
+        "name": "godot_aabb_expand",
+        "return_type": "godot_aabb",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_vector3 *", "p_to_point"]
         ]
       },
       {
-        "name": "godot_rect3_grow",
-        "return_type": "godot_rect3",
+        "name": "godot_aabb_grow",
+        "return_type": "godot_aabb",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_real", "p_by"]
         ]
       },
       {
-        "name": "godot_rect3_get_endpoint",
+        "name": "godot_aabb_get_endpoint",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
+          ["const godot_aabb *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_rect3_operator_equal",
+        "name": "godot_aabb_operator_equal",
         "return_type": "godot_bool",
         "arguments": [
-          ["const godot_rect3 *", "p_self"],
-          ["const godot_rect3 *", "p_b"]
+          ["const godot_aabb *", "p_self"],
+          ["const godot_aabb *", "p_b"]
         ]
       },
       {
@@ -3632,19 +3632,19 @@
         ]
       },
       {
-        "name": "godot_transform_xform_rect3",
-        "return_type": "godot_rect3",
+        "name": "godot_transform_xform_aabb",
+        "return_type": "godot_aabb",
         "arguments": [
           ["const godot_transform *", "p_self"],
-          ["const godot_rect3 *", "p_v"]
+          ["const godot_aabb *", "p_v"]
         ]
       },
       {
-        "name": "godot_transform_xform_inv_rect3",
-        "return_type": "godot_rect3",
+        "name": "godot_transform_xform_inv_aabb",
+        "return_type": "godot_aabb",
         "arguments": [
           ["const godot_transform *", "p_self"],
-          ["const godot_rect3 *", "p_v"]
+          ["const godot_aabb *", "p_v"]
         ]
       },
       {
@@ -3930,11 +3930,11 @@
         ]
       },
       {
-        "name": "godot_variant_new_rect3",
+        "name": "godot_variant_new_aabb",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_rect3 *", "p_rect3"]
+          ["const godot_aabb *", "p_aabb"]
         ]
       },
       {
@@ -4135,8 +4135,8 @@
         ]
       },
       {
-        "name": "godot_variant_as_rect3",
-        "return_type": "godot_rect3",
+        "name": "godot_variant_as_aabb",
+        "return_type": "godot_aabb",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]

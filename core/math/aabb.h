@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rect3.h                                                              */
+/*  aabb.h                                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -39,7 +39,7 @@
  * This is implemented by a point (position) and the box size
  */
 
-class Rect3 {
+class AABB {
 public:
 	Vector3 position;
 	Vector3 size;
@@ -60,16 +60,16 @@ public:
 	const Vector3 &get_size() const { return size; }
 	void set_size(const Vector3 &p_size) { size = p_size; }
 
-	bool operator==(const Rect3 &p_rval) const;
-	bool operator!=(const Rect3 &p_rval) const;
+	bool operator==(const AABB &p_rval) const;
+	bool operator!=(const AABB &p_rval) const;
 
-	_FORCE_INLINE_ bool intersects(const Rect3 &p_aabb) const; /// Both AABBs overlap
-	_FORCE_INLINE_ bool intersects_inclusive(const Rect3 &p_aabb) const; /// Both AABBs (or their faces) overlap
-	_FORCE_INLINE_ bool encloses(const Rect3 &p_aabb) const; /// p_aabb is completely inside this
+	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
+	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
+	_FORCE_INLINE_ bool encloses(const AABB &p_aabb) const; /// p_aabb is completely inside this
 
-	Rect3 merge(const Rect3 &p_with) const;
-	void merge_with(const Rect3 &p_aabb); ///merge with another AABB
-	Rect3 intersection(const Rect3 &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
+	AABB merge(const AABB &p_with) const;
+	void merge_with(const AABB &p_aabb); ///merge with another AABB
+	AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
 	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
 	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = NULL, Vector3 *r_normal = NULL) const;
 	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
@@ -88,26 +88,26 @@ public:
 	int get_shortest_axis_index() const;
 	_FORCE_INLINE_ real_t get_shortest_axis_size() const;
 
-	Rect3 grow(real_t p_by) const;
+	AABB grow(real_t p_by) const;
 	_FORCE_INLINE_ void grow_by(real_t p_amount);
 
 	void get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const;
 	_FORCE_INLINE_ Vector3 get_endpoint(int p_point) const;
 
-	Rect3 expand(const Vector3 &p_vector) const;
+	AABB expand(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ void project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const;
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	operator String() const;
 
-	_FORCE_INLINE_ Rect3() {}
-	inline Rect3(const Vector3 &p_pos, const Vector3 &p_size)
+	_FORCE_INLINE_ AABB() {}
+	inline AABB(const Vector3 &p_pos, const Vector3 &p_size)
 		: position(p_pos),
 		  size(p_size) {
 	}
 };
 
-inline bool Rect3::intersects(const Rect3 &p_aabb) const {
+inline bool AABB::intersects(const AABB &p_aabb) const {
 
 	if (position.x >= (p_aabb.position.x + p_aabb.size.x))
 		return false;
@@ -125,7 +125,7 @@ inline bool Rect3::intersects(const Rect3 &p_aabb) const {
 	return true;
 }
 
-inline bool Rect3::intersects_inclusive(const Rect3 &p_aabb) const {
+inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 
 	if (position.x > (p_aabb.position.x + p_aabb.size.x))
 		return false;
@@ -143,7 +143,7 @@ inline bool Rect3::intersects_inclusive(const Rect3 &p_aabb) const {
 	return true;
 }
 
-inline bool Rect3::encloses(const Rect3 &p_aabb) const {
+inline bool AABB::encloses(const AABB &p_aabb) const {
 
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
@@ -159,7 +159,7 @@ inline bool Rect3::encloses(const Rect3 &p_aabb) const {
 			(src_max.z > dst_max.z));
 }
 
-Vector3 Rect3::get_support(const Vector3 &p_normal) const {
+Vector3 AABB::get_support(const Vector3 &p_normal) const {
 
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
@@ -171,7 +171,7 @@ Vector3 Rect3::get_support(const Vector3 &p_normal) const {
 		   ofs;
 }
 
-Vector3 Rect3::get_endpoint(int p_point) const {
+Vector3 AABB::get_endpoint(int p_point) const {
 
 	switch (p_point) {
 		case 0: return Vector3(position.x, position.y, position.z);
@@ -187,7 +187,7 @@ Vector3 Rect3::get_endpoint(int p_point) const {
 	ERR_FAIL_V(Vector3());
 }
 
-bool Rect3::intersects_convex_shape(const Plane *p_planes, int p_plane_count) const {
+bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count) const {
 
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
@@ -206,7 +206,7 @@ bool Rect3::intersects_convex_shape(const Plane *p_planes, int p_plane_count) co
 	return true;
 }
 
-bool Rect3::has_point(const Vector3 &p_point) const {
+bool AABB::has_point(const Vector3 &p_point) const {
 
 	if (p_point.x < position.x)
 		return false;
@@ -224,7 +224,7 @@ bool Rect3::has_point(const Vector3 &p_point) const {
 	return true;
 }
 
-inline void Rect3::expand_to(const Vector3 &p_vector) {
+inline void AABB::expand_to(const Vector3 &p_vector) {
 
 	Vector3 begin = position;
 	Vector3 end = position + size;
@@ -247,7 +247,7 @@ inline void Rect3::expand_to(const Vector3 &p_vector) {
 	size = end - begin;
 }
 
-void Rect3::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
+void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
 
 	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
@@ -258,7 +258,7 @@ void Rect3::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &
 	r_max = distance + length;
 }
 
-inline real_t Rect3::get_longest_axis_size() const {
+inline real_t AABB::get_longest_axis_size() const {
 
 	real_t max_size = size.x;
 
@@ -273,7 +273,7 @@ inline real_t Rect3::get_longest_axis_size() const {
 	return max_size;
 }
 
-inline real_t Rect3::get_shortest_axis_size() const {
+inline real_t AABB::get_shortest_axis_size() const {
 
 	real_t max_size = size.x;
 
@@ -288,7 +288,7 @@ inline real_t Rect3::get_shortest_axis_size() const {
 	return max_size;
 }
 
-bool Rect3::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
+bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
 
 	real_t divx = 1.0 / p_dir.x;
 	real_t divy = 1.0 / p_dir.y;
@@ -332,7 +332,7 @@ bool Rect3::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, rea
 	return ((tmin < t1) && (tmax > t0));
 }
 
-void Rect3::grow_by(real_t p_amount) {
+void AABB::grow_by(real_t p_amount) {
 
 	position.x -= p_amount;
 	position.y -= p_amount;

@@ -52,7 +52,7 @@ enum {
 	VARIANT_VECTOR3 = 12,
 	VARIANT_PLANE = 13,
 	VARIANT_QUAT = 14,
-	VARIANT_RECT3 = 15,
+	VARIANT_AABB = 15,
 	VARIANT_MATRIX3 = 16,
 	VARIANT_TRANSFORM = 17,
 	VARIANT_MATRIX32 = 18,
@@ -196,9 +196,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
-		case VARIANT_RECT3: {
+		case VARIANT_AABB: {
 
-			Rect3 v;
+			AABB v;
 			v.position.x = f->get_real();
 			v.position.y = f->get_real();
 			v.position.z = f->get_real();
@@ -1374,10 +1374,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant &p_property,
 			f->store_real(val.w);
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
-			f->store_32(VARIANT_RECT3);
-			Rect3 val = p_property;
+			f->store_32(VARIANT_AABB);
+			AABB val = p_property;
 			f->store_real(val.position.x);
 			f->store_real(val.position.y);
 			f->store_real(val.position.z);

@@ -95,10 +95,10 @@
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="Rect3">
+			<argument index="0" name="from" type="AABB">
 			</argument>
 			<description>
-				Constructs a new String from the given [Rect3].
+				Constructs a new String from the given [AABB].
 			</description>
 		</method>
 		<method name="String">

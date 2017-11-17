@@ -52,7 +52,7 @@ public:
 	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
 	Ref<MultiMesh> get_multimesh() const;
 
-	virtual Rect3 get_aabb() const;
+	virtual AABB get_aabb() const;
 
 	MultiMeshInstance();
 	~MultiMeshInstance();

@@ -371,7 +371,7 @@ void unregister_gdnative_types() {
 	print_line(String("poolarray:\t") + itos(sizeof(PoolByteArray)));
 	print_line(String("quat:\t")      + itos(sizeof(Quat)));
 	print_line(String("rect2:\t")     + itos(sizeof(Rect2)));
-	print_line(String("rect3:\t")     + itos(sizeof(Rect3)));
+	print_line(String("aabb:\t")     + itos(sizeof(AABB)));
 	print_line(String("rid:\t")       + itos(sizeof(RID)));
 	print_line(String("string:\t")    + itos(sizeof(String)));
 	print_line(String("transform:\t") + itos(sizeof(Transform)));

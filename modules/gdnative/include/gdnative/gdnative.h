@@ -169,9 +169,9 @@ typedef void godot_object;
 
 #include <gdnative/quat.h>
 
-/////// Rect3
+/////// AABB
 
-#include <gdnative/rect3.h>
+#include <gdnative/aabb.h>
 
 /////// Basis
 

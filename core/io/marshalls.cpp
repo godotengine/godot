@@ -159,7 +159,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = str;
 
 		} break;
-		// math types
+			// math types
 
 		case Variant::VECTOR2: {
 
@@ -245,10 +245,10 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4 * 4;
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
 			ERR_FAIL_COND_V(len < (int)4 * 6, ERR_INVALID_DATA);
-			Rect3 val;
+			AABB val;
 			val.position.x = decode_float(&buf[0]);
 			val.position.y = decode_float(&buf[4]);
 			val.position.z = decode_float(&buf[8]);
@@ -967,7 +967,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			_encode_string(p_variant, buf, r_len);
 
 		} break;
-		// math types
+			// math types
 
 		case Variant::VECTOR2: {
 
@@ -1045,10 +1045,10 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
 			if (buf) {
-				Rect3 aabb = p_variant;
+				AABB aabb = p_variant;
 				encode_float(aabb.position.x, &buf[0]);
 				encode_float(aabb.position.y, &buf[4]);
 				encode_float(aabb.position.z, &buf[8]);
