@@ -36,6 +36,7 @@
 #include "print_string.h"
 #include "sem_osx.h"
 #include "servers/visual/visual_server_raster.h"
+#include "version_generated.gen.h"
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -1338,6 +1339,43 @@ void OS_OSX::set_icon(const Ref<Image> &p_icon) {
 MainLoop *OS_OSX::get_main_loop() const {
 
 	return main_loop;
+}
+
+String OS_OSX::get_config_path() const {
+
+	if (has_environment("XDG_CONFIG_HOME")) {
+		return get_environment("XDG_CONFIG_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file("Library/Application Support");
+	} else {
+		return ".";
+	}
+}
+
+String OS_OSX::get_data_path() const {
+
+	if (has_environment("XDG_DATA_HOME")) {
+		return get_environment("XDG_DATA_HOME");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_OSX::get_cache_path() const {
+
+	if (has_environment("XDG_CACHE_HOME")) {
+		return get_environment("XDG_CACHE_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file("Library/Caches");
+	} else {
+		return get_config_path();
+	}
+}
+
+// Get properly capitalized engine name for system paths
+String OS_OSX::get_godot_dir_name() const {
+
+	return String(_MKSTR(VERSION_SHORT_NAME)).capitalize();
 }
 
 String OS_OSX::get_system_dir(SystemDir p_dir) const {

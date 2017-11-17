@@ -2,16 +2,6 @@
 
 Import('env')
 
-g_set_p = '#ifdef UNIX_ENABLED\n'
-g_set_p += '#include "os_unix.h"\n'
-g_set_p += 'String OS_Unix::get_global_settings_path() const {\n'
-g_set_p += '\treturn "' + env["unix_global_settings_path"] + '";\n'
-g_set_p += '}\n'
-g_set_p += '#endif'
-f = open("os_unix_global_settings_path.gen.cpp", "w")
-f.write(g_set_p)
-f.close()
-
 env.add_source_files(env.drivers_sources, "*.cpp")
 
 env["check_c_headers"] = [ [ "mntent.h", "HAVE_MNTENT" ] ]

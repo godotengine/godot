@@ -336,33 +336,18 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
-	String base_name = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + "/" + template_file_name;
-	String user_file = EditorSettings::get_singleton()->get_settings_dir() + "/templates/" + base_name;
-	String system_file = OS::get_singleton()->get_installed_templates_path();
-	bool has_system_path = (system_file != "");
-	system_file = system_file.plus_file(base_name);
+	String current_version = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + VERSION_MODULE_CONFIG;
+	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(current_version).plus_file(template_file_name);
 
-	// Prefer user file
-	if (FileAccess::exists(user_file)) {
-		return user_file;
-	}
-
-	// Now check system file
-	if (has_system_path) {
-		if (FileAccess::exists(system_file)) {
-			return system_file;
-		}
+	if (FileAccess::exists(template_path)) {
+		return template_path;
 	}
 
 	// Not found
 	if (err) {
-		*err += "No export template found at \"" + user_file + "\"";
-		if (has_system_path)
-			*err += "\n or \"" + system_file + "\".";
-		else
-			*err += ".";
+		*err += "No export template found at \"" + template_path + "\".";
 	}
-	return String(); // not found
+	return String();
 }
 
 bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {

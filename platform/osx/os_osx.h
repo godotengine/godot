@@ -154,6 +154,11 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
+	virtual String get_godot_dir_name() const;
+
 	virtual String get_system_dir(SystemDir p_dir) const;
 
 	virtual bool can_draw() const;
