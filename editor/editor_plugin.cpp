@@ -176,8 +176,9 @@ void EditorPlugin::make_visible(bool p_visible) {
 void EditorPlugin::edit(Object *p_object) {
 
 	if (get_script_instance() && get_script_instance()->has_method("edit")) {
-		if (p_object->is_class("Resource")) {
-			get_script_instance()->call("edit", Ref<Resource>(Object::cast_to<Resource>(p_object)));
+		Resource *obj = p_object ? p_object->cast_to<Resource>() : NULL;
+		if (obj) {
+			get_script_instance()->call("edit", Ref<Resource>(obj));
 		} else {
 			get_script_instance()->call("edit", p_object);
 		}
