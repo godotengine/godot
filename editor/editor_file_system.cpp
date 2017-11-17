@@ -188,7 +188,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_cache3");
 	FileAccess *f = FileAccess::open(fscache, FileAccess::READ);
 
 	if (f) {
@@ -238,7 +238,7 @@ void EditorFileSystem::_scan_filesystem() {
 		memdelete(f);
 	}
 
-	String update_cache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update3");
+	String update_cache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update3");
 
 	if (FileAccess::exists(update_cache)) {
 		{
@@ -282,7 +282,7 @@ void EditorFileSystem::_scan_filesystem() {
 }
 
 void EditorFileSystem::_save_filesystem_cache() {
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_cache3");
 
 	FileAccess *f = FileAccess::open(fscache, FileAccess::WRITE);
 	_save_filesystem_cache(filesystem, f);
@@ -1180,7 +1180,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update3");
 	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
 	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
 		f->store_line(E->get());

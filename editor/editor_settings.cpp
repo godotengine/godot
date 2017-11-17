@@ -639,7 +639,6 @@ void EditorSettings::create() {
 		return; //pointless
 
 	DirAccess *dir = NULL;
-	Variant meta;
 
 	String config_path;
 	String config_dir;
@@ -732,13 +731,13 @@ void EditorSettings::create() {
 
 		dir->change_dir("config");
 
-		String pcp = ProjectSettings::get_singleton()->get_resource_path();
-		if (pcp.ends_with("/"))
-			pcp = config_path.substr(0, pcp.size() - 1);
-		pcp = pcp.get_file() + "-" + pcp.md5_text();
+		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
+		if (project_config_dir.ends_with("/"))
+			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
+		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
 
-		if (dir->change_dir(pcp)) {
-			dir->make_dir(pcp);
+		if (dir->change_dir(project_config_dir)) {
+			dir->make_dir(project_config_dir);
 		} else {
 			dir->change_dir("..");
 		}
@@ -750,8 +749,6 @@ void EditorSettings::create() {
 		String config_file_name = "editor_settings-" + String(_MKSTR(VERSION_MAJOR)) + ".tres";
 		config_file_path = config_path + "/" + config_dir + "/" + config_file_name;
 
-		String open_path = config_file_path;
-
 		if (!dir->file_exists(config_file_name)) {
 
 			goto fail;
@@ -759,7 +756,7 @@ void EditorSettings::create() {
 
 		memdelete(dir);
 
-		singleton = ResourceLoader::load(open_path, "EditorSettings");
+		singleton = ResourceLoader::load(config_file_path, "EditorSettings");
 
 		if (singleton.is_null()) {
 			WARN_PRINT("Could not open config file.");
@@ -768,8 +765,8 @@ void EditorSettings::create() {
 
 		singleton->save_changed_setting = true;
 		singleton->config_file_path = config_file_path;
-		singleton->project_config_path = pcp;
-		singleton->settings_path = config_path + "/" + config_dir;
+		singleton->project_config_dir = project_config_dir;
+		singleton->settings_dir = config_path + "/" + config_dir;
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 
@@ -799,7 +796,7 @@ fail:
 	singleton = Ref<EditorSettings>(memnew(EditorSettings));
 	singleton->save_changed_setting = true;
 	singleton->config_file_path = config_file_path;
-	singleton->settings_path = config_path + "/" + config_dir;
+	singleton->settings_dir = config_path + "/" + config_dir;
 	singleton->_load_defaults(extra_config);
 	singleton->setup_language();
 	singleton->setup_network();
@@ -971,19 +968,19 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 
 // Settings paths and saved metadata
 
-String EditorSettings::get_settings_path() const {
+String EditorSettings::get_settings_dir() const {
 
-	return settings_path;
+	return settings_dir;
 }
 
-String EditorSettings::get_project_settings_path() const {
+String EditorSettings::get_project_settings_dir() const {
 
-	return get_settings_path().plus_file("config").plus_file(project_config_path);
+	return get_settings_dir().plus_file("config").plus_file(project_config_dir);
 }
 
 void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_path().plus_file("project_metadata.cfg");
+	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	cf->load(path);
 	cf->set_value(p_section, p_key, p_data);
 	cf->save(path);
@@ -991,7 +988,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	String path = get_project_settings_path().plus_file("project_metadata.cfg");
+	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
 		return p_default;
@@ -1002,7 +999,7 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 void EditorSettings::set_favorite_dirs(const Vector<String> &p_favorites_dirs) {
 
 	favorite_dirs = p_favorites_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"), FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorite_dirs"), FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < favorite_dirs.size(); i++)
 			f->store_line(favorite_dirs[i]);
@@ -1018,7 +1015,7 @@ Vector<String> EditorSettings::get_favorite_dirs() const {
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
 
 	recent_dirs = p_recent_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"), FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
 	if (f) {
 		for (int i = 0; i < recent_dirs.size(); i++)
 			f->store_line(recent_dirs[i]);
@@ -1033,7 +1030,7 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 
 void EditorSettings::load_favorites() {
 
-	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"), FileAccess::READ);
+	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorite_dirs"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (line != "") {
@@ -1043,7 +1040,7 @@ void EditorSettings::load_favorites() {
 		memdelete(f);
 	}
 
-	f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"), FileAccess::READ);
+	f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (line != "") {
@@ -1056,7 +1053,7 @@ void EditorSettings::load_favorites() {
 
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Adaptive,Default";
-	DirAccess *d = DirAccess::open(get_settings_path().plus_file("text_editor_themes"));
+	DirAccess *d = DirAccess::open(get_settings_dir().plus_file("text_editor_themes"));
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1078,7 +1075,7 @@ void EditorSettings::load_text_editor_theme() {
 		return;
 	}
 
-	String theme_path = get_settings_path().plus_file("text_editor_themes").plus_file((String)get("text_editor/theme/color_theme") + ".tet");
+	String theme_path = get_settings_dir().plus_file("text_editor_themes").plus_file((String)get("text_editor/theme/color_theme") + ".tet");
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error err = cf->load(theme_path);
@@ -1116,9 +1113,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccess *d = DirAccess::open(get_settings_path().plus_file("text_editor_themes"));
+		DirAccess *d = DirAccess::open(get_settings_dir().plus_file("text_editor_themes"));
 		if (d) {
-			d->copy(p_file, get_settings_path().plus_file("text_editor_themes").plus_file(p_file.get_file()));
+			d->copy(p_file, get_settings_dir().plus_file("text_editor_themes").plus_file(p_file.get_file()));
 			memdelete(d);
 			return true;
 		}
@@ -1133,7 +1130,7 @@ bool EditorSettings::save_text_editor_theme() {
 	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive") {
 		return false;
 	}
-	String theme_path = get_settings_path().plus_file("text_editor_themes").plus_file(p_file + ".tet");
+	String theme_path = get_settings_dir().plus_file("text_editor_themes").plus_file(p_file + ".tet");
 	return _save_text_editor_theme(theme_path);
 }
 
@@ -1151,7 +1148,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
 
-		if (p_file.get_base_dir() == get_settings_path().plus_file("text_editor_themes")) {
+		if (p_file.get_base_dir() == get_settings_dir().plus_file("text_editor_themes")) {
 			_initial_set("text_editor/theme/color_theme", theme_name);
 			load_text_editor_theme();
 		}
@@ -1163,7 +1160,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension) {
 
 	Vector<String> templates;
-	DirAccess *d = DirAccess::open(get_settings_path().plus_file("script_templates"));
+	DirAccess *d = DirAccess::open(get_settings_dir().plus_file("script_templates"));
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1285,8 +1282,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
 
-	ClassDB::bind_method(D_METHOD("get_settings_path"), &EditorSettings::get_settings_path);
-	ClassDB::bind_method(D_METHOD("get_project_settings_path"), &EditorSettings::get_project_settings_path);
+	ClassDB::bind_method(D_METHOD("get_settings_dir"), &EditorSettings::get_settings_dir);
+	ClassDB::bind_method(D_METHOD("get_project_settings_dir"), &EditorSettings::get_project_settings_dir);
 
 	ClassDB::bind_method(D_METHOD("set_favorite_dirs", "dirs"), &EditorSettings::set_favorite_dirs);
 	ClassDB::bind_method(D_METHOD("get_favorite_dirs"), &EditorSettings::get_favorite_dirs);

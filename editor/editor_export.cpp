@@ -337,7 +337,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
 	String base_name = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + "/" + template_file_name;
-	String user_file = EditorSettings::get_singleton()->get_settings_path() + "/templates/" + base_name;
+	String user_file = EditorSettings::get_singleton()->get_settings_dir() + "/templates/" + base_name;
 	String system_file = OS::get_singleton()->get_installed_templates_path();
 	bool has_system_path = (system_file != "");
 	system_file = system_file.plus_file(base_name);
@@ -692,7 +692,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp" + config_file;
+	String engine_cfb = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/tmp" + config_file;
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
@@ -705,7 +705,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	EditorProgress ep("savepack", TTR("Packing"), 102);
 
-	String tmppath = EditorSettings::get_singleton()->get_settings_path() + "/tmp/packtmp";
+	String tmppath = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/packtmp";
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
 

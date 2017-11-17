@@ -1066,7 +1066,7 @@ public:
 		if (use_reverse)
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
 
-		String export_to = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmpexport.apk";
+		String export_to = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/tmpexport.apk";
 		Error err = export_project(p_preset, true, export_to, p_debug_flags);
 		if (err) {
 			device_lock->unlock();
@@ -1291,7 +1291,7 @@ public:
 		zlib_filefunc_def io2 = io;
 		FileAccess *dst_f = NULL;
 		io2.opaque = &dst_f;
-		String unaligned_path = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmpexport-unaligned.apk";
+		String unaligned_path = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/tmpexport-unaligned.apk";
 		zipFile unaligned_apk = zipOpen2(unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
 
 		bool export_x86 = p_preset->get("architecture/x86");

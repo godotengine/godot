@@ -46,7 +46,7 @@ void ExportTemplateManager::_update_template_list() {
 	}
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_path().plus_file("templates"));
+	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_dir().plus_file("templates"));
 
 	d->list_dir_begin();
 	Set<String> templates;
@@ -142,7 +142,7 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 void ExportTemplateManager::_uninstall_template_confirm() {
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_path().plus_file("templates"));
+	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_dir().plus_file("templates"));
 
 	ERR_FAIL_COND(err != OK);
 
@@ -244,7 +244,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 		return;
 	}
 
-	String template_path = EditorSettings::get_singleton()->get_settings_path().plus_file("templates").plus_file(version);
+	String template_path = EditorSettings::get_singleton()->get_settings_dir().plus_file("templates").plus_file(version);
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = d->make_dir_recursive(template_path);
@@ -393,7 +393,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 			if (p_code != 200) {
 				template_list_state->set_text(TTR("Failed:") + " " + itos(p_code));
 			} else {
-				String path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_templates.tpz");
+				String path = EditorSettings::get_singleton()->get_settings_dir().plus_file("tmp").plus_file("tmp_templates.tpz");
 				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
 				if (!f) {
 					template_list_state->set_text(TTR("Can't write file."));

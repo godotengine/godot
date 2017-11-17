@@ -319,7 +319,7 @@ int EditorExportPlatformJavaScript::get_device_count() const {
 
 Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
 
-	String path = EditorSettings::get_singleton()->get_settings_path() + "/tmp/tmp_export.html";
+	String path = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/tmp_export.html";
 	Error err = export_project(p_preset, true, path, p_debug_flags);
 	if (err) {
 		return err;

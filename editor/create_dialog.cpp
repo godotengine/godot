@@ -41,7 +41,7 @@ void CreateDialog::popup_create(bool p_dontclear) {
 
 	recent->clear();
 
-	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_path().plus_file("create_recent." + base_type), FileAccess::READ);
+	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::READ);
 
 	if (f) {
 
@@ -63,7 +63,7 @@ void CreateDialog::popup_create(bool p_dontclear) {
 
 	favorites->clear();
 
-	f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_path().plus_file("favorites." + base_type), FileAccess::READ);
+	f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::READ);
 
 	favorite_list.clear();
 
@@ -316,7 +316,7 @@ void CreateDialog::_confirmed() {
 	if (!ti)
 		return;
 
-	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_path().plus_file("create_recent." + base_type), FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::WRITE);
 
 	if (f) {
 		f->store_line(get_selected_type());
@@ -476,7 +476,7 @@ void CreateDialog::_favorite_toggled() {
 
 void CreateDialog::_save_favorite_list() {
 
-	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_path().plus_file("favorites." + base_type), FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
 
 	if (f) {
 

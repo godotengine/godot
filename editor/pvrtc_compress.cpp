@@ -62,7 +62,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		}
 		return;
 	}
-	String spath = EditorSettings::get_singleton()->get_settings_path();
+	String spath = EditorSettings::get_singleton()->get_settings_dir();
 
 	List<String> args;
 

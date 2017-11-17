@@ -57,7 +57,7 @@ String _get_expected_build_config() {
 String _get_mono_user_dir() {
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		return EditorSettings::get_singleton()->get_settings_path().plus_file("mono");
+		return EditorSettings::get_singleton()->get_settings_dir().plus_file("mono");
 	} else {
 		String settings_path;
 
