@@ -41,7 +41,7 @@ struct SpatialIndexer {
 
 	struct NotifierData {
 
-		Rect3 aabb;
+		AABB aabb;
 		OctreeElementID id;
 	};
 
@@ -63,7 +63,7 @@ struct SpatialIndexer {
 	uint64_t pass;
 	uint64_t last_frame;
 
-	void _notifier_add(VisibilityNotifier *p_notifier, const Rect3 &p_rect) {
+	void _notifier_add(VisibilityNotifier *p_notifier, const AABB &p_rect) {
 
 		ERR_FAIL_COND(notifiers.has(p_notifier));
 		notifiers[p_notifier].aabb = p_rect;
@@ -71,7 +71,7 @@ struct SpatialIndexer {
 		changed = true;
 	}
 
-	void _notifier_update(VisibilityNotifier *p_notifier, const Rect3 &p_rect) {
+	void _notifier_update(VisibilityNotifier *p_notifier, const AABB &p_rect) {
 
 		Map<VisibilityNotifier *, NotifierData>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
@@ -229,14 +229,14 @@ void World::_remove_camera(Camera *p_camera) {
 #endif
 }
 
-void World::_register_notifier(VisibilityNotifier *p_notifier, const Rect3 &p_rect) {
+void World::_register_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect) {
 
 #ifndef _3D_DISABLED
 	indexer->_notifier_add(p_notifier, p_rect);
 #endif
 }
 
-void World::_update_notifier(VisibilityNotifier *p_notifier, const Rect3 &p_rect) {
+void World::_update_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect) {
 
 #ifndef _3D_DISABLED
 	indexer->_notifier_update(p_notifier, p_rect);

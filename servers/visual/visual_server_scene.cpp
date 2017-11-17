@@ -614,7 +614,7 @@ void VisualServerScene::instance_set_exterior(RID p_instance, bool p_enabled) {
 void VisualServerScene::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {
 }
 
-Vector<ObjectID> VisualServerScene::instances_cull_aabb(const Rect3 &p_aabb, RID p_scenario) const {
+Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
 
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get(p_scenario);
@@ -772,7 +772,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
 
-	Rect3 new_aabb;
+	AABB new_aabb;
 
 	new_aabb = p_instance->transform.xform(p_instance->aabb);
 
@@ -817,7 +817,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 
-	Rect3 new_aabb;
+	AABB new_aabb;
 
 	ERR_FAIL_COND(p_instance->base_type != VS::INSTANCE_NONE && !p_instance->base.is_valid());
 
@@ -1279,7 +1279,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					camera->zfar,
 					camera->vaspect
 
-					);
+			);
 			ortho = true;
 		} break;
 		case Camera::PERSPECTIVE: {
@@ -1291,7 +1291,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					camera->zfar,
 					camera->vaspect
 
-					);
+			);
 			ortho = false;
 
 		} break;
@@ -1863,7 +1863,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.enabled = true;
 
 	Transform cell_to_xform = VSG::storage->gi_probe_get_to_cell_xform(p_instance->base);
-	Rect3 bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
+	AABB bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
 	float cell_size = VSG::storage->gi_probe_get_cell_size(p_instance->base);
 
 	probe->dynamic.light_to_cell_xform = cell_to_xform * p_instance->transform.affine_inverse();

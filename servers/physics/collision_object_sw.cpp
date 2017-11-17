@@ -149,7 +149,7 @@ void CollisionObjectSW::_update_shapes() {
 		}
 
 		//not quite correct, should compute the next matrix..
-		Rect3 shape_aabb = s.shape->get_aabb();
+		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
 		s.aabb_cache = shape_aabb;
@@ -176,10 +176,10 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 		}
 
 		//not quite correct, should compute the next matrix..
-		Rect3 shape_aabb = s.shape->get_aabb();
+		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(Rect3(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
+		shape_aabb = shape_aabb.merge(AABB(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
 		s.aabb_cache = shape_aabb;
 
 		space->get_broadphase()->move(s.bpid, shape_aabb);

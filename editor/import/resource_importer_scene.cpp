@@ -302,7 +302,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		// get mesh instance and bounding box
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-		Rect3 aabb = mi->get_aabb();
+		AABB aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
 		RigidBody *rigid_body = memnew(RigidBody);

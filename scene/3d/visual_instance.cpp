@@ -33,7 +33,7 @@
 #include "servers/visual_server.h"
 #include "skeleton.h"
 
-Rect3 VisualInstance::get_transformed_aabb() const {
+AABB VisualInstance::get_transformed_aabb() const {
 
 	return get_global_transform().xform(get_aabb());
 }

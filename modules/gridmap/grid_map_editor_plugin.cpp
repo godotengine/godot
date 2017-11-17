@@ -1137,7 +1137,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		for (int i = 0; i < 12; i++) {
 
-			Rect3 base(Vector3(0, 0, 0), Vector3(1, 1, 1));
+			AABB base(Vector3(0, 0, 0), Vector3(1, 1, 1));
 			Vector3 a, b;
 			base.get_edge(i, a, b);
 			lines.push_back(a);

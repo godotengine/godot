@@ -84,7 +84,7 @@ public:
 	void set_instance_color(int p_instance, const Color &p_color);
 	Color get_instance_color(int p_instance) const;
 
-	virtual Rect3 get_aabb() const;
+	virtual AABB get_aabb() const;
 
 	virtual RID get_rid() const;
 

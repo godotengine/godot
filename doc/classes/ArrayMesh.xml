@@ -66,7 +66,7 @@
 			</description>
 		</method>
 		<method name="get_custom_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -95,7 +95,7 @@
 		<method name="set_custom_aabb">
 			<return type="void">
 			</return>
-			<argument index="0" name="aabb" type="Rect3">
+			<argument index="0" name="aabb" type="AABB">
 			</argument>
 			<description>
 			</description>

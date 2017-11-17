@@ -1,15 +1,15 @@
 using System;
 
-// file: core/math/rect3.h
+// file: core/math/aabb.h
 // commit: 7ad14e7a3e6f87ddc450f7e34621eb5200808451
-// file: core/math/rect3.cpp
+// file: core/math/aabb.cpp
 // commit: bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
 
 namespace Godot
 {
-    public struct Rect3 : IEquatable<Rect3>
+    public struct AABB : IEquatable<AABB>
     {
         private Vector3 position;
         private Vector3 size;
@@ -38,7 +38,7 @@ namespace Godot
             }
         }
 
-        public bool encloses(Rect3 with)
+        public bool encloses(AABB with)
         {
             Vector3 src_min = position;
             Vector3 src_max = position + size;
@@ -53,7 +53,7 @@ namespace Godot
                     (src_max.z > dst_max.z));
         }
 
-        public Rect3 expand(Vector3 to_point)
+        public AABB expand(Vector3 to_point)
         {
             Vector3 begin = position;
             Vector3 end = position + size;
@@ -72,7 +72,7 @@ namespace Godot
             if (to_point.z > end.z)
                 end.z = to_point.z;
 
-            return new Rect3(begin, end - begin);
+            return new AABB(begin, end - begin);
         }
 
         public float get_area()
@@ -222,9 +222,9 @@ namespace Godot
                 (dir.z > 0f) ? -half_extents.z : half_extents.z);
         }
 
-        public Rect3 grow(float by)
+        public AABB grow(float by)
         {
-            Rect3 res = this;
+            AABB res = this;
 
             res.position.x -= by;
             res.position.y -= by;
@@ -264,7 +264,7 @@ namespace Godot
             return true;
         }
 
-        public Rect3 intersection(Rect3 with)
+        public AABB intersection(AABB with)
         {
             Vector3 src_min = position;
             Vector3 src_max = position + size;
@@ -275,7 +275,7 @@ namespace Godot
 
             if (src_min.x > dst_max.x || src_max.x < dst_min.x)
             {
-                return new Rect3();
+                return new AABB();
             }
             else
             {
@@ -285,7 +285,7 @@ namespace Godot
 
             if (src_min.y > dst_max.y || src_max.y < dst_min.y)
             {
-                return new Rect3();
+                return new AABB();
             }
             else
             {
@@ -295,7 +295,7 @@ namespace Godot
 
             if (src_min.z > dst_max.z || src_max.z < dst_min.z)
             {
-                return new Rect3();
+                return new AABB();
             }
             else
             {
@@ -303,10 +303,10 @@ namespace Godot
                 max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
             }
 
-            return new Rect3(min, max - min);
+            return new AABB(min, max - min);
         }
 
-        public bool intersects(Rect3 with)
+        public bool intersects(AABB with)
         {
             if (position.x >= (with.position.x + with.size.x))
                 return false;
@@ -398,7 +398,7 @@ namespace Godot
             return true;
         }
 
-        public Rect3 merge(Rect3 with)
+        public AABB merge(AABB with)
         {
             Vector3 beg_1 = position;
             Vector3 beg_2 = with.position;
@@ -417,36 +417,36 @@ namespace Godot
                               (end_1.z > end_2.z) ? end_1.z : end_2.z
                           );
 
-            return new Rect3(min, max - min);
+            return new AABB(min, max - min);
         }
 
-        public Rect3(Vector3 position, Vector3 size)
+        public AABB(Vector3 position, Vector3 size)
         {
             this.position = position;
             this.size = size;
         }
 
-        public static bool operator ==(Rect3 left, Rect3 right)
+        public static bool operator ==(AABB left, AABB right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Rect3 left, Rect3 right)
+        public static bool operator !=(AABB left, AABB right)
         {
             return !left.Equals(right);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Rect3)
+            if (obj is AABB)
             {
-                return Equals((Rect3)obj);
+                return Equals((AABB)obj);
             }
 
             return false;
         }
 
-        public bool Equals(Rect3 other)
+        public bool Equals(AABB other)
         {
             return position == other.position && size == other.size;
         }

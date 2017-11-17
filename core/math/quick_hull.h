@@ -30,9 +30,9 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
+#include "aabb.h"
 #include "geometry.h"
 #include "list.h"
-#include "rect3.h"
 #include "set.h"
 
 class QuickHull {

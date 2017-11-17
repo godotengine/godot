@@ -98,9 +98,9 @@ godot_vector3 GDAPI godot_transform_xform_vector3(const godot_transform *p_self,
 
 godot_vector3 GDAPI godot_transform_xform_inv_vector3(const godot_transform *p_self, const godot_vector3 *p_v);
 
-godot_rect3 GDAPI godot_transform_xform_rect3(const godot_transform *p_self, const godot_rect3 *p_v);
+godot_aabb GDAPI godot_transform_xform_aabb(const godot_transform *p_self, const godot_aabb *p_v);
 
-godot_rect3 GDAPI godot_transform_xform_inv_rect3(const godot_transform *p_self, const godot_rect3 *p_v);
+godot_aabb GDAPI godot_transform_xform_inv_aabb(const godot_transform *p_self, const godot_aabb *p_v);
 
 #ifdef __cplusplus
 }

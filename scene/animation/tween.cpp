@@ -416,10 +416,10 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 
 			result = r;
 		} break;
-		case Variant::RECT3: {
-			Rect3 i = initial_val;
-			Rect3 d = delta_val;
-			Rect3 r;
+		case Variant::AABB: {
+			AABB i = initial_val;
+			AABB d = delta_val;
+			AABB r;
 
 			APPLY_EQUATION(position.x);
 			APPLY_EQUATION(position.y);
@@ -956,10 +956,10 @@ bool Tween::_calc_delta_val(const Variant &p_initial_val, const Variant &p_final
 		case Variant::QUAT:
 			delta_val = final_val.operator Quat() - initial_val.operator Quat();
 			break;
-		case Variant::RECT3: {
-			Rect3 i = initial_val;
-			Rect3 f = final_val;
-			delta_val = Rect3(f.position - i.position, f.size - i.size);
+		case Variant::AABB: {
+			AABB i = initial_val;
+			AABB f = final_val;
+			delta_val = AABB(f.position - i.position, f.size - i.size);
 		} break;
 		case Variant::TRANSFORM: {
 			Transform i = initial_val;

@@ -46,7 +46,7 @@ private:
 
 public:
 	static bool solve_static(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, Vector3 *r_sep_axis = NULL, real_t p_margin_A = 0, real_t p_margin_B = 0);
-	static bool solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const Rect3 &p_concave_hint, Vector3 *r_sep_axis = NULL);
+	static bool solve_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis = NULL);
 };
 
 #endif // COLLISION_SOLVER__SW_H

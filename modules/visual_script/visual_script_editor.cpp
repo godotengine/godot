@@ -349,7 +349,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::TRANSFORM2D: color = Color::html("#c4ec69"); break;
 			case Variant::PLANE: color = Color::html("#f77070"); break;
 			case Variant::QUAT: color = Color::html("#ec69a3"); break;
-			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::AABB: color = Color::html("#ee7991"); break;
 			case Variant::BASIS: color = Color::html("#e3ec69"); break;
 			case Variant::TRANSFORM: color = Color::html("#f6a86e"); break;
 
@@ -386,7 +386,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::TRANSFORM2D: color = Color::html("#96ce1a"); break;
 			case Variant::PLANE: color = Color::html("#f77070"); break;
 			case Variant::QUAT: color = Color::html("#ec69a3"); break;
-			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::AABB: color = Color::html("#ee7991"); break;
 			case Variant::BASIS: color = Color::html("#b2bb19"); break;
 			case Variant::TRANSFORM: color = Color::html("#f49047"); break;
 

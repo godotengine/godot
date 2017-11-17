@@ -148,7 +148,7 @@ static const _bit _type_list[] = {
 	{ Variant::RECT2, "Rect2" },
 	{ Variant::TRANSFORM2D, "Transform2D" },
 	{ Variant::VECTOR3, "Vector3" },
-	{ Variant::RECT3, "Rect3" },
+	{ Variant::AABB, "AABB" },
 	{ Variant::PLANE, "Plane" },
 	{ Variant::QUAT, "Quat" },
 	{ Variant::BASIS, "Basis" },
@@ -253,9 +253,9 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_BUILT_IN_FUNC:
 
 		case TK_OP_IN:
-		//case TK_OP_NOT:
-		//case TK_OP_OR:
-		//case TK_OP_AND:
+			//case TK_OP_NOT:
+			//case TK_OP_OR:
+			//case TK_OP_AND:
 
 		case TK_PR_CLASS:
 		case TK_PR_CONST:
@@ -1125,7 +1125,7 @@ void GDScriptTokenizerText::advance(int p_amount) {
 		_advance();
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define BYTECODE_VERSION 12
 

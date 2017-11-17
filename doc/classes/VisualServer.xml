@@ -1035,7 +1035,7 @@
 			</description>
 		</method>
 		<method name="mesh_get_custom_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<argument index="0" name="mesh" type="RID">
 			</argument>
@@ -1085,13 +1085,13 @@
 			</return>
 			<argument index="0" name="mesh" type="RID">
 			</argument>
-			<argument index="1" name="aabb" type="Rect3">
+			<argument index="1" name="aabb" type="AABB">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<argument index="0" name="mesh" type="RID">
 			</argument>

@@ -66,12 +66,12 @@ void Room::_notification(int p_what) {
 	}
 }
 
-Rect3 Room::get_aabb() const {
+AABB Room::get_aabb() const {
 
 	if (room.is_null())
-		return Rect3();
+		return AABB();
 
-	return Rect3();
+	return AABB();
 }
 
 PoolVector<Face3> Room::get_faces(uint32_t p_usage_flags) const {

@@ -102,14 +102,14 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 			textures.push_back(Ref<Texture>());
 			continue;
 		}
-		Rect3 aabb = mesh->get_aabb();
+		AABB aabb = mesh->get_aabb();
 		print_line("aabb: " + aabb);
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		aabb.position -= ofs;
 		Transform xform;
 		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.25);
 		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.25) * xform.basis;
-		Rect3 rot_aabb = xform.xform(aabb);
+		AABB rot_aabb = xform.xform(aabb);
 		print_line("rot_aabb: " + rot_aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {

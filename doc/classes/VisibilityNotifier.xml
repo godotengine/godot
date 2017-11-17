@@ -12,7 +12,7 @@
 	</demos>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 				Returns the bounding box of the VisibilityNotifier.
@@ -28,7 +28,7 @@
 		<method name="set_aabb">
 			<return type="void">
 			</return>
-			<argument index="0" name="rect" type="Rect3">
+			<argument index="0" name="rect" type="AABB">
 			</argument>
 			<description>
 				Set the visibility bounding box of the VisibilityNotifier.
@@ -36,7 +36,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="aabb" type="Rect3" setter="set_aabb" getter="get_aabb">
+		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb">
 			The VisibilityNotifier's bounding box.
 		</member>
 	</members>

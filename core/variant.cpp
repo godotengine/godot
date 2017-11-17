@@ -66,7 +66,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "String";
 		} break;
 
-		// math types
+			// math types
 
 		case VECTOR2: {
 
@@ -94,9 +94,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 
 			} break;*/
-		case RECT3: {
+		case AABB: {
 
-			return "Rect3";
+			return "AABB";
 		} break;
 		case QUAT: {
 
@@ -722,7 +722,7 @@ bool Variant::is_zero() const {
 
 		} break;
 
-		// math types
+			// math types
 
 		case VECTOR2: {
 
@@ -754,9 +754,9 @@ bool Variant::is_zero() const {
 
 
 		} break;*/
-		case RECT3: {
+		case AABB: {
 
-			return *_data._rect3 == Rect3();
+			return *_data._aabb == ::AABB();
 		} break;
 		case QUAT: {
 
@@ -931,7 +931,7 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, String(*reinterpret_cast<const String *>(p_variant._data._mem)));
 		} break;
 
-		// math types
+			// math types
 
 		case VECTOR2: {
 
@@ -954,9 +954,9 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Plane(*reinterpret_cast<const Plane *>(p_variant._data._mem)));
 		} break;
 
-		case RECT3: {
+		case AABB: {
 
-			_data._rect3 = memnew(Rect3(*p_variant._data._rect3));
+			_data._aabb = memnew(::AABB(*p_variant._data._aabb));
 		} break;
 		case QUAT: {
 
@@ -1079,9 +1079,9 @@ void Variant::clear() {
 
 			memdelete(_data._transform2d);
 		} break;
-		case RECT3: {
+		case AABB: {
 
-			memdelete(_data._rect3);
+			memdelete(_data._aabb);
 		} break;
 		case BASIS: {
 
@@ -1426,7 +1426,7 @@ Variant::operator String() const {
 		case PLANE:
 			return operator Plane();
 		//case QUAT:
-		case RECT3: return operator Rect3();
+		case AABB: return operator ::AABB();
 		case QUAT: return "(" + operator Quat() + ")";
 		case BASIS: {
 
@@ -1617,12 +1617,12 @@ Variant::operator Plane() const {
 	else
 		return Plane();
 }
-Variant::operator Rect3() const {
+Variant::operator ::AABB() const {
 
-	if (type == RECT3)
-		return *_data._rect3;
+	if (type == AABB)
+		return *_data._aabb;
 	else
-		return Rect3();
+		return ::AABB();
 }
 
 Variant::operator Basis() const {
@@ -2188,10 +2188,10 @@ Variant::Variant(const Plane &p_plane) {
 	type = PLANE;
 	memnew_placement(_data._mem, Plane(p_plane));
 }
-Variant::Variant(const Rect3 &p_aabb) {
+Variant::Variant(const ::AABB &p_aabb) {
 
-	type = RECT3;
-	_data._rect3 = memnew(Rect3(p_aabb));
+	type = AABB;
+	_data._aabb = memnew(::AABB(p_aabb));
 }
 
 Variant::Variant(const Basis &p_matrix) {
@@ -2501,7 +2501,7 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<String *>(_data._mem) = *reinterpret_cast<const String *>(p_variant._data._mem);
 		} break;
 
-		// math types
+			// math types
 
 		case VECTOR2: {
 
@@ -2524,9 +2524,9 @@ void Variant::operator=(const Variant &p_variant) {
 			*reinterpret_cast<Plane *>(_data._mem) = *reinterpret_cast<const Plane *>(p_variant._data._mem);
 		} break;
 
-		case RECT3: {
+		case AABB: {
 
-			*_data._rect3 = *(p_variant._data._rect3);
+			*_data._aabb = *(p_variant._data._aabb);
 		} break;
 		case QUAT: {
 
@@ -2641,7 +2641,7 @@ uint32_t Variant::hash() const {
 
 			return reinterpret_cast<const String *>(_data._mem)->hash();
 		} break;
-		// math types
+			// math types
 
 		case VECTOR2: {
 
@@ -2686,13 +2686,13 @@ uint32_t Variant::hash() const {
 
 
 			} break;*/
-		case RECT3: {
+		case AABB: {
 
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {
 
-				hash = hash_djb2_one_float(_data._rect3->position[i], hash);
-				hash = hash_djb2_one_float(_data._rect3->size[i], hash);
+				hash = hash_djb2_one_float(_data._aabb->position[i], hash);
+				hash = hash_djb2_one_float(_data._aabb->size[i], hash);
 			}
 
 			return hash;
@@ -2952,9 +2952,9 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 				   (hash_compare_scalar(l->d, r->d));
 		} break;
 
-		case RECT3: {
-			const Rect3 *l = _data._rect3;
-			const Rect3 *r = p_variant._data._rect3;
+		case AABB: {
+			const ::AABB *l = _data._aabb;
+			const ::AABB *r = p_variant._data._aabb;
 
 			return (hash_compare_vector3(l->position, r->position) &&
 					(hash_compare_vector3(l->size, r->size)));

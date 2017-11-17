@@ -77,8 +77,8 @@ class VisualServerRaster : public VisualServer {
 	static void _changes_changed() {}
 
 public:
-//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
-//#define DEBUG_CHANGES
+	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
+	//#define DEBUG_CHANGES
 
 #ifdef DEBUG_CHANGES
 	_FORCE_INLINE_ static void redraw_request() {
@@ -96,7 +96,7 @@ public:
 #define DISPLAY_CHANGED \
 	changes++;
 #endif
-//	print_line(String("CHANGED: ") + __FUNCTION__);
+		//	print_line(String("CHANGED: ") + __FUNCTION__);
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
@@ -203,7 +203,7 @@ public:
 
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const Rect3 &, const Vector<PoolVector<uint8_t> > &, const Vector<Rect3> &)
+	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
 
 	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
@@ -225,15 +225,15 @@ public:
 	BIND2RC(uint32_t, mesh_surface_get_format, RID, int)
 	BIND2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
 
-	BIND2RC(Rect3, mesh_surface_get_aabb, RID, int)
+	BIND2RC(AABB, mesh_surface_get_aabb, RID, int)
 	BIND2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	BIND2RC(Vector<Rect3>, mesh_surface_get_skeleton_aabb, RID, int)
+	BIND2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
 
 	BIND2(mesh_remove_surface, RID, int)
 	BIND1RC(int, mesh_get_surface_count, RID)
 
-	BIND2(mesh_set_custom_aabb, RID, const Rect3 &)
-	BIND1RC(Rect3, mesh_get_custom_aabb, RID)
+	BIND2(mesh_set_custom_aabb, RID, const AABB &)
+	BIND1RC(AABB, mesh_get_custom_aabb, RID)
 
 	BIND1(mesh_clear, RID)
 
@@ -250,7 +250,7 @@ public:
 	BIND3(multimesh_instance_set_color, RID, int, const Color &)
 
 	BIND1RC(RID, multimesh_get_mesh, RID)
-	BIND1RC(Rect3, multimesh_get_aabb, RID)
+	BIND1RC(AABB, multimesh_get_aabb, RID)
 
 	BIND2RC(Transform, multimesh_instance_get_transform, RID, int)
 	BIND2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
@@ -327,8 +327,8 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND2(gi_probe_set_bounds, RID, const Rect3 &)
-	BIND1RC(Rect3, gi_probe_get_bounds, RID)
+	BIND2(gi_probe_set_bounds, RID, const AABB &)
+	BIND1RC(AABB, gi_probe_get_bounds, RID)
 
 	BIND2(gi_probe_set_cell_size, RID, float)
 	BIND1RC(float, gi_probe_get_cell_size, RID)
@@ -371,7 +371,7 @@ public:
 	BIND2(particles_set_pre_process_time, RID, float)
 	BIND2(particles_set_explosiveness_ratio, RID, float)
 	BIND2(particles_set_randomness_ratio, RID, float)
-	BIND2(particles_set_custom_aabb, RID, const Rect3 &)
+	BIND2(particles_set_custom_aabb, RID, const AABB &)
 	BIND2(particles_set_speed_scale, RID, float)
 	BIND2(particles_set_use_local_coordinates, RID, bool)
 	BIND2(particles_set_process_material, RID, RID)
@@ -384,7 +384,7 @@ public:
 	BIND2(particles_set_draw_passes, RID, int)
 	BIND3(particles_set_draw_pass_mesh, RID, int, RID)
 
-	BIND1R(Rect3, particles_get_current_aabb, RID)
+	BIND1R(AABB, particles_get_current_aabb, RID)
 	BIND2(particles_set_emission_transform, RID, const Transform &)
 
 #undef BINDBASE
@@ -449,7 +449,7 @@ public:
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
-/* ENVIRONMENT API */
+	/* ENVIRONMENT API */
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -479,7 +479,7 @@ public:
 	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-/* SCENARIO API */
+	/* SCENARIO API */
 
 #undef BINDBASE
 #define BINDBASE VSG::scene
@@ -510,7 +510,7 @@ public:
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
 	// don't use these in a game!
-	BIND2RC(Vector<ObjectID>, instances_cull_aabb, const Rect3 &, RID)
+	BIND2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
 	BIND3RC(Vector<ObjectID>, instances_cull_ray, const Vector3 &, const Vector3 &, RID)
 	BIND2RC(Vector<ObjectID>, instances_cull_convex, const Vector<Plane> &, RID)
 

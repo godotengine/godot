@@ -198,20 +198,20 @@ godot_vector3 GDAPI godot_transform_xform_inv_vector3(const godot_transform *p_s
 	return raw_dest;
 }
 
-godot_rect3 GDAPI godot_transform_xform_rect3(const godot_transform *p_self, const godot_rect3 *p_v) {
-	godot_rect3 raw_dest;
-	Rect3 *dest = (Rect3 *)&raw_dest;
+godot_aabb GDAPI godot_transform_xform_aabb(const godot_transform *p_self, const godot_aabb *p_v) {
+	godot_aabb raw_dest;
+	AABB *dest = (AABB *)&raw_dest;
 	const Transform *self = (const Transform *)p_self;
-	const Rect3 *v = (const Rect3 *)p_v;
+	const AABB *v = (const AABB *)p_v;
 	*dest = self->xform(*v);
 	return raw_dest;
 }
 
-godot_rect3 GDAPI godot_transform_xform_inv_rect3(const godot_transform *p_self, const godot_rect3 *p_v) {
-	godot_rect3 raw_dest;
-	Rect3 *dest = (Rect3 *)&raw_dest;
+godot_aabb GDAPI godot_transform_xform_inv_aabb(const godot_transform *p_self, const godot_aabb *p_v) {
+	godot_aabb raw_dest;
+	AABB *dest = (AABB *)&raw_dest;
 	const Transform *self = (const Transform *)p_self;
-	const Rect3 *v = (const Rect3 *)p_v;
+	const AABB *v = (const AABB *)p_v;
 	*dest = self->xform_inv(*v);
 	return raw_dest;
 }

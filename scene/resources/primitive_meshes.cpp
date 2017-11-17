@@ -42,7 +42,7 @@ void PrimitiveMesh::_update() const {
 
 	PoolVector<Vector3> points = arr[VS::ARRAY_VERTEX];
 
-	aabb = Rect3();
+	aabb = AABB();
 
 	int pc = points.size();
 	ERR_FAIL_COND(pc == 0);
@@ -141,7 +141,7 @@ StringName PrimitiveMesh::get_blend_shape_name(int p_index) const {
 	return StringName();
 }
 
-Rect3 PrimitiveMesh::get_aabb() const {
+AABB PrimitiveMesh::get_aabb() const {
 	if (pending_request) {
 		_update();
 	}

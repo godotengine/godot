@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rect3.cpp                                                            */
+/*  aabb.cpp                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,25 +27,25 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "rect3.h"
+#include "aabb.h"
 
 #include "print_string.h"
 
-real_t Rect3::get_area() const {
+real_t AABB::get_area() const {
 
 	return size.x * size.y * size.z;
 }
 
-bool Rect3::operator==(const Rect3 &p_rval) const {
+bool AABB::operator==(const AABB &p_rval) const {
 
 	return ((position == p_rval.position) && (size == p_rval.size));
 }
-bool Rect3::operator!=(const Rect3 &p_rval) const {
+bool AABB::operator!=(const AABB &p_rval) const {
 
 	return ((position != p_rval.position) || (size != p_rval.size));
 }
 
-void Rect3::merge_with(const Rect3 &p_aabb) {
+void AABB::merge_with(const AABB &p_aabb) {
 
 	Vector3 beg_1, beg_2;
 	Vector3 end_1, end_2;
@@ -68,7 +68,7 @@ void Rect3::merge_with(const Rect3 &p_aabb) {
 	size = max - min;
 }
 
-Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
+AABB AABB::intersection(const AABB &p_aabb) const {
 
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
@@ -78,7 +78,7 @@ Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
 	Vector3 min, max;
 
 	if (src_min.x > dst_max.x || src_max.x < dst_min.x)
-		return Rect3();
+		return AABB();
 	else {
 
 		min.x = (src_min.x > dst_min.x) ? src_min.x : dst_min.x;
@@ -86,7 +86,7 @@ Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
 	}
 
 	if (src_min.y > dst_max.y || src_max.y < dst_min.y)
-		return Rect3();
+		return AABB();
 	else {
 
 		min.y = (src_min.y > dst_min.y) ? src_min.y : dst_min.y;
@@ -94,17 +94,17 @@ Rect3 Rect3::intersection(const Rect3 &p_aabb) const {
 	}
 
 	if (src_min.z > dst_max.z || src_max.z < dst_min.z)
-		return Rect3();
+		return AABB();
 	else {
 
 		min.z = (src_min.z > dst_min.z) ? src_min.z : dst_min.z;
 		max.z = (src_max.z < dst_max.z) ? src_max.z : dst_max.z;
 	}
 
-	return Rect3(min, max - min);
+	return AABB(min, max - min);
 }
 
-bool Rect3::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
+bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
 
 	Vector3 c1, c2;
 	Vector3 end = position + size;
@@ -147,7 +147,7 @@ bool Rect3::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 	return true;
 }
 
-bool Rect3::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip, Vector3 *r_normal) const {
+bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip, Vector3 *r_normal) const {
 
 	real_t min = 0, max = 1;
 	int axis = 0;
@@ -205,7 +205,7 @@ bool Rect3::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vecto
 	return true;
 }
 
-bool Rect3::intersects_plane(const Plane &p_plane) const {
+bool AABB::intersects_plane(const Plane &p_plane) const {
 
 	Vector3 points[8] = {
 		Vector3(position.x, position.y, position.z),
@@ -232,7 +232,7 @@ bool Rect3::intersects_plane(const Plane &p_plane) const {
 	return under && over;
 }
 
-Vector3 Rect3::get_longest_axis() const {
+Vector3 AABB::get_longest_axis() const {
 
 	Vector3 axis(1, 0, 0);
 	real_t max_size = size.x;
@@ -249,7 +249,7 @@ Vector3 Rect3::get_longest_axis() const {
 
 	return axis;
 }
-int Rect3::get_longest_axis_index() const {
+int AABB::get_longest_axis_index() const {
 
 	int axis = 0;
 	real_t max_size = size.x;
@@ -267,7 +267,7 @@ int Rect3::get_longest_axis_index() const {
 	return axis;
 }
 
-Vector3 Rect3::get_shortest_axis() const {
+Vector3 AABB::get_shortest_axis() const {
 
 	Vector3 axis(1, 0, 0);
 	real_t max_size = size.x;
@@ -284,7 +284,7 @@ Vector3 Rect3::get_shortest_axis() const {
 
 	return axis;
 }
-int Rect3::get_shortest_axis_index() const {
+int AABB::get_shortest_axis_index() const {
 
 	int axis = 0;
 	real_t max_size = size.x;
@@ -302,25 +302,25 @@ int Rect3::get_shortest_axis_index() const {
 	return axis;
 }
 
-Rect3 Rect3::merge(const Rect3 &p_with) const {
+AABB AABB::merge(const AABB &p_with) const {
 
-	Rect3 aabb = *this;
+	AABB aabb = *this;
 	aabb.merge_with(p_with);
 	return aabb;
 }
-Rect3 Rect3::expand(const Vector3 &p_vector) const {
-	Rect3 aabb = *this;
+AABB AABB::expand(const Vector3 &p_vector) const {
+	AABB aabb = *this;
 	aabb.expand_to(p_vector);
 	return aabb;
 }
-Rect3 Rect3::grow(real_t p_by) const {
+AABB AABB::grow(real_t p_by) const {
 
-	Rect3 aabb = *this;
+	AABB aabb = *this;
 	aabb.grow_by(p_by);
 	return aabb;
 }
 
-void Rect3::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
+void AABB::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 
 	ERR_FAIL_INDEX(p_edge, 12);
 	switch (p_edge) {
@@ -394,7 +394,7 @@ void Rect3::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 	}
 }
 
-Rect3::operator String() const {
+AABB::operator String() const {
 
 	return String() + position + " - " + size;
 }

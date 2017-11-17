@@ -113,7 +113,7 @@ public:
 	void set_shadow_reverse_cull_face(bool p_enable);
 	bool get_shadow_reverse_cull_face() const;
 
-	virtual Rect3 get_aabb() const;
+	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	Light();

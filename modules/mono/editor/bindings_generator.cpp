@@ -1721,7 +1721,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::PLANE:
-		case Variant::RECT3:
+		case Variant::AABB:
 		case Variant::COLOR:
 			r_iarg.default_argument = "new Color(1, 1, 1, 1)";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
@@ -1793,7 +1793,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Basis, "real_t*")
 	INSERT_STRUCT_TYPE(Quat, "real_t*")
 	INSERT_STRUCT_TYPE(Transform, "real_t*")
-	INSERT_STRUCT_TYPE(Rect3, "real_t*")
+	INSERT_STRUCT_TYPE(AABB, "real_t*")
 	INSERT_STRUCT_TYPE(Color, "real_t*")
 	INSERT_STRUCT_TYPE(Plane, "real_t*")
 

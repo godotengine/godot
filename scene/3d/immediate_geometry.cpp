@@ -85,7 +85,7 @@ void ImmediateGeometry::clear() {
 	cached_textures.clear();
 }
 
-Rect3 ImmediateGeometry::get_aabb() const {
+AABB ImmediateGeometry::get_aabb() const {
 
 	return aabb;
 }

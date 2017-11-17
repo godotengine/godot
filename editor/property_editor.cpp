@@ -755,7 +755,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_editor[3]->set_text(String::num(q.w));
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
 			field_names.push_back("px");
 			field_names.push_back("py");
@@ -765,7 +765,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("sz");
 			config_value_editors(6, 3, 16, field_names);
 
-			Rect3 aabb = v;
+			AABB aabb = v;
 			value_editor[0]->set_text(String::num(aabb.position.x));
 			value_editor[1]->set_text(String::num(aabb.position.y));
 			value_editor[2]->set_text(String::num(aabb.position.z));
@@ -1585,7 +1585,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			_emit_changed_whole_or_field();
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
 			Vector3 pos;
 			Vector3 size;
@@ -1605,7 +1605,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				size.y = value_editor[4]->get_text().to_double();
 				size.z = value_editor[5]->get_text().to_double();
 			}
-			v = Rect3(pos, size);
+			v = AABB(pos, size);
 			_emit_changed_whole_or_field();
 
 		} break;
@@ -1727,7 +1727,7 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::VECTOR3:
 		case Variant::PLANE:
 		case Variant::QUAT:
-		case Variant::RECT3:
+		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
 		case Variant::TRANSFORM: {
@@ -1752,7 +1752,7 @@ void CustomPropertyEditor::_focus_exit() {
 		case Variant::VECTOR3:
 		case Variant::PLANE:
 		case Variant::QUAT:
-		case Variant::RECT3:
+		case Variant::AABB:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
 		case Variant::TRANSFORM: {
@@ -2238,7 +2238,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 		case Variant::VECTOR3:
 		case Variant::QUAT:
 		case Variant::VECTOR2:
-		case Variant::RECT3:
+		case Variant::AABB:
 		case Variant::RECT2:
 		case Variant::TRANSFORM2D:
 		case Variant::BASIS:
@@ -3367,13 +3367,13 @@ void PropertyEditor::update_tree() {
 					item->set_icon(0, get_icon("Plane", "EditorIcons"));
 
 			} break;
-			case Variant::RECT3: {
+			case Variant::AABB: {
 
 				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 				item->set_editable(1, true);
-				item->set_text(1, "Rect3");
+				item->set_text(1, "AABB");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("Rect3", "EditorIcons"));
+					item->set_icon(0, get_icon("AABB", "EditorIcons"));
 			} break;
 
 			case Variant::QUAT: {
@@ -3714,7 +3714,7 @@ void PropertyEditor::_item_edited() {
 				_edit_set(name, item->get_text(1), refresh_all);
 			}
 		} break;
-		// math types
+			// math types
 
 		case Variant::VECTOR3: {
 
@@ -3725,7 +3725,7 @@ void PropertyEditor::_item_edited() {
 		case Variant::QUAT: {
 
 		} break;
-		case Variant::RECT3: {
+		case Variant::AABB: {
 
 		} break;
 		case Variant::BASIS: {

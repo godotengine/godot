@@ -197,10 +197,10 @@ Dictionary mono_object_to_Dictionary(MonoObject *p_dict);
 		Basis(m_in[0], m_in[1], m_in[2], m_in[3], m_in[4], m_in[5], m_in[6], m_in[7], m_in[8]), \
 		Vector3(m_in[9], m_in[10], m_in[11]));
 
-// Rect3
+// AABB
 
-#define MARSHALLED_OUT_Rect3(m_in, m_out) real_t m_out[6] = { m_in.position.x, m_in.position.y, m_in.position.z, m_in.size.x, m_in.size.y, m_in.size.z };
-#define MARSHALLED_IN_Rect3(m_in, m_out) Rect3 m_out(Vector3(m_in[0], m_in[1], m_in[2]), Vector3(m_in[3], m_in[4], m_in[5]));
+#define MARSHALLED_OUT_AABB(m_in, m_out) real_t m_out[6] = { m_in.position.x, m_in.position.y, m_in.position.z, m_in.size.x, m_in.size.y, m_in.size.z };
+#define MARSHALLED_IN_AABB(m_in, m_out) AABB m_out(Vector3(m_in[0], m_in[1], m_in[2]), Vector3(m_in[3], m_in[4], m_in[5]));
 
 // Color
 
@@ -214,6 +214,6 @@ Dictionary mono_object_to_Dictionary(MonoObject *p_dict);
 
 #endif
 
-} // GDMonoMarshal
+} // namespace GDMonoMarshal
 
 #endif // GDMONOMARSHAL_H
