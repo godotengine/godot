@@ -80,7 +80,7 @@ String _get_mono_user_dir() {
 		return settings_path.plus_file("mono");
 	}
 #else
-	return OS::get_singleton()->get_data_dir().plus_file("mono");
+	return OS::get_singleton()->get_user_data_dir().plus_file("mono");
 #endif
 }
 

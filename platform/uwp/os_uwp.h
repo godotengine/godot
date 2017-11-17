@@ -226,7 +226,7 @@ public:
 	virtual String get_locale() const;
 
 	virtual void move_window_to_foreground();
-	virtual String get_data_dir() const;
+	virtual String get_user_data_dir() const;
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_uwp.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
@@ -298,7 +299,7 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
 	}
 
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	if (is_keep_screen_on())
 		display_request->RequestActive();
@@ -781,7 +782,7 @@ MainLoop *OSUWP::get_main_loop() const {
 	return main_loop;
 }
 
-String OSUWP::get_data_dir() const {
+String OSUWP::get_user_data_dir() const {
 
 	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 

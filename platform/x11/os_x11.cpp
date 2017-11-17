@@ -464,7 +464,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(input));
 #endif
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	power_manager = memnew(PowerX11);
 }

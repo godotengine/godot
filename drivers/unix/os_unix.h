@@ -110,7 +110,7 @@ public:
 
 	virtual String get_installed_templates_path() const;
 	virtual String get_executable_path() const;
-	virtual String get_data_dir() const;
+	virtual String get_user_data_dir() const;
 
 	//virtual void run( MainLoop * p_main_loop );
 };

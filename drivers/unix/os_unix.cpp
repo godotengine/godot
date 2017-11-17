@@ -454,7 +454,7 @@ int OS_Unix::get_processor_count() const {
 	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
-String OS_Unix::get_data_dir() const {
+String OS_Unix::get_user_data_dir() const {
 
 	String an = get_safe_application_name();
 	if (an != "") {

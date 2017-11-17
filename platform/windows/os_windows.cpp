@@ -1090,7 +1090,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	//RegisterTouchWindow(hWnd, 0); // Windows 7
 
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	DragAcceptFiles(hWnd, true);
 
@@ -2167,7 +2167,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	ERR_FAIL_COND_V(res != S_OK, String());
 	return String(szPath);
 }
-String OS_Windows::get_data_dir() const {
+String OS_Windows::get_user_data_dir() const {
 
 	String an = get_safe_application_name();
 	if (an != "") {

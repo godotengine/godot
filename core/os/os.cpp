@@ -281,7 +281,7 @@ String OS::get_safe_application_name() const {
 	return an;
 }
 
-String OS::get_data_dir() const {
+String OS::get_user_data_dir() const {
 
 	return ".";
 };
@@ -374,9 +374,9 @@ OS::ScreenOrientation OS::get_screen_orientation() const {
 	return (OS::ScreenOrientation)_orientation;
 }
 
-void OS::_ensure_data_dir() {
+void OS::_ensure_user_data_dir() {
 
-	String dd = get_data_dir();
+	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
 	if (da) {
 		memdelete(da);

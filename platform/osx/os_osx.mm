@@ -1095,7 +1095,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	power_manager = memnew(power_osx);
 
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
 }

@@ -38,7 +38,7 @@ String DirAccess::_get_root_path() const {
 	switch (_access_type) {
 
 		case ACCESS_RESOURCES: return ProjectSettings::get_singleton()->get_resource_path();
-		case ACCESS_USERDATA: return OS::get_singleton()->get_data_dir();
+		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
 		default: return "";
 	}
 
@@ -217,7 +217,7 @@ String DirAccess::fix_path(String p_path) const {
 
 			if (p_path.begins_with("user://")) {
 
-				String data_dir = OS::get_singleton()->get_data_dir();
+				String data_dir = OS::get_singleton()->get_user_data_dir();
 				if (data_dir != "") {
 
 					return p_path.replace_first("user:/", data_dir);

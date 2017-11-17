@@ -124,7 +124,7 @@ protected:
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
-	void _ensure_data_dir();
+	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
@@ -334,7 +334,7 @@ public:
 	virtual String get_locale() const;
 
 	String get_safe_application_name() const;
-	virtual String get_data_dir() const;
+	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }

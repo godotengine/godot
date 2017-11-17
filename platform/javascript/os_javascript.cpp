@@ -889,11 +889,11 @@ String OS_JavaScript::get_resource_dir() const {
 	return "/"; //javascript has it's own filesystem for resources inside the APK
 }
 
-String OS_JavaScript::get_data_dir() const {
+String OS_JavaScript::get_user_data_dir() const {
 
 	/*
-	if (get_data_dir_func)
-		return get_data_dir_func();
+	if (get_user_data_dir_func)
+		return get_user_data_dir_func();
 	*/
 	return "/userfs";
 };
@@ -993,7 +993,7 @@ bool OS_JavaScript::is_userfs_persistent() const {
 	return idbfs_available;
 }
 
-OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {
+OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_user_data_dir_func) {
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;
 	gl_extensions = NULL;
@@ -1001,7 +1001,7 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_d
 	soft_fs_enabled = false;
 	canvas_size_adjustment_requested = false;
 
-	get_data_dir_func = p_get_data_dir_func;
+	get_user_data_dir_func = p_get_user_data_dir_func;
 	FileAccessUnix::close_notification_func = _close_notification_funcs;
 
 	idbfs_available = false;
