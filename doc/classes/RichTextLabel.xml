@@ -374,6 +374,20 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="meta_hover_started">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse enters a meta tag. 
+			</description>
+		</signal>
+		<signal name="meta_hover_ended">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse exits a meta tag. 
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0">
