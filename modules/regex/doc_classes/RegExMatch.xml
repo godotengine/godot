@@ -4,7 +4,7 @@
 		Contains the results of a regex search.
 	</brief_description>
 	<description>
-		Contains the results of a single regex match returned by [method RegEx.search] and [method.RegEx.search_all]. It can be used to find the position and range of the match and its capturing groups, and it can extract its sub-string for you.
+		Contains the results of a single regex match returned by [method RegEx.search] and [method RegEx.search_all]. It can be used to find the position and range of the match and its capturing groups, and it can extract its sub-string for you.
 	</description>
 	<tutorials>
 	</tutorials>
