@@ -4552,6 +4552,11 @@ static Node *_resource_get_edited_scene() {
 	return EditorNode::get_singleton()->get_edited_scene();
 }
 
+void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
+	EditorNode *en = (EditorNode *)p_this;
+	en->log->add_message(p_string, p_error);
+}
+
 EditorNode::EditorNode() {
 
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
@@ -5652,6 +5657,10 @@ EditorNode::EditorNode() {
 	_dim_timer->connect("timeout", this, "_dim_timeout");
 	add_child(_dim_timer);
 
+	print_handler.printfunc = _print_handler;
+	print_handler.userdata = this;
+	add_print_handler(&print_handler);
+
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F2);
 	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F3); //hack neded for script editor F3 search to work :) Assign like this or don't use F3
@@ -5663,6 +5672,7 @@ EditorNode::EditorNode() {
 
 EditorNode::~EditorNode() {
 
+	remove_print_handler(&print_handler);
 	memdelete(EditorHelp::get_doc_data());
 	memdelete(editor_selection);
 	memdelete(editor_plugins_over);
