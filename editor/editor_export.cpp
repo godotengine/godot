@@ -677,7 +677,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	String config_file = "project.binary";
-	String engine_cfb = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/tmp" + config_file;
+	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
 
@@ -690,7 +690,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	EditorProgress ep("savepack", TTR("Packing"), 102);
 
-	String tmppath = EditorSettings::get_singleton()->get_settings_dir() + "/tmp/packtmp";
+	String tmppath = EditorSettings::get_singleton()->get_cache_dir().plus_file("packtmp");
 	FileAccess *ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	ERR_FAIL_COND_V(!ftmp, ERR_CANT_CREATE)
 

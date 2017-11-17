@@ -712,6 +712,12 @@ void EditorSettings::create() {
 			}
 		}
 
+		if (dir->change_dir("templates") != OK) {
+			dir->make_dir("templates");
+		} else {
+			dir->change_dir("..");
+		}
+
 		// Validate/create cache dir
 
 		if (dir->change_dir(cache_path) != OK) {
@@ -746,20 +752,6 @@ void EditorSettings::create() {
 			}
 		}
 
-		// FIXME: Move to data dir
-		if (dir->change_dir("templates") != OK) {
-			dir->make_dir("templates");
-		} else {
-			dir->change_dir("..");
-		}
-
-		// FIXME: Move to cache dir
-		if (dir->change_dir("tmp") != OK) {
-			dir->make_dir("tmp");
-		} else {
-			dir->change_dir("..");
-		}
-
 		if (dir->change_dir("text_editor_themes") != OK) {
 			dir->make_dir("text_editor_themes");
 		} else {
@@ -771,18 +763,17 @@ void EditorSettings::create() {
 		} else {
 			dir->change_dir("..");
 		}
-		_create_script_templates(dir->get_current_dir() + "/script_templates");
+		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
 
-		// FIXME: Rename to "projects"
-		if (dir->change_dir("config") != OK) {
-			dir->make_dir("config");
+		if (dir->change_dir("projects") != OK) {
+			dir->make_dir("projects");
 		} else {
 			dir->change_dir("..");
 		}
 
 		// Validate/create project-specific config dir
 
-		dir->change_dir("config");
+		dir->change_dir("projects");
 		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
 		if (project_config_dir.ends_with("/"))
 			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
@@ -1040,8 +1031,7 @@ String EditorSettings::get_settings_dir() const {
 
 String EditorSettings::get_project_settings_dir() const {
 
-	// FIXME: Rename to "projects"
-	return get_settings_dir().plus_file("config").plus_file(project_config_dir);
+	return get_settings_dir().plus_file("projects").plus_file(project_config_dir);
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
@@ -1138,7 +1128,7 @@ void EditorSettings::load_favorites() {
 
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Adaptive,Default";
-	DirAccess *d = DirAccess::open(get_settings_dir().plus_file("text_editor_themes"));
+	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1160,7 +1150,7 @@ void EditorSettings::load_text_editor_theme() {
 		return;
 	}
 
-	String theme_path = get_settings_dir().plus_file("text_editor_themes").plus_file((String)get("text_editor/theme/color_theme") + ".tet");
+	String theme_path = get_text_editor_themes_dir().plus_file((String)get("text_editor/theme/color_theme") + ".tet");
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error err = cf->load(theme_path);
@@ -1198,9 +1188,9 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 			return false;
 		}
 
-		DirAccess *d = DirAccess::open(get_settings_dir().plus_file("text_editor_themes"));
+		DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
 		if (d) {
-			d->copy(p_file, get_settings_dir().plus_file("text_editor_themes").plus_file(p_file.get_file()));
+			d->copy(p_file, get_text_editor_themes_dir().plus_file(p_file.get_file()));
 			memdelete(d);
 			return true;
 		}
@@ -1215,7 +1205,7 @@ bool EditorSettings::save_text_editor_theme() {
 	if (p_file.get_file().to_lower() == "default" || p_file.get_file().to_lower() == "adaptive") {
 		return false;
 	}
-	String theme_path = get_settings_dir().plus_file("text_editor_themes").plus_file(p_file + ".tet");
+	String theme_path = get_text_editor_themes_dir().plus_file(p_file + ".tet");
 	return _save_text_editor_theme(theme_path);
 }
 
@@ -1233,7 +1223,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
 
-		if (p_file.get_base_dir() == get_settings_dir().plus_file("text_editor_themes")) {
+		if (p_file.get_base_dir() == get_text_editor_themes_dir()) {
 			_initial_set("text_editor/theme/color_theme", theme_name);
 			load_text_editor_theme();
 		}
@@ -1245,7 +1235,7 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 Vector<String> EditorSettings::get_script_templates(const String &p_extension) {
 
 	Vector<String> templates;
-	DirAccess *d = DirAccess::open(get_settings_dir().plus_file("script_templates"));
+	DirAccess *d = DirAccess::open(get_script_templates_dir());
 	if (d) {
 		d->list_dir_begin();
 		String file = d->get_next();
@@ -1259,6 +1249,11 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension) {
 		memdelete(d);
 	}
 	return templates;
+}
+
+String EditorSettings::get_editor_layouts_config() const {
+
+	return get_settings_dir().plus_file("editor_layouts.cfg");
 }
 
 // Shortcuts
