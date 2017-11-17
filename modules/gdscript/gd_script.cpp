@@ -436,21 +436,21 @@ bool GDScript::_update_exports() {
 
 			if (c->extends_used && String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
 
-				String path = c->extends_file;
-				if (path.is_rel_path()) {
+				String path_test = c->extends_file;
+				if (path_test.is_rel_path()) {
 
-					String base = get_path();
-					if (base == "" || base.is_rel_path()) {
+					String base_test = get_path();
+					if (base_test == "" || base_test.is_rel_path()) {
 
-						ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
+						ERR_PRINT(("Could not resolve relative path for parent class: " + path_test).utf8().get_data());
 					} else {
-						path = base.get_base_dir().plus_file(path);
+						path_test = base_test.get_base_dir().plus_file(path_test);
 					}
 				}
 
-				if (path != get_path()) {
+				if (path_test != get_path()) {
 
-					Ref<GDScript> bf = ResourceLoader::load(path);
+					Ref<GDScript> bf = ResourceLoader::load(path_test);
 
 					if (bf.is_valid()) {
 
@@ -461,7 +461,7 @@ bool GDScript::_update_exports() {
 						//bf->_update_exports(p_instances,true,false);
 					}
 				} else {
-					ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
+					ERR_PRINT(("Path extending itself in  " + path_test).utf8().get_data());
 				}
 			}
 

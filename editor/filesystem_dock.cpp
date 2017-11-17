@@ -903,9 +903,9 @@ void FileSystemDock::_file_option(int p_option) {
 			for (int i = 0; i < files->get_item_count(); i++) {
 				if (!files->is_selected(i))
 					continue;
-				String path = files->get_item_metadata(i);
-				if (EditorFileSystem::get_singleton()->get_file_type(path) == "PackedScene") {
-					paths.push_back(path);
+				String path_test = files->get_item_metadata(i);
+				if (EditorFileSystem::get_singleton()->get_file_type(path_test) == "PackedScene") {
+					paths.push_back(path_test);
 				}
 			}
 
@@ -918,16 +918,16 @@ void FileSystemDock::_file_option(int p_option) {
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
-			String path = files->get_item_metadata(idx);
-			deps_editor->edit(path);
+			String path_test = files->get_item_metadata(idx);
+			deps_editor->edit(path_test);
 		} break;
 		case FILE_OWNERS: {
 
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
-			String path = files->get_item_metadata(idx);
-			owners_editor->show(path);
+			String path_test = files->get_item_metadata(idx);
+			owners_editor->show(path_test);
 		} break;
 		case FILE_MOVE: {
 			to_move.clear();
@@ -935,8 +935,8 @@ void FileSystemDock::_file_option(int p_option) {
 				if (!files->is_selected(i))
 					continue;
 
-				String path = files->get_item_metadata(i);
-				to_move.push_back(FileOrFolder(path, !path.ends_with("/")));
+				String path_test = files->get_item_metadata(i);
+				to_move.push_back(FileOrFolder(path_test, !path_test.ends_with("/")));
 			}
 			if (to_move.size() > 0) {
 				move_dialog->popup_centered_ratio();
@@ -968,12 +968,12 @@ void FileSystemDock::_file_option(int p_option) {
 			Vector<String> remove_folders;
 
 			for (int i = 0; i < files->get_item_count(); i++) {
-				String path = files->get_item_metadata(i);
-				if (files->is_selected(i) && path != "res://") {
-					if (path.ends_with("/")) {
-						remove_folders.push_back(path);
+				String path_test = files->get_item_metadata(i);
+				if (files->is_selected(i) && path_test != "res://") {
+					if (path_test.ends_with("/")) {
+						remove_folders.push_back(path_test);
 					} else {
-						remove_files.push_back(path);
+						remove_files.push_back(path_test);
 					}
 				}
 			}
@@ -995,8 +995,8 @@ void FileSystemDock::_file_option(int p_option) {
 				if (!files->is_selected(i))
 					continue;
 
-				String path = files->get_item_metadata(i);
-				reimport.push_back(path);
+				String path_test = files->get_item_metadata(i);
+				reimport.push_back(path_test);
 			}
 
 			ERR_FAIL_COND(reimport.size() == 0);
@@ -1030,8 +1030,8 @@ void FileSystemDock::_file_option(int p_option) {
 			int idx = files->get_current();
 			if (idx < 0 || idx >= files->get_item_count())
 				break;
-			String path = files->get_item_metadata(idx);
-			OS::get_singleton()->set_clipboard(path);
+			String path_test = files->get_item_metadata(idx);
+			OS::get_singleton()->set_clipboard(path_test);
 		} break;
 	}
 }
@@ -1348,11 +1348,11 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		if (!ti)
 			return;
 
-		Vector<String> files = drag_data["files"];
+		Vector<String> files_test = drag_data["files"];
 
-		ERR_FAIL_COND(files.size() != 1);
+		ERR_FAIL_COND(files_test.size() != 1);
 
-		String swap = files[0];
+		String swap = files_test[0];
 		if (swap != "res://" && swap.ends_with("/")) {
 			swap = swap.substr(0, swap.length() - 1);
 		}
@@ -1415,9 +1415,9 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			TreeItem *ti = tree->get_item_at_position(p_point);
 			if (!ti)
 				return;
-			String path = ti->get_metadata(0);
+			String path_test = ti->get_metadata(0);
 
-			if (path == String())
+			if (path_test == String())
 				return;
 
 			EditorNode::get_singleton()->save_resource_as(res, path);

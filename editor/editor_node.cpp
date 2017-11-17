@@ -284,9 +284,9 @@ void EditorNode::_notification(int p_what) {
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/editor/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+		Ref<Theme> theme_test = create_editor_theme(theme_base->get_theme());
 
-		theme_base->set_theme(theme);
+		theme_base->set_theme(theme_test);
 
 		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 		play_button_panel->add_style_override("panel", gui_base->get_stylebox("PlayButtonPanel", "EditorStyles"));
@@ -339,8 +339,8 @@ void EditorNode::_notification(int p_what) {
 		object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
 		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); dont have access to that node. needs to become a class property
 		update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
-		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
-		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+		dock_tab_move_left->set_icon(theme_test->get_icon("Back", "EditorIcons"));
+		dock_tab_move_right->set_icon(theme_test->get_icon("Forward", "EditorIcons"));
 		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
 	}
 }
@@ -1183,8 +1183,8 @@ void EditorNode::_dialog_action(String p_file) {
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 
-			uint32_t current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+			uint32_t current_test = editor_history.get_current();
+			Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
@@ -1401,8 +1401,8 @@ void EditorNode::_property_editable_warning_pressed() {
 
 void EditorNode::_edit_current() {
 
-	uint32_t current = editor_history.get_current();
-	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+	uint32_t current_test = editor_history.get_current();
+	Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 	property_back->set_disabled(editor_history.is_at_beginning());
 	property_forward->set_disabled(editor_history.is_at_end());
@@ -2056,8 +2056,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_SAVE: {
 
-			uint32_t current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+			uint32_t current_test = editor_history.get_current();
+			Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
@@ -2068,8 +2068,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_SAVE_AS: {
 
-			uint32_t current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+			uint32_t current_test = editor_history.get_current();
+			Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
@@ -2080,8 +2080,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_UNREF: {
 
-			uint32_t current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+			uint32_t current_test = editor_history.get_current();
+			Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
@@ -2091,8 +2091,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_COPY: {
 
-			uint32_t current = editor_history.get_current();
-			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
+			uint32_t current_test = editor_history.get_current();
+			Object *current_obj = current_test > 0 ? ObjectDB::get_instance(current_test) : NULL;
 
 			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
 
@@ -2441,8 +2441,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				ERR_FAIL_INDEX(idx, methods.size());
 				String name = methods[idx].name;
 
-				if (current)
-					current->call(name);
+				current->call(name);
 			} else if (p_option >= IMPORT_PLUGIN_BASE) {
 			}
 		}
@@ -4690,8 +4689,8 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	Ref<Theme> theme = create_editor_theme();
-	theme_base->set_theme(theme);
+	Ref<Theme> theme_test = create_editor_theme();
+	theme_base->set_theme(theme_test);
 	gui_base->set_theme(create_custom_theme());
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
 
@@ -4785,13 +4784,13 @@ EditorNode::EditorNode() {
 
 	HBoxContainer *dock_hb = memnew(HBoxContainer);
 	dock_tab_move_left = memnew(ToolButton);
-	dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+	dock_tab_move_left->set_icon(theme_test->get_icon("Back", "EditorIcons"));
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", this, "_dock_move_left");
 	dock_hb->add_child(dock_tab_move_left);
 	dock_hb->add_spacer();
 	dock_tab_move_right = memnew(ToolButton);
-	dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+	dock_tab_move_right->set_icon(theme_test->get_icon("Forward", "EditorIcons"));
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", this, "_dock_move_right");
 
@@ -5010,12 +5009,12 @@ EditorNode::EditorNode() {
 	//p->add_item(TTR("Run Script"), FILE_RUN_SCRIPT, KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R);
 	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
 
-	PopupMenu *tool_menu = memnew(PopupMenu);
-	tool_menu->set_name("Tools");
-	tool_menu->connect("id_pressed", this, "_menu_option");
-	p->add_child(tool_menu);
+	PopupMenu *tool_menu_test = memnew(PopupMenu);
+	tool_menu_test->set_name("Tools");
+	tool_menu_test->connect("id_pressed", this, "_menu_option");
+	p->add_child(tool_menu_test);
 	p->add_submenu_item(TTR("Tools"), "Tools");
-	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
+	tool_menu_test->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
 	p->add_separator();
 
 #ifdef OSX_ENABLED
@@ -5309,7 +5308,6 @@ EditorNode::EditorNode() {
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
 
-	Button *property_editable_warning;
 	prop_editor_base->add_child(property_editor);
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 

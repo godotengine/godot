@@ -1225,7 +1225,7 @@ PoolVector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vect
 PoolVector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
 
 	Vector3 r1, r2;
-	Geometry::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	Geometry::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
 	PoolVector<Vector3> r;
 	r.resize(2);
 	r.set(0, r1);

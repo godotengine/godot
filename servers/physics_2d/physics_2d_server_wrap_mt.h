@@ -307,8 +307,16 @@ public:
 		if (tm == 0) //single unsafe
 			return memnew(T);
 		else if (tm == 1) //single saef
+			// Returning Physics2DServerWrapMT object but declared 
+			// Physics2DServer object to return. using additional 
+			// memory outside the allocated block and may cause a 
+			// crash or incorrect program behavior
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
 		else //single unsafe
+			// Returning Physics2DServerWrapMT object but declared 
+			// Physics2DServer object to return. using additional 
+			// memory outside the allocated block and may cause a 
+			// crash or incorrect program behavior
 			return memnew(Physics2DServerWrapMT(memnew(T), true));
 	}
 

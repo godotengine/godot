@@ -336,8 +336,6 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 
 	latency = 0;
 	buffer_frames = 0;
-	buffer_size = 0;
-	channels = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

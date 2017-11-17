@@ -1121,7 +1121,7 @@ public:
 
 			clear = true;
 			inactive = true;
-			inactive_time = false;
+			inactive_time = 0.0;
 
 			glGenBuffers(2, particle_buffers);
 			glGenVertexArrays(2, particle_vaos);

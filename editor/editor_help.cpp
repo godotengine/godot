@@ -705,7 +705,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	if (ClassDB::class_exists(cd.name)) {
 
 		bool found = false;
-		bool prev = false;
 
 		for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
 
@@ -722,14 +721,9 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 					class_desc->push_font(doc_font);
 				}
 
-				if (prev) {
-
-					class_desc->add_text(" , ");
-					prev = false;
-				}
+				class_desc->add_text(" , ");
 
 				_add_type(E->get().name);
-				prev = true;
 			}
 		}
 

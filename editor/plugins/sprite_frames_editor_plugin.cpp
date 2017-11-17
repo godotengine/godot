@@ -599,6 +599,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			return false;
 
 		for (int i = 0; i < files.size(); i++) {
+			// Is this a typo? maybe 'i' variable instead of 0 but not sure
 			String file = files[0];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 

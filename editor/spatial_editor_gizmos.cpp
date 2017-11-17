@@ -1988,9 +1988,9 @@ void CollisionShapeSpatialGizmo::redraw() {
 
 	if (Object::cast_to<CapsuleShape>(*s)) {
 
-		Ref<CapsuleShape> cs = s;
-		float radius = cs->get_radius();
-		float height = cs->get_height();
+		Ref<CapsuleShape> cs_test = s;
+		float radius = cs_test->get_radius();
+		float height = cs_test->get_height();
 
 		Vector<Vector3> points;
 
@@ -2056,8 +2056,8 @@ void CollisionShapeSpatialGizmo::redraw() {
 		add_collision_segments(collision_segments);
 
 		Vector<Vector3> handles;
-		handles.push_back(Vector3(cs->get_radius(), 0, 0));
-		handles.push_back(Vector3(0, 0, cs->get_height() * 0.5 + cs->get_radius()));
+		handles.push_back(Vector3(cs_test->get_radius(), 0, 0));
+		handles.push_back(Vector3(0, 0, cs_test->get_height() * 0.5 + cs_test->get_radius()));
 		add_handles(handles);
 	}
 

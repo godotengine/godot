@@ -584,26 +584,26 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			if (d.has("index_count"))
 				index_count = d["index_count"];
 
-			Vector<PoolVector<uint8_t> > blend_shapes;
+			Vector<PoolVector<uint8_t> > blend_shapes_test;
 
 			if (d.has("blend_shape_data")) {
 				Array blend_shape_data = d["blend_shape_data"];
 				for (int i = 0; i < blend_shape_data.size(); i++) {
 					PoolVector<uint8_t> shape = blend_shape_data[i];
-					blend_shapes.push_back(shape);
+					blend_shapes_test.push_back(shape);
 				}
 			}
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			Rect3 aabb = d["aabb"];
 
-			Vector<Rect3> bone_aabb;
+			Vector<Rect3> bone_aabb_test;
 			if (d.has("bone_aabb")) {
 				Array baabb = d["bone_aabb"];
-				bone_aabb.resize(baabb.size());
+				bone_aabb_test.resize(baabb.size());
 
 				for (int i = 0; i < baabb.size(); i++) {
-					bone_aabb[i] = baabb[i];
+					bone_aabb_test[i] = baabb[i];
 				}
 			}
 

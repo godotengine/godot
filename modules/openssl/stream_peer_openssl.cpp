@@ -393,8 +393,6 @@ Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 		bool cert_ok = SSL_get_verify_result(ssl) == X509_V_OK;
 		print_line("cert_ok: " + itos(cert_ok));
 
-	} else if (validate_certs) {
-		status = STATUS_ERROR_NO_CERTIFICATE;
 	}
 
 	connected = true;
@@ -413,7 +411,7 @@ void StreamPeerOpenSSL::_print_error(int err) {
 	err = SSL_get_error(ssl, err);
 	switch (err) {
 		case SSL_ERROR_NONE: ERR_PRINT("NO ERROR: The TLS/SSL I/O operation completed"); break;
-		case SSL_ERROR_ZERO_RETURN: ERR_PRINT("The TLS/SSL connection has been closed.");
+		case SSL_ERROR_ZERO_RETURN: ERR_PRINT("The TLS/SSL connection has been closed."); break;
 		case SSL_ERROR_WANT_READ:
 		case SSL_ERROR_WANT_WRITE:
 			ERR_PRINT("The operation did not complete.");

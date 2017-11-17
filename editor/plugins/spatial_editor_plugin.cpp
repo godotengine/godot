@@ -1236,14 +1236,14 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.mode = TRANSFORM_TRANSLATE;
 				}
 
-				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
+				if (cursor.region_select) {
 
 					cursor.region_end = m->get_position();
 					surface->update();
 					return;
 				}
 
-				if (_edit.mode == TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
+				if (_edit.mode == TRANSFORM_NONE)
 					return;
 
 				Vector3 ray_pos = _get_ray_pos(m->get_position());
@@ -1254,34 +1254,34 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					case TRANSFORM_SCALE: {
 
 						Vector3 motion_mask;
-						Plane plane;
+						Plane plane_test;
 						bool plane_mv;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
 								motion_mask = Vector3(0, 0, 0);
-								plane = Plane(_edit.center, _get_camera_normal());
+								plane_test = Plane(_edit.center, _get_camera_normal());
 								break;
 							case TRANSFORM_X_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_Y_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_Z_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 						}
 
 						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection))
+						if (!plane_test.intersects_ray(ray_pos, ray, &intersection))
 							break;
 
 						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
+						if (!plane_test.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
 							break;
 
 						Vector3 motion = intersection - click;
@@ -1365,49 +1365,49 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					case TRANSFORM_TRANSLATE: {
 
 						Vector3 motion_mask;
-						Plane plane;
+						Plane plane_test;
 						bool plane_mv;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
 								motion_mask = Vector3(0, 0, 0);
-								plane = Plane(_edit.center, _get_camera_normal());
+								plane_test = Plane(_edit.center, _get_camera_normal());
 								break;
 							case TRANSFORM_X_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_Y_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_Z_AXIS:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2);
-								plane = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								plane_test = Plane(_edit.center, motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
 								break;
 							case TRANSFORM_YZ:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
 								plane_mv = true;
 								break;
 							case TRANSFORM_XZ:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(2) + spatial_editor->get_gizmo_transform().basis.get_axis(0);
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
 								plane_mv = true;
 								break;
 							case TRANSFORM_XY:
 								motion_mask = spatial_editor->get_gizmo_transform().basis.get_axis(0) + spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
 								plane_mv = true;
 								break;
 						}
 
 						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection))
+						if (!plane_test.intersects_ray(ray_pos, ray, &intersection))
 							break;
 
 						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
+						if (!plane_test.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
 							break;
 
 						//_validate_selection();
@@ -1481,37 +1481,37 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					case TRANSFORM_ROTATE: {
 
-						Plane plane;
+						Plane plane_test;
 						Vector3 axis;
 
 						switch (_edit.plane) {
 							case TRANSFORM_VIEW:
-								plane = Plane(_edit.center, _get_camera_normal());
+								plane_test = Plane(_edit.center, _get_camera_normal());
 								break;
 							case TRANSFORM_X_AXIS:
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(0));
 								axis = Vector3(1, 0, 0);
 								break;
 							case TRANSFORM_Y_AXIS:
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(1));
 								axis = Vector3(0, 1, 0);
 								break;
 							case TRANSFORM_Z_AXIS:
-								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
+								plane_test = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
 								axis = Vector3(0, 0, 1);
 								break;
 						}
 
 						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos, ray, &intersection))
+						if (!plane_test.intersects_ray(ray_pos, ray, &intersection))
 							break;
 
 						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
+						if (!plane_test.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click))
 							break;
 
 						Vector3 y_axis = (click - _edit.center).normalized();
-						Vector3 x_axis = plane.normal.cross(y_axis).normalized();
+						Vector3 x_axis = plane_test.normal.cross(y_axis).normalized();
 
 						float angle = Math::atan2(x_axis.dot(intersection - _edit.center), y_axis.dot(intersection - _edit.center));
 
@@ -1563,7 +1563,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								Transform r;
 								Transform base = Transform(Basis(), _edit.center);
 
-								r.basis.rotate(plane.normal, angle);
+								r.basis.rotate(plane_test.normal, angle);
 								t = base * r * base.inverse() * original;
 
 								sp->set_global_transform(t);
@@ -3194,8 +3194,8 @@ void SpatialEditorViewportContainer::_gui_input(const Ref<InputEvent> &p_event) 
 		int mid_w = size.width * ratio_h;
 		int mid_h = size.height * ratio_v;
 
-		dragging_h = mb->get_position().x > (mid_w - h_sep / 2) && mb->get_position().x < (mid_w + h_sep / 2);
-		dragging_v = mb->get_position().y > (mid_h - v_sep / 2) && mb->get_position().y < (mid_h + v_sep / 2);
+		dragging_h = mb->get_position().x > (mid_w - (float) (h_sep) / 2) && mb->get_position().x < (mid_w + h_sep / 2);
+		dragging_v = mb->get_position().y > (mid_h - (float) (v_sep) / 2) && mb->get_position().y < (mid_h + v_sep / 2);
 
 		drag_begin_pos = mb->get_position();
 		drag_begin_ratio.x = ratio_h;
@@ -4139,7 +4139,7 @@ void SpatialEditor::_init_indicators() {
 				surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
 				Vector3 vec = ivec2 - ivec3;
-				Vector3 plane[4] = {
+				Vector3 plane_test[4] = {
 					vec * GIZMO_PLANE_DST,
 					vec * GIZMO_PLANE_DST + ivec2 * GIZMO_PLANE_SIZE,
 					vec * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE),
@@ -4149,10 +4149,10 @@ void SpatialEditor::_init_indicators() {
 				Basis ma(ivec, Math_PI / 2);
 
 				Vector3 points[4] = {
-					ma.xform(plane[0]),
-					ma.xform(plane[1]),
-					ma.xform(plane[2]),
-					ma.xform(plane[3]),
+					ma.xform(plane_test[0]),
+					ma.xform(plane_test[1]),
+					ma.xform(plane_test[2]),
+					ma.xform(plane_test[3]),
 				};
 				surftool->add_vertex(points[0]);
 				surftool->add_vertex(points[1]);

@@ -51,7 +51,7 @@ void CollisionObject::_notification(int p_what) {
 
 			_update_pickable();
 			//get space
-		};
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 

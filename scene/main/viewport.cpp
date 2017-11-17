@@ -1819,7 +1819,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		gui.last_mouse_pos = mpos;
 
-		Control *over = NULL;
+		Control *over_test = NULL;
 
 		// D&D
 		if (!gui.drag_attempted && gui.mouse_focus && mm->get_button_mask() & BUTTON_MASK_LEFT) {
@@ -1861,45 +1861,45 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (gui.mouse_focus) {
-			over = gui.mouse_focus;
+			over_test = gui.mouse_focus;
 			//recompute focus_inv_xform again here
 
 		} else {
 
-			over = _gui_find_control(mpos);
+			over_test = _gui_find_control(mpos);
 		}
 
-		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
+		if (gui.drag_data.get_type() == Variant::NIL && over_test && !gui.modal_stack.empty()) {
 
 			Control *top = gui.modal_stack.back()->get();
-			if (over != top && !top->is_a_parent_of(over)) {
-				over = NULL; //nothing can be found outside the modal stack
+			if (over_test != top && !top->is_a_parent_of(over_test)) {
+				over_test = NULL; //nothing can be found outside the modal stack
 			}
 		}
 
-		if (over != gui.mouse_over) {
+		if (over_test != gui.mouse_over) {
 
 			if (gui.mouse_over)
 				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
 
 			_gui_cancel_tooltip();
 
-			if (over)
-				over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+			if (over_test)
+				over_test->notification(Control::NOTIFICATION_MOUSE_ENTER);
 		}
 
-		gui.mouse_over = over;
+		gui.mouse_over = over_test;
 
 		if (gui.drag_preview) {
 			gui.drag_preview->set_position(mpos);
 		}
 
-		if (!over) {
+		if (!over_test) {
 			OS::get_singleton()->set_cursor_shape(OS::CURSOR_ARROW);
 			return;
 		}
 
-		Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
+		Transform2D localizer = over_test->get_global_transform_with_canvas().affine_inverse();
 		Size2 pos = localizer.xform(mpos);
 		Vector2 speed = localizer.basis_xform(mm->get_speed());
 		Vector2 rel = localizer.basis_xform(mm->get_relative());
@@ -1916,7 +1916,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool can_tooltip = true;
 
 			if (!gui.modal_stack.empty()) {
-				if (gui.modal_stack.back()->get() != over && !gui.modal_stack.back()->get()->is_a_parent_of(over))
+				if (gui.modal_stack.back()->get() != over_test && !gui.modal_stack.back()->get()->is_a_parent_of(over_test))
 					can_tooltip = false;
 			}
 
@@ -1924,7 +1924,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (gui.tooltip_popup) {
 				if (can_tooltip) {
-					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+					String tooltip = over_test->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)
 						_gui_cancel_tooltip();
@@ -1936,7 +1936,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (can_tooltip && !is_tooltip_shown) {
 
-				gui.tooltip = over;
+				gui.tooltip = over_test;
 				gui.tooltip_pos = mpos; //(parent_xform * get_transform()).affine_inverse().xform(pos);
 				gui.tooltip_timer = gui.tooltip_delay;
 			}
@@ -1946,18 +1946,18 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		mm->set_position(pos);
 
-		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
+		Control::CursorShape cursor_shape = over_test->get_cursor_shape(pos);
 		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
 
-		if (over->can_process()) {
-			_gui_call_input(over, mm);
+		if (over_test->can_process()) {
+			_gui_call_input(over_test, mm);
 		}
 
 		get_tree()->set_input_as_handled();
 
 		if (gui.drag_data.get_type() != Variant::NIL && mm->get_button_mask() & BUTTON_MASK_LEFT) {
 
-			bool can_drop = _gui_drop(over, pos, true);
+			bool can_drop = _gui_drop(over_test, pos, true);
 
 			if (!can_drop) {
 				OS::get_singleton()->set_cursor_shape(OS::CURSOR_FORBIDDEN);
@@ -1974,27 +1974,27 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Size2 pos = touch_event->get_position();
 		if (touch_event->is_pressed()) {
 
-			Control *over = _gui_find_control(pos);
-			if (over) {
+			Control *over_test = _gui_find_control(pos);
+			if (over_test) {
 
 				if (!gui.modal_stack.empty()) {
 
 					Control *top = gui.modal_stack.back()->get();
-					if (over != top && !top->is_a_parent_of(over)) {
+					if (over_test != top && !top->is_a_parent_of(over_test)) {
 
 						return;
 					}
 				}
-				if (over->can_process()) {
+				if (over_test->can_process()) {
 
 					touch_event = touch_event->xformed_by(Transform2D()); //make a copy
-					if (over == gui.mouse_focus) {
+					if (over_test == gui.mouse_focus) {
 						pos = gui.focus_inv_xform.xform(pos);
 					} else {
-						pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
+						pos = over_test->get_global_transform_with_canvas().affine_inverse().xform(pos);
 					}
 					touch_event->set_position(pos);
-					_gui_call_input(over, touch_event);
+					_gui_call_input(over_test, touch_event);
 				}
 				get_tree()->set_input_as_handled();
 				return;
@@ -2016,23 +2016,23 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	Ref<InputEventScreenDrag> drag_event = p_event;
 	if (drag_event.is_valid()) {
 
-		Control *over = gui.mouse_focus;
-		if (!over) {
-			over = _gui_find_control(drag_event->get_position());
+		Control *over_test = gui.mouse_focus;
+		if (!over_test) {
+			over_test = _gui_find_control(drag_event->get_position());
 		}
-		if (over) {
+		if (over_test) {
 
 			if (!gui.modal_stack.empty()) {
 
 				Control *top = gui.modal_stack.back()->get();
-				if (over != top && !top->is_a_parent_of(over)) {
+				if (over_test != top && !top->is_a_parent_of(over_test)) {
 
 					return;
 				}
 			}
-			if (over->can_process()) {
+			if (over_test->can_process()) {
 
-				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
+				Transform2D localizer = over_test->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
 				Vector2 speed = localizer.basis_xform(drag_event->get_speed());
 				Vector2 rel = localizer.basis_xform(drag_event->get_relative());
@@ -2043,7 +2043,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
 
-				_gui_call_input(over, drag_event);
+				_gui_call_input(over_test, drag_event);
 			}
 
 			get_tree()->set_input_as_handled();

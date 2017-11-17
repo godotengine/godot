@@ -943,9 +943,9 @@ void ItemList::_notification(int p_what) {
 			if (items[i].selected) {
 				Rect2 r = rcache;
 				r.position += base_ofs;
-				r.position.y -= vseparation / 2;
+				r.position.y -= (double) (vseparation) / 2;
 				r.size.y += vseparation;
-				r.position.x -= hseparation / 2;
+				r.position.x -= (double) (hseparation) / 2;
 				r.size.x += hseparation;
 
 				draw_style_box(sbsel, r);
@@ -955,9 +955,9 @@ void ItemList::_notification(int p_what) {
 				r.position += base_ofs;
 
 				// Size rect to make the align the temperature colors
-				r.position.y -= vseparation / 2;
+				r.position.y -= (double) (vseparation) / 2;
 				r.size.y += vseparation;
-				r.position.x -= hseparation / 2;
+				r.position.x -= (double) (hseparation) / 2;
 				r.size.x += hseparation;
 
 				draw_rect(r, items[i].custom_bg);
@@ -1096,9 +1096,9 @@ void ItemList::_notification(int p_what) {
 
 				Rect2 r = rcache;
 				r.position += base_ofs;
-				r.position.y -= vseparation / 2;
+				r.position.y -= (double) (vseparation) / 2;
 				r.size.y += vseparation;
-				r.position.x -= hseparation / 2;
+				r.position.x -= (double) (hseparation) / 2;
 				r.size.x += hseparation;
 				draw_style_box(cursor, r);
 			}

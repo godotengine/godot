@@ -727,23 +727,23 @@ ThemeEditor::ThemeEditor() {
 	te->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
 	second_vb->add_child(te);
 
-	Tree *test_tree = memnew(Tree);
-	second_vb->add_child(test_tree);
-	test_tree->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
+	Tree *test_tree_v = memnew(Tree);
+	second_vb->add_child(test_tree_v);
+	test_tree_v->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
 
-	TreeItem *item = test_tree->create_item();
+	TreeItem *item = test_tree_v->create_item();
 	item->set_editable(0, true);
 	item->set_text(0, "Tree");
-	item = test_tree->create_item(test_tree->get_root());
+	item = test_tree_v->create_item(test_tree_v->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	item->set_editable(0, true);
 	item->set_text(0, "check");
-	item = test_tree->create_item(test_tree->get_root());
+	item = test_tree_v->create_item(test_tree_v->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
 	item->set_range_config(0, 0, 20, 0.1);
 	item->set_range(0, 2);
-	item = test_tree->create_item(test_tree->get_root());
+	item = test_tree_v->create_item(test_tree_v->get_root());
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
 	item->set_text(0, TTR("Have,Many,Several,Options!"));

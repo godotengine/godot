@@ -51,8 +51,6 @@ static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 
 			// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
 	}
-
-	ERR_FAIL_COND_V(true, Image::FORMAT_MAX);
 }
 
 static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format) {

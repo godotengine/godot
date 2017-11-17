@@ -291,7 +291,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 			preset_accent_color = Color::html("#1bfe99");
 			preset_base_color = Color::html("#2f373f");
 			preset_contrast = 0.25;
-		}
+		} break;
 		default: { // Custom
 			accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
 			base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));

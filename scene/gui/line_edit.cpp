@@ -740,8 +740,8 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			Point2 cursor_pos_test = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos_test);
 			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 
 			if (OS::get_singleton()->has_virtual_keyboard())

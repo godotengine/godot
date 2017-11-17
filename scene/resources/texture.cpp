@@ -510,8 +510,8 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			PoolVector<uint8_t> pv;
 			pv.resize(size);
 			{
-				PoolVector<uint8_t>::Write w = pv.write();
-				f->get_buffer(w.ptr(), size);
+				PoolVector<uint8_t>::Write w_test = pv.write();
+				f->get_buffer(w_test.ptr(), size);
 			}
 
 			Ref<Image> img;
@@ -545,7 +545,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			img_data.resize(total_size);
 
 			{
-				PoolVector<uint8_t>::Write w = img_data.write();
+				PoolVector<uint8_t>::Write w_test = img_data.write();
 
 				int ofs = 0;
 				for (int i = 0; i < mipmap_images.size(); i++) {
@@ -553,7 +553,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
 					int len = id.size();
 					PoolVector<uint8_t>::Read r = id.read();
-					copymem(&w[ofs], r.ptr(), len);
+					copymem(&(w_test)[ofs], r.ptr(), len);
 					ofs += len;
 				}
 			}
@@ -575,8 +575,8 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			img_data.resize(size);
 
 			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				f->get_buffer(w.ptr(), size);
+				PoolVector<uint8_t>::Write w_test = img_data.write();
+				f->get_buffer(w_test.ptr(), size);
 			}
 
 			memdelete(f);
@@ -616,8 +616,8 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			img_data.resize(total_size - ofs);
 
 			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
+				PoolVector<uint8_t>::Write w_tesst = img_data.write();
+				int bytes = f->get_buffer(w_test.ptr(), total_size - ofs);
 				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
 
 				memdelete(f);

@@ -227,9 +227,7 @@ static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t p_len
 	rstatus = (PNGReadStatus *)png_get_io_ptr(png_ptr);
 
 	png_size_t to_read = p_length;
-	if (rstatus->size >= 0) {
-		to_read = MIN(p_length, rstatus->size - rstatus->offset);
-	}
+	to_read = MIN(p_length, rstatus->size - rstatus->offset);
 	memcpy(data, &rstatus->image[rstatus->offset], to_read);
 	rstatus->offset += to_read;
 

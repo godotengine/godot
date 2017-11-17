@@ -322,7 +322,7 @@ static void _parser_show_block(const GDParser::BlockNode *p_block, int p_indent)
 
 				const GDParser::ControlFlowNode *cf_node = static_cast<const GDParser::ControlFlowNode *>(statement);
 				switch (cf_node->cf_type) {
-
+					// Missing logic for CF_MATCH case
 					case GDParser::ControlFlowNode::CF_IF: {
 
 						ERR_FAIL_COND(cf_node->arguments.size() != 1);
@@ -901,7 +901,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 			if (incr == 0) {
 
 				ERR_EXPLAIN("unhandled opcode: " + itos(code[ip]));
-				ERR_BREAK(incr == 0);
+				ERR_BREAK(true);
 			}
 
 			ip += incr;

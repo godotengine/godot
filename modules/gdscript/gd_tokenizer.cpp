@@ -791,12 +791,12 @@ void GDTokenizerText::_advance() {
 										return;
 									}
 									CharType v;
-									if (c >= '0' && c <= '9') {
+									if (c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
 										v += 10;
-									} else if (c >= 'A' && c <= 'F') {
+									} else if (c >= 'A') {
 										v = c - 'A';
 										v += 10;
 									} else {
@@ -861,21 +861,17 @@ void GDTokenizerText::_advance() {
 							}
 							period_found = true;
 						} else if (GETCHAR(i) == 'x') {
-							if (hexa_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
+							if (str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
 								_make_error("Invalid numeric constant at 'x'");
 								return;
 							}
 							hexa_found = true;
-						} else if (!hexa_found && GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found) {
-								_make_error("Invalid numeric constant at 'e'");
-								return;
-							}
+						} else if (GETCHAR(i) == 'e') {
 							exponent_found = true;
 						} else if (_is_number(GETCHAR(i))) {
 							//all ok
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
-
+						} else if (_is_hex(GETCHAR(i))) {
+							// Never reach here, 'hexa_found' always false
 						} else if ((GETCHAR(i) == '-' || GETCHAR(i) == '+') && exponent_found) {
 							if (sign_found) {
 								_make_error("Invalid numeric constant at '-'");
@@ -1179,12 +1175,12 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
 
 	for (int i = 0; i < line_count; i++) {
 
-		uint32_t token = decode_uint32(b);
+		uint32_t token_test = decode_uint32(b);
 		b += 4;
 		uint32_t linecol = decode_uint32(b);
 		b += 4;
 
-		lines.insert(token, linecol);
+		lines.insert(token_test, linecol);
 		total_len -= 8;
 	}
 

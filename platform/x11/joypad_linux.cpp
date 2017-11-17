@@ -445,7 +445,9 @@ InputDefault::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int 
 		if (p_value < 0) {
 			jx.value = (float)-p_value / min;
 		}
-		jx.value = (float)p_value / max;
+		else {
+			jx.value = (float)p_value / max;
+		}
 	}
 	if (min == 0) {
 		jx.min = 0;

@@ -157,10 +157,7 @@ int FilterTwoPass(T *pSrcImage, int srcWidth, int srcHeight,
 	//** Need to create a temporary image to stuff the horizontally scaled image
 	//**------------------------------------------------------------------------
 	pTempImage = new T[destWidth * srcHeight * numComponents];
-	if (pTempImage == NULL)
-	{
-		return 0;
-	}
+	// new operator will throw an exception in case it fails not a null pointer.
 
 	//**-------------------------------------------------------
 	//** Horizontally filter the image into the temporary image

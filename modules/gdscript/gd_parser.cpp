@@ -268,7 +268,6 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 				switch (tokenizer->get_token()) {
 					case GDTokenizer::TK_CURSOR: {
-						completion_cursor = StringName();
 						completion_type = COMPLETION_GET_NODE;
 						completion_class = current_class;
 						completion_function = current_function;
@@ -1131,7 +1130,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 
 			bool unary = false;
 			bool ternary = false;
-			bool error = false;
+			bool error_test = false;
 
 			switch (expression[i].op) {
 
@@ -1189,7 +1188,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 					break;
 				case OperatorNode::OP_TERNARY_ELSE:
 					priority = 14;
-					error = true;
+					error_test = true;
 					break; // Errors out when found without IF (since IF would consume it)
 
 				case OperatorNode::OP_ASSIGN: priority = 15; break;
@@ -1211,7 +1210,7 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 			}
 
 			if (priority < min_priority) {
-				if (error) {
+				if (error_test) {
 					_set_error("Unexpected operator");
 					return NULL;
 				}

@@ -268,7 +268,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 					int idx = j;
 
-					if (!flip_faces && idx < 2) {
+					if (idx < 2) {
 						idx = 1 ^ idx;
 					}
 

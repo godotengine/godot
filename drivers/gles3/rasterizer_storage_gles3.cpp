@@ -1257,7 +1257,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	Texture *texture = texture_owner.getornull(sky->panorama);
 	if (!texture) {
 		sky->panorama = RID();
-		ERR_FAIL_COND(!texture);
+		ERR_FAIL_COND(true);
 	}
 
 	glBindVertexArray(0);
@@ -2888,7 +2888,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				glGenVertexArrays(1, &surface->array_id);
 				glBindVertexArray(surface->array_id);
 				glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-			} else if (ai == 1) {
+			} else {
 				//for instancing draw (can be changed and no one cares)
 				glGenVertexArrays(1, &surface->instancing_array_id);
 				glBindVertexArray(surface->instancing_array_id);
@@ -2993,7 +2993,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					glGenVertexArrays(1, &surface->array_wireframe_id);
 					glBindVertexArray(surface->array_wireframe_id);
 					glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-				} else if (ai == 1) {
+				} else {
 					//for instancing draw (can be changed and no one cares)
 					glGenVertexArrays(1, &surface->instancing_array_wireframe_id);
 					glBindVertexArray(surface->instancing_array_wireframe_id);
@@ -5783,9 +5783,7 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base, RasterizerScene
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
 
@@ -5826,10 +5824,7 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base, RasterizerSc
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
 

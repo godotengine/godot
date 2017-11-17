@@ -566,7 +566,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String iconset_dir = dest_dir + binary_name + "/Images.xcassets/AppIcon.appiconset/";
 	Error err = OK;
 	if (!tmp_app_path->dir_exists(iconset_dir)) {
-		Error err = tmp_app_path->make_dir_recursive(iconset_dir);
+		err = tmp_app_path->make_dir_recursive(iconset_dir);
 	}
 	memdelete(tmp_app_path);
 	if (err)

@@ -119,10 +119,10 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 
 Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
-	uint32_t type = f->get_32();
-	print_bl("find property of type: " + itos(type));
+	uint32_t type_test = f->get_32();
+	print_bl("find property of type: " + itos(type_test));
 
-	switch (type) {
+	switch (type_test) {
 
 		case VARIANT_NIL: {
 
@@ -292,9 +292,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 		case VARIANT_OBJECT: {
 
-			uint32_t type = f->get_32();
+			uint32_t type_test = f->get_32();
 
-			switch (type) {
+			switch (type_test) {
 
 				case OBJECT_EMPTY: {
 					//do none
@@ -313,7 +313,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				case OBJECT_EXTERNAL_RESOURCE: {
 					//old file format, still around for compatibility
 
-					String type = get_unicode_string();
+					String type_test = get_unicode_string();
 					String path = get_unicode_string();
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
@@ -325,7 +325,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					RES res = ResourceLoader::load(path, type);
+					RES res = ResourceLoader::load(path, type_test);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -342,7 +342,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						r_v = Variant();
 					} else {
 
-						String type = external_resources[erindex].type;
+						String type_test = external_resources[erindex].type;
 						String path = external_resources[erindex].path;
 
 						if (path.find("://") == -1 && path.is_rel_path()) {
@@ -350,7 +350,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
-						RES res = ResourceLoader::load(path, type);
+						RES res = ResourceLoader::load(path, typetest);
 
 						if (res.is_null()) {
 							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());

@@ -552,7 +552,6 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	}
 	int adapted_corner_detail = (corner_radius[0] == 0 && corner_radius[1] == 0 && corner_radius[2] == 0 && corner_radius[3] == 0) ? 1 : corner_detail;
 	int rings = (border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0) ? 1 : 2;
-	rings = 2;
 
 	int ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);

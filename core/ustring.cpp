@@ -2705,6 +2705,7 @@ String String::replace_first(String p_key, String p_with) const {
 		new_string += substr(search_from, result - search_from);
 		new_string += p_with;
 		search_from = result + p_key.length();
+		// FIXME: Unconditional break.
 		break;
 	}
 

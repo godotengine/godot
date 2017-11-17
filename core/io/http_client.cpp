@@ -286,15 +286,15 @@ Error HTTPClient::poll() {
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
-						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
-						Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, ssl_verify_host ? conn_host : String());
+						Ref<StreamPeerSSL> ssl_test = StreamPeerSSL::create();
+						Error err = ssl_test->connect_to_stream(tcp_connection, ssl_verify_host, ssl_verify_host ? conn_host : String());
 						if (err != OK) {
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
 						//print_line("SSL! TURNED ON!");
-						connection = ssl;
+						connection = ssl_test;
 					}
 					status = STATUS_CONNECTED;
 					return OK;
@@ -554,8 +554,8 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				to_read -= rec;
 				_offset += rec;
 			} else {
-				if (to_read > 0) //ended up reading less
-					ret.resize(_offset);
+				//ended up reading less
+				ret.resize(_offset);
 				break;
 			}
 		}

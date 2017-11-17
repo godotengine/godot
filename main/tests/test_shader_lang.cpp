@@ -101,7 +101,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 	String code;
 
 	switch (p_node->type) {
-
+		// Missing case for SL:Node::TYPE_VARIABLE_DECLARATION
 		case SL::Node::TYPE_SHADER: {
 
 			SL::ShaderNode *pnode = (SL::ShaderNode *)p_node;
@@ -178,7 +178,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			for (int i = 0; i < bnode->statements.size(); i++) {
 
 				String scode = dump_node_code(bnode->statements[i], p_level);
-
+				// The same expression on both sides of the '||' operator, another enum should be put for the second statement.
 				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
 					code += scode; //use directly
 				} else {

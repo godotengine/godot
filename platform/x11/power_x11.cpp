@@ -115,7 +115,7 @@ bool PowerX11::make_proc_acpi_key_val(char **_ptr, char **_key, char **_val) {
 
 	*(ptr++) = '\0'; /* terminate the key. */
 
-	while ((*ptr == ' ') && (*ptr != '\0')) {
+	while (*ptr == ' ') {
 		ptr++; /* skip whitespace. */
 	}
 
@@ -202,7 +202,7 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	 * We pick the battery that claims to have the most minutes left.
 	 *  (failing a report of minutes, we'll take the highest percent.)
 	 */
-	if ((secs < 0) && (this->nsecs_left < 0)) {
+	if (this->nsecs_left < 0) {
 		if ((pct < 0) && (this->percent_left < 0)) {
 			choose = true; /* at least we know there's a battery. */
 		}

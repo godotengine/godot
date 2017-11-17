@@ -254,8 +254,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid())
 		return debug_mesh;
 
-	PoolVector<Vector3> vertices = get_vertices();
-	PoolVector<Vector3>::Read vr = vertices.read();
+	PoolVector<Vector3> vertices_test = get_vertices();
+	PoolVector<Vector3>::Read vr = vertices_test.read();
 	List<Face3> faces;
 	for (int i = 0; i < get_polygon_count(); i++) {
 		Vector<int> p = get_polygon(i);

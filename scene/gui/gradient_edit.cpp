@@ -317,17 +317,17 @@ void GradientEdit::_notification(int p_what) {
 				continue;
 			}
 
-			Vector<Vector2> points;
+			Vector<Vector2> points_test;
 			Vector<Color> colors;
-			points.push_back(Vector2(prev.offset * total_w, h));
-			points.push_back(Vector2(prev.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, 0));
-			points.push_back(Vector2(next.offset * total_w, h));
+			points_test.push_back(Vector2(prev.offset * total_w, h));
+			points_test.push_back(Vector2(prev.offset * total_w, 0));
+			points_test.push_back(Vector2(next.offset * total_w, 0));
+			points_test.push_back(Vector2(next.offset * total_w, h));
 			colors.push_back(prev.color);
 			colors.push_back(prev.color);
 			colors.push_back(next.color);
 			colors.push_back(next.color);
-			draw_primitive(points, colors, Vector<Point2>());
+			draw_primitive(points_test, colors, Vector<Point2>());
 			prev = next;
 		}
 

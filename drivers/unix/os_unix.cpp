@@ -159,8 +159,8 @@ static int has_data(FILE *p_fd, int timeout_usec = 0) {
 	timeval time;
 	time.tv_sec = 0;
 	time.tv_usec = timeout_usec;
-	int res = 0; //select(fd + 1, &readset, NULL, NULL, &time);
-	return res > 0;
+	//TODO: select(fd + 1, &readset, NULL, NULL, &time);
+	return false;
 };
 
 String OS_Unix::get_stdin_string(bool p_block) {

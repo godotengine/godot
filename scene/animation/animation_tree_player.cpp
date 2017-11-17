@@ -1642,7 +1642,7 @@ void AnimationTreePlayer::_update_sources() {
 	Node *m = get_node(master);
 	if (!m) {
 		master = NodePath();
-		ERR_FAIL_COND(!m);
+		ERR_FAIL_COND(true);
 	}
 
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(m);
@@ -1650,7 +1650,7 @@ void AnimationTreePlayer::_update_sources() {
 	if (!ap) {
 
 		master = NodePath();
-		ERR_FAIL_COND(!ap);
+		ERR_FAIL_COND(true);
 	}
 
 	for (Map<StringName, NodeBase *>::Element *E = node_map.front(); E; E = E->next()) {

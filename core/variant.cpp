@@ -2254,13 +2254,13 @@ Variant::Variant(const Object *p_object) {
 Variant::Variant(const Dictionary &p_dictionary) {
 
 	type = DICTIONARY;
-	memnew_placement(_data._mem, (Dictionary)(p_dictionary));
+	memnew_placement(_data._mem, p_dictionary);
 }
 
 Variant::Variant(const Array &p_array) {
 
 	type = ARRAY;
-	memnew_placement(_data._mem, Array(p_array));
+	memnew_placement(_data._mem, p_array);
 }
 
 Variant::Variant(const PoolVector<Plane> &p_array) {

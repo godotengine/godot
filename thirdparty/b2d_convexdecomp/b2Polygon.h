@@ -38,6 +38,7 @@ int32 DecomposeConvex(b2Polygon* p, b2Polygon* results, int32 maxPolys);
 
 void ReversePolygon(float32* x, float32* y, int n);
 
+// It is not recommended to implement the copy constructor but not the '=' operator
 b2Polygon TraceEdge(b2Polygon* p); //For use with self-intersecting polygons, finds outline
 
 class b2Polygon {

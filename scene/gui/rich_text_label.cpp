@@ -323,7 +323,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									cw = tab_size * font->get_char_size(' ').width;
 								}
 
-								if (p_click_pos.x - cw / 2 > p_ofs.x + align_ofs + pofs) {
+								if (p_click_pos.x - (float) (cw) / 2 > p_ofs.x + align_ofs + pofs) {
 
 									rchar = int((&c[i]) - cf);
 								}
@@ -342,7 +342,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								int cw = 0;
 
-								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - (fh - 0 * ascent), fh); //getting rid of ascent seems to work??
+								bool visible = (visible_characters < 0 || p_char_count < visible_characters) && YRANGE_VISIBLE(y + lh - (fh - 0 * ascent), fh); //getting rid of ascent seems to work??
 								if (visible)
 									line_is_blank = false;
 
@@ -402,7 +402,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 				ENSURE_WIDTH(img->image->get_width());
 
-				bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - font->get_descent() - img->image->get_height(), img->image->get_height());
+				bool visible = (visible_characters < 0 || p_char_count < visible_characters) && YRANGE_VISIBLE(y + lh - font->get_descent() - img->image->get_height(), img->image->get_height());
 				if (visible)
 					line_is_blank = false;
 
@@ -1727,7 +1727,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection) {
 	Item *it = main;
 	int charidx = 0;
 
-	if (p_from_selection && selection.active && selection.enabled) {
+	if (p_from_selection && selection.active) {
 		it = selection.to;
 		charidx = selection.to_char + 1;
 	}

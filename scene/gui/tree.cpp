@@ -919,7 +919,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 				int check_icon_h = cache.checked->get_height();
 				if (height < check_icon_h)
 					height = check_icon_h;
-			}
+			} break;
 			case TreeItem::CELL_MODE_STRING:
 			case TreeItem::CELL_MODE_CUSTOM:
 			case TreeItem::CELL_MODE_ICON: {
@@ -3392,10 +3392,10 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
 				section = 0;
 			} else if (drop_mode_flags == DROP_MODE_INBETWEEN) {
-				section = pos.y < h / 2 ? -1 : 1;
-			} else if (pos.y < h / 4) {
+				section = pos.y < (double) (h) / 2 ? -1 : 1;
+			} else if (pos.y < (double) (h) / 4) {
 				section = -1;
-			} else if (pos.y >= (h * 3 / 4)) {
+			} else if (pos.y >= ((double) (h * 3) / 4)) {
 				section = 1;
 			} else {
 				section = 0;

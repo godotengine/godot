@@ -512,11 +512,9 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas, int p_size
 
 	if (reflection_atlas->size) {
 
-		bool use_float = true;
-
-		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
+		GLenum internal_format = GL_RGBA16F;
 		GLenum format = GL_RGBA;
-		GLenum type = use_float ? GL_HALF_FLOAT : GL_UNSIGNED_INT_2_10_10_10_REV;
+		GLenum type = GL_HALF_FLOAT;
 
 		// Create a texture for storing the color
 		glActiveTexture(GL_TEXTURE0);
@@ -1065,12 +1063,10 @@ void RasterizerSceneGLES3::gi_probe_instance_set_light_data(RID p_probe, RID p_b
 	if (p_data.is_valid()) {
 		RasterizerStorageGLES3::GIProbeData *gipd = storage->gi_probe_data_owner.getornull(p_data);
 		ERR_FAIL_COND(!gipd);
-		if (gipd) {
-			gipi->tex_cache = gipd->tex_id;
-			gipi->cell_size_cache.x = 1.0 / gipd->width;
-			gipi->cell_size_cache.y = 1.0 / gipd->height;
-			gipi->cell_size_cache.z = 1.0 / gipd->depth;
-		}
+		gipi->tex_cache = gipd->tex_id;
+		gipi->cell_size_cache.x = 1.0 / gipd->width;
+		gipi->cell_size_cache.y = 1.0 / gipd->height;
+		gipi->cell_size_cache.z = 1.0 / gipd->depth;
 	}
 }
 void RasterizerSceneGLES3::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {
@@ -4459,6 +4455,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 				if (light_instance->light_directional_index & 1) {
 					light_instance->directional_rect.position.x += light_instance->directional_rect.size.x;
 				}
+				// Maybe it is intended to be '&' instead of '/' or t he result compared with a value.
 				if (light_instance->light_directional_index / 2) {
 					light_instance->directional_rect.position.y += light_instance->directional_rect.size.y;
 				}
@@ -4931,11 +4928,9 @@ void RasterizerSceneGLES3::initialize() {
 
 		glActiveTexture(GL_TEXTURE0);
 
-		bool use_float = true;
-
-		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
+		GLenum internal_format = GL_RGBA16F;
 		GLenum format = GL_RGBA;
-		GLenum type = use_float ? GL_HALF_FLOAT : GL_UNSIGNED_INT_2_10_10_10_REV;
+		GLenum type = GL_HALF_FLOAT;
 
 		while (cube_size >= 32) {
 

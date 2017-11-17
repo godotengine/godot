@@ -1912,7 +1912,6 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 		case NETWORK_COMMAND_REMOTE_CALL:
 		case NETWORK_COMMAND_REMOTE_SET: {
 
-			ERR_FAIL_COND(p_packet_len < 5);
 			uint32_t target = decode_uint32(&p_packet[1]);
 
 			Node *node = NULL;
@@ -2028,7 +2027,6 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 		} break;
 		case NETWORK_COMMAND_SIMPLIFY_PATH: {
 
-			ERR_FAIL_COND(p_packet_len < 5);
 			int id = decode_uint32(&p_packet[1]);
 
 			String paths;

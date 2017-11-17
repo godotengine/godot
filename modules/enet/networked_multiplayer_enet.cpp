@@ -120,7 +120,7 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address &p_ip, int p_port
 
 	if (peer == NULL) {
 		enet_host_destroy(host);
-		ERR_FAIL_COND_V(!peer, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V(true, ERR_CANT_CREATE);
 	}
 
 	//technically safe to ignore the peer or anything else.
@@ -139,14 +139,14 @@ void NetworkedMultiplayerENet::poll() {
 
 	_pop_current_packet();
 
-	ENetEvent event;
+	ENetEvent event_test;
 	/* Wait up to 1000 milliseconds for an event. */
 	while (true) {
 
 		if (!host || !active) //might have been disconnected while emitting a notification
 			return;
 
-		int ret = enet_host_service(host, &event, 1);
+		int ret = enet_host_service(host, &event_test, 1);
 
 		if (ret < 0) {
 			//error, do something?
@@ -155,25 +155,25 @@ void NetworkedMultiplayerENet::poll() {
 			break;
 		}
 
-		switch (event.type) {
+		switch (event_test.type) {
 			case ENET_EVENT_TYPE_CONNECT: {
 				/* Store any relevant client information here. */
 
 				if (server && refuse_connections) {
-					enet_peer_reset(event.peer);
+					enet_peer_reset(event_test.peer);
 					break;
 				}
 
 				int *new_id = memnew(int);
-				*new_id = event.data;
+				*new_id = event_test.data;
 
 				if (*new_id == 0) { //data zero is sent by server (enet won't let you configure this). Server is always 1
 					*new_id = 1;
 				}
 
-				event.peer->data = new_id;
+				event_test.peer->data = new_id;
 
-				peer_map[*new_id] = event.peer;
+				peer_map[*new_id] = event_test.peer;
 
 				connection_status = CONNECTION_CONNECTED; //if connecting, this means it connected t something!
 
@@ -189,7 +189,7 @@ void NetworkedMultiplayerENet::poll() {
 						ENetPacket *packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
 						encode_uint32(E->key(), &packet->data[4]);
-						enet_peer_send(event.peer, SYSCH_CONFIG, packet);
+						enet_peer_send(event_test.peer, SYSCH_CONFIG, packet);
 						//send the new peer to existing peers
 						packet = enet_packet_create(NULL, 8, ENET_PACKET_FLAG_RELIABLE);
 						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
@@ -206,7 +206,7 @@ void NetworkedMultiplayerENet::poll() {
 
 				/* Reset the peer's client information. */
 
-				int *id = (int *)event.peer->data;
+				int *id = (int *)event_test.peer->data;
 
 				if (!id) {
 					if (!server) {
@@ -240,15 +240,15 @@ void NetworkedMultiplayerENet::poll() {
 			} break;
 			case ENET_EVENT_TYPE_RECEIVE: {
 
-				if (event.channelID == SYSCH_CONFIG) {
+				if (event_test.channelID == SYSCH_CONFIG) {
 					//some config message
-					ERR_CONTINUE(event.packet->dataLength < 8);
+					ERR_CONTINUE(event_test.packet->dataLength < 8);
 
 					// Only server can send config messages
 					ERR_CONTINUE(server);
 
-					int msg = decode_uint32(&event.packet->data[0]);
-					int id = decode_uint32(&event.packet->data[4]);
+					int msg = decode_uint32(&event_test.packet->data[0]);
+					int id = decode_uint32(&event_test.packet->data[4]);
 
 					switch (msg) {
 						case SYSMSG_ADD_PEER: {
@@ -264,19 +264,19 @@ void NetworkedMultiplayerENet::poll() {
 						} break;
 					}
 
-					enet_packet_destroy(event.packet);
-				} else if (event.channelID < SYSCH_MAX) {
+					enet_packet_destroy(event_test.packet);
+				} else if (event_test.channelID < SYSCH_MAX) {
 
 					Packet packet;
-					packet.packet = event.packet;
+					packet.packet = event_test.packet;
 
-					uint32_t *id = (uint32_t *)event.peer->data;
+					uint32_t *id = (uint32_t *)event_test.peer->data;
 
-					ERR_CONTINUE(event.packet->dataLength < 12)
+					ERR_CONTINUE(event_test.packet->dataLength < 12)
 
-					uint32_t source = decode_uint32(&event.packet->data[0]);
-					int target = decode_uint32(&event.packet->data[4]);
-					uint32_t flags = decode_uint32(&event.packet->data[8]);
+					uint32_t source = decode_uint32(&event_test.packet->data[0]);
+					int target = decode_uint32(&event_test.packet->data[4]);
+					uint32_t flags = decode_uint32(&event_test.packet->data[8]);
 
 					packet.from = source;
 
@@ -298,7 +298,7 @@ void NetworkedMultiplayerENet::poll() {
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
 
-								enet_peer_send(E->get(), event.channelID, packet2);
+								enet_peer_send(E->get(), event_test.channelID, packet2);
 							}
 
 						} else if (target < 0) {
@@ -312,7 +312,7 @@ void NetworkedMultiplayerENet::poll() {
 
 								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, flags);
 
-								enet_peer_send(E->get(), event.channelID, packet2);
+								enet_peer_send(E->get(), event_test.channelID, packet2);
 							}
 
 							if (-target != 1) {
@@ -329,7 +329,7 @@ void NetworkedMultiplayerENet::poll() {
 						} else {
 							//to someone else, specifically
 							ERR_CONTINUE(!peer_map.has(target));
-							enet_peer_send(peer_map[target], event.channelID, packet.packet);
+							enet_peer_send(peer_map[target], event_test.channelID, packet.packet);
 						}
 					} else {
 

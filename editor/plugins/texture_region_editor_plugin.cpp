@@ -352,8 +352,6 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 						undo_redo->add_do_method(atlas_tex.ptr(), "set_region", atlas_tex->get_region());
 						undo_redo->add_undo_method(atlas_tex.ptr(), "set_region", rect_prev);
 					} else if (node_ninepatch) {
-						// FIXME: Is this intentional?
-					} else if (node_ninepatch) {
 						undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
 						undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
 					} else if (obj_styleBox.is_valid()) {

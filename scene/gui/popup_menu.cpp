@@ -238,7 +238,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 				for (int i = mouse_over - 1; i >= 0; i--) {
 
-					if (i < 0 || i >= items.size())
+					if (i >= items.size())
 						continue;
 
 					if (!items[i].separator && !items[i].disabled) {
@@ -309,26 +309,26 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			} break;
 			case BUTTON_LEFT: {
 
-				int over = _get_mouse_over(b->get_position());
+				int over_test = _get_mouse_over(b->get_position());
 
 				if (invalidated_click) {
 					invalidated_click = false;
 					break;
 				}
-				if (over < 0) {
+				if (over_test < 0) {
 					hide();
 					break; //non-activable
 				}
 
-				if (items[over].separator || items[over].disabled)
+				if (items[over_test].separator || items[over_test].disabled)
 					break;
 
-				if (items[over].submenu != "") {
+				if (items[over_test].submenu != "") {
 
-					_activate_submenu(over);
+					_activate_submenu(over_test);
 					return;
 				}
-				activate_item(over);
+				activate_item(over_test);
 
 			} break;
 		}
@@ -354,8 +354,8 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		int over = _get_mouse_over(m->get_position());
-		int id = (over < 0 || items[over].separator || items[over].disabled) ? -1 : (items[over].ID >= 0 ? items[over].ID : over);
+		int over_test = _get_mouse_over(m->get_position());
+		int id = (over_test < 0 || items[over_test].separator || items[over_test].disabled) ? -1 : (items[over_test].ID >= 0 ? items[over_test].ID : over_test);
 
 		if (id < 0) {
 			mouse_over = -1;
@@ -363,13 +363,13 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		if (items[over].submenu != "" && submenu_over != over) {
-			submenu_over = over;
+		if (items[over_test].submenu != "" && submenu_over != over_test) {
+			submenu_over = over_test;
 			submenu_timer->start();
 		}
 
-		if (over != mouse_over) {
-			mouse_over = over;
+		if (over_test != mouse_over) {
+			mouse_over = over_test;
 			update();
 		}
 	}

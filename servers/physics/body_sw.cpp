@@ -99,6 +99,7 @@ void BodySW::update_inertias() {
 				shape_inertia_tensor = shape_basis * shape_inertia_tensor * shape_basis.transposed();
 
 				Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
+				// FIXME: shape_origin is acting as parameter of its own function.
 				inertia_tensor += shape_inertia_tensor + (Basis() * shape_origin.dot(shape_origin) - shape_origin.outer(shape_origin)) * mass;
 			}
 

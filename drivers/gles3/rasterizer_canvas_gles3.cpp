@@ -461,7 +461,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 	for (int i = 0; i < cc; i++) {
 
 		Item::Command *c = commands[i];
-
+		// Not coevering TYPE_MESH and TYPE_MULTIMESH
 		switch (c->type) {
 			case Item::Command::TYPE_LINE: {
 

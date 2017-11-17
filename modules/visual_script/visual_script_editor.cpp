@@ -1688,7 +1688,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
-		Array nodes = d["nodes"];
+		Array nodes_test = d["nodes"];
 
 		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 
@@ -1701,13 +1701,13 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		undo_redo->create_action(TTR("Add Node(s) From Tree"));
 		int base_id = script->get_available_id();
 
-		if (nodes.size() > 1) {
+		if (nodes_test.size() > 1) {
 			use_node = true;
 		}
 
-		for (int i = 0; i < nodes.size(); i++) {
+		for (int i = 0; i < nodes_test.size(); i++) {
 
-			NodePath np = nodes[i];
+			NodePath np = nodes_test[i];
 			Node *node = get_node(np);
 			if (!node) {
 				continue;
@@ -2996,9 +2996,9 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			Set<Vector2> existing_positions;
 
 			{
-				List<int> nodes;
-				script->get_node_list(edited_func, &nodes);
-				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+				List<int> nodes_test;
+				script->get_node_list(edited_func, &nodes_test);
+				for (List<int>::Element *E = nodes_test.front(); E; E = E->next()) {
 					Vector2 pos = script->get_node_position(edited_func, E->get()).snapped(Vector2(2, 2));
 					existing_positions.insert(pos);
 				}
@@ -3110,9 +3110,9 @@ void VisualScriptEditor::_member_option(int p_option) {
 				undo_redo->create_action(TTR("Remove Function"));
 				undo_redo->add_do_method(script.ptr(), "remove_function", name);
 				undo_redo->add_undo_method(script.ptr(), "add_function", name);
-				List<int> nodes;
-				script->get_node_list(name, &nodes);
-				for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+				List<int> nodes_test;
+				script->get_node_list(name, &nodes_test);
+				for (List<int>::Element *E = nodes_test.front(); E; E = E->next()) {
 					undo_redo->add_undo_method(script.ptr(), "add_node", name, E->get(), script->get_node(name, E->get()), script->get_node_position(name, E->get()));
 				}
 

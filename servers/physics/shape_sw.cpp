@@ -532,7 +532,6 @@ void CapsuleShapeSW::project_range(const Vector3 &p_normal, const Transform &p_t
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
-	return;
 
 	n = p_transform.basis.xform(n);
 
@@ -542,6 +541,8 @@ void CapsuleShapeSW::project_range(const Vector3 &p_normal, const Transform &p_t
 	r_max = distance + length;
 
 	ERR_FAIL_COND(r_max < r_min);
+
+	return;
 }
 
 Vector3 CapsuleShapeSW::get_support(const Vector3 &p_normal) const {

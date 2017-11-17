@@ -193,10 +193,8 @@ public:
 	inline V &operator[](const T &p_key) {
 
 		int pos = _find_exact(p_key);
-		if (pos < 0) {
-			V val;
-			pos = insert(p_key, val);
-		}
+		
+		CRASH_COND(pos < 0);
 
 		return _data[pos].value;
 	}

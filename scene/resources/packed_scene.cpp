@@ -118,16 +118,16 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			//print_line("instance");
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
 
-				String path = props[n.instance & FLAG_MASK];
+				String path_test = props[n.instance & FLAG_MASK];
 				if (disable_placeholders) {
 
-					Ref<PackedScene> sdata = ResourceLoader::load(path, "PackedScene");
+					Ref<PackedScene> sdata = ResourceLoader::load(path_test, "PackedScene");
 					ERR_FAIL_COND_V(!sdata.is_valid(), NULL);
 					node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_COND_V(!node, NULL);
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
-					ip->set_instance_path(path);
+					ip->set_instance_path(path_test);
 					node = ip;
 				}
 				node->set_scene_instance_load_placeholder(true);

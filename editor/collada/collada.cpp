@@ -1098,7 +1098,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 
 							Vector<float> values = _read_float_array(parser);
 							if (polygons) {
-
+								// Division by 0 --> prim.vertex_size initialized to 0 and not changed.
 								prim.polygons.push_back(values.size() / prim.vertex_size);
 								int from = prim.indices.size();
 								prim.indices.resize(from + values.size());

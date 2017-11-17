@@ -235,10 +235,10 @@ bool BodyPairSW::setup(real_t p_step) {
 	ShapeSW *shape_A_ptr = A->get_shape(shape_A);
 	ShapeSW *shape_B_ptr = B->get_shape(shape_B);
 
-	bool collided = CollisionSolverSW::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
-	this->collided = collided;
+	bool collided_test = CollisionSolverSW::solve_static(shape_A_ptr, xform_A, shape_B_ptr, xform_B, _contact_added_callback, this, &sep_axis);
+	this->collided = collided_test;
 
-	if (!collided) {
+	if (!collided_test) {
 
 		//test ccd (currently just a raycast)
 

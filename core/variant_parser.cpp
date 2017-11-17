@@ -727,7 +727,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			bool at_key = true;
 			String key;
-			Token token;
 			bool need_comma = false;
 
 			while (true) {

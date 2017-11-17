@@ -113,10 +113,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			body_shape_data[Physics2DServer::SHAPE_CIRCLE].image = vs->texture_create_from_image(image);
 
-			RID circle_shape = ps->shape_create(Physics2DServer::SHAPE_CIRCLE);
+			RID circle_shape_test = ps->shape_create(Physics2DServer::SHAPE_CIRCLE);
 			ps->shape_set_data(circle_shape, 16);
 
-			body_shape_data[Physics2DServer::SHAPE_CIRCLE].shape = circle_shape;
+			body_shape_data[Physics2DServer::SHAPE_CIRCLE].shape = circle_shape_test;
 		}
 
 		// BOX

@@ -551,8 +551,8 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 		int closest_axis = 0;
 		float closest_dot = 0;
 
-		Plane plane = Plane(p_vtx[0], p_vtx[1], p_vtx[2]);
-		Vector3 normal = plane.normal;
+		Plane plane_test = Plane(p_vtx[0], p_vtx[1], p_vtx[2]);
+		Vector3 normal = plane_test.normal;
 
 		for (int i = 0; i < 3; i++) {
 
@@ -609,12 +609,12 @@ void GIProbe::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, cons
 
 				Vector3 intersection;
 
-				if (!plane.intersects_segment(ray_from, ray_to, &intersection)) {
-					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
-						intersection = plane.project(ray_from);
+				if (!plane_test.intersects_segment(ray_from, ray_to, &intersection)) {
+					if (ABS(plane_test.distance_to(ray_from)) < ABS(plane_test.distance_to(ray_to))) {
+						intersection = plane_test.project(ray_from);
 					} else {
 
-						intersection = plane.project(ray_to);
+						intersection = plane_test.project(ray_to);
 					}
 				}
 
@@ -1281,21 +1281,21 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		_create_debug_mesh(&baker);
 	} else {
 
-		Ref<GIProbeData> probe_data;
-		probe_data.instance();
-		probe_data->set_bounds(Rect3(-extents, extents * 2.0));
-		probe_data->set_cell_size(baker.po2_bounds.size[longest_axis] / baker.axis_cell_size[longest_axis]);
-		probe_data->set_dynamic_data(data);
-		probe_data->set_dynamic_range(dynamic_range);
-		probe_data->set_energy(energy);
-		probe_data->set_bias(bias);
-		probe_data->set_normal_bias(normal_bias);
-		probe_data->set_propagation(propagation);
-		probe_data->set_interior(interior);
-		probe_data->set_compress(compress);
-		probe_data->set_to_cell_xform(baker.to_cell_space);
+		Ref<GIProbeData> probe_data_test;
+		probe_data_test.instance();
+		probe_data_test->set_bounds(Rect3(-extents, extents * 2.0));
+		probe_data_test->set_cell_size(baker.po2_bounds.size[longest_axis] / baker.axis_cell_size[longest_axis]);
+		probe_data_test->set_dynamic_data(data);
+		probe_data_test->set_dynamic_range(dynamic_range);
+		probe_data_test->set_energy(energy);
+		probe_data_test->set_bias(bias);
+		probe_data_test->set_normal_bias(normal_bias);
+		probe_data_test->set_propagation(propagation);
+		probe_data_test->set_interior(interior);
+		probe_data_test->set_compress(compress);
+		probe_data_test->set_to_cell_xform(baker.to_cell_space);
 
-		set_probe_data(probe_data);
+		set_probe_data(probe_data_test);
 	}
 
 	if (bake_end_function) {
@@ -1381,9 +1381,9 @@ void GIProbe::_create_debug_mesh(Baker *p_baker) {
 				for (int k = 0; k < 3; k++) {
 
 					if (i < 3)
-						face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[j][(i + k) % 3] = v[k];
 					else
-						face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+						face_points[3 - j][(i + k) % 3] = v[k] * (-1);
 				}
 			}
 

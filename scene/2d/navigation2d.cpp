@@ -90,8 +90,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 
 		if (!valid) {
 			nm.polygons.pop_back();
-			ERR_CONTINUE(!valid);
-			continue;
+			ERR_CONTINUE(true);
 		}
 
 		p.center = center / plen;

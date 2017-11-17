@@ -408,7 +408,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 										return ERR_PARSE_ERROR;
 									}
 									CharType v;
-									if (c >= '0' && c <= '9') {
+									if (c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';

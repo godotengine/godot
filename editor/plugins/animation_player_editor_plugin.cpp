@@ -810,6 +810,9 @@ void AnimationPlayerEditor::_update_player() {
 	save_anim->set_disabled(animlist.size() == 0);
 	tool_anim->set_disabled(player == NULL);
 
+	if (!player)
+		return;
+
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
 
@@ -821,9 +824,6 @@ void AnimationPlayerEditor::_update_player() {
 		if (player->get_current_animation() == E->get())
 			active_idx = animation->get_item_count() - 1;
 	}
-
-	if (!player)
-		return;
 
 	updating = false;
 	if (active_idx != -1) {

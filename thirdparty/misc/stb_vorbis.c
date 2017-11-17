@@ -1069,8 +1069,8 @@ static int compute_codewords(Codebook *c, uint8 *len, int n, uint32 *values)
       // fires, so!
       while (z > 0 && !available[z]) --z;
       if (z == 0) { return FALSE; }
+      assert(z > 0 && z < 32);      
       res = available[z];
-      assert(z >= 0 && z < 32);
       available[z] = 0;
       add_entry(c, bit_reverse(res), i, m++, len[i], values);
       // propogate availability up the tree
@@ -3805,8 +3805,7 @@ static int start_decoder(vorb *f)
                unsigned int div=1;
                for (k=0; k < c->dimensions; ++k) {
                   int off = (z / div) % c->lookup_values;
-                  float val = mults[off];
-                  val = mults[off]*c->delta_value + c->minimum_value + last;
+                  float val = mults[off]*c->delta_value + c->minimum_value + last;
                   c->multiplicands[j*c->dimensions + k] = val;
                   if (c->sequence_p)
                      last = val;

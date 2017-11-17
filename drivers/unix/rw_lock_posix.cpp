@@ -43,7 +43,7 @@ void RWLockPosix::read_lock() {
 	}
 	ERR_FAIL_COND(err != 0);
 }
-
+// read_unlock() and write_unlock() are the same. Unify them...
 void RWLockPosix::read_unlock() {
 
 	pthread_rwlock_unlock(&rwlock);

@@ -225,7 +225,7 @@ void CanvasItemEditor::_edit_set_pivot(const Vector2 &mouse_pos) {
 void CanvasItemEditor::_snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius) {
 	float radius = p_radius / zoom;
 	float dist = Math::abs(p_value - p_target_snap);
-	if (p_radius < 0 || dist < radius && (!r_snapped || dist < Math::abs(r_current_snap - p_value))) {
+	if ((p_radius < 0 || dist < radius) && (!r_snapped || dist < Math::abs(r_current_snap - p_value))) {
 		r_current_snap = p_target_snap;
 		r_snapped = true;
 	}
@@ -1968,29 +1968,33 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 				switch (drag) {
 					case DRAG_ANCHOR_TOP_LEFT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
+						if (!uniform || !use_y) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
+						if (!uniform || use_y) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
 						continue;
 						break;
 					case DRAG_ANCHOR_TOP_RIGHT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
+						if (!uniform || !use_y) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
+						if (!uniform || use_y) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
 						continue;
 						break;
 					case DRAG_ANCHOR_BOTTOM_RIGHT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || !use_y) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
+						if (!uniform || use_y) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
 						break;
 					case DRAG_ANCHOR_BOTTOM_LEFT:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || !use_y) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
+						if (!uniform || use_y) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
 						continue;
 						break;
 					case DRAG_ANCHOR_ALL:
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
-						if (!uniform || (uniform && !use_y)) control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_TOP, anchor_snapped.y);
-						if (!uniform || (uniform && use_y)) control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						if (!uniform || !use_y) {
+							control->set_anchor(MARGIN_LEFT, anchor_snapped.x);
+							control->set_anchor(MARGIN_RIGHT, anchor_snapped.x);
+						}
+						if (!uniform || use_y) {
+							control->set_anchor(MARGIN_TOP, anchor_snapped.y);
+							control->set_anchor(MARGIN_BOTTOM, anchor_snapped.y);
+						}
 						continue;
 						break;
 				}
@@ -2530,7 +2534,7 @@ void CanvasItemEditor::_draw_selection() {
 						anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
 					}
 
-					Map<Node *, Object *> &selection = editor_selection->get_selection();
+					&selection = editor_selection->get_selection();
 					// Get which anchor is dragged
 					int dragged_anchor = -1;
 					switch (drag) {

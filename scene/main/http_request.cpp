@@ -318,8 +318,7 @@ bool HTTPRequest::_update_connection() {
 
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, PoolByteArray());
 					return true;
-				}
-				if (got_response && body_len < 0) {
+				} else if (body_len < 0) {
 					//chunked transfer is done
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;

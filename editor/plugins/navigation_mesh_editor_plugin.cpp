@@ -74,6 +74,7 @@ void NavigationMeshEditor::_bake_pressed() {
 
 void NavigationMeshEditor::_clear_pressed() {
 
+	ERR_FAIL_COND(!node);
 	if (node)
 		NavigationMeshGenerator::clear(node->get_navigation_mesh());
 
