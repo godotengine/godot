@@ -63,7 +63,7 @@
 			<argument index="0" name="i" type="int">
 			</argument>
 			<description>
-				Returns point [code]i[code]'s position.
+				Returns point [code]i[/code]'s position.
 			</description>
 		</method>
 		<method name="get_points" qualifiers="const">

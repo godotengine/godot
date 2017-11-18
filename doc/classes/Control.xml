@@ -60,7 +60,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant in the [theme] resource the node uses. If the [code]constant[code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
+				Overrides an integer constant in the [Theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
 			</description>
 		</method>
 		<method name="add_font_override">

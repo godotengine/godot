@@ -18,7 +18,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this event matches [code]event[event].
+				Returns [code]true[/code] if this event matches [code]event[/code].
 			</description>
 		</method>
 		<method name="as_text" qualifiers="const">
