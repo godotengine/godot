@@ -922,7 +922,8 @@ void EditorSettings::raise_order(const String &p_setting) {
 
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value) {
 
-	ERR_FAIL_COND(!props.has(p_setting));
+	if (!props.has(p_setting))
+		return;
 	props[p_setting].initial = p_value;
 	props[p_setting].initial_set = true;
 }
