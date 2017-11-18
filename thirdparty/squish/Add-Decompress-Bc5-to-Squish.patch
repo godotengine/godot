@@ -1,0 +1,143 @@
+From 7b64cc4c8b0be0443741483bf65909f5140179c0 Mon Sep 17 00:00:00 2001
+From: Orkun <orkuntezerm@gmail.com>
+Date: Sun, 19 Nov 2017 02:24:31 +0300
+Subject: [PATCH] Fix #12220: Add Decompress Bc5 to Squish
+
+This Commit fixes the corrupted file preview described in #12220.
+Added DecompressColourBc5 function to squish.
+---
+ thirdparty/squish/colourblock.cpp | 85 +++++++++++++++++++++++++++++++++++++++
+ thirdparty/squish/colourblock.h   |  3 ++
+ thirdparty/squish/squish.cpp      |  8 +++-
+ 3 files changed, 95 insertions(+), 1 deletion(-)
+
+diff --git a/thirdparty/squish/colourblock.cpp b/thirdparty/squish/colourblock.cpp
+index af8b98036..3de46382c 100644
+--- a/thirdparty/squish/colourblock.cpp
++++ b/thirdparty/squish/colourblock.cpp
+@@ -211,4 +211,89 @@ void DecompressColour( u8* rgba, void const* block, bool isDxt1 )
+     }
+ }
+ 
++// -- Godot start --
++void DecompressColourBc5( u8* rgba, void const* block)
++{
++    // get the block bytes
++    u8 const* bytes = reinterpret_cast< u8 const* >( block );
++
++    // unpack the endpoints
++    u8 codes[16];
++    int red_0 = bytes[0];
++    int red_1 = bytes[1];
++
++    codes[0] = red_0;
++    codes[1] = red_1;
++    codes[6] = 0.0f;
++    codes[7] = 1.0f;
++    // generate the midpoints
++    if(red_0 > red_1)
++    {
++        for( int i = 2; i < 8; ++i )
++        {
++            codes[i] = ((8-i)*red_0 + (i-1)*red_1)/7;
++        }
++    }
++    else
++    {
++        for( int i = 2; i < 6; ++i )
++        {
++            codes[i] = ((6-i)*red_0 + (i-1)*red_1)/5;
++        }
++    }
++
++    int green_0 = bytes[8];
++    int green_1 = bytes[9];
++
++    codes[0 + 8] = green_0;
++    codes[1 + 8] = green_1;
++    codes[6 + 8] = 0.0f;
++    codes[7 + 8] = 1.0f;
++    // generate the midpoints
++    if(green_0 > green_1)
++    {
++        for( int i = 2; i < 8; ++i )
++        {
++            codes[i + 8] = ((8-i)*green_0 + (i-1)*green_1)/7;
++        }
++    }
++    else
++    {
++        for( int i = 2; i < 6; ++i )
++        {
++            codes[i + 8] = ((6-i)*green_0 + (i-1)*green_1)/5;
++        }
++    }
++
++    u8 indices[32];
++    for( int i = 0; i < 4; ++i )
++    {
++        u8 packed = bytes[2 + i];
++        u8* red_ind = indices + 4*i;
++
++        red_ind[0] = packed & 0x3;
++        red_ind[1] = ( packed >> 2 ) & 0x3;
++        red_ind[2] = ( packed >> 4 ) & 0x3;
++        red_ind[3] = ( packed >> 6 ) & 0x3;
++
++        packed = bytes[8 + i];
++        u8* green_ind = indices + 4*i + 16;
++        green_ind[0] = packed & 0x3;
++        green_ind[1] = ( packed >> 2 ) & 0x3;
++        green_ind[2] = ( packed >> 4 ) & 0x3;
++        green_ind[3] = ( packed >> 6 ) & 0x3;
++    }
++
++    // store out the colours
++    for( int i = 0; i < 16; ++i )
++    {
++        rgba[4*i] = codes[indices[i]];
++        rgba[4*i +1] = codes[indices[i + 16] + 8];
++        rgba[4*i +2] = 0;
++        rgba[4*i +3] = 255;
++    }
++}
++// -- GODOT end --
++
++
+ } // namespace squish
+diff --git a/thirdparty/squish/colourblock.h b/thirdparty/squish/colourblock.h
+index fee2cd7c5..3cb9b7e3b 100644
+--- a/thirdparty/squish/colourblock.h
++++ b/thirdparty/squish/colourblock.h
+@@ -35,6 +35,9 @@ void WriteColourBlock3( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void*
+ void WriteColourBlock4( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void* block );
+ 
+ void DecompressColour( u8* rgba, void const* block, bool isDxt1 );
++// -- GODOT start --
++void DecompressColourBc5( u8* rgba, void const* block );
++// -- GODOT end --
+ 
+ } // namespace squish
+ 
+diff --git a/thirdparty/squish/squish.cpp b/thirdparty/squish/squish.cpp
+index 1d22a64ad..fd11a147d 100644
+--- a/thirdparty/squish/squish.cpp
++++ b/thirdparty/squish/squish.cpp
+@@ -135,7 +135,13 @@ void Decompress( u8* rgba, void const* block, int flags )
+         colourBlock = reinterpret_cast< u8 const* >( block ) + 8;
+ 
+     // decompress colour
+-    DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    // -- GODOT start --
++    //DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    if(( flags & ( kBc5 ) ) != 0)
++        DecompressColourBc5( rgba, colourBlock);
++    else
++        DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
++    // -- GODOT end --
+ 
+     // decompress alpha separately if necessary
+     if( ( flags & kDxt3 ) != 0 )
+-- 
+2.13.6
+

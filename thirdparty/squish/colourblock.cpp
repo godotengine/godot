@@ -211,4 +211,89 @@ void DecompressColour( u8* rgba, void const* block, bool isDxt1 )
     }
 }
 
+// -- Godot start --
+void DecompressColourBc5( u8* rgba, void const* block)
+{
+    // get the block bytes
+    u8 const* bytes = reinterpret_cast< u8 const* >( block );
+
+    // unpack the endpoints
+    u8 codes[16];
+    int red_0 = bytes[0];
+    int red_1 = bytes[1];
+
+    codes[0] = red_0;
+    codes[1] = red_1;
+    codes[6] = 0.0f;
+    codes[7] = 1.0f;
+    // generate the midpoints
+    if(red_0 > red_1)
+    {
+        for( int i = 2; i < 8; ++i )
+        {
+            codes[i] = ((8-i)*red_0 + (i-1)*red_1)/7;
+        }
+    }
+    else
+    {
+        for( int i = 2; i < 6; ++i )
+        {
+            codes[i] = ((6-i)*red_0 + (i-1)*red_1)/5;
+        }
+    }
+
+    int green_0 = bytes[8];
+    int green_1 = bytes[9];
+
+    codes[0 + 8] = green_0;
+    codes[1 + 8] = green_1;
+    codes[6 + 8] = 0.0f;
+    codes[7 + 8] = 1.0f;
+    // generate the midpoints
+    if(green_0 > green_1)
+    {
+        for( int i = 2; i < 8; ++i )
+        {
+            codes[i + 8] = ((8-i)*green_0 + (i-1)*green_1)/7;
+        }
+    }
+    else
+    {
+        for( int i = 2; i < 6; ++i )
+        {
+            codes[i + 8] = ((6-i)*green_0 + (i-1)*green_1)/5;
+        }
+    }
+
+    u8 indices[32];
+    for( int i = 0; i < 4; ++i )
+    {
+        u8 packed = bytes[2 + i];
+        u8* red_ind = indices + 4*i;
+
+        red_ind[0] = packed & 0x3;
+        red_ind[1] = ( packed >> 2 ) & 0x3;
+        red_ind[2] = ( packed >> 4 ) & 0x3;
+        red_ind[3] = ( packed >> 6 ) & 0x3;
+
+        packed = bytes[8 + i];
+        u8* green_ind = indices + 4*i + 16;
+        green_ind[0] = packed & 0x3;
+        green_ind[1] = ( packed >> 2 ) & 0x3;
+        green_ind[2] = ( packed >> 4 ) & 0x3;
+        green_ind[3] = ( packed >> 6 ) & 0x3;
+    }
+
+    // store out the colours
+    for( int i = 0; i < 16; ++i )
+    {
+        rgba[4*i] = codes[indices[i]];
+        rgba[4*i +1] = codes[indices[i + 16] + 8];
+        rgba[4*i +2] = 0;
+        rgba[4*i +3] = 255;
+    }
+}
+// -- GODOT end --
+
+
 } // namespace squish
