@@ -428,6 +428,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("editors/poly_editor/point_grab_radius", 8);
 	_initial_set("editors/poly_editor/show_previous_outline", true);
+	_initial_set("editors/poly_editor/one_click_editing", false);
 
 	_initial_set("run/window_placement/rect", 1);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen");

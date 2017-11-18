@@ -46,7 +46,6 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	ToolButton *button_create;
 	ToolButton *button_edit;
-	ToolButton *button_delete;
 
 	struct Vertex {
 		Vertex();
@@ -74,6 +73,10 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Vertex hover_point; // point under mouse cursor
 	Vertex selected_point; // currently selected
 	PosVertex edge_point; // adding an edge point?
+
+	uint32_t edited_point_click_time;
+	Vector2 edited_point_click_gpoint;
+	bool edited_point_moved;
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
