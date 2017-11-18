@@ -757,22 +757,24 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	_copy_internals_from(dst);
 }
-void Image::crop(int p_width, int p_height) {
 
+void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot crop in indexed, compressed or custom image formats.");
 		ERR_FAIL();
 	}
+	ERR_FAIL_COND(p_x < 0);
+	ERR_FAIL_COND(p_y < 0);
 	ERR_FAIL_COND(p_width <= 0);
 	ERR_FAIL_COND(p_height <= 0);
-	ERR_FAIL_COND(p_width > MAX_WIDTH);
-	ERR_FAIL_COND(p_height > MAX_HEIGHT);
+	ERR_FAIL_COND(p_x + p_width > MAX_WIDTH);
+	ERR_FAIL_COND(p_y + p_height > MAX_HEIGHT);
 
 	/* to save memory, cropping should be done in-place, however, since this function
 	   will most likely either not be used much, or in critical areas, for now it wont, because
 	   it's a waste of time. */
 
-	if (p_width == width && p_height == height)
+	if (p_width == width && p_height == height && p_x == 0 && p_y == 0)
 		return;
 
 	uint8_t pdata[16]; //largest is 16
@@ -784,9 +786,11 @@ void Image::crop(int p_width, int p_height) {
 		PoolVector<uint8_t>::Read r = data.read();
 		PoolVector<uint8_t>::Write w = dst.data.write();
 
-		for (int y = 0; y < p_height; y++) {
+		int m_h = p_y + p_height;
+		int m_w = p_x + p_width;
+		for (int y = p_y; y < m_h; y++) {
 
-			for (int x = 0; x < p_width; x++) {
+			for (int x = p_x; x < m_w; x++) {
 
 				if ((x >= width || y >= height)) {
 					for (uint32_t i = 0; i < pixel_size; i++)
@@ -795,7 +799,7 @@ void Image::crop(int p_width, int p_height) {
 					_get_pixelb(x, y, pixel_size, r.ptr(), pdata);
 				}
 
-				dst._put_pixelb(x, y, pixel_size, w.ptr(), pdata);
+				dst._put_pixelb(x - p_x, y - p_y, pixel_size, w.ptr(), pdata);
 			}
 		}
 	}
@@ -803,6 +807,11 @@ void Image::crop(int p_width, int p_height) {
 	if (mipmaps > 0)
 		dst.generate_mipmaps();
 	_copy_internals_from(dst);
+}
+
+void Image::crop(int p_width, int p_height) {
+
+	crop_from_point(0, 0, p_width, p_height);
 }
 
 void Image::flip_y() {
