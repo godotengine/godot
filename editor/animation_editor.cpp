@@ -1368,7 +1368,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		icon_ofs.x-=hsep;
 		*/
-		track_ofs[0] = size.width - icon_ofs.x;
+		track_ofs[0] = size.width - icon_ofs.x + ofs.x;
 		icon_ofs.x -= down_icon->get_width();
 		te->draw_texture(down_icon, icon_ofs - Size2(0, 4 * EDSCALE));
 
@@ -1380,7 +1380,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		icon_ofs.x -= hsep;
 		te->draw_line(Point2(icon_ofs.x, ofs.y + y), Point2(icon_ofs.x, ofs.y + y + h), sepcolor);
 
-		track_ofs[1] = size.width - icon_ofs.x;
+		track_ofs[1] = size.width - icon_ofs.x + ofs.x;
 
 		icon_ofs.x -= down_icon->get_width();
 		te->draw_texture(down_icon, icon_ofs - Size2(0, 4 * EDSCALE));
@@ -1394,7 +1394,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		icon_ofs.x -= hsep;
 		te->draw_line(Point2(icon_ofs.x, ofs.y + y), Point2(icon_ofs.x, ofs.y + y + h), sepcolor);
 
-		track_ofs[2] = size.width - icon_ofs.x;
+		track_ofs[2] = size.width - icon_ofs.x + ofs.x;
 
 		if (animation->track_get_type(idx) == Animation::TYPE_VALUE) {
 
@@ -1415,13 +1415,12 @@ void AnimationKeyEditor::_track_editor_draw() {
 		icon_ofs.x -= hsep;
 		te->draw_line(Point2(icon_ofs.x, ofs.y + y), Point2(icon_ofs.x, ofs.y + y + h), sepcolor);
 
-		track_ofs[3] = size.width - icon_ofs.x;
+		track_ofs[3] = size.width - icon_ofs.x + ofs.x;
 
 		icon_ofs.x -= hsep;
 		icon_ofs.x -= add_key_icon->get_width();
 		te->draw_texture((mouse_over.over == MouseOver::OVER_ADD_KEY && mouse_over.track == idx) ? add_key_icon_hl : add_key_icon, icon_ofs);
-
-		track_ofs[4] = size.width - icon_ofs.x;
+		track_ofs[4] = size.width - icon_ofs.x + ofs.x;
 
 		//draw the keys;
 		int tt = animation->track_get_type(idx);
