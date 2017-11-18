@@ -452,6 +452,7 @@ if selected_platform in platform_list:
     if env['vsproj']:
         env['CPPPATH'] = [Dir(path) for path in env['CPPPATH']]
         methods.generate_vs_project(env, GetOption("num_jobs"))
+        methods.generate_cpp_hint_file("cpp.hint")
 
     # Check for the existence of headers
     conf = Configure(env)

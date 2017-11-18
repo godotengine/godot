@@ -1686,6 +1686,17 @@ def find_visual_c_batch_file(env):
     (host_platform, target_platform,req_target_platform) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
 
+def generate_cpp_hint_file(filename):
+    import os.path
+    if os.path.isfile(filename):
+        # Don't overwrite an existing hint file since the user may have customized it.
+        pass
+    else:
+        try:
+            fd = open(filename, "w")
+            fd.write("#define GDCLASS(m_class, m_inherits)\n")
+        except IOError:
+            print("Could not write cpp.hint file.")
 
 def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
