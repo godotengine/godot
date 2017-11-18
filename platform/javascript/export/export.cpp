@@ -35,8 +35,6 @@
 
 #define EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE "webassembly_release.zip"
 #define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
-#define EXPORT_TEMPLATE_ASMJS_RELEASE "javascript_release.zip"
-#define EXPORT_TEMPLATE_ASMJS_DEBUG "javascript_debug.zip"
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
@@ -47,18 +45,11 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	bool runnable_when_last_polled;
 
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug);
-	void _fix_fsloader_js(Vector<uint8_t> &p_js, const String &p_pack_name, uint64_t p_pack_size);
 
 public:
-	enum Target {
-		TARGET_WEBASSEMBLY,
-		TARGET_ASMJS
-	};
-
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
 
 	virtual void get_export_options(List<ExportOption> *r_options);
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 
 	virtual String get_name() const;
 	virtual String get_os_name() const;
@@ -90,17 +81,9 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
 
-	int memory_mb;
-	if (p_preset->get("options/target").operator int() != TARGET_ASMJS)
-		// WebAssembly allows memory growth, so start with a reasonable default
-		memory_mb = 1 << 4;
-	else
-		memory_mb = 1 << (p_preset->get("options/memory_size").operator int() + 5);
-
 	for (int i = 0; i < lines.size(); i++) {
 
 		String current_line = lines[i];
-		current_line = current_line.replace("$GODOT_TOTAL_MEMORY", itos(memory_mb * 1024 * 1024));
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
@@ -129,22 +112,12 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "options/target", PROPERTY_HINT_ENUM, "WebAssembly,asm.js"), TARGET_WEBASSEMBLY));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "options/memory_size", PROPERTY_HINT_ENUM, "32 MB,64 MB,128 MB,256 MB,512 MB,1 GB"), 3));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
-}
-
-bool EditorExportPlatformJavaScript::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
-	if (p_option == "options/memory_size") {
-		return p_options["options/target"].operator int() == TARGET_ASMJS;
-	}
-	return true;
 }
 
 String EditorExportPlatformJavaScript::get_name() const {
@@ -166,17 +139,10 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 
 	r_missing_templates = false;
 
-	if (p_preset->get("options/target").operator int() == TARGET_WEBASSEMBLY) {
-		if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) == String())
-			r_missing_templates = true;
-		else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) == String())
-			r_missing_templates = true;
-	} else {
-		if (find_export_template(EXPORT_TEMPLATE_ASMJS_RELEASE) == String())
-			r_missing_templates = true;
-		else if (find_export_template(EXPORT_TEMPLATE_ASMJS_DEBUG) == String())
-			r_missing_templates = true;
-	}
+	if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) == String())
+		r_missing_templates = true;
+	else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) == String())
+		r_missing_templates = true;
 
 	return !r_missing_templates;
 }
@@ -197,17 +163,10 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 	if (template_path == String()) {
 
-		if (p_preset->get("options/target").operator int() == TARGET_WEBASSEMBLY) {
-			if (p_debug)
-				template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
-			else
-				template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
-		} else {
-			if (p_debug)
-				template_path = find_export_template(EXPORT_TEMPLATE_ASMJS_DEBUG);
-			else
-				template_path = find_export_template(EXPORT_TEMPLATE_ASMJS_RELEASE);
-		}
+		if (p_debug)
+			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
+		else
+			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
 	}
 
 	if (template_path != String() && !FileAccess::exists(template_path)) {
@@ -270,12 +229,6 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		} else if (file == "godot.wasm") {
 
 			file = p_path.get_file().get_basename() + ".wasm";
-		} else if (file == "godot.asm.js") {
-
-			file = p_path.get_file().get_basename() + ".asm.js";
-		} else if (file == "godot.mem") {
-
-			file = p_path.get_file().get_basename() + ".mem";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
