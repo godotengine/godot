@@ -41,7 +41,7 @@ void GDMonoField::set_value_raw(MonoObject *p_object, void *p_ptr) {
 void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 #define SET_FROM_STRUCT_AND_BREAK(m_type)                \
 	{                                                    \
-		const m_type &val = p_value.operator m_type();   \
+		const m_type &val = p_value.operator ::m_type(); \
 		MARSHALLED_OUT(m_type, val, raw);                \
 		mono_field_set_value(p_object, mono_field, raw); \
 		break;                                           \

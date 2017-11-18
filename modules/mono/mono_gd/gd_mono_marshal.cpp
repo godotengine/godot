@@ -36,7 +36,7 @@ namespace GDMonoMarshal {
 
 #define RETURN_BOXED_STRUCT(m_t, m_var_in)                                    \
 	{                                                                         \
-		const m_t &m_in = m_var_in->operator m_t();                           \
+		const m_t &m_in = m_var_in->operator ::m_t();                         \
 		MARSHALLED_OUT(m_t, m_in, raw);                                       \
 		return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(m_t), raw); \
 	}
