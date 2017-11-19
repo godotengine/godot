@@ -3273,7 +3273,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorResourceConversionPlugin>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
-	//ClassDB::register_class<EditorScenePostImport>();
+	ClassDB::register_class<EditorScenePostImport>();
 	//ClassDB::register_type<EditorImportExport>();
 }
 
