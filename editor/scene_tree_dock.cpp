@@ -443,8 +443,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				List<Node *> owned;
 				node->get_owned_by(node->get_owner(), &owned);
 
-				Map<Node *, Node *> duplimap;
-				Node *dup = _duplicate(node, duplimap);
+				Map<const Node *, Node *> duplimap;
+				Node *dup = node->duplicate_from_editor(duplimap);
 
 				ERR_CONTINUE(!dup);
 
@@ -819,82 +819,6 @@ void SceneTreeDock::_node_selected() {
 void SceneTreeDock::_node_renamed() {
 
 	_node_selected();
-}
-
-Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node *, Node *> &duplimap) {
-
-	Node *node = NULL;
-
-	if (p_node->get_filename() != "") { //an instance
-
-		Ref<PackedScene> sd = ResourceLoader::load(p_node->get_filename());
-		ERR_FAIL_COND_V(!sd.is_valid(), NULL);
-		node = sd->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
-		ERR_FAIL_COND_V(!node, NULL);
-		node->set_scene_instance_load_placeholder(p_node->get_scene_instance_load_placeholder());
-	} else {
-		Object *obj = ClassDB::instance(p_node->get_class());
-		ERR_FAIL_COND_V(!obj, NULL);
-		node = Object::cast_to<Node>(obj);
-		if (!node)
-			memdelete(obj);
-		ERR_FAIL_COND_V(!node, NULL);
-	}
-
-	List<PropertyInfo> plist;
-
-	p_node->get_property_list(&plist);
-
-	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-			continue;
-		String name = E->get().name;
-		Variant value = p_node->get(name);
-		// Duplicate dictionaries and arrays, mainly needed for __meta__
-		if (value.get_type() == Variant::DICTIONARY) {
-			value = Dictionary(value).copy();
-		} else if (value.get_type() == Variant::ARRAY) {
-			value = Array(value).duplicate();
-		}
-		node->set(name, value);
-	}
-
-	List<Connection> conns;
-	p_node->get_all_signal_connections(&conns);
-	for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
-		if (E->get().flags & CONNECT_PERSIST) {
-			node->connect(E->get().signal, E->get().target, E->get().method, E->get().binds, E->get().flags);
-		}
-	}
-
-	List<Node::GroupInfo> group_info;
-	p_node->get_groups(&group_info);
-	for (List<Node::GroupInfo>::Element *E = group_info.front(); E; E = E->next()) {
-
-		if (E->get().persistent)
-			node->add_to_group(E->get().name, true);
-	}
-
-	node->set_name(p_node->get_name());
-	duplimap[p_node] = node;
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-
-		Node *child = p_node->get_child(i);
-		if (p_node->get_owner() != child->get_owner())
-			continue; //don't bother with not in-scene nodes.
-
-		Node *dup = _duplicate(child, duplimap);
-		if (!dup) {
-			memdelete(node);
-			return NULL;
-		}
-
-		node->add_child(dup);
-	}
-
-	return node;
 }
 
 void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
