@@ -413,6 +413,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 	for (List<Ref<Mesh> >::Element *E = meshes.front(); E; E = E->next()) {
 
 		MeshInstance *mi = memnew(MeshInstance);
+		mi->set_mesh(E->get());
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
 		mi->set_owner(scene);
