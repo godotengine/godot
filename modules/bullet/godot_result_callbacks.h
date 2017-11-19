@@ -88,7 +88,7 @@ public:
 struct GodotClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const Set<RID> *m_exclude;
-	int m_shapePart;
+	int m_shapeId;
 
 	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude)
 		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_exclude(p_exclude) {}
@@ -149,4 +149,31 @@ public:
 	virtual btScalar addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1);
 };
 
+struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
+	btVector3 m_pointNormalWorld;
+	btVector3 m_pointWorld;
+	btScalar m_penetration_distance;
+	int m_other_compound_shape_index;
+	const btCollisionObject *m_pointCollisionObject;
+
+	btScalar m_most_penetrated_distance;
+
+	GodotDeepPenetrationContactResultCallback(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap)
+		: btManifoldResult(body0Wrap, body1Wrap),
+		  m_pointCollisionObject(NULL),
+		  m_penetration_distance(0),
+		  m_other_compound_shape_index(0),
+		  m_most_penetrated_distance(1e20) {}
+
+	void reset() {
+		m_pointCollisionObject = NULL;
+		m_most_penetrated_distance = 1e20;
+	}
+
+	bool hasHit() {
+		return m_pointCollisionObject;
+	}
+
+	virtual void addContactPoint(const btVector3 &normalOnBInWorld, const btVector3 &pointInWorld, btScalar depth);
+};
 #endif // GODOT_RESULT_CALLBACKS_H
