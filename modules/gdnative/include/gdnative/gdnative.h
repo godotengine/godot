@@ -229,13 +229,28 @@ void GDAPI godot_method_bind_ptrcall(godot_method_bind *p_method_bind, godot_obj
 godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, godot_object *p_instance, const godot_variant **p_args, const int p_arg_count, godot_variant_call_error *p_call_error);
 ////// Script API
 
-struct godot_gdnative_api_struct; // Forward declaration
+typedef struct godot_gdnative_api_version {
+	unsigned int major;
+	unsigned int minor;
+} godot_gdnative_api_version;
+
+typedef struct godot_gdnative_api_struct godot_gdnative_api_struct;
+
+struct godot_gdnative_api_struct {
+	unsigned int type;
+	godot_gdnative_api_version version;
+	const godot_gdnative_api_struct *next;
+};
+
+#define GDNATIVE_VERSION_COMPATIBLE(want, have) (want.major == have.major && want.minor <= have.minor)
 
 typedef struct {
 	godot_bool in_editor;
 	uint64_t core_api_hash;
 	uint64_t editor_api_hash;
 	uint64_t no_api_hash;
+	void (*report_version_mismatch)(const godot_object *p_library, const char *p_what, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have);
+	void (*report_loading_error)(const godot_object *p_library, const char *p_what);
 	godot_object *gd_native_library; // pointer to GDNativeLibrary that is being initialized
 	const struct godot_gdnative_core_api_struct *api_struct;
 	const godot_string *active_library_path;
