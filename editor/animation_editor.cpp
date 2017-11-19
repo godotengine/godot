@@ -2079,7 +2079,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					return;
 				}
 
-				if (mpos.x < name_limit) {
+				if (mpos.x < name_limit - (type_icon[0]->get_width() / 2.0)) {
 					//name column
 
 					// area
