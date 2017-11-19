@@ -32,7 +32,6 @@
 
 #include "audio_driver_javascript.h"
 #include "drivers/unix/os_unix.h"
-#include "javascript_eval.h"
 #include "main/input_default.h"
 #include "os/input.h"
 #include "os/main_loop.h"
@@ -66,10 +65,6 @@ class OS_JavaScript : public OS_Unix {
 	GetDataDirFunc get_data_dir_func;
 
 	PowerJavascript *power_manager;
-
-#ifdef JAVASCRIPT_EVAL_ENABLED
-	JavaScript *javascript_eval;
-#endif
 
 	static void _close_notification_funcs(const String &p_file, int p_flags);
 

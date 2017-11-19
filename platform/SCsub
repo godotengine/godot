@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+from compat import open_utf8
+
+Import('env')
+platform_sources = []
+
+# Register platform-exclusive APIs
+reg_apis_inc = '#include "register_platform_apis.h"\n'
+reg_apis = 'void register_platform_apis() {\n'
+unreg_apis = 'void unregister_platform_apis() {\n'
+for platform in env.platform_apis:
+    platform_dir = env.Dir(platform)
+    platform_sources.append(platform_dir.File('api/api.cpp'))
+    reg_apis += '\tregister_' + platform + '_api();\n'
+    unreg_apis += '\tunregister_' + platform + '_api();\n'
+    reg_apis_inc += '#include "' + platform + '/api/api.h"\n'
+reg_apis_inc += '\n'
+reg_apis += '}\n\n'
+unreg_apis += '}\n'
+f = open_utf8('register_platform_apis.gen.cpp', 'w')
+f.write(reg_apis_inc)
+f.write(reg_apis)
+f.write(unreg_apis)
+f.close()
+platform_sources.append('register_platform_apis.gen.cpp')
+
+env.Prepend(LIBS=env.Library('platform', platform_sources))
+
+Export('env')

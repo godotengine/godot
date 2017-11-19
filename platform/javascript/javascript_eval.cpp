@@ -29,15 +29,8 @@
 /*************************************************************************/
 #ifdef JAVASCRIPT_EVAL_ENABLED
 
-#include "javascript_eval.h"
+#include "api/javascript_eval.h"
 #include "emscripten.h"
-
-JavaScript *JavaScript::singleton = NULL;
-
-JavaScript *JavaScript::get_singleton() {
-
-	return singleton;
-}
 
 extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_poolbytearray_and_open_write(PoolByteArray *p_arr, PoolByteArray::Write *r_write, int p_len) {
 
@@ -180,20 +173,6 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 			return arr;
 	}
 	return Variant();
-}
-
-void JavaScript::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScript::eval, false);
-}
-
-JavaScript::JavaScript() {
-
-	ERR_FAIL_COND(singleton != NULL);
-	singleton = this;
-}
-
-JavaScript::~JavaScript() {
 }
 
 #endif // JAVASCRIPT_EVAL_ENABLED

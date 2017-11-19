@@ -512,11 +512,6 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
-#ifdef JAVASCRIPT_EVAL_ENABLED
-	javascript_eval = memnew(JavaScript);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaScript", javascript_eval));
-#endif
-
 	visual_server->init();
 }
 
