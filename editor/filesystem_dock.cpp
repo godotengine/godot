@@ -155,6 +155,7 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_next->set_icon(get_icon("Forward", "EditorIcons"));
 			button_hist_prev->set_icon(get_icon("Back", "EditorIcons"));
 			file_options->connect("item_pressed", this, "_file_option");
+			folder_options->connect("item_pressed", this, "_folder_option");
 
 			button_back->connect("pressed", this, "_go_to_tree", varray(), CONNECT_DEFERRED);
 			current_path->connect("text_entered", this, "_go_to_dir");
@@ -224,6 +225,182 @@ void FileSystemDock::_dir_selected() {
 
 	if (!split_mode) {
 		_open_pressed(); //go directly to dir
+	}
+}
+
+void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
+	folder_options->clear();
+	folder_options->set_size(Size2(1, 1));
+
+	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
+	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
+
+	TreeItem *item = tree->get_selected();
+	if (item) {
+		String fpath = item->get_metadata(tree->get_selected_column());
+		folder_options->add_separator();
+		folder_options->add_item(TTR("Copy Path"), FOLDER_COPY_PATH);
+		if (fpath != "res://") {
+			folder_options->add_item(TTR("Rename.."), FOLDER_RENAME);
+			folder_options->add_item(TTR("Move To.."), FOLDER_MOVE);
+			folder_options->add_item(TTR("Delete"), FOLDER_REMOVE);
+		}
+		folder_options->add_separator();
+		folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
+		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+	}
+	folder_options->set_pos(tree->get_global_pos() + p_pos);
+	folder_options->popup();
+}
+
+void FileSystemDock::_make_dir_confirm() {
+	String dir_name = make_dir_dialog_text->get_text().strip_edges();
+
+	if (dir_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
+		return;
+	}
+	else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1) {
+		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters"));
+		return;
+	}
+
+	print_line("Making folder " + dir_name + " in " + path);
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Error err = da->change_dir(path);
+	if (err == OK) {
+		err = da->make_dir(dir_name);
+	}
+	memdelete(da);
+
+	if (err == OK) {
+		print_line("call rescan!");
+		_rescan();
+	}
+	else {
+		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
+	}
+}
+
+void FileSystemDock::_rename_operation_confirm() {
+
+	String new_name = rename_dialog_text->get_text().strip_edges();
+	if (new_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
+		return;
+	}
+	else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
+		return;
+	}
+
+	String old_path = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1) : to_rename.path;
+	String new_path = old_path.get_base_dir().plus_file(new_name);
+	if (old_path == new_path) {
+		return;
+	}
+
+	//Present a more user friendly warning for name conflict
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
+		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
+		memdelete(da);
+		return;
+	}
+	memdelete(da);
+
+	Map<String, String> renames;
+	_try_move_item(to_rename, new_path, renames);
+	_update_dependencies_after_move(renames);
+
+	//Rescan everything
+	print_line("call rescan!");
+	_rescan();
+}
+
+void FileSystemDock::_move_operation_confirm(const String &p_to_path) {
+
+	Map<String, String> renames;
+	for (int i = 0; i < to_move.size(); i++) {
+		String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
+		String new_path = p_to_path.plus_file(old_path.get_file());
+		_try_move_item(to_move[i], new_path, renames);
+	}
+
+	_update_dependencies_after_move(renames);
+	print_line("call rescan!");
+	_rescan();
+}
+
+void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames) {
+	//Ensure folder paths end with "/"
+	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
+	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+
+	if (new_path == old_path) {
+		return;
+	}
+	else if (old_path == "res://") {
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
+		return;
+	}
+	else if (!p_item.is_file && new_path.begins_with(old_path)) {
+		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
+		return;
+	}
+
+	//Build a list of files which will have new paths as a result of this operation
+	Vector<String> changed_paths;
+	if (p_item.is_file) {
+		changed_paths.push_back(old_path);
+	}
+	else {
+		_get_all_files_in_dir(EditorFileSystem::get_singleton()->get_path(old_path), changed_paths);
+	}
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	print_line("Moving " + old_path + " -> " + new_path);
+	Error err = da->rename(old_path, new_path);
+	if (err == OK) {
+		//Only treat as a changed dependency if it was successfully moved
+		for (int i = 0; i < changed_paths.size(); ++i) {
+			p_renames[changed_paths[i]] = changed_paths[i].replace_first(old_path, new_path);
+			print_line("  Remap: " + changed_paths[i] + " -> " + p_renames[changed_paths[i]]);
+		}
+	}
+	else {
+		EditorNode::get_singleton()->add_io_error(TTR("Error moving:\n") + old_path + "\n");
+	}
+	memdelete(da);
+}
+
+void FileSystemDock::_get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files) {
+	if (efsd == NULL)
+		return;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_get_all_files_in_dir(efsd->get_subdir(i), files);
+	}
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+		files.push_back(efsd->get_file_path(i));
+	}
+}
+
+void FileSystemDock::_update_dependencies_after_move(Map<String, String> &p_renames) {
+	//The following code assumes that the following holds:
+	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
+	// 2) ResourceLoader can use the new paths without needing to call rescan.
+	List<String> remaps;
+	_find_remaps(EditorFileSystem::get_singleton()->get_filesystem(), p_renames, remaps);
+	for (int i = 0; i < remaps.size(); ++i) {
+		//Because we haven't called a rescan yet the found remap might still be an old path itself.
+		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
+		print_line("Remapping dependencies for: " + file);
+		Error err = ResourceLoader::rename_dependencies(file, p_renames);
+		if (err != OK) {
+			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:\n") + remaps[i] + "\n");
+		}
 	}
 }
 
@@ -1039,6 +1216,77 @@ void FileSystemDock::_file_option(int p_option) {
 	}
 }
 
+void FileSystemDock::_folder_option(int p_option) {
+
+	TreeItem *selected = tree->get_selected();
+
+	switch (p_option) {
+	case FOLDER_EXPAND_ALL:
+	case FOLDER_COLLAPSE_ALL: {
+		bool is_collapsed = (p_option == FOLDER_COLLAPSE_ALL);
+		Vector<TreeItem *> needs_check;
+		needs_check.push_back(selected);
+
+		while (needs_check.size()) {
+			needs_check[0]->set_collapsed(is_collapsed);
+
+			TreeItem *child = needs_check[0]->get_children();
+			while (child) {
+				needs_check.push_back(child);
+				child = child->get_next();
+			}
+
+			needs_check.remove(0);
+		}
+	} break;
+	case FOLDER_MOVE: {
+		to_move.clear();
+		String fpath = selected->get_metadata(tree->get_selected_column());
+		if (fpath != "res://") {
+			fpath = fpath.ends_with("/") ? fpath.substr(0, fpath.length() - 1) : fpath;
+			to_move.push_back(FileOrFolder(fpath, false));
+			move_dir_dialog->popup_centered_ratio();
+		}
+	} break;
+	case FOLDER_RENAME: {
+		to_rename.path = selected->get_metadata(tree->get_selected_column());
+		to_rename.is_file = false;
+		if (to_rename.path != "res://") {
+			String name = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1).get_file() : to_rename.path.get_file();
+			rename_dir_dialog->set_title(TTR("Renaming folder:") + " " + name);
+			rename_dialog_text->set_text(name);
+			rename_dialog_text->select(0, name.length());
+			rename_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			rename_dialog_text->grab_focus();
+		}
+	} break;
+	case FOLDER_REMOVE: {
+		Vector<String> remove_folders;
+		Vector<String> remove_files;
+		String fpath = selected->get_metadata(tree->get_selected_column());
+		if (fpath != "res://") {
+			remove_folders.push_back(fpath);
+			remove_dialog->show(remove_folders);
+		}
+	} break;
+	case FOLDER_NEW_FOLDER: {
+		make_dir_dialog_text->set_text("new folder");
+		make_dir_dialog_text->select_all();
+		make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+		make_dir_dialog_text->grab_focus();
+	} break;
+	case FOLDER_COPY_PATH: {
+		String fpath = selected->get_metadata(tree->get_selected_column());
+		OS::get_singleton()->set_clipboard(fpath);
+	} break;
+	case FOLDER_SHOW_IN_EXPLORER: {
+		String fpath = selected->get_metadata(tree->get_selected_column());
+		String dir = Globals::get_singleton()->globalize_path(fpath);
+		OS::get_singleton()->shell_open(String("file://") + dir);
+	} break;
+	}
+}
+
 void FileSystemDock::_open_pressed() {
 
 	TreeItem *sel = tree->get_selected();
@@ -1525,6 +1773,12 @@ void FileSystemDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_move_operation"), &FileSystemDock::_move_operation);
 	ObjectTypeDB::bind_method(_MD("_rename_operation"), &FileSystemDock::_rename_operation);
 
+	ObjectTypeDB::bind_method(_MD("_folder_option"), &FileSystemDock::_folder_option);
+	ObjectTypeDB::bind_method(_MD("_dir_rmb_pressed"), &FileSystemDock::_dir_rmb_pressed);
+	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
+	ObjectTypeDB::bind_method(_MD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
+	ObjectTypeDB::bind_method(_MD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
+
 	ObjectTypeDB::bind_method(_MD("_search_changed"), &FileSystemDock::_search_changed);
 
 	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &FileSystemDock::get_drag_data_fw);
@@ -1604,6 +1858,39 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
 
+	folder_options = memnew(PopupMenu);
+	add_child(folder_options);
+
+	move_dir_dialog = memnew(EditorDirDialog);
+	move_dir_dialog->get_ok()->set_text(TTR("Move"));
+	add_child(move_dir_dialog);
+	move_dir_dialog->connect("dir_selected", this, "_move_operation_confirm");
+
+	rename_dir_dialog = memnew(ConfirmationDialog);
+	VBoxContainer *rename_dialog_vb = memnew(VBoxContainer);
+	rename_dir_dialog->add_child(rename_dialog_vb);
+
+	rename_dialog_text = memnew(LineEdit);
+	rename_dialog_vb->add_margin_child(TTR("Name:"), rename_dialog_text);
+	rename_dir_dialog->get_ok()->set_text(TTR("Rename"));
+	add_child(rename_dir_dialog);
+	rename_dir_dialog->set_child_rect(rename_dialog_vb);
+	rename_dir_dialog->register_text_enter(rename_dialog_text);
+	rename_dir_dialog->connect("confirmed", this, "_rename_operation_confirm");
+
+	make_dir_dialog = memnew(ConfirmationDialog);
+	make_dir_dialog->set_title(TTR("Create Folder"));
+
+	VBoxContainer *make_folder_dialog_vb = memnew(VBoxContainer);
+	make_dir_dialog_text = memnew(LineEdit);
+	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
+	add_child(make_dir_dialog);
+	
+	make_dir_dialog->add_child(make_folder_dialog_vb);
+	make_dir_dialog->set_child_rect(make_folder_dialog_vb);
+	make_dir_dialog->register_text_enter(make_dir_dialog_text);
+	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
+
 	split_box = memnew(VSplitContainer);
 	add_child(split_box);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1613,11 +1900,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
 	tree->set_drag_forwarding(this);
-
+	tree->set_allow_rmb_select(true);
 	//tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited", this, "_favorite_toggled");
 	tree->connect("item_activated", this, "_open_pressed");
 	tree->connect("cell_selected", this, "_dir_selected");
+	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
 
 	files = memnew(ItemList);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);

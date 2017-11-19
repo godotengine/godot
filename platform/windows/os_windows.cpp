@@ -2319,6 +2319,33 @@ bool OS_Windows::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
+Error OS_Windows::move_path_to_trash(String p_dir) {
+	SHFILEOPSTRUCTA sf;
+	TCHAR *from = new TCHAR[p_dir.length() + 2];
+	strcpy(from, p_dir.utf8().get_data());
+	from[p_dir.length()] = 0;
+	from[p_dir.length() + 1] = 0;
+
+	sf.hwnd = hWnd;
+	sf.wFunc = FO_DELETE;
+	sf.pFrom = from;
+	sf.pTo = NULL;
+	sf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
+	sf.fAnyOperationsAborted = FALSE;
+	sf.hNameMappings = NULL;
+	sf.lpszProgressTitle = NULL;
+
+	int ret = SHFileOperation(&sf);
+	delete[] from;
+
+	if (ret) {
+		ERR_PRINTS("SHFileOperation error: " + itos(ret));
+		return FAILED;
+	}
+
+	return OK;
+}
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	key_event_pos = 0;
