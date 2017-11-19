@@ -89,11 +89,6 @@ wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, cons
 	return self->operator[](p_idx);
 }
 
-const char GDAPI *godot_string_c_str(const godot_string *p_self) {
-	const String *self = (const String *)p_self;
-	return self->utf8().get_data();
-}
-
 const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 	return self->c_str();

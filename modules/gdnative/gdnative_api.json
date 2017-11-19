@@ -4362,13 +4362,6 @@
         ]
       },
       {
-        "name": "godot_string_c_str",
-        "return_type": "const char *",
-        "arguments": [
-          ["const godot_string *", "p_self"]
-        ]
-      },
-      {
         "name": "godot_string_unicode_str",
         "return_type": "const wchar_t *",
         "arguments": [
