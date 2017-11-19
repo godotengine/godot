@@ -175,17 +175,19 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, 0.002);
 
-	if (btResult.hasHit()) {
-		if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
-			B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
+	if (r_info) {
+		if (btResult.hasHit()) {
+			if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
+				B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
+			}
+			CollisionObjectBullet *collision_object = static_cast<CollisionObjectBullet *>(btResult.m_hitCollisionObject->getUserPointer());
+			p_closest_safe = p_closest_unsafe = btResult.m_closestHitFraction;
+			B_TO_G(btResult.m_hitPointWorld, r_info->point);
+			B_TO_G(btResult.m_hitNormalWorld, r_info->normal);
+			r_info->rid = collision_object->get_self();
+			r_info->collider_id = collision_object->get_instance_id();
+			r_info->shape = btResult.m_shapeId;
 		}
-		CollisionObjectBullet *collision_object = static_cast<CollisionObjectBullet *>(btResult.m_hitCollisionObject->getUserPointer());
-		p_closest_safe = p_closest_unsafe = btResult.m_closestHitFraction;
-		B_TO_G(btResult.m_hitPointWorld, r_info->point);
-		B_TO_G(btResult.m_hitNormalWorld, r_info->normal);
-		r_info->rid = collision_object->get_self();
-		r_info->collider_id = collision_object->get_instance_id();
-		r_info->shape = btResult.m_shapeId;
 	}
 
 	bulletdelete(bt_convex_shape);
