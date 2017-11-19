@@ -115,12 +115,13 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_xform.basis.get_scale(), scale_with_margin);
@@ -147,12 +148,13 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_layer, uint32_t p_object_type_mask, ShapeRestInfo *r_info) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *bt_convex_shape = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!bt_convex_shape) {
-		bulletdelete(bt_convex_shape);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *bt_convex_shape = static_cast<btConvexShape *>(btShape);
 
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
@@ -197,12 +199,13 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_shape_xform.basis.get_scale(), scale_with_margin);
@@ -231,12 +234,13 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_shape_xform.basis.get_scale() + Vector3(p_margin, p_margin, p_margin), scale_with_margin);
@@ -877,11 +881,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				continue;
 			}
 
-			btConvexShape *convex_shape_test(dynamic_cast<btConvexShape *>(p_body->get_bt_shape(shIndex)));
-			if (!convex_shape_test) {
+			if (!p_body->get_bt_shape(shIndex)->isConvex()) {
 				// Skip no convex shape
 				continue;
 			}
+			btConvexShape *convex_shape_test(static_cast<btConvexShape *>(p_body->get_bt_shape(shIndex)));
 
 			btTransform shape_world_from;
 			G_TO_B(p_body->get_shape_transform(shIndex), shape_world_from);
