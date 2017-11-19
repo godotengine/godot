@@ -141,28 +141,22 @@ void RasterizerGLES3::initialize() {
 		print_line("Using GLES3 video driver");
 	}
 
-#ifdef GLEW_ENABLED
-	GLuint res = glewInit();
-	ERR_FAIL_COND(res != GLEW_OK);
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line(String("GLES2: Using GLEW ") + (const char *)glewGetString(GLEW_VERSION));
-	}
-
-	// Check for GL 2.1 compatibility, if not bail out
-	if (!glewIsSupported("GL_VERSION_3_0")) {
-		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 3.0+ / GLES 3.0, sorry :(\n"
-				  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 3.0+ / GLES 3.0, sorry :(\n"
-								   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-				"Fatal error: Insufficient OpenGL / GLES drivers");
-		// TODO: If it's even possible, we should stop the execution without segfault and memory leaks :)
-	}
-#endif
-
 #ifdef GLAD_ENABLED
-
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+	}
+
+// GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
+#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
+	if (GLVersion.major < 3 && GLVersion.minor < 3) {
+#else // OpenGL ES 3.0
+	if (GLVersion.major < 3) {
+#endif
+		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 3.3 / OpenGL ES 3.0, sorry :(\n"
+				  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
+		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 3.3 / OpenGL ES 3.0, sorry :(\n"
+								   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
+				"Fatal error: Insufficient OpenGL / GLES driver support");
 	}
 
 #ifdef __APPLE__
@@ -175,21 +169,20 @@ void RasterizerGLES3::initialize() {
 	}
 #endif
 
-#endif
+#endif // GLAD_ENABLED
 
-	/*	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_ERROR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
+	/* // For debugging
+	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_ERROR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_PORTABILITY_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_PERFORMANCE_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_OTHER_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
 	glDebugMessageInsertARB(
-
 			GL_DEBUG_SOURCE_API_ARB,
 			GL_DEBUG_TYPE_OTHER_ARB, 1,
 			GL_DEBUG_SEVERITY_HIGH_ARB,5, "hello");
-
-*/
+	*/
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 3.0 Renderer: " + String((const char *)renderer));
