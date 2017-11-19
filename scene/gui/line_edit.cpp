@@ -1309,6 +1309,7 @@ void LineEdit::set_expand_to_text_length(bool p_enabled) {
 
 	expand_to_text_length = p_enabled;
 	minimum_size_changed();
+	set_window_pos(0);
 }
 
 bool LineEdit::get_expand_to_text_length() const {
@@ -1428,7 +1429,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "max_length"), "set_max_length", "get_max_length");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "expand_to_len"), "set_expand_to_text_length", "get_expand_to_text_length");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length", "get_expand_to_text_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 	ADD_GROUP("Placeholder", "placeholder_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
