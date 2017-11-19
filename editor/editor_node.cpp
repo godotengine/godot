@@ -1109,7 +1109,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 				_save_default_environment();
 				_save_scene_with_preview(p_file);
-				_run(false);
+				_run(false, p_file);
 			}
 		} break;
 
