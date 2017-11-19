@@ -287,7 +287,7 @@
 			<argument index="1" name="send" type="String">
 			</argument>
 			<description>
-				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/send].
+				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].
 			</description>
 		</method>
 		<method name="set_bus_solo">

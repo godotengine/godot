@@ -207,6 +207,7 @@ def rstize_text(text, cclass):
             elif cmd == '/code':
                 tag_text = '``'
                 inside_code = False
+                escape_post = True
             elif inside_code:
                 tag_text = '[' + tag_text + ']'
             elif cmd.find('html') == 0:
