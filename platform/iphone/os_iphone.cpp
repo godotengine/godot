@@ -54,7 +54,7 @@ int OSIPhone::get_video_driver_count() const {
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 };
 
 OSIPhone *OSIPhone::get_singleton() {

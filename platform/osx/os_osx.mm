@@ -896,7 +896,7 @@ int OS_OSX::get_video_driver_count() const {
 
 const char *OS_OSX::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 void OS_OSX::initialize_core() {
@@ -1066,8 +1066,6 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		zoomed = true;
 
 	/*** END OSX INITIALIZATION ***/
-	/*** END OSX INITIALIZATION ***/
-	/*** END OSX INITIALIZATION ***/
 
 	bool use_gl2 = p_video_driver != 1;
 
@@ -1077,16 +1075,12 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
-	//rasterizer = instance_RasterizerGLES2();
-	//visual_server = memnew( VisualServerRaster(rasterizer) );
-
 	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 	visual_server->init();
-	//	visual_server->cursor_set_visible(false, 0);
 
 	AudioDriverManager::initialize(p_audio_driver);
 

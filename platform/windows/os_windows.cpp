@@ -143,7 +143,7 @@ int OS_Windows::get_video_driver_count() const {
 }
 const char *OS_Windows::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 int OS_Windows::get_audio_driver_count() const {

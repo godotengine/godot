@@ -69,7 +69,7 @@ int OSUWP::get_video_driver_count() const {
 }
 const char *OSUWP::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 Size2 OSUWP::get_window_size() const {

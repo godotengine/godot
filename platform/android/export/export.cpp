@@ -945,16 +945,17 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-		int api = p_preset->get("graphics/api");
+		// Reenable when a GLES 2.0 backend is readded
+		/*int api = p_preset->get("graphics/api");
 		if (api == 0)
 			r_features->push_back("etc");
-		else
-			r_features->push_back("etc2");
+		else*/
+		r_features->push_back("etc2");
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/api", PROPERTY_HINT_ENUM, "OpenGL ES 2.0,OpenGL ES 3.0"), 1));
+		/*r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/api", PROPERTY_HINT_ENUM, "OpenGL ES 2.0,OpenGL ES 3.0"), 1));*/
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));

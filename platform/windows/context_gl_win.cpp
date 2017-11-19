@@ -27,24 +27,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED)
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-//
-// C++ Implementation: context_gl_x11
-//
-// Description:
-//
-//
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-//
 
 #include "context_gl_win.h"
-
-//#include "drivers/opengl/glwrapper.h"
-//#include "ctxgl_procaddr.h"
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092

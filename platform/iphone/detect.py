@@ -163,7 +163,7 @@ def configure(env):
     env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 
     env.Append(CPPPATH=['#platform/iphone'])
-    env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT', '-DCOREAUDIO_ENABLED'])
+    env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DMPC_FIXED_POINT', '-DCOREAUDIO_ENABLED'])
 
     # TODO: Move that to opus module's config
     if 'module_opus_enabled' in env and env['module_opus_enabled']:
