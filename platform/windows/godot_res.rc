@@ -29,7 +29,7 @@ BEGIN
             VALUE "Licence",                "MIT"
             VALUE "LegalCopyright",         "Copyright (c) 2007-" _MKSTR(VERSION_YEAR) " Juan Linietsky, Ariel Manzur"
             VALUE "Info",                   "https://godotengine.org"
-            VALUE "ProductVersion",         _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) PATCH_STRING "." VERSION_REVISION
+            VALUE "ProductVersion",         _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) PATCH_STRING "." VERSION_BUILD
         END
     END
     BLOCK "VarFileInfo"

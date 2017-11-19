@@ -85,7 +85,7 @@ Dictionary Engine::get_version_info() const {
 	dict["patch"] = 0;
 #endif
 	dict["status"] = VERSION_STATUS;
-	dict["revision"] = VERSION_REVISION;
+	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
 	String hash = VERSION_HASH;
@@ -94,7 +94,7 @@ Dictionary Engine::get_version_info() const {
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0)
 		stringver += "." + String(dict["patch"]);
-	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
+	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
 
 	return dict;
