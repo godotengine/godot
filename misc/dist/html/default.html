@@ -230,7 +230,6 @@ $GODOT_HEAD_INCLUDE
 		(function() {
 
 			const BASENAME = '$GODOT_BASENAME';
-			const MEMORY_SIZE = $GODOT_TOTAL_MEMORY;
 			const DEBUG_ENABLED = $GODOT_DEBUG_ENABLED;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
@@ -247,7 +246,6 @@ $GODOT_HEAD_INCLUDE
 
 			setStatusMode('indeterminate');
 			game.setCanvas(canvas);
-			game.setAsmjsMemorySize(MEMORY_SIZE);
 
 			function setStatusMode(mode) {
 

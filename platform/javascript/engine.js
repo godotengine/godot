@@ -5,7 +5,6 @@
 (function() {
 	var engine = Engine;
 
-	var USING_WASM = engine.USING_WASM;
 	var DOWNLOAD_ATTEMPTS_MAX = 4;
 
 	var basePath = null;
@@ -34,7 +33,6 @@
 
 		var gameInitPromise = null;
 		var unloadAfterInit = true;
-		var memorySize = 268435456;
 
 		var progressFunc = null;
 		var pckProgressTracker = {};
@@ -91,10 +89,6 @@
 					});
 					return {};
 				};
-			} else if (initializer.asm && initializer.mem) {
-				rtenvOpts.asm = initializer.asm;
-				rtenvOpts.memoryInitializerRequest = initializer.mem;
-				rtenvOpts.TOTAL_MEMORY = memorySize;
 			} else {
 				throw new Error("Invalid initializer");
 			}
@@ -190,10 +184,6 @@
 			canvas = elem;
 		};
 
-		this.setAsmjsMemorySize = function(size) {
-			memorySize = size;
-		};
-
 		this.setUnloadAfterInit = function(enabled) {
 
 			if (enabled && !unloadAfterInit && gameInitPromise) {
@@ -236,22 +226,12 @@
 
 		if (newBasePath !== undefined) basePath = getBasePath(newBasePath);
 		if (engineLoadPromise === null) {
-			if (USING_WASM) {
-				if (typeof WebAssembly !== 'object')
-					return Promise.reject(new Error("Browser doesn't support WebAssembly"));
-				// TODO cache/retrieve module to/from idb
-				engineLoadPromise = loadPromise(basePath + '.wasm').then(function(xhr) {
-					return xhr.response;
-				});
-			} else {
-				var asmjsPromise = loadPromise(basePath + '.asm.js').then(function(xhr) {
-					return asmjsModulePromise(xhr.response);
-				});
-				var memPromise = loadPromise(basePath + '.mem');
-				engineLoadPromise = Promise.all([asmjsPromise, memPromise]).then(function(values) {
-					return { asm: values[0], mem: values[1] };
-				});
-			}
+			if (typeof WebAssembly !== 'object')
+				return Promise.reject(new Error("Browser doesn't support WebAssembly"));
+			// TODO cache/retrieve module to/from idb
+			engineLoadPromise = loadPromise(basePath + '.wasm').then(function(xhr) {
+				return xhr.response;
+			});
 			engineLoadPromise = engineLoadPromise.catch(function(err) {
 				engineLoadPromise = null;
 				throw err;
@@ -259,33 +239,6 @@
 		}
 		return engineLoadPromise;
 	};
-
-	function asmjsModulePromise(module) {
-		var elem = document.createElement('script');
-		var script = new Blob([
-			'Engine.asm = (function() { var Module = {};',
-			module,
-			'return Module.asm; })();'
-		]);
-		var url = URL.createObjectURL(script);
-		elem.src = url;
-		return new Promise(function(resolve, reject) {
-			elem.addEventListener('load', function() {
-				URL.revokeObjectURL(url);
-				var asm = Engine.asm;
-				Engine.asm = undefined;
-				setTimeout(function() {
-					// delay to reclaim compilation memory
-					resolve(asm);
-				}, 1);
-			});
-			elem.addEventListener('error', function() {
-				URL.revokeObjectURL(url);
-				reject("asm.js faiilure");
-			});
-			document.body.appendChild(elem);
-		});
-	}
 
 	Engine.unloadEngine = function() {
 		engineLoadPromise = null;

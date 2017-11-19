@@ -21,37 +21,21 @@ for x in javascript_files:
 
 env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_main_after_fs_sync','_send_notification']\""])
 
-# output file name without file extension
-basename = "godot" + env["PROGSUFFIX"]
 target_dir = env.Dir("#bin")
-
-zip_dir = target_dir.Dir('.javascript_zip')
-zip_files = env.InstallAs(zip_dir.File('godot.html'), '#misc/dist/html/default.html')
-
-implicit_targets = []
-if env['wasm']:
-    wasm = target_dir.File(basename + '.wasm')
-    implicit_targets.append(wasm)
-    zip_files.append(InstallAs(zip_dir.File('godot.wasm'), wasm))
-    prejs = env.File('pre_wasm.js')
-else:
-    asmjs_files = [target_dir.File(basename + '.asm.js'), target_dir.File(basename + '.js.mem')]
-    implicit_targets.extend(asmjs_files)
-    zip_files.append(InstallAs([zip_dir.File('godot.asm.js'), zip_dir.File('godot.mem')], asmjs_files))
-    prejs = env.File('pre_asmjs.js')
-
-js = env.Program(['#bin/godot'] + implicit_targets, javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js')[0];
-zip_files.append(InstallAs(zip_dir.File('godot.js'), js))
+build = env.Program(['#bin/godot', target_dir.File('godot' + env['PROGSUFFIX'] + '.wasm')], javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js');
 
 js_libraries = []
 js_libraries.append(env.File('http_request.js'))
 for lib in js_libraries:
     env.Append(LINKFLAGS=['--js-library', lib.path])
-env.Depends(js, js_libraries)
+env.Depends(build, js_libraries)
 
+prejs = env.File('pre.js')
 postjs = env.File('engine.js')
-env.Depends(js, [prejs, postjs])
 env.Append(LINKFLAGS=['--pre-js', prejs.path])
 env.Append(LINKFLAGS=['--post-js', postjs.path])
+env.Depends(build, [prejs, postjs])
 
+zip_dir = target_dir.Dir('.javascript_zip')
+zip_files = env.InstallAs([zip_dir.File('godot.js'), zip_dir.File('godot.wasm'), zip_dir.File('godot.html')], build + ['#misc/dist/html/default.html'])
 Zip('#bin/godot', zip_files, ZIPSUFFIX=env['PROGSUFFIX'] + env['ZIPSUFFIX'], ZIPROOT=zip_dir, ZIPCOMSTR="Archving $SOURCES as $TARGET")
