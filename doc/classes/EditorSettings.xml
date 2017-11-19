@@ -55,7 +55,7 @@
 				Get the list of favorite directories for this project.
 			</description>
 		</method>
-		<method name="get_project_settings_path" qualifiers="const">
+		<method name="get_project_settings_dir" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
@@ -77,7 +77,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_settings_path" qualifiers="const">
+		<method name="get_settings_dir" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>

@@ -48,7 +48,7 @@
 
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 typedef int (*OpenURIFunc)(const String &);
-typedef String (*GetDataDirFunc)();
+typedef String (*GetUserDataDirFunc)();
 typedef String (*GetLocaleFunc)();
 typedef String (*GetModelFunc)();
 typedef int (*GetScreenDPIFunc)();
@@ -116,7 +116,7 @@ private:
 	MainLoop *main_loop;
 
 	OpenURIFunc open_uri_func;
-	GetDataDirFunc get_data_dir_func;
+	GetUserDataDirFunc get_user_data_dir_func;
 	GetLocaleFunc get_locale_func;
 	GetModelFunc get_model_func;
 	GetScreenDPIFunc get_screen_dpi_func;
@@ -208,7 +208,7 @@ public:
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 
 	virtual Error shell_open(String p_uri);
-	virtual String get_data_dir() const;
+	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
 	virtual String get_model_name() const;
@@ -237,7 +237,7 @@ public:
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
-	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion);
 	~OS_Android();
 };
 

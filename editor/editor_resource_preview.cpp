@@ -198,7 +198,7 @@ void EditorResourcePreview::_thread() {
 
 				} else {
 
-					String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
+					String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-" + cache_base);
 

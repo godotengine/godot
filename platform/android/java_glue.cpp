@@ -647,7 +647,7 @@ static int _open_uri(const String &p_uri) {
 	return env->CallIntMethod(godot_io, _openURI, jStr);
 }
 
-static String _get_data_dir() {
+static String _get_user_data_dir() {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	jstring s = (jstring)env->CallObjectMethod(godot_io, _getDataDir);
@@ -825,7 +825,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		AudioDriverAndroid::setup(gob);
 	}
 
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, p_use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, p_use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];

@@ -124,7 +124,7 @@ protected:
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
 
-	void _ensure_data_dir();
+	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
 public:
@@ -200,7 +200,6 @@ public:
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
 
-	virtual String get_installed_templates_path() const { return ""; }
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
@@ -334,10 +333,14 @@ public:
 	virtual String get_locale() const;
 
 	String get_safe_application_name() const;
-	virtual String get_data_dir() const;
-	virtual String get_resource_dir() const;
+	virtual String get_godot_dir_name() const;
 
-	virtual Error move_to_trash(const String &p_path) { return FAILED; }
+	virtual String get_data_path() const;
+	virtual String get_config_path() const;
+	virtual String get_cache_path() const;
+
+	virtual String get_user_data_dir() const;
+	virtual String get_resource_dir() const;
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,
@@ -351,6 +354,8 @@ public:
 	};
 
 	virtual String get_system_dir(SystemDir p_dir) const;
+
+	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
 	virtual void set_no_window_mode(bool p_enable);
 	virtual bool is_no_window_mode_enabled() const;
