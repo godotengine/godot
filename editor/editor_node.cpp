@@ -4276,12 +4276,19 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 
-	/*
-	String cur_path = filesystem_dock->get_current_path();
-	for(int i=0;i<EditorImportExport::get_singleton()->get_import_plugin_count();i++) {
-		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
+	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_current_path());
+	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	for (int i = 0; i < p_files.size(); i++) {
+
+		String from = p_files[i];
+		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from)) {
+			continue;
+		}
+		String to = to_path.plus_file(from.get_file());
+		dir->copy(from, to);
 	}
-	*/
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void EditorNode::_file_access_close_error_notify(const String &p_str) {
