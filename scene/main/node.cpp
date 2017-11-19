@@ -2099,10 +2099,6 @@ Node *Node::_duplicate(int p_flags) const {
 		ERR_FAIL_COND_V(!node, NULL);
 	}
 
-	if (get_filename() != "") { //an instance
-		node->set_filename(get_filename());
-	}
-
 	List<PropertyInfo> plist;
 
 	get_property_list(&plist);
