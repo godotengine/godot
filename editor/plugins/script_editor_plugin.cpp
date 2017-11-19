@@ -1583,7 +1583,7 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	if (_sort_list_on_update) {
+	if (_sort_list_on_update && !sedata.empty()) {
 		sedata.sort();
 
 		// change actual order of tab_container so that the order can be rearranged by user
