@@ -2067,7 +2067,7 @@ int Node::get_position_in_parent() const {
 	return data.pos;
 }
 
-Node *Node::duplicate(int p_flags) const {
+Node *Node::_duplicate(int p_flags) const {
 
 	Node *node = NULL;
 
@@ -2147,9 +2147,6 @@ Node *Node::duplicate(int p_flags) const {
 		}
 	}
 
-	if (p_flags & DUPLICATE_SIGNALS)
-		_duplicate_signals(this, node);
-
 	for (int i = 0; i < get_child_count(); i++) {
 
 		if (get_child(i)->data.parent_owned)
@@ -2168,6 +2165,17 @@ Node *Node::duplicate(int p_flags) const {
 	}
 
 	return node;
+}
+
+Node *Node::duplicate(int p_flags) const {
+
+	Node *dupe = _duplicate(p_flags);
+
+	if (dupe && (p_flags & DUPLICATE_SIGNALS)) {
+		_duplicate_signals(this, dupe);
+	}
+
+	return dupe;
 }
 
 void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const {
@@ -2240,6 +2248,9 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 	}
 }
 
+// Duplication of signals must happen after all the node descendants have been copied,
+// because re-targeting of connections from some descendant to another is not possible
+// if the emitter node comes later in tree order than the receiver
 void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 
 	if (this != p_original && (get_owner() != p_original && get_owner() != p_original->get_owner()))
@@ -2261,6 +2272,12 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			}
 			NodePath ptarget = p_original->get_path_to(target);
 			Node *copytarget = p_copy->get_node(ptarget);
+
+			// Cannot find a path to the duplicate target, so it seems it's not part
+			// of the duplicated and not yet parented hierarchy, so at least try to connect
+			// to the same target as the original
+			if (!copytarget)
+				copytarget = target;
 
 			if (copy && copytarget) {
 				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, CONNECT_PERSIST);
