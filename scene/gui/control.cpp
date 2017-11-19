@@ -45,7 +45,7 @@
 #endif
 #include <stdio.h>
 
-Variant Control::edit_get_state() const {
+Dictionary Control::_edit_get_state() const {
 
 	Dictionary s;
 	s["rect"] = get_rect();
@@ -59,20 +59,76 @@ Variant Control::edit_get_state() const {
 	s["anchors"] = anchors;
 	return s;
 }
-void Control::edit_set_state(const Variant &p_state) {
+void Control::_edit_set_state(const Dictionary &p_state) {
 
-	Dictionary s = p_state;
+	Dictionary state = p_state;
 
-	Rect2 state = s["rect"];
-	set_position(state.position);
-	set_size(state.size);
-	set_rotation(s["rotation"]);
-	set_scale(s["scale"]);
-	Array anchors = s["anchors"];
+	Rect2 rect = state["rect"];
+	set_position(rect.position);
+	set_size(rect.size);
+	set_rotation(state["rotation"]);
+	set_scale(state["scale"]);
+	Array anchors = state["anchors"];
 	set_anchor(MARGIN_LEFT, anchors[0]);
 	set_anchor(MARGIN_TOP, anchors[1]);
 	set_anchor(MARGIN_RIGHT, anchors[2]);
 	set_anchor(MARGIN_BOTTOM, anchors[3]);
+}
+
+void Control::_edit_set_position(const Point2 &p_position) {
+	set_position(p_position);
+};
+
+Point2 Control::_edit_get_position() const {
+	return get_position();
+};
+
+void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
+
+	Transform2D xform = _get_internal_transform();
+
+	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
+
+	Vector2 pos = get_position() + new_pos;
+
+	Rect2 new_rect = get_rect();
+	new_rect.position = pos.snapped(Vector2(1, 1));
+	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
+
+	set_position(new_rect.position);
+	set_size(new_rect.size);
+}
+
+Rect2 Control::_edit_get_rect() const {
+	return Rect2(Point2(), get_size());
+}
+
+bool Control::_edit_use_rect() const {
+	return true;
+}
+
+void Control::_edit_set_rotation(float p_rotation) {
+	set_rotation(p_rotation);
+}
+
+float Control::_edit_get_rotation() const {
+	return get_rotation();
+}
+
+bool Control::_edit_use_rotation() const {
+	return true;
+}
+
+void Control::_edit_set_pivot(const Point2 &p_pivot) {
+	set_pivot_offset(p_pivot);
+}
+
+Point2 Control::_edit_get_pivot() const {
+	return get_pivot_offset();
+}
+
+bool Control::_edit_use_pivot() const {
+	return true;
 }
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
@@ -96,7 +152,7 @@ Size2 Control::get_combined_minimum_size() const {
 	return minsize;
 }
 
-Size2 Control::edit_get_minimum_size() const {
+Size2 Control::_edit_get_minimum_size() const {
 
 	return get_combined_minimum_size();
 }
@@ -109,23 +165,6 @@ Transform2D Control::_get_internal_transform() const {
 	offset.set_origin(-data.pivot_offset);
 
 	return offset.affine_inverse() * (rot_scale * offset);
-}
-void Control::edit_set_rect(const Rect2 &p_edit_rect) {
-
-	Transform2D xform = _get_internal_transform();
-
-	//	xform[2] += get_position();
-
-	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
-
-	Vector2 pos = get_position() + new_pos;
-
-	Rect2 new_rect = get_rect();
-	new_rect.position = pos.snapped(Vector2(1, 1));
-	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
-
-	set_position(new_rect.position);
-	set_size(new_rect.size);
 }
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
@@ -1210,7 +1249,7 @@ Size2 Control::get_parent_area_size() const {
 
 	if (data.parent_canvas_item) {
 
-		parent_size = data.parent_canvas_item->get_item_rect().size;
+		parent_size = data.parent_canvas_item->_edit_get_rect().size;
 	} else {
 
 		parent_size = get_viewport()->get_visible_rect().size;
@@ -1289,7 +1328,7 @@ float Control::_get_parent_range(int p_idx) const {
 	}
 	if (data.parent_canvas_item) {
 
-		return data.parent_canvas_item->get_item_rect().size[p_idx & 1];
+		return data.parent_canvas_item->_edit_get_rect().size[p_idx & 1];
 	} else {
 		return get_viewport()->get_visible_rect().size[p_idx & 1];
 	}
@@ -1749,11 +1788,6 @@ Rect2 Control::get_window_rect() const {
 Rect2 Control::get_rect() const {
 
 	return Rect2(get_position(), get_size());
-}
-
-Rect2 Control::get_item_rect() const {
-
-	return Rect2(Point2(), get_size());
 }
 
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
@@ -2254,7 +2288,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	Point2 points[4];
 
 	Transform2D xform = get_global_transform();
-	Rect2 rect = get_item_rect();
+	Rect2 rect = _edit_get_rect();
 
 	points[0] = xform.xform(rect.position);
 	points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
@@ -2313,7 +2347,7 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Point2 points[4];
 
 		Transform2D xform = c->get_global_transform();
-		Rect2 rect = c->get_item_rect();
+		Rect2 rect = c->_edit_get_rect();
 
 		points[0] = xform.xform(rect.position);
 		points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));

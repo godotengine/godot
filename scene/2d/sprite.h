@@ -62,9 +62,10 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-	virtual void edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 edit_get_pivot() const;
-	virtual bool edit_has_pivot() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot);
+	virtual Point2 _edit_get_pivot() const;
+	virtual bool _edit_use_pivot() const;
+	virtual Rect2 _edit_get_rect() const;
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
@@ -102,53 +103,7 @@ public:
 	void set_hframes(int p_amount);
 	int get_hframes() const;
 
-	virtual Rect2 get_item_rect() const;
-
 	Sprite();
 };
 
-#if 0
-class ViewportSprite : public Node2D {
-
-	GDCLASS( ViewportSprite, Node2D );
-
-	Ref<Texture> texture;
-	NodePath viewport_path;
-
-	bool centered;
-	Point2 offset;
-	Color modulate;
-
-protected:
-
-	void _notification(int p_what);
-
-	static void _bind_methods();
-
-public:
-
-	virtual void edit_set_pivot(const Point2& p_pivot);
-	virtual Point2 edit_get_pivot() const;
-	virtual bool edit_has_pivot() const;
-
-	void set_viewport_path(const NodePath& p_viewport);
-	NodePath get_viewport_path() const;
-
-	void set_centered(bool p_center);
-	bool is_centered() const;
-
-	void set_offset(const Point2& p_offset);
-	Point2 get_offset() const;
-
-	void set_modulate(const Color& p_color);
-	Color get_modulate() const;
-
-	virtual Rect2 get_item_rect() const;
-
-	virtual String get_configuration_warning() const;
-
-	ViewportSprite();
-};
-
-#endif
 #endif // SPRITE_H

@@ -133,7 +133,7 @@ void TouchScreenButton::_notification(int p_what) {
 				return;
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
-				Vector2 pos = shape_centered ? get_item_rect().size * 0.5f : Vector2();
+				Vector2 pos = shape_centered ? _edit_get_rect().size * 0.5f : Vector2();
 				draw_set_transform_matrix(get_canvas_transform().translated(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
@@ -251,7 +251,7 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 
 	Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(p_point);
-	Rect2 item_rect = get_item_rect();
+	Rect2 item_rect = _edit_get_rect();
 
 	bool touched = false;
 	bool check_rect = true;
@@ -322,13 +322,13 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 	}
 }
 
-Rect2 TouchScreenButton::get_item_rect() const {
+Rect2 TouchScreenButton::_edit_get_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0, 0, 1, 1);
 	/*
 	if (texture.is_null())
-		return CanvasItem::get_item_rect();
+		return CanvasItem::_edit_get_rect();
 	*/
 
 	return Rect2(Size2(), texture->get_size());

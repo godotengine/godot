@@ -49,7 +49,7 @@ void BackBufferCopy::_update_copy_mode() {
 	}
 }
 
-Rect2 BackBufferCopy::get_item_rect() const {
+Rect2 BackBufferCopy::_edit_get_rect() const {
 
 	return rect;
 }

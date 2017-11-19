@@ -99,11 +99,11 @@ public:
 
 	//editor stuff
 
-	virtual void edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 edit_get_pivot() const;
-	virtual bool edit_has_pivot() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot);
+	virtual Point2 _edit_get_pivot() const;
+	virtual bool _edit_use_pivot() const;
 
-	virtual Rect2 get_item_rect() const;
+	virtual Rect2 _edit_get_rect() const;
 
 	Polygon2D();
 };

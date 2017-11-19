@@ -158,7 +158,7 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 	return shape;
 }
 
-Rect2 CollisionShape2D::get_item_rect() const {
+Rect2 CollisionShape2D::_edit_get_rect() const {
 
 	return rect;
 }
