@@ -92,6 +92,7 @@ void InAppStore::_bind_methods() {
 	PoolRealArray prices;
 	PoolStringArray ids;
 	PoolStringArray localized_prices;
+	PoolStringArray currency_codes;
 
 	for (int i = 0; i < [products count]; i++) {
 
@@ -105,12 +106,14 @@ void InAppStore::_bind_methods() {
 		prices.push_back([product.price doubleValue]);
 		ids.push_back(String::utf8([product.productIdentifier UTF8String]));
 		localized_prices.push_back(String::utf8([product.localizedPrice UTF8String]));
+		currency_codes.push_back(String::utf8([[[product priceLocale] objectForKey:NSLocaleCurrencyCode] UTF8String]));
 	};
 	ret["titles"] = titles;
 	ret["descriptions"] = descriptions;
 	ret["prices"] = prices;
 	ret["ids"] = ids;
 	ret["localized_prices"] = localized_prices;
+	ret["currency_codes"] = currency_codes;
 
 	PoolStringArray invalid_ids;
 
