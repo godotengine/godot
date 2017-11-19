@@ -438,25 +438,23 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	video_mode = p_desired;
 	// can't fulfil fullscreen request due to browser security
 	video_mode.fullscreen = false;
-	set_window_size(Size2(p_desired.width, p_desired.height));
+	/* clang-format off */
+	bool resize_canvas_on_start = EM_ASM_INT_V(
+		return Module.resizeCanvasOnStart;
+	);
+	/* clang-format on */
+	if (resize_canvas_on_start) {
+		set_window_size(Size2(video_mode.width, video_mode.height));
+	} else {
+		Size2 canvas_size = get_window_size();
+		video_mode.width = canvas_size.width;
+		video_mode.height = canvas_size.height;
+	}
 
-	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
 	/* clang-format off */
-	EM_ASM_({
-		var locale = "";
-		if (Module.locale) {
-			// best case: server-side script reads Accept-Language early and
-			// defines the locale to be read here
-			locale = Module.locale;
-		} else {
-			// no luck, use what the JS engine can tell us
-			// if this turns out not compatible enough, add tests for
-			// browserLanguage, systemLanguage and userLanguage
-			locale = navigator.languages ? navigator.languages[0] : navigator.language;
-		}
-		locale = locale.split('.')[0];
-		stringToUTF8(locale, $0, 16);
+	EM_ASM_ARGS({
+		stringToUTF8(Module.locale, $0, 16);
 	}, locale_ptr);
 	/* clang-format on */
 	setenv("LANG", locale_ptr, true);

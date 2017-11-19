@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
 	// run the 'main_after_fs_sync' function
 	/* clang-format off */
 	EM_ASM(
-		Module.noExitRuntime = true;
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 		FS.syncfs(true, function(err) {

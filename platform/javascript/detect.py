@@ -102,14 +102,13 @@ def configure(env):
 
     ## Link flags
 
-    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
-    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
-
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-    # In contrast to asm.js, enabling memory growth on WebAssembly has no
-    # major performance impact, and causes only a negligible increase in
-    # memory size.
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
+    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
+
+    env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
+    env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
 
     # TODO: Move that to opus module's config
     if 'module_opus_enabled' in env and env['module_opus_enabled']:
