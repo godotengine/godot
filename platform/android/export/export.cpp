@@ -370,7 +370,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		}
 
 		if (aname == "") {
-			aname = _MKSTR(VERSION_NAME);
+			aname = VERSION_NAME;
 		}
 
 		return aname;

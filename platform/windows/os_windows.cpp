@@ -2166,7 +2166,7 @@ String OS_Windows::get_cache_path() const {
 // Get properly capitalized engine name for system paths
 String OS_Windows::get_godot_dir_name() const {
 
-	return String(_MKSTR(VERSION_SHORT_NAME)).capitalize();
+	return String(VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_Windows::get_system_dir(SystemDir p_dir) const {

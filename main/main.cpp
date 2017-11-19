@@ -177,7 +177,7 @@ static String get_full_version_string() {
 
 void Main::print_help(const char *p_binary) {
 
-	print_line(String(_MKSTR(VERSION_NAME)) + " v" + get_full_version_string() + " - https://godotengine.org");
+	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - https://godotengine.org");
 	OS::get_singleton()->print("(c) 2007-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("(c) 2014-2017 Godot Engine contributors.\n");
 	OS::get_singleton()->print("\n");
