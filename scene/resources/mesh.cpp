@@ -1097,11 +1097,13 @@ void ArrayMesh::_bind_methods() {
 }
 
 void ArrayMesh::reload_from_file() {
-	for (int i = 0; i < get_surface_count(); i++) {
-		surface_remove(i);
-	}
+	VisualServer::get_singleton()->mesh_clear(mesh);
+	surfaces.clear();
+	clear_blend_shapes();
+
 	Resource::reload_from_file();
-	String path = get_path();
+
+	_change_notify();
 }
 
 ArrayMesh::ArrayMesh() {
