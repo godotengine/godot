@@ -1459,6 +1459,8 @@ void SceneTreeDock::_create() {
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 				continue;
+			if (E->get().name == "__meta__")
+				continue;
 			newnode->set(E->get().name, n->get(E->get().name));
 		}
 
