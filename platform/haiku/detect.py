@@ -67,7 +67,7 @@ def configure(env):
     ## Flags
 
     env.Append(CPPPATH=['#platform/haiku'])
-    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
+    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
     env.Append(CPPFLAGS=['-DMEDIA_KIT_ENABLED'])
     # env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
     env.Append(CPPFLAGS=['-DPTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np

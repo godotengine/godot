@@ -76,7 +76,7 @@ int OS_Haiku::get_video_driver_count() const {
 }
 
 const char *OS_Haiku::get_video_driver_name(int p_driver) const {
-	return "GLES2";
+	return "GLES3";
 }
 
 void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -106,7 +106,9 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	context_gl->initialize();
 	context_gl->make_current();
 
-	rasterizer = memnew(RasterizerGLES2);
+	/* Port to GLES 3 rasterizer */
+	//rasterizer = memnew(RasterizerGLES2);
+
 #endif
 
 	visual_server = memnew(VisualServerRaster(rasterizer));

@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "context_gl.h"
 
-#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED)
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
 ContextGL *ContextGL::singleton = NULL;
 
