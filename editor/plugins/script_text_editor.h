@@ -91,6 +91,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
+		EDIT_FOLD_LINE,
+		EDIT_UNFOLD_LINE,
+		EDIT_FOLD_ALL_LINES,
+		EDIT_UNFOLD_ALL_LINES,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -118,7 +122,7 @@ protected:
 	static void _bind_methods();
 
 	void _edit_option(int p_op);
-	void _make_context_menu(bool p_selection, bool p_color);
+	void _make_context_menu(bool p_selection, bool p_color, bool p_can_fold, bool p_is_folded);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 

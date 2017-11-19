@@ -56,6 +56,7 @@ void GotoLineDialog::ok_pressed() {
 
 	if (get_line() < 1 || get_line() > text_editor->get_line_count())
 		return;
+	text_editor->unfold_line(get_line() - 1);
 	text_editor->cursor_set_line(get_line() - 1);
 	hide();
 }
@@ -139,6 +140,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 
 	if (found) {
 		if (!preserve_cursor) {
+			text_edit->unfold_line(line);
 			text_edit->cursor_set_line(line, false);
 			text_edit->cursor_set_column(col + text.length(), false);
 			text_edit->center_viewport_to_cursor();
@@ -167,6 +169,7 @@ void FindReplaceBar::_replace() {
 	if (result_line != -1 && result_col != -1) {
 		text_edit->begin_complex_operation();
 
+		text_edit->unfold_line(result_line);
 		text_edit->select(result_line, result_col, result_line, result_col + get_search_text().length());
 		text_edit->insert_text_at_cursor(get_replace_text());
 
@@ -214,6 +217,7 @@ void FindReplaceBar::_replace_all() {
 
 		prev_match = Point2i(result_line, result_col + replace_text.length());
 
+		text_edit->unfold_line(result_line);
 		text_edit->select(result_line, result_col, result_line, match_to.y);
 
 		if (selection_enabled && is_selection_only()) {
@@ -751,6 +755,7 @@ bool FindReplaceDialog::_search() {
 
 	if (found) {
 		// print_line("found");
+		text_edit->unfold_line(line);
 		text_edit->cursor_set_line(line);
 		if (is_backwards())
 			text_edit->cursor_set_column(col);
@@ -1093,6 +1098,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
+	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
+	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/open_scripts/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/open_scripts/v_scroll_speed"));
