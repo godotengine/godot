@@ -307,7 +307,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
 	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
 	_initial_set("filesystem/directories/default_project_export_path", "");
-	hints["global/default_project_export_path"] = PropertyInfo(Variant::STRING, "global/default_project_export_path", PROPERTY_HINT_GLOBAL_DIR);
+	hints["filesystem/directories/default_project_export_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_export_path", PROPERTY_HINT_GLOBAL_DIR);
 	_initial_set("interface/editor/show_script_in_scene_tabs", false);
 
 	_initial_set("text_editor/theme/color_theme", "Adaptive");
