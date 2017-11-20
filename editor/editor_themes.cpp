@@ -738,6 +738,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("button", "Tabs", style_menu);
 	theme->set_icon("increment", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
 	theme->set_icon("decrement", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_icon("increment", "Tabs", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
+	theme->set_icon("decrement", "Tabs", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_icon("increment_highlight", "Tabs", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
+	theme->set_icon("decrement_highlight", "Tabs", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_icon("increment_highlight", "TabContainer", theme->get_icon("GuiScrollArrowRight", "EditorIcons"));
+	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon("GuiScrollArrowLeft", "EditorIcons"));
+	theme->set_constant("hseparation", "Tabs", 4 * EDSCALE);
 
 	// Content of each tab
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
