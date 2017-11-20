@@ -187,6 +187,9 @@ protected:
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
+	void _window_changed(XEvent *xevent);
+	static int _check_window_events(Display *display, XEvent *xevent, char *arg);
+
 public:
 	virtual String get_name();
 

@@ -427,6 +427,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
 
 			init_maximized = true;
+			video_mode.maximized = true;
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -748,6 +749,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		init_maximized = true;
+		video_mode.maximized = true;
 		use_custom_res = false;
 	}
 
