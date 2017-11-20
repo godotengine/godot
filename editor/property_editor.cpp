@@ -40,6 +40,7 @@
 #include "core/project_settings.h"
 #include "editor/array_property_edit.h"
 #include "editor/create_dialog.h"
+#include "editor/dictionary_property_edit.h"
 #include "editor/editor_export.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
@@ -1157,7 +1158,8 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 			node = Object::cast_to<Node>(owner);
 		else if (owner->is_class("ArrayPropertyEdit"))
 			node = Object::cast_to<ArrayPropertyEdit>(owner)->get_node();
-
+		else if (owner->is_class("DictionaryPropertyEdit"))
+			node = Object::cast_to<DictionaryPropertyEdit>(owner)->get_node();
 		if (!node) {
 			v = p_path;
 			emit_signal("variant_changed");
@@ -3215,9 +3217,14 @@ void PropertyEditor::update_tree() {
 			} break;
 			case Variant::DICTIONARY: {
 
+				Variant v = obj->get(p.name);
+
 				item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
-				item->set_editable(1, false);
-				item->set_text(1, obj->get(p.name).operator String());
+				item->set_text(1, String("Dictionary{") + itos(v.call("size")) + "}");
+				item->add_button(1, get_icon("EditResource", "EditorIcons"));
+
+				if (show_type_icons)
+					item->set_icon(0, get_icon("DictionaryData", "EditorIcons"));
 
 			} break;
 
@@ -3416,7 +3423,9 @@ void PropertyEditor::update_tree() {
 					type = p.hint_string;
 
 				RES res = obj->get(p.name).operator RefPtr();
-
+				if (type.begins_with("RES:") && type != "RES:") { // Remote resources
+					res = ResourceLoader::load(type.substr(4, type.length()));
+				}
 				Ref<EncodedObjectAsID> encoded = obj->get(p.name); //for debugger and remote tools
 
 				if (encoded.is_valid()) {
@@ -3427,6 +3436,7 @@ void PropertyEditor::update_tree() {
 					item->set_editable(1, true);
 
 				} else if (obj->get(p.name).get_type() == Variant::NIL || res.is_null()) {
+
 					item->set_text(1, "<null>");
 					item->set_icon(1, Ref<Texture>());
 					item->set_custom_as_button(1, false);
@@ -3585,7 +3595,7 @@ void PropertyEditor::_edit_set(const String &p_name, const Variant &p_value, boo
 		}
 	}
 
-	if (!undo_redo || Object::cast_to<ArrayPropertyEdit>(obj)) { //kind of hacky
+	if (!undo_redo || Object::cast_to<ArrayPropertyEdit>(obj) || Object::cast_to<DictionaryPropertyEdit>(obj)) { //kind of hacky
 
 		obj->set(p_name, p_value);
 		if (p_refresh_all)
@@ -3983,8 +3993,20 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 			Ref<ArrayPropertyEdit> ape = memnew(ArrayPropertyEdit);
 			ape->edit(obj, n, ht, Variant::Type(t));
-
 			EditorNode::get_singleton()->push_item(ape.ptr());
+
+		} else if (t == Variant::DICTIONARY) {
+
+			Variant v = obj->get(n);
+
+			if (v.get_type() != t) {
+				Variant::CallError ce;
+				v = Variant::construct(Variant::Type(t), NULL, 0, ce);
+			}
+
+			Ref<DictionaryPropertyEdit> dpe = memnew(DictionaryPropertyEdit);
+			dpe->edit(obj, n);
+			EditorNode::get_singleton()->push_item(dpe.ptr());
 		}
 	}
 }

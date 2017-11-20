@@ -1853,6 +1853,8 @@ void SceneTreeDock::_local_tree_selected() {
 		remote_tree->hide();
 	edit_remote->set_pressed(false);
 	edit_local->set_pressed(true);
+
+	_node_selected();
 }
 
 void SceneTreeDock::_bind_methods() {

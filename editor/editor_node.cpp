@@ -303,8 +303,7 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/editor/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-		property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-		Ref<Theme> theme = create_custom_theme(theme_base->get_theme());
+		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 
 		theme_base->set_theme(theme);
 		gui_base->set_theme(theme);
@@ -1368,6 +1367,8 @@ void EditorNode::_prepare_history() {
 			}
 		} else if (Object::cast_to<Node>(obj)) {
 			text = Object::cast_to<Node>(obj)->get_name();
+		} else if (obj->is_class("ScriptEditorDebuggerInspectedObject")) {
+			text = obj->call("get_title");
 		} else {
 			text = obj->get_class();
 		}
@@ -1463,6 +1464,7 @@ void EditorNode::_edit_current() {
 
 	object_menu->set_disabled(true);
 
+	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
@@ -1516,6 +1518,11 @@ void EditorNode::_edit_current() {
 
 	} else {
 
+		if (current_obj->is_class("ScriptEditorDebuggerInspectedObject")) {
+			editable_warning = TTR("This is a remote object so changes to it will not be kept.\nPlease read the documentation relevant to debugging to better understand this workflow.");
+			capitalize = false;
+		}
+
 		property_editor->edit(current_obj);
 		node_dock->set_node(NULL);
 	}
@@ -1523,6 +1530,10 @@ void EditorNode::_edit_current() {
 	if (editable_warning != String()) {
 		property_editable_warning->show(); //hide by default
 		property_editable_warning_dialog->set_text(editable_warning);
+	}
+
+	if (property_editor->is_capitalize_paths_enabled() != capitalize) {
+		property_editor->set_enable_capitalize_paths(capitalize);
 	}
 
 	/* Take care of PLUGIN EDITOR */

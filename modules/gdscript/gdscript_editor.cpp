@@ -33,7 +33,7 @@
 #include "gdscript_compiler.h"
 #include "global_constants.h"
 #include "os/file_access.h"
-#include "project_settings.h"
+#include "core/engine.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
@@ -280,10 +280,62 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 		p_values->push_back(instance->debug_get_member_by_index(E->get().index));
 	}
 }
-void GDScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 
-	//no globals are really reachable in gdscript
+ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
+
+	ERR_FAIL_COND_V(_debug_parse_err_line >= 0, NULL);
+	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, NULL);
+
+	int l = _debug_call_stack_pos - p_level - 1;
+	ScriptInstance *instance = _call_stack[l].instance;
+
+	return instance;
 }
+
+void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+
+	const Map<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
+	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
+
+	List<Pair<String, Variant> > cinfo;
+	get_public_constants(&cinfo);
+
+	for (const Map<StringName, int>::Element *E = name_idx.front(); E; E = E->next()) {
+
+		if (ClassDB::class_exists(E->key()) || Engine::get_singleton()->has_singleton(E->key()))
+			continue;
+
+		bool is_script_constant = false;
+		for (List<Pair<String, Variant> >::Element *CE = cinfo.front(); CE; CE = CE->next()) {
+			if (CE->get().first == E->key()) {
+				is_script_constant = true;
+				break;
+			}
+		}
+		if (is_script_constant)
+			continue;
+
+		const Variant &var = globals[E->value()];
+		if (Object *obj = var) {
+			if (Object::cast_to<GDScriptNativeClass>(obj))
+				continue;
+		}
+
+		bool skip = false;
+		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+			if (E->key() == GlobalConstants::get_global_constant_name(i)) {
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+			continue;
+
+		p_globals->push_back(E->key());
+		p_values->push_back(var);
+	}
+}
+
 String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 
 	if (_debug_parse_err_line >= 0)
@@ -1743,7 +1795,7 @@ static void _find_type_arguments(GDScriptCompletionContext &context, const GDScr
 			}
 
 		} else {
-//regular method
+		//regular method
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 			if (p_argidx < m->get_argument_count()) {

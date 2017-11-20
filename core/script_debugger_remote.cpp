@@ -35,6 +35,8 @@
 #include "os/input.h"
 #include "os/os.h"
 #include "project_settings.h"
+#include "scene/main/node.h"
+
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -201,20 +203,39 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 				List<String> members;
 				List<Variant> member_vals;
-
+				if (ScriptInstance *inst = p_script->debug_get_stack_level_instance(lv)) {
+					members.push_back("self");
+					member_vals.push_back(inst->get_owner());
+				}
 				p_script->debug_get_stack_level_members(lv, &members, &member_vals);
-
 				ERR_CONTINUE(members.size() != member_vals.size());
 
 				List<String> locals;
 				List<Variant> local_vals;
-
 				p_script->debug_get_stack_level_locals(lv, &locals, &local_vals);
-
 				ERR_CONTINUE(locals.size() != local_vals.size());
 
+				List<String> globals;
+				List<Variant> globals_vals;
+				p_script->debug_get_globals(&globals, &globals_vals);
+				ERR_CONTINUE(globals.size() != globals_vals.size());
+
 				packet_peer_stream->put_var("stack_frame_vars");
-				packet_peer_stream->put_var(2 + locals.size() * 2 + members.size() * 2);
+				packet_peer_stream->put_var(3 + (locals.size() + members.size() + globals.size()) * 2);
+
+				{ //locals
+					packet_peer_stream->put_var(locals.size());
+
+					List<String>::Element *E = locals.front();
+					List<Variant>::Element *F = local_vals.front();
+
+					while (E) {
+						_put_variable(E->get(), F->get());
+
+						E = E->next();
+						F = F->next();
+					}
+				}
 
 				{ //members
 					packet_peer_stream->put_var(members.size());
@@ -231,11 +252,11 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 					}
 				}
 
-				{ //locals
-					packet_peer_stream->put_var(locals.size());
+				{ //globals
+					packet_peer_stream->put_var(globals.size());
 
-					List<String>::Element *E = locals.front();
-					List<Variant>::Element *F = local_vals.front();
+					List<String>::Element *E = globals.front();
+					List<Variant>::Element *F = globals_vals.front();
 
 					while (E) {
 						_put_variable(E->get(), F->get());
@@ -532,56 +553,88 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	if (!obj)
 		return;
 
+	typedef Pair<PropertyInfo, Variant> PropertyDesc;
+	List<PropertyDesc> properties;
+
+	if (ScriptInstance *si = obj->get_script_instance()) {
+		if (!si->get_script().is_null()) {
+
+			Set<StringName> members;
+			si->get_script()->get_members(&members);
+			for (Set<StringName>::Element *E = members.front(); E; E = E->next()) {
+
+				Variant m;
+				if (si->get(E->get(), m)) {
+					PropertyInfo pi(m.get_type(), String("Members/") + E->get());
+					properties.push_back(PropertyDesc(pi, m));
+				}
+			}
+
+			Map<StringName, Variant> constants;
+			si->get_script()->get_constants(&constants);
+			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+				PropertyInfo pi(E->value().get_type(), (String("Constants/") + E->key()));
+				properties.push_back(PropertyDesc(pi, E->value()));
+			}
+		}
+	}
+	if (Node *node = Object::cast_to<Node>(obj)) {
+		PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));
+		properties.push_front(PropertyDesc(pi, node->get_path()));
+	} else if (Resource *res = Object::cast_to<Resource>(obj)) {
+		if (Script *s = Object::cast_to<Script>(res)) {
+			Map<StringName, Variant> constants;
+			s->get_constants(&constants);
+			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
+				PropertyInfo pi(E->value().get_type(), String("Constants/") + E->key());
+				properties.push_front(PropertyDesc(pi, E->value()));
+			}
+		}
+	}
+
 	List<PropertyInfo> pinfo;
 	obj->get_property_list(&pinfo, true);
-
-	int props_to_send = 0;
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
 		if (E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-			props_to_send++;
+			properties.push_back(PropertyDesc(E->get(), obj->get(E->get().name)));
 		}
+	}
+
+	Array send_props;
+	for (int i = 0; i < properties.size(); i++) {
+		const PropertyInfo &pi = properties[i].first;
+		const Variant &var = properties[i].second;
+		RES res = var;
+
+		Array prop;
+		prop.push_back(pi.name);
+		prop.push_back(pi.type);
+
+		//only send information that can be sent..
+		int len = 0; //test how big is this to encode
+		encode_variant(var, NULL, len);
+		if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+			prop.push_back(PROPERTY_HINT_OBJECT_TOO_BIG);
+			prop.push_back("");
+			prop.push_back(pi.usage);
+			prop.push_back(Variant());
+		} else {
+			prop.push_back(pi.hint);
+			if (res.is_null())
+				prop.push_back(pi.hint_string);
+			else
+				prop.push_back(String("RES:") + res->get_path());
+			prop.push_back(pi.usage);
+			prop.push_back(var);
+		}
+		send_props.push_back(prop);
 	}
 
 	packet_peer_stream->put_var("message:inspect_object");
-	packet_peer_stream->put_var(props_to_send * 5 + 4);
+	packet_peer_stream->put_var(3);
 	packet_peer_stream->put_var(p_id);
 	packet_peer_stream->put_var(obj->get_class());
-	if (obj->is_class("Resource") || obj->is_class("Node"))
-		packet_peer_stream->put_var(obj->call("get_path"));
-	else
-		packet_peer_stream->put_var("");
-
-	packet_peer_stream->put_var(props_to_send);
-
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
-		if (E->get().usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CATEGORY)) {
-
-			if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
-				packet_peer_stream->put_var("*" + E->get().name);
-			} else {
-				packet_peer_stream->put_var(E->get().name);
-			}
-
-			Variant var = obj->get(E->get().name);
-			packet_peer_stream->put_var(E->get().type);
-			//only send information that can be sent..
-
-			int len = 0; //test how big is this to encode
-			encode_variant(var, NULL, len);
-
-			if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
-				packet_peer_stream->put_var(PROPERTY_HINT_OBJECT_TOO_BIG);
-				packet_peer_stream->put_var("");
-				packet_peer_stream->put_var(Variant());
-			} else {
-				packet_peer_stream->put_var(E->get().hint);
-				packet_peer_stream->put_var(E->get().hint_string);
-				packet_peer_stream->put_var(var);
-			}
-		}
-	}
+	packet_peer_stream->put_var(send_props);
 }
 
 void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
@@ -590,7 +643,11 @@ void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_p
 	if (!obj)
 		return;
 
-	obj->set(p_property, p_value);
+	String prop_name = p_property;
+	if (p_property.begins_with("Members/"))
+		prop_name = p_property.substr(8, p_property.length());
+
+	obj->set(prop_name, p_value);
 }
 
 void ScriptDebuggerRemote::_poll_events() {
