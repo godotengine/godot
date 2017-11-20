@@ -141,7 +141,25 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
-	scene_tabs->ensure_tab_visible(editor_data.get_edited_scene());
+
+	int current = editor_data.get_edited_scene();
+	if (scene_tabs->get_offset_buttons_visible()) {
+		// move add button to fixed position on the tabbar
+		if (scene_tab_add->get_parent() == scene_tabs) {
+			scene_tab_add->set_position(Point2(0, 0));
+			scene_tabs->remove_child(scene_tab_add);
+			tabbar_container->add_child(scene_tab_add);
+			tabbar_container->move_child(scene_tab_add, 1);
+		}
+	} else {
+		// move add button to after last tab
+		if (scene_tab_add->get_parent() == tabbar_container) {
+			tabbar_container->remove_child(scene_tab_add);
+			scene_tabs->add_child(scene_tab_add);
+		}
+		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+		scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
+	}
 }
 
 void EditorNode::_update_title() {
@@ -327,6 +345,7 @@ void EditorNode::_notification(int p_what) {
 
 		prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
 		distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
+		scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
 
 		resource_new_button->set_icon(gui_base->get_icon("New", "EditorIcons"));
 		resource_load_button->set_icon(gui_base->get_icon("Load", "EditorIcons"));
@@ -343,6 +362,9 @@ void EditorNode::_notification(int p_what) {
 		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
+	}
+	if (p_what = Control::NOTIFICATION_RESIZED) {
+		_update_scene_tabs();
 	}
 }
 
@@ -1765,6 +1787,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int idx = editor_data.add_edited_scene(-1);
 			_scene_tab_changed(idx);
 			editor_data.clear_editor_states();
+			_update_scene_tabs();
 
 		} break;
 		case FILE_NEW_INHERITED_SCENE:
@@ -3903,6 +3926,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	} else {
 		_discard_changes();
 	}
+	_update_scene_tabs();
 }
 
 void EditorNode::_scene_tab_hover(int p_tab) {
@@ -4881,19 +4905,27 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("mouse_exited", this, "_scene_tab_exit");
 	scene_tabs->connect("gui_input", this, "_scene_tab_input");
 	scene_tabs->connect("reposition_active_tab_request", this, "_reposition_active_tab");
+	scene_tabs->connect("resized", this, "_update_scene_tabs");
 
-	HBoxContainer *tabbar_container = memnew(HBoxContainer);
+	tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	srt->add_child(tabbar_container);
 	tabbar_container->add_child(scene_tabs);
 	distraction_free = memnew(ToolButton);
-	tabbar_container->add_child(distraction_free);
 	distraction_free->set_shortcut(ED_SHORTCUT("editor/distraction_free_mode", TTR("Distraction Free Mode"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F11));
 	distraction_free->set_tooltip(TTR("Toggle distraction-free mode."));
 	distraction_free->connect("pressed", this, "_toggle_distraction_free_mode");
 	distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
 	distraction_free->set_toggle_mode(true);
+
+	scene_tab_add = memnew(ToolButton);
+	tabbar_container->add_child(scene_tab_add);
+	tabbar_container->add_child(distraction_free);
+	scene_tab_add->set_tooltip(TTR("Add a new scene."));
+	scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
+	scene_tab_add->add_color_override("icon_color_normal", Color(0.6f, 0.6f, 0.6f, 0.8f));
+	scene_tab_add->connect("pressed", this, "_menu_option", make_binds(FILE_NEW_SCENE));
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);

@@ -344,7 +344,10 @@ private:
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
+
+	HBoxContainer *tabbar_container;
 	ToolButton *distraction_free;
+	ToolButton *scene_tab_add;
 
 	bool scene_distraction;
 	bool script_distraction;

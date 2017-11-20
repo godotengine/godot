@@ -88,6 +88,7 @@ private:
 
 	int hover; // hovered tab
 	int min_width;
+	bool scrolling_enabled;
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
@@ -131,9 +132,15 @@ public:
 	int get_current_tab() const;
 	int get_hovered_tab() const;
 
+	int get_tab_offset() const;
+	bool get_offset_buttons_visible() const;
+
 	void remove_tab(int p_idx);
 
 	void clear_tabs();
+
+	void set_scrolling_enabled(bool p_enabled);
+	bool get_scrolling_enabled() const;
 
 	void ensure_tab_visible(int p_idx);
 	void set_min_width(int p_width);
