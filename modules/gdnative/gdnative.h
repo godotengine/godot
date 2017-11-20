@@ -103,12 +103,10 @@ public:
 	static void _bind_methods();
 };
 
-typedef godot_variant (*native_call_cb)(void *, godot_array *);
-
 struct GDNativeCallRegistry {
 	static GDNativeCallRegistry *singleton;
 
-	inline GDNativeCallRegistry *get_singleton() {
+	inline static GDNativeCallRegistry *get_singleton() {
 		return singleton;
 	}
 
