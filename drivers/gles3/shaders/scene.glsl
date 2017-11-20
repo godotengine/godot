@@ -216,7 +216,15 @@ out highp vec3 vertex_interp;
 out vec3 normal_interp;
 
 #if defined(ENABLE_COLOR_INTERP)
-out vec4 color_interp;
+	#if defined(INTERPOLATION_FLAT)
+		flat out vec4 color_interp;
+	#elif defined(INTERPOLATION_SMOOTH)
+		smooth out vec4 color_interp;
+	#elif defined(INTERPOLATION_NO_PERSPECTIVE)
+		noperspective out vec4 color_interp;
+	#else
+		out vec4 color_interp;
+	#endif
 #endif
 
 #if defined(ENABLE_UV_INTERP)
@@ -541,7 +549,15 @@ uniform highp mat4 world_transform;
 /* Varyings */
 
 #if defined(ENABLE_COLOR_INTERP)
-in vec4 color_interp;
+	#if defined(INTERPOLATION_FLAT)
+		flat in vec4 color_interp;
+	#elif defined(INTERPOLATION_SMOOTH)
+		smooth in vec4 color_interp;
+	#elif defined(INTERPOLATION_NO_PERSPECTIVE)
+		noperspective in vec4 color_interp;
+	#else
+		in vec4 color_interp;
+	#endif
 #endif
 
 #if defined(ENABLE_UV_INTERP)

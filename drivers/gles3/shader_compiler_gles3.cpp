@@ -837,6 +837,10 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 
+	actions[VS::SHADER_SPATIAL].render_mode_defines["interpolation_flat"] = "#define INTERPOLATION_FLAT\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["interpolation_smooth"] = "#define INTERPOLATION_SMOOTH\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["interpolation_no_perspective"] = "#define INTERPOLATION_NO_PERSPECTIVE\n";
+
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_burley"] = "#define DIFFUSE_BURLEY\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_oren_nayar"] = "#define DIFFUSE_OREN_NAYAR\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["diffuse_lambert_wrap"] = "#define DIFFUSE_LAMBERT_WRAP\n";
