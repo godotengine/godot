@@ -2849,6 +2849,20 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		camera->set_doppler_tracking(doppler ? Camera::DOPPLER_TRACKING_IDLE_STEP : Camera::DOPPLER_TRACKING_DISABLED);
 		view_menu->get_popup()->set_item_checked(idx, doppler);
 	}
+	if (p_state.has("gizmos")) {
+		bool gizmos = p_state["gizmos"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
+		if (view_menu->get_popup()->is_item_checked(idx) != gizmos)
+			_menu_option(VIEW_GIZMOS);
+	}
+	if (p_state.has("information")) {
+		bool information = p_state["information"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_INFORMATION);
+		if (view_menu->get_popup()->is_item_checked(idx) != information)
+			_menu_option(VIEW_INFORMATION);
+	}
 	if (p_state.has("half_res")) {
 		bool half_res = p_state["half_res"];
 
@@ -2880,6 +2894,9 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["use_environment"] = camera->get_environment().is_valid();
 	d["use_orthogonal"] = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 	d["listener"] = viewport->is_audio_listener();
+	d["doppler"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_DOPPLER));
+	d["gizmos"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS));
+	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
