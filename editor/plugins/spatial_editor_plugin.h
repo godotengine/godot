@@ -84,6 +84,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_ORTHOGONAL,
 		VIEW_AUDIO_LISTENER,
 		VIEW_GIZMOS,
+		VIEW_FPS,
 	};
 
 public:
@@ -114,6 +115,9 @@ private:
 	bool orthogonal;
 	float gizmo_scale;
 
+	PanelContainer *fps;
+	Label *fps_label;
+	
 	struct _RayResult {
 
 		Spatial *item;
