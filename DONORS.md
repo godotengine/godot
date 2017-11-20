@@ -17,32 +17,35 @@ None so far, but your company could be the first! :)
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
+    GameDev.TV <https://www.gamedev.tv>
 
 ## Mini sponsors
 
     Andreas
     Andreas Hirschauer
     Christian Uldall Pedersen
+    Christoph Woinke
     E Hewert
     Hein-Pieter van Braam
     Matthieu Huvé
     Nathan Warden
     Neal Gompa (Conan Kudo)
     Olimpiu Metiu
+    Pascal Julien
     Ruslan Mustakov
     Slobodan Milnovic
 
 ## Gold donors
 
+    3Dexplorer
     Alexander Otto
+    Andy Meier
     Asdf
-    Blair Allen
     cheese65536
     Jake Bo
     Javier
     Manuele Finocchiaro
     Officine Pixel S.n.c.
-    Ranoller
     Rémi Verschelde
     Stephan Lanfermann
 
@@ -50,8 +53,10 @@ None so far, but your company could be the first! :)
     Austen McRae
     Bernhard Liebl
     Gerald E Butler
+    Jahn Johansen
     Jordan M Lucas
     Kris Michael
+    Ranoller
 
     BanjoNode2D
     Chris Serino
@@ -63,7 +68,6 @@ None so far, but your company could be the first! :)
     Henrique Alves
     Laurence Bannister
     Leo
-    mhilbrunner
     Przemysław Gołąb (n-pigeon)
     Robert Willes
     Robin Arys
@@ -72,9 +76,12 @@ None so far, but your company could be the first! :)
     Testus Maximus
     Thomas Bjarnelöf
     Xavier Tan
+    Zaq Poi
 
     Amanda Haldy
     Andreas Haas
+    Andres Cuevas
+    Arnaud Verstuyf
     Bryanna M
     Chris Brown
     Cody Parker
@@ -82,16 +89,16 @@ None so far, but your company could be the first! :)
     Ezra Theunissen
     flesk
     François Cantin
+    Giovanni Solimeno
     Hendrik Mans
     Jeppe Zapp
     Justin Arnold
     Justo Delgado Baudí
     Leandro Voltolino
     Lucien Boudy
-    Myles
     Noah
+    Ryan Estes
     Trent McPheron
-    x1212
 
 ## Silver donors
 
@@ -102,23 +109,36 @@ None so far, but your company could be the first! :)
     Avencherus
     Bastian Böhm
     Ben Vercammen
+    Blair Allen
     Bryan Stevenson
     Christian Baune
     Christian Winter
     Collin Shooltz
+    Daniel Kaplan
+    David Cravens
+    David May
+    Diego Moreira Guimarães
     Dominik Wetzel
+    Eric Martini
     Fabian Becker
     fengjiongmax
-    Fredy Romero Sam
+    Frank C. Simmons
     Geequlim
     Gerrit Großkopf
     Guldoman
+    Gustav Dahlström
+    HardRound
     hatniX
     HeartBeast
     Heribert Hirth
     Hunter Jones
+    Jaime Ruiz-Borau Vizárraga
+    Jeff Hungerford
+    Jesse Liles
+    joe513
     Jonathon
     Josh 'Cheeseness' Bush
+    Juan Negrier
     JuDelCo
     Julian Murgia
     Juraj Móza
@@ -127,6 +147,7 @@ None so far, but your company could be the first! :)
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
     Kobi Malul
+    Linus Lind Lundgren
     Lisandro Lorea
     magodev
     Martin Novák
@@ -134,7 +155,9 @@ None so far, but your company could be the first! :)
     Matthew Valancy
     Matthias Hölzl
     Max R.R. Collada
+    mhilbrunner
     Michael Gringauz
+    Michael Tintiuc
     Mikael Olsson
     MoM
     Moritz Laass
@@ -142,9 +165,10 @@ None so far, but your company could be the first! :)
     Neil Blakey-Milner
     Nik Lee
     Niko Leopold
-    nvgrod
+    Oleg Tyshchenko
     Pablo Seibelt
     Pan Ip
+    Pat LaBine
     Patrick Nafarrete
     Paul Mason
     Paweł Kowal
@@ -153,17 +177,15 @@ None so far, but your company could be the first! :)
     rayos
     Richman Stewart
     Roger Smith
-    Ryan Estes
+    Roman Tinkov
     Sam Van Campenhout
-    Sam Vila
     Sasori Olkof
     Scott D. Yelich
     Sootstone
-    Tavo Tell
     TheHappieCat
     Theo Cranmore
+    Thomas Norman
     Tom Larrow
-    Troy Bonneau
     UltyX
     Wout Standaert
     Xananax & karroffel
