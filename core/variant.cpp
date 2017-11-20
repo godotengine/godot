@@ -267,6 +267,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				QUAT,
+				VECTOR3,
 				NIL
 			};
 
