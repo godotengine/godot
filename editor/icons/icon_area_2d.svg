@@ -1,5 +1,3 @@
 <svg width="16" height="16" version="1.1" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1036.4)">
-<path transform="translate(0 1036.4)" d="m1 1v2 2h2v-2h2v-2h-4zm10 0v2h2v2h2v-4h-4zm-7 3v2 4 2h8v-2-6h-8zm2 2h4v4h-4v-4zm-5 5v2 2h2 2v-2h-2v-2h-2zm12 0v2h-2v2h4v-2-2h-2z" fill="#a5b7f3"/>
-</g>
+<path d="m1 1v2 2h2v-2h2v-2h-4zm10 0v2h2v2h2v-4h-4zm-7 3v2 4 2h8v-2-6h-8zm2 2h4v4h-4v-4zm-5 5v2 2h2 2v-2h-2v-2h-2zm12 0v2h-2v2h4v-2-2h-2z" fill="#a5b7f3"/>
 </svg>

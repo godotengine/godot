@@ -1238,7 +1238,9 @@ void TextEdit::_notification(int p_what) {
 					char_ofs += char_w;
 
 					if (j == str.length() - 1 && is_folded(line)) {
-						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin, ofs_y), Color(1, 1, 1, 1), true);
+						int yofs = (get_row_height() - cache.folded_eol_icon->get_height()) / 2;
+						int xofs = cache.folded_eol_icon->get_width() / 2;
+						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs, ofs_y + yofs), Color(1, 1, 1, 1));
 					}
 				}
 
@@ -3937,7 +3939,7 @@ void TextEdit::_update_caches() {
 	cache.tab_icon = get_icon("tab");
 	cache.folded_icon = get_icon("GuiTreeArrowRight", "EditorIcons");
 	cache.can_fold_icon = get_icon("GuiTreeArrowDown", "EditorIcons");
-	cache.folded_eol_icon = get_icon("GuiTabMenu", "EditorIcons");
+	cache.folded_eol_icon = get_icon("GuiEllipsis", "EditorIcons");
 	text.set_font(cache.font);
 }
 
