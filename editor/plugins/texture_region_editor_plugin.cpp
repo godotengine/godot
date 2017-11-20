@@ -777,6 +777,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	edited_margin = -1;
 	drag_index = -1;
 	drag = false;
+	snap_mode = SNAP_NONE;
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
