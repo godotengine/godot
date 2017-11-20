@@ -109,7 +109,7 @@ void GameCenter::connect() {
 				GameCenter::get_singleton()->authenticated = true;
 			} else {
 				ret["result"] = "error";
-				ret["error_code"] = error.code;
+				ret["error_code"] = (int64_t)error.code;
 				ret["error_description"] = [error.localizedDescription UTF8String];
 				GameCenter::get_singleton()->authenticated = false;
 			};
@@ -145,7 +145,7 @@ Error GameCenter::post_score(Variant p_score) {
 					ret["result"] = "ok";
 				} else {
 					ret["result"] = "error";
-					ret["error_code"] = error.code;
+					ret["error_code"] = (int64_t)error.code;
 					ret["error_description"] = [error.localizedDescription UTF8String];
 				};
 
@@ -183,7 +183,7 @@ Error GameCenter::award_achievement(Variant p_params) {
 						ret["result"] = "ok";
 					} else {
 						ret["result"] = "error";
-						ret["error_code"] = error.code;
+						ret["error_code"] = (int64_t)error.code;
 					};
 
 					pending_events.push_back(ret);
@@ -241,7 +241,7 @@ void GameCenter::request_achievement_descriptions() {
 
 		} else {
 			ret["result"] = "error";
-			ret["error_code"] = error.code;
+			ret["error_code"] = (int64_t)error.code;
 		};
 
 		pending_events.push_back(ret);
@@ -273,7 +273,7 @@ void GameCenter::request_achievements() {
 
 		} else {
 			ret["result"] = "error";
-			ret["error_code"] = error.code;
+			ret["error_code"] = (int64_t)error.code;
 		};
 
 		pending_events.push_back(ret);
@@ -289,7 +289,7 @@ void GameCenter::reset_achievements() {
 			ret["result"] = "ok";
 		} else {
 			ret["result"] = "error";
-			ret["error_code"] = error.code;
+			ret["error_code"] = (int64_t)error.code;
 		};
 
 		pending_events.push_back(ret);
@@ -358,7 +358,7 @@ Error GameCenter::request_identity_verification_signature() {
 			ret["player_id"] = [player.playerID UTF8String];
 		} else {
 			ret["result"] = "error";
-			ret["error_code"] = error.code;
+			ret["error_code"] = (int64_t)error.code;
 			ret["error_description"] = [error.localizedDescription UTF8String];
 		};
 

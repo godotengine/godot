@@ -862,6 +862,17 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
+String String::join(Vector<String> parts) {
+	String ret;
+	for (int i = 0; i < parts.size(); ++i) {
+		if (i > 0) {
+			ret += *this;
+		}
+		ret += parts[i];
+	}
+	return ret;
+}
+
 CharType String::char_uppercase(CharType p_char) {
 
 	return _find_upper(p_char);

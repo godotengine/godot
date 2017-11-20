@@ -61,10 +61,13 @@ def configure(env):
         env.Append(LINKFLAGS=['-flto'])
 
     ## Architecture
+    if env["ios_sim"] and not ("arch" in env):
+      env["arch"] = "x86"
 
-    if env["ios_sim"] or env["arch"] == "x86":  # i386, simulator
-        env["arch"] = "x86"
+    if env["arch"] == "x86":  # i386, simulator
         env["bits"] = "32"
+    elif env["arch"] == "x86_64":
+        env["bits"] = "64"
     elif (env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32"):  # arm
         env["arch"] = "arm"
         env["bits"] = "32"
@@ -95,10 +98,11 @@ def configure(env):
 
     ## Compile flags
 
-    if (env["arch"] == "x86"):
+    if (env["arch"] == "x86" or env["arch"] == "x86_64"):
         env['IPHONEPLATFORM'] = 'iPhoneSimulator'
-        env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
-        env.Append(CCFLAGS='-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"'.split())
+        env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
+        env.Append(CCFLAGS=('-arch ' + arch_flag + ' -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=9.0 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"').split())
     elif (env["arch"] == "arm"):
         env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=9.0 -MMD -MT dependencies'.split())
     elif (env["arch"] == "arm64"):
@@ -113,8 +117,9 @@ def configure(env):
 
     ## Link flags
 
-    if (env["arch"] == "x86"):
-        env.Append(LINKFLAGS=['-arch', 'i386', '-mios-simulator-version-min=4.3',
+    if (env["arch"] == "x86" or env["arch"] == "x86_64"):
+        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
+        env.Append(LINKFLAGS=['-arch', arch_flag, '-mios-simulator-version-min=9.0',
                               '-isysroot', '$IPHONESDK',
                               '-Xlinker',
                               '-objc_abi_version',

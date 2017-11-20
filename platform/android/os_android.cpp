@@ -705,7 +705,24 @@ String OS_Android::get_joy_guid(int p_device) const {
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2"; //TODO support etc2 only if GLES3 driver is selected
+	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2") {
+		//TODO support etc2 only if GLES3 driver is selected
+		return true;
+	}
+#if defined(__aarch64__)
+	if (p_feature == "arm64-v8a") {
+		return true;
+	}
+#elif defined(__ARM_ARCH_7A__)
+	if (p_feature == "armeabi-v7a" || p_feature == "armeabi") {
+		return true;
+	}
+#elif defined(__arm__)
+	if (p_feature == "armeabi") {
+		return true;
+	}
+#endif
+	return false;
 }
 
 OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {

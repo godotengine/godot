@@ -123,7 +123,7 @@ bool GDNative::initialize() {
 		return false;
 	}
 #ifdef IPHONE_ENABLED
-	String path = lib_path.replace("res://", "dylibs/");
+	String path = "";
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif
@@ -148,7 +148,7 @@ bool GDNative::initialize() {
 	// we cheat here a little bit. you saw nothing
 	initialized = true;
 
-	err = get_symbol(library->get_symbol_prefix() + init_symbol, library_init);
+	err = get_symbol(library->get_symbol_prefix() + init_symbol, library_init, false);
 
 	initialized = false;
 
@@ -280,7 +280,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 	return *(Variant *)&result;
 }
 
-Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
+Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) {
 
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");
@@ -291,7 +291,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle) {
 			native_handle,
 			p_procedure_name,
 			r_handle,
-			true);
+			p_optional);
 
 	return result;
 }

@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>$name</string>
 	<key>CFBundleExecutable</key>
-	<string>$binary.iphone</string>
+	<string>$binary</string>
 	<key>CFBundleIcons</key>
 	<dict/>
 	<key>CFBundleIcons~ipad</key>
@@ -47,5 +47,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	$additional_plist_content
 </dict>
 </plist>

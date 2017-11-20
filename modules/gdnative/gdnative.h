@@ -141,7 +141,7 @@ public:
 
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 
-	Error get_symbol(StringName p_procedure_name, void *&r_handle);
+	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true);
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {

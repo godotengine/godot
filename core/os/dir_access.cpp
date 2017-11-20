@@ -98,6 +98,7 @@ static Error _erase_recursive(DirAccess *da) {
 			err = _erase_recursive(da);
 			if (err) {
 				print_line("err recurso " + E->get());
+				da->change_dir("..");
 				return err;
 			}
 			err = da->change_dir("..");
@@ -336,6 +337,102 @@ Error DirAccess::copy(String p_from, String p_to, int chmod_flags) {
 
 	memdelete(fsrc);
 	memdelete(fdst);
+
+	return err;
+}
+
+// Changes dir for the current scope, returning back to the original dir
+// when scope exits
+class DirChanger {
+	DirAccess *da;
+	String original_dir;
+
+public:
+	DirChanger(DirAccess *p_da, String p_dir) {
+		da = p_da;
+		original_dir = p_da->get_current_dir();
+		p_da->change_dir(p_dir);
+	}
+
+	~DirChanger() {
+		da->change_dir(original_dir);
+	}
+};
+
+Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags) {
+	List<String> dirs;
+
+	String curdir = get_current_dir();
+	list_dir_begin();
+	String n = get_next();
+	while (n != String()) {
+
+		if (n != "." && n != "..") {
+
+			if (current_is_dir())
+				dirs.push_back(n);
+			else {
+				String rel_path = n;
+				if (!n.is_rel_path()) {
+					list_dir_end();
+					return ERR_BUG;
+				}
+				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				if (err) {
+					list_dir_end();
+					return err;
+				}
+			}
+		}
+
+		n = get_next();
+	}
+
+	list_dir_end();
+
+	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
+		String rel_path = E->get();
+		String target_dir = p_to + rel_path;
+		if (!p_target_da->dir_exists(target_dir)) {
+			Error err = p_target_da->make_dir(target_dir);
+			ERR_FAIL_COND_V(err, err);
+		}
+
+		Error err = change_dir(E->get());
+		ERR_FAIL_COND_V(err, err);
+		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags);
+		if (err) {
+			change_dir("..");
+			ERR_PRINT("Failed to copy recursively");
+			return err;
+		}
+		err = change_dir("..");
+		if (err) {
+			ERR_PRINT("Failed to go back");
+			return err;
+		}
+	}
+
+	return OK;
+}
+
+Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
+	ERR_FAIL_COND_V(!dir_exists(p_from), ERR_FILE_NOT_FOUND);
+
+	DirAccess *target_da = DirAccess::create_for_path(p_to);
+	ERR_FAIL_COND_V(!target_da, ERR_CANT_CREATE);
+
+	if (!target_da->dir_exists(p_to)) {
+		Error err = target_da->make_dir_recursive(p_to);
+		if (err) {
+			memdelete(target_da);
+		}
+		ERR_FAIL_COND_V(err, err);
+	}
+
+	DirChanger dir_changer(this, p_from);
+	Error err = _copy_dir(target_da, p_to + "/", p_chmod_flags);
+	memdelete(target_da);
 
 	return err;
 }

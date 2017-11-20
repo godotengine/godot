@@ -470,9 +470,52 @@ void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p
 	extra_files.push_back(ef);
 }
 
-void EditorExportPlugin::add_shared_object(const String &p_path) {
+void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<String> &tags) {
 
-	shared_objects.push_back(p_path);
+	shared_objects.push_back(SharedObject(p_path, tags));
+}
+
+void EditorExportPlugin::add_ios_framework(const String &p_path) {
+	ios_frameworks.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_ios_frameworks() const {
+	return ios_frameworks;
+}
+
+void EditorExportPlugin::add_ios_plist_content(const String &p_plist_content) {
+	ios_plist_content += p_plist_content + "\n";
+}
+
+String EditorExportPlugin::get_ios_plist_content() const {
+	return ios_plist_content;
+}
+
+void EditorExportPlugin::add_ios_linker_flags(const String &p_flags) {
+	if (ios_linker_flags.length() > 0) {
+		ios_linker_flags += ' ';
+	}
+	ios_linker_flags += p_flags;
+}
+
+String EditorExportPlugin::get_ios_linker_flags() const {
+	return ios_linker_flags;
+}
+
+void EditorExportPlugin::add_ios_bundle_file(const String &p_path) {
+	ios_bundle_files.push_back(p_path);
+}
+
+Vector<String> EditorExportPlugin::get_ios_bundle_files() const {
+	return ios_bundle_files;
+}
+
+void EditorExportPlugin::add_ios_cpp_code(const String &p_code) {
+	ios_cpp_code += p_code;
+}
+
+String EditorExportPlugin::get_ios_cpp_code() const {
+	return ios_cpp_code;
 }
 
 void EditorExportPlugin::_export_file_script(const String &p_path, const String &p_type, const PoolVector<String> &p_features) {
@@ -482,17 +525,17 @@ void EditorExportPlugin::_export_file_script(const String &p_path, const String 
 	}
 }
 
-void EditorExportPlugin::_export_begin_script(const PoolVector<String> &p_features) {
+void EditorExportPlugin::_export_begin_script(const PoolVector<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
 
 	if (get_script_instance()) {
-		get_script_instance()->call("_export_begin", p_features);
+		get_script_instance()->call("_export_begin", p_features, p_debug, p_path, p_flags);
 	}
 }
 
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
 }
 
-void EditorExportPlugin::_export_begin(const Set<String> &p_features) {
+void EditorExportPlugin::_export_begin(const Set<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
 }
 
 void EditorExportPlugin::skip() {
@@ -502,33 +545,58 @@ void EditorExportPlugin::skip() {
 
 void EditorExportPlugin::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("add_shared_object", "path"), &EditorExportPlugin::add_shared_object);
+	ClassDB::bind_method(D_METHOD("add_shared_object", "path", "tags"), &EditorExportPlugin::add_shared_object);
 	ClassDB::bind_method(D_METHOD("add_file", "path", "file", "remap"), &EditorExportPlugin::add_file);
+	ClassDB::bind_method(D_METHOD("add_ios_framework", "path"), &EditorExportPlugin::add_ios_framework);
+	ClassDB::bind_method(D_METHOD("add_ios_plist_content", "plist_content"), &EditorExportPlugin::add_ios_plist_content);
+	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_ios_linker_flags);
+	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_ios_bundle_file);
+	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_ios_cpp_code);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 
 	BIND_VMETHOD(MethodInfo("_export_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::POOL_STRING_ARRAY, "features")));
-	BIND_VMETHOD(MethodInfo("_export_begin", PropertyInfo(Variant::POOL_STRING_ARRAY, "features")));
+	BIND_VMETHOD(MethodInfo("_export_begin", PropertyInfo(Variant::POOL_STRING_ARRAY, "features"), PropertyInfo(Variant::BOOL, "is_debug"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags")));
 }
 
 EditorExportPlugin::EditorExportPlugin() {
 	skipped = false;
 }
 
-Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
-
+EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_containers(const Ref<EditorExportPreset> &p_preset) {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
+	platform->get_platform_features(&feature_list);
 	platform->get_preset_features(p_preset, &feature_list);
-	//figure out features
-	Set<String> features;
-	PoolVector<String> features_pv;
+
+	FeatureContainers result;
 	for (List<String>::Element *E = feature_list.front(); E; E = E->next()) {
-		features.insert(E->get());
-		features_pv.push_back(E->get());
+		result.features.insert(E->get());
+		result.features_pv.push_back(E->get());
 	}
+	return result;
+}
 
+EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	FeatureContainers features = p_platform.get_feature_containers(p_preset);
 	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	//initial export plugin callback
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->get_script_instance()) { //script based
+			export_plugins[i]->_export_begin_script(features.features_pv, p_debug, p_path, p_flags);
+		} else {
+			export_plugins[i]->_export_begin(features.features, p_debug, p_path, p_flags);
+		}
+	}
+}
 
+EditorExportPlatform::ExportNotifier::~ExportNotifier() {
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		export_plugins[i]->_export_end();
+	}
+}
+
+Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 	//figure out paths of files that will be exported
 	Set<String> paths;
 	Vector<String> path_remaps;
@@ -551,13 +619,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 
-	//initial export plugin callback
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
-		if (export_plugins[i]->get_script_instance()) { //script based
-			export_plugins[i]->_export_begin_script(features_pv);
-		} else {
-			export_plugins[i]->_export_begin(features);
-		}
 		if (p_so_func) {
 			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
 				p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
@@ -569,6 +632,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 		export_plugins[i]->_clear();
 	}
+
+	FeatureContainers feature_containers = get_feature_containers(p_preset);
+	Set<String> &features = feature_containers.features;
+	PoolVector<String> &features_pv = feature_containers.features_pv;
 
 	//store everything in the export medium
 	int idx = 0;
@@ -686,7 +753,16 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	return OK;
 }
 
-Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
+Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObject &p_so) {
+	PackData *pack_data = (PackData *)p_userdata;
+	if (pack_data->so_files) {
+		pack_data->so_files->push_back(p_so);
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files) {
 
 	EditorProgress ep("savepack", TTR("Packing"), 102);
 
@@ -697,8 +773,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	PackData pd;
 	pd.ep = &ep;
 	pd.f = ftmp;
+	pd.so_files = p_so_files;
 
-	Error err = export_project_files(p_preset, _save_pack_file, &pd);
+	Error err = export_project_files(p_preset, _save_pack_file, &pd, _add_shared_object);
 
 	memdelete(ftmp); //close tmp file
 
@@ -1203,6 +1280,7 @@ String EditorExportPlatformPC::get_binary_extension() const {
 }
 
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");

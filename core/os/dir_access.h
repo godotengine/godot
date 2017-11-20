@@ -52,6 +52,9 @@ public:
 private:
 	AccessType _access_type;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
+
+	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
+
 protected:
 	String _get_root_path() const;
 	String _get_root_string() const;
@@ -89,6 +92,7 @@ public:
 	static bool exists(String p_dir);
 	virtual size_t get_space_left() = 0;
 
+	Error copy_dir(String p_from, String p_to, int chmod_flags = -1);
 	virtual Error copy(String p_from, String p_to, int chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;

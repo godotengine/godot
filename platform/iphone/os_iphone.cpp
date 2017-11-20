@@ -46,6 +46,7 @@
 #include "sem_iphone.h"
 
 #include "ios.h"
+#include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
 
@@ -99,9 +100,11 @@ void OSIPhone::initialize_core() {
 void OSIPhone::initialize_logger() {
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(SyslogLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
+#ifdef DEBUG_ENABLED
+	// it seems iOS app's stdout/stderr is only obtainable if you launch it from Xcode
+	loggers.push_back(memnew(StdLogger));
+#endif
+	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
@@ -402,6 +405,37 @@ void OSIPhone::alert(const String &p_alert, const String &p_title) {
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
+Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle) {
+	if (p_path.length() == 0) {
+		p_library_handle = RTLD_SELF;
+		return OK;
+	}
+	return OS_Unix::open_dynamic_library(p_path, p_library_handle);
+}
+
+Error OSIPhone::close_dynamic_library(void *p_library_handle) {
+	if (p_library_handle == RTLD_SELF) {
+		return OK;
+	}
+	return OS_Unix::close_dynamic_library(p_library_handle);
+}
+
+HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
+void register_dynamic_symbol(char *name, void *address) {
+	OSIPhone::dynamic_symbol_lookup_table[String(name)] = address;
+}
+
+Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional) {
+	if (p_library_handle == RTLD_SELF) {
+		void **ptr = OSIPhone::dynamic_symbol_lookup_table.getptr(p_name);
+		if (ptr) {
+			p_symbol_handle = *ptr;
+			return OK;
+		}
+	}
+	return OS_Unix::get_dynamic_library_symbol_handle(p_library_handle, p_name, p_symbol_handle, p_optional);
+}
+
 void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
@@ -558,7 +592,36 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";
 }
 
+// Initialization order between compilation units is not guaranteed,
+// so we use this as a hack to ensure certain code is called before
+// everything else, but after all units are initialized.
+typedef void (*init_callback)();
+static init_callback *ios_init_callbacks = NULL;
+static int ios_init_callbacks_count = 0;
+static int ios_init_callbacks_capacity = 0;
+
+void add_ios_init_callback(init_callback cb) {
+	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
+		void *new_ptr = realloc(ios_init_callbacks, sizeof(cb) * 32);
+		if (new_ptr) {
+			ios_init_callbacks = (init_callback *)(new_ptr);
+			ios_init_callbacks_capacity += 32;
+		}
+	}
+	if (ios_init_callbacks_capacity > ios_init_callbacks_count) {
+		ios_init_callbacks[ios_init_callbacks_count] = cb;
+		++ios_init_callbacks_count;
+	}
+}
+
 OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
+	for (int i = 0; i < ios_init_callbacks_count; ++i) {
+		ios_init_callbacks[i]();
+	}
+	free(ios_init_callbacks);
+	ios_init_callbacks = NULL;
+	ios_init_callbacks_count = 0;
+	ios_init_callbacks_capacity = 0;
 
 	main_loop = NULL;
 	visual_server = NULL;
