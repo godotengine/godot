@@ -391,6 +391,8 @@ public:
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
 		TOOL_MODE_LIST_SELECT,
+		TOOL_LOCK_SELECTED,
+		TOOL_UNLOCK_SELECTED,
 		TOOL_MAX
 
 	};
@@ -479,13 +481,17 @@ private:
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
 		MENU_VIEW_CAMERA_SETTINGS,
-
+		MENU_LOCK_SELECTED,
+		MENU_UNLOCK_SELECTED
 	};
 
 	Button *tool_button[TOOL_MAX];
 
 	MenuButton *transform_menu;
 	MenuButton *view_menu;
+
+	ToolButton *lock_button;
+	ToolButton *unlock_button;
 
 	AcceptDialog *accept;
 
@@ -542,6 +548,8 @@ private:
 	SpatialEditor();
 
 	bool is_any_freelook_active() const;
+
+	void _refresh_menu_icons();
 
 protected:
 	void _notification(int p_what);
