@@ -109,6 +109,9 @@ Ref<GDNativeLibrary> GDNative::get_library() {
 	return library;
 }
 
+extern "C" void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have);
+extern "C" void _gdnative_report_loading_error(const godot_object *p_library, const char *p_what);
+
 bool GDNative::initialize() {
 	if (library.is_null()) {
 		ERR_PRINT("No library set, can't initialize GDNative object");
@@ -168,6 +171,8 @@ bool GDNative::initialize() {
 	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	options.report_version_mismatch = &_gdnative_report_version_mismatch;
+	options.report_loading_error = &_gdnative_report_loading_error;
 	options.gd_native_library = (godot_object *)(get_library().ptr());
 	options.active_library_path = (godot_string *)&path;
 
