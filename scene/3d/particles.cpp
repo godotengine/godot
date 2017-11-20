@@ -836,9 +836,15 @@ void ParticlesMaterial::_update_shader() {
 
 	if (flags[FLAG_DISABLE_Z]) {
 
-		code += "	TRANSFORM[0] = vec4(cos(CUSTOM.x),-sin(CUSTOM.x),0.0,0.0);\n";
-		code += "	TRANSFORM[1] = vec4(sin(CUSTOM.x),cos(CUSTOM.x),0.0,0.0);\n";
-		code += "	TRANSFORM[2] = vec4(0.0,0.0,1.0,0.0);\n";
+		if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
+			code += "	if (length(VELOCITY) > 0.0) { TRANSFORM[1].xyz = normalize(VELOCITY); } else { TRANSFORM[1].xyz = normalize(TRANSFORM[1].xyz); }\n";
+			code += "	TRANSFORM[0].xyz = normalize(cross(TRANSFORM[1].xyz,TRANSFORM[2].xyz));\n";
+			code += "	TRANSFORM[2] = vec4(0.0,0.0,1.0,0.0);\n";
+		} else {
+			code += "	TRANSFORM[0] = vec4(cos(CUSTOM.x),-sin(CUSTOM.x),0.0,0.0);\n";
+			code += "	TRANSFORM[1] = vec4(sin(CUSTOM.x),cos(CUSTOM.x),0.0,0.0);\n";
+			code += "	TRANSFORM[2] = vec4(0.0,0.0,1.0,0.0);\n";
+		}
 
 	} else {
 		//orient particle Y towards velocity
