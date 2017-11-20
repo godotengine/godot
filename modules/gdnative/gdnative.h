@@ -55,7 +55,6 @@ class GDNativeLibrary : public Resource {
 
 	String current_library_path;
 	Vector<String> current_dependencies;
-	bool current_library_statically_linked;
 
 	bool singleton;
 	bool load_once;
@@ -74,9 +73,6 @@ public:
 	}
 	_FORCE_INLINE_ Vector<String> get_current_dependencies() const {
 		return current_dependencies;
-	}
-	_FORCE_INLINE_ bool is_current_library_statically_linked() const {
-		return current_library_statically_linked;
 	}
 
 	// things that are a property of the library itself, not platform specific
