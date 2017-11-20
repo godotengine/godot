@@ -1447,6 +1447,15 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->popup();
 }
 
+void FileSystemDock::_rmb_pressed(const Vector2 &p_pos) {
+	folder_options->clear();
+	folder_options->set_size(Size2(1, 1));
+
+	folder_options->add_item(TTR("New Folder.."), FOLDER_NEW_FOLDER);
+	folder_options->set_position(files->get_global_position() + p_pos);
+	folder_options->popup();
+}
+
 void FileSystemDock::select_file(const String &p_file) {
 
 	navigate_to_path(p_file);
@@ -1547,6 +1556,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_selected"), &FileSystemDock::_file_selected);
 	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
+	ClassDB::bind_method(D_METHOD("_rmb_pressed"), &FileSystemDock::_rmb_pressed);
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
@@ -1665,6 +1675,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->connect("item_rmb_selected", this, "_files_list_rmb_select");
 	files->connect("item_selected", this, "_file_selected");
 	files->connect("multi_selected", this, "_file_multi_selected");
+	files->connect("rmb_clicked", this, "_rmb_pressed");
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
 
