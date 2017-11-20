@@ -595,7 +595,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = Quat(args[0], args[1], args[2], args[3]);
 			return OK;
 
-		} else if (id == "AABB") {
+		} else if (id == "AABB" || id == "Rect3") {
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
