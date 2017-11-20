@@ -565,20 +565,19 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 		}
 
 	} else if (node->get_tile_origin() == TileMap::TILE_ORIGIN_CENTER) {
-		rect.position += node->get_cell_size() / 2;
-		Vector2 s = r.size;
+		Size2 cell_size = node->get_cell_size();
 
-		Vector2 center = (s / 2) - tile_ofs;
+		rect.position += tile_ofs;
 
 		if (p_flip_h)
-			rect.position.x -= s.x - center.x;
+			rect.position.x -= cell_size.x / 2;
 		else
-			rect.position.x -= center.x;
+			rect.position.x += cell_size.x / 2;
 
 		if (p_flip_v)
-			rect.position.y -= s.y - center.y;
+			rect.position.y -= cell_size.y / 2;
 		else
-			rect.position.y -= center.y;
+			rect.position.y += cell_size.y / 2;
 	}
 
 	rect.position = p_xform.xform(rect.position);
