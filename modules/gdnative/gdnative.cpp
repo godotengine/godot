@@ -64,7 +64,6 @@ void GDNativeLibrary::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_library_path"), &GDNativeLibrary::get_current_library_path);
 	ClassDB::bind_method(D_METHOD("get_current_dependencies"), &GDNativeLibrary::get_current_dependencies);
-	ClassDB::bind_method(D_METHOD("is_current_library_statically_linked"), &GDNativeLibrary::is_current_library_statically_linked);
 
 	ClassDB::bind_method(D_METHOD("should_load_once"), &GDNativeLibrary::should_load_once);
 	ClassDB::bind_method(D_METHOD("is_singleton"), &GDNativeLibrary::is_singleton);
@@ -119,7 +118,7 @@ bool GDNative::initialize() {
 	}
 
 	String lib_path = library->get_current_library_path();
-	if (lib_path.empty() && !library->is_current_library_statically_linked()) {
+	if (lib_path.empty()) {
 		ERR_PRINT("No library set for this platform");
 		return false;
 	}
@@ -140,7 +139,7 @@ bool GDNative::initialize() {
 	}
 
 	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle);
-	if (err != OK && !library->is_current_library_statically_linked()) {
+	if (err != OK) {
 		return false;
 	}
 
@@ -154,8 +153,7 @@ bool GDNative::initialize() {
 	initialized = false;
 
 	if (err || !library_init) {
-		if (!library->is_current_library_statically_linked())
-			OS::get_singleton()->close_dynamic_library(native_handle);
+		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
 		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
 		return false;
@@ -374,40 +372,8 @@ RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_or
 		}
 	}
 
-	bool is_statically_linked = false;
-	{
-
-		List<String> static_linking_keys;
-		config->get_section_keys("static_linking", &static_linking_keys);
-
-		for (List<String>::Element *E = static_linking_keys.front(); E; E = E->next()) {
-			String key = E->get();
-
-			Vector<String> tags = key.split(".");
-
-			bool skip = false;
-
-			for (int i = 0; i < tags.size(); i++) {
-				bool has_feature = OS::get_singleton()->has_feature(tags[i]);
-
-				if (!has_feature) {
-					skip = true;
-					break;
-				}
-			}
-
-			if (skip) {
-				continue;
-			}
-
-			is_statically_linked = config->get_value("static_linking", key);
-			break;
-		}
-	}
-
 	lib->current_library_path = entry_lib_path;
 	lib->current_dependencies = dependency_paths;
-	lib->current_library_statically_linked = is_statically_linked;
 
 	return lib;
 }
