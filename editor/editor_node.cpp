@@ -157,7 +157,9 @@ void EditorNode::_update_scene_tabs() {
 			tabbar_container->remove_child(scene_tab_add);
 			scene_tabs->add_child(scene_tab_add);
 		}
-		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
+		Rect2 last_tab = Rect2();
+		if (scene_tabs->get_tab_count() != 0)
+			last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
 		scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
 	}
 }
