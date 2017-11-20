@@ -197,6 +197,7 @@ public:
 
 		AABB aabb;
 		AABB transformed_aabb;
+		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;
 		uint32_t object_ID;
 
@@ -251,12 +252,16 @@ public:
 			last_frame_pass = 0;
 			version = 1;
 			base_data = NULL;
+
+			custom_aabb = NULL;
 		}
 
 		~Instance() {
 
 			if (base_data)
 				memdelete(base_data);
+			if (custom_aabb)
+				memdelete(custom_aabb);
 		}
 	};
 
@@ -459,6 +464,8 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
+
+	virtual void instance_set_custom_aabb(RID p_insatnce, AABB aabb);
 
 	virtual void instance_attach_skeleton(RID p_instance, RID p_skeleton);
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled);
