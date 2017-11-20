@@ -135,7 +135,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_value) {
 	set(p_name, p_value);
 	props[p_name].initial = p_value;
-	props[p_name].initial_set = true;
+	props[p_name].has_default_value = true;
 }
 
 struct _EVCSort {
@@ -221,7 +221,7 @@ bool EditorSettings::has_default_value(const String &p_setting) const {
 
 	if (!props.has(p_setting))
 		return false;
-	return props[p_setting].initial_set;
+	return props[p_setting].has_default_value;
 }
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
@@ -967,7 +967,7 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	if (!props.has(p_setting))
 		return;
 	props[p_setting].initial = p_value;
-	props[p_setting].initial_set = true;
+	props[p_setting].has_default_value = true;
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
@@ -975,10 +975,10 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting))
 		ret = EditorSettings::get_singleton()->get(p_setting);
-	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
-		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+	else
 		EditorSettings::get_singleton()->set(p_setting, p_default);
-	}
+	if (!EditorSettings::get_singleton()->has_default_value(p_setting))
+		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
 
 	return ret;
 }

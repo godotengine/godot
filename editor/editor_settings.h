@@ -66,13 +66,13 @@ private:
 		int order;
 		Variant variant;
 		Variant initial;
-		bool initial_set;
+		bool has_default_value;
 		bool hide_from_editor;
 		bool save;
 		VariantContainer() {
 			order = 0;
 			hide_from_editor = false;
-			initial_set = false;
+			has_default_value = false;
 			save = false;
 		}
 		VariantContainer(const Variant &p_variant, int p_order) {
