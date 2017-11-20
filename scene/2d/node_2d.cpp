@@ -433,8 +433,6 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
 	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
 
-	ClassDB::bind_method(D_METHOD("_edit_set_pivot", "pivot"), &Node2D::_edit_set_pivot);
-
 	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent"), &Node2D::get_relative_transform_to_parent);
 
 	ADD_GROUP("Transform", "");
