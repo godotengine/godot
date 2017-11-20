@@ -192,6 +192,7 @@ private:
 
 	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _rmb_pressed(const Vector2 &p_pos);
 
 	struct FileInfo {
 		String name;

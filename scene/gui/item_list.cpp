@@ -525,6 +525,11 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 			return;
 		}
+		if (mb->get_button_index() == BUTTON_RIGHT) {
+			emit_signal("rmb_clicked", mb->get_position());
+
+			return;
+		}
 	}
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
@@ -1397,6 +1402,7 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_rmb_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::VECTOR2, "at_position")));
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
+	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
 }
