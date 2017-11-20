@@ -504,6 +504,8 @@ public:
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
 
+	BIND2(instance_set_custom_aabb, RID, AABB)
+
 	BIND2(instance_attach_skeleton, RID, RID)
 	BIND2(instance_set_exterior, RID, bool)
 

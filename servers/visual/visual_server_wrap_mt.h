@@ -424,6 +424,7 @@ public:
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
+	FUNC2(instance_set_custom_aabb, RID, AABB)
 
 	FUNC2(instance_attach_skeleton, RID, RID)
 	FUNC2(instance_set_exterior, RID, bool)

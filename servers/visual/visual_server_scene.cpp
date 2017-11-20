@@ -587,6 +587,36 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	}
 }
 
+inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
+	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
+}
+
+void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
+
+	if(p_aabb != AABB()) {
+
+		// Set custom AABB
+		if (instance->custom_aabb == NULL)
+			instance->custom_aabb = memnew(AABB);
+		*instance->custom_aabb = p_aabb;
+
+	} else {
+
+		// Clear custom AABB
+		if (instance->custom_aabb != NULL) {
+			memdelete(instance->custom_aabb);
+			instance->custom_aabb = NULL;
+		}
+	}
+
+	if (instance->scenario)
+		_instance_queue_update(instance, true, false);
+}
+
 void VisualServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton) {
 
 	Instance *instance = instance_owner.get(p_instance);
@@ -828,23 +858,35 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		} break;
 		case VisualServer::INSTANCE_MESH: {
 
-			new_aabb = VSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
 
 		} break;
 
 		case VisualServer::INSTANCE_MULTIMESH: {
 
-			new_aabb = VSG::storage->multimesh_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->multimesh_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_IMMEDIATE: {
 
-			new_aabb = VSG::storage->immediate_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->immediate_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_PARTICLES: {
 
-			new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_LIGHT: {
@@ -866,6 +908,7 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		default: {}
 	}
 
+	// <Zylann> This is why I didn't re-use Instance::aabb to implement custom AABBs
 	if (p_instance->extra_margin)
 		new_aabb.grow_by(p_instance->extra_margin);
 
