@@ -84,17 +84,17 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
-	dict["status"] = _MKSTR(VERSION_STATUS);
-	dict["revision"] = _MKSTR(VERSION_REVISION);
+	dict["status"] = VERSION_STATUS;
+	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
-	String hash = String(VERSION_HASH);
+	String hash = VERSION_HASH;
 	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0)
 		stringver += "." + String(dict["patch"]);
-	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
+	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
 
 	return dict;

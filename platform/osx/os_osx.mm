@@ -1369,7 +1369,7 @@ String OS_OSX::get_cache_path() const {
 // Get properly capitalized engine name for system paths
 String OS_OSX::get_godot_dir_name() const {
 
-	return String(_MKSTR(VERSION_SHORT_NAME)).capitalize();
+	return String(VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_OSX::get_system_dir(SystemDir p_dir) const {

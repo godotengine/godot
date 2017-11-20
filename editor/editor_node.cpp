@@ -147,7 +147,7 @@ void EditorNode::_update_scene_tabs() {
 void EditorNode::_update_title() {
 
 	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(_MKSTR(VERSION_NAME) + String(" - ") + appname);
+	String title = appname.empty() ? String(VERSION_FULL_NAME) : String(VERSION_NAME + String(" - ") + appname);
 	String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_filename() : String();
 	if (!edited.empty())
 		title += " - " + String(edited.get_file());

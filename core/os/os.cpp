@@ -279,7 +279,7 @@ String OS::get_safe_application_name() const {
 String OS::get_godot_dir_name() const {
 
 	// Default to lowercase, so only override when different case is needed
-	return String(_MKSTR(VERSION_SHORT_NAME)).to_lower();
+	return String(VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME

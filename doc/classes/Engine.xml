@@ -71,8 +71,8 @@
 				"minor"    - Holds the minor version number as a String
 				"patch"    - Holds the patch version number as a String
 				"status"   - Holds the status (e.g. "beta", "rc1", "rc2", ... "stable") as a String
-				"revision" - Holds the revision (e.g. "custom-build") as a String
-				"string"   - major + minor + patch + status + revision in a single String
+				"build"    - Holds the build name (e.g. "custom-build") as a String
+				"string"   - major + minor + patch + status + build in a single String
 			</description>
 		</method>
 		<method name="has_singleton" qualifiers="const">

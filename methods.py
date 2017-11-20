@@ -1150,26 +1150,26 @@ def build_gles3_headers(target, source, env):
 
 
 def add_module_version_string(self,s):
-    self.module_version_string+="."+s
+    self.module_version_string += "." + s
 
 def update_version(module_version_string=""):
 
-    rev = "custom_build"
+    build_name = "custom_build"
+    if (os.getenv("BUILD_NAME") != None):
+        build_name = os.getenv("BUILD_NAME")
+        print("Using custom build name: " + build_name)
 
-    if (os.getenv("BUILD_REVISION") != None):
-        rev = os.getenv("BUILD_REVISION")
-        print("Using custom revision: " + rev)
     import version
 
     f = open("core/version_generated.gen.h", "w")
-    f.write("#define VERSION_SHORT_NAME " + str(version.short_name) + "\n")
-    f.write("#define VERSION_NAME " + str(version.name) + "\n")
+    f.write("#define VERSION_SHORT_NAME \"" + str(version.short_name) + "\"\n")
+    f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
     if (hasattr(version, 'patch')):
         f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
-    f.write("#define VERSION_REVISION " + str(rev) + "\n")
-    f.write("#define VERSION_STATUS " + str(version.status) + "\n")
+    f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
+    f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
     import datetime
     f.write("#define VERSION_YEAR " + str(datetime.datetime.now().year) + "\n")
