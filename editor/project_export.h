@@ -142,6 +142,8 @@ private:
 
 	void _tab_changed(int);
 
+	String default_filename;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
