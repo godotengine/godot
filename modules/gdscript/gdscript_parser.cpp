@@ -3758,22 +3758,82 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							current_export.hint = PROPERTY_HINT_NONE;
 						}
 
-					} else if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER) {
+					} else {
 
-						String identifier = tokenizer->get_token_identifier();
-						if (!ClassDB::is_parent_class(identifier, "Resource")) {
+						parenthesis++;
+						Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
+						if (!subexpr) {
+							if (_recover_from_completion()) {
+								break;
+							}
+							return;
+						}
+						parenthesis--;
 
+						if (subexpr->type != Node::TYPE_CONSTANT) {
 							current_export = PropertyInfo();
-							_set_error("Export hint not a type or resource.");
+							_set_error("Expected a constant expression.");
 						}
 
-						current_export.type = Variant::OBJECT;
-						current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
-						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						Variant constant = static_cast<ConstantNode *>(subexpr)->value;
 
-						current_export.hint_string = identifier;
+						if (constant.get_type() == Variant::OBJECT) {
+							GDScriptNativeClass *native_class = Object::cast_to<GDScriptNativeClass>(constant);
 
-						tokenizer->advance();
+							if (native_class && ClassDB::is_parent_class(native_class->get_name(), "Resource")) {
+								current_export.type = Variant::OBJECT;
+								current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+
+								current_export.hint_string = native_class->get_name();
+
+							} else {
+								current_export = PropertyInfo();
+								_set_error("Export hint not a resource type.");
+							}
+						} else if (constant.get_type() == Variant::DICTIONARY) {
+							// Enumeration
+							bool is_flags = false;
+
+							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+								tokenizer->advance();
+
+								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
+									is_flags = true;
+									tokenizer->advance();
+								} else {
+									current_export = PropertyInfo();
+									_set_error("Expected 'FLAGS' after comma.");
+								}
+							}
+
+							current_export.type = Variant::INT;
+							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
+							Dictionary enum_values = constant;
+
+							List<Variant> keys;
+							enum_values.get_key_list(&keys);
+
+							bool first = true;
+							for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+								if (enum_values[E->get()].get_type() == Variant::INT) {
+									if (!first)
+										current_export.hint_string += ",";
+									else
+										first = false;
+
+									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+									if (!is_flags) {
+										current_export.hint_string += ":";
+										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
+									}
+								}
+							}
+						} else {
+							current_export = PropertyInfo();
+							_set_error("Expected type for export.");
+							return;
+						}
 					}
 
 					if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {

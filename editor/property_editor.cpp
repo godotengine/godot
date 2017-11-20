@@ -415,7 +415,11 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				menu->clear();
 				Vector<String> options = hint_text.split(",");
 				for (int i = 0; i < options.size(); i++) {
-					menu->add_item(options[i], i);
+					if (options[i].find(":") != -1) {
+						menu->add_item(options[i].get_slicec(':', 0), options[i].get_slicec(':', 1).to_int());
+					} else {
+						menu->add_item(options[i], i);
+					}
 				}
 				menu->set_position(get_position());
 				menu->popup();
