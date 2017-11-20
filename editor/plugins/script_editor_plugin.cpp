@@ -777,6 +777,37 @@ void ScriptEditor::_close_current_tab() {
 	_close_tab(tab_container->get_current_tab());
 }
 
+void ScriptEditor::_close_other_tabs(int idx) {
+
+	_close_all_tab(idx);
+}
+
+void ScriptEditor::_close_all_tab(int except) {
+
+	int child_count = tab_container->get_tab_count();
+	for (int i = child_count - 1; i >= 0; i--) {
+		if (i == except && except!=-1) {
+			continue;
+		}
+		ScriptTextEditor *current = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
+		if (current) {
+			if (current->get_text_edit()->get_version() != current->get_text_edit()->get_saved_version()) {
+				erase_tab_confirm->set_text("Close and save changes?\n\"" + current->get_name() + "\"");
+				erase_tab_confirm->popup_centered_minsize();
+			}
+			else {
+				_close_tab(i);
+			}
+		}
+		else {
+			EditorHelp *help = tab_container->get_child(i)->cast_to<EditorHelp>();
+			if (help) {
+				_close_tab(i);
+			}
+		}
+	}
+}
+
 void ScriptEditor::_close_docs_tab() {
 
 	int child_count = tab_container->get_child_count();
@@ -1525,6 +1556,12 @@ void ScriptEditor::_menu_option(int p_option) {
 					_close_current_tab();
 				}
 			} break;
+			case FILE_CLOSE_OTHERS: {
+				_close_other_tabs(selected);
+			} break;
+			case FILE_CLOSE_ALL: {
+				_close_all_tab(-1);
+			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
@@ -1570,6 +1607,12 @@ void ScriptEditor::_menu_option(int p_option) {
 				case SEARCH_FIND_NEXT: {
 					help->search_again();
 				} break;
+				case FILE_CLOSE_OTHERS: {
+					_close_other_tabs(selected);
+				} break;
+				case FILE_CLOSE_ALL: {
+					_close_all_tab(-1);
+				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
 				} break;
@@ -1596,6 +1639,8 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("script_add_function_request", this, "_add_callback");
 		editor->connect("resource_saved", this, "_res_saved_callback");
 		script_list->connect("item_selected", this, "_script_selected");
+		script_list->connect("item_rmb_selected", this, "_script_rmb_selected");
+		script_list_menu->connect("item_pressed", this, "_menu_option");
 		members_overview->connect("item_selected", this, "_members_overview_selected");
 		script_split->connect("dragged", this, "_script_split_dragged");
 		autosave_timer->connect("timeout", this, "_autosave_scripts");
@@ -1853,6 +1898,20 @@ void ScriptEditor::_script_selected(int p_idx) {
 	grab_focus_block = false;
 }
 
+void ScriptEditor::_script_rmb_selected(int p_idx, const Vector2 &p_pos) {
+
+	script_list_menu->clear();
+	script_list_menu->set_size(Size2(1, 1));
+	if (p_idx >= 0) {
+		script_list_menu->add_item(TTR("Close"), FILE_CLOSE);
+		script_list_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_OTHERS);
+		script_list_menu->add_item(TTR("Close All"), FILE_CLOSE_ALL);
+	}
+
+	script_list_menu->set_pos(script_list->get_global_pos() + p_pos);
+	script_list_menu->popup();
+}
+
 void ScriptEditor::ensure_select_current() {
 
 	if (tab_container->get_child_count() && tab_container->get_current_tab() >= 0) {
@@ -1923,6 +1982,9 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 void ScriptEditor::_update_members_overview() {
 	members_overview->clear();
+
+	if (tab_container->get_child_count() <= 0)
+		return;
 
 	Node *current = tab_container->get_child(tab_container->get_current_tab());
 	ScriptTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ScriptTextEditor>();
@@ -2588,6 +2650,8 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_tab_changed", &ScriptEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option", &ScriptEditor::_menu_option);
 	ObjectTypeDB::bind_method("_close_current_tab", &ScriptEditor::_close_current_tab);
+	ObjectTypeDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
+	ObjectTypeDB::bind_method("_close_all_tab", &ScriptEditor::_close_all_tab);
 	ObjectTypeDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ObjectTypeDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ObjectTypeDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
@@ -2608,6 +2672,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
 	ObjectTypeDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
 	ObjectTypeDB::bind_method("_script_selected", &ScriptEditor::_script_selected);
+	ObjectTypeDB::bind_method("_script_rmb_selected", &ScriptEditor::_script_rmb_selected);
 	ObjectTypeDB::bind_method("_script_created", &ScriptEditor::_script_created);
 	ObjectTypeDB::bind_method("_script_split_dragged", &ScriptEditor::_script_split_dragged);
 	ObjectTypeDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
@@ -2645,8 +2710,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_list = memnew(ItemList);
 	list_split->add_child(script_list);
 	script_list->set_custom_minimum_size(Size2(0, 0));
+	script_list->set_allow_rmb_select(true);
 	script_split->set_split_offset(140);
 	list_split->set_split_offset(500);
+
+	script_list_menu = memnew(PopupMenu);
+	script_list->add_child(script_list_menu);
 
 	members_overview = memnew(ItemList);
 	list_split->add_child(members_overview);
@@ -2682,6 +2751,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), FILE_CLOSE_OTHERS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), FILE_CLOSE_ALL);
 	file_menu->get_popup()->connect("item_pressed", this, "_menu_option");
 
 	edit_menu = memnew(MenuButton);
