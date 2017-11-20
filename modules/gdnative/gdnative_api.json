@@ -5549,6 +5549,14 @@
         ]
       },
       {
+        "name": "godot_register_native_call_type",
+        "return_type": "void",
+        "arguments": [
+          ["const char *", "call_type"],
+          ["native_call_cb", "p_callback"]
+        ]
+      },
+      {
         "name": "godot_alloc",
         "return_type": "void *",
         "arguments": [

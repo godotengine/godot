@@ -274,6 +274,9 @@ typedef godot_variant (*godot_gdnative_procedure_fn)(godot_array *);
 
 ////// System Functions
 
+typedef godot_variant (*native_call_cb)(void *, godot_array *);
+void GDAPI godot_register_native_call_type(const char *p_call_type, native_call_cb p_callback);
+
 //using these will help Godot track how much memory is in use in debug mode
 void GDAPI *godot_alloc(int p_bytes);
 void GDAPI *godot_realloc(void *p_ptr, int p_bytes);

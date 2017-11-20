@@ -115,6 +115,10 @@ godot_dictionary GDAPI godot_get_global_constants() {
 }
 
 // System functions
+void GDAPI godot_register_native_call_type(const char *p_call_type, native_call_cb p_callback) {
+	GDNativeCallRegistry::get_singleton()->register_native_call_type(StringName(p_call_type), p_callback);
+}
+
 void GDAPI *godot_alloc(int p_bytes) {
 	return memalloc(p_bytes);
 }
