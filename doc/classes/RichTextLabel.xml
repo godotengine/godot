@@ -403,6 +403,20 @@
 				Triggered when the user clicks on content between [url] tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
+		<signal name="meta_hover_started">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse enters a meta tag. 
+			</description>
+		</signal>
+		<signal name="meta_hover_ended">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse exits a meta tag. 
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0">
