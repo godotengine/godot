@@ -1728,6 +1728,30 @@ void SpatialEditorViewport::_notification(int p_what) {
 			if (message_time < 0)
 				surface->update();
 		}
+
+		// FPS Counter.
+		bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FPS)) && !previewing;
+		if (show_fps != fps->is_visible()) {
+			if (show_fps)
+				fps->show();
+			else
+				fps->hide();
+		}
+
+		if (show_fps) {
+			const float os_fps = OS::get_singleton()->get_frames_per_second();
+			String text = TTR("FPS") + ": " + itos(os_fps) + " (" + String::num(1000.0f / os_fps, 2) + " ms)";
+
+			if (fps_label->get_text() != text || surface->get_size() != prev_size) {
+				fps_label->set_text(text);
+				Vector2 container_position = Vector2(surface->get_size().x - fps->get_size().x - 20, 20);
+				if (preview)
+					container_position.y += 20;
+
+				container_position *= EDSCALE;
+				fps->set_pos(container_position);
+			}
+		}
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1735,6 +1759,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("draw", this, "_draw");
 		surface->connect("input_event", this, "_sinput");
 		surface->connect("mouse_enter", this, "_smouseenter");
+		fps->add_style_override("panel", get_stylebox("panel", "Panel"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
 		_init_gizmo_instance(index);
 	}
@@ -1980,6 +2005,12 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			else
 				camera->set_visible_layers(((1 << 20) - 1) | (1 << (GIZMO_BASE_LAYER + index)) | (1 << GIZMO_GRID_LAYER));
 			view_menu->get_popup()->set_item_checked(idx, current);
+
+		} break;
+		case VIEW_FPS: {
+			int idx = view_menu->get_popup()->get_item_index(VIEW_FPS);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			view_menu->get_popup()->set_item_checked(idx, !current);
 
 		} break;
 	}
@@ -2255,6 +2286,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("Gizmos")), VIEW_GIZMOS);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_fps", TTR("View FPS")), VIEW_FPS);
 
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
@@ -2273,6 +2305,14 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	previewing = NULL;
 	preview = NULL;
 	gizmo_scale = 1.0;
+
+	// FPS Counter.
+	fps = memnew(PanelContainer);
+	fps->set_self_opacity(0.4f);
+	surface->add_child(fps);
+	fps_label = memnew(Label);
+	fps->add_child(fps_label);
+	fps->hide();
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
