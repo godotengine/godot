@@ -586,6 +586,32 @@ void ScriptEditor::_close_docs_tab() {
 	}
 }
 
+void ScriptEditor::_close_other_tabs() {
+
+	int child_count = tab_container->get_child_count();
+	int current_idx = tab_container->get_current_tab();
+	for (int i = child_count - 1; i >= 0; i--) {
+
+		if (i == current_idx) {
+			continue;
+		}
+
+		tab_container->set_current_tab(i);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+
+		if (se) {
+
+			// Maybe there are unsaved changes
+			if (se->is_unsaved()) {
+				_ask_close_current_unsaved_tab(se);
+				continue;
+			}
+		}
+
+		_close_current_tab();
+	}
+}
+
 void ScriptEditor::_close_all_tabs() {
 
 	int child_count = tab_container->get_child_count();
@@ -1003,6 +1029,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
+			case CLOSE_OTHER_TABS: {
+				_close_other_tabs();
+			} break;
 			case CLOSE_ALL: {
 				_close_all_tabs();
 			} break;
@@ -1078,6 +1107,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				case CLOSE_DOCS: {
 					_close_docs_tab();
 				} break;
+				case CLOSE_OTHER_TABS: {
+					_close_other_tabs();
+				} break;
 				case CLOSE_ALL: {
 					_close_all_tabs();
 				} break;
@@ -1119,6 +1151,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("script_add_function_request", this, "_add_callback");
 			editor->connect("resource_saved", this, "_res_saved_callback");
 			script_list->connect("item_selected", this, "_script_selected");
+
 			members_overview->connect("item_selected", this, "_members_overview_selected");
 			help_overview->connect("item_selected", this, "_help_overview_selected");
 			script_split->connect("dragged", this, "_script_split_dragged");
@@ -2139,6 +2172,8 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), CLOSE_ALL);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), CLOSE_OTHER_TABS);
 		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 
@@ -2458,6 +2493,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_close_discard_current_tab", &ScriptEditor::_close_discard_current_tab);
 	ClassDB::bind_method("_close_docs_tab", &ScriptEditor::_close_docs_tab);
 	ClassDB::bind_method("_close_all_tabs", &ScriptEditor::_close_all_tabs);
+	ClassDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
 	ClassDB::bind_method("_open_recent_script", &ScriptEditor::_open_recent_script);
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
@@ -2539,7 +2575,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
 	//list_split->set_split_offset(500);
-
 	_sort_list_on_update = true;
 	script_list->connect("gui_input", this, "_script_list_gui_input");
 	script_list->set_allow_rmb_select(true);
@@ -2604,6 +2639,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_other_tabs", TTR("Close Other Tabs")), CLOSE_OTHER_TABS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/run_file", TTR("Run"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X), FILE_RUN);
 	file_menu->get_popup()->add_separator();
