@@ -2067,7 +2067,7 @@ int Node::get_position_in_parent() const {
 	return data.pos;
 }
 
-Node *Node::_duplicate(int p_flags) const {
+Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const {
 
 	Node *node = NULL;
 
@@ -2084,7 +2084,12 @@ Node *Node::_duplicate(int p_flags) const {
 
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
 		ERR_FAIL_COND_V(res.is_null(), NULL);
-		node = res->instance();
+		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
+#ifdef TOOLS_ENABLED
+		if (p_flags & DUPLICATE_FROM_EDITOR)
+			ges = PackedScene::GEN_EDIT_STATE_INSTANCE;
+#endif
+		node = res->instance(ges);
 		ERR_FAIL_COND_V(!node, NULL);
 
 		instanced = true;
@@ -2097,10 +2102,6 @@ Node *Node::_duplicate(int p_flags) const {
 		if (!node)
 			memdelete(obj);
 		ERR_FAIL_COND_V(!node, NULL);
-	}
-
-	if (get_filename() != "") { //an instance
-		node->set_filename(get_filename());
 	}
 
 	List<PropertyInfo> plist;
@@ -2138,10 +2139,20 @@ Node *Node::_duplicate(int p_flags) const {
 
 	node->set_name(get_name());
 
+#ifdef TOOLS_ENABLED
+	if ((p_flags & DUPLICATE_FROM_EDITOR) && r_duplimap)
+		r_duplimap->insert(this, node);
+#endif
+
 	if (p_flags & DUPLICATE_GROUPS) {
 		List<GroupInfo> gi;
 		get_groups(&gi);
 		for (List<GroupInfo>::Element *E = gi.front(); E; E = E->next()) {
+
+#ifdef TOOLS_ENABLED
+			if ((p_flags & DUPLICATE_FROM_EDITOR) && !E->get().persistent)
+				continue;
+#endif
 
 			node->add_to_group(E->get().name, E->get().persistent);
 		}
@@ -2154,7 +2165,7 @@ Node *Node::_duplicate(int p_flags) const {
 		if (instanced && get_child(i)->data.owner == this)
 			continue; //part of instance
 
-		Node *dup = get_child(i)->duplicate(p_flags);
+		Node *dup = get_child(i)->_duplicate(p_flags, r_duplimap);
 		if (!dup) {
 
 			memdelete(node);
@@ -2177,6 +2188,20 @@ Node *Node::duplicate(int p_flags) const {
 
 	return dupe;
 }
+
+#ifdef TOOLS_ENABLED
+Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
+
+	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
+
+	// Duplication of signals must happen after all the node descendants have been copied,
+	// because re-targeting of connections from some descendant to another is not possible
+	// if the emitter node comes later in tree order than the receiver
+	_duplicate_signals(this, dupe);
+
+	return dupe;
+}
+#endif
 
 void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const {
 
@@ -2325,6 +2350,9 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 		get_child(i)->_duplicate_and_reown(node, p_reown_map);
 	}
 
+	// Duplication of signals must happen after all the node descendants have been copied,
+	// because re-targeting of connections from some descendant to another is not possible
+	// if the emitter node comes later in tree order than the receiver
 	_duplicate_signals(this, node);
 	return node;
 }
