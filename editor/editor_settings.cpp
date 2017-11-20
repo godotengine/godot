@@ -789,7 +789,7 @@ void EditorSettings::create() {
 
 		// Validate editor config file
 
-		String config_file_name = "editor_settings.tres";
+		String config_file_name = "editor_settings-3.tres";
 		config_file_path = config_dir.plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
 			goto fail;
