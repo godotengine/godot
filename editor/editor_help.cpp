@@ -564,18 +564,37 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		emit_signal("go_to_help", "class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
+		String tag = p_select.substr(1, 6);
+		String link = p_select.substr(7, p_select.length());
 
-		String m = p_select.substr(1, p_select.length());
+		String topic;
+		Map<String, int> *table = NULL;
 
-		if (m.find(".") != -1) {
+		if (tag == "method") {
+			topic = "class_method";
+			table = &this->method_line;
+		} else if (tag == "member") {
+			topic = "class_property";
+			table = &this->property_line;
+		} else if (tag == "enum  ") {
+			topic = "class_enum";
+			table = &this->enum_line;
+		} else if (tag == "signal") {
+			topic = "class_signal";
+			table = &this->signal_line;
+		} else {
+			return;
+		}
+
+		if (link.find(".") != -1) {
 			//must go somewhere else
 
-			emit_signal("go_to_help", "class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0));
+			emit_signal("go_to_help", topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
 
-			if (!method_line.has(m))
+			if (!table->has(link))
 				return;
-			class_desc->scroll_to_line(method_line[m]);
+			class_desc->scroll_to_line((*table)[link]);
 		}
 	} else if (p_select.begins_with("http")) {
 		OS::get_singleton()->shell_open(p_select);
@@ -808,7 +827,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 			}
 			class_desc->push_cell();
 			if (describe) {
-				class_desc->push_meta("@" + cd.properties[i].name);
+				class_desc->push_meta("@member" + cd.properties[i].name);
 			}
 
 			class_desc->push_font(doc_code_font);
@@ -881,7 +900,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			if (methods[i].description != "") {
 				method_descr = true;
-				class_desc->push_meta("@" + methods[i].name);
+				class_desc->push_meta("@method" + methods[i].name);
 			}
 			class_desc->push_color(headline_color);
 			_add_text(methods[i].name);
@@ -1240,7 +1259,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 
-			method_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
+			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 
 			class_desc->push_table(2);
 			class_desc->set_table_column_expand(1, 1);
@@ -1452,7 +1471,6 @@ void EditorHelp::_help_callback(const String &p_topic) {
 			line = property_line[name];
 	} else if (what == "class_enum") {
 
-		print_line("go to enum:");
 		if (enum_line.has(name))
 			line = enum_line[name];
 	} else if (what == "class_theme_item") {
@@ -1535,12 +1553,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ")) {
 
-			String m = tag.substr(7, tag.length());
+			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
+			String link_tag = tag.substr(0, tag.find(" ")).rpad(6);
 			p_rt->push_color(link_color);
-			p_rt->push_meta("@" + m);
-			p_rt->add_text(m + "()");
+			p_rt->push_meta("@" + link_tag + link_target);
+			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
 			pos = brk_end + 1;
