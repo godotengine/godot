@@ -306,6 +306,8 @@ public:
 
 		if (!p_element->next_ptr) {
 			_data->last = n;
+		} else {
+			p_element->next_ptr->prev_ptr = n;
 		}
 
 		p_element->next_ptr = n;
@@ -330,6 +332,8 @@ public:
 
 		if (!p_element->prev_ptr) {
 			_data->first = n;
+		} else {
+			p_element->prev_ptr->next_ptr = n;
 		}
 
 		p_element->prev_ptr = n;
