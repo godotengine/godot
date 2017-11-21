@@ -432,6 +432,7 @@ public:
 
 	void input(const Ref<InputEvent> &p_event);
 	void unhandled_input(const Ref<InputEvent> &p_event);
+	void force_process_input(const Ref<InputEvent> &p_event);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
