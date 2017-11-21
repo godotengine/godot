@@ -364,7 +364,8 @@ void EditorNode::_notification(int p_what) {
 		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 		update_menu->set_icon(gui_base->get_icon("Progress1", "EditorIcons"));
 	}
-	if (p_what = Control::NOTIFICATION_RESIZED) {
+
+	if (p_what == Control::NOTIFICATION_RESIZED) {
 		_update_scene_tabs();
 	}
 }
