@@ -2918,7 +2918,7 @@
         ]
       },
       {
-        "name": "godot_node_path_get_property",
+        "name": "godot_node_path_get_concatenated_subnames",
         "return_type": "godot_string",
         "arguments": [
           ["const godot_node_path *", "p_self"]

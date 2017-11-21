@@ -986,7 +986,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 									//will be renamed
 									NodePath rel_path = new_root_path.rel_path_to(E->get().second);
 
-									NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false, track_np.get_property());
+									NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false);
 									if (new_path == track_np)
 										continue; //bleh
 									editor_data->get_undo_redo().add_do_method(anim.ptr(), "track_set_path", i, new_path);

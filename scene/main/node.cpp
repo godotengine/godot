@@ -2502,24 +2502,19 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 		return false;
 	Node *node = get_node(p_path);
 
-	if (p_path.get_subname_count()) {
+	bool result = false;
 
-		RES r;
-		for (int j = 0; j < p_path.get_subname_count(); j++) {
-			r = j == 0 ? node->get(p_path.get_subname(j)) : r->get(p_path.get_subname(j));
-			if (r.is_null())
-				return false;
-		}
-	}
+	node->get_indexed(p_path.get_subnames(), &result);
 
-	return true;
+	return result;
 }
 
 Array Node::_get_node_and_resource(const NodePath &p_path) {
 
 	Node *node;
 	RES res;
-	node = get_node_and_resource(p_path, res);
+	Vector<StringName> leftover_path;
+	node = get_node_and_resource(p_path, res, leftover_path);
 	Array result;
 
 	if (node)
@@ -2532,21 +2527,35 @@ Array Node::_get_node_and_resource(const NodePath &p_path) {
 	else
 		result.push_back(Variant());
 
+	result.push_back(NodePath(Vector<StringName>(), leftover_path, false));
+
 	return result;
 }
 
-Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res) const {
+Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property) const {
 
 	Node *node = get_node(p_path);
 	r_res = RES();
+	r_leftover_subpath = Vector<StringName>();
 	if (!node)
 		return NULL;
 
 	if (p_path.get_subname_count()) {
 
-		for (int j = 0; j < p_path.get_subname_count(); j++) {
-			r_res = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
-			ERR_FAIL_COND_V(r_res.is_null(), node);
+		int j = 0;
+		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
+		for (; j < p_path.get_subname_count() - p_last_is_property; j++) {
+			RES new_res = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
+
+			if (new_res.is_null()) {
+				break;
+			}
+
+			r_res = new_res;
+		}
+		for (; j < p_path.get_subname_count(); j++) {
+			// Put the rest of the subpath in the leftover path
+			r_leftover_subpath.push_back(p_path.get_subname(j));
 		}
 	}
 
