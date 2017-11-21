@@ -360,7 +360,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		last_wait_for_key = p_event;
 		String str = keycode_get_string(k->get_scancode()).capitalize();
 		if (k->get_metakey())
-			str = TTR("Meta+") + str;
+			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
 		if (k->get_shift())
 			str = TTR("Shift+") + str;
 		if (k->get_alt())
@@ -642,7 +642,7 @@ void ProjectSettingsEditor::_update_actions() {
 
 				String str = keycode_get_string(k->get_scancode()).capitalize();
 				if (k->get_metakey())
-					str = TTR("Meta+") + str;
+					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
 				if (k->get_shift())
 					str = TTR("Shift+") + str;
 				if (k->get_alt())
