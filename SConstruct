@@ -326,6 +326,8 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['/w'])
+        # Set exception handling model to avoid warnings caused by Windows system headers.
+        env.Append(CCFLAGS=['/EHsc'])
     else: # Rest of the world
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'])
