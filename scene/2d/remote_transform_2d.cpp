@@ -58,12 +58,10 @@ void RemoteTransform2D::_update_remote() {
 	if (!n->is_inside_tree())
 		return;
 
-	//todo make faster
+	//Todo: make faster
 	if (use_global_coordinates) {
 
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
-		} else {
+		if (remote_mode == REMOTE_MODE_LEAD) {
 			Transform2D n_trans = n->get_global_transform();
 			Transform2D our_trans = get_global_transform();
 			Vector2 n_scale = n->get_global_scale();
@@ -79,13 +77,27 @@ void RemoteTransform2D::_update_remote() {
 				n->set_scale(get_global_scale());
 			else
 				n->set_scale(n_scale);
+		} else {
+			Transform2D n_trans = n->get_global_transform();
+			Transform2D our_trans = get_global_transform();
+			Vector2 our_scale = get_global_scale();
+
+			if (!update_remote_position)
+				n_trans.set_origin(our_trans.get_origin());
+			if (!update_remote_rotation)
+				n_trans.set_rotation(our_trans.get_rotation());
+
+			set_global_transform(n_trans);
+
+			if (update_remote_scale)
+				set_scale(n->get_global_scale());
+			else
+				set_scale(our_scale);
 		}
 
 	} else {
 
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_transform(get_transform());
-		} else {
+		if (remote_mode == REMOTE_MODE_LEAD) {
 			Transform2D n_trans = n->get_transform();
 			Transform2D our_trans = get_transform();
 			Vector2 n_scale = n->get_scale();
@@ -101,6 +113,22 @@ void RemoteTransform2D::_update_remote() {
 				n->set_scale(get_scale());
 			else
 				n->set_scale(n_scale);
+		} else {
+			Transform2D n_trans = n->get_transform();
+			Transform2D our_trans = get_transform();
+			Vector2 our_scale = get_scale();
+
+			if (!update_remote_position)
+				n_trans.set_origin(our_trans.get_origin());
+			if (!update_remote_rotation)
+				n_trans.set_rotation(our_trans.get_rotation());
+
+			set_transform(n_trans);
+
+			if (update_remote_scale)
+				set_scale(n->get_scale());
+			else
+				set_scale(our_scale);
 		}
 	}
 }
@@ -123,6 +151,16 @@ void RemoteTransform2D::_notification(int p_what) {
 				_update_remote();
 			}
 
+		} break;
+
+		// NOTE: Because we don't know when the remote_node has moved
+		// NOTE: have to update every physics process.
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (!is_inside_tree() || remote_mode != REMOTE_MODE_FOLLOW)
+				break;
+			if (cache && remote_mode) {
+				_update_remote();
+			}
 		} break;
 	}
 }
@@ -176,6 +214,15 @@ bool RemoteTransform2D::get_update_scale() const {
 	return update_remote_scale;
 }
 
+void RemoteTransform2D::set_remote_mode(const RemoteMode p_mode) {
+	remote_mode = p_mode;
+	_update_remote();
+}
+
+RemoteTransform2D::RemoteMode RemoteTransform2D::get_remote_mode() const {
+	return remote_mode;
+}
+
 String RemoteTransform2D::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
@@ -200,13 +247,21 @@ void RemoteTransform2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform2D::set_update_scale);
 	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform2D::get_update_scale);
 
+	ClassDB::bind_method(D_METHOD("set_remote_mode", "mode"), &RemoteTransform2D::set_remote_mode);
+	ClassDB::bind_method(D_METHOD("get_remote_mode"), &RemoteTransform2D::get_remote_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
+
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Lead,Follow"), "set_remote_mode", "get_remote_mode");
 
 	ADD_GROUP("Update", "update_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_position"), "set_update_position", "get_update_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_rotation"), "set_update_rotation", "get_update_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_scale"), "set_update_scale", "get_update_scale");
+
+	BIND_ENUM_CONSTANT(REMOTE_MODE_LEAD);
+	BIND_ENUM_CONSTANT(REMOTE_MODE_FOLLOW);
 }
 
 RemoteTransform2D::RemoteTransform2D() {
