@@ -2305,7 +2305,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				copytarget = target;
 
 			if (copy && copytarget) {
-				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, CONNECT_PERSIST);
+				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
 			}
 		}
 	}
