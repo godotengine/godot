@@ -147,6 +147,15 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_disable");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_never");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_less");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_equal");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_lequal");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_greater");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_notequal");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_gequal");
+	shader_modes[VS::SHADER_SPATIAL].modes.insert("depth_test_always");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_front");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_back");
 	shader_modes[VS::SHADER_SPATIAL].modes.insert("cull_disabled");

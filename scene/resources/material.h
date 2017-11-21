@@ -162,6 +162,17 @@ public:
 
 	};
 
+	enum DepthTestMode {
+		DEPTH_TEST_NEVER,
+		DEPTH_TEST_LESS,
+		DEPTH_TEST_EQUAL,
+		DEPTH_TEST_LEQUAL,
+		DEPTH_TEST_GREATER,
+		DEPTH_TEST_NOTEQUAL,
+		DEPTH_TEST_GEQUAL,
+		DEPTH_TEST_ALWAYS
+	};
+
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
@@ -228,6 +239,7 @@ private:
 			uint64_t detail_uv : 1;
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
+			uint64_t depth_test_mode : 3;
 			uint64_t cull_mode : 2;
 			uint64_t flags : 12;
 			uint64_t detail_blend_mode : 2;
@@ -270,6 +282,7 @@ private:
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
+		mk.depth_test_mode = depth_test_mode;
 		mk.cull_mode = cull_mode;
 		for (int i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
@@ -396,6 +409,7 @@ private:
 	BlendMode blend_mode;
 	BlendMode detail_blend_mode;
 	DepthDrawMode depth_draw_mode;
+	DepthTestMode depth_test_mode;
 	CullMode cull_mode;
 	bool flags[FLAG_MAX];
 	SpecularMode specular_mode;
@@ -504,6 +518,9 @@ public:
 	void set_depth_draw_mode(DepthDrawMode p_mode);
 	DepthDrawMode get_depth_draw_mode() const;
 
+	void set_depth_test_mode(DepthTestMode p_mode);
+	DepthTestMode get_depth_test_mode() const;
+
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
@@ -608,6 +625,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::DetailUV)
 VARIANT_ENUM_CAST(SpatialMaterial::Feature)
 VARIANT_ENUM_CAST(SpatialMaterial::BlendMode)
 VARIANT_ENUM_CAST(SpatialMaterial::DepthDrawMode)
+VARIANT_ENUM_CAST(SpatialMaterial::DepthTestMode)
 VARIANT_ENUM_CAST(SpatialMaterial::CullMode)
 VARIANT_ENUM_CAST(SpatialMaterial::Flags)
 VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)

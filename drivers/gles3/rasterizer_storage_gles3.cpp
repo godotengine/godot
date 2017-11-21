@@ -1589,6 +1589,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 			p_shader->spatial.blend_mode = Shader::Spatial::BLEND_MODE_MIX;
 			p_shader->spatial.depth_draw_mode = Shader::Spatial::DEPTH_DRAW_OPAQUE;
+			p_shader->spatial.depth_test_mode = Shader::Spatial::DEPTH_TEST_LEQUAL;
 			p_shader->spatial.cull_mode = Shader::Spatial::CULL_MODE_BACK;
 			p_shader->spatial.uses_alpha = false;
 			p_shader->spatial.uses_alpha_scissor = false;
@@ -1611,6 +1612,15 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["depth_draw_always"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALWAYS);
 			shaders.actions_scene.render_mode_values["depth_draw_never"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_NEVER);
 			shaders.actions_scene.render_mode_values["depth_draw_alpha_prepass"] = Pair<int *, int>(&p_shader->spatial.depth_draw_mode, Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS);
+
+			shaders.actions_scene.render_mode_values["depth_test_never"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_NEVER);
+			shaders.actions_scene.render_mode_values["depth_test_less"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_LESS);
+			shaders.actions_scene.render_mode_values["depth_test_equal"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_EQUAL);
+			shaders.actions_scene.render_mode_values["depth_test_lequal"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_LEQUAL);
+			shaders.actions_scene.render_mode_values["depth_test_greater"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_GREATER);
+			shaders.actions_scene.render_mode_values["depth_test_notequal"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_NOTEQUAL);
+			shaders.actions_scene.render_mode_values["depth_test_gequal"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_GEQUAL);
+			shaders.actions_scene.render_mode_values["depth_test_always"] = Pair<int *, int>(&p_shader->spatial.depth_test_mode, Shader::Spatial::DEPTH_TEST_ALWAYS);
 
 			shaders.actions_scene.render_mode_values["cull_front"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_FRONT);
 			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
