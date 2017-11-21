@@ -323,6 +323,9 @@ void FileDialog::update_file_list() {
 
 	while ((item = dir_access->get_next(&isdir)) != "") {
 
+		if (item == ".")
+			continue;
+
 		ishidden = dir_access->current_is_hidden();
 
 		if (show_hidden || !ishidden) {
@@ -344,7 +347,7 @@ void FileDialog::update_file_list() {
 	while (!dirs.empty()) {
 		String &dir_name = dirs.front()->get();
 		TreeItem *ti = tree->create_item(root);
-		ti->set_text(0, dir_name + "/");
+		ti->set_text(0, dir_name);
 		ti->set_icon(0, folder);
 
 		Dictionary d;
