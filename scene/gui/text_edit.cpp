@@ -3488,7 +3488,10 @@ void TextEdit::adjust_viewport_to_cursor() {
 		cursor.x_ofs = cursor_x;
 
 	update_line_scroll_pos();
-	v_scroll->set_value(get_line_scroll_pos() + 1);
+	if (get_line_scroll_pos() == 0)
+		v_scroll->set_value(0);
+	else
+		v_scroll->set_value(get_line_scroll_pos() + 1);
 	update();
 	/*
 	get_range()->set_max(text.size());
