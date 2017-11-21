@@ -84,7 +84,7 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
-private:
+
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
@@ -109,12 +109,14 @@ private:
 
 	Vector<Vector3> contactDebug;
 	int contactDebugCount;
+	real_t delta_time;
 
 public:
-	SpaceBullet(bool p_create_soft_world);
+	SpaceBullet();
 	virtual ~SpaceBullet();
 
 	void flush_queries();
+	real_t get_delta_time() { return delta_time; }
 	void step(real_t p_delta_time);
 
 	_FORCE_INLINE_ btBroadphaseInterface *get_broadphase() { return broadphase; }

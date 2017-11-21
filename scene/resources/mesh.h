@@ -123,6 +123,7 @@ public:
 	virtual int get_surface_count() const = 0;
 	virtual int surface_get_array_len(int p_idx) const = 0;
 	virtual int surface_get_array_index_len(int p_idx) const = 0;
+	virtual bool surface_is_softbody_friendly(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const = 0;
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
@@ -133,6 +134,8 @@ public:
 
 	PoolVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
+	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
+	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
 	Ref<Shape> create_trimesh_shape() const;
 	Ref<Shape> create_convex_shape() const;
@@ -143,6 +146,7 @@ public:
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
+	void clear_cache();
 
 	Mesh();
 };

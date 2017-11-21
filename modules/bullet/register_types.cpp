@@ -32,6 +32,7 @@
 
 #include "bullet_physics_server.h"
 #include "class_db.h"
+#include "project_settings.h"
 
 /**
 	@author AndreaCatania
@@ -47,6 +48,9 @@ void register_bullet_types() {
 #ifndef _3D_DISABLED
 	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServerManager::set_default_server("Bullet", 1);
+
+	GLOBAL_DEF("physics/3d/active_soft_world", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
 #endif
 }
 

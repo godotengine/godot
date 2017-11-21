@@ -490,6 +490,72 @@ public:
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL) = 0;
 
+	/* SOFT BODY */
+
+	virtual RID soft_body_create(bool p_init_sleeping = false) = 0;
+
+	virtual void soft_body_update_visual_server(RID p_body, class SoftBodyVisualServerHandler *p_visual_server_handler) = 0;
+
+	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
+	virtual RID soft_body_get_space(RID p_body) const = 0;
+
+	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) = 0;
+
+	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
+	virtual uint32_t soft_body_get_collision_layer(RID p_body) const = 0;
+
+	virtual void soft_body_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
+	virtual uint32_t soft_body_get_collision_mask(RID p_body) const = 0;
+
+	virtual void soft_body_add_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void soft_body_remove_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) = 0;
+
+	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
+	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const = 0;
+
+	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) = 0;
+	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const = 0;
+
+	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) = 0;
+	virtual bool soft_body_is_ray_pickable(RID p_body) const = 0;
+
+	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) = 0;
+	virtual int soft_body_get_simulation_precision(RID p_body) = 0;
+
+	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) = 0;
+	virtual real_t soft_body_get_total_mass(RID p_body) = 0;
+
+	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_volume_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) = 0;
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) = 0;
+	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) = 0;
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) = 0;
+
+	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const = 0;
+
+	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
+	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) = 0;
+
 	/* JOINT API */
 
 	enum JointType {

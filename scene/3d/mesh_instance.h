@@ -41,6 +41,7 @@ class MeshInstance : public GeometryInstance {
 
 	GDCLASS(MeshInstance, GeometryInstance);
 
+protected:
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 

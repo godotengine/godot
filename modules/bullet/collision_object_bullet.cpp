@@ -111,6 +111,8 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
 	exceptions.insert(p_ignoreCollisionObject->get_self());
+	if (!bt_collision_object)
+		return;
 	bt_collision_object->setIgnoreCollisionCheck(p_ignoreCollisionObject->bt_collision_object, true);
 	if (space)
 		space->get_broadphase()->getOverlappingPairCache()->cleanProxyFromPairs(bt_collision_object->getBroadphaseHandle(), space->get_dispatcher());
