@@ -97,7 +97,6 @@ public:
 #define DISPLAY_CHANGED \
 	changes++;
 #endif
-	//	print_line(String("CHANGED: ") + __FUNCTION__);
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
@@ -219,8 +218,6 @@ public:
 	BIND2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	BIND1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	BIND3RC(uint32_t, mesh_surface_get_stride_in_array, RID, int, int)
-	BIND3RC(uint32_t, mesh_surface_get_offset_in_array, RID, int, int)
 	BIND4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
 
 	BIND3(mesh_surface_set_material, RID, int, RID)
