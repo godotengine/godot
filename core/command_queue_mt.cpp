@@ -76,6 +76,30 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 	return &sync_sems[idx];
 }
 
+bool CommandQueueMT::dealloc_one() {
+tryagain:
+	if (dealloc_ptr == write_ptr) {
+		// The queue is empty
+		return false;
+	}
+
+	uint32_t size = *(uint32_t *)&command_mem[dealloc_ptr];
+
+	if (size == 0) {
+		// End of command buffer wrap down
+		dealloc_ptr = 0;
+		goto tryagain;
+	}
+
+	if (size & 1) {
+		// Still used, nothing can be deallocated
+		return false;
+	}
+
+	dealloc_ptr += (size >> 1) + sizeof(uint32_t);
+	return true;
+}
+
 CommandQueueMT::CommandQueueMT(bool p_sync) {
 
 	read_ptr = 0;

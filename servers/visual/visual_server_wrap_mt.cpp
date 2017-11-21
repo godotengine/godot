@@ -37,14 +37,7 @@ void VisualServerWrapMT::thread_exit() {
 
 void VisualServerWrapMT::thread_draw() {
 
-	draw_mutex->lock();
-
-	draw_pending--;
-	bool draw = (draw_pending == 0); // only draw when no more flushes are pending
-
-	draw_mutex->unlock();
-
-	if (draw) {
+	if (!atomic_decrement(&draw_pending)) {
 
 		visual_server->draw();
 	}
@@ -52,11 +45,7 @@ void VisualServerWrapMT::thread_draw() {
 
 void VisualServerWrapMT::thread_flush() {
 
-	draw_mutex->lock();
-
-	draw_pending--;
-
-	draw_mutex->unlock();
+	atomic_decrement(&draw_pending);
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
@@ -92,15 +81,8 @@ void VisualServerWrapMT::sync() {
 
 	if (create_thread) {
 
-		/* TODO: sync with the thread */
-
-		/*
-		ERR_FAIL_COND(!draw_mutex);
-		draw_mutex->lock();
-		draw_pending++; //cambiar por un saferefcount
-		draw_mutex->unlock();
-		*/
-		//command_queue.push( this, &VisualServerWrapMT::thread_flush);
+		atomic_increment(&draw_pending);
+		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 
 		command_queue.flush_all(); //flush all pending from other threads
@@ -111,14 +93,8 @@ void VisualServerWrapMT::draw() {
 
 	if (create_thread) {
 
-		/* TODO: Make it draw
-		ERR_FAIL_COND(!draw_mutex);
-		draw_mutex->lock();
-		draw_pending++; //cambiar por un saferefcount
-		draw_mutex->unlock();
-
-		command_queue.push( this, &VisualServerWrapMT::thread_draw);
-		*/
+		atomic_increment(&draw_pending);
+		command_queue.push(this, &VisualServerWrapMT::thread_draw);
 	} else {
 
 		visual_server->draw();
@@ -129,7 +105,6 @@ void VisualServerWrapMT::init() {
 
 	if (create_thread) {
 
-		draw_mutex = Mutex::create();
 		print_line("CREATING RENDER THREAD");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
@@ -181,9 +156,6 @@ void VisualServerWrapMT::finish() {
 	canvas_item_free_cached_ids();
 	canvas_light_occluder_free_cached_ids();
 	canvas_occluder_polygon_free_cached_ids();
-
-	if (draw_mutex)
-		memdelete(draw_mutex);
 }
 
 VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread)
@@ -192,7 +164,6 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_
 	visual_server = p_contained;
 	create_thread = p_create_thread;
 	thread = NULL;
-	draw_mutex = NULL;
 	draw_pending = 0;
 	draw_thread_up = false;
 	alloc_mutex = Mutex::create();
