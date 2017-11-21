@@ -152,6 +152,8 @@ public:
 
 	Error insert(int p_pos, const T &p_val);
 
+	void append_array(const Vector<T> &p_other);
+
 	template <class C>
 	void sort_custom() {
 
@@ -405,6 +407,17 @@ Error Vector<T>::insert(int p_pos, const T &p_val) {
 	set(p_pos, p_val);
 
 	return OK;
+}
+
+template <class T>
+void Vector<T>::append_array(const Vector<T> &p_other) {
+	const int ds = p_other.size();
+	if (ds == 0)
+		return;
+	const int bs = size();
+	resize(bs + ds);
+	for (int i = 0; i < ds; ++i)
+		operator[](bs + i) = p_other[i];
 }
 
 template <class T>
