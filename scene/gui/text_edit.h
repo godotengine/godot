@@ -328,6 +328,9 @@ class TextEdit : public Control {
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _scroll_up(real_t p_delta);
+	void _scroll_down(real_t p_delta);
+
 	void _pre_shift_selection();
 	void _post_shift_selection();
 

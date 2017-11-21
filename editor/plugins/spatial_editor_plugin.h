@@ -170,6 +170,11 @@ private:
 	void _select_region();
 	bool _gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
 
+	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;

@@ -1777,46 +1777,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (mb->is_pressed()) {
 
 			if (mb->get_button_index() == BUTTON_WHEEL_UP && !mb->get_command()) {
-				float scroll_factor = 3 * mb->get_factor();
-				if (scrolling) {
-					target_v_scroll = (target_v_scroll - scroll_factor);
-				} else {
-					target_v_scroll = (v_scroll->get_value() - scroll_factor);
-				}
-
-				if (smooth_scroll_enabled) {
-					if (target_v_scroll <= 0) {
-						target_v_scroll = 0;
-					}
-					scrolling = true;
-					set_physics_process(true);
-				} else {
-					v_scroll->set_value(target_v_scroll);
-				}
+				_scroll_up(3 * mb->get_factor());
 			}
 			if (mb->get_button_index() == BUTTON_WHEEL_DOWN && !mb->get_command()) {
-				float scroll_factor = 3 * mb->get_factor();
-				if (scrolling) {
-					target_v_scroll = (target_v_scroll + scroll_factor);
-				} else {
-					target_v_scroll = (v_scroll->get_value() + scroll_factor);
-				}
-
-				if (smooth_scroll_enabled) {
-					int max_v_scroll = get_total_unhidden_rows();
-					if (!scroll_past_end_of_file_enabled) {
-						max_v_scroll -= get_visible_rows();
-						max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
-					}
-
-					if (target_v_scroll > max_v_scroll) {
-						target_v_scroll = max_v_scroll;
-					}
-					scrolling = true;
-					set_physics_process(true);
-				} else {
-					v_scroll->set_value(target_v_scroll);
-				}
+				_scroll_down(3 * mb->get_factor());
 			}
 			if (mb->get_button_index() == BUTTON_WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
@@ -1971,6 +1935,19 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			// notify to show soft keyboard
 			notification(NOTIFICATION_FOCUS_ENTER);
 		}
+	}
+
+	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	if (pan_gesture.is_valid()) {
+
+		const real_t delta = pan_gesture->get_delta().y;
+		if (delta < 0) {
+			_scroll_up(-delta);
+		} else {
+			_scroll_down(delta);
+		}
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		return;
 	}
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
@@ -3063,6 +3040,50 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		return;
+	}
+}
+
+void TextEdit::_scroll_up(real_t p_delta) {
+
+	if (scrolling) {
+		target_v_scroll = (target_v_scroll - p_delta);
+	} else {
+		target_v_scroll = (v_scroll->get_value() - p_delta);
+	}
+
+	if (smooth_scroll_enabled) {
+		if (target_v_scroll <= 0) {
+			target_v_scroll = 0;
+		}
+		scrolling = true;
+		set_physics_process(true);
+	} else {
+		v_scroll->set_value(target_v_scroll);
+	}
+}
+
+void TextEdit::_scroll_down(real_t p_delta) {
+
+	if (scrolling) {
+		target_v_scroll = (target_v_scroll + p_delta);
+	} else {
+		target_v_scroll = (v_scroll->get_value() + p_delta);
+	}
+
+	if (smooth_scroll_enabled) {
+		int max_v_scroll = get_total_unhidden_rows();
+		if (!scroll_past_end_of_file_enabled) {
+			max_v_scroll -= get_visible_rows();
+			max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
+		}
+
+		if (target_v_scroll > max_v_scroll) {
+			target_v_scroll = max_v_scroll;
+		}
+		scrolling = true;
+		set_physics_process(true);
+	} else {
+		v_scroll->set_value(target_v_scroll);
 	}
 }
 

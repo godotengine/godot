@@ -85,6 +85,15 @@ static int prev_mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
 
+static Vector2 get_mouse_pos(NSEvent *event) {
+
+	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
+	const NSPoint p = [event locationInWindow];
+	mouse_x = p.x * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	mouse_y = (contentRect.size.height - p.y) * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	return Vector2(mouse_x, mouse_y);
+}
+
 @interface GodotApplication : NSApplication
 @end
 
@@ -508,12 +517,9 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_button_mask(button_mask);
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
-	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-	const NSPoint p = [event locationInWindow];
-	mouse_x = p.x * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	mouse_y = (contentRect.size.height - p.y) * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	mm->set_position(Vector2(mouse_x, mouse_y));
-	mm->set_global_position(Vector2(mouse_x, mouse_y));
+	const Vector2 pos = get_mouse_pos(event);
+	mm->set_position(pos);
+	mm->set_global_position(pos);
 	Vector2 relativeMotion = Vector2();
 	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
@@ -573,6 +579,15 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 	if (OS_OSX::singleton->input)
 		OS_OSX::singleton->input->set_mouse_in_window(true);
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event {
+	Ref<InputEventMagnifyGesture> ev;
+	ev.instance();
+	get_key_modifier_state([event modifierFlags], ev);
+	ev->set_position(get_mouse_pos(event));
+	ev->set_factor([event magnification] + 1.0);
+	OS_OSX::singleton->push_input(ev);
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -838,6 +853,18 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 	OS_OSX::singleton->push_input(sc);
 }
 
+inline void sendPanEvent(double dx, double dy, int modifierFlags) {
+
+	Ref<InputEventPanGesture> pg;
+	pg.instance();
+
+	get_key_modifier_state(modifierFlags, pg);
+	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
+	pg->set_position(mouse_pos);
+	pg->set_delta(Vector2(-dx, -dy));
+	OS_OSX::singleton->push_input(pg);
+}
+
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
@@ -856,11 +883,16 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 		deltaX = [event deltaX];
 		deltaY = [event deltaY];
 	}
-	if (fabs(deltaX)) {
-		sendScrollEvent(0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
-	}
-	if (fabs(deltaY)) {
-		sendScrollEvent(0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+
+	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
+		sendPanEvent(deltaX, deltaY, [event modifierFlags]);
+	} else {
+		if (fabs(deltaX)) {
+			sendScrollEvent(0 > deltaX ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT, fabs(deltaX * 0.3), [event modifierFlags]);
+		}
+		if (fabs(deltaY)) {
+			sendScrollEvent(0 < deltaY ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN, fabs(deltaY * 0.3), [event modifierFlags]);
+		}
 	}
 }
 

@@ -623,6 +623,16 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		return do_input_action(p_camera, mm->get_position(), false);
 	}
 
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+
+		if (pan_gesture->get_command() || pan_gesture->get_shift()) {
+			const real_t delta = pan_gesture->get_delta().y;
+			floor->set_value(floor->get_value() + SGN(delta));
+			return true;
+		}
+	}
+
 	return false;
 }
 

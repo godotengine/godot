@@ -2612,6 +2612,12 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			} break;
 		}
 	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 bool Tree::edit_selected() {
