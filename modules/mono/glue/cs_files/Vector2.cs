@@ -46,57 +46,57 @@ namespace Godot
             }
         }
 
-        internal void normalize()
+        internal void Normalize()
         {
             float length = x * x + y * y;
 
             if (length != 0f)
             {
-                length = Mathf.sqrt(length);
+                length = Mathf.Sqrt(length);
                 x /= length;
                 y /= length;
             }
         }
 
-        private float cross(Vector2 b)
+        private float Cross(Vector2 b)
         {
             return x * b.y - y * b.x;
         }
 
-        public Vector2 abs()
+        public Vector2 Abs()
         {
-            return new Vector2(Mathf.abs(x), Mathf.abs(y));
+            return new Vector2(Mathf.Abs(x), Mathf.Abs(y));
         }
 
-        public float angle()
+        public float Angle()
         {
-            return Mathf.atan2(y, x);
+            return Mathf.Atan2(y, x);
         }
 
-        public float angle_to(Vector2 to)
+        public float AngleTo(Vector2 to)
         {
-            return Mathf.atan2(cross(to), dot(to));
+            return Mathf.Atan2(Cross(to), Dot(to));
         }
 
-        public float angle_to_point(Vector2 to)
+        public float AngleToPoint(Vector2 to)
         {
-            return Mathf.atan2(x - to.x, y - to.y);
+            return Mathf.Atan2(x - to.x, y - to.y);
         }
 
-        public float aspect()
+        public float Aspect()
         {
             return x / y;
         }
 
-        public Vector2 bounce(Vector2 n)
+        public Vector2 Bounce(Vector2 n)
         {
-            return -reflect(n);
+            return -Reflect(n);
         }
 
-        public Vector2 clamped(float length)
+        public Vector2 Clamped(float length)
         {
             Vector2 v = this;
-            float l = this.length();
+            float l = this.Length();
 
             if (l > 0 && length < l)
             {
@@ -107,7 +107,7 @@ namespace Godot
             return v;
         }
 
-        public Vector2 cubic_interpolate(Vector2 b, Vector2 preA, Vector2 postB, float t)
+        public Vector2 CubicInterpolate(Vector2 b, Vector2 preA, Vector2 postB, float t)
         {
             Vector2 p0 = preA;
             Vector2 p1 = this;
@@ -123,42 +123,42 @@ namespace Godot
                                 (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
         }
 
-        public float distance_squared_to(Vector2 to)
+        public float DistanceSquaredTo(Vector2 to)
         {
             return (x - to.x) * (x - to.x) + (y - to.y) * (y - to.y);
         }
 
-        public float distance_to(Vector2 to)
+        public float DistanceTo(Vector2 to)
         {
-            return Mathf.sqrt((x - to.x) * (x - to.x) + (y - to.y) * (y - to.y));
+            return Mathf.Sqrt((x - to.x) * (x - to.x) + (y - to.y) * (y - to.y));
         }
 
-        public float dot(Vector2 with)
+        public float Dot(Vector2 with)
         {
             return x * with.x + y * with.y;
         }
 
-        public Vector2 floor()
+        public Vector2 Floor()
         {
-            return new Vector2(Mathf.floor(x), Mathf.floor(y));
+            return new Vector2(Mathf.Floor(x), Mathf.Floor(y));
         }
 
-        public bool is_normalized()
+        public bool IsNormalized()
         {
-            return Mathf.abs(length_squared() - 1.0f) < Mathf.Epsilon;
+            return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
         }
 
-        public float length()
+        public float Length()
         {
-            return Mathf.sqrt(x * x + y * y);
+            return Mathf.Sqrt(x * x + y * y);
         }
 
-        public float length_squared()
+        public float LengthSquared()
         {
             return x * x + y * y;
         }
 
-        public Vector2 linear_interpolate(Vector2 b, float t)
+        public Vector2 LinearInterpolate(Vector2 b, float t)
         {
             Vector2 res = this;
 
@@ -168,35 +168,35 @@ namespace Godot
             return res;
         }
 
-        public Vector2 normalized()
+        public Vector2 Normalized()
         {
             Vector2 result = this;
-            result.normalize();
+            result.Normalize();
             return result;
         }
 
-        public Vector2 reflect(Vector2 n)
+        public Vector2 Reflect(Vector2 n)
         {
-            return 2.0f * n * dot(n) - this;
+            return 2.0f * n * Dot(n) - this;
         }
 
-        public Vector2 rotated(float phi)
+        public Vector2 Rotated(float phi)
         {
-            float rads = angle() + phi;
-            return new Vector2(Mathf.cos(rads), Mathf.sin(rads)) * length();
+            float rads = Angle() + phi;
+            return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
         }
 
-        public Vector2 slide(Vector2 n)
+        public Vector2 Slide(Vector2 n)
         {
-            return this - n * dot(n);
+            return this - n * Dot(n);
         }
 
-        public Vector2 snapped(Vector2 by)
+        public Vector2 Snapped(Vector2 by)
         {
-            return new Vector2(Mathf.stepify(x, by.x), Mathf.stepify(y, by.y));
+            return new Vector2(Mathf.Stepify(x, by.x), Mathf.Stepify(y, by.y));
         }
 
-        public Vector2 tangent()
+        public Vector2 Tangent()
         {
             return new Vector2(y, -x);
         }

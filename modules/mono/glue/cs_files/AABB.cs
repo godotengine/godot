@@ -38,7 +38,7 @@ namespace Godot
             }
         }
 
-        public bool encloses(AABB with)
+        public bool Encloses(AABB with)
         {
             Vector3 src_min = position;
             Vector3 src_max = position + size;
@@ -53,7 +53,7 @@ namespace Godot
                     (src_max.z > dst_max.z));
         }
 
-        public AABB expand(Vector3 to_point)
+        public AABB Expand(Vector3 to_point)
         {
             Vector3 begin = position;
             Vector3 end = position + size;
@@ -75,12 +75,12 @@ namespace Godot
             return new AABB(begin, end - begin);
         }
 
-        public float get_area()
+        public float GetArea()
         {
             return size.x * size.y * size.z;
         }
 
-        public Vector3 get_endpoint(int idx)
+        public Vector3 GetEndpoint(int idx)
         {
             switch (idx)
             {
@@ -105,7 +105,7 @@ namespace Godot
             }
         }
 
-        public Vector3 get_longest_axis()
+        public Vector3 GetLongestAxis()
         {
             Vector3 axis = new Vector3(1f, 0f, 0f);
             float max_size = size.x;
@@ -125,7 +125,7 @@ namespace Godot
             return axis;
         }
 
-        public Vector3.Axis get_longest_axis_index()
+        public Vector3.Axis GetLongestAxisIndex()
         {
             Vector3.Axis axis = Vector3.Axis.X;
             float max_size = size.x;
@@ -145,7 +145,7 @@ namespace Godot
             return axis;
         }
 
-        public float get_longest_axis_size()
+        public float GetLongestAxisSize()
         {
             float max_size = size.x;
 
@@ -158,7 +158,7 @@ namespace Godot
             return max_size;
         }
 
-        public Vector3 get_shortest_axis()
+        public Vector3 GetShortestAxis()
         {
             Vector3 axis = new Vector3(1f, 0f, 0f);
             float max_size = size.x;
@@ -178,7 +178,7 @@ namespace Godot
             return axis;
         }
 
-        public Vector3.Axis get_shortest_axis_index()
+        public Vector3.Axis GetShortestAxisIndex()
         {
             Vector3.Axis axis = Vector3.Axis.X;
             float max_size = size.x;
@@ -198,7 +198,7 @@ namespace Godot
             return axis;
         }
 
-        public float get_shortest_axis_size()
+        public float GetShortestAxisSize()
         {
             float max_size = size.x;
 
@@ -211,7 +211,7 @@ namespace Godot
             return max_size;
         }
 
-        public Vector3 get_support(Vector3 dir)
+        public Vector3 GetSupport(Vector3 dir)
         {
             Vector3 half_extents = size * 0.5f;
             Vector3 ofs = position + half_extents;
@@ -222,7 +222,7 @@ namespace Godot
                 (dir.z > 0f) ? -half_extents.z : half_extents.z);
         }
 
-        public AABB grow(float by)
+        public AABB Grow(float by)
         {
             AABB res = this;
 
@@ -236,17 +236,17 @@ namespace Godot
             return res;
         }
 
-        public bool has_no_area()
+        public bool HasNoArea()
         {
             return size.x <= 0f || size.y <= 0f || size.z <= 0f;
         }
 
-        public bool has_no_surface()
+        public bool HasNoSurface()
         {
             return size.x <= 0f && size.y <= 0f && size.z <= 0f;
         }
 
-        public bool has_point(Vector3 point)
+        public bool HasPoint(Vector3 point)
         {
             if (point.x < position.x)
                 return false;
@@ -264,7 +264,7 @@ namespace Godot
             return true;
         }
 
-        public AABB intersection(AABB with)
+        public AABB Intersection(AABB with)
         {
             Vector3 src_min = position;
             Vector3 src_max = position + size;
@@ -306,7 +306,7 @@ namespace Godot
             return new AABB(min, max - min);
         }
 
-        public bool intersects(AABB with)
+        public bool Intersects(AABB with)
         {
             if (position.x >= (with.position.x + with.size.x))
                 return false;
@@ -324,7 +324,7 @@ namespace Godot
             return true;
         }
 
-        public bool intersects_plane(Plane plane)
+        public bool IntersectsPlane(Plane plane)
         {
             Vector3[] points =
             {
@@ -343,7 +343,7 @@ namespace Godot
 
             for (int i = 0; i < 8; i++)
             {
-                if (plane.distance_to(points[i]) > 0)
+                if (plane.DistanceTo(points[i]) > 0)
                     over = true;
                 else
                     under = true;
@@ -352,7 +352,7 @@ namespace Godot
             return under && over;
         }
 
-        public bool intersects_segment(Vector3 from, Vector3 to)
+        public bool IntersectsSegment(Vector3 from, Vector3 to)
         {
             float min = 0f;
             float max = 1f;
@@ -398,7 +398,7 @@ namespace Godot
             return true;
         }
 
-        public AABB merge(AABB with)
+        public AABB Merge(AABB with)
         {
             Vector3 beg_1 = position;
             Vector3 beg_2 = with.position;

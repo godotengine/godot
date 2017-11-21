@@ -58,40 +58,40 @@ namespace Godot
             }
         }
 
-        public Quat cubic_slerp(Quat b, Quat preA, Quat postB, float t)
+        public Quat CubicSlerp(Quat b, Quat preA, Quat postB, float t)
         {
             float t2 = (1.0f - t) * t * 2f;
-            Quat sp = slerp(b, t);
-            Quat sq = preA.slerpni(postB, t);
-            return sp.slerpni(sq, t2);
+            Quat sp = Slerp(b, t);
+            Quat sq = preA.Slerpni(postB, t);
+            return sp.Slerpni(sq, t2);
         }
 
-        public float dot(Quat b)
+        public float Dot(Quat b)
         {
             return x * b.x + y * b.y + z * b.z + w * b.w;
         }
 
-        public Quat inverse()
+        public Quat Inverse()
         {
             return new Quat(-x, -y, -z, w);
         }
 
-        public float length()
+        public float Length()
         {
-            return Mathf.sqrt(length_squared());
+            return Mathf.Sqrt(LengthSquared());
         }
 
-        public float length_squared()
+        public float LengthSquared()
         {
-            return dot(this);
+            return Dot(this);
         }
 
-        public Quat normalized()
+        public Quat Normalized()
         {
-            return this / length();
+            return this / Length();
         }
 
-        public void set(float x, float y, float z, float w)
+        public void Set(float x, float y, float z, float w)
         {
             this.x = x;
             this.y = y;
@@ -99,7 +99,7 @@ namespace Godot
             this.w = w;
         }
 
-        public Quat slerp(Quat b, float t)
+        public Quat Slerp(Quat b, float t)
         {
             // Calculate cosine
             float cosom = x * b.x + y * b.y + z * b.z + w * b.w;
@@ -128,10 +128,10 @@ namespace Godot
             if ((1.0 - cosom) > Mathf.Epsilon)
             {
                 // Standard case (Slerp)
-                float omega = Mathf.acos(cosom);
-                sinom = Mathf.sin(omega);
-                scale0 = Mathf.sin((1.0f - t) * omega) / sinom;
-                scale1 = Mathf.sin(t * omega) / sinom;
+                float omega = Mathf.Acos(cosom);
+                sinom = Mathf.Sin(omega);
+                scale0 = Mathf.Sin((1.0f - t) * omega) / sinom;
+                scale1 = Mathf.Sin(t * omega) / sinom;
             }
             else
             {
@@ -150,19 +150,19 @@ namespace Godot
             );
         }
 
-        public Quat slerpni(Quat b, float t)
+        public Quat Slerpni(Quat b, float t)
         {
-            float dot = this.dot(b);
+            float dot = this.Dot(b);
 
-            if (Mathf.abs(dot) > 0.9999f)
+            if (Mathf.Abs(dot) > 0.9999f)
             {
                 return this;
             }
 
-            float theta = Mathf.acos(dot);
-            float sinT = 1.0f / Mathf.sin(theta);
-            float newFactor = Mathf.sin(t * theta) * sinT;
-            float invFactor = Mathf.sin((1.0f - t) * theta) * sinT;
+            float theta = Mathf.Acos(dot);
+            float sinT = 1.0f / Mathf.Sin(theta);
+            float newFactor = Mathf.Sin(t * theta) * sinT;
+            float invFactor = Mathf.Sin((1.0f - t) * theta) * sinT;
 
             return new Quat
             (
@@ -173,10 +173,10 @@ namespace Godot
             );
         }
 
-        public Vector3 xform(Vector3 v)
+        public Vector3 Xform(Vector3 v)
         {
             Quat q = this * v;
-            q *= this.inverse();
+            q *= this.Inverse();
             return new Vector3(q.x, q.y, q.z);
         }
 
@@ -190,7 +190,7 @@ namespace Godot
 
         public Quat(Vector3 axis, float angle)
         {
-            float d = axis.length();
+            float d = axis.Length();
 
             if (d == 0f)
             {
@@ -201,12 +201,12 @@ namespace Godot
             }
             else
             {
-                float s = Mathf.sin(angle * 0.5f) / d;
+                float s = Mathf.Sin(angle * 0.5f) / d;
 
                 x = axis.x * s;
                 y = axis.y * s;
                 z = axis.z * s;
-                w = Mathf.cos(angle * 0.5f);
+                w = Mathf.Cos(angle * 0.5f);
             }
         }
 
