@@ -511,12 +511,14 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 			mode = PhysicsServer::BODY_MODE_RIGID;
 			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0 == mass ? 1 : mass);
+			scratch_space_override_modificator();
 			break;
 		}
 		case PhysicsServer::BODY_MODE_CHARACTER: {
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
 			set_axis_lock(axis_lock); // Reload axis lock
 			_internal_set_mass(0 == mass ? 1 : mass);
+			scratch_space_override_modificator();
 			break;
 		}
 	}
