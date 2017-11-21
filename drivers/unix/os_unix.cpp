@@ -133,15 +133,6 @@ void OS_Unix::initialize_core() {
 	}
 }
 
-void OS_Unix::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(UnixTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OS_Unix::finalize_core() {
 }
 
@@ -542,5 +533,11 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
+
+OS_Unix::OS_Unix() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(UnixTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
+}
 
 #endif

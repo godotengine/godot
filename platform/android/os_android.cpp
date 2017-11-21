@@ -114,15 +114,6 @@ void OS_Android::initialize_core() {
 #endif
 }
 
-void OS_Android::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(AndroidLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
@@ -762,7 +753,9 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	alert_func = p_alert_func;
 	use_reload_hooks = false;
 
-	_set_logger(memnew(AndroidLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(AndroidLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS_Android::~OS_Android() {

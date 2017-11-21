@@ -53,7 +53,6 @@ protected:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
 	//virtual void initialize(int p_video_driver,int p_audio_driver);
@@ -63,6 +62,8 @@ protected:
 	String stdin_buf;
 
 public:
+	OS_Unix();
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual String get_stdin_string(bool p_block);
 

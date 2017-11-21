@@ -97,17 +97,6 @@ void OSIPhone::initialize_core() {
 	set_data_dir(data_dir);
 };
 
-void OSIPhone::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(SyslogLogger));
-#ifdef DEBUG_ENABLED
-	// it seems iOS app's stdout/stderr is only obtainable if you launch it from Xcode
-	loggers.push_back(memnew(StdLogger));
-#endif
-	loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	supported_orientations = 0;
@@ -639,7 +628,13 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 	// which is initialized in initialize_core
 	data_dir = p_data_dir;
 
-	_set_logger(memnew(SyslogLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(SyslogLogger));
+#ifdef DEBUG_ENABLED
+	// it seems iOS app's stdout/stderr is only obtainable if you launch it from Xcode
+	loggers.push_back(memnew(StdLogger));
+#endif
+	_set_logger(memnew(CompositeLogger(loggers)));
 };
 
 OSIPhone::~OSIPhone() {

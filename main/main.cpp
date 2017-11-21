@@ -290,8 +290,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_settings(); //here globals is present
 
-	OS::get_singleton()->initialize_logger();
-
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
 	ClassDB::register_class<Performance>();
@@ -743,6 +741,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		goto error;
 #endif
+	}
+
+	GLOBAL_DEF("logging/file_logging/enable_file_logging", true);
+	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
+	GLOBAL_DEF("logging/file_logging/max_log_files", 10);
+	if (FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) && GLOBAL_GET("logging/file_logging/enable_file_logging")) {
+		String base_path = GLOBAL_GET("logging/file_logging/log_path");
+		int max_files = GLOBAL_GET("logging/file_logging/max_log_files");
+		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
 	if (editor) {

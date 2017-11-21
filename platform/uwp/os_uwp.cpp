@@ -179,15 +179,6 @@ void OSUWP::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
-void OSUWP::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(WindowsTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 bool OSUWP::can_draw() const {
 
 	return !minimized;
@@ -834,7 +825,9 @@ OSUWP::OSUWP() {
 
 	AudioDriverManager::add_driver(&audio_driver);
 
-	_set_logger(memnew(WindowsTerminalLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(WindowsTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OSUWP::~OSUWP() {

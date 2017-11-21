@@ -62,10 +62,10 @@ class OS {
 
 	void *_stack_bottom;
 
-	Logger *_logger;
+	CompositeLogger *_logger;
 
 protected:
-	void _set_logger(Logger *p_logger);
+	void _set_logger(CompositeLogger *p_logger);
 
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
@@ -114,7 +114,8 @@ protected:
 	virtual int get_audio_driver_count() const = 0;
 	virtual const char *get_audio_driver_name(int p_driver) const = 0;
 
-	virtual void initialize_logger();
+	void add_logger(Logger *p_logger);
+
 	virtual void initialize_core() = 0;
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) = 0;
 

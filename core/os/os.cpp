@@ -63,15 +63,21 @@ void OS::debug_break(){
 	// something
 };
 
-void OS::_set_logger(Logger *p_logger) {
+void OS::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {
 		memdelete(_logger);
 	}
 	_logger = p_logger;
 }
 
-void OS::initialize_logger() {
-	_set_logger(memnew(StdLogger));
+void OS::add_logger(Logger *p_logger) {
+	if (!_logger) {
+		Vector<Logger *> loggers;
+		loggers.push_back(p_logger);
+		_logger = memnew(CompositeLogger(loggers));
+	} else {
+		_logger->add_logger(p_logger);
+	}
 }
 
 void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
@@ -604,7 +610,10 @@ OS::OS() {
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;
-	_set_logger(memnew(StdLogger));
+
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(StdLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS::~OS() {
