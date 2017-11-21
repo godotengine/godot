@@ -3229,24 +3229,6 @@ VS::BlendShapeMode RasterizerStorageGLES3::mesh_get_blend_shape_mode(RID p_mesh)
 	return mesh->blend_shape_mode;
 }
 
-uint32_t RasterizerStorageGLES3::mesh_surface_get_stride_in_array(RID p_mesh, int p_surface, int p_array_index) const {
-	Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, 0);
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 0);
-	ERR_FAIL_INDEX_V(p_array_index, VS::ARRAY_MAX, 0);
-
-	return mesh->surfaces[p_surface]->attribs[p_array_index].stride;
-}
-
-uint32_t RasterizerStorageGLES3::mesh_surface_get_offset_in_array(RID p_mesh, int p_surface, int p_array_index) const {
-	Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh, 0);
-	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), 0);
-	ERR_FAIL_INDEX_V(p_array_index, VS::ARRAY_MAX, 0);
-
-	return mesh->surfaces[p_surface]->attribs[p_array_index].offset;
-}
-
 void RasterizerStorageGLES3::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
