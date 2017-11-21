@@ -64,7 +64,7 @@ class VisualServerWrapMT : public VisualServer {
 
 	int pool_max_size;
 
-	//#define DEBUG_SYNC
+//#define DEBUG_SYNC
 
 	static VisualServerWrapMT *singleton_mt;
 
@@ -152,6 +152,8 @@ public:
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
+	FUNC3RC(uint32_t, mesh_surface_get_stride_in_array, RID, int, int)
+	FUNC3RC(uint32_t, mesh_surface_get_offset_in_array, RID, int, int)
 	FUNC4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
