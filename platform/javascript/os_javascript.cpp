@@ -80,10 +80,6 @@ void OS_JavaScript::initialize_core() {
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 }
 
-void OS_JavaScript::initialize_logger() {
-	_set_logger(memnew(StdLogger));
-}
-
 void OS_JavaScript::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);

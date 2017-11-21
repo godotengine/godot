@@ -1185,15 +1185,6 @@ public:
 typedef UnixTerminalLogger OSXTerminalLogger;
 #endif
 
-void OS_OSX::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(OSXTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OS_OSX::alert(const String &p_alert, const String &p_title) {
 	// Set OS X-compliant variables
 	NSAlert *window = [[NSAlert alloc] init];
@@ -2142,7 +2133,9 @@ OS_OSX::OS_OSX() {
 	window_size = Vector2(1024, 600);
 	zoomed = false;
 
-	_set_logger(memnew(OSXTerminalLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(OSXTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
