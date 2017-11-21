@@ -252,6 +252,8 @@ public:
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) = 0;
 	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const = 0;
 
+	virtual uint32_t mesh_surface_get_stride_in_array(RID p_mesh, int p_surface, int p_array_index) const = 0;
+	virtual uint32_t mesh_surface_get_offset_in_array(RID p_mesh, int p_surface, int p_array_index) const = 0;
 	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
@@ -277,6 +279,7 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const = 0;
+
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
