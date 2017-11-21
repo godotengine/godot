@@ -242,6 +242,8 @@ private:
 	PopupMenu *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
+	ToolButton *collapseall_button;
+	ToolButton *expandall_button;
 	MenuButton *object_menu;
 	ToolButton *play_button;
 	MenuButton *native_play_button;
@@ -425,6 +427,9 @@ private:
 
 	void _property_editor_forward();
 	void _property_editor_back();
+
+	void _menu_collapseall();
+	void _menu_expandall();
 
 	void _select_history(int p_idx);
 	void _prepare_history();

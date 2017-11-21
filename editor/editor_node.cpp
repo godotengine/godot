@@ -357,6 +357,8 @@ void EditorNode::_notification(int p_what) {
 		editor_history_menu->set_icon(gui_base->get_icon("History", "EditorIcons"));
 
 		search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
+		collapseall_button->set_icon(gui_base->get_icon("CollapseAll", "EditorIcons"));
+		expandall_button->set_icon(gui_base->get_icon("ExpandAll", "EditorIcons"));
 		object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
 		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); dont have access to that node. needs to become a class property
 		update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
@@ -1392,6 +1394,14 @@ void EditorNode::_property_editor_back() {
 		_edit_current();
 }
 
+void EditorNode::_menu_collapseall() {
+	property_editor->collapse_all_parent_nodes();
+}
+
+void EditorNode::_menu_expandall() {
+	property_editor->expand_all_parent_nodes();
+}
+
 void EditorNode::_save_default_environment() {
 
 	Ref<Environment> fallback = get_tree()->get_root()->get_world()->get_fallback_environment();
@@ -1456,6 +1466,8 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit(NULL);
 		node_dock->set_node(NULL);
+		collapseall_button->set_disabled(true);
+		expandall_button->set_disabled(true);
 		object_menu->set_disabled(true);
 
 		_display_top_editors(false);
@@ -1463,6 +1475,8 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
+	collapseall_button->set_disabled(true);
+	expandall_button->set_disabled(true);
 	object_menu->set_disabled(true);
 
 	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
@@ -1477,6 +1491,8 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit(current_res);
 		node_dock->set_node(NULL);
+		collapseall_button->set_disabled(false);
+		expandall_button->set_disabled(false);
 		object_menu->set_disabled(false);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
@@ -1591,6 +1607,8 @@ void EditorNode::_edit_current() {
 		_hide_top_editors();
 	}
 
+	collapseall_button->set_disabled(false);
+	expandall_button->set_disabled(false);
 	object_menu->set_disabled(false);
 
 	PopupMenu *p = object_menu->get_popup();
@@ -4526,6 +4544,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_resource_selected", &EditorNode::_resource_selected, DEFVAL(""));
 	ClassDB::bind_method("_property_editor_forward", &EditorNode::_property_editor_forward);
 	ClassDB::bind_method("_property_editor_back", &EditorNode::_property_editor_back);
+	ClassDB::bind_method("_menu_collapseall", &EditorNode::_menu_collapseall);
+	ClassDB::bind_method("_menu_expandall", &EditorNode::_menu_expandall);
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
@@ -5338,6 +5358,20 @@ EditorNode::EditorNode() {
 	prop_editor_hb->add_child(search_button);
 	search_button->connect("toggled", this, "_toggle_search_bar");
 
+	collapseall_button = memnew(ToolButton);
+	collapseall_button->set_icon(gui_base->get_icon("Back", "EditorIcons"));
+	collapseall_button->set_flat(true);
+	collapseall_button->set_tooltip(TTR("Collapse all properties."));
+	collapseall_button->set_disabled(true);
+	prop_editor_hb->add_child(collapseall_button);
+
+	expandall_button = memnew(ToolButton);
+	expandall_button->set_icon(gui_base->get_icon("Back", "EditorIcons"));
+	expandall_button->set_flat(true);
+	expandall_button->set_tooltip(TTR("Expand all properties."));
+	expandall_button->set_disabled(true);
+	prop_editor_hb->add_child(expandall_button);
+
 	object_menu = memnew(MenuButton);
 	object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
 	prop_editor_hb->add_child(object_menu);
@@ -5511,6 +5545,9 @@ EditorNode::EditorNode() {
 
 	property_forward->connect("pressed", this, "_property_editor_forward");
 	property_back->connect("pressed", this, "_property_editor_back");
+
+	collapseall_button->connect("pressed", this, "_menu_collapseall");
+	expandall_button->connect("pressed", this, "_menu_expandall");
 
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	object_menu->get_popup()->connect("id_pressed", this, "_menu_option");
