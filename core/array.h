@@ -70,6 +70,8 @@ public:
 
 	Array &sort();
 	Array &sort_custom(Object *p_obj, const StringName &p_function);
+	int bsearch(const Variant &p_value, bool p_before = true);
+	int bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before = true);
 	Array &invert();
 
 	int find(const Variant &p_value, int p_from = 0) const;
