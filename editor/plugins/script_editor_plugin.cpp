@@ -786,7 +786,7 @@ void ScriptEditor::_close_all_tab(int except) {
 
 	int child_count = tab_container->get_tab_count();
 	for (int i = child_count - 1; i >= 0; i--) {
-		if (i == except && except!=-1) {
+		if (i == except && except != -1) {
 			continue;
 		}
 		ScriptTextEditor *current = tab_container->get_child(i)->cast_to<ScriptTextEditor>();
@@ -794,12 +794,10 @@ void ScriptEditor::_close_all_tab(int except) {
 			if (current->get_text_edit()->get_version() != current->get_text_edit()->get_saved_version()) {
 				erase_tab_confirm->set_text("Close and save changes?\n\"" + current->get_name() + "\"");
 				erase_tab_confirm->popup_centered_minsize();
-			}
-			else {
+			} else {
 				_close_tab(i);
 			}
-		}
-		else {
+		} else {
 			EditorHelp *help = tab_container->get_child(i)->cast_to<EditorHelp>();
 			if (help) {
 				_close_tab(i);
@@ -1903,9 +1901,13 @@ void ScriptEditor::_script_rmb_selected(int p_idx, const Vector2 &p_pos) {
 	script_list_menu->clear();
 	script_list_menu->set_size(Size2(1, 1));
 	if (p_idx >= 0) {
-		script_list_menu->add_item(TTR("Close"), FILE_CLOSE);
-		script_list_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_OTHERS);
-		script_list_menu->add_item(TTR("Close All"), FILE_CLOSE_ALL);
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_all"), FILE_SAVE_ALL);
+		script_list_menu->add_separator();
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), FILE_CLOSE_OTHERS);
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), FILE_CLOSE_ALL);
 	}
 
 	script_list_menu->set_pos(script_list->get_global_pos() + p_pos);
