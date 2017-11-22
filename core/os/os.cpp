@@ -554,7 +554,7 @@ bool OS::has_feature(const String &p_feature) {
 	if (sizeof(void *) == 4 && p_feature == "32") {
 		return true;
 	}
-#if defined(__x86_64) || defined(__x86_64__)
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__)
 	if (p_feature == "x86_64") {
 		return true;
 	}

@@ -123,7 +123,13 @@ bool GDNative::initialize() {
 		return false;
 	}
 #ifdef IPHONE_ENABLED
+	// on iOS we use static linking
 	String path = "";
+#elif defined(ANDROID_ENABLED)
+	// On Android dynamic libraries are located separately from resource assets,
+	// we should pass library name to dlopen(). The library name is flattened
+	// during export.
+	String path = lib_path.get_file();
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif

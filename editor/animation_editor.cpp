@@ -966,7 +966,9 @@ void AnimationKeyEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		Object *obj = NULL;
 
 		RES res;
-		Node *node = root->get_node_and_resource(p_animation->track_get_path(i), res);
+		Vector<StringName> leftover_path;
+
+		Node *node = root->get_node_and_resource(p_animation->track_get_path(i), res, leftover_path);
 
 		if (res.is_valid()) {
 			obj = res.ptr();
@@ -975,7 +977,7 @@ void AnimationKeyEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		}
 
 		if (obj && p_animation->track_get_type(i) == Animation::TYPE_VALUE) {
-			valid_type = obj->get_static_property_type(p_animation->track_get_path(i).get_property(), &prop_exists);
+			valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
 		}
 
 		if (!obj && cleanup_tracks->is_pressed()) {
@@ -1315,7 +1317,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 		Object *obj = NULL;
 
 		RES res;
-		Node *node = root ? root->get_node_and_resource(animation->track_get_path(idx), res) : (Node *)NULL;
+		Vector<StringName> leftover_path;
+
+		Node *node = root ? root->get_node_and_resource(animation->track_get_path(idx), res, leftover_path) : (Node *)NULL;
 
 		if (res.is_valid()) {
 			obj = res.ptr();
@@ -1324,7 +1328,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 		}
 
 		if (obj && animation->track_get_type(idx) == Animation::TYPE_VALUE) {
-			valid_type = obj->get_static_property_type(animation->track_get_path(idx).get_property(), &prop_exists);
+			// While leftover_path might be still empty, we wouldn't be able to get here anyway
+			valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
 		}
 
 		if (/*mouse_over.over!=MouseOver::OVER_NONE &&*/ idx == mouse_over.track) {
@@ -1648,26 +1653,34 @@ PropertyInfo AnimationKeyEditor::_find_hint_for_track(int p_idx, NodePath &r_bas
 		return PropertyInfo();
 
 	RES res;
-	Node *node = root->get_node_and_resource(path, res);
+	Vector<StringName> leftover_path;
+	Node *node = root->get_node_and_resource(path, res, leftover_path, true);
 
 	if (node) {
 		r_base_path = node->get_path();
 	}
 
-	String property = path.get_property();
-	if (property == "")
+	if (leftover_path.empty())
 		return PropertyInfo();
 
-	List<PropertyInfo> pinfo;
+	Variant property_info_base;
 	if (res.is_valid())
-		res->get_property_list(&pinfo);
+		property_info_base = res;
 	else if (node)
-		node->get_property_list(&pinfo);
+		property_info_base = node;
+
+	for (int i = 0; i < leftover_path.size() - 1; i++) {
+		property_info_base = property_info_base.get_named(leftover_path[i]);
+	}
+
+	List<PropertyInfo> pinfo;
+	property_info_base.get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
-		if (E->get().name == property)
+		if (E->get().name == leftover_path[leftover_path.size() - 1]) {
 			return E->get();
+		}
 	}
 
 	return PropertyInfo();
@@ -2779,7 +2792,8 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 							Object *obj = NULL;
 
 							RES res;
-							Node *node = root->get_node_and_resource(animation->track_get_path(idx), res);
+							Vector<StringName> leftover_path;
+							Node *node = root->get_node_and_resource(animation->track_get_path(idx), res, leftover_path);
 
 							if (res.is_valid()) {
 								obj = res.ptr();
@@ -2788,7 +2802,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 							}
 
 							if (obj) {
-								valid_type = obj->get_static_property_type(animation->track_get_path(idx).get_property(), &prop_exists);
+								valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
 							}
 
 							text += "type: " + Variant::get_type_name(v.get_type()) + "\n";

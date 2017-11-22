@@ -242,7 +242,8 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 
 		p_anim->node_cache[i] = NULL;
 		RES resource;
-		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource);
+		Vector<StringName> leftover_path;
+		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
 		if (!child) {
 			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
 		}
@@ -250,9 +251,9 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
-		if (a->track_get_path(i).get_property() && Object::cast_to<Skeleton>(child)) {
+		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
 
-			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(a->track_get_path(i).get_property());
+			bone_idx = Object::cast_to<Skeleton>(child)->find_bone(a->track_get_path(i).get_subname(0));
 			if (bone_idx == -1) {
 
 				continue;
@@ -289,8 +290,8 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 				p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
 				if (p_anim->node_cache[i]->skeleton) {
 
-					StringName bone_name = a->track_get_path(i).get_property();
-					if (bone_name.operator String() != "") {
+					if (a->track_get_path(i).get_subname_count() == 1) {
+						StringName bone_name = a->track_get_path(i).get_subname(0);
 
 						p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 						if (p_anim->node_cache[i]->bone_idx < 0) {
@@ -311,24 +312,23 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 
 		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
 
-			StringName property = a->track_get_path(i).get_property();
-			if (!p_anim->node_cache[i]->property_anim.has(property)) {
+			if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
 				TrackNodeCache::PropertyAnim pa;
-				pa.prop = property;
+				pa.subpath = leftover_path;
 				pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				pa.special = SP_NONE;
 				pa.owner = p_anim->node_cache[i];
 				if (false && p_anim->node_cache[i]->node_2d) {
 
-					if (pa.prop == SceneStringNames::get_singleton()->transform_pos)
+					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
 						pa.special = SP_NODE2D_POS;
-					else if (pa.prop == SceneStringNames::get_singleton()->transform_rot)
+					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
 						pa.special = SP_NODE2D_ROT;
-					else if (pa.prop == SceneStringNames::get_singleton()->transform_scale)
+					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
 						pa.special = SP_NODE2D_SCALE;
 				}
-				p_anim->node_cache[i]->property_anim[property] = pa;
+				p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
 			}
 		}
 	}
@@ -396,7 +396,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				//StringName property=a->track_get_path(i).get_property();
 
-				Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.find(a->track_get_path(i).get_property());
+				Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.find(a->track_get_path(i).get_concatenated_subnames());
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
 
 				TrackNodeCache::PropertyAnim *pa = &E->get();
@@ -434,7 +434,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 							case SP_NONE: {
 								bool valid;
-								pa->object->set(pa->prop, value, &valid); //you are not speshul
+								pa->object->set_indexed(pa->subpath, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
 									ERR_PRINTS("Failed setting track value '" + String(pa->owner->path) + "'. Check if property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
@@ -622,7 +622,7 @@ void AnimationPlayer::_animation_update_transforms() {
 
 			case SP_NONE: {
 				bool valid;
-				pa->object->set(pa->prop, pa->value_accum, &valid); //you are not speshul
+				pa->object->set_indexed(pa->subpath, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					ERR_PRINTS("Failed setting key at time " + rtos(playback.current.pos) + " in Animation '" + get_current_animation() + "' at Node '" + get_path() + "', Track '" + String(pa->owner->path) + "'. Check if property exists or the type of key is right for the property");

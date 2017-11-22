@@ -437,6 +437,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Color, contrasted);
 	VCALL_LOCALMEM2R(Color, linear_interpolate);
 	VCALL_LOCALMEM1R(Color, blend);
+	VCALL_LOCALMEM1R(Color, lightened);
+	VCALL_LOCALMEM1R(Color, darkened);
 	VCALL_LOCALMEM1R(Color, to_html);
 
 	VCALL_LOCALMEM0R(RID, get_id);
@@ -446,7 +448,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(NodePath, get_name);
 	VCALL_LOCALMEM0R(NodePath, get_subname_count);
 	VCALL_LOCALMEM1R(NodePath, get_subname);
-	VCALL_LOCALMEM0R(NodePath, get_property);
+	VCALL_LOCALMEM0R(NodePath, get_concatenated_subnames);
 	VCALL_LOCALMEM0R(NodePath, is_empty);
 
 	VCALL_LOCALMEM0R(Dictionary, size);
@@ -897,11 +899,6 @@ struct _VariantCall {
 	static void Basis_init2(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Basis(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
-	}
-
-	static void Basis_init3(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Basis(p_args[0]->operator Vector3());
 	}
 
 	static void Transform_init1(Variant &r_ret, const Variant **p_args) {
@@ -1583,6 +1580,8 @@ void register_variant_methods() {
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
 	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", REAL, "t", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
+	ADDFUNC1R(COLOR, COLOR, Color, lightened, REAL, "amount", varray());
+	ADDFUNC1R(COLOR, COLOR, Color, darkened, REAL, "amount", varray());
 	ADDFUNC1R(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
 
 	ADDFUNC0R(_RID, INT, RID, get_id, varray());
@@ -1592,7 +1591,7 @@ void register_variant_methods() {
 	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_name, INT, "idx", varray());
 	ADDFUNC0R(NODE_PATH, INT, NodePath, get_subname_count, varray());
 	ADDFUNC1R(NODE_PATH, STRING, NodePath, get_subname, INT, "idx", varray());
-	ADDFUNC0R(NODE_PATH, STRING, NodePath, get_property, varray());
+	ADDFUNC0R(NODE_PATH, STRING, NodePath, get_concatenated_subnames, varray());
 	ADDFUNC0R(NODE_PATH, BOOL, NodePath, is_empty, varray());
 
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, size, varray());
@@ -1799,7 +1798,6 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Basis_init3, Variant::BASIS, "euler", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);

@@ -126,6 +126,32 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="lightened">
+			<return type="Color">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+				Returns a new color resulting from making this color lighter by the specified percentage (0-1).
+				[codeblock]
+				var green = Color(0.0, 1.0, 0.0)
+				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
+				[/codeblock]
+			</description>
+		</method>
+		<method name="darkened">
+			<return type="Color">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+				Returns a new color resulting from making this color darker by the specified percentage (0-1).
+				[codeblock]
+				var green = Color(0.0, 1.0, 0.0)
+				var darkgreen = green.darkened(0.2) # 20% darker than regular green
+				[/codeblock]
+			</description>
+		</method>
 		<method name="linear_interpolate">
 			<return type="Color">
 			</return>

@@ -467,52 +467,72 @@ class EditorExportAndroid : public EditorExportPlatform {
 		return zipfi;
 	}
 
-	static Set<String> get_abis() {
-		Set<String> abis;
-		abis.insert("armeabi");
-		abis.insert("armeabi-v7a");
-		abis.insert("arm64-v8a");
-		abis.insert("x86");
-		abis.insert("x86_64");
-		abis.insert("mips");
-		abis.insert("mips64");
+	static Vector<String> get_abis() {
+		// mips and armv6 are dead (especially for games), so not including them
+		Vector<String> abis;
+		abis.push_back("armeabi-v7a");
+		abis.push_back("arm64-v8a");
+		abis.push_back("x86");
+		abis.push_back("x86_64");
 		return abis;
 	}
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
-		APKExportData *ed = (APKExportData *)p_userdata;
-		String dst_path = p_path;
-		static Set<String> android_abis = get_abis();
-
-		if (dst_path.ends_with(".so")) {
-			String abi = dst_path.get_base_dir().get_file().strip_edges(); // parent dir name
-			if (android_abis.has(abi)) {
-				dst_path = "lib/" + abi + "/" + dst_path.get_file();
-			} else {
-				String err = "Dynamic libraries must be located in the folder named after Android ABI they were compiled for. " +
-							 p_path + " does not follow this convention.";
-				ERR_PRINT(err.utf8().get_data());
-				return ERR_FILE_BAD_PATH;
-			}
-		} else {
-			dst_path = dst_path.replace_first("res://", "assets/");
-		}
-
+	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED) {
 		zip_fileinfo zipfi = get_zip_fileinfo();
-
 		zipOpenNewFileInZip(ed->apk,
-				dst_path.utf8().get_data(),
+				p_path.utf8().get_data(),
 				&zipfi,
 				NULL,
 				0,
 				NULL,
 				0,
 				NULL,
-				_should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0,
+				compression_method,
 				Z_DEFAULT_COMPRESSION);
 
 		zipWriteInFileInZip(ed->apk, p_data.ptr(), p_data.size());
 		zipCloseFileInZip(ed->apk);
+
+		return OK;
+	}
+
+	static Error save_apk_so(void *p_userdata, const SharedObject &p_so) {
+		if (!p_so.path.get_file().begins_with("lib")) {
+			String err = "Android .so file names must start with \"lib\", but got: " + p_so.path;
+			ERR_PRINT(err.utf8().get_data());
+			return FAILED;
+		}
+		APKExportData *ed = (APKExportData *)p_userdata;
+		Vector<String> abis = get_abis();
+		bool exported = false;
+		for (int i = 0; i < p_so.tags.size(); ++i) {
+			// shared objects can be fat (compatible with multiple ABIs)
+			int start_pos = 0;
+			int abi_index = abis.find(p_so.tags[i]);
+			if (abi_index != -1) {
+				exported = true;
+				start_pos = abi_index + 1;
+				String abi = abis[abi_index];
+				String dst_path = "lib/" + abi + "/" + p_so.path.get_file();
+				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
+				Error store_err = store_in_apk(ed, dst_path, array);
+				ERR_FAIL_COND_V(store_err, store_err);
+			}
+		}
+		if (!exported) {
+			String abis_string = String(" ").join(abis);
+			String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
+			ERR_PRINT(err.utf8().get_data());
+			return FAILED;
+		}
+		return OK;
+	}
+
+	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+		APKExportData *ed = (APKExportData *)p_userdata;
+		String dst_path = p_path.replace_first("res://", "assets/");
+
+		store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
 		ed->ep->step("File: " + p_path, 3 + p_file * 100 / p_total);
 		return OK;
 	}
@@ -935,6 +955,18 @@ class EditorExportAndroid : public EditorExportPlatform {
 		//printf("end\n");
 	}
 
+	static Vector<String> get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
+		Vector<String> abis = get_abis();
+		Vector<String> enabled_abis;
+		for (int i = 0; i < abis.size(); ++i) {
+			bool is_enabled = p_preset->get("architectures/" + abis[i]);
+			if (is_enabled) {
+				enabled_abis.push_back(abis[i]);
+			}
+		}
+		return enabled_abis;
+	}
+
 public:
 	enum {
 		MAX_USER_PERMISSIONS = 20
@@ -951,6 +983,11 @@ public:
 			r_features->push_back("etc");
 		else*/
 		r_features->push_back("etc2");
+
+		Vector<String> abis = get_enabled_abis(p_preset);
+		for (int i = 0; i < abis.size(); ++i) {
+			r_features->push_back(abis[i]);
+		}
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
@@ -967,8 +1004,6 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/icon", PROPERTY_HINT_FILE, "png"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architecture/arm"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architecture/x86"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "screen/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -981,6 +1016,13 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/SALT"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT), ""));
+
+		Vector<String> abis = get_abis();
+		for (int i = 0; i < abis.size(); ++i) {
+			String abi = abis[i];
+			bool is_default = (abi == "armeabi-v7a");
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
+		}
 
 		const char **perms = android_perms;
 		while (*perms) {
@@ -1295,10 +1337,6 @@ public:
 		String unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned.apk");
 		zipFile unaligned_apk = zipOpen2(unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
 
-		bool export_x86 = p_preset->get("architecture/x86");
-		bool export_arm = p_preset->get("architecture/arm");
-		bool export_arm64 = p_preset->get("architecture/arm64");
-
 		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
 		bool immersive = p_preset->get("screen/immersive_mode");
 
@@ -1317,6 +1355,8 @@ public:
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
+
+		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
 		while (ret == UNZ_OK) {
 
@@ -1381,25 +1421,25 @@ public:
 				}
 			}
 
-			if (file == "lib/x86/*.so" && !export_x86) {
-				skip = true;
-			}
-
-			if (file.match("lib/armeabi*/*.so") && !export_arm) {
-				skip = true;
-			}
-
-			if (file.match("lib/arm64*/*.so") && !export_arm64) {
-				skip = true;
+			if (file.ends_with(".so")) {
+				bool enabled = false;
+				for (int i = 0; i < enabled_abis.size(); ++i) {
+					if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
+						enabled = true;
+						break;
+					}
+				}
+				if (!enabled) {
+					skip = true;
+				}
 			}
 
 			if (file.begins_with("META-INF") && _signed) {
 				skip = true;
 			}
 
-			print_line("ADDING: " + file);
-
 			if (!skip) {
+				print_line("ADDING: " + file);
 
 				// Respect decision on compression made by AAPT for the export template
 				const bool uncompressed = info.compression_method == 0;
@@ -1473,7 +1513,7 @@ public:
 				ed.ep = &ep;
 				ed.apk = unaligned_apk;
 
-				err = export_project_files(p_preset, save_apk_file, &ed);
+				err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
 			}
 		}
 
