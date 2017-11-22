@@ -1641,6 +1641,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			} else {
 
+				bool modal_closed = false;
+
 				_gui_sort_modal_stack();
 				while (!gui.modal_stack.empty()) {
 
@@ -1658,9 +1660,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
+						modal_closed = true;
 					} else {
 						break;
 					}
+				}
+
+				if (modal_closed) {
+					// eat up clicks that close modals; otherwise the same click that closes a modal
+					// can open it up again in the same frame, which is confusing (see issue #12451)
+					get_tree()->set_input_as_handled();
+					return;
 				}
 
 				//Matrix32 parent_xform;
