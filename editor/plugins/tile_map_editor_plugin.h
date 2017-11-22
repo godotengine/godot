@@ -137,6 +137,8 @@ class TileMapEditor : public VBoxContainer {
 		bool flip_h;
 		bool flip_v;
 		bool transpose;
+		int auto_x;
+		int auto_y;
 	};
 
 	List<TileData> copydata;

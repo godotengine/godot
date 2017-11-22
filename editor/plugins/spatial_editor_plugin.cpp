@@ -4724,9 +4724,9 @@ VSplitContainer *SpatialEditor::get_shader_split() {
 	return shader_split;
 }
 
-HSplitContainer *SpatialEditor::get_palette_split() {
+HBoxContainer *SpatialEditor::get_palette_split() {
 
-	return palette_split;
+	return palette_split_container;
 }
 
 void SpatialEditor::_request_gizmo(Object *p_obj) {
@@ -5016,6 +5016,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	palette_split = memnew(HSplitContainer);
 	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_child(palette_split);
+
+	palette_split_container = memnew(HBoxContainer);
+	palette_split_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette_split->add_child(palette_split_container);
 
 	shader_split = memnew(VSplitContainer);
 	shader_split->set_h_size_flags(SIZE_EXPAND_FILL);
