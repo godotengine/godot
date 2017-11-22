@@ -43,6 +43,8 @@ class ParallaxLayer : public Node2D {
 	Vector2 mirroring;
 	void _update_mirroring();
 
+	Point2 screen_offset;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -57,7 +59,7 @@ public:
 	void set_mirroring(const Size2 &p_mirroring);
 	Size2 get_mirroring() const;
 
-	void set_base_offset_and_scale(const Point2 &p_offset, float p_scale);
+	void set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset);
 
 	virtual String get_configuration_warning() const;
 	ParallaxLayer();

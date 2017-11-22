@@ -541,6 +541,9 @@ void EditorFileDialog::update_file_list() {
 
 	while ((item = dir_access->get_next(&isdir)) != "") {
 
+		if (item == ".")
+			continue;
+
 		ishidden = dir_access->current_is_hidden();
 
 		if (show_hidden || !ishidden) {
@@ -562,7 +565,7 @@ void EditorFileDialog::update_file_list() {
 	while (!dirs.empty()) {
 		const String &dir_name = dirs.front()->get();
 
-		item_list->add_item(dir_name + "/");
+		item_list->add_item(dir_name);
 
 		if (display_mode == DISPLAY_THUMBNAILS) {
 

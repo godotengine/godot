@@ -87,23 +87,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 		return;
 	}
 
-	List<ResourceImporter::ImportOption> options;
-	params->importer->get_import_options(&options);
-
-	params->properties.clear();
-	params->values.clear();
-
-	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
-
-		params->properties.push_back(E->get().option);
-		if (config->has_section_key("params", E->get().option.name)) {
-			params->values[E->get().option.name] = config->get_value("params", E->get().option.name);
-		} else {
-			params->values[E->get().option.name] = E->get().default_value;
-		}
-	}
-
-	params->update();
+	_update_options(config);
 
 	List<Ref<ResourceImporter> > importers;
 	ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_path.get_extension(), &importers);
@@ -125,6 +109,34 @@ void ImportDock::set_edit_path(const String &p_path) {
 		}
 	}
 
+	params->paths.clear();
+	params->paths.push_back(p_path);
+	import->set_disabled(false);
+	import_as->set_disabled(false);
+
+	imported->set_text(p_path.get_file());
+}
+
+void ImportDock::_update_options(const Ref<ConfigFile> &p_config) {
+
+	List<ResourceImporter::ImportOption> options;
+	params->importer->get_import_options(&options);
+
+	params->properties.clear();
+	params->values.clear();
+
+	for (List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
+
+		params->properties.push_back(E->get().option);
+		if (p_config.is_valid() && p_config->has_section_key("params", E->get().option.name)) {
+			params->values[E->get().option.name] = p_config->get_value("params", E->get().option.name);
+		} else {
+			params->values[E->get().option.name] = E->get().default_value;
+		}
+	}
+
+	params->update();
+
 	preset->get_popup()->clear();
 
 	if (params->importer->get_preset_count() == 0) {
@@ -142,13 +154,6 @@ void ImportDock::set_edit_path(const String &p_path) {
 		preset->get_popup()->add_separator();
 		preset->get_popup()->add_item(vformat(TTR("Clear Default for '%s'"), params->importer->get_visible_name()), ITEM_CLEAR_DEFAULT);
 	}
-
-	params->paths.clear();
-	params->paths.push_back(p_path);
-	import->set_disabled(false);
-	import_as->set_disabled(false);
-
-	imported->set_text(p_path.get_file());
 }
 
 void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
@@ -263,6 +268,24 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	imported->set_text(itos(p_paths.size()) + TTR(" Files"));
 }
 
+void ImportDock::_importer_selected(int i_idx) {
+	String name = import_as->get_selected_metadata();
+	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(name);
+	ERR_FAIL_COND(importer.is_null());
+
+	params->importer = importer;
+
+	Ref<ConfigFile> config;
+	if (params->paths.size()) {
+		config.instance();
+		Error err = config->load(params->paths[0] + ".import");
+		if (err != OK) {
+			config.unref();
+		}
+	}
+	_update_options(config);
+}
+
 void ImportDock::_preset_selected(int p_idx) {
 
 	int item_id = preset->get_popup()->get_item_id(p_idx);
@@ -336,6 +359,7 @@ void ImportDock::_reimport() {
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
+		config->set_value("remap", "importer", params->importer->get_importer_name());
 		config->erase_section("params");
 
 		for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
@@ -367,6 +391,7 @@ void ImportDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
 	ClassDB::bind_method(D_METHOD("_preset_selected"), &ImportDock::_preset_selected);
+	ClassDB::bind_method(D_METHOD("_importer_selected"), &ImportDock::_importer_selected);
 }
 
 void ImportDock::initialize_import_options() const {
@@ -384,6 +409,7 @@ ImportDock::ImportDock() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
+	import_as->connect("item_selected", this, "_importer_selected");
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);

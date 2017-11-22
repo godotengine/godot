@@ -37,6 +37,17 @@
 
 class Engine {
 
+public:
+	struct Singleton {
+		StringName name;
+		Object *ptr;
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL)
+			: name(p_name),
+			  ptr(p_ptr) {
+		}
+	};
+
+private:
 	friend class Main;
 
 	uint64_t frames_drawn;
@@ -53,6 +64,9 @@ class Engine {
 
 	uint64_t _idle_frames;
 	bool _in_physics;
+
+	List<Singleton> singletons;
+	Map<StringName, Object *> singleton_ptrs;
 
 	bool editor_hint;
 
@@ -82,6 +96,11 @@ public:
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
+
+	void add_singleton(const Singleton &p_singleton);
+	void get_singletons(List<Singleton> *p_singletons);
+	bool has_singleton(const String &p_name) const;
+	Object *get_singleton_object(const String &p_name) const;
 
 	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
 

@@ -34,6 +34,7 @@
 #include "compressed_translation.h"
 #include "core/io/xml_parser.h"
 #include "core_string_names.h"
+#include "engine.h"
 #include "func_ref.h"
 #include "geometry.h"
 #include "input_map.h"
@@ -203,19 +204,19 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("IP", IP::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Geometry", _Geometry::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("OS", _OS::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Engine", _Engine::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("ClassDB", _classdb));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Marshalls", _Marshalls::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("TranslationServer", TranslationServer::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("Input", Input::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("InputMap", InputMap::get_singleton()));
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry", _Geometry::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", _Engine::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
 }
 
 void unregister_core_types() {

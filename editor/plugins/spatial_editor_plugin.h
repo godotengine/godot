@@ -88,6 +88,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
 		VIEW_INFORMATION,
+		VIEW_FPS,
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
@@ -108,7 +109,7 @@ private:
 	Size2 prev_size;
 
 	Spatial *preview_node;
-	Rect3 *preview_bounds;
+	AABB *preview_bounds;
 	Vector<String> selected_files;
 	AcceptDialog *accept;
 
@@ -138,6 +139,9 @@ private:
 	PanelContainer *info;
 	Label *info_label;
 
+	PanelContainer *fps;
+	Label *fps_label;
+
 	struct _RayResult {
 
 		Spatial *item;
@@ -165,6 +169,11 @@ private:
 
 	void _select_region();
 	bool _gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
+
+	void _nav_pan(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_zoom(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
+	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 
 	float get_znear() const;
 	float get_zfar() const;
@@ -255,7 +264,7 @@ private:
 
 	real_t zoom_indicator_delay;
 
-	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[3], scale_gizmo_instance[3];
+	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[3], scale_gizmo_instance[3], scale_plane_gizmo_instance[3];
 
 	String last_message;
 	String message;
@@ -287,7 +296,7 @@ private:
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static Rect3 _calculate_spatial_bounds(const Spatial *p_parent, const Rect3 p_bounds);
+	static AABB _calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds);
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
@@ -314,7 +323,7 @@ public:
 
 	void assign_pending_data_pointers(
 			Spatial *p_preview_node,
-			Rect3 *p_preview_bounds,
+			AABB *p_preview_bounds,
 			AcceptDialog *p_accept);
 
 	Viewport *get_viewport_node() { return viewport; }
@@ -327,7 +336,7 @@ class SpatialEditorSelectedItem : public Object {
 	GDCLASS(SpatialEditorSelectedItem, Object);
 
 public:
-	Rect3 aabb;
+	AABB aabb;
 	Transform original; // original location when moving
 	Transform original_local;
 	Transform last_xform; // last transform
@@ -387,6 +396,8 @@ public:
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
 		TOOL_MODE_LIST_SELECT,
+		TOOL_LOCK_SELECTED,
+		TOOL_UNLOCK_SELECTED,
 		TOOL_MAX
 
 	};
@@ -418,7 +429,7 @@ private:
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
-	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
 	Ref<SpatialMaterial> gizmo_hl;
@@ -435,7 +446,7 @@ private:
 
 	// Scene drag and drop support
 	Spatial *preview_node;
-	Rect3 preview_bounds;
+	AABB preview_bounds;
 
 	/*
 	struct Selected {
@@ -475,13 +486,17 @@ private:
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
 		MENU_VIEW_CAMERA_SETTINGS,
-
+		MENU_LOCK_SELECTED,
+		MENU_UNLOCK_SELECTED
 	};
 
 	Button *tool_button[TOOL_MAX];
 
 	MenuButton *transform_menu;
 	MenuButton *view_menu;
+
+	ToolButton *lock_button;
+	ToolButton *unlock_button;
 
 	AcceptDialog *accept;
 
@@ -539,6 +554,8 @@ private:
 
 	bool is_any_freelook_active() const;
 
+	void _refresh_menu_icons();
+
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
@@ -571,6 +588,7 @@ public:
 	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }
 	Ref<ArrayMesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
 	Ref<ArrayMesh> get_scale_gizmo(int idx) const { return scale_gizmo[idx]; }
+	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 
 	void update_transform_gizmo();
 

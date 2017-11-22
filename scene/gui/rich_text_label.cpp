@@ -817,6 +817,16 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+
+		if (scroll_active)
+
+			vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
+
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -877,11 +887,13 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 		if (main->first_invalid_line < main->lines.size())
 			return;
 
+		int line = 0;
+		Item *item = NULL;
+		bool outside;
+		_find_click(main, m->get_position(), &item, &line, &outside);
+
 		if (selection.click) {
 
-			int line = 0;
-			Item *item = NULL;
-			_find_click(main, m->get_position(), &item, &line);
 			if (!item)
 				return; // do not update
 
@@ -911,6 +923,22 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 			selection.active = true;
 			update();
+		}
+
+		Variant meta;
+		if (item && !outside && _find_meta(item, &meta)) {
+			if (meta_hovering != item) {
+				if (meta_hovering) {
+					emit_signal("meta_hover_ended", current_meta);
+				}
+				meta_hovering = static_cast<ItemMeta *>(item);
+				current_meta = meta;
+				emit_signal("meta_hover_started", meta);
+			}
+		} else if (meta_hovering) {
+			emit_signal("meta_hover_ended", current_meta);
+			meta_hovering = NULL;
+			current_meta = false;
 		}
 	}
 }
@@ -1968,6 +1996,8 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 
 	ADD_SIGNAL(MethodInfo("meta_clicked", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+	ADD_SIGNAL(MethodInfo("meta_hover_started", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
+	ADD_SIGNAL(MethodInfo("meta_hover_ended", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);

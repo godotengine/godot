@@ -120,6 +120,9 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
+	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
+	virtual void get_members(Set<StringName> *p_constants) {}
+
 	Script() {}
 };
 
@@ -130,6 +133,7 @@ public:
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = NULL) const = 0;
 
+	virtual Object *get_owner() { return NULL; }
 	virtual void get_property_state(List<Pair<StringName, Variant> > &state);
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
@@ -244,7 +248,8 @@ public:
 	virtual String debug_get_stack_level_source(int p_level) const = 0;
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return NULL; }
+	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
 	struct StackInfo {

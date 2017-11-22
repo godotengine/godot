@@ -31,6 +31,7 @@
 #define AUDIO_RB_RESAMPLER_H
 
 #include "os/memory.h"
+#include "servers/audio_server.h"
 #include "typedefs.h"
 
 struct AudioRBResampler {
@@ -53,11 +54,11 @@ struct AudioRBResampler {
 		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
 	};
 
-	int16_t *read_buf;
-	int16_t *rb;
+	float *read_buf;
+	float *rb;
 
 	template <int C>
-	uint32_t _resample(int32_t *p_dest, int p_todo, int32_t p_increment);
+	uint32_t _resample(AudioFrame *p_dest, int p_todo, int32_t p_increment);
 
 public:
 	_FORCE_INLINE_ void flush() {
@@ -71,33 +72,48 @@ public:
 	}
 
 	_FORCE_INLINE_ int get_total() const {
-
 		return rb_len - 1;
 	}
 
-	_FORCE_INLINE_ int get_todo() const { //return amount of frames to mix
+	_FORCE_INLINE_ int get_writer_space() const {
+		int space, r, w;
 
-		int todo;
-		int read_pos_cache = rb_read_pos;
+		r = rb_read_pos;
+		w = rb_write_pos;
 
-		if (read_pos_cache == rb_write_pos) {
-			todo = rb_len - 1;
-		} else if (read_pos_cache > rb_write_pos) {
-
-			todo = read_pos_cache - rb_write_pos - 1;
+		if (r == w) {
+			space = rb_len - 1;
+		} else if (w < r) {
+			space = r - w - 1;
 		} else {
-
-			todo = (rb_len - rb_write_pos) + read_pos_cache - 1;
+			space = (rb_len - r) + w - 1;
 		}
 
-		return todo;
+		return space;
+	}
+
+	_FORCE_INLINE_ int get_reader_space() const {
+		int space, r, w;
+
+		r = rb_read_pos;
+		w = rb_write_pos;
+
+		if (r == w) {
+			space = 0;
+		} else if (w < r) {
+			space = rb_len - r + w;
+		} else {
+			space = w - r;
+		}
+
+		return space;
 	}
 
 	_FORCE_INLINE_ bool has_data() const {
 		return rb && rb_read_pos != rb_write_pos;
 	}
 
-	_FORCE_INLINE_ int16_t *get_write_buffer() { return read_buf; }
+	_FORCE_INLINE_ float *get_write_buffer() { return read_buf; }
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
 
 		ERR_FAIL_COND(p_frames >= rb_len);
@@ -151,7 +167,8 @@ public:
 
 	Error setup(int p_channels, int p_src_mix_rate, int p_target_mix_rate, int p_buffer_msec, int p_minbuff_needed = -1);
 	void clear();
-	bool mix(int32_t *p_dest, int p_frames);
+	bool mix(AudioFrame *p_dest, int p_frames);
+	int get_num_of_ready_frames();
 
 	AudioRBResampler();
 	~AudioRBResampler();

@@ -47,9 +47,9 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 
 	for (int i = 0; i < 5; i++) {
 		if (i < p_rating)
-			stars[i]->set_texture(get_icon("RatingStar", "EditorIcons"));
+			stars[i]->set_texture(get_icon("Favorites", "EditorIcons"));
 		else
-			stars[i]->set_texture(get_icon("RatingNoStar", "EditorIcons"));
+			stars[i]->set_texture(get_icon("NonFavorite", "EditorIcons"));
 	}
 }
 
@@ -273,15 +273,15 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	vbox->add_child(hbox);
-	vbox->add_constant_override("separation", 15);
+	vbox->add_constant_override("separation", 15 * EDSCALE);
 	VBoxContainer *desc_vbox = memnew(VBoxContainer);
 	hbox->add_child(desc_vbox);
-	hbox->add_constant_override("separation", 15);
+	hbox->add_constant_override("separation", 15 * EDSCALE);
 
 	item = memnew(EditorAssetLibraryItem);
 
 	desc_vbox->add_child(item);
-	desc_vbox->set_custom_minimum_size(Size2(300, 0));
+	desc_vbox->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 
 	desc_bg = memnew(PanelContainer);
 	desc_vbox->add_child(desc_bg);
@@ -292,12 +292,12 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_bg->add_child(description);
 
 	preview = memnew(TextureRect);
-	preview->set_custom_minimum_size(Size2(640, 345));
+	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
 	hbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
 	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 85));
+	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -445,7 +445,7 @@ void EditorAssetLibraryItemDownload::_install() {
 
 void EditorAssetLibraryItemDownload::_make_request() {
 	download->cancel_request();
-	download->set_download_file(EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
+	download->set_download_file(EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_asset_" + itos(asset_id)) + ".zip");
 
 	Error err = download->request(host);
 	if (err != OK) {
@@ -680,7 +680,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		PoolByteArray image_data = p_data;
 
 		if (use_cache) {
-			String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 
 			FileAccess *file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 
@@ -702,15 +702,28 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		Ref<Image> image = Ref<Image>(memnew(Image(r.ptr(), len)));
 
 		if (!image->empty()) {
-			float max_height = 10000;
 			switch (image_queue[p_queue_id].image_type) {
-				case IMAGE_QUEUE_ICON: max_height = 80; break;
-				case IMAGE_QUEUE_THUMBNAIL: max_height = 80; break;
-				case IMAGE_QUEUE_SCREENSHOT: max_height = 345; break;
-			}
-			float scale_ratio = max_height / image->get_height();
-			if (scale_ratio < 1) {
-				image->resize(image->get_width() * scale_ratio, image->get_height() * scale_ratio, Image::INTERPOLATE_CUBIC);
+				case IMAGE_QUEUE_ICON:
+
+					image->resize(80 * EDSCALE, 80 * EDSCALE, Image::INTERPOLATE_CUBIC);
+
+					break;
+				case IMAGE_QUEUE_THUMBNAIL: {
+					float max_height = 85 * EDSCALE;
+
+					float scale_ratio = max_height / (image->get_height() * EDSCALE);
+					if (scale_ratio < 1) {
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+					}
+				} break;
+				case IMAGE_QUEUE_SCREENSHOT: {
+					float max_height = 397 * EDSCALE;
+
+					float scale_ratio = max_height / (image->get_height() * EDSCALE);
+					if (scale_ratio < 1) {
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+					}
+				} break;
 			}
 
 			Ref<ImageTexture> tex;
@@ -738,7 +751,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
-					String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
+					String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + image_queue[p_queue_id].image_url.md5_text());
 					String new_etag = headers[i].substr(headers[i].find(":") + 1, headers[i].length()).strip_edges();
 					FileAccess *file;
 
@@ -786,7 +799,7 @@ void EditorAssetLibrary::_update_image_queue() {
 	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
 		if (!E->get().active && current_images < max_images) {
 
-			String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_" + E->get().image_url.md5_text());
+			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
 			Vector<String> headers;
 
 			if (FileAccess::exists(cache_filename_base + ".etag") && FileAccess::exists(cache_filename_base + ".data")) {

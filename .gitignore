@@ -88,6 +88,9 @@ bld/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Hints for improving IntelliSense, created together with VS project
+cpp.hint
+
 #NUNIT
 *.VisualState.xml
 TestResult.xml

@@ -156,17 +156,6 @@ void MobileVRInterface::set_position_from_sensors() {
 		has_gyro = true;
 	};
 
-#ifdef ANDROID_ENABLED
-	///@TODO needs testing, i don't have a gyro, potentially can be removed depending on what comes out of issue #8101
-	// On Android x and z axis seem inverted
-	gyro.x = -gyro.x;
-	gyro.z = -gyro.z;
-	grav.x = -grav.x;
-	grav.z = -grav.z;
-	magneto.x = -magneto.x;
-	magneto.z = -magneto.z;
-#endif
-
 	if (has_gyro) {
 		// start with applying our gyro (do NOT smooth our gyro!)
 		Basis rotate;
@@ -334,7 +323,7 @@ void MobileVRInterface::uninitialize() {
 	};
 };
 
-Size2 MobileVRInterface::get_recommended_render_targetsize() {
+Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size

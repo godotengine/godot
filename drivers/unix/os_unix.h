@@ -53,7 +53,6 @@ protected:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual int unix_initialize_audio(int p_audio_driver);
 	//virtual void initialize(int p_video_driver,int p_audio_driver);
@@ -62,9 +61,9 @@ protected:
 
 	String stdin_buf;
 
-	String get_global_settings_path() const;
-
 public:
+	OS_Unix();
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual String get_stdin_string(bool p_block);
 
@@ -108,11 +107,8 @@ public:
 
 	virtual void debug_break();
 
-	virtual String get_installed_templates_path() const;
 	virtual String get_executable_path() const;
-	virtual String get_data_dir() const;
-
-	//virtual void run( MainLoop * p_main_loop );
+	virtual String get_user_data_dir() const;
 };
 
 class UnixTerminalLogger : public StdLogger {

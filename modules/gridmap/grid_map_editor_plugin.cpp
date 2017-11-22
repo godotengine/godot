@@ -28,8 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "grid_map_editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/spatial_editor_plugin.h"
+#include "os/input.h"
 #include "scene/3d/camera.h"
 
 #include "geometry.h"
@@ -55,6 +57,14 @@ void GridMapEditor::_configure() {
 void GridMapEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
+
+		case MENU_OPTION_PREV_LEVEL: {
+			floor->set_value(floor->get_value() - 1);
+		} break;
+
+		case MENU_OPTION_NEXT_LEVEL: {
+			floor->set_value(floor->get_value() + 1);
+		} break;
 
 		case MENU_OPTION_CONFIGURE: {
 
@@ -94,6 +104,7 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
+
 			Basis r;
 			if (input_action == INPUT_DUPLICATE) {
 
@@ -109,6 +120,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_X: {
+
 			Basis r;
 			if (input_action == INPUT_DUPLICATE) {
 
@@ -125,6 +137,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
+
 			Basis r;
 			if (input_action == INPUT_DUPLICATE) {
 
@@ -141,6 +154,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
+
 			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 1, 0), Math_PI / 2.0);
@@ -148,6 +162,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
+
 			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
@@ -155,6 +170,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
+
 			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 0, 1), Math_PI / 2.0);
@@ -184,6 +200,9 @@ void GridMapEditor::_menu_option(int p_option) {
 			if (last_mouseover == Vector3(-1, -1, -1)) //nono mouseovering anythin
 				break;
 
+			last_mouseover = selection.begin;
+			VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], Transform(Basis(), grid_ofs));
+
 			input_action = INPUT_DUPLICATE;
 			selection.click = last_mouseover;
 			selection.current = last_mouseover;
@@ -198,7 +217,7 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_GRIDMAP_SETTINGS: {
-			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
+			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50) * EDSCALE);
 		} break;
 	}
 }
@@ -551,12 +570,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 					input_action = INPUT_NONE;
 					_update_duplicate_indicator();
-				} else {
+				} else if (mb->get_shift()) {
 					input_action = INPUT_ERASE;
 					set_items.clear();
-				}
-			else
-				return false;
+				} else
+					return false;
 
 			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 		} else {
@@ -603,6 +621,16 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 	if (mm.is_valid()) {
 
 		return do_input_action(p_camera, mm->get_position(), false);
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+
+		if (pan_gesture->get_command() || pan_gesture->get_shift()) {
+			const real_t delta = pan_gesture->get_delta().y;
+			floor->set_value(floor->get_value() + SGN(delta));
+			return true;
+		}
 	}
 
 	return false;
@@ -829,70 +857,77 @@ void GridMapEditor::update_grid() {
 
 void GridMapEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
 
-		theme_pallete->connect("item_selected", this, "_item_selected_cbk");
-		for (int i = 0; i < 3; i++) {
-
-			grid[i] = VS::get_singleton()->mesh_create();
-			grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
-			selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
-		}
-
-		selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
-		duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh, get_tree()->get_root()->get_world()->get_scenario());
-
-		_update_selection_transform();
-		_update_duplicate_indicator();
-
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-
-		for (int i = 0; i < 3; i++) {
-
-			VS::get_singleton()->free(grid_instance[i]);
-			VS::get_singleton()->free(grid[i]);
-			grid_instance[i] = RID();
-			grid[i] = RID();
-			VisualServer::get_singleton()->free(selection_level_instance[i]);
-		}
-
-		VisualServer::get_singleton()->free(selection_instance);
-		VisualServer::get_singleton()->free(duplicate_instance);
-		selection_instance = RID();
-		duplicate_instance = RID();
-
-	} else if (p_what == NOTIFICATION_PROCESS) {
-		if (!node) {
-			return;
-		}
-
-		Transform xf = node->get_global_transform();
-
-		if (xf != grid_xform) {
+		case NOTIFICATION_ENTER_TREE: {
+			theme_pallete->connect("item_selected", this, "_item_selected_cbk");
 			for (int i = 0; i < 3; i++) {
 
-				VS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
+				grid[i] = VS::get_singleton()->mesh_create();
+				grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
+				selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
 			}
-			grid_xform = xf;
-		}
-		Ref<MeshLibrary> cgmt = node->get_theme();
-		if (cgmt.operator->() != last_theme)
-			update_pallete();
 
-		if (lock_view) {
+			selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh, get_tree()->get_root()->get_world()->get_scenario());
 
-			EditorNode *editor = Object::cast_to<EditorNode>(get_tree()->get_root()->get_child(0));
+			_update_selection_transform();
+			_update_duplicate_indicator();
+		} break;
 
-			Plane p;
-			p.normal[edit_axis] = 1.0;
-			p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
-			p = node->get_transform().xform(p); // plane to snap
+		case NOTIFICATION_EXIT_TREE: {
+			for (int i = 0; i < 3; i++) {
 
-			SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
-			if (sep)
-				sep->snap_cursor_to_plane(p);
-			//editor->get_editor_plugin_screen()->call("snap_cursor_to_plane",p);
-		}
+				VS::get_singleton()->free(grid_instance[i]);
+				VS::get_singleton()->free(grid[i]);
+				grid_instance[i] = RID();
+				grid[i] = RID();
+				VisualServer::get_singleton()->free(selection_level_instance[i]);
+			}
+
+			VisualServer::get_singleton()->free(selection_instance);
+			VisualServer::get_singleton()->free(duplicate_instance);
+			selection_instance = RID();
+			duplicate_instance = RID();
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (!node) {
+				return;
+			}
+
+			Transform xf = node->get_global_transform();
+
+			if (xf != grid_xform) {
+				for (int i = 0; i < 3; i++) {
+
+					VS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
+				}
+				grid_xform = xf;
+			}
+			Ref<MeshLibrary> cgmt = node->get_theme();
+			if (cgmt.operator->() != last_theme)
+				update_pallete();
+
+			if (lock_view) {
+
+				EditorNode *editor = Object::cast_to<EditorNode>(get_tree()->get_root()->get_child(0));
+
+				Plane p;
+				p.normal[edit_axis] = 1.0;
+				p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
+				p = node->get_transform().xform(p); // plane to snap
+
+				SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
+				if (sep)
+					sep->snap_cursor_to_plane(p);
+				//editor->get_editor_plugin_screen()->call("snap_cursor_to_plane",p);
+			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			options->set_icon(get_icon("GridMap", "EditorIcons"));
+		} break;
 	}
 }
 
@@ -954,20 +989,38 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	int mw = EDITOR_DEF("editors/grid_map/palette_min_width", 230);
 	Control *ec = memnew(Control);
-	ec->set_custom_minimum_size(Size2(mw, 0));
+	ec->set_custom_minimum_size(Size2(mw, 0) * EDSCALE);
 	add_child(ec);
 
 	spatial_editor_hb = memnew(HBoxContainer);
+	spatial_editor_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
+
+	Label *fl = memnew(Label);
+	fl->set_text(TTR("Floor:"));
+	spatial_editor_hb->add_child(fl);
+
+	floor = memnew(SpinBox);
+	floor->set_min(-32767);
+	floor->set_max(32767);
+	floor->set_step(1);
+	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
+
+	spatial_editor_hb->add_child(floor);
+	floor->connect("value_changed", this, "_floor_changed");
+
+	spatial_editor_hb->add_child(memnew(VSeparator));
+
 	options = memnew(MenuButton);
 	spatial_editor_hb->add_child(options);
 	spatial_editor_hb->hide();
 
-	options->set_text("Grid");
+	options->set_text(TTR("Grid Map"));
 	options->get_popup()->add_check_item(TTR("Snap View"), MENU_OPTION_LOCK_VIEW);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(vformat(TTR("Prev Level (%sDown Wheel)"), keycode_get_string(KEY_MASK_CMD)), MENU_OPTION_PREV_LEVEL);
-	options->get_popup()->add_item(vformat(TTR("Next Level (%sUp Wheel)"), keycode_get_string(KEY_MASK_CMD)), MENU_OPTION_NEXT_LEVEL);
+	options->get_popup()->add_item(TTR("Previous Floor"), MENU_OPTION_PREV_LEVEL, KEY_Q);
+	options->get_popup()->add_item(TTR("Next Floor"), MENU_OPTION_NEXT_LEVEL, KEY_E);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item(TTR("Clip Disabled"), MENU_OPTION_CLIP_DISABLED);
 	options->get_popup()->set_item_checked(options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true);
@@ -993,8 +1046,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Create Exterior Connector"), MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
 	options->get_popup()->add_item(TTR("Erase Area"), MENU_OPTION_REMOVE_AREA);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Selection -> Duplicate"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_INSERT);
-	options->get_popup()->add_item(TTR("Selection -> Clear"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_DELETE);
+	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_C);
+	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_X);
 
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
@@ -1003,7 +1056,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_dialog->set_title(TTR("GridMap Settings"));
 	add_child(settings_dialog);
 	settings_vbc = memnew(VBoxContainer);
-	settings_vbc->set_custom_minimum_size(Size2(200, 0));
+	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 
 	settings_pick_distance = memnew(SpinBox);
@@ -1041,20 +1094,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	theme_pallete = memnew(ItemList);
 	add_child(theme_pallete);
 	theme_pallete->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	spatial_editor_hb->add_child(memnew(VSeparator));
-	Label *fl = memnew(Label);
-	fl->set_text("   Floor: ");
-	spatial_editor_hb->add_child(fl);
-
-	floor = memnew(SpinBox);
-	floor->set_min(-32767);
-	floor->set_max(32767);
-	floor->set_step(1);
-	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
-
-	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed", this, "_floor_changed");
 
 	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
@@ -1108,7 +1147,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		for (int i = 0; i < 12; i++) {
 
-			Rect3 base(Vector3(0, 0, 0), Vector3(1, 1, 1));
+			AABB base(Vector3(0, 0, 0), Vector3(1, 1, 1));
 			Vector3 a, b;
 			base.get_edge(i, a, b);
 			lines.push_back(a);
@@ -1250,7 +1289,9 @@ GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 	gridmap_editor = memnew(GridMapEditor(editor));
 
 	SpatialEditor::get_singleton()->get_palette_split()->add_child(gridmap_editor);
-	SpatialEditor::get_singleton()->get_palette_split()->move_child(gridmap_editor, 0);
+	// TODO: make this configurable, so the user can choose were to put this, it makes more sense
+	// on the right, but some people might find it strange.
+	SpatialEditor::get_singleton()->get_palette_split()->move_child(gridmap_editor, 1);
 
 	gridmap_editor->hide();
 }

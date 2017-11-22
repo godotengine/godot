@@ -114,15 +114,6 @@ void OS_Android::initialize_core() {
 #endif
 }
 
-void OS_Android::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(AndroidLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
@@ -490,6 +481,11 @@ void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 	input->set_accelerometer(p_accelerometer);
 }
 
+void OS_Android::process_gravity(const Vector3 &p_gravity) {
+
+	input->set_gravity(p_gravity);
+}
+
 void OS_Android::process_magnetometer(const Vector3 &p_magnetometer) {
 
 	input->set_magnetometer(p_magnetometer);
@@ -607,13 +603,13 @@ void OS_Android::set_need_reload_hooks(bool p_needs_them) {
 	use_reload_hooks = p_needs_them;
 }
 
-String OS_Android::get_data_dir() const {
+String OS_Android::get_user_data_dir() const {
 
 	if (data_dir_cache != String())
 		return data_dir_cache;
 
-	if (get_data_dir_func) {
-		String data_dir = get_data_dir_func();
+	if (get_user_data_dir_func) {
+		String data_dir = get_user_data_dir_func();
 
 		//store current dir
 		char real_current_dir_name[2048];
@@ -636,7 +632,6 @@ String OS_Android::get_data_dir() const {
 	}
 
 	return ".";
-	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
@@ -701,10 +696,27 @@ String OS_Android::get_joy_guid(int p_device) const {
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2"; //TODO support etc2 only if GLES3 driver is selected
+	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2") {
+		//TODO support etc2 only if GLES3 driver is selected
+		return true;
+	}
+#if defined(__aarch64__)
+	if (p_feature == "arm64-v8a") {
+		return true;
+	}
+#elif defined(__ARM_ARCH_7A__)
+	if (p_feature == "armeabi-v7a" || p_feature == "armeabi") {
+		return true;
+	}
+#elif defined(__arm__)
+	if (p_feature == "armeabi") {
+		return true;
+	}
+#endif
+	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -720,7 +732,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	use_gl2 = false;
 
 	open_uri_func = p_open_uri_func;
-	get_data_dir_func = p_get_data_dir_func;
+	get_user_data_dir_func = p_get_user_data_dir_func;
 	get_locale_func = p_get_locale_func;
 	get_model_func = p_get_model_func;
 	get_screen_dpi_func = p_get_screen_dpi_func;
@@ -741,7 +753,9 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	alert_func = p_alert_func;
 	use_reload_hooks = false;
 
-	_set_logger(memnew(AndroidLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(AndroidLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS_Android::~OS_Android() {

@@ -98,7 +98,7 @@ void Portal::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::REAL, "connect_range", PROPERTY_HINT_RANGE, "0.1,4096,0.01"));
 }
 
-Rect3 Portal::get_aabb() const {
+AABB Portal::get_aabb() const {
 
 	return aabb;
 }

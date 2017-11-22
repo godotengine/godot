@@ -188,7 +188,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_cache3");
 	FileAccess *f = FileAccess::open(fscache, FileAccess::READ);
 
 	if (f) {
@@ -238,7 +238,7 @@ void EditorFileSystem::_scan_filesystem() {
 		memdelete(f);
 	}
 
-	String update_cache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update3");
+	String update_cache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update3");
 
 	if (FileAccess::exists(update_cache)) {
 		{
@@ -282,7 +282,7 @@ void EditorFileSystem::_scan_filesystem() {
 }
 
 void EditorFileSystem::_save_filesystem_cache() {
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_cache3");
 
 	FileAccess *f = FileAccess::open(fscache, FileAccess::WRITE);
 	_save_filesystem_cache(filesystem, f);
@@ -821,8 +821,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				scan_actions.push_back(ia);
 			}
 		}
-
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_dir->get_file_path(i));
 	}
 
 	for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -915,7 +913,8 @@ void EditorFileSystem::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			scan();
+			call_deferred("scan"); //this should happen after every editor node entered the tree
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (use_threads && thread) {
@@ -1181,7 +1180,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
-	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_update3");
+	String fscache = EditorSettings::get_singleton()->get_project_settings_dir().plus_file("filesystem_update3");
 	FileAccessRef f = FileAccess::open(fscache, FileAccess::WRITE);
 	for (Set<String>::Element *E = late_update_files.front(); E; E = E->next()) {
 		f->store_line(E->get());
@@ -1266,7 +1265,6 @@ void EditorFileSystem::update_file(const String &p_file) {
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
 
-	EditorResourcePreview::get_singleton()->call_deferred("check_for_invalidation", p_file);
 	call_deferred("emit_signal", "filesystem_changed"); //update later
 }
 
@@ -1436,6 +1434,8 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 			r->set_import_last_modified_time(0);
 		}
 	}
+
+	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {

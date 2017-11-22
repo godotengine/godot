@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.0.alpha.custom_build">
+<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.0-alpha">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -66,7 +66,7 @@
 			</description>
 		</method>
 		<method name="get_custom_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -95,7 +95,7 @@
 		<method name="set_custom_aabb">
 			<return type="void">
 			</return>
-			<argument index="0" name="aabb" type="Rect3">
+			<argument index="0" name="aabb" type="AABB">
 			</argument>
 			<description>
 			</description>
@@ -197,6 +197,18 @@
 			</argument>
 			<description>
 				Set a [Material] for a given surface. Surface will be rendered using this material.
+			</description>
+		</method>
+		<method name="surface_update_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="offset" type="int">
+			</argument>
+			<argument index="2" name="data" type="PoolByteArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

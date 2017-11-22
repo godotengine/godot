@@ -298,7 +298,7 @@ if webm_cpu_x86:
 
     if not yasm_found:
         webm_cpu_x86 = False
-        print "YASM is necessary for WebM SIMD optimizations."
+        print("YASM is necessary for WebM SIMD optimizations.")
 
 webm_simd_optimizations = False
 
@@ -345,7 +345,7 @@ if webm_cpu_arm:
     webm_simd_optimizations = True
 
 if webm_simd_optimizations == False:
-    print "WebM SIMD optimizations are disabled. Check if your CPU architecture, CPU bits or platform are supported!"
+    print("WebM SIMD optimizations are disabled. Check if your CPU architecture, CPU bits or platform are supported!")
 
 
 env_libvpx.add_source_files(env.modules_sources, libvpx_sources)

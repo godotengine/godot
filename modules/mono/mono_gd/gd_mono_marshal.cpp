@@ -36,7 +36,7 @@ namespace GDMonoMarshal {
 
 #define RETURN_BOXED_STRUCT(m_t, m_var_in)                                    \
 	{                                                                         \
-		const m_t &m_in = m_var_in->operator m_t();                           \
+		const m_t &m_in = m_var_in->operator ::m_t();                         \
 		MARSHALLED_OUT(m_t, m_in, raw);                                       \
 		return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(m_t), raw); \
 	}
@@ -104,8 +104,8 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			if (tclass == CACHED_CLASS(Transform))
 				return Variant::TRANSFORM;
 
-			if (tclass == CACHED_CLASS(Rect3))
-				return Variant::RECT3;
+			if (tclass == CACHED_CLASS(AABB))
+				return Variant::AABB;
 
 			if (tclass == CACHED_CLASS(Color))
 				return Variant::COLOR;
@@ -297,8 +297,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (tclass == CACHED_CLASS(Transform))
 				RETURN_BOXED_STRUCT(Transform, p_var);
 
-			if (tclass == CACHED_CLASS(Rect3))
-				RETURN_BOXED_STRUCT(Rect3, p_var);
+			if (tclass == CACHED_CLASS(AABB))
+				RETURN_BOXED_STRUCT(AABB, p_var);
 
 			if (tclass == CACHED_CLASS(Color))
 				RETURN_BOXED_STRUCT(Color, p_var);
@@ -394,8 +394,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					RETURN_BOXED_STRUCT(Plane, p_var);
 				case Variant::QUAT:
 					RETURN_BOXED_STRUCT(Quat, p_var);
-				case Variant::RECT3:
-					RETURN_BOXED_STRUCT(Rect3, p_var);
+				case Variant::AABB:
+					RETURN_BOXED_STRUCT(AABB, p_var);
 				case Variant::BASIS:
 					RETURN_BOXED_STRUCT(Basis, p_var);
 				case Variant::TRANSFORM:
@@ -518,8 +518,8 @@ Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type) {
 			if (tclass == CACHED_CLASS(Transform))
 				RETURN_UNBOXED_STRUCT(Transform, p_obj);
 
-			if (tclass == CACHED_CLASS(Rect3))
-				RETURN_UNBOXED_STRUCT(Rect3, p_obj);
+			if (tclass == CACHED_CLASS(AABB))
+				RETURN_UNBOXED_STRUCT(AABB, p_obj);
 
 			if (tclass == CACHED_CLASS(Color))
 				RETURN_UNBOXED_STRUCT(Color, p_obj);

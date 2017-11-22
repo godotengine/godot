@@ -84,20 +84,45 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
-	dict["status"] = _MKSTR(VERSION_STATUS);
-	dict["revision"] = _MKSTR(VERSION_REVISION);
+	dict["status"] = VERSION_STATUS;
+	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
 
-	String hash = String(VERSION_HASH);
+	String hash = VERSION_HASH;
 	dict["hash"] = hash.length() == 0 ? String("unknown") : hash;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0)
 		stringver += "." + String(dict["patch"]);
-	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
+	stringver += "-" + String(dict["status"]) + " (" + String(dict["build"]) + ")";
 	dict["string"] = stringver;
 
 	return dict;
+}
+
+void Engine::add_singleton(const Singleton &p_singleton) {
+
+	singletons.push_back(p_singleton);
+	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
+}
+
+Object *Engine::get_singleton_object(const String &p_name) const {
+
+	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
+	ERR_EXPLAIN("Failed to retrieve non-existent singleton '" + p_name + "'");
+	ERR_FAIL_COND_V(!E, NULL);
+	return E->get();
+};
+
+bool Engine::has_singleton(const String &p_name) const {
+
+	return singleton_ptrs.has(p_name);
+};
+
+void Engine::get_singletons(List<Singleton> *p_singletons) {
+
+	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
+		p_singletons->push_back(E->get());
 }
 
 Engine *Engine::singleton = NULL;

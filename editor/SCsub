@@ -21,11 +21,11 @@ def make_certs_header(target, source, env):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _CERTS_RAW_H\n")
     g.write("#define _CERTS_RAW_H\n")
-    g.write("static const int _certs_compressed_size=" + str(len(buf)) + ";\n")
-    g.write("static const int _certs_uncompressed_size=" + str(decomp_size) + ";\n")
-    g.write("static const unsigned char _certs_compressed[]={\n")
+    g.write("static const int _certs_compressed_size = " + str(len(buf)) + ";\n")
+    g.write("static const int _certs_uncompressed_size = " + str(decomp_size) + ";\n")
+    g.write("static const unsigned char _certs_compressed[] = {\n")
     for i in range(len(buf)):
-        g.write(byte_to_str(buf[i]) + ",\n")
+        g.write("\t" + byte_to_str(buf[i]) + ",\n")
     g.write("};\n")
     g.write("#endif")
 
@@ -43,7 +43,7 @@ def make_doc_header(target, source, env):
             continue
         f = open_utf8(src, "r")
         content = f.read()
-        buf+=content
+        buf += content
 
     buf = encode_utf8(docbegin + buf + docend)
     decomp_size = len(buf)
@@ -53,11 +53,11 @@ def make_doc_header(target, source, env):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _DOC_DATA_RAW_H\n")
     g.write("#define _DOC_DATA_RAW_H\n")
-    g.write("static const int _doc_data_compressed_size=" + str(len(buf)) + ";\n")
-    g.write("static const int _doc_data_uncompressed_size=" + str(decomp_size) + ";\n")
-    g.write("static const unsigned char _doc_data_compressed[]={\n")
+    g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
+    g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
+    g.write("static const unsigned char _doc_data_compressed[] = {\n")
     for i in range(len(buf)):
-        g.write(byte_to_str(buf[i]) + ",\n")
+        g.write("\t" + byte_to_str(buf[i]) + ",\n")
     g.write("};\n")
 
     g.write("#endif")
@@ -82,10 +82,10 @@ def make_fonts_header(target, source, env):
 
         name = os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
 
-        g.write("static const int _font_" + name + "_size=" + str(len(buf)) + ";\n")
-        g.write("static const unsigned char _font_" + name + "[]={\n")
+        g.write("static const int _font_" + name + "_size = " + str(len(buf)) + ";\n")
+        g.write("static const unsigned char _font_" + name + "[] = {\n")
         for i in range(len(buf)):
-            g.write(byte_to_str(buf[i]) + ",\n")
+            g.write("\t" + byte_to_str(buf[i]) + ",\n")
 
         g.write("};\n")
 
@@ -116,11 +116,9 @@ def make_translations_header(target, source, env):
         buf = zlib.compress(buf)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
 
-        #g.write("static const int _translation_"+name+"_compressed_size="+str(len(buf))+";\n")
-        #g.write("static const int _translation_"+name+"_uncompressed_size="+str(decomp_size)+";\n")
-        g.write("static const unsigned char _translation_" + name + "_compressed[]={\n")
+        g.write("static const unsigned char _translation_" + name + "_compressed[] = {\n")
         for i in range(len(buf)):
-            g.write(byte_to_str(buf[i]) + ",\n")
+            g.write("\t" + byte_to_str(buf[i]) + ",\n")
 
         g.write("};\n")
 
@@ -132,10 +130,10 @@ def make_translations_header(target, source, env):
     g.write("\tint uncomp_size;\n")
     g.write("\tconst unsigned char* data;\n")
     g.write("};\n\n")
-    g.write("static EditorTranslationList _editor_translations[]={\n")
+    g.write("static EditorTranslationList _editor_translations[] = {\n")
     for x in xl_names:
-        g.write("\t{ \"" + x[0] + "\", " + str(x[1]) + ", " + str(x[2]) + ",_translation_" + x[0] + "_compressed},\n")
-    g.write("\t{NULL,0,0,NULL}\n")
+        g.write("\t{ \"" + x[0] + "\", " + str(x[1]) + ", " + str(x[2]) + ", _translation_" + x[0] + "_compressed},\n")
+    g.write("\t{NULL, 0, 0, NULL}\n")
     g.write("};\n")
 
     g.write("#endif")
@@ -392,13 +390,13 @@ def make_license_header(target, source, env):
 
 def _make_doc_data_class_path(to_path):
       g = open_utf8(os.path.join(to_path,"doc_data_class_path.gen.h"), "w")
-      g.write("static const int _doc_data_class_path_count="+str(len(env.doc_class_path))+";\n")
+      g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
       g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
-      g.write("static const _DocDataClassPath _doc_data_class_paths["+str(len(env.doc_class_path)+1)+"]={\n");
-      for c in env.doc_class_path:
-          g.write("{\""+c+"\",\""+env.doc_class_path[c]+"\"},\n")
-      g.write("{NULL,NULL}\n")
+      g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n");
+      for c in sorted(env.doc_class_path):
+          g.write("\t{\"" + c + "\", \"" + env.doc_class_path[c] + "\"},\n")
+      g.write("\t{NULL, NULL}\n")
       g.write("};\n")
 
 
@@ -418,11 +416,22 @@ if env['tools']:
 
     # API documentation
     docs = []
-    for f in os.listdir(os.path.join(env.Dir('#').abspath, "doc/classes")):
-        docs.append("#doc/classes/" + f)
+    doc_dirs = ["doc/classes"]
+
+    for p in env.doc_class_path.values():
+        if p not in doc_dirs:
+            doc_dirs.append(p)
+
+    for d in doc_dirs:
+        try:
+            for f in os.listdir(os.path.join(env.Dir('#').abspath, d)):
+                docs.append("#" + os.path.join(d, f))
+        except OSError:
+            pass
 
     _make_doc_data_class_path(os.path.join(env.Dir('#').abspath, "editor/doc"))
 
+    docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.Command("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
     # Certificates

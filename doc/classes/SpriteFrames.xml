@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpriteFrames" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+<class name="SpriteFrames" inherits="Resource" category="Core" version="3.0-alpha">
 	<brief_description>
 		Sprite frame library for AnimatedSprite.
 	</brief_description>

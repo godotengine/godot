@@ -84,8 +84,15 @@ def configure(env):
         else: # 64-bit, default
             basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
-        env['CC'] = basecmd + "cc"
-        env['CXX'] = basecmd + "c++"
+        ccache_path = os.environ.get("CCACHE")
+        if ccache_path == None:
+            env['CC'] = basecmd + "cc"
+            env['CXX'] = basecmd + "c++"
+        else:
+            # there aren't any ccache wrappers available for OS X cross-compile,
+            # to enable caching we need to prepend the path to the ccache binary
+            env['CC'] = ccache_path + ' ' + basecmd + "cc"
+            env['CXX'] = ccache_path + ' ' + basecmd + "c++"
         env['AR'] = basecmd + "ar"
         env['RANLIB'] = basecmd + "ranlib"
         env['AS'] = basecmd + "as"
@@ -103,7 +110,7 @@ def configure(env):
     ## Flags
 
     env.Append(CPPPATH=['#platform/osx'])
-    env.Append(CPPFLAGS=['-DOSX_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED'])
+    env.Append(CPPFLAGS=['-DOSX_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED'])
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback'])
     env.Append(LIBS=['pthread'])
 

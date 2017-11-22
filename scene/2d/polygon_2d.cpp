@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "polygon_2d.h"
 
-Rect2 Polygon2D::get_item_rect() const {
+Rect2 Polygon2D::_edit_get_rect() const {
 
 	if (rect_cache_dirty) {
 		int l = polygon.size();
@@ -49,16 +49,16 @@ Rect2 Polygon2D::get_item_rect() const {
 	return item_rect;
 }
 
-void Polygon2D::edit_set_pivot(const Point2 &p_pivot) {
+void Polygon2D::_edit_set_pivot(const Point2 &p_pivot) {
 
 	set_offset(p_pivot);
 }
 
-Point2 Polygon2D::edit_get_pivot() const {
+Point2 Polygon2D::_edit_get_pivot() const {
 
 	return get_offset();
 }
-bool Polygon2D::edit_has_pivot() const {
+bool Polygon2D::_edit_use_pivot() const {
 
 	return true;
 }

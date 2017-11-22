@@ -44,7 +44,7 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 		return -1;
 	}
 
-	Rect3 aabb;
+	AABB aabb;
 	aabb = p_bb[p_from]->aabb;
 	for (int i = 1; i < p_size; i++) {
 
@@ -166,7 +166,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 	valid = true;
 }
 
-Vector3 TriangleMesh::get_area_normal(const Rect3 &p_aabb) const {
+Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 

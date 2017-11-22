@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" category="Core" version="3.0.alpha.custom_build">
+<class name="Control" inherits="CanvasItem" category="Core" version="3.0-alpha">
 	<brief_description>
 		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
 	</brief_description>
@@ -60,7 +60,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant in the [theme] resource the node uses. If the [code]constant[code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
+				Overrides an integer constant in the [Theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -228,7 +228,14 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
-				Return the forced neighbour for moving the input focus to. When pressing TAB or directional/joypad directions focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
+				Return the forced neighbour for moving the input focus to. When pressing directional/joypad directions, focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
+			</description>
+		</method>
+		<method name="get_focus_next" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+				Return the 'focus_next' for moving input focus to. When pressing TAB, focus is moved to the next control in the tree. However, the control to move to can be forced with this function.
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
@@ -236,6 +243,13 @@
 			</return>
 			<description>
 				Return which control is owning the keyboard focus, or null if no one.
+			</description>
+		</method>
+		<method name="get_focus_previous" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<description>
+				Return the 'focus_previous' for moving input focus to. When pressing Shift+TAB focus is moved to the previous control in the tree. However, the control to move to can be forced with this function.
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -676,7 +690,25 @@
 			<argument index="1" name="neighbour" type="NodePath">
 			</argument>
 			<description>
-				Force a neighbour for moving the input focus to. When pressing TAB or directional/joypad directions focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
+				Force a neighbour for moving the input focus to. When pressing directional/joypad directions, focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
+			</description>
+		</method>
+		<method name="set_focus_next">
+			<return type="void">
+			</return>
+			<argument index="0" name="next" type="NodePath">
+			</argument>
+			<description>
+				Force the 'focus_next' for moving input focus to. When pressing TAB, focus is moved to the next control in the tree. However, the control to move to can be forced with this function.
+			</description>
+		</method>
+		<method name="set_focus_previous">
+			<return type="void">
+			</return>
+			<argument index="0" name="previous" type="NodePath">
+			</argument>
+			<description>
+				Force the 'focus_previous' for moving input focus to. When pressing Shift+TAB, focus is moved to the previous control in the tree. However, the control to move to can be forced with this function.
 			</description>
 		</method>
 		<method name="set_global_position">

@@ -177,6 +177,14 @@ bool InputEventWithModifiers::get_command() const {
 	return command;
 }
 
+void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
+
+	set_alt(event->get_alt());
+	set_shift(event->get_shift());
+	set_control(event->get_control());
+	set_metakey(event->get_metakey());
+}
+
 void InputEventWithModifiers::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_alt", "enable"), &InputEventWithModifiers::set_alt);
@@ -270,16 +278,16 @@ String InputEventKey::as_text() const {
 		return kc;
 
 	if (get_metakey()) {
-		kc = "Meta+" + kc;
+		kc = find_keycode_name(KEY_META) + ("+" + kc);
 	}
 	if (get_alt()) {
-		kc = "Alt+" + kc;
+		kc = find_keycode_name(KEY_ALT) + ("+" + kc);
 	}
 	if (get_shift()) {
-		kc = "Shift+" + kc;
+		kc = find_keycode_name(KEY_SHIFT) + ("+" + kc);
 	}
 	if (get_control()) {
-		kc = "Ctrl+" + kc;
+		kc = find_keycode_name(KEY_CONTROL) + ("+" + kc);
 	}
 	return kc;
 }
@@ -436,10 +444,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	mb->set_id(get_id());
 	mb->set_device(get_device());
 
-	mb->set_alt(get_alt());
-	mb->set_shift(get_shift());
-	mb->set_control(get_control());
-	mb->set_metakey(get_metakey());
+	mb->set_modifiers_from_event(this);
 
 	mb->set_position(l);
 	mb->set_global_position(g);
@@ -555,10 +560,7 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 	mm->set_id(get_id());
 	mm->set_device(get_device());
 
-	mm->set_alt(get_alt());
-	mm->set_shift(get_shift());
-	mm->set_control(get_control());
-	mm->set_metakey(get_metakey());
+	mm->set_modifiers_from_event(this);
 
 	mm->set_position(l);
 	mm->set_global_position(g);
@@ -929,4 +931,76 @@ void InputEventAction::_bind_methods() {
 
 InputEventAction::InputEventAction() {
 	pressed = false;
+}
+/////////////////////////////
+
+void InputEventGesture::set_position(const Vector2 &p_pos) {
+
+	pos = p_pos;
+}
+
+Vector2 InputEventGesture::get_position() const {
+
+	return pos;
+}
+/////////////////////////////
+
+void InputEventMagnifyGesture::set_factor(real_t p_factor) {
+
+	factor = p_factor;
+}
+
+real_t InputEventMagnifyGesture::get_factor() const {
+
+	return factor;
+}
+
+Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+
+	Ref<InputEventMagnifyGesture> ev;
+	ev.instance();
+
+	ev->set_id(get_id());
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_factor(get_factor());
+
+	return ev;
+}
+
+InputEventMagnifyGesture::InputEventMagnifyGesture() {
+
+	factor = 1.0;
+}
+/////////////////////////////
+
+void InputEventPanGesture::set_delta(const Vector2 &p_delta) {
+
+	delta = p_delta;
+}
+
+Vector2 InputEventPanGesture::get_delta() const {
+	return delta;
+}
+
+Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
+
+	Ref<InputEventPanGesture> ev;
+	ev.instance();
+
+	ev->set_id(get_id());
+	ev->set_device(get_device());
+	ev->set_modifiers_from_event(this);
+
+	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
+	ev->set_delta(get_delta());
+
+	return ev;
+}
+
+InputEventPanGesture::InputEventPanGesture() {
+
+	delta = Vector2(0, 0);
 }

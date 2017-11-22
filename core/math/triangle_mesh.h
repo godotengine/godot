@@ -47,7 +47,7 @@ class TriangleMesh : public Reference {
 
 	struct BVH {
 
-		Rect3 aabb;
+		AABB aabb;
 		Vector3 center; //used for sorting
 		int left;
 		int right;
@@ -88,7 +88,7 @@ public:
 	bool is_valid() const;
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const;
 	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal) const;
-	Vector3 get_area_normal(const Rect3 &p_aabb) const;
+	Vector3 get_area_normal(const AABB &p_aabb) const;
 	PoolVector<Face3> get_faces() const;
 
 	void create(const PoolVector<Vector3> &p_faces);

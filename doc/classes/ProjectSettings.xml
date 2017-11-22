@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProjectSettings" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+<class name="ProjectSettings" inherits="Object" category="Core" version="3.0-alpha">
 	<brief_description>
 		Contains global variables accessible from everywhere.
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="0" name="hint" type="Dictionary">
 			</argument>
 			<description>
-				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
+				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@GlobalScope]), and optionally hint:[int](see PROPERTY_HINT_* in [@GlobalScope]), hint_string:[String].
 				Example:
 				[codeblock]
 				ProjectSettings.set("category/property_name", 0)
@@ -59,14 +59,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_singleton" qualifiers="const">
-			<return type="Object">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="globalize_path" qualifiers="const">
 			<return type="String">
 			</return>
@@ -83,14 +75,6 @@
 			</argument>
 			<description>
 				Return true if a configuration value is present.
-			</description>
-		</method>
-		<method name="has_singleton" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="load_resource_pack">

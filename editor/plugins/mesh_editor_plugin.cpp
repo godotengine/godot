@@ -95,7 +95,7 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 		rot_y = 0;
 		_update_rotation();
 
-		Rect3 aabb = mesh->get_aabb();
+		AABB aabb = mesh->get_aabb();
 		print_line("aabb: " + aabb);
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		float m = aabb.get_longest_axis_size();

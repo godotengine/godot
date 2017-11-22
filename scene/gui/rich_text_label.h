@@ -225,6 +225,9 @@ private:
 
 	Align default_align;
 
+	ItemMeta *meta_hovering;
+	Variant current_meta;
+
 	void _invalidate_current_line(ItemFrame *p_frame);
 	void _validate_line_caches(ItemFrame *p_frame);
 

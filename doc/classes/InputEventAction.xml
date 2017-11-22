@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventAction" inherits="InputEvent" category="Core" version="3.0.alpha.custom_build">
+<class name="InputEventAction" inherits="InputEvent" category="Core" version="3.0-alpha">
 	<brief_description>
 		Input event type for actions.
 	</brief_description>
 	<description>
-		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/Code]. See [method Node._input].
+		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/code]. See [method Node._input].
 	</description>
 	<tutorials>
 		http://docs.godotengine.org/en/stable/learning/features/inputs/inputevent.html#actions

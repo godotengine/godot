@@ -20,12 +20,12 @@ matrix:
     #- env: GODOT_TARGET=windows TOOLS=yes
     #  os: linux
     #  compiler: gcc
+    - env: GODOT_TARGET=android TOOLS=no
+      os: linux
+      compiler: gcc
     - env: GODOT_TARGET=osx TOOLS=yes
       os: osx
       compiler: clang
-    #- env: GODOT_TARGET=android TOOLS=no
-    #  os: osx
-    #  compiler: clang
     #- env: GODOT_TARGET=iphone TOOLS=no
     #  os: osx
     #  compiler: clang
@@ -61,15 +61,29 @@ addons:
       # For style checks.
       - clang-format-3.9
 
-before_script:
+install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
+      misc/travis/android-tools-linux.sh;
+    fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      brew update; brew install scons ccache;
-      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+      misc/travis/scons-local-osx.sh;
+      misc/travis/ccache-osx.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
-      brew update; brew install -v android-sdk;
-      brew install -v android-ndk | grep -v "inflating:" | grep -v "creating:";
-      export ANDROID_HOME=/usr/local/opt/android-sdk; export ANDROID_NDK_ROOT=/usr/local/opt/android-ndk;
+      misc/travis/android-tools-osx.sh;
+    fi
+
+before_script:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      export CCACHE="/usr/bin/ccache";
+    fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      export CCACHE="/usr/local/bin/ccache";
+      export PATH="/usr/local/opt/ccache/libexec:$PATH";
+    fi
+  - if [ "$GODOT_TARGET" = "android" ]; then
+      export ANDROID_HOME=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-sdk;
+      export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-ndk;
     fi
 
 script:
@@ -78,3 +92,10 @@ script:
     else
       scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
     fi
+
+after_success:
+  - if [ "$STATIC_CHECKS" != "yes" ] && [ $(command -v ccache) ]; then
+      which ccache;
+      ccache --version | grep "ccache version";
+      ccache -s;
+    fi;

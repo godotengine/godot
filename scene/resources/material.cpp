@@ -723,7 +723,11 @@ void SpatialMaterial::_update_shader() {
 		} else {
 			code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
 		}
-		code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
+		if (emission_op == EMISSION_OP_ADD) {
+			code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
+		} else {
+			code += "\tEMISSION = (emission.rgb*emission_tex)*emission_energy;\n";
+		}
 	}
 
 	if (features[FEATURE_REFRACTION] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //refraction not supported with triplanar
@@ -1635,6 +1639,19 @@ float SpatialMaterial::get_distance_fade_min_distance() const {
 	return distance_fade_min_distance;
 }
 
+void SpatialMaterial::set_emission_operator(EmissionOperator p_op) {
+
+	if (emission_op == p_op)
+		return;
+	emission_op = p_op;
+	_queue_shader_change();
+}
+
+SpatialMaterial::EmissionOperator SpatialMaterial::get_emission_operator() const {
+
+	return emission_op;
+}
+
 RID SpatialMaterial::get_shader_rid() const {
 
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
@@ -1769,6 +1786,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
 	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
 
+	ClassDB::bind_method(D_METHOD("set_emission_operator", "operator"), &SpatialMaterial::set_emission_operator);
+	ClassDB::bind_method(D_METHOD("get_emission_operator"), &SpatialMaterial::get_emission_operator);
+
 	ClassDB::bind_method(D_METHOD("set_ao_light_affect", "amount"), &SpatialMaterial::set_ao_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ao_light_affect"), &SpatialMaterial::get_ao_light_affect);
 
@@ -1854,6 +1874,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("NormalMap", "normal_");
@@ -2022,6 +2043,9 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_CHANNEL_BLUE);
 	BIND_ENUM_CONSTANT(TEXTURE_CHANNEL_ALPHA);
 	BIND_ENUM_CONSTANT(TEXTURE_CHANNEL_GRAYSCALE);
+
+	BIND_ENUM_CONSTANT(EMISSION_OP_ADD);
+	BIND_ENUM_CONSTANT(EMISSION_OP_MULTIPLY);
 }
 
 SpatialMaterial::SpatialMaterial()
@@ -2057,6 +2081,7 @@ SpatialMaterial::SpatialMaterial()
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);
 	set_alpha_scissor_threshold(0.98);
+	emission_op = EMISSION_OP_ADD;
 
 	proximity_fade_enabled = false;
 	distance_fade_enabled = false;

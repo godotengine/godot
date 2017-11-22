@@ -876,6 +876,8 @@ void AudioServer::init() {
 #ifdef TOOLS_ENABLED
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
+
+	GLOBAL_DEF("audio/video_delay_compensation_ms", 0);
 }
 
 void AudioServer::load_default_bus_layout() {

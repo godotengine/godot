@@ -76,7 +76,7 @@ int OS_Haiku::get_video_driver_count() const {
 }
 
 const char *OS_Haiku::get_video_driver_name(int p_driver) const {
-	return "GLES2";
+	return "GLES3";
 }
 
 void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -106,7 +106,9 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	context_gl->initialize();
 	context_gl->make_current();
 
-	rasterizer = memnew(RasterizerGLES2);
+	/* Port to GLES 3 rasterizer */
+	//rasterizer = memnew(RasterizerGLES2);
+
 #endif
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
@@ -313,4 +315,37 @@ String OS_Haiku::get_executable_path() const {
 bool OS_Haiku::_check_internal_feature_support(const String &p_feature) {
 
 	return p_feature == "pc" || p_feature == "s3tc";
+}
+
+String OS_Haiku::get_config_path() const {
+
+	if (has_environment("XDG_CONFIG_HOME")) {
+		return get_environment("XDG_CONFIG_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".config");
+	} else {
+		return ".";
+	}
+}
+
+String OS_Haiku::get_data_path() const {
+
+	if (has_environment("XDG_DATA_HOME")) {
+		return get_environment("XDG_DATA_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".local/share");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_Haiku::get_cache_path() const {
+
+	if (has_environment("XDG_CACHE_HOME")) {
+		return get_environment("XDG_CACHE_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".cache");
+	} else {
+		return get_config_path();
+	}
 }

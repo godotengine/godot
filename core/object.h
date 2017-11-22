@@ -477,6 +477,8 @@ private:
 	Array _get_incoming_connections() const;
 	void _set_bind(const String &p_set, const Variant &p_value);
 	Variant _get_bind(const String &p_name) const;
+	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
+	Variant _get_indexed_bind(const NodePath &p_name) const;
 
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
@@ -627,6 +629,8 @@ public:
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
 	Variant get(const StringName &p_name, bool *r_valid = NULL) const;
+	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = NULL);
+	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = NULL) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 
@@ -687,6 +691,7 @@ public:
 	bool is_blocking_signals() const;
 
 	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = NULL) const;
+	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = NULL) const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 

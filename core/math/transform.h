@@ -30,9 +30,9 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
+#include "aabb.h"
 #include "matrix3.h"
 #include "plane.h"
-#include "rect3.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -80,8 +80,8 @@ public:
 	_FORCE_INLINE_ Plane xform(const Plane &p_plane) const;
 	_FORCE_INLINE_ Plane xform_inv(const Plane &p_plane) const;
 
-	_FORCE_INLINE_ Rect3 xform(const Rect3 &p_aabb) const;
-	_FORCE_INLINE_ Rect3 xform_inv(const Rect3 &p_aabb) const;
+	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
+	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const;
 
 	void operator*=(const Transform &p_transform);
 	Transform operator*(const Transform &p_transform) const;
@@ -153,14 +153,14 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 	return Plane(normal, d);
 }
 
-_FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
+_FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
 	/* define vertices */
 	Vector3 x = basis.get_axis(0) * p_aabb.size.x;
 	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
 	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
 	Vector3 pos = xform(p_aabb.position);
 	//could be even further optimized
-	Rect3 new_aabb;
+	AABB new_aabb;
 	new_aabb.position = pos;
 	new_aabb.expand_to(pos + x);
 	new_aabb.expand_to(pos + y);
@@ -172,7 +172,7 @@ _FORCE_INLINE_ Rect3 Transform::xform(const Rect3 &p_aabb) const {
 	return new_aabb;
 }
 
-_FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
+_FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 
 	/* define vertices */
 	Vector3 vertices[8] = {
@@ -186,7 +186,7 @@ _FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3 &p_aabb) const {
 		Vector3(p_aabb.position.x, p_aabb.position.y, p_aabb.position.z)
 	};
 
-	Rect3 ret;
+	AABB ret;
 
 	ret.position = xform_inv(vertices[0]);
 

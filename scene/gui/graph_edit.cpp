@@ -964,6 +964,19 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		emit_signal("delete_nodes_request");
 		accept_event();
 	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
+	if (magnify_gesture.is_valid()) {
+
+		set_zoom_custom(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_ev;
+	if (pan_gesture.is_valid()) {
+
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 void GraphEdit::clear_connections() {
@@ -975,6 +988,11 @@ void GraphEdit::clear_connections() {
 
 void GraphEdit::set_zoom(float p_zoom) {
 
+	set_zoom_custom(p_zoom, get_size() / 2);
+}
+
+void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
+
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
 	if (zoom == p_zoom)
 		return;
@@ -982,7 +1000,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 	zoom_minus->set_disabled(zoom == MIN_ZOOM);
 	zoom_plus->set_disabled(zoom == MAX_ZOOM);
 
-	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + get_size() / 2) / zoom;
+	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + p_center) / zoom;
 
 	zoom = p_zoom;
 	top_layer->update();
@@ -992,7 +1010,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 
 	if (is_visible_in_tree()) {
 
-		Vector2 ofs = sbofs * zoom - get_size() / 2;
+		Vector2 ofs = sbofs * zoom - p_center;
 		h_scroll->set_value(ofs.x);
 		v_scroll->set_value(ofs.y);
 	}

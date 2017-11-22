@@ -247,16 +247,16 @@ SpriteFrames::SpriteFrames() {
 	add_animation(SceneStringNames::get_singleton()->_default);
 }
 
-void AnimatedSprite::edit_set_pivot(const Point2 &p_pivot) {
+void AnimatedSprite::_edit_set_pivot(const Point2 &p_pivot) {
 
 	set_offset(p_pivot);
 }
 
-Point2 AnimatedSprite::edit_get_pivot() const {
+Point2 AnimatedSprite::_edit_get_pivot() const {
 
 	return get_offset();
 }
-bool AnimatedSprite::edit_has_pivot() const {
+bool AnimatedSprite::_edit_use_pivot() const {
 
 	return true;
 }
@@ -509,17 +509,17 @@ bool AnimatedSprite::is_flipped_v() const {
 	return vflip;
 }
 
-Rect2 AnimatedSprite::get_item_rect() const {
+Rect2 AnimatedSprite::_edit_get_rect() const {
 
 	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
-		return Node2D::get_item_rect();
+		return Node2D::_edit_get_rect();
 	}
 
 	Ref<Texture> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
 	if (t.is_null())
-		return Node2D::get_item_rect();
+		return Node2D::_edit_get_rect();
 	Size2i s = t->get_size();
 
 	Point2 ofs = offset;

@@ -99,6 +99,8 @@ private:
 	Label *export_error;
 	HBoxContainer *export_templates_error;
 
+	String default_filename;
+
 	void _patch_selected(const String &p_path);
 	void _patch_deleted();
 

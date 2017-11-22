@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.0.alpha.custom_build">
+<class name="EditorSpatialGizmo" inherits="SpatialGizmo" category="Core" version="3.0-alpha">
 	<brief_description>
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
@@ -24,7 +24,7 @@
 			</return>
 			<argument index="0" name="triangles" type="TriangleMesh">
 			</argument>
-			<argument index="1" name="bounds" type="Rect3">
+			<argument index="1" name="bounds" type="AABB">
 			</argument>
 			<description>
 				Add collision triangles to the gizmo for picking. A [TriangleMesh] can be generated from a regular [Mesh] too. Call this function during [method redraw].

@@ -51,6 +51,7 @@ typedef struct {
 }
 #endif
 
+#include <gdnative/array.h>
 #include <gdnative/gdnative.h>
 #include <gdnative/variant.h>
 
@@ -67,7 +68,6 @@ void GDAPI godot_string_get_data(const godot_string *p_self, char *p_dest, int *
 
 wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
 wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx);
-const char GDAPI *godot_string_c_str(const godot_string *p_self);
 const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self);
 
 godot_bool GDAPI godot_string_operator_equal(const godot_string *p_self, const godot_string *p_b);

@@ -173,8 +173,15 @@ def configure(env):
     # For Clang to find NDK tools in preference of those system-wide
     env.PrependENVPath('PATH', tools_path)
 
-    env['CC'] = compiler_path + '/clang'
-    env['CXX'] = compiler_path + '/clang++'
+    ccache_path = os.environ.get("CCACHE")
+    if ccache_path == None:
+        env['CC'] = compiler_path + '/clang'
+        env['CXX'] = compiler_path + '/clang++'
+    else:
+        # there aren't any ccache wrappers available for Android,
+        # to enable caching we need to prepend the path to the ccache binary
+        env['CC'] = ccache_path + ' ' + compiler_path + '/clang'
+        env['CXX'] = ccache_path + ' ' + compiler_path + '/clang++'
     env['AR'] = tools_path + "/ar"
     env['RANLIB'] = tools_path + "/ranlib"
     env['AS'] = tools_path + "/as"
@@ -198,7 +205,7 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
 
     env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
-    env.Append(CPPFLAGS='-DNO_STATVFS -DGLES2_ENABLED'.split())
+    env.Append(CPPFLAGS='-DNO_STATVFS -DGLES_ENABLED'.split())
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':

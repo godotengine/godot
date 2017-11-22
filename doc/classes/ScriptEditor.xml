@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptEditor" inherits="PanelContainer" category="Core" version="3.0.alpha.custom_build">
+<class name="ScriptEditor" inherits="PanelContainer" category="Core" version="3.0-alpha">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,11 +9,45 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="can_drop_data_fw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="drop_data_fw">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_current_script">
 			<return type="Script">
 			</return>
 			<description>
 				Returns a [Script] that is currently active in editor.
+			</description>
+		</method>
+		<method name="get_drag_data_fw">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Control">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_open_scripts" qualifiers="const">

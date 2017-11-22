@@ -587,6 +587,36 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	}
 }
 
+inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
+	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
+}
+
+void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
+
+	if(p_aabb != AABB()) {
+
+		// Set custom AABB
+		if (instance->custom_aabb == NULL)
+			instance->custom_aabb = memnew(AABB);
+		*instance->custom_aabb = p_aabb;
+
+	} else {
+
+		// Clear custom AABB
+		if (instance->custom_aabb != NULL) {
+			memdelete(instance->custom_aabb);
+			instance->custom_aabb = NULL;
+		}
+	}
+
+	if (instance->scenario)
+		_instance_queue_update(instance, true, false);
+}
+
 void VisualServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton) {
 
 	Instance *instance = instance_owner.get(p_instance);
@@ -614,7 +644,7 @@ void VisualServerScene::instance_set_exterior(RID p_instance, bool p_enabled) {
 void VisualServerScene::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {
 }
 
-Vector<ObjectID> VisualServerScene::instances_cull_aabb(const Rect3 &p_aabb, RID p_scenario) const {
+Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {
 
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.get(p_scenario);
@@ -772,7 +802,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
 
-	Rect3 new_aabb;
+	AABB new_aabb;
 
 	new_aabb = p_instance->transform.xform(p_instance->aabb);
 
@@ -817,7 +847,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 
-	Rect3 new_aabb;
+	AABB new_aabb;
 
 	ERR_FAIL_COND(p_instance->base_type != VS::INSTANCE_NONE && !p_instance->base.is_valid());
 
@@ -828,23 +858,35 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		} break;
 		case VisualServer::INSTANCE_MESH: {
 
-			new_aabb = VSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
 
 		} break;
 
 		case VisualServer::INSTANCE_MULTIMESH: {
 
-			new_aabb = VSG::storage->multimesh_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->multimesh_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_IMMEDIATE: {
 
-			new_aabb = VSG::storage->immediate_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->immediate_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_PARTICLES: {
 
-			new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
+			if (p_instance->custom_aabb)
+				new_aabb = *p_instance->custom_aabb;
+			else
+				new_aabb = VSG::storage->particles_get_aabb(p_instance->base);
 
 		} break;
 		case VisualServer::INSTANCE_LIGHT: {
@@ -866,6 +908,7 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		default: {}
 	}
 
+	// <Zylann> This is why I didn't re-use Instance::aabb to implement custom AABBs
 	if (p_instance->extra_margin)
 		new_aabb.grow_by(p_instance->extra_margin);
 
@@ -1863,7 +1906,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.enabled = true;
 
 	Transform cell_to_xform = VSG::storage->gi_probe_get_to_cell_xform(p_instance->base);
-	Rect3 bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
+	AABB bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
 	float cell_size = VSG::storage->gi_probe_get_cell_size(p_instance->base);
 
 	probe->dynamic.light_to_cell_xform = cell_to_xform * p_instance->transform.affine_inverse();
@@ -2562,7 +2605,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		InstanceGIProbeData::LightCache lc;
 		lc.type = VSG::storage->light_get_type(E->get()->base);
 		lc.color = VSG::storage->light_get_color(E->get()->base);
-		lc.energy = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ENERGY);
+		lc.energy = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ENERGY) * VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_INDIRECT_ENERGY);
 		lc.radius = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_RANGE);
 		lc.attenuation = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ATTENUATION);
 		lc.spot_angle = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ANGLE);
@@ -2582,7 +2625,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		InstanceGIProbeData::LightCache lc;
 		lc.type = VSG::storage->light_get_type(E->get()->base);
 		lc.color = VSG::storage->light_get_color(E->get()->base);
-		lc.energy = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ENERGY);
+		lc.energy = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ENERGY) * VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_INDIRECT_ENERGY);
 		lc.radius = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_RANGE);
 		lc.attenuation = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_ATTENUATION);
 		lc.spot_angle = VSG::storage->light_get_param(E->get()->base, VS::LIGHT_PARAM_SPOT_ANGLE);

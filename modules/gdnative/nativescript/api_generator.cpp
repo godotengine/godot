@@ -32,9 +32,9 @@
 #ifdef TOOLS_ENABLED
 
 #include "core/class_db.h"
+#include "core/engine.h"
 #include "core/global_constants.h"
 #include "core/pair.h"
-#include "core/project_settings.h"
 #include "os/file_access.h"
 
 // helper stuff
@@ -177,7 +177,7 @@ List<ClassAPI> generate_c_api_classes() {
 			if (name.begins_with("_")) {
 				name.remove(0);
 			}
-			class_api.is_singleton = ProjectSettings::get_singleton()->has_singleton(name);
+			class_api.is_singleton = Engine::get_singleton()->has_singleton(name);
 		}
 		class_api.is_instanciable = !class_api.is_singleton && ClassDB::can_instance(class_name);
 

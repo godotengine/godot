@@ -219,6 +219,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
+	private Sensor mGravity;
 	private Sensor mMagnetometer;
 	private Sensor mGyroscope;
 
@@ -435,6 +436,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+		mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -667,6 +670,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 		});
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+		mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
@@ -734,13 +738,16 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				@Override
 				public void run() {
 					if (typeOfSensor == Sensor.TYPE_ACCELEROMETER) {
-						GodotLib.accelerometer(x,y,z);
+						GodotLib.accelerometer(-x,y,-z);
+					}
+					if (typeOfSensor == Sensor.TYPE_GRAVITY) {
+						GodotLib.gravity(-x,y,-z);
 					}
 					if (typeOfSensor == Sensor.TYPE_MAGNETIC_FIELD) {
-						GodotLib.magnetometer(x,y,z);
+						GodotLib.magnetometer(-x,y,-z);
 					}
 					if (typeOfSensor == Sensor.TYPE_GYROSCOPE) {
-						GodotLib.gyroscope(x,y,z);
+						GodotLib.gyroscope(x,-y,z);
 					}
 				}
 			});

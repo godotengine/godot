@@ -29,7 +29,7 @@
 /*************************************************************************/
 #include "register_types.h"
 
-#include "gd_script.h"
+#include "gdscript.h"
 #include "io/file_access_encrypted.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
@@ -41,10 +41,9 @@ ResourceFormatSaverGDScript *resource_saver_gd = NULL;
 void register_gdscript_types() {
 
 	ClassDB::register_class<GDScript>();
-	ClassDB::register_virtual_class<GDFunctionState>();
+	ClassDB::register_virtual_class<GDScriptFunctionState>();
 
 	script_language_gd = memnew(GDScriptLanguage);
-	//script_language_gd->init();
 	ScriptServer::register_language(script_language_gd);
 	resource_loader_gd = memnew(ResourceFormatLoaderGDScript);
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);

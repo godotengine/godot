@@ -47,6 +47,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "stream_peer_winsock.h"
 #include "tcp_server_winsock.h"
+#include "version_generated.gen.h"
 #include "windows_terminal_logger.h"
 
 #include <process.h>
@@ -143,7 +144,7 @@ int OS_Windows::get_video_driver_count() const {
 }
 const char *OS_Windows::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 int OS_Windows::get_audio_driver_count() const {
@@ -198,15 +199,6 @@ void OS_Windows::initialize_core() {
 	IP_Unix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
-}
-
-void OS_Windows::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(WindowsTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 bool OS_Windows::can_draw() const {
@@ -1090,7 +1082,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	//RegisterTouchWindow(hWnd, 0); // Windows 7
 
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	DragAcceptFiles(hWnd, true);
 
@@ -2131,6 +2123,43 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+String OS_Windows::get_config_path() const {
+
+	if (has_environment("XDG_CONFIG_HOME")) { // unlikely, but after all why not?
+		return get_environment("XDG_CONFIG_HOME");
+	} else if (has_environment("APPDATA")) {
+		return get_environment("APPDATA");
+	} else {
+		return ".";
+	}
+}
+
+String OS_Windows::get_data_path() const {
+
+	if (has_environment("XDG_DATA_HOME")) {
+		return get_environment("XDG_DATA_HOME");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_Windows::get_cache_path() const {
+
+	if (has_environment("XDG_CACHE_HOME")) {
+		return get_environment("XDG_CACHE_HOME");
+	} else if (has_environment("TEMP")) {
+		return get_environment("TEMP");
+	} else {
+		return get_config_path();
+	}
+}
+
+// Get properly capitalized engine name for system paths
+String OS_Windows::get_godot_dir_name() const {
+
+	return String(VERSION_SHORT_NAME).capitalize();
+}
+
 String OS_Windows::get_system_dir(SystemDir p_dir) const {
 
 	int id;
@@ -2167,18 +2196,17 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	ERR_FAIL_COND_V(res != S_OK, String());
 	return String(szPath);
 }
-String OS_Windows::get_data_dir() const {
 
-	String an = get_safe_application_name();
-	if (an != "") {
+String OS_Windows::get_user_data_dir() const {
 
-		if (has_environment("APPDATA")) {
+	String appname = get_safe_application_name();
+	if (appname != "") {
 
-			bool use_godot = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
-			if (!use_godot)
-				return (OS::get_singleton()->get_environment("APPDATA") + "/" + an).replace("\\", "/");
-			else
-				return (OS::get_singleton()->get_environment("APPDATA") + "/Godot/app_userdata/" + an).replace("\\", "/");
+		bool use_godot_dir = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
+		if (use_godot_dir) {
+			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname).replace("\\", "/");
+		} else {
+			return get_data_path().plus_file(appname).replace("\\", "/");
 		}
 	}
 
@@ -2289,7 +2317,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
-	_set_logger(memnew(WindowsTerminalLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(WindowsTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OS_Windows::~OS_Windows() {

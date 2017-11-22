@@ -517,6 +517,80 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 }
 
+void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
+	if (p_names.empty()) {
+		if (r_valid)
+			*r_valid = false;
+		return;
+	}
+	if (p_names.size() == 1) {
+		set(p_names[0], p_value, r_valid);
+		return;
+	}
+
+	bool valid = false;
+	if (!r_valid) r_valid = &valid;
+
+	List<Variant> value_stack;
+
+	value_stack.push_back(get(p_names[0], r_valid));
+
+	if (!*r_valid) {
+		value_stack.clear();
+		return;
+	}
+
+	for (int i = 1; i < p_names.size() - 1; i++) {
+		value_stack.push_back(value_stack.back()->get().get_named(p_names[i], r_valid));
+
+		if (!*r_valid) {
+			value_stack.clear();
+			return;
+		}
+	}
+
+	value_stack.push_back(p_value); // p_names[p_names.size() - 1]
+
+	for (int i = p_names.size() - 1; i > 0; i--) {
+
+		value_stack.back()->prev()->get().set_named(p_names[i], value_stack.back()->get(), r_valid);
+		value_stack.pop_back();
+
+		if (!*r_valid) {
+			value_stack.clear();
+			return;
+		}
+	}
+
+	set(p_names[0], value_stack.back()->get(), r_valid);
+	value_stack.pop_back();
+
+	ERR_FAIL_COND(!value_stack.empty());
+}
+
+Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
+	if (p_names.empty()) {
+		if (r_valid)
+			*r_valid = false;
+		return Variant();
+	}
+	bool valid = false;
+
+	Variant current_value = get(p_names[0]);
+	for (int i = 1; i < p_names.size(); i++) {
+		current_value = current_value.get_named(p_names[i], &valid);
+
+		if (!valid) {
+			if (r_valid)
+				*r_valid = false;
+			return Variant();
+		}
+	}
+	if (r_valid)
+		*r_valid = true;
+	return current_value;
+}
+
 void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
 
 	if (script_instance && p_reversed) {
@@ -1416,6 +1490,16 @@ Variant Object::_get_bind(const String &p_name) const {
 	return get(p_name);
 }
 
+void Object::_set_indexed_bind(const NodePath &p_name, const Variant &p_value) {
+
+	set_indexed(p_name.get_as_property_path().get_subnames(), p_value);
+}
+
+Variant Object::_get_indexed_bind(const NodePath &p_name) const {
+
+	return get_indexed(p_name.get_as_property_path().get_subnames());
+}
+
 void Object::initialize_class() {
 
 	static bool initialized = false;
@@ -1513,6 +1597,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_class", "type"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
+	ClassDB::bind_method(D_METHOD("set_indexed", "property", "value"), &Object::_set_indexed_bind);
+	ClassDB::bind_method(D_METHOD("get_indexed", "property"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
@@ -1659,6 +1745,43 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 		*r_valid = false;
 
 	return Variant::NIL;
+}
+
+Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
+
+	bool valid = false;
+	Variant::Type t = get_static_property_type(p_path[0], &valid);
+	if (!valid) {
+		if (r_valid)
+			*r_valid = false;
+
+		return Variant::NIL;
+	}
+
+	Variant::CallError ce;
+	Variant check = Variant::construct(t, NULL, 0, ce);
+
+	for (int i = 1; i < p_path.size(); i++) {
+		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
+			// We cannot be sure about the type of properties this types can have
+			if (r_valid)
+				*r_valid = false;
+			return Variant::NIL;
+		}
+
+		check = check.get_named(p_path[i], &valid);
+
+		if (!valid) {
+			if (r_valid)
+				*r_valid = false;
+			return Variant::NIL;
+		}
+	}
+
+	if (r_valid)
+		*r_valid = true;
+
+	return check.get_type();
 }
 
 bool Object::is_queued_for_deletion() const {

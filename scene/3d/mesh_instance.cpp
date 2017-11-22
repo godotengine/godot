@@ -165,12 +165,12 @@ NodePath MeshInstance::get_skeleton_path() {
 	return skeleton_path;
 }
 
-Rect3 MeshInstance::get_aabb() const {
+AABB MeshInstance::get_aabb() const {
 
 	if (!mesh.is_null())
 		return mesh->get_aabb();
 
-	return Rect3();
+	return AABB();
 }
 
 PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {

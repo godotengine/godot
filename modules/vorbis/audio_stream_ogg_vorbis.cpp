@@ -106,8 +106,6 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 			break;
 		}
 
-//printf("to mix %i - mix me %i bytes\n",to_mix,to_mix*stream_channels*sizeof(int16_t));
-
 #ifdef BIG_ENDIAN_ENABLED
 		long ret = ov_read(&vf, (char *)p_buffer, todo * stream_channels * sizeof(int16_t), 1, 2, 1, &current_section);
 #else
@@ -359,7 +357,7 @@ void AudioStreamPlaybackOGGVorbis::set_paused(bool p_paused) {
 	paused = p_paused;
 }
 
-bool AudioStreamPlaybackOGGVorbis::is_paused(bool p_paused) const {
+bool AudioStreamPlaybackOGGVorbis::is_paused() const {
 
 	return paused;
 }

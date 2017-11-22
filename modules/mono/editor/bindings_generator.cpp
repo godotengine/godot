@@ -31,12 +31,12 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
+#include "engine.h"
 #include "global_constants.h"
 #include "io/compression.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "project_settings.h"
 #include "ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
@@ -320,9 +320,9 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 	int global_constants_count = GlobalConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
-		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@Global Scope");
+		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
 
-		ERR_EXPLAIN("Could not find `@Global Scope` in DocData");
+		ERR_EXPLAIN("Could not find `@GlobalScope` in DocData");
 		ERR_FAIL_COND_V(!match, ERR_BUG);
 
 		const DocData::ClassDoc &global_scope_doc = match->value();
@@ -1169,7 +1169,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 			output.push_back("Object* ");
 			output.push_back(singleton_icall_name);
-			output.push_back("() " OPEN_BLOCK "\treturn ProjectSettings::get_singleton()->get_singleton_object(\"");
+			output.push_back("() " OPEN_BLOCK "\treturn Engine::get_singleton()->get_singleton_object(\"");
 			output.push_back(itype.proxy_name);
 			output.push_back("\");\n" CLOSE_BLOCK "\n");
 		}
@@ -1505,7 +1505,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
-		itype.is_singleton = ProjectSettings::get_singleton()->has_singleton(itype.proxy_name);
+		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
 		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
 		itype.is_reference = ClassDB::is_parent_class(type_cname, refclass_name);
 		itype.memory_own = itype.is_reference;
@@ -1721,7 +1721,7 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::PLANE:
-		case Variant::RECT3:
+		case Variant::AABB:
 		case Variant::COLOR:
 			r_iarg.default_argument = "new Color(1, 1, 1, 1)";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
@@ -1793,7 +1793,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Basis, "real_t*")
 	INSERT_STRUCT_TYPE(Quat, "real_t*")
 	INSERT_STRUCT_TYPE(Transform, "real_t*")
-	INSERT_STRUCT_TYPE(Rect3, "real_t*")
+	INSERT_STRUCT_TYPE(AABB, "real_t*")
 	INSERT_STRUCT_TYPE(Color, "real_t*")
 	INSERT_STRUCT_TYPE(Plane, "real_t*")
 

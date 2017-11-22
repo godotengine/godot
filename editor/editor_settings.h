@@ -66,13 +66,13 @@ private:
 		int order;
 		Variant variant;
 		Variant initial;
-		bool initial_set;
+		bool has_default_value;
 		bool hide_from_editor;
 		bool save;
 		VariantContainer() {
 			order = 0;
 			hide_from_editor = false;
-			initial_set = false;
+			has_default_value = false;
 			save = false;
 		}
 		VariantContainer(const Variant &p_variant, int p_order) {
@@ -93,9 +93,11 @@ private:
 	Map<String, Ref<ShortCut> > shortcuts;
 
 	String resource_path;
+	String settings_dir;
+	String data_dir;
+	String cache_dir;
 	String config_file_path;
-	String settings_path;
-	String project_config_path;
+	String project_config_dir;
 
 	Vector<String> favorite_dirs;
 	Vector<String> recent_dirs;
@@ -147,8 +149,13 @@ public:
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
 
-	String get_settings_path() const;
-	String get_project_settings_path() const;
+	String get_data_dir() const;
+	String get_templates_dir() const;
+	String get_settings_dir() const;
+	String get_project_settings_dir() const;
+	String get_text_editor_themes_dir() const;
+	String get_script_templates_dir() const;
+	String get_cache_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default);
@@ -166,6 +173,7 @@ public:
 	bool save_text_editor_theme_as(String p_file);
 
 	Vector<String> get_script_templates(const String &p_extension);
+	String get_editor_layouts_config() const;
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;

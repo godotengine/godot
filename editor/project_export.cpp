@@ -308,7 +308,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 	if (p_id == 0) {
 		Vector<String> patches = current->get_patches();
 		ERR_FAIL_INDEX(patch_index, patches.size());
-		patch_erase->set_text(vformat(TTR("Delete patch '" + patches[patch_index].get_file() + "' from list?")));
+		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), patches[patch_index].get_file()));
 		patch_erase->popup_centered_minsize();
 	} else {
 		patch_dialog->popup_centered_ratio();
@@ -717,6 +717,7 @@ void ProjectExportDialog::_export_project() {
 
 	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
 	export_project->clear_filters();
+	export_project->set_current_file(default_filename);
 	String extension = platform->get_binary_extension();
 	if (extension != String()) {
 		export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
@@ -726,6 +727,9 @@ void ProjectExportDialog::_export_project() {
 }
 
 void ProjectExportDialog::_export_project_to_path(const String &p_path) {
+	// Save this name for use in future exports (but drop the file extension)
+	default_filename = p_path.get_basename().get_file();
+	EditorSettings::get_singleton()->set_project_metadata("export_options", "default_filename", default_filename);
 
 	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
 	ERR_FAIL_COND(current.is_null());
@@ -970,6 +974,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	set_hide_on_ok(false);
 
 	editor_icons = "EditorIcons";
+
+	default_filename = EditorSettings::get_singleton()->get_project_metadata("export_options", "default_filename", String());
 }
 
 ProjectExportDialog::~ProjectExportDialog() {

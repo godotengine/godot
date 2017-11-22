@@ -47,7 +47,7 @@ class PrimitiveMesh : public Mesh {
 
 private:
 	RID mesh;
-	mutable Rect3 aabb;
+	mutable AABB aabb;
 
 	Ref<Material> material;
 
@@ -73,7 +73,7 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const;
 	virtual int get_blend_shape_count() const;
 	virtual StringName get_blend_shape_name(int p_index) const;
-	virtual Rect3 get_aabb() const;
+	virtual AABB get_aabb() const;
 	virtual RID get_rid() const;
 
 	void set_material(const Ref<Material> &p_material);
@@ -263,7 +263,7 @@ class QuadMesh : public PrimitiveMesh {
 	GDCLASS(QuadMesh, PrimitiveMesh)
 
 private:
-	// nothing? really? Maybe add size some day atleast... :)
+	Size2 size;
 
 protected:
 	static void _bind_methods();
@@ -271,6 +271,9 @@ protected:
 
 public:
 	QuadMesh();
+
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 };
 
 /**

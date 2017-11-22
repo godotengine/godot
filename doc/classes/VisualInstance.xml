@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualInstance" inherits="Spatial" category="Core" version="3.0.alpha.custom_build">
+<class name="VisualInstance" inherits="Spatial" category="Core" version="3.0-alpha">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -10,7 +10,7 @@
 	</demos>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -22,7 +22,7 @@
 			</description>
 		</method>
 		<method name="get_transformed_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>

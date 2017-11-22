@@ -225,12 +225,11 @@ $GODOT_HEAD_INCLUDE
 	<script type="text/javascript" src="$GODOT_BASENAME.js"></script>
 	<script type="text/javascript">//<![CDATA[
 
-		var game = new Engine;
+		var engine = new Engine;
 
 		(function() {
 
 			const BASENAME = '$GODOT_BASENAME';
-			const MEMORY_SIZE = $GODOT_TOTAL_MEMORY;
 			const DEBUG_ENABLED = $GODOT_DEBUG_ENABLED;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
@@ -246,8 +245,7 @@ $GODOT_HEAD_INCLUDE
 			var indeterminiateStatusAnimationId = 0;
 
 			setStatusMode('indeterminate');
-			game.setCanvas(canvas);
-			game.setAsmjsMemorySize(MEMORY_SIZE);
+			engine.setCanvas(canvas);
 
 			function setStatusMode(mode) {
 
@@ -302,7 +300,7 @@ $GODOT_HEAD_INCLUDE
 				});
 			};
 
-			game.setProgressFunc((current, total) => {
+			engine.setProgressFunc((current, total) => {
 
 				if (total > 0) {
 					statusProgressInner.style.width = current/total * 100 + '%';
@@ -332,10 +330,6 @@ $GODOT_HEAD_INCLUDE
 				outputRoot.style.display = 'block';
 
 				function print(text) {
-					if (arguments.length > 1) {
-						text = Array.prototype.slice.call(arguments).join(" ");
-					}
-					if (text.length <= 0) return;
 					while (outputScroll.childElementCount >= OUTPUT_MSG_COUNT_MAX) {
 						outputScroll.firstChild.remove();
 					}
@@ -356,26 +350,31 @@ $GODOT_HEAD_INCLUDE
 				};
 
 				function printError(text) {
-					print('**ERROR**' + ":", text);
+					if (!text.startsWith('**ERROR**: ')) {
+						text = '**ERROR**: ' + text;
+					}
+					print(text);
 				}
 
-				game.setStdoutFunc(text => {
+				engine.setStdoutFunc(text => {
 					print(text);
 					console.log(text);
 				});
 
-				game.setStderrFunc(text => {
+				engine.setStderrFunc(text => {
 					printError(text);
 					console.warn(text);
 				});
 			}
 
-			game.start(BASENAME + '.pck').then(() => {
+			engine.startGame(BASENAME + '.pck').then(() => {
 				setStatusMode('hidden');
 				initializing = false;
 			}, err => {
-				if (DEBUG_ENABLED)
+				if (DEBUG_ENABLED) {
 					printError(err.message);
+					console.warn(err);
+				}
 				setStatusNotice(err.message);
 				setStatusMode('notice');
 				initializing = false;

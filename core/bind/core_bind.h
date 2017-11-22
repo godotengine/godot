@@ -297,7 +297,7 @@ public:
 
 	String get_system_dir(SystemDir p_dir) const;
 
-	String get_data_dir() const;
+	String get_user_data_dir() const;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 
@@ -669,6 +669,9 @@ public:
 	Dictionary get_version_info() const;
 
 	bool is_in_physics_frame() const;
+
+	bool has_singleton(const String &p_name) const;
+	Object *get_singleton_object(const String &p_name) const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;

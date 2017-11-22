@@ -215,6 +215,11 @@ public:
 		TEXTURE_CHANNEL_GRAYSCALE
 	};
 
+	enum EmissionOperator {
+		EMISSION_OP_ADD,
+		EMISSION_OP_MULTIPLY
+	};
+
 private:
 	union MaterialKey {
 
@@ -234,6 +239,7 @@ private:
 			uint64_t grow : 1;
 			uint64_t proximity_fade : 1;
 			uint64_t distance_fade : 1;
+			uint64_t emission_op : 1;
 		};
 
 		uint64_t key;
@@ -278,6 +284,7 @@ private:
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
 		mk.distance_fade = distance_fade_enabled;
+		mk.emission_op = emission_op;
 
 		return mk;
 	}
@@ -394,6 +401,7 @@ private:
 	SpecularMode specular_mode;
 	DiffuseMode diffuse_mode;
 	BillboardMode billboard_mode;
+	EmissionOperator emission_op;
 
 	TextureChannel metallic_texture_channel;
 	TextureChannel roughness_texture_channel;
@@ -571,6 +579,9 @@ public:
 	void set_distance_fade_min_distance(float p_distance);
 	float get_distance_fade_min_distance() const;
 
+	void set_emission_operator(EmissionOperator p_op);
+	EmissionOperator get_emission_operator() const;
+
 	void set_metallic_texture_channel(TextureChannel p_channel);
 	TextureChannel get_metallic_texture_channel() const;
 	void set_roughness_texture_channel(TextureChannel p_channel);
@@ -603,6 +614,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::DiffuseMode)
 VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
+VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
 
 //////////////////////
 

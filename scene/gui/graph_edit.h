@@ -179,6 +179,7 @@ public:
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
 
 	void set_zoom(float p_zoom);
+	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.0.alpha.custom_build">
+<class name="HTTPClient" inherits="Reference" category="Core" version="3.0-alpha">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>

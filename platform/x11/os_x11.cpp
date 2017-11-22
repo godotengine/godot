@@ -250,41 +250,13 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-
-	// borderless fullscreen window mode
-	if (current_videomode.fullscreen) {
-		// set bypass compositor hint
-		Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
-		unsigned long compositing_disable_on = 1;
-		XChangeProperty(x11_display, x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
-
-		// needed for lxde/openbox, possibly others
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		XMapRaised(x11_display, x11_window);
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
-
-		// code for netwm-compliants
-		XEvent xev;
-		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
-
-		memset(&xev, 0, sizeof(xev));
-		xev.type = ClientMessage;
-		xev.xclient.window = x11_window;
-		xev.xclient.message_type = wm_state;
-		xev.xclient.format = 32;
-		xev.xclient.data.l[0] = 1;
-		xev.xclient.data.l[1] = fullscreen;
-		xev.xclient.data.l[2] = 0;
-
-		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	if (current_videomode.maximized) {
+		current_videomode.maximized = false;
+		set_window_maximized(true);
+		// borderless fullscreen window mode
+	} else if (current_videomode.fullscreen) {
+		current_videomode.fullscreen = false;
+		set_window_fullscreen(true);
 	} else if (current_videomode.borderless_window) {
 		Hints hints;
 		Atom property;
@@ -464,11 +436,20 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(input));
 #endif
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	power_manager = memnew(PowerX11);
+
+	XEvent xevent;
+	while (XCheckIfEvent(x11_display, &xevent, _check_window_events, NULL)) {
+		_window_changed(&xevent);
+	}
 }
 
+int OS_X11::_check_window_events(Display *display, XEvent *event, char *arg) {
+	if (event->type == ConfigureNotify) return 1;
+	return 0;
+}
 void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
 
@@ -648,6 +629,9 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) con
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
+	if (current_videomode.fullscreen == p_enabled)
+		return;
+
 	if (p_enabled && !is_window_resizable()) {
 		// Set the window as resizable to prevent window managers to ignore the fullscreen state flag.
 		XSizeHints *xsh;
@@ -971,6 +955,9 @@ bool OS_X11::is_window_minimized() const {
 }
 
 void OS_X11::set_window_maximized(bool p_enabled) {
+	if (is_window_maximized() == p_enabled)
+		return;
+
 	// Using EWMH -- Extended Window Manager Hints
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
@@ -1417,6 +1404,20 @@ static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p
 	return None;
 }
 
+void OS_X11::_window_changed(XEvent *event) {
+
+	if (xic) {
+		//  Not portable.
+		set_ime_position(Point2(0, 1));
+	}
+	if ((event->xconfigure.width == current_videomode.width) &&
+			(event->xconfigure.height == current_videomode.height))
+		return;
+
+	current_videomode.width = event->xconfigure.width;
+	current_videomode.height = event->xconfigure.height;
+}
+
 void OS_X11::process_xevents() {
 
 	//printf("checking events %i\n", XPending(x11_display));
@@ -1498,18 +1499,7 @@ void OS_X11::process_xevents() {
 				break;
 
 			case ConfigureNotify:
-				if (xic) {
-					//  Not portable.
-					set_ime_position(Point2(0, 1));
-				}
-				/* call resizeGLScene only if our window-size changed */
-
-				if ((event.xconfigure.width == current_videomode.width) &&
-						(event.xconfigure.height == current_videomode.height))
-					break;
-
-				current_videomode.width = event.xconfigure.width;
-				current_videomode.height = event.xconfigure.height;
+				_window_changed(&event);
 				break;
 			case ButtonPress:
 			case ButtonRelease: {
@@ -1939,6 +1929,39 @@ Error OS_X11::shell_open(String p_uri) {
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
 
 	return p_feature == "pc" || p_feature == "s3tc";
+}
+
+String OS_X11::get_config_path() const {
+
+	if (has_environment("XDG_CONFIG_HOME")) {
+		return get_environment("XDG_CONFIG_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".config");
+	} else {
+		return ".";
+	}
+}
+
+String OS_X11::get_data_path() const {
+
+	if (has_environment("XDG_DATA_HOME")) {
+		return get_environment("XDG_DATA_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".local/share");
+	} else {
+		return get_config_path();
+	}
+}
+
+String OS_X11::get_cache_path() const {
+
+	if (has_environment("XDG_CACHE_HOME")) {
+		return get_environment("XDG_CACHE_HOME");
+	} else if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".cache");
+	} else {
+		return get_config_path();
+	}
 }
 
 String OS_X11::get_system_dir(SystemDir p_dir) const {

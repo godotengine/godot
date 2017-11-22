@@ -7,6 +7,7 @@ import os
 import xml.etree.ElementTree as ET
 
 input_list = []
+cur_file = ""
 
 for arg in sys.argv[1:]:
     if arg.endswith(os.sep):
@@ -206,6 +207,7 @@ def rstize_text(text, cclass):
             elif cmd == '/code':
                 tag_text = '``'
                 inside_code = False
+                escape_post = True
             elif inside_code:
                 tag_text = '[' + tag_text + ']'
             elif cmd.find('html') == 0:
@@ -217,7 +219,10 @@ def rstize_text(text, cclass):
                 param = tag_text[space_pos + 1:]
 
                 if param.find('.') != -1:
-                    (class_param, method_param) = param.split('.')
+                    ss = param.split('.')
+                    if len(ss) > 2:
+                        sys.exit("Bad reference: '" + param + "' in file: " + cur_file)
+                    (class_param, method_param) = ss
                     tag_text = ':ref:`' + class_param + '.' + method_param + '<class_' + class_param + '_' + method_param + '>`'
                 else:
                     tag_text = ':ref:`' + param + '<class_' + cclass + "_" + param + '>`'
@@ -519,8 +524,8 @@ for path in input_list:
     elif os.path.isfile(path) and path.endswith('.xml'):
         file_list.append(path)
 
-for file in file_list:
-    tree = ET.parse(file)
+for cur_file in file_list:
+    tree = ET.parse(cur_file)
     doc = tree.getroot()
 
     if 'version' not in doc.attrib:

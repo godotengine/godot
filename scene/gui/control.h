@@ -191,6 +191,8 @@ private:
 		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
+		NodePath focus_next;
+		NodePath focus_prev;
 
 		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
 		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
@@ -269,10 +271,25 @@ public:
 
 	};
 
-	virtual Variant edit_get_state() const;
-	virtual void edit_set_state(const Variant &p_state);
-	virtual void edit_set_rect(const Rect2 &p_edit_rect);
-	virtual Size2 edit_get_minimum_size() const;
+	virtual Dictionary _edit_get_state() const;
+	virtual void _edit_set_state(const Dictionary &p_state);
+
+	virtual void _edit_set_position(const Point2 &p_position);
+	virtual Point2 _edit_get_position() const;
+
+	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
+
+	virtual void _edit_set_rotation(float p_rotation);
+	virtual float _edit_get_rotation() const;
+	virtual bool _edit_use_rotation() const;
+
+	virtual void _edit_set_pivot(const Point2 &p_pivot);
+	virtual Point2 _edit_get_pivot() const;
+	virtual bool _edit_use_pivot() const;
+
+	virtual Size2 _edit_get_minimum_size() const;
 
 	void accept_event();
 
@@ -374,6 +391,11 @@ public:
 	void set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour);
 	NodePath get_focus_neighbour(Margin p_margin) const;
 
+	void set_focus_next(const NodePath &p_next);
+	NodePath get_focus_next() const;
+	void set_focus_previous(const NodePath &p_prev);
+	NodePath get_focus_previous() const;
+
 	Control *get_focus_owner() const;
 
 	void set_mouse_filter(MouseFilter p_filter);
@@ -420,7 +442,6 @@ public:
 	CursorShape get_default_cursor_shape() const;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
-	virtual Rect2 get_item_rect() const;
 	virtual Transform2D get_transform() const;
 
 	bool is_toplevel_control() const;

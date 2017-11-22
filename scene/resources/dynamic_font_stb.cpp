@@ -333,8 +333,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 	//blit to image and texture
 	{
-
-		Image img(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata);
+		Ref<Image> img = memnew(Image(tex.texture_size, tex.texture_size, 0, Image::FORMAT_LA8, tex.imgdata));
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();
@@ -518,7 +517,7 @@ bool ResourceFormatLoaderDynamicFont::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderDynamicFont::get_resource_type(const String &p_path) const {
 
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 	if (el == "ttf")
 		return "DynamicFontData";
 	return "";

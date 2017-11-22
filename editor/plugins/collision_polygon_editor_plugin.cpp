@@ -389,7 +389,7 @@ void CollisionPolygonEditor::_polygon_draw() {
 
 	rect = rect.grow(1);
 
-	Rect3 r;
+	AABB r;
 	r.position.x = rect.position.x;
 	r.position.y = rect.position.y;
 	r.position.z = depth;

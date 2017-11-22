@@ -45,7 +45,7 @@
 #endif
 #include <stdio.h>
 
-Variant Control::edit_get_state() const {
+Dictionary Control::_edit_get_state() const {
 
 	Dictionary s;
 	s["rect"] = get_rect();
@@ -59,20 +59,76 @@ Variant Control::edit_get_state() const {
 	s["anchors"] = anchors;
 	return s;
 }
-void Control::edit_set_state(const Variant &p_state) {
+void Control::_edit_set_state(const Dictionary &p_state) {
 
-	Dictionary s = p_state;
+	Dictionary state = p_state;
 
-	Rect2 state = s["rect"];
-	set_position(state.position);
-	set_size(state.size);
-	set_rotation(s["rotation"]);
-	set_scale(s["scale"]);
-	Array anchors = s["anchors"];
+	Rect2 rect = state["rect"];
+	set_position(rect.position);
+	set_size(rect.size);
+	set_rotation(state["rotation"]);
+	set_scale(state["scale"]);
+	Array anchors = state["anchors"];
 	set_anchor(MARGIN_LEFT, anchors[0]);
 	set_anchor(MARGIN_TOP, anchors[1]);
 	set_anchor(MARGIN_RIGHT, anchors[2]);
 	set_anchor(MARGIN_BOTTOM, anchors[3]);
+}
+
+void Control::_edit_set_position(const Point2 &p_position) {
+	set_position(p_position);
+};
+
+Point2 Control::_edit_get_position() const {
+	return get_position();
+};
+
+void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
+
+	Transform2D xform = _get_internal_transform();
+
+	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
+
+	Vector2 pos = get_position() + new_pos;
+
+	Rect2 new_rect = get_rect();
+	new_rect.position = pos.snapped(Vector2(1, 1));
+	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
+
+	set_position(new_rect.position);
+	set_size(new_rect.size);
+}
+
+Rect2 Control::_edit_get_rect() const {
+	return Rect2(Point2(), get_size());
+}
+
+bool Control::_edit_use_rect() const {
+	return true;
+}
+
+void Control::_edit_set_rotation(float p_rotation) {
+	set_rotation(p_rotation);
+}
+
+float Control::_edit_get_rotation() const {
+	return get_rotation();
+}
+
+bool Control::_edit_use_rotation() const {
+	return true;
+}
+
+void Control::_edit_set_pivot(const Point2 &p_pivot) {
+	set_pivot_offset(p_pivot);
+}
+
+Point2 Control::_edit_get_pivot() const {
+	return get_pivot_offset();
+}
+
+bool Control::_edit_use_pivot() const {
+	return true;
 }
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
@@ -96,7 +152,7 @@ Size2 Control::get_combined_minimum_size() const {
 	return minsize;
 }
 
-Size2 Control::edit_get_minimum_size() const {
+Size2 Control::_edit_get_minimum_size() const {
 
 	return get_combined_minimum_size();
 }
@@ -109,23 +165,6 @@ Transform2D Control::_get_internal_transform() const {
 	offset.set_origin(-data.pivot_offset);
 
 	return offset.affine_inverse() * (rot_scale * offset);
-}
-void Control::edit_set_rect(const Rect2 &p_edit_rect) {
-
-	Transform2D xform = _get_internal_transform();
-
-	//	xform[2] += get_position();
-
-	Vector2 new_pos = xform.basis_xform(p_edit_rect.position);
-
-	Vector2 pos = get_position() + new_pos;
-
-	Rect2 new_rect = get_rect();
-	new_rect.position = pos.snapped(Vector2(1, 1));
-	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
-
-	set_position(new_rect.position);
-	set_size(new_rect.size);
 }
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
@@ -1210,7 +1249,7 @@ Size2 Control::get_parent_area_size() const {
 
 	if (data.parent_canvas_item) {
 
-		parent_size = data.parent_canvas_item->get_item_rect().size;
+		parent_size = data.parent_canvas_item->_edit_get_rect().size;
 	} else {
 
 		parent_size = get_viewport()->get_visible_rect().size;
@@ -1289,7 +1328,7 @@ float Control::_get_parent_range(int p_idx) const {
 	}
 	if (data.parent_canvas_item) {
 
-		return data.parent_canvas_item->get_item_rect().size[p_idx & 1];
+		return data.parent_canvas_item->_edit_get_rect().size[p_idx & 1];
 	} else {
 		return get_viewport()->get_visible_rect().size[p_idx & 1];
 	}
@@ -1751,11 +1790,6 @@ Rect2 Control::get_rect() const {
 	return Rect2(get_position(), get_size());
 }
 
-Rect2 Control::get_item_rect() const {
-
-	return Rect2(Point2(), get_size());
-}
-
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
 
 	ERR_FAIL_COND(p_icon.is_null());
@@ -1847,6 +1881,25 @@ Control *Control::find_next_valid_focus() const {
 
 	while (true) {
 
+		// If the focus property is manually overwritten, attempt to use it.
+
+		if (!data.focus_next.is_empty()) {
+			Node *n = get_node(data.focus_next);
+			if (n) {
+				from = Object::cast_to<Control>(n);
+
+				if (!from) {
+
+					ERR_EXPLAIN("Next focus node is not a control: " + n->get_name());
+					ERR_FAIL_V(NULL);
+				}
+			} else {
+				return NULL;
+			}
+			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
+				return from;
+		}
+
 		// find next child
 
 		Control *next_child = NULL;
@@ -1925,6 +1978,25 @@ Control *Control::find_prev_valid_focus() const {
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
+
+		// If the focus property is manually overwritten, attempt to use it.
+
+		if (!data.focus_prev.is_empty()) {
+			Node *n = get_node(data.focus_prev);
+			if (n) {
+				from = Object::cast_to<Control>(n);
+
+				if (!from) {
+
+					ERR_EXPLAIN("Prev focus node is not a control: " + n->get_name());
+					ERR_FAIL_V(NULL);
+				}
+			} else {
+				return NULL;
+			}
+			if (from->is_visible() && from->get_focus_mode() != FOCUS_NONE)
+				return from;
+		}
 
 		// find prev child
 
@@ -2157,6 +2229,26 @@ NodePath Control::get_focus_neighbour(Margin p_margin) const {
 	return data.focus_neighbour[p_margin];
 }
 
+void Control::set_focus_next(const NodePath &p_next) {
+
+	data.focus_next = p_next;
+}
+
+NodePath Control::get_focus_next() const {
+
+	return data.focus_next;
+}
+
+void Control::set_focus_previous(const NodePath &p_prev) {
+
+	data.focus_prev = p_prev;
+}
+
+NodePath Control::get_focus_previous() const {
+
+	return data.focus_prev;
+}
+
 #define MAX_NEIGHBOUR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
@@ -2172,7 +2264,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 
 			if (!c) {
 
-				ERR_EXPLAIN("Next focus node is not a control: " + n->get_name());
+				ERR_EXPLAIN("Neighbour focus node is not a control: " + n->get_name());
 				ERR_FAIL_V(NULL);
 			}
 		} else {
@@ -2196,7 +2288,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	Point2 points[4];
 
 	Transform2D xform = get_global_transform();
-	Rect2 rect = get_item_rect();
+	Rect2 rect = _edit_get_rect();
 
 	points[0] = xform.xform(rect.position);
 	points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
@@ -2255,7 +2347,7 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Point2 points[4];
 
 		Transform2D xform = c->get_global_transform();
-		Rect2 rect = c->get_item_rect();
+		Rect2 rect = c->_edit_get_rect();
 
 		points[0] = xform.xform(rect.position);
 		points[1] = xform.xform(rect.position + Point2(rect.size.x, 0));
@@ -2677,6 +2769,12 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_neighbour", "margin", "neighbour"), &Control::set_focus_neighbour);
 	ClassDB::bind_method(D_METHOD("get_focus_neighbour", "margin"), &Control::get_focus_neighbour);
 
+	ClassDB::bind_method(D_METHOD("set_focus_next", "next"), &Control::set_focus_next);
+	ClassDB::bind_method(D_METHOD("get_focus_next"), &Control::get_focus_next);
+
+	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
+	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
+
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
@@ -2737,6 +2835,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_top"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_TOP);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_right"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_RIGHT);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_bottom"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_BOTTOM);
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_next"), "set_focus_next", "get_focus_next");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "focus_previous"), "set_focus_previous", "get_focus_previous");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");

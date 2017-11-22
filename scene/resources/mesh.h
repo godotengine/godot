@@ -95,6 +95,7 @@ public:
 
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
+		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
 
 		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_VERTEX | ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
 
@@ -135,7 +136,7 @@ public:
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
-	virtual Rect3 get_aabb() const = 0;
+	virtual AABB get_aabb() const = 0;
 
 	Mesh();
 };
@@ -148,16 +149,16 @@ class ArrayMesh : public Mesh {
 private:
 	struct Surface {
 		String name;
-		Rect3 aabb;
+		AABB aabb;
 		Ref<Material> material;
 		bool is_2d;
 	};
 	Vector<Surface> surfaces;
 	RID mesh;
-	Rect3 aabb;
+	AABB aabb;
 	BlendShapeMode blend_shape_mode;
 	Vector<StringName> blend_shapes;
-	Rect3 custom_aabb;
+	AABB custom_aabb;
 
 	void _recompute_aabb();
 
@@ -172,7 +173,7 @@ protected:
 
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const Rect3 &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<Rect3> &p_bone_aabbs = Vector<Rect3>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>());
 
 	Array surface_get_arrays(int p_surface) const;
 	Array surface_get_blend_shape_arrays(int p_surface) const;
@@ -185,10 +186,12 @@ public:
 	void set_blend_shape_mode(BlendShapeMode p_mode);
 	BlendShapeMode get_blend_shape_mode() const;
 
+	void surface_update_region(int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+
 	int get_surface_count() const;
 	void surface_remove(int p_idx);
 
-	void surface_set_custom_aabb(int p_idx, const Rect3 &p_aabb); //only recognized by driver
+	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
 
 	int surface_get_array_len(int p_idx) const;
 	int surface_get_array_index_len(int p_idx) const;
@@ -204,14 +207,16 @@ public:
 
 	void add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data);
 
-	void set_custom_aabb(const Rect3 &p_custom);
-	Rect3 get_custom_aabb() const;
+	void set_custom_aabb(const AABB &p_custom);
+	AABB get_custom_aabb() const;
 
-	Rect3 get_aabb() const;
+	AABB get_aabb() const;
 	virtual RID get_rid() const;
 
 	void center_geometry();
 	void regen_normalmaps();
+
+	virtual void reload_from_file();
 
 	ArrayMesh();
 

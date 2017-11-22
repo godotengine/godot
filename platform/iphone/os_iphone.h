@@ -60,6 +60,9 @@ private:
 		MAX_EVENTS = 64,
 	};
 
+	static HashMap<String, void *> dynamic_symbol_lookup_table;
+	friend void register_dynamic_symbol(char *name, void *address);
+
 	uint8_t supported_orientations;
 
 	VisualServer *visual_server;
@@ -83,7 +86,6 @@ private:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
-	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -153,6 +155,10 @@ public:
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle);
+	virtual Error close_dynamic_library(void *p_library_handle);
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
+
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
@@ -178,7 +184,7 @@ public:
 
 	Error shell_open(String p_uri);
 
-	String get_data_dir() const;
+	String get_user_data_dir() const;
 
 	void set_locale(String p_locale);
 	String get_locale() const;

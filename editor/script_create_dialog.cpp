@@ -128,7 +128,7 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 	}
 	String ext = ScriptServer::get_language(language_menu->get_selected())->get_extension();
 	String name = template_list[p_template - 1] + "." + ext;
-	script_template = EditorSettings::get_singleton()->get_settings_path() + "/script_templates/" + name;
+	script_template = EditorSettings::get_singleton()->get_script_templates_dir().plus_file(name);
 }
 
 void ScriptCreateDialog::ok_pressed() {

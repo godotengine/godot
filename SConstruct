@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 98, 1)
@@ -23,6 +22,7 @@ platform_flags = {}  # flags for each platform
 active_platforms = []
 active_platform_ids = []
 platform_exporters = []
+platform_apis = []
 global_defaults = []
 
 for x in glob.glob("platform/*"):
@@ -35,6 +35,8 @@ for x in glob.glob("platform/*"):
 
     if (os.path.exists(x + "/export/export.cpp")):
         platform_exporters.append(x[9:])
+    if (os.path.exists(x + "/api/api.cpp")):
+        platform_apis.append(x[9:])
     if (os.path.exists(x + "/globals/global_defaults.cpp")):
         global_defaults.append(x[9:])
     if (detect.is_active()):
@@ -216,6 +218,7 @@ env_base.Append(CPPPATH=['#core', '#core/math', '#editor', '#drivers', '#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
+env_base.platform_apis = platform_apis
 
 """
 sys.path.append("./platform/"+env_base["platform"])
@@ -271,9 +274,12 @@ if selected_platform in platform_list:
                 if len(pieces) > 0:
                     basename = pieces[0]
                     basename = basename.replace('\\\\', '/')
-                    env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-                    env.vs_incs = env.vs_incs + [basename + ".h"]
-                    # print basename
+                    if os.path.isfile(basename + ".h"):
+                        env.vs_incs = env.vs_incs + [basename + ".h"]
+                    if os.path.isfile(basename + ".c"):
+                        env.vs_srcs = env.vs_srcs + [basename + ".c"]
+                    elif os.path.isfile(basename + ".cpp"):
+                        env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
         env.AddToVSProject = AddToVSProject
 
     env.extra_suffix = ""
@@ -320,6 +326,8 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['/w'])
+        # Set exception handling model to avoid warnings caused by Windows system headers.
+        env.Append(CCFLAGS=['/EHsc'])
     else: # Rest of the world
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'])
@@ -367,7 +375,7 @@ if selected_platform in platform_list:
     sys.modules.pop('detect')
 
     env.module_list = []
-    env.doc_class_path={}
+    env.doc_class_path = {}
 
     for x in module_list:
         if not env['module_' + x + '_enabled']:
@@ -383,10 +391,9 @@ if selected_platform in platform_list:
                  doc_classes = config.get_doc_classes()
                  doc_path = config.get_doc_path()
                  for c in doc_classes:
-                     env.doc_class_path[c]="modules/"+x+"/"+doc_path
+                     env.doc_class_path[c] = "modules/" + x + "/" + doc_path
             except:
                 pass
-
 
         sys.path.remove(tmppath)
         sys.modules.pop('config')
@@ -437,6 +444,7 @@ if selected_platform in platform_list:
     SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
+    SConscript("platform/SCsub")
     SConscript("modules/SCsub")
     SConscript("main/SCsub")
 
@@ -446,6 +454,7 @@ if selected_platform in platform_list:
     if env['vsproj']:
         env['CPPPATH'] = [Dir(path) for path in env['CPPPATH']]
         methods.generate_vs_project(env, GetOption("num_jobs"))
+        methods.generate_cpp_hint_file("cpp.hint")
 
     # Check for the existence of headers
     conf = Configure(env)

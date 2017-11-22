@@ -73,7 +73,7 @@ godot_int GDAPI godot_node_path_get_subname_count(const godot_node_path *p_self)
 
 godot_string GDAPI godot_node_path_get_subname(const godot_node_path *p_self, const godot_int p_idx);
 
-godot_string GDAPI godot_node_path_get_property(const godot_node_path *p_self);
+godot_string GDAPI godot_node_path_get_concatenated_subnames(const godot_node_path *p_self);
 
 godot_bool GDAPI godot_node_path_is_empty(const godot_node_path *p_self);
 

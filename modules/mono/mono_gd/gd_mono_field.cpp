@@ -41,7 +41,7 @@ void GDMonoField::set_value_raw(MonoObject *p_object, void *p_ptr) {
 void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 #define SET_FROM_STRUCT_AND_BREAK(m_type)                \
 	{                                                    \
-		const m_type &val = p_value.operator m_type();   \
+		const m_type &val = p_value.operator ::m_type(); \
 		MARSHALLED_OUT(m_type, val, raw);                \
 		mono_field_set_value(p_object, mono_field, raw); \
 		break;                                           \
@@ -129,8 +129,8 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 			if (tclass == CACHED_CLASS(Transform))
 				SET_FROM_STRUCT_AND_BREAK(Transform);
 
-			if (tclass == CACHED_CLASS(Rect3))
-				SET_FROM_STRUCT_AND_BREAK(Rect3);
+			if (tclass == CACHED_CLASS(AABB))
+				SET_FROM_STRUCT_AND_BREAK(AABB);
 
 			if (tclass == CACHED_CLASS(Color))
 				SET_FROM_STRUCT_AND_BREAK(Color);
@@ -229,7 +229,7 @@ void GDMonoField::set_value(MonoObject *p_object, const Variant &p_value) {
 				case Variant::TRANSFORM2D: SET_FROM_STRUCT_AND_BREAK(Transform2D);
 				case Variant::PLANE: SET_FROM_STRUCT_AND_BREAK(Plane);
 				case Variant::QUAT: SET_FROM_STRUCT_AND_BREAK(Quat);
-				case Variant::RECT3: SET_FROM_STRUCT_AND_BREAK(Rect3);
+				case Variant::AABB: SET_FROM_STRUCT_AND_BREAK(AABB);
 				case Variant::BASIS: SET_FROM_STRUCT_AND_BREAK(Basis);
 				case Variant::TRANSFORM: SET_FROM_STRUCT_AND_BREAK(Transform);
 				case Variant::COLOR: SET_FROM_STRUCT_AND_BREAK(Color);

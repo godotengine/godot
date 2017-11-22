@@ -117,7 +117,7 @@ Vector<Point2> CollisionPolygon::get_polygon() const {
 	return polygon;
 }
 
-Rect3 CollisionPolygon::get_item_rect() const {
+AABB CollisionPolygon::get_item_rect() const {
 
 	return aabb;
 }
@@ -176,7 +176,7 @@ void CollisionPolygon::_bind_methods() {
 
 CollisionPolygon::CollisionPolygon() {
 
-	aabb = Rect3(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);
 	parent = NULL;

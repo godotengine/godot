@@ -48,7 +48,7 @@
 #include "gd_native_library_editor.h"
 // Class used to discover singleton gdnative files
 
-void actual_discoverer_handler();
+static void actual_discoverer_handler();
 
 class GDNativeSingletonDiscover : public Object {
 	// GDCLASS(GDNativeSingletonDiscover, Object)
@@ -66,7 +66,7 @@ class GDNativeSingletonDiscover : public Object {
 	}
 };
 
-Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
+static Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 
 	Set<String> file_paths;
 
@@ -81,7 +81,7 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 		}
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(p_dir->get_file_path(i));
-		if (lib.is_valid() && lib->is_singleton_gdnative()) {
+		if (lib.is_valid() && lib->is_singleton()) {
 			file_paths.insert(p_dir->get_file_path(i));
 		}
 	}
@@ -98,7 +98,7 @@ Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 	return file_paths;
 }
 
-void actual_discoverer_handler() {
+static void actual_discoverer_handler() {
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
 	Set<String> file_paths = get_gdnative_singletons(dir);
@@ -115,7 +115,134 @@ void actual_discoverer_handler() {
 	ProjectSettings::get_singleton()->save();
 }
 
-GDNativeSingletonDiscover *discoverer = NULL;
+static GDNativeSingletonDiscover *discoverer = NULL;
+
+class GDNativeExportPlugin : public EditorExportPlugin {
+
+protected:
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+};
+
+struct LibrarySymbol {
+	char *name;
+	bool is_required;
+};
+
+void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+	if (p_type != "GDNativeLibrary") {
+		return;
+	}
+
+	Ref<GDNativeLibrary> lib = ResourceLoader::load(p_path);
+
+	if (lib.is_null()) {
+		return;
+	}
+
+	Ref<ConfigFile> config = lib->get_config_file();
+
+	{
+
+		List<String> entry_keys;
+		config->get_section_keys("entry", &entry_keys);
+
+		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			String entry_lib_path = config->get_value("entry", key);
+			add_shared_object(entry_lib_path, tags);
+		}
+	}
+
+	{
+		List<String> dependency_keys;
+		config->get_section_keys("dependencies", &dependency_keys);
+
+		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
+			String key = E->get();
+
+			Vector<String> tags = key.split(".");
+
+			bool skip = false;
+			for (int i = 0; i < tags.size(); i++) {
+				bool has_feature = p_features.has(tags[i]);
+
+				if (!has_feature) {
+					skip = true;
+					break;
+				}
+			}
+
+			if (skip) {
+				continue;
+			}
+
+			Vector<String> dependency_paths = config->get_value("dependencies", key);
+			for (int i = 0; i < dependency_paths.size(); i++) {
+				add_shared_object(dependency_paths[i], tags);
+			}
+		}
+	}
+
+	if (p_features.has("iOS")) {
+		// Register symbols in the "fake" dynamic lookup table, because dlsym does not work well on iOS.
+		LibrarySymbol expected_symbols[] = {
+			{ "gdnative_init", true },
+			{ "gdnative_terminate", false },
+			{ "nativescript_init", false },
+			{ "nativescript_frame", false },
+			{ "nativescript_thread_enter", false },
+			{ "nativescript_thread_exit", false },
+			{ "gdnative_singleton", false }
+		};
+		String declare_pattern = "extern \"C\" void $name(void)$weak;\n";
+		String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
+								 "extern void add_ios_init_callback(void (*cb)());\n";
+		String linker_flags = "";
+		for (int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
+			String code = declare_pattern.replace("$name", full_name);
+			code = code.replace("$weak", expected_symbols[i].is_required ? "" : " __attribute__((weak))");
+			additional_code += code;
+
+			if (!expected_symbols[i].is_required) {
+				if (linker_flags.length() > 0) {
+					linker_flags += " ";
+				}
+				linker_flags += "-Wl,-U,_" + full_name;
+			}
+		}
+
+		additional_code += String("void $prefixinit() {\n").replace("$prefix", lib->get_symbol_prefix());
+		String register_pattern = "  if (&$name) register_dynamic_symbol((char *)\"$name\", (void *)$name);\n";
+		for (int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
+			additional_code += register_pattern.replace("$name", full_name);
+		}
+		additional_code += "}\n";
+		additional_code += String("struct $prefixstruct {$prefixstruct() {add_ios_init_callback($prefixinit);}};\n").replace("$prefix", lib->get_symbol_prefix());
+		additional_code += String("$prefixstruct $prefixstruct_instance;\n").replace("$prefix", lib->get_symbol_prefix());
+
+		add_ios_cpp_code(additional_code);
+		add_ios_linker_flags(linker_flags);
+	}
+}
 
 static void editor_init_callback() {
 
@@ -125,11 +252,16 @@ static void editor_init_callback() {
 
 	discoverer = memnew(GDNativeSingletonDiscover);
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");
+
+	Ref<GDNativeExportPlugin> export_plugin;
+	export_plugin.instance();
+
+	EditorExport::get_singleton()->add_export_plugin(export_plugin);
 }
 
 #endif
 
-godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *p_args) {
+static godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *p_args) {
 
 	godot_gdnative_procedure_fn proc;
 	proc = (godot_gdnative_procedure_fn)p_procedure_handle;
@@ -141,17 +273,24 @@ GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
 Vector<Ref<GDNative> > singleton_gdnatives;
 
+GDNativeLibraryResourceLoader *resource_loader_gdnlib = NULL;
+GDNativeLibraryResourceSaver *resource_saver_gdnlib = NULL;
+
 void register_gdnative_types() {
 
 #ifdef TOOLS_ENABLED
 
-	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::add_init_callback(editor_init_callback);
-	}
+	EditorNode::add_init_callback(editor_init_callback);
 #endif
 
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
+
+	resource_loader_gdnlib = memnew(GDNativeLibraryResourceLoader);
+	resource_saver_gdnlib = memnew(GDNativeLibraryResourceSaver);
+
+	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
+	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
 
 	GDNativeCallRegistry::singleton = memnew(GDNativeCallRegistry);
 
@@ -185,11 +324,11 @@ void register_gdnative_types() {
 
 		void *proc_ptr;
 		Error err = singleton_gdnatives[i]->get_symbol(
-				"godot_gdnative_singleton",
+				lib->get_symbol_prefix() + "gdnative_singleton",
 				proc_ptr);
 
 		if (err != OK) {
-			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_active_library_path()) + "\" found").utf8().get_data());
+			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_current_library_path()) + "\" found").utf8().get_data());
 		} else {
 			((void (*)())proc_ptr)();
 		}
@@ -224,6 +363,9 @@ void unregister_gdnative_types() {
 	}
 #endif
 
+	memdelete(resource_loader_gdnlib);
+	memdelete(resource_saver_gdnlib);
+
 	// This is for printing out the sizes of the core types
 
 	/*
@@ -236,7 +378,7 @@ void unregister_gdnative_types() {
 	print_line(String("poolarray:\t") + itos(sizeof(PoolByteArray)));
 	print_line(String("quat:\t")      + itos(sizeof(Quat)));
 	print_line(String("rect2:\t")     + itos(sizeof(Rect2)));
-	print_line(String("rect3:\t")     + itos(sizeof(Rect3)));
+	print_line(String("aabb:\t")     + itos(sizeof(AABB)));
 	print_line(String("rid:\t")       + itos(sizeof(RID)));
 	print_line(String("string:\t")    + itos(sizeof(String)));
 	print_line(String("transform:\t") + itos(sizeof(Transform)));

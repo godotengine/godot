@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _node_path_api_anchor() {}
-
 void GDAPI godot_node_path_new(godot_node_path *r_dest, const godot_string *p_from) {
 	NodePath *dest = (NodePath *)r_dest;
 	const String *from = (const String *)p_from;
@@ -93,10 +91,10 @@ godot_string GDAPI godot_node_path_get_subname(const godot_node_path *p_self, co
 	return dest;
 }
 
-godot_string GDAPI godot_node_path_get_property(const godot_node_path *p_self) {
+godot_string GDAPI godot_node_path_get_concatenated_subnames(const godot_node_path *p_self) {
 	godot_string dest;
 	const NodePath *self = (const NodePath *)p_self;
-	memnew_placement(&dest, String(self->get_property()));
+	memnew_placement(&dest, String(self->get_concatenated_subnames()));
 	return dest;
 }
 

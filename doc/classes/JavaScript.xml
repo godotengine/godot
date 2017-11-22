@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JavaScript" inherits="Object" category="Core" version="3.0-alpha">
+	<brief_description>
+		Singleton that connects the engine with the browser's JavaScript context in HTML5 export.
+	</brief_description>
+	<description>
+		The JavaScript singleton is implemented only in HTML5 export. It's used to access the browser's JavaScript context. This allows interaction with embedding pages or calling third-party JavaScript APIs.
+	</description>
+	<tutorials>
+		http://docs.godotengine.org/en/stable/learning/workflow/export/exporting_for_web.html#calling-javascript-from-script
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="eval">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="code" type="String">
+			</argument>
+			<argument index="1" name="use_global_execution_context" type="bool" default="false">
+			</argument>
+			<description>
+				Execute the string [code]code[/code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code]eval()[/code].
+				If [code]use_global_execution_context[/code] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

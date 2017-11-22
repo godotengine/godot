@@ -38,8 +38,6 @@
 extern "C" {
 #endif
 
-void _dictionary_api_anchor() {}
-
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest) {
 	Dictionary *dest = (Dictionary *)r_dest;
 	memnew_placement(dest, Dictionary);

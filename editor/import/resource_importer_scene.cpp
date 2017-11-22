@@ -232,16 +232,26 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		}
 	}
 
-	if (_teststr(name, "colonly")) {
+	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
 
 		if (isroot)
 			return p_node;
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		if (mi) {
-			Node *col = mi->create_trimesh_collision_node();
-			ERR_FAIL_COND_V(!col, NULL);
+			Node *col;
 
-			col->set_name(_fixstr(name, "colonly"));
+			if (_teststr(name, "colonly")) {
+				col = mi->create_trimesh_collision_node();
+				ERR_FAIL_COND_V(!col, NULL);
+
+				col->set_name(_fixstr(name, "colonly"));
+			} else {
+				col = mi->create_convex_collision_node();
+				ERR_FAIL_COND_V(!col, NULL);
+
+				col->set_name(_fixstr(name, "convcolonly"));
+			}
+
 			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
 			p_node->replace_by(col);
 			memdelete(p_node);
@@ -292,7 +302,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 
 		// get mesh instance and bounding box
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
-		Rect3 aabb = mi->get_aabb();
+		AABB aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
 		RigidBody *rigid_body = memnew(RigidBody);
@@ -328,15 +338,25 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 		rb->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
 
-	} else if (_teststr(name, "col") && Object::cast_to<MeshInstance>(p_node)) {
+	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance>(p_node)) {
 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		Node *col;
 
-		mi->set_name(_fixstr(name, "col"));
-		Node *col = mi->create_trimesh_collision_node();
-		ERR_FAIL_COND_V(!col, NULL);
+		if (_teststr(name, "col")) {
+			mi->set_name(_fixstr(name, "col"));
+			col = mi->create_trimesh_collision_node();
+			ERR_FAIL_COND_V(!col, NULL);
 
-		col->set_name("col");
+			col->set_name("col");
+		} else {
+			mi->set_name(_fixstr(name, "convcol"));
+			col = mi->create_convex_collision_node();
+			ERR_FAIL_COND_V(!col, NULL);
+
+			col->set_name("convcol");
+		}
+
 		p_node->add_child(col);
 
 		StaticBody *sb = Object::cast_to<StaticBody>(col);
@@ -527,26 +547,55 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 #endif
 	} else if (Object::cast_to<MeshInstance>(p_node)) {
 
-		//last attempt, maybe collision insde the mesh data
+		//last attempt, maybe collision inside the mesh data
 
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
-			if (_teststr(mesh->get_name(), "col")) {
-
-				mesh->set_name(_fixstr(mesh->get_name(), "col"));
+			if (_teststr(mesh->get_name(), "col") || _teststr(mesh->get_name(), "convcol")) {
 				Ref<Shape> shape;
+				if (_teststr(mesh->get_name(), "col")) {
+					mesh->set_name(_fixstr(mesh->get_name(), "col"));
 
-				if (collision_map.has(mesh)) {
-					shape = collision_map[mesh];
+					if (collision_map.has(mesh)) {
+						shape = collision_map[mesh];
 
-				} else {
+					} else {
 
-					shape = mesh->create_trimesh_shape();
-					if (!shape.is_null())
-						collision_map[mesh] = shape;
+						shape = mesh->create_trimesh_shape();
+						if (!shape.is_null())
+							collision_map[mesh] = shape;
+					}
+				} else if (_teststr(mesh->get_name(), "convcol")) {
+					mesh->set_name(_fixstr(mesh->get_name(), "convcol"));
+
+					if (collision_map.has(mesh)) {
+						shape = collision_map[mesh];
+
+					} else {
+
+						shape = mesh->create_convex_shape();
+						if (!shape.is_null())
+							collision_map[mesh] = shape;
+					}
+				}
+
+				if (!shape.is_null()) {
+					StaticBody *col = memnew(StaticBody);
+					CollisionShape *cshape = memnew(CollisionShape);
+					cshape->set_shape(shape);
+					col->add_child(cshape);
+
+					col->set_transform(mi->get_transform());
+					col->set_name(mi->get_name());
+					p_node->replace_by(col);
+					memdelete(p_node);
+					p_node = col;
+
+					cshape->set_name("shape");
+					cshape->set_owner(p_node->get_owner());
 				}
 			}
 		}
@@ -858,12 +907,11 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
 					if (p_keep_materials && FileAccess::exists(ext_name)) {
 						//if exists, use it
-						Ref<Material> existing = ResourceLoader::load(ext_name);
-						p_materials[mat] = existing;
+						p_materials[mat] = ResourceLoader::load(ext_name);
 					} else {
 
 						ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-						p_materials[mat] = mat;
+						p_materials[mat] = ResourceLoader::load(ext_name);
 					}
 				}
 
@@ -887,7 +935,8 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 							String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
 
 							ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
-							p_meshes[mesh] = mesh;
+							p_meshes[mesh] = ResourceLoader::load(ext_name);
+							p_node->set(E->get().name, p_meshes[mesh]);
 							mesh_just_added = true;
 						}
 					}
@@ -907,18 +956,24 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 									;
 									if (FileAccess::exists(ext_name)) {
 										//if exists, use it
-										Ref<Material> existing = ResourceLoader::load(ext_name);
-										p_materials[mat] = existing;
+										p_materials[mat] = ResourceLoader::load(ext_name);
 									} else {
 
 										ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-										p_materials[mat] = mat;
+										p_materials[mat] = ResourceLoader::load(ext_name);
 									}
 								}
 
 								if (p_materials[mat] != mat) {
 
 									mesh->surface_set_material(i, p_materials[mat]);
+
+									//re-save the mesh since a material is now assigned
+									if (p_make_meshes) {
+										String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+										ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
+										p_meshes[mesh] = ResourceLoader::load(ext_name);
+									}
 								}
 							}
 

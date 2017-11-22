@@ -57,7 +57,7 @@ String _get_expected_build_config() {
 String _get_mono_user_dir() {
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		return EditorSettings::get_singleton()->get_settings_path().plus_file("mono");
+		return EditorSettings::get_singleton()->get_data_dir().plus_file("mono");
 	} else {
 		String settings_path;
 
@@ -68,19 +68,13 @@ String _get_mono_user_dir() {
 			// contain yourself
 			settings_path = exe_dir.plus_file("editor_data");
 		} else {
-			if (OS::get_singleton()->has_environment("APPDATA")) {
-				String app_data = OS::get_singleton()->get_environment("APPDATA").replace("\\", "/");
-				settings_path = app_data.plus_file(String(_MKSTR(VERSION_SHORT_NAME)).capitalize());
-			} else if (OS::get_singleton()->has_environment("HOME")) {
-				String home = OS::get_singleton()->get_environment("HOME");
-				settings_path = home.plus_file("." + String(_MKSTR(VERSION_SHORT_NAME)).to_lower());
-			}
+			settings_path = OS::get_singleton()->get_data_path().plus_file(OS::get_singleton()->get_godot_dir_name());
 		}
 
 		return settings_path.plus_file("mono");
 	}
 #else
-	return OS::get_singleton()->get_data_dir().plus_file("mono");
+	return OS::get_singleton()->get_user_data_dir().plus_file("mono");
 #endif
 }
 

@@ -149,13 +149,6 @@ void RasterizerCanvasGLES3::canvas_begin() {
 		storage->frame.clear_request = false;
 	}
 
-	/*canvas_shader.unbind();
-	canvas_shader.set_custom_shader(0);
-	canvas_shader.set_conditional(CanvasShaderGLES2::USE_MODULATE,false);
-	canvas_shader.bind();
-	canvas_shader.set_uniform(CanvasShaderGLES2::TEXTURE, 0);
-	canvas_use_modulate=false;*/
-
 	reset_canvas();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_TEXTURE_RECT, true);
@@ -911,61 +904,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 	}
 }
 
-#if 0
-void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material,Shader* shader) {
-
-	if (canvas_shader.bind())
-		rebind_texpixel_size=true;
-
-	if (material->shader_version!=shader->version) {
-		//todo optimize uniforms
-		material->shader_version=shader->version;
-	}
-
-	if (shader->has_texscreen && framebuffer.active) {
-
-		int x = viewport.x;
-		int y = window_size.height-(viewport.height+viewport.y);
-
-		canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
-		canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
-		canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,max_texture_units-1);
-		glActiveTexture(GL_TEXTURE0+max_texture_units-1);
-		glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
-		if (framebuffer.scale==1 && !canvas_texscreen_used) {
-#ifdef GLEW_ENABLED
-			if (current_rt) {
-				glReadBuffer(GL_COLOR_ATTACHMENT0);
-			} else {
-				glReadBuffer(GL_BACK);
-			}
-#endif
-			if (current_rt) {
-				glCopyTexSubImage2D(GL_TEXTURE_2D,0,viewport.x,viewport.y,viewport.x,viewport.y,viewport.width,viewport.height);
-				canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(viewport.y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
-				//window_size.height-(viewport.height+viewport.y)
-			} else {
-				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
-			}
-
-			canvas_texscreen_used=true;
-		}
-
-		glActiveTexture(GL_TEXTURE0);
-
-	}
-
-	if (shader->has_screen_uv) {
-		canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
-	}
-
-
-	uses_texpixel_size=shader->uses_texpixel_size;
-
-}
-
-#endif
-
 void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 
 	glDisable(GL_BLEND);
@@ -1570,6 +1508,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DITHER);
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {

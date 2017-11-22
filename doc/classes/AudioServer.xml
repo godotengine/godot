@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+<class name="AudioServer" inherits="Object" category="Core" version="3.0-alpha">
 	<brief_description>
 		Server interface for low level audio access.
 	</brief_description>
@@ -287,7 +287,7 @@
 			<argument index="1" name="send" type="String">
 			</argument>
 			<description>
-				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/send].
+				Connects the output of the bus at [code]bus_idx[/code] to the bus named [code]send[/code].
 			</description>
 		</method>
 		<method name="set_bus_solo">

@@ -35,6 +35,7 @@
 #include "io/zip_io.h"
 #include "os/dir_access.h"
 #include "version.h"
+
 void ExportTemplateManager::_update_template_list() {
 
 	while (current_hb->get_child_count()) {
@@ -46,7 +47,7 @@ void ExportTemplateManager::_update_template_list() {
 	}
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_path().plus_file("templates"));
+	Error err = d->change_dir(EditorSettings::get_singleton()->get_templates_dir());
 
 	d->list_dir_begin();
 	Set<String> templates;
@@ -66,7 +67,7 @@ void ExportTemplateManager::_update_template_list() {
 
 	memdelete(d);
 
-	String current_version = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + VERSION_MODULE_CONFIG;
+	String current_version = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + VERSION_STATUS + VERSION_MODULE_CONFIG;
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -142,7 +143,7 @@ void ExportTemplateManager::_uninstall_template(const String &p_version) {
 void ExportTemplateManager::_uninstall_template_confirm() {
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = d->change_dir(EditorSettings::get_singleton()->get_settings_path().plus_file("templates"));
+	Error err = d->change_dir(EditorSettings::get_singleton()->get_templates_dir());
 
 	ERR_FAIL_COND(err != OK);
 
@@ -244,7 +245,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 		return;
 	}
 
-	String template_path = EditorSettings::get_singleton()->get_settings_path().plus_file("templates").plus_file(version);
+	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(version);
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = d->make_dir_recursive(template_path);
@@ -393,7 +394,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 			if (p_code != 200) {
 				template_list_state->set_text(TTR("Failed:") + " " + itos(p_code));
 			} else {
-				String path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("tmp_templates.tpz");
+				String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz");
 				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
 				if (!f) {
 					template_list_state->set_text(TTR("Can't write file."));

@@ -39,9 +39,6 @@
 extern "C" {
 #endif
 
-void _string_api_anchor() {
-}
-
 void GDAPI godot_string_new(godot_string *r_dest) {
 	String *dest = (String *)r_dest;
 	memnew_placement(dest, String);
@@ -90,11 +87,6 @@ wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int
 wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx) {
 	const String *self = (const String *)p_self;
 	return self->operator[](p_idx);
-}
-
-const char GDAPI *godot_string_c_str(const godot_string *p_self) {
-	const String *self = (const String *)p_self;
-	return self->utf8().get_data();
 }
 
 const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_self) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.0.alpha.custom_build">
+<class name="OS" inherits="Object" category="Core" version="3.0-alpha">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -127,11 +127,11 @@
 				Returns the current screen index (0 padded).
 			</description>
 		</method>
-		<method name="get_data_dir" qualifiers="const">
+		<method name="get_user_data_dir" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the absolute directory path of user data path([user://]).
+				Returns the absolute directory path where user data is written ([code]user://[/code]).
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">

@@ -180,6 +180,17 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			time_since_motion = 0;
 		}
 	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+	if (pan_gesture.is_valid()) {
+
+		if (h_scroll->is_visible_in_tree()) {
+			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+		}
+		if (v_scroll->is_visible_in_tree()) {
+			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		}
+	}
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -347,11 +358,10 @@ void ScrollContainer::update_scrollbars() {
 	} else {
 
 		v_scroll->show();
+		v_scroll->set_max(min.height);
+		v_scroll->set_page(size.height - hmin.height);
 		scroll.y = v_scroll->get_value();
 	}
-
-	v_scroll->set_max(min.height);
-	v_scroll->set_page(size.height - hmin.height);
 
 	if (!scroll_h || min.width <= size.width - vmin.width) {
 

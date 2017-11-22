@@ -44,7 +44,7 @@ void GDNativeLibraryEditor::_find_gdnative_singletons(EditorFileSystemDirectory 
 		}
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(p_dir->get_file_path(i));
-		if (lib.is_valid() && lib->is_singleton_gdnative()) {
+		if (lib.is_valid() && lib->is_singleton()) {
 			String path = p_dir->get_file_path(i);
 			TreeItem *ti = libraries->create_item(libraries->get_root());
 			ti->set_text(0, path.get_file());

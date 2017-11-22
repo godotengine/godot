@@ -31,17 +31,23 @@
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 
-	for (int i = 0; i < 2; i++) {
-		ima_adpcm[i].step_index = 0;
-		ima_adpcm[i].predictor = 0;
-		ima_adpcm[i].loop_step_index = 0;
-		ima_adpcm[i].loop_predictor = 0;
-		ima_adpcm[i].last_nibble = -1;
-		ima_adpcm[i].loop_pos = 0x7FFFFFFF;
-		ima_adpcm[i].window_ofs = 0;
+	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
+		//no seeking in IMA_ADPCM
+		for (int i = 0; i < 2; i++) {
+			ima_adpcm[i].step_index = 0;
+			ima_adpcm[i].predictor = 0;
+			ima_adpcm[i].loop_step_index = 0;
+			ima_adpcm[i].loop_predictor = 0;
+			ima_adpcm[i].last_nibble = -1;
+			ima_adpcm[i].loop_pos = 0x7FFFFFFF;
+			ima_adpcm[i].window_ofs = 0;
+		}
+
+		offset = 0;
+	} else {
+		seek(p_from_pos);
 	}
 
-	seek(p_from_pos);
 	sign = 1;
 	active = true;
 }
@@ -372,6 +378,14 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 		}
 
 		dst_buff += target;
+	}
+
+	if (todo) {
+		//bit was missing from mix
+		int todo_ofs = p_frames - todo;
+		for (int i = todo_ofs; i < p_frames; i++) {
+			p_buffer[i] = AudioFrame(0, 0);
+		}
 	}
 }
 

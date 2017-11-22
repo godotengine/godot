@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" category="Core" version="3.0.alpha.custom_build">
+<class name="RichTextLabel" inherits="Control" category="Core" version="3.0-alpha">
 	<brief_description>
 		Label that displays rich text.
 	</brief_description>
 	<description>
-		Label that displays rich text. Rich text can contain custom text, fonts, images and some basic formatting. It also adapts itself to given width/heights.
+		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
+		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,6 +18,7 @@
 			<argument index="0" name="image" type="Texture">
 			</argument>
 			<description>
+				Adds an image's opening and closing tags to the tag stack.
 			</description>
 		</method>
 		<method name="add_text">
@@ -25,6 +27,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Adds raw non-bbcode-parsed text to the tag stack.
 			</description>
 		</method>
 		<method name="append_bbcode">
@@ -33,27 +36,28 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [code]OK[/code] if successful.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clears the label's text.
+				Clears the tag stack and sets [member bbcode_text] to an empty string.
 			</description>
 		</method>
 		<method name="get_bbcode" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns label's BBCode.
+				Returns the bbcode-parsed  [member bbcode_text].
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of lines in the text.
+				Returns the total number of newlines in the tag stack's text tags. Considers wrapped text as one line.
 			</description>
 		</method>
 		<method name="get_percent_visible" qualifiers="const">
@@ -67,26 +71,28 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of spaces associated with a single tab length. Does not affect "\t" in text tags, only indent tags.
 			</description>
 		</method>
 		<method name="get_text">
 			<return type="String">
 			</return>
 			<description>
-				Returns the label's text with the formatting removed.
+				Returns the raw content of [member bbcode_text].
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of characters.
+				Returns the total number of characters from text tags. Does not include bbcodes.
 			</description>
 		</method>
 		<method name="get_v_scroll">
 			<return type="VScrollBar">
 			</return>
 			<description>
+				Returns the vertical scrollbar.
 			</description>
 		</method>
 		<method name="get_visible_characters" qualifiers="const">
@@ -106,6 +112,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the label underlines meta tags such as [url]{text}[/url].
 			</description>
 		</method>
 		<method name="is_overriding_selected_font_color" qualifiers="const">
@@ -118,34 +125,34 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if active scrolling is enabled.
+				Returns [code]true[/code] if the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
 			</description>
 		</method>
 		<method name="is_scroll_following" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the window scrolls down to display new content automatically.
 			</description>
 		</method>
 		<method name="is_selection_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the label's text can be selected.
+				Returns [code]true[/code] if the label allows text selection.
 			</description>
 		</method>
 		<method name="is_using_bbcode" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the label has BBCode.
 			</description>
 		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
 			<description>
-				Adds a newline to the end of the rich text.
+				Adds a newline tag to the tag stack.
 			</description>
 		</method>
 		<method name="parse_bbcode">
@@ -154,12 +161,14 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [code]OK[/code] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="pop">
 			<return type="void">
 			</return>
 			<description>
+				Terminates the current tag. Use after [code]push_*[/code] methods to close bbcodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
 		<method name="push_align">
@@ -168,12 +177,14 @@
 			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
 			</argument>
 			<description>
+				Adds a [code][right][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_cell">
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [table] tag. See [method push_table] for details.
 			</description>
 		</method>
 		<method name="push_color">
@@ -182,6 +193,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
+				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_font">
@@ -190,6 +202,7 @@
 			<argument index="0" name="font" type="Font">
 			</argument>
 			<description>
+				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
 			</description>
 		</method>
 		<method name="push_indent">
@@ -198,6 +211,7 @@
 			<argument index="0" name="level" type="int">
 			</argument>
 			<description>
+				Adds an [code][indent][/code] tag to the tag stack. Multiplies "level" by current tab_size to determine new margin length.
 			</description>
 		</method>
 		<method name="push_list">
@@ -206,6 +220,7 @@
 			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType">
 			</argument>
 			<description>
+				Adds a list tag to the tag stack. Similar to the bbcodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
 			</description>
 		</method>
 		<method name="push_meta">
@@ -214,6 +229,7 @@
 			<argument index="0" name="data" type="Variant">
 			</argument>
 			<description>
+				Adds a meta tag to the tag stack. Similar to the bbcode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_table">
@@ -222,12 +238,14 @@
 			<argument index="0" name="columns" type="int">
 			</argument>
 			<description>
+				Adds a [code][table=columns][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_underline">
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][u][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="remove_line">
@@ -236,6 +254,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
 			</description>
 		</method>
 		<method name="scroll_to_line">
@@ -244,6 +263,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Scrolls the window's top line to match [code]line[/code].
 			</description>
 		</method>
 		<method name="set_bbcode">
@@ -261,6 +281,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] will underline meta tags such as the [url] bbcode. Default value: [code]true[/code].
 			</description>
 		</method>
 		<method name="set_override_selected_font_color">
@@ -286,6 +307,7 @@
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
+				If [code]false[/code] the vertical scrollbar is hidden. Default value: [code]true[/code].
 			</description>
 		</method>
 		<method name="set_scroll_follow">
@@ -294,6 +316,7 @@
 			<argument index="0" name="follow" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the window scrolls to reveal new content. Default value: [code]false[/code].
 			</description>
 		</method>
 		<method name="set_selection_enabled">
@@ -311,6 +334,7 @@
 			<argument index="0" name="spaces" type="int">
 			</argument>
 			<description>
+				Sets the current tab length in spaces. Use with [method push_indent] to redefine indent length.
 			</description>
 		</method>
 		<method name="set_table_column_expand">
@@ -323,6 +347,9 @@
 			<argument index="2" name="ratio" type="int">
 			</argument>
 			<description>
+				Edits the selected columns expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
+				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.
+				Columns with a [code]false[/code] expand will not contribute to the total ratio.
 			</description>
 		</method>
 		<method name="set_text">
@@ -331,6 +358,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+				Clears the tag stack and adds a raw text tag to the top of it. Does not parse bbcodes. Does not modify [member bbcode_text].
 			</description>
 		</method>
 		<method name="set_use_bbcode">
@@ -355,7 +383,7 @@
 			If [code]true[/code] the label uses BBCode formatting. Default value: [code]false[/code].
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
-			The label's text in BBCode format.
+			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 			If [code]true[/code] the label uses the custom font color. Default value: [code]false[/code].
@@ -372,6 +400,21 @@
 			<argument index="0" name="meta" type="Nil">
 			</argument>
 			<description>
+				Triggered when the user clicks on content between [url] tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
+			</description>
+		</signal>
+		<signal name="meta_hover_started">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse enters a meta tag. 
+			</description>
+		</signal>
+		<signal name="meta_hover_ended">
+			<argument index="0" name="meta" type="Nil">
+			</argument>
+			<description>
+				Triggers when the mouse exits a meta tag. 
 			</description>
 		</signal>
 	</signals>

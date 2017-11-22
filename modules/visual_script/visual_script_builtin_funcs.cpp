@@ -78,6 +78,8 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"rad2deg",
 	"linear2db",
 	"db2linear",
+	"polar2cartesian",
+	"cartesian2polar",
 	"wrapi",
 	"wrapf",
 	"max",
@@ -191,6 +193,8 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_EASE:
 		case MATH_STEPIFY:
 		case MATH_RANDOM:
+		case MATH_POLAR2CARTESIAN:
+		case MATH_CARTESIAN2POLAR:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case FUNC_FUNCREF:
@@ -367,6 +371,18 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case MATH_DB2LINEAR: {
 			return PropertyInfo(Variant::REAL, "db");
+		} break;
+		case MATH_POLAR2CARTESIAN: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "r");
+			else
+				return PropertyInfo(Variant::REAL, "th");
+		} break;
+		case MATH_CARTESIAN2POLAR: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "x");
+			else
+				return PropertyInfo(Variant::REAL, "y");
 		} break;
 		case MATH_WRAP: {
 			if (p_idx == 0)
@@ -572,6 +588,10 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_WRAPF:
 		case MATH_DB2LINEAR: {
 			t = Variant::REAL;
+		} break;
+		case MATH_POLAR2CARTESIAN:
+		case MATH_CARTESIAN2POLAR: {
+			t = Variant::VECTOR2;
 		} break;
 		case MATH_WRAP: {
 			t = Variant::INT;
@@ -922,6 +942,20 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::db2linear((double)*p_inputs[0]);
 		} break;
+		case VisualScriptBuiltinFunc::MATH_POLAR2CARTESIAN: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			double r = *p_inputs[0];
+			double th = *p_inputs[1];
+			*r_return = Vector2(r * Math::cos(th), r * Math::sin(th));
+		} break;
+		case VisualScriptBuiltinFunc::MATH_CARTESIAN2POLAR: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			double x = *p_inputs[0];
+			double y = *p_inputs[1];
+			*r_return = Vector2(Math::sqrt(x * x + y * y), Math::atan2(y, x));
+		} break;
 		case VisualScriptBuiltinFunc::MATH_WRAP: {
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
@@ -1109,7 +1143,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			String str = *p_inputs[0];
 
 			//str+="\n";
-			OS::get_singleton()->printerr("%s\n", str.utf8().get_data());
+			print_error(str);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINTRAW: {
@@ -1294,6 +1328,8 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_RAD2DEG);
 	BIND_ENUM_CONSTANT(MATH_LINEAR2DB);
 	BIND_ENUM_CONSTANT(MATH_DB2LINEAR);
+	BIND_ENUM_CONSTANT(MATH_POLAR2CARTESIAN);
+	BIND_ENUM_CONSTANT(MATH_CARTESIAN2POLAR);
 	BIND_ENUM_CONSTANT(MATH_WRAP);
 	BIND_ENUM_CONSTANT(MATH_WRAPF);
 	BIND_ENUM_CONSTANT(LOGIC_MAX);
@@ -1381,6 +1417,8 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/rad2deg", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RAD2DEG>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/linear2db", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LINEAR2DB>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/db2linear", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_DB2LINEAR>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/polar2cartesian", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_POLAR2CARTESIAN>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/cartesian2polar", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_CARTESIAN2POLAR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/wrapi", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_WRAP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/wrapf", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_WRAPF>);
 

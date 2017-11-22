@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMesh" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+<class name="MultiMesh" inherits="Resource" category="Core" version="3.0-alpha">
 	<brief_description>
 		Provides high performance mesh instancing.
 	</brief_description>
@@ -7,7 +7,7 @@
 		MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
 		For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
 		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
-		Since instances may have any behavior, the Rect3 used for visibility must be provided by the user.
+		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,10 +15,10 @@
 	</demos>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
-				Return the visibility Rect3.
+				Return the visibility AABB.
 			</description>
 		</method>
 		<method name="get_color_format" qualifiers="const">

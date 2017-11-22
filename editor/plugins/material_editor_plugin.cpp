@@ -503,3 +503,41 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	smat->set_render_priority(mat->get_render_priority());
 	return smat;
 }
+
+String CanvasItemMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<CanvasItemMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
+
+	Ref<CanvasItemMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}

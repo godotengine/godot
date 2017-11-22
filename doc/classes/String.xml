@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="String" category="Built-In Types" version="3.0.alpha.custom_build">
+<class name="String" category="Built-In Types" version="3.0-alpha">
 	<brief_description>
 		Built-in string class.
 	</brief_description>
@@ -95,10 +95,10 @@
 		<method name="String">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="Rect3">
+			<argument index="0" name="from" type="AABB">
 			</argument>
 			<description>
-				Constructs a new String from the given [Rect3].
+				Constructs a new String from the given [AABB].
 			</description>
 		</method>
 		<method name="String">
@@ -271,6 +271,12 @@
 			</argument>
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
+			</description>
+		</method>
+		<method name="dedent">
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="empty">

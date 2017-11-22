@@ -116,7 +116,7 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 
-		String data_dir = OS::get_singleton()->get_data_dir();
+		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (data_dir != "") {
 
 			return p_path.replace("user:/", data_dir);
@@ -776,32 +776,6 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 	return ret;
 }
 
-void ProjectSettings::add_singleton(const Singleton &p_singleton) {
-
-	singletons.push_back(p_singleton);
-	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
-}
-
-Object *ProjectSettings::get_singleton_object(const String &p_name) const {
-
-	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
-	if (!E)
-		return NULL;
-	else
-		return E->get();
-};
-
-bool ProjectSettings::has_singleton(const String &p_name) const {
-
-	return get_singleton_object(p_name) != NULL;
-};
-
-void ProjectSettings::get_singletons(List<Singleton> *p_singletons) {
-
-	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next())
-		p_singletons->push_back(E->get());
-}
-
 Vector<String> ProjectSettings::get_optimizer_presets() const {
 
 	List<PropertyInfo> pi;
@@ -893,8 +867,6 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &ProjectSettings::has_singleton);
-	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &ProjectSettings::get_singleton_object);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack"), &ProjectSettings::_load_resource_pack);
 	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ProjectSettings::property_can_revert);
 	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ProjectSettings::property_get_revert);

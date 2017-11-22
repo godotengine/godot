@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _vector2_api_anchor() {}
-
 void GDAPI godot_vector2_new(godot_vector2 *r_dest, const godot_real p_x, const godot_real p_y) {
 
 	Vector2 *dest = (Vector2 *)r_dest;

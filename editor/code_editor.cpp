@@ -56,6 +56,7 @@ void GotoLineDialog::ok_pressed() {
 
 	if (get_line() < 1 || get_line() > text_editor->get_line_count())
 		return;
+	text_editor->unfold_line(get_line() - 1);
 	text_editor->cursor_set_line(get_line() - 1);
 	hide();
 }
@@ -139,6 +140,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 
 	if (found) {
 		if (!preserve_cursor) {
+			text_edit->unfold_line(line);
 			text_edit->cursor_set_line(line, false);
 			text_edit->cursor_set_column(col + text.length(), false);
 			text_edit->center_viewport_to_cursor();
@@ -167,6 +169,7 @@ void FindReplaceBar::_replace() {
 	if (result_line != -1 && result_col != -1) {
 		text_edit->begin_complex_operation();
 
+		text_edit->unfold_line(result_line);
 		text_edit->select(result_line, result_col, result_line, result_col + get_search_text().length());
 		text_edit->insert_text_at_cursor(get_replace_text());
 
@@ -214,6 +217,7 @@ void FindReplaceBar::_replace_all() {
 
 		prev_match = Point2i(result_line, result_col + replace_text.length());
 
+		text_edit->unfold_line(result_line);
 		text_edit->select(result_line, result_col, result_line, match_to.y);
 
 		if (selection_enabled && is_selection_only()) {
@@ -751,6 +755,7 @@ bool FindReplaceDialog::_search() {
 
 	if (found) {
 		// print_line("found");
+		text_edit->unfold_line(line);
 		text_edit->cursor_set_line(line);
 		if (is_backwards())
 			text_edit->cursor_set_column(col);
@@ -974,6 +979,23 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+
+		Ref<DynamicFont> font = text_editor->get_font("font");
+
+		if (font.is_valid()) {
+			if (font->get_size() != (int)font_size) {
+				font_size = font->get_size();
+			}
+
+			font_size *= powf(magnify_gesture->get_factor(), 0.25);
+
+			_add_font_size((int)font_size - font->get_size());
+		}
+		return;
+	}
+
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
@@ -994,14 +1016,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_zoom_in() {
 	font_resize_val += EDSCALE;
-
-	if (font_resize_timer->get_time_left() == 0)
-		font_resize_timer->start();
+	_zoom_changed();
 }
 
 void CodeTextEditor::_zoom_out() {
 	font_resize_val -= EDSCALE;
+	_zoom_changed();
+}
 
+void CodeTextEditor::_zoom_changed() {
 	if (font_resize_timer->get_time_left() == 0)
 		font_resize_timer->start();
 }
@@ -1062,16 +1085,25 @@ void CodeTextEditor::_complete_request() {
 
 void CodeTextEditor::_font_resize_timeout() {
 
+	if (_add_font_size(font_resize_val)) {
+		font_resize_val = 0;
+	}
+}
+
+bool CodeTextEditor::_add_font_size(int p_delta) {
+
 	Ref<DynamicFont> font = text_editor->get_font("font");
 
 	if (font.is_valid()) {
-		int new_size = CLAMP(font->get_size() + font_resize_val, 8 * EDSCALE, 96 * EDSCALE);
+		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 		if (new_size != font->get_size()) {
 			EditorSettings::get_singleton()->set("interface/editor/source_font_size", new_size / EDSCALE);
 			font->set_size(new_size);
 		}
 
-		font_resize_val = 0;
+		return true;
+	} else {
+		return false;
 	}
 }
 
@@ -1093,6 +1125,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
 	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
+	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
+	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/open_scripts/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/open_scripts/v_scroll_speed"));
@@ -1278,6 +1312,7 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer->connect("timeout", this, "_code_complete_timer_timeout");
 
 	font_resize_val = 0;
+	font_size = -1;
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);

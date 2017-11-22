@@ -888,9 +888,9 @@ void _OS::dump_resources_to_file(const String &p_file) {
 	OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
 }
 
-String _OS::get_data_dir() const {
+String _OS::get_user_data_dir() const {
 
-	return OS::get_singleton()->get_data_dir();
+	return OS::get_singleton()->get_user_data_dir();
 };
 
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
@@ -1088,7 +1088,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
 	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"), &_OS::get_dynamic_memory_usage);
 
-	ClassDB::bind_method(D_METHOD("get_data_dir"), &_OS::get_data_dir);
+	ClassDB::bind_method(D_METHOD("get_user_data_dir"), &_OS::get_user_data_dir);
 	ClassDB::bind_method(D_METHOD("get_system_dir", "dir"), &_OS::get_system_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &_OS::get_unique_id);
 
@@ -2592,6 +2592,16 @@ bool _Engine::is_in_physics_frame() const {
 	return Engine::get_singleton()->is_in_physics_frame();
 }
 
+bool _Engine::has_singleton(const String &p_name) const {
+
+	return Engine::get_singleton()->has_singleton(p_name);
+}
+
+Object *_Engine::get_singleton_object(const String &p_name) const {
+
+	return Engine::get_singleton()->get_singleton_object(p_name);
+}
+
 void _Engine::set_editor_hint(bool p_enabled) {
 
 	Engine::get_singleton()->set_editor_hint(p_enabled);
@@ -2620,6 +2630,9 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_version_info"), &_Engine::get_version_info);
 
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &_Engine::is_in_physics_frame);
+
+	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &_Engine::has_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &_Engine::get_singleton_object);
 
 	ClassDB::bind_method(D_METHOD("set_editor_hint", "enabled"), &_Engine::set_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &_Engine::is_editor_hint);

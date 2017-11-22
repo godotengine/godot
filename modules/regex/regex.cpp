@@ -324,6 +324,21 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	return result;
 }
 
+Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
+
+	int last_end = -1;
+	Array result;
+	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
+	while (match.is_valid()) {
+		if (last_end == match->get_end(0))
+			break;
+		result.push_back(match);
+		last_end = match->get_end(0);
+		match = search(p_subject, match->get_end(0), p_end);
+	}
+	return result;
+}
+
 String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
 
 	ERR_FAIL_COND_V(!is_valid(), String());
@@ -489,6 +504,7 @@ void RegEx::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
 	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
 	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_valid"), &RegEx::is_valid);
 	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);

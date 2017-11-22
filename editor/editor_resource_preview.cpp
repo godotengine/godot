@@ -86,7 +86,6 @@ void EditorResourcePreview::_thread_func(void *ud) {
 
 void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture> &p_texture, ObjectID id, const StringName &p_func, const Variant &p_ud) {
 
-	//print_line("preview is ready");
 	preview_mutex->lock();
 
 	String path = p_str;
@@ -121,7 +120,6 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem &p_item, c
 		type = p_item.resource->get_class();
 	else
 		type = ResourceLoader::get_resource_type(p_item.path);
-	//print_line("resource type is: "+type);
 
 	if (type == "")
 		return Ref<Texture>(); //could not guess type
@@ -144,7 +142,6 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem &p_item, c
 	if (!p_item.resource.is_valid()) {
 		// cache the preview in case it's a resource on disk
 		if (generated.is_valid()) {
-			//print_line("was generated");
 			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 			//wow it generated a preview... save cache
@@ -164,14 +161,10 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem &p_item, c
 
 void EditorResourcePreview::_thread() {
 
-	//print_line("begin thread");
 	while (!exit) {
 
-		//print_line("wait for semaphore");
 		preview_sem->wait();
 		preview_mutex->lock();
-
-		//print_line("blue team go");
 
 		if (queue.size()) {
 
@@ -189,11 +182,10 @@ void EditorResourcePreview::_thread() {
 
 				preview_mutex->unlock();
 			} else {
+
 				preview_mutex->unlock();
 
 				Ref<ImageTexture> texture;
-
-				//print_line("pop from queue "+item.path);
 
 				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
@@ -206,7 +198,7 @@ void EditorResourcePreview::_thread() {
 
 				} else {
 
-					String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
+					String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
@@ -304,7 +296,6 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 
 	cache.erase(path_id); //erase if exists, since it will be regen
 
-	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function = p_receiver_func;
 	item.id = p_receiver->get_instance_id();
@@ -328,7 +319,6 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 		return;
 	}
 
-	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function = p_receiver_func;
 	item.id = p_receiver->get_instance_id();

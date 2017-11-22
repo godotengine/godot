@@ -204,6 +204,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	Timer *font_resize_timer;
 	int font_resize_val;
+	real_t font_size;
 
 	Label *error;
 
@@ -212,10 +213,12 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_font();
 	void _complete_request();
 	void _font_resize_timeout();
+	bool _add_font_size(int p_delta);
 
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();
+	void _zoom_changed();
 	void _reset_zoom();
 
 	CodeTextEditorCodeCompleteFunc code_complete_func;

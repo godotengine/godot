@@ -34,6 +34,6 @@
 
 Ref<Theme> create_editor_theme(Ref<Theme> p_theme = NULL);
 
-Ref<Theme> create_custom_theme();
+Ref<Theme> create_custom_theme(Ref<Theme> p_theme = NULL);
 
 #endif

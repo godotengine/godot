@@ -360,7 +360,7 @@ void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
 		last_wait_for_key = p_event;
 		String str = keycode_get_string(k->get_scancode()).capitalize();
 		if (k->get_metakey())
-			str = TTR("Meta+") + str;
+			str = vformat("%s+", find_keycode_name(KEY_META)) + str;
 		if (k->get_shift())
 			str = TTR("Shift+") + str;
 		if (k->get_alt())
@@ -642,7 +642,7 @@ void ProjectSettingsEditor::_update_actions() {
 
 				String str = keycode_get_string(k->get_scancode()).capitalize();
 				if (k->get_metakey())
-					str = TTR("Meta+") + str;
+					str = vformat("%s+", find_keycode_name(KEY_META)) + str;
 				if (k->get_shift())
 					str = TTR("Shift+") + str;
 				if (k->get_alt())
@@ -785,12 +785,12 @@ void ProjectSettingsEditor::_item_del() {
 	String property = globals_editor->get_current_section().plus_file(path);
 
 	if (!ProjectSettings::get_singleton()->has_setting(property)) {
-		EditorNode::get_singleton()->show_warning(TTR("No property '" + property + "' exists."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("No property '%s' exists."), property));
 		return;
 	}
 
 	if (ProjectSettings::get_singleton()->get_order(property) < ProjectSettings::NO_BUILTIN_ORDER_BASE) {
-		EditorNode::get_singleton()->show_warning(TTR("Setting '" + property + "' is internal, and it can't be deleted."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Setting '%s' is internal, and it can't be deleted."), property));
 		return;
 	}
 
@@ -1782,6 +1782,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(translations);
 	//remap for properly select language in popup
 	translation_locales_idxs_remap = Vector<int>();
+	translation_locales_list_created = false;
 
 	{
 

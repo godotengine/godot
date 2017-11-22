@@ -187,6 +187,9 @@ protected:
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
+	void _window_changed(XEvent *xevent);
+	static int _check_window_events(Display *display, XEvent *xevent, char *arg);
+
 public:
 	virtual String get_name();
 
@@ -212,6 +215,10 @@ public:
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
+
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
 
 	virtual String get_system_dir(SystemDir p_dir) const;
 

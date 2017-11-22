@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+<class name="Image" inherits="Resource" category="Core" version="3.0-alpha">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -377,13 +377,13 @@
 			</argument>
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is unlocked. Example:
-				[code]
+				[codeblock]
 				var img = Image.new()
 				img.lock()
 				img.set_pixel(x, y, color) # Does not have an effect
 				img.unlock()
 				img.set_pixel(x, y, color) # Works
-				[/code].
+				[/codeblock]
 			</description>
 		</method>
 		<method name="shrink_x2">

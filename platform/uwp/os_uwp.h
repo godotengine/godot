@@ -157,7 +157,6 @@ protected:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize_logger();
 	virtual void initialize_core();
 	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -226,7 +225,7 @@ public:
 	virtual String get_locale() const;
 
 	virtual void move_window_to_foreground();
-	virtual String get_data_dir() const;
+	virtual String get_user_data_dir() const;
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

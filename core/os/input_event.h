@@ -213,6 +213,8 @@ public:
 	void set_command(bool p_enabled);
 	bool get_command() const;
 
+	void set_modifiers_from_event(const InputEventWithModifiers *event);
+
 	InputEventWithModifiers();
 };
 
@@ -468,4 +470,42 @@ public:
 	InputEventAction();
 };
 
+class InputEventGesture : public InputEventWithModifiers {
+
+	GDCLASS(InputEventGesture, InputEventWithModifiers)
+
+	Vector2 pos;
+
+public:
+	void set_position(const Vector2 &p_pos);
+	Vector2 get_position() const;
+};
+
+class InputEventMagnifyGesture : public InputEventGesture {
+
+	GDCLASS(InputEventMagnifyGesture, InputEventGesture)
+	real_t factor;
+
+public:
+	void set_factor(real_t p_factor);
+	real_t get_factor() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	InputEventMagnifyGesture();
+};
+
+class InputEventPanGesture : public InputEventGesture {
+
+	GDCLASS(InputEventPanGesture, InputEventGesture)
+	Vector2 delta;
+
+public:
+	void set_delta(const Vector2 &p_delta);
+	Vector2 get_delta() const;
+
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+
+	InputEventPanGesture();
+};
 #endif

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GIProbeData" inherits="Resource" category="Core" version="3.0.alpha.custom_build">
+<class name="GIProbeData" inherits="Resource" category="Core" version="3.0-alpha">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -16,7 +16,7 @@
 			</description>
 		</method>
 		<method name="get_bounds" qualifiers="const">
-			<return type="Rect3">
+			<return type="AABB">
 			</return>
 			<description>
 			</description>
@@ -86,7 +86,7 @@
 		<method name="set_bounds">
 			<return type="void">
 			</return>
-			<argument index="0" name="bounds" type="Rect3">
+			<argument index="0" name="bounds" type="AABB">
 			</argument>
 			<description>
 			</description>
@@ -167,7 +167,7 @@
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias">
 		</member>
-		<member name="bounds" type="Rect3" setter="set_bounds" getter="get_bounds">
+		<member name="bounds" type="AABB" setter="set_bounds" getter="get_bounds">
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size">
 		</member>

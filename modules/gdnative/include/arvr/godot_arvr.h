@@ -47,7 +47,7 @@ typedef struct {
 	godot_bool (*is_initialized)(const void *);
 	godot_bool (*initialize)(void *);
 	void (*uninitialize)(void *);
-	godot_vector2 (*get_recommended_render_targetsize)(const void *);
+	godot_vector2 (*get_render_targetsize)(const void *);
 	godot_transform (*get_transform_for_eye)(void *, godot_int, godot_transform *);
 	void (*fill_projection_for_eye)(void *, godot_real *, godot_int, godot_real, godot_real, godot_real);
 	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);

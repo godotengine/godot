@@ -44,6 +44,26 @@ void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
 	return p_allocfunc(p_size);
 }
 
+#ifdef _MSC_VER
+void operator delete(void *p_mem, const char *p_description) {
+
+	ERR_EXPLAINC("Call to placement delete should not happen.");
+	CRASH_NOW();
+}
+
+void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
+
+	ERR_EXPLAINC("Call to placement delete should not happen.");
+	CRASH_NOW();
+}
+
+void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description) {
+
+	ERR_EXPLAINC("Call to placement delete should not happen.");
+	CRASH_NOW();
+}
+#endif
+
 #ifdef DEBUG_ENABLED
 uint64_t Memory::mem_usage = 0;
 uint64_t Memory::max_usage = 0;

@@ -42,7 +42,7 @@ void PrimitiveMesh::_update() const {
 
 	PoolVector<Vector3> points = arr[VS::ARRAY_VERTEX];
 
-	aabb = Rect3();
+	aabb = AABB();
 
 	int pc = points.size();
 	ERR_FAIL_COND(pc == 0);
@@ -141,7 +141,7 @@ StringName PrimitiveMesh::get_blend_shape_name(int p_index) const {
 	return StringName();
 }
 
-Rect3 PrimitiveMesh::get_aabb() const {
+AABB PrimitiveMesh::get_aabb() const {
 	if (pending_request) {
 		_update();
 	}
@@ -1299,14 +1299,16 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	tangents.resize(4 * 4);
 	uvs.resize(4);
 
-	for (int i = 0; i < 4; i++) {
+	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
 
-		static const Vector3 quad_faces[4] = {
-			Vector3(-1, -1, 0),
-			Vector3(-1, 1, 0),
-			Vector3(1, 1, 0),
-			Vector3(1, -1, 0),
-		};
+	Vector3 quad_faces[4] = {
+		Vector3(-_size.x, -_size.y, 0),
+		Vector3(-_size.x, _size.y, 0),
+		Vector3(_size.x, _size.y, 0),
+		Vector3(_size.x, -_size.y, 0),
+	};
+
+	for (int i = 0; i < 4; i++) {
 
 		faces.set(i, quad_faces[i]);
 		normals.set(i, Vector3(0, 0, 1));
@@ -1325,18 +1327,30 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 		uvs.set(i, quad_uv[i]);
 	}
 
-	p_arr[ARRAY_VERTEX] = faces;
-	p_arr[ARRAY_NORMAL] = normals;
-	p_arr[ARRAY_TANGENT] = tangents;
-	p_arr[ARRAY_TEX_UV] = uvs;
+	p_arr[VS::ARRAY_VERTEX] = faces;
+	p_arr[VS::ARRAY_NORMAL] = normals;
+	p_arr[VS::ARRAY_TANGENT] = tangents;
+	p_arr[VS::ARRAY_TEX_UV] = uvs;
 };
 
 void QuadMesh::_bind_methods() {
-	// nothing here yet...
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadMesh::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &QuadMesh::get_size);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 }
 
 QuadMesh::QuadMesh() {
 	primitive_type = PRIMITIVE_TRIANGLE_FAN;
+	size = Size2(1.0, 1.0);
+}
+
+void QuadMesh::set_size(const Size2 &p_size) {
+	size = p_size;
+	_request_update();
+}
+
+Size2 QuadMesh::get_size() const {
+	return size;
 }
 
 /**

@@ -58,7 +58,10 @@ public:
 		DUPLICATE_SIGNALS = 1,
 		DUPLICATE_GROUPS = 2,
 		DUPLICATE_SCRIPTS = 4,
-		DUPLICATE_USE_INSTANCING = 8
+		DUPLICATE_USE_INSTANCING = 8,
+#ifdef TOOLS_ENABLED
+		DUPLICATE_FROM_EDITOR = 16,
+#endif
 	};
 
 	enum RPCMode {
@@ -169,7 +172,7 @@ private:
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
-	Node *_duplicate(int p_flags) const;
+	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = NULL) const;
 
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -242,7 +245,7 @@ public:
 	Node *get_node(const NodePath &p_path) const;
 	Node *find_node(const String &p_mask, bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
-	Node *get_node_and_resource(const NodePath &p_path, RES &r_res) const;
+	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
 	_FORCE_INLINE_ SceneTree *get_tree() const {
@@ -326,6 +329,9 @@ public:
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 	Node *duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const;
+#ifdef TOOLS_ENABLED
+	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
+#endif
 
 	//Node *clone_tree() const;
 

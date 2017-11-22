@@ -36,8 +36,6 @@
 extern "C" {
 #endif
 
-void _variant_api_anchor() {}
-
 #define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
 
 // Constructors
@@ -120,10 +118,10 @@ void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_qua
 	memnew_placement_custom(dest, Variant, Variant(*quat));
 }
 
-void GDAPI godot_variant_new_rect3(godot_variant *r_dest, const godot_rect3 *p_rect3) {
+void GDAPI godot_variant_new_aabb(godot_variant *r_dest, const godot_aabb *p_aabb) {
 	Variant *dest = (Variant *)r_dest;
-	Rect3 *rect3 = (Rect3 *)p_rect3;
-	memnew_placement_custom(dest, Variant, Variant(*rect3));
+	AABB *aabb = (AABB *)p_aabb;
+	memnew_placement_custom(dest, Variant, Variant(*aabb));
 }
 
 void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_basis) {
@@ -306,10 +304,10 @@ godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self) {
 	return raw_dest;
 }
 
-godot_rect3 GDAPI godot_variant_as_rect3(const godot_variant *p_self) {
-	godot_rect3 raw_dest;
+godot_aabb GDAPI godot_variant_as_aabb(const godot_variant *p_self) {
+	godot_aabb raw_dest;
 	const Variant *self = (const Variant *)p_self;
-	Rect3 *dest = (Rect3 *)&raw_dest;
+	AABB *dest = (AABB *)&raw_dest;
 	*dest = *self;
 	return raw_dest;
 }

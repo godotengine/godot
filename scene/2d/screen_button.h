@@ -102,7 +102,7 @@ public:
 
 	bool is_pressed() const;
 
-	Rect2 get_item_rect() const;
+	Rect2 _edit_get_rect() const;
 
 	TouchScreenButton();
 };

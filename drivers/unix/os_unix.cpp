@@ -133,15 +133,6 @@ void OS_Unix::initialize_core() {
 	}
 }
 
-void OS_Unix::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(UnixTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
-}
-
 void OS_Unix::finalize_core() {
 }
 
@@ -454,30 +445,19 @@ int OS_Unix::get_processor_count() const {
 	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
-String OS_Unix::get_data_dir() const {
+String OS_Unix::get_user_data_dir() const {
 
-	String an = get_safe_application_name();
-	if (an != "") {
-
-		if (has_environment("HOME")) {
-
-			bool use_godot = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
-			if (use_godot)
-				return get_environment("HOME") + "/.godot/app_userdata/" + an;
-			else
-				return get_environment("HOME") + "/." + an;
+	String appname = get_safe_application_name();
+	if (appname != "") {
+		bool use_godot_dir = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
+		if (use_godot_dir) {
+			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname);
+		} else {
+			return get_data_path().plus_file(appname);
 		}
 	}
 
 	return ProjectSettings::get_singleton()->get_resource_path();
-}
-
-String OS_Unix::get_installed_templates_path() const {
-	String p = get_global_settings_path();
-	if (p != "")
-		return p + "/templates/";
-	else
-		return "";
 }
 
 String OS_Unix::get_executable_path() const {
@@ -553,5 +533,11 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
+
+OS_Unix::OS_Unix() {
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(UnixTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
+}
 
 #endif

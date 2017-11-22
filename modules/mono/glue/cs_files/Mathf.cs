@@ -35,6 +35,11 @@ namespace Godot
             return (float)Math.Atan2(x, y);
         }
 
+		public static Vector2 cartesian2polar(float x, float y)
+		{
+			return new Vector2(sqrt(x * x + y * y), atan2(y, x));
+		}
+
         public static float ceil(float s)
         {
             return (float)Math.Ceiling(s);
@@ -175,6 +180,11 @@ namespace Godot
             val++;
             return val;
         }
+
+		public static Vector2 polar2cartesian(float r, float th)
+		{
+			return new Vector2(r * cos(th), r * sin(th));
+		}
 
         public static float pow(float x, float y)
         {

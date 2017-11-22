@@ -80,7 +80,7 @@ void MonoCache::clear_members() {
 	class_Basis = NULL;
 	class_Quat = NULL;
 	class_Transform = NULL;
-	class_Rect3 = NULL;
+	class_AABB = NULL;
 	class_Color = NULL;
 	class_Plane = NULL;
 	class_NodePath = NULL;
@@ -147,7 +147,7 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(Basis, GODOT_API_CLASS(Basis));
 	CACHE_CLASS_AND_CHECK(Quat, GODOT_API_CLASS(Quat));
 	CACHE_CLASS_AND_CHECK(Transform, GODOT_API_CLASS(Transform));
-	CACHE_CLASS_AND_CHECK(Rect3, GODOT_API_CLASS(Rect3));
+	CACHE_CLASS_AND_CHECK(AABB, GODOT_API_CLASS(AABB));
 	CACHE_CLASS_AND_CHECK(Color, GODOT_API_CLASS(Color));
 	CACHE_CLASS_AND_CHECK(Plane, GODOT_API_CLASS(Plane));
 	CACHE_CLASS_AND_CHECK(NodePath, GODOT_API_CLASS(NodePath));
@@ -364,4 +364,4 @@ String get_exception_name_and_message(MonoObject *p_ex) {
 
 	return res;
 }
-}
+} // namespace GDMonoUtils

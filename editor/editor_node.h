@@ -30,6 +30,7 @@
 #ifndef EDITOR_NODE_H
 #define EDITOR_NODE_H
 
+#include "core/print_string.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_about.h"
@@ -343,7 +344,10 @@ private:
 	int dock_popup_selected;
 	Timer *dock_drag_timer;
 	bool docks_visible;
+
+	HBoxContainer *tabbar_container;
 	ToolButton *distraction_free;
+	ToolButton *scene_tab_add;
 
 	bool scene_distraction;
 	bool script_distraction;
@@ -503,7 +507,7 @@ private:
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
-	void _save_scene_with_preview(String p_file);
+	void _save_scene_with_preview(String p_file, int p_idx = -1);
 
 	Map<String, Set<String> > dependency_errors;
 
@@ -609,6 +613,9 @@ private:
 	void _license_tree_selected();
 
 	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
+
+	PrintHandlerList print_handler;
+	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 
 protected:
 	void _notification(int p_what);

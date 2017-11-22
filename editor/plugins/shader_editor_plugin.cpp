@@ -248,6 +248,8 @@ void ShaderTextEditor::_validate_script() {
 	if (err != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		set_error(error_text);
+		for (int i = 0; i < get_text_edit()->get_line_count(); i++)
+			get_text_edit()->set_line_as_marked(i, false);
 		get_text_edit()->set_line_as_marked(sl.get_error_line() - 1, true);
 
 	} else {
@@ -269,54 +271,283 @@ ShaderTextEditor::ShaderTextEditor() {
 
 void ShaderEditor::_menu_option(int p_option) {
 
-	ShaderTextEditor *current = shader_editor;
-
 	switch (p_option) {
 		case EDIT_UNDO: {
-
-			current->get_text_edit()->undo();
+			shader_editor->get_text_edit()->undo();
 		} break;
 		case EDIT_REDO: {
-			current->get_text_edit()->redo();
-
+			shader_editor->get_text_edit()->redo();
 		} break;
 		case EDIT_CUT: {
-
-			current->get_text_edit()->cut();
+			shader_editor->get_text_edit()->cut();
 		} break;
 		case EDIT_COPY: {
-			current->get_text_edit()->copy();
-
+			shader_editor->get_text_edit()->copy();
 		} break;
 		case EDIT_PASTE: {
-			current->get_text_edit()->paste();
-
+			shader_editor->get_text_edit()->paste();
 		} break;
 		case EDIT_SELECT_ALL: {
+			shader_editor->get_text_edit()->select_all();
+		} break;
+		case EDIT_MOVE_LINE_UP: {
 
-			current->get_text_edit()->select_all();
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
 
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				int from_line = tx->get_selection_from_line();
+				int from_col = tx->get_selection_from_column();
+				int to_line = tx->get_selection_to_line();
+				int to_column = tx->get_selection_to_column();
+
+				for (int i = from_line; i <= to_line; i++) {
+					int line_id = i;
+					int next_id = i - 1;
+
+					if (line_id == 0 || next_id < 0)
+						return;
+
+					tx->swap_lines(line_id, next_id);
+					tx->cursor_set_line(next_id);
+				}
+				int from_line_up = from_line > 0 ? from_line - 1 : from_line;
+				int to_line_up = to_line > 0 ? to_line - 1 : to_line;
+				tx->select(from_line_up, from_col, to_line_up, to_column);
+			} else {
+				int line_id = tx->cursor_get_line();
+				int next_id = line_id - 1;
+
+				if (line_id == 0 || next_id < 0)
+					return;
+
+				tx->swap_lines(line_id, next_id);
+				tx->cursor_set_line(next_id);
+			}
+			tx->end_complex_operation();
+			tx->update();
+
+		} break;
+		case EDIT_MOVE_LINE_DOWN: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				int from_line = tx->get_selection_from_line();
+				int from_col = tx->get_selection_from_column();
+				int to_line = tx->get_selection_to_line();
+				int to_column = tx->get_selection_to_column();
+
+				for (int i = to_line; i >= from_line; i--) {
+					int line_id = i;
+					int next_id = i + 1;
+
+					if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
+						return;
+
+					tx->swap_lines(line_id, next_id);
+					tx->cursor_set_line(next_id);
+				}
+				int from_line_down = from_line < tx->get_line_count() ? from_line + 1 : from_line;
+				int to_line_down = to_line < tx->get_line_count() ? to_line + 1 : to_line;
+				tx->select(from_line_down, from_col, to_line_down, to_column);
+			} else {
+				int line_id = tx->cursor_get_line();
+				int next_id = line_id + 1;
+
+				if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
+					return;
+
+				tx->swap_lines(line_id, next_id);
+				tx->cursor_set_line(next_id);
+			}
+			tx->end_complex_operation();
+			tx->update();
+
+		} break;
+		case EDIT_INDENT_LEFT: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				tx->indent_selection_left();
+			} else {
+				int begin = tx->cursor_get_line();
+				String line_text = tx->get_line(begin);
+				// begins with tab
+				if (line_text.begins_with("\t")) {
+					line_text = line_text.substr(1, line_text.length());
+					tx->set_line(begin, line_text);
+				}
+				// begins with 4 spaces
+				else if (line_text.begins_with("    ")) {
+					line_text = line_text.substr(4, line_text.length());
+					tx->set_line(begin, line_text);
+				}
+			}
+			tx->end_complex_operation();
+			tx->update();
+			//tx->deselect();
+
+		} break;
+		case EDIT_INDENT_RIGHT: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				tx->indent_selection_right();
+			} else {
+				int begin = tx->cursor_get_line();
+				String line_text = tx->get_line(begin);
+				line_text = '\t' + line_text;
+				tx->set_line(begin, line_text);
+			}
+			tx->end_complex_operation();
+			tx->update();
+			//tx->deselect();
+
+		} break;
+		case EDIT_DELETE_LINE: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			int line = tx->cursor_get_line();
+			tx->set_line(tx->cursor_get_line(), "");
+			tx->backspace_at_cursor();
+			tx->cursor_set_line(line);
+			tx->end_complex_operation();
+
+		} break;
+		case EDIT_CLONE_DOWN: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			int from_line = tx->cursor_get_line();
+			int to_line = tx->cursor_get_line();
+			int column = tx->cursor_get_column();
+
+			if (tx->is_selection_active()) {
+				from_line = tx->get_selection_from_line();
+				to_line = tx->get_selection_to_line();
+				column = tx->cursor_get_column();
+			}
+			int next_line = to_line + 1;
+
+			tx->begin_complex_operation();
+			for (int i = from_line; i <= to_line; i++) {
+
+				if (i >= tx->get_line_count() - 1) {
+					tx->set_line(i, tx->get_line(i) + "\n");
+				}
+				String line_clone = tx->get_line(i);
+				tx->insert_at(line_clone, next_line);
+				next_line++;
+			}
+
+			tx->cursor_set_column(column);
+			if (tx->is_selection_active()) {
+				tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
+			}
+
+			tx->end_complex_operation();
+			tx->update();
+
+		} break;
+		case EDIT_TOGGLE_COMMENT: {
+
+			TextEdit *tx = shader_editor->get_text_edit();
+			if (shader.is_null())
+				return;
+
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				int begin = tx->get_selection_from_line();
+				int end = tx->get_selection_to_line();
+
+				// End of selection ends on the first column of the last line, ignore it.
+				if (tx->get_selection_to_column() == 0)
+					end -= 1;
+
+				// Check if all lines in the selected block are commented
+				bool is_commented = true;
+				for (int i = begin; i <= end; i++) {
+					if (!tx->get_line(i).begins_with("//")) {
+						is_commented = false;
+						break;
+					}
+				}
+				for (int i = begin; i <= end; i++) {
+					String line_text = tx->get_line(i);
+
+					if (line_text.strip_edges().empty()) {
+						line_text = "//";
+					} else {
+						if (is_commented) {
+							line_text = line_text.substr(2, line_text.length());
+						} else {
+							line_text = "//" + line_text;
+						}
+					}
+					tx->set_line(i, line_text);
+				}
+			} else {
+				int begin = tx->cursor_get_line();
+				String line_text = tx->get_line(begin);
+
+				if (line_text.begins_with("//"))
+					line_text = line_text.substr(2, line_text.length());
+				else
+					line_text = "//" + line_text;
+				tx->set_line(begin, line_text);
+			}
+			tx->end_complex_operation();
+			tx->update();
+			//tx->deselect();
+
+		} break;
+		case EDIT_COMPLETE: {
+
+			shader_editor->get_text_edit()->query_code_comple();
 		} break;
 		case SEARCH_FIND: {
 
-			current->get_find_replace_bar()->popup_search();
+			shader_editor->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
 
-			current->get_find_replace_bar()->search_next();
+			shader_editor->get_find_replace_bar()->search_next();
 		} break;
 		case SEARCH_FIND_PREV: {
 
-			current->get_find_replace_bar()->search_prev();
+			shader_editor->get_find_replace_bar()->search_prev();
 		} break;
 		case SEARCH_REPLACE: {
 
-			current->get_find_replace_bar()->popup_replace();
+			shader_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_GOTO_LINE: {
 
-			goto_line_dialog->popup_find_line(current->get_text_edit());
+			goto_line_dialog->popup_find_line(shader_editor->get_text_edit());
 		} break;
+	}
+	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
+		shader_editor->get_text_edit()->call_deferred("grab_focus");
 	}
 }
 
@@ -325,10 +556,6 @@ void ShaderEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 	}
 	if (p_what == NOTIFICATION_DRAW) {
-
-		RID ci = get_canvas_item();
-		Ref<StyleBox> style = get_stylebox("panel", "Panel");
-		style->draw(ci, Rect2(Point2(), get_size()));
 	}
 }
 
@@ -360,6 +587,7 @@ void ShaderEditor::_editor_settings_changed() {
 void ShaderEditor::_bind_methods() {
 
 	ClassDB::bind_method("_editor_settings_changed", &ShaderEditor::_editor_settings_changed);
+	ClassDB::bind_method("_text_edit_gui_input", &ShaderEditor::_text_edit_gui_input);
 
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
@@ -413,48 +641,121 @@ void ShaderEditor::apply_shaders() {
 	}
 }
 
-ShaderEditor::ShaderEditor() {
+void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
-	HBoxContainer *hbc = memnew(HBoxContainer);
+	Ref<InputEventMouseButton> mb = ev;
 
-	add_child(hbc);
+	if (mb.is_valid()) {
 
-	edit_menu = memnew(MenuButton);
-	hbc->add_child(edit_menu);
-	edit_menu->set_position(Point2(5, -1));
-	edit_menu->set_text(TTR("Edit"));
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/undo", TTR("Undo"), KEY_MASK_CMD | KEY_Z), EDIT_UNDO);
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/redo", TTR("Redo"), KEY_MASK_CMD | KEY_Y), EDIT_REDO);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/cut", TTR("Cut"), KEY_MASK_CMD | KEY_X), EDIT_CUT);
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy", TTR("Copy"), KEY_MASK_CMD | KEY_C), EDIT_COPY);
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/paste", TTR("Paste"), KEY_MASK_CMD | KEY_V), EDIT_PASTE);
-	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/select_all", TTR("Select All"), KEY_MASK_CMD | KEY_A), EDIT_SELECT_ALL);
-	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+		if (mb->get_button_index() == BUTTON_RIGHT && !mb->is_pressed()) {
 
-	search_menu = memnew(MenuButton);
-	hbc->add_child(search_menu);
-	search_menu->set_position(Point2(38, -1));
-	search_menu->set_text(TTR("Search"));
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F), SEARCH_FIND);
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), SEARCH_FIND_NEXT);
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), SEARCH_FIND_PREV);
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace", TTR("Replace.."), KEY_MASK_CMD | KEY_R), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	//search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD | KEY_L), SEARCH_GOTO_LINE);
-	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+			int col, row;
+			TextEdit *tx = shader_editor->get_text_edit();
+			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
+			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
+			bool have_selection = (tx->get_selection_text().length() > 0);
+			_make_context_menu(have_selection);
+		}
+	}
+}
 
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+void ShaderEditor::_make_context_menu(bool p_selection) {
+
+	context_menu->clear();
+	if (p_selection) {
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"), EDIT_COPY);
+	}
+
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
+
+	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_size(Vector2(1, 1));
+	context_menu->popup();
+}
+
+ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	shader_editor = memnew(ShaderTextEditor);
-	add_child(shader_editor);
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	shader_editor->add_constant_override("separation", 0);
+	shader_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	shader_editor->connect("script_changed", this, "apply_shaders");
 	EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+
+	shader_editor->get_text_edit()->set_callhint_settings(
+			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
+			EditorSettings::get_singleton()->get("text_editor/completion/callhint_tooltip_offset"));
+
+	shader_editor->get_text_edit()->set_select_identifiers_on_hover(true);
+	shader_editor->get_text_edit()->set_context_menu_enabled(false);
+	shader_editor->get_text_edit()->connect("gui_input", this, "_text_edit_gui_input");
+
+	shader_editor->update_editor_settings();
+
+	context_menu = memnew(PopupMenu);
+	add_child(context_menu);
+	context_menu->connect("id_pressed", this, "_menu_option");
+
+	VBoxContainer *main_container = memnew(VBoxContainer);
+	HBoxContainer *hbc = memnew(HBoxContainer);
+
+	edit_menu = memnew(MenuButton);
+	//edit_menu->set_position(Point2(5, -1));
+	edit_menu->set_text(TTR("Edit"));
+
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"), EDIT_COPY);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_up"), EDIT_MOVE_LINE_UP);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/move_down"), EDIT_MOVE_LINE_DOWN);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
+
+	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	search_menu = memnew(MenuButton);
+	//search_menu->set_position(Point2(38, -1));
+	search_menu->set_text(TTR("Search"));
+
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	add_child(main_container);
+	main_container->add_child(hbc);
+	hbc->add_child(search_menu);
+	hbc->add_child(edit_menu);
+	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
+	main_container->add_child(shader_editor);
+
+	goto_line_dialog = memnew(GotoLineDialog);
+	add_child(goto_line_dialog);
 
 	_editor_settings_changed();
 }
@@ -504,7 +805,7 @@ void ShaderEditorPlugin::apply_changes() {
 ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	shader_editor = memnew(ShaderEditor);
+	shader_editor = memnew(ShaderEditor(p_node));
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300));
 	button = editor->add_bottom_panel_item(TTR("Shader"), shader_editor);

@@ -381,8 +381,7 @@ void main() {
 
 	if (clip_rect_uv) {
 
-		vec2 half_texpixel = color_texpixel_size * 0.5;
-		uv = clamp(uv,src_rect.xy+half_texpixel,src_rect.xy+abs(src_rect.zw)-color_texpixel_size);
+		uv = clamp(uv,src_rect.xy,src_rect.xy+abs(src_rect.zw));
 	}
 
 #endif

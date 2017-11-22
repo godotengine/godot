@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_uwp.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
@@ -69,7 +70,7 @@ int OSUWP::get_video_driver_count() const {
 }
 const char *OSUWP::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 Size2 OSUWP::get_window_size() const {
@@ -176,15 +177,6 @@ void OSUWP::initialize_core() {
 	IP_Unix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
-}
-
-void OSUWP::initialize_logger() {
-	Vector<Logger *> loggers;
-	loggers.push_back(memnew(WindowsTerminalLogger));
-	// FIXME: Reenable once we figure out how to get this properly in user://
-	// instead of littering the user's working dirs (res:// + pwd) with log files (GH-12277)
-	//loggers.push_back(memnew(RotatedFileLogger("user://logs/log.txt")));
-	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 bool OSUWP::can_draw() const {
@@ -298,7 +290,7 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
 	}
 
-	_ensure_data_dir();
+	_ensure_user_data_dir();
 
 	if (is_keep_screen_on())
 		display_request->RequestActive();
@@ -781,7 +773,7 @@ MainLoop *OSUWP::get_main_loop() const {
 	return main_loop;
 }
 
-String OSUWP::get_data_dir() const {
+String OSUWP::get_user_data_dir() const {
 
 	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
@@ -833,7 +825,9 @@ OSUWP::OSUWP() {
 
 	AudioDriverManager::add_driver(&audio_driver);
 
-	_set_logger(memnew(WindowsTerminalLogger));
+	Vector<Logger *> loggers;
+	loggers.push_back(memnew(WindowsTerminalLogger));
+	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
 OSUWP::~OSUWP() {

@@ -184,7 +184,7 @@ Ref<Texture> EditorPackedScenePreviewPlugin::generate(const RES &p_from) {
 
 Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path) {
 
-	String temp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
+	String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
 	cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
@@ -790,13 +790,13 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) {
 
 	VS::get_singleton()->instance_set_base(mesh_instance, mesh->get_rid());
 
-	Rect3 aabb = mesh->get_aabb();
+	AABB aabb = mesh->get_aabb();
 	Vector3 ofs = aabb.position + aabb.size * 0.5;
 	aabb.position -= ofs;
 	Transform xform;
 	xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.125);
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
-	Rect3 rot_aabb = xform.xform(aabb);
+	AABB rot_aabb = xform.xform(aabb);
 	float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 	if (m == 0)
 		return Ref<Texture>();

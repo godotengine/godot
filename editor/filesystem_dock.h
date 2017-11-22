@@ -147,6 +147,7 @@ private:
 	bool updating_tree;
 	Tree *tree; //directories
 	ItemList *files;
+	bool import_dock_needs_update;
 
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
 	void _update_tree(bool keep_collapse_state);
@@ -161,6 +162,7 @@ private:
 
 	void _select_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
+	void _update_import_dock();
 
 	void _file_selected();
 	void _dir_selected();
@@ -190,6 +192,7 @@ private:
 
 	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _rmb_pressed(const Vector2 &p_pos);
 
 	struct FileInfo {
 		String name;

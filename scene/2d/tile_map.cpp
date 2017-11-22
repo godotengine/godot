@@ -459,9 +459,9 @@ void TileMap::_update_dirty_quadrants() {
 					Transform2D xform;
 					xform.set_origin(offset.floor());
 
-					_fix_cell_transform(xform, c, center_ofs, s);
+					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id, i);
 
-					xform *= shapes[i].shape_transform;
+					_fix_cell_transform(xform, c, shape_ofs + center_ofs, s);
 
 					if (debug_canvas_item.is_valid()) {
 						vs->canvas_item_add_set_transform(debug_canvas_item, xform);
@@ -884,7 +884,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	return data;
 }
 
-Rect2 TileMap::get_item_rect() const {
+Rect2 TileMap::_edit_get_rect() const {
 
 	const_cast<TileMap *>(this)->_update_dirty_quadrants();
 	return rect_cache;

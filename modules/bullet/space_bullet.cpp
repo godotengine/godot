@@ -115,12 +115,13 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_xform.basis.get_scale(), scale_with_margin);
@@ -147,12 +148,13 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_layer, uint32_t p_object_type_mask, ShapeRestInfo *r_info) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *bt_convex_shape = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!bt_convex_shape) {
-		bulletdelete(bt_convex_shape);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *bt_convex_shape = static_cast<btConvexShape *>(btShape);
 
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
@@ -174,16 +176,18 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, 0.002);
 
 	if (btResult.hasHit()) {
-		if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
-			B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
-		}
-		CollisionObjectBullet *collision_object = static_cast<CollisionObjectBullet *>(btResult.m_hitCollisionObject->getUserPointer());
 		p_closest_safe = p_closest_unsafe = btResult.m_closestHitFraction;
-		B_TO_G(btResult.m_hitPointWorld, r_info->point);
-		B_TO_G(btResult.m_hitNormalWorld, r_info->normal);
-		r_info->rid = collision_object->get_self();
-		r_info->collider_id = collision_object->get_instance_id();
-		r_info->shape = btResult.m_shapePart;
+		if (r_info) {
+			if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
+				B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);
+			}
+			CollisionObjectBullet *collision_object = static_cast<CollisionObjectBullet *>(btResult.m_hitCollisionObject->getUserPointer());
+			B_TO_G(btResult.m_hitPointWorld, r_info->point);
+			B_TO_G(btResult.m_hitNormalWorld, r_info->normal);
+			r_info->rid = collision_object->get_self();
+			r_info->collider_id = collision_object->get_instance_id();
+			r_info->shape = btResult.m_shapeId;
+		}
 	}
 
 	bulletdelete(bt_convex_shape);
@@ -197,12 +201,13 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_shape_xform.basis.get_scale(), scale_with_margin);
@@ -231,12 +236,13 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
-	btConvexShape *btConvex = dynamic_cast<btConvexShape *>(shape->create_bt_shape());
-	if (!btConvex) {
-		bulletdelete(btConvex);
+	btCollisionShape *btShape = shape->create_bt_shape();
+	if (!btShape->isConvex()) {
+		bulletdelete(btShape);
 		ERR_PRINTS("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
 		return 0;
 	}
+	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btVector3 scale_with_margin;
 	G_TO_B(p_shape_xform.basis.get_scale() + Vector3(p_margin, p_margin, p_margin), scale_with_margin);
@@ -777,7 +783,8 @@ void SpaceBullet::check_body_collision() {
 void SpaceBullet::update_gravity() {
 	btVector3 btGravity;
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
-	dynamicsWorld->setGravity(btGravity);
+	//dynamicsWorld->setGravity(btGravity);
+	dynamicsWorld->setGravity(btVector3(0, 0, 0));
 	if (soft_body_world_info) {
 		soft_body_world_info->m_gravity = btGravity;
 	}
@@ -877,11 +884,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				continue;
 			}
 
-			btConvexShape *convex_shape_test(dynamic_cast<btConvexShape *>(p_body->get_bt_shape(shIndex)));
-			if (!convex_shape_test) {
+			if (!p_body->get_bt_shape(shIndex)->isConvex()) {
 				// Skip no convex shape
 				continue;
 			}
+			btConvexShape *convex_shape_test(static_cast<btConvexShape *>(p_body->get_bt_shape(shIndex)));
 
 			btTransform shape_world_from;
 			G_TO_B(p_body->get_shape_transform(shIndex), shape_world_from);
@@ -910,26 +917,26 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 
 	{ /// Phase three - Recover + contact test with margin
 
-		RecoverResult recover_result;
+		RecoverResult r_recover_result;
 
-		hasPenetration = recover_from_penetration(p_body, body_safe_position, recovered_motion, &recover_result);
+		hasPenetration = recover_from_penetration(p_body, body_safe_position, recovered_motion, &r_recover_result);
 
 		if (r_result) {
 
 			B_TO_G(recovered_motion + recover_initial_position, r_result->motion);
 
 			if (hasPenetration) {
-				const btRigidBody *btRigid = static_cast<const btRigidBody *>(recover_result.other_collision_object);
+				const btRigidBody *btRigid = static_cast<const btRigidBody *>(r_recover_result.other_collision_object);
 				CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
 
 				r_result->remainder = p_motion - r_result->motion; // is the remaining movements
-				B_TO_G(recover_result.pointWorld, r_result->collision_point);
-				B_TO_G(recover_result.pointNormalWorld, r_result->collision_normal);
-				B_TO_G(btRigid->getVelocityInLocalPoint(recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
+				B_TO_G(r_recover_result.pointWorld, r_result->collision_point);
+				B_TO_G(r_recover_result.pointNormalWorld, r_result->collision_normal);
+				B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
 				r_result->collider = collisionObject->get_self();
 				r_result->collider_id = collisionObject->get_instance_id();
-				r_result->collider_shape = recover_result.other_compound_shape_index;
-				r_result->collision_local_shape = recover_result.local_shape_most_recovered;
+				r_result->collider_shape = r_recover_result.other_compound_shape_index;
+				r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
 
 //{ /// Add manifold point to manage collisions
 //    btPersistentManifold* manifold = dynamicsWorld->getDispatcher()->getNewManifold(p_body->getBtBody(), btRigid);
@@ -995,7 +1002,7 @@ public:
 	}
 };
 
-bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btVector3 &out_recover_position, RecoverResult *recover_result) {
+bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btVector3 &r_recover_position, RecoverResult *r_recover_result) {
 
 	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask());
 
@@ -1004,9 +1011,6 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 	// Broad phase support
 	btVector3 minAabb, maxAabb;
-
-	// GJK support
-	btGjkPairDetector::ClosestPointInput gjk_input;
 
 	bool penetration = false;
 
@@ -1022,7 +1026,7 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		body_shape_position = p_body_position * kin_shape.transform;
 		body_shape_position_recovered = body_shape_position;
-		body_shape_position_recovered.getOrigin() += out_recover_position;
+		body_shape_position_recovered.getOrigin() += r_recover_position;
 
 		kin_shape.shape->getAabb(body_shape_position_recovered, minAabb, maxAabb);
 		dynamicsWorld->getBroadphase()->aabbTest(minAabb, maxAabb, recover_broad_result);
@@ -1032,70 +1036,104 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 			if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
 				continue;
 
-			if (otherObject->getCollisionShape()->isCompound()) { /// Execute GJK test against all shapes
+			if (otherObject->getCollisionShape()->isCompound()) {
 
 				// Each convex shape
 				btCompoundShape *cs = static_cast<btCompoundShape *>(otherObject->getCollisionShape());
 				for (int x = cs->getNumChildShapes() - 1; 0 <= x; --x) {
 
-					if (!cs->getChildShape(x)->isConvex())
-						continue;
+					if (cs->getChildShape(x)->isConvex()) {
+						if (RFP_convex_convex_test(kin_shape.shape, static_cast<const btConvexShape *>(cs->getChildShape(x)), otherObject, x, body_shape_position, otherObject->getWorldTransform() * cs->getChildTransform(x), r_recover_position, r_recover_result)) {
 
-					// Initialize GJK input
-					gjk_input.m_transformA = body_shape_position;
-					gjk_input.m_transformA.getOrigin() += out_recover_position;
-					gjk_input.m_transformB = otherObject->getWorldTransform() * cs->getChildTransform(x);
+							penetration = true;
+						}
+					} else {
+						if (RFP_convex_world_test(kin_shape.shape, cs->getChildShape(x), p_body->get_bt_collision_object(), otherObject, kinIndex, x, body_shape_position, otherObject->getWorldTransform() * cs->getChildTransform(x), r_recover_position, r_recover_result)) {
 
-					// Perform GJK test
-					btPointCollector result;
-					btGjkPairDetector gjk_pair_detector(kin_shape.shape, static_cast<const btConvexShape *>(cs->getChildShape(x)), gjk_simplex_solver, gjk_epa_pen_solver);
-					gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
-					if (0 > result.m_distance) {
-						// Has penetration
-						out_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
-						penetration = true;
-
-						if (recover_result) {
-
-							recover_result->hasPenetration = true;
-							recover_result->other_collision_object = otherObject;
-							recover_result->other_compound_shape_index = x;
-							recover_result->penetration_distance = result.m_distance;
-							recover_result->pointNormalWorld = result.m_normalOnBInWorld;
-							recover_result->pointWorld = result.m_pointInWorld;
+							penetration = true;
 						}
 					}
 				}
-
 			} else if (otherObject->getCollisionShape()->isConvex()) { /// Execute GJK test against object shape
+				if (RFP_convex_convex_test(kin_shape.shape, static_cast<const btConvexShape *>(otherObject->getCollisionShape()), otherObject, 0, body_shape_position, otherObject->getWorldTransform(), r_recover_position, r_recover_result)) {
 
-				// Initialize GJK input
-				gjk_input.m_transformA = body_shape_position;
-				gjk_input.m_transformA.getOrigin() += out_recover_position;
-				gjk_input.m_transformB = otherObject->getWorldTransform();
-
-				// Perform GJK test
-				btPointCollector result;
-				btGjkPairDetector gjk_pair_detector(kin_shape.shape, static_cast<const btConvexShape *>(otherObject->getCollisionShape()), gjk_simplex_solver, gjk_epa_pen_solver);
-				gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
-				if (0 > result.m_distance) {
-					// Has penetration
-					out_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
 					penetration = true;
+				}
+			} else {
+				if (RFP_convex_world_test(kin_shape.shape, otherObject->getCollisionShape(), p_body->get_bt_collision_object(), otherObject, kinIndex, 0, body_shape_position, otherObject->getWorldTransform(), r_recover_position, r_recover_result)) {
 
-					if (recover_result) {
-
-						recover_result->hasPenetration = true;
-						recover_result->other_collision_object = otherObject;
-						recover_result->other_compound_shape_index = 0;
-						recover_result->penetration_distance = result.m_distance;
-						recover_result->pointNormalWorld = result.m_normalOnBInWorld;
-						recover_result->pointWorld = result.m_pointInWorld;
-					}
+					penetration = true;
 				}
 			}
 		}
 	}
 
 	return penetration;
+}
+
+bool SpaceBullet::RFP_convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btVector3 &r_recover_position, RecoverResult *r_recover_result) {
+
+	// Initialize GJK input
+	btGjkPairDetector::ClosestPointInput gjk_input;
+	gjk_input.m_transformA = p_transformA;
+	gjk_input.m_transformA.getOrigin() += r_recover_position;
+	gjk_input.m_transformB = p_transformB;
+
+	// Perform GJK test
+	btPointCollector result;
+	btGjkPairDetector gjk_pair_detector(p_shapeA, p_shapeB, gjk_simplex_solver, gjk_epa_pen_solver);
+	gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+	if (0 > result.m_distance) {
+		// Has penetration
+		r_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
+
+		if (r_recover_result) {
+
+			r_recover_result->hasPenetration = true;
+			r_recover_result->other_collision_object = p_objectB;
+			r_recover_result->other_compound_shape_index = p_shapeId_B;
+			r_recover_result->penetration_distance = result.m_distance;
+			r_recover_result->pointNormalWorld = result.m_normalOnBInWorld;
+			r_recover_result->pointWorld = result.m_pointInWorld;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btVector3 &r_recover_position, RecoverResult *r_recover_result) {
+
+	/// Contact test
+
+	btTransform p_recovered_transformA(p_transformA);
+	p_recovered_transformA.getOrigin() += r_recover_position;
+
+	btCollisionObjectWrapper obA(NULL, p_shapeA, p_objectA, p_recovered_transformA, -1, p_shapeId_A);
+	btCollisionObjectWrapper obB(NULL, p_shapeB, p_objectB, p_transformB, -1, p_shapeId_B);
+
+	btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CLOSEST_POINT_ALGORITHMS);
+	if (algorithm) {
+		GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
+		//discrete collision detection query
+		algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
+
+		algorithm->~btCollisionAlgorithm();
+		dispatcher->freeCollisionAlgorithm(algorithm);
+
+		if (contactPointResult.hasHit()) {
+			r_recover_position += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1);
+
+			if (r_recover_result) {
+
+				r_recover_result->hasPenetration = true;
+				r_recover_result->other_collision_object = p_objectB;
+				r_recover_result->other_compound_shape_index = p_shapeId_B;
+				r_recover_result->penetration_distance = contactPointResult.m_penetration_distance;
+				r_recover_result->pointNormalWorld = contactPointResult.m_pointNormalWorld;
+				r_recover_result->pointWorld = contactPointResult.m_pointWorld;
+			}
+			return true;
+		}
+	}
+	return false;
 }

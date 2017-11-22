@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RegExMatch" inherits="Reference" category="Core" version="3.0-alpha">
+	<brief_description>
+		Contains the results of a regex search.
+	</brief_description>
+	<description>
+		Contains the results of a single regex match returned by [method RegEx.search] and [method RegEx.search_all]. It can be used to find the position and range of the match and its capturing groups, and it can extract its sub-string for you.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_end" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="Variant" default="0">
+			</argument>
+			<description>
+				Returns the end position of the match within the source string. The end position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns -1 if the group did not match or doesn't exist.
+			</description>
+		</method>
+		<method name="get_group_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of capturing groups.
+			</description>
+		</method>
+		<method name="get_names" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns a dictionary of named groups and its corresponding group number. Only groups with that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
+			</description>
+		</method>
+		<method name="get_start" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="Variant" default="0">
+			</argument>
+			<description>
+				Returns the starting position of the match within the source string. The starting position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns -1 if the group did not match or doesn't exist.
+			</description>
+		</method>
+		<method name="get_string" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="name" type="Variant" default="0">
+			</argument>
+			<description>
+				Returns the substring of the match from the source string. Capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
+				Returns an empty string if the group did not match or doesn't exist.
+			</description>
+		</method>
+		<method name="get_strings" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of the match and its capturing groups.
+			</description>
+		</method>
+		<method name="get_subject" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the source string used with the search pattern to find this matching result.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

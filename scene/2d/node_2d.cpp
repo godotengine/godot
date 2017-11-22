@@ -34,35 +34,22 @@
 #include "scene/main/viewport.h"
 #include "servers/visual_server.h"
 
-void Node2D::edit_set_pivot(const Point2 &p_pivot) {
-}
+Dictionary Node2D::_edit_get_state() const {
 
-Point2 Node2D::edit_get_pivot() const {
-
-	return Point2();
-}
-bool Node2D::edit_has_pivot() const {
-
-	return false;
-}
-
-Variant Node2D::edit_get_state() const {
-
-	Array state;
-	state.push_back(get_position());
-	state.push_back(get_rotation());
-	state.push_back(get_scale());
+	Dictionary state;
+	state["position"] = get_position();
+	state["rotation"] = get_rotation();
+	state["scale"] = get_scale();
 
 	return state;
 }
-void Node2D::edit_set_state(const Variant &p_state) {
+void Node2D::_edit_set_state(const Dictionary &p_state) {
 
-	Array state = p_state;
-	ERR_FAIL_COND(state.size() != 3);
+	Dictionary state = p_state;
+	pos = state["position"];
+	angle = state["rotation"];
+	_scale = state["scale"];
 
-	pos = state[0];
-	angle = state[1];
-	_scale = state[2];
 	_update_transform();
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
@@ -70,9 +57,16 @@ void Node2D::edit_set_state(const Variant &p_state) {
 	_change_notify("position");
 }
 
-void Node2D::edit_set_rect(const Rect2 &p_edit_rect) {
+void Node2D::_edit_set_position(const Point2 &p_position) {
+	pos = p_position;
+}
 
-	Rect2 r = get_item_rect();
+Point2 Node2D::_edit_get_position() const {
+	return pos;
+}
+
+void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
+	Rect2 r = _edit_get_rect();
 
 	Vector2 zero_offset;
 	if (r.size.x != 0)
@@ -101,12 +95,23 @@ void Node2D::edit_set_rect(const Rect2 &p_edit_rect) {
 	_change_notify("position");
 }
 
-void Node2D::edit_rotate(float p_rot) {
+bool Node2D::_edit_use_rect() const {
+	return true;
+}
 
-	angle += p_rot;
+void Node2D::_edit_set_rotation(float p_rotation) {
+	angle = p_rotation;
 	_update_transform();
 	_change_notify("rotation");
 	_change_notify("rotation_degrees");
+}
+
+float Node2D::_edit_get_rotation() const {
+	return angle;
+}
+
+bool Node2D::_edit_use_rotation() const {
+	return true;
 }
 
 void Node2D::_update_xform_values() {
@@ -203,17 +208,6 @@ void Node2D::_notification(int p_what) {
 Transform2D Node2D::get_transform() const {
 
 	return _mat;
-}
-
-Rect2 Node2D::get_item_rect() const {
-
-	if (get_script_instance()) {
-		Variant::CallError err;
-		Rect2 r = get_script_instance()->call("_get_item_rect", NULL, 0, err);
-		if (err.error == Variant::CallError::CALL_OK)
-			return r;
-	}
-	return Rect2(Point2(-32, -32), Size2(64, 64));
 }
 
 void Node2D::rotate(float p_radians) {
@@ -438,8 +432,6 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
 	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
-
-	ClassDB::bind_method(D_METHOD("edit_set_pivot", "pivot"), &Node2D::edit_set_pivot);
 
 	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent"), &Node2D::get_relative_transform_to_parent);
 

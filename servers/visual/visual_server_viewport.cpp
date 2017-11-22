@@ -268,7 +268,7 @@ void VisualServerViewport::draw_viewports() {
 
 		if (vp->use_arvr && arvr_interface.is_valid()) {
 			// override our size, make sure it matches our required size
-			Size2 size = arvr_interface->get_recommended_render_targetsize();
+			Size2 size = arvr_interface->get_render_targetsize();
 			VSG::storage->render_target_set_size(vp->render_target, size.x, size.y);
 
 			// render mono or left eye first

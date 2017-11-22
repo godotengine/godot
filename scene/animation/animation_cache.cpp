@@ -87,95 +87,90 @@ void AnimationCache::_update_cache() {
 
 		Ref<Resource> res;
 
-		if (np.get_subname_count()) {
+		if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM) {
 
-			if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM) {
-
+			if (np.get_subname_count() > 1) {
 				path_cache.push_back(Path());
 				ERR_EXPLAIN("Transform tracks can't have a subpath: " + np);
 				ERR_CONTINUE(animation->track_get_type(i) == Animation::TYPE_TRANSFORM);
 			}
 
-			RES res;
+			Spatial *sp = Object::cast_to<Spatial>(node);
 
-			for (int j = 0; j < np.get_subname_count(); j++) {
-				res = j == 0 ? node->get(np.get_subname(j)) : res->get(np.get_subname(j));
-				if (res.is_null())
-					break;
-			}
-
-			if (res.is_null()) {
+			if (!sp) {
 
 				path_cache.push_back(Path());
-				ERR_EXPLAIN("Invalid Track SubPath in Animation: " + np);
-				ERR_CONTINUE(res.is_null());
+				ERR_EXPLAIN("Transform track not of type Spatial: " + np);
+				ERR_CONTINUE(!sp);
 			}
 
-			path.resource = res;
-			path.object = res.ptr();
-
-		} else {
-
-			if (animation->track_get_type(i) == Animation::TYPE_TRANSFORM) {
-				StringName property = np.get_property();
+			if (np.get_subname_count() == 1) {
+				StringName property = np.get_subname(0);
 				String ps = property;
 
-				Spatial *sp = Object::cast_to<Spatial>(node);
-
-				if (!sp) {
+				Skeleton *sk = Object::cast_to<Skeleton>(node);
+				if (!sk) {
 
 					path_cache.push_back(Path());
-					ERR_EXPLAIN("Transform track not of type Spatial: " + np);
-					ERR_CONTINUE(!sp);
+					ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton!: " + np);
+					ERR_CONTINUE(!sk);
 				}
 
-				if (ps != "") {
-
-					Skeleton *sk = Object::cast_to<Skeleton>(node);
-					if (!sk) {
-
-						path_cache.push_back(Path());
-						ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton!: " + np);
-						ERR_CONTINUE(!sk);
-					}
-
-					int idx = sk->find_bone(ps);
-					if (idx == -1) {
-
-						path_cache.push_back(Path());
-						ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton Bone!: " + np);
-						ERR_CONTINUE(idx == -1);
-					}
-
-					path.bone_idx = idx;
-					path.skeleton = sk;
+				int idx = sk->find_bone(ps);
+				if (idx == -1) {
+					path_cache.push_back(Path());
+					ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton Bone!: " + np);
+					ERR_CONTINUE(idx == -1);
 				}
 
-				path.spatial = sp;
+				path.bone_idx = idx;
+				path.skeleton = sk;
 			}
 
-			path.node = node;
-			path.object = node;
+			path.spatial = sp;
+
+		} else {
+			if (np.get_subname_count() > 0) {
+
+				RES res;
+				Vector<StringName> leftover_subpath;
+
+				// We don't want to cache the last resource unless it is a method call
+				bool is_method = animation->track_get_type(i) == Animation::TYPE_METHOD;
+				root->get_node_and_resource(np, res, leftover_subpath, is_method);
+
+				if (res.is_valid()) {
+					path.resource = res;
+				} else {
+					path.node = node;
+				}
+				path.object = res.is_valid() ? res.ptr() : (Object *)node;
+				path.subpath = leftover_subpath;
+
+			} else {
+
+				path.node = node;
+				path.object = node;
+				path.subpath = np.get_subnames();
+			}
 		}
 
 		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
 
-			if (np.get_property().operator String() == "") {
+			if (np.get_subname_count() == 0) {
 
 				path_cache.push_back(Path());
 				ERR_EXPLAIN("Value Track lacks property: " + np);
-				ERR_CONTINUE(np.get_property().operator String() == "");
+				ERR_CONTINUE(np.get_subname_count() == 0);
 			}
-
-			path.property = np.get_property();
 
 		} else if (animation->track_get_type(i) == Animation::TYPE_METHOD) {
 
-			if (np.get_property().operator String() != "") {
+			if (path.subpath.size() != 0) { // Trying to call a method of a non-resource
 
 				path_cache.push_back(Path());
 				ERR_EXPLAIN("Method Track has property: " + np);
-				ERR_CONTINUE(np.get_property().operator String() != "");
+				ERR_CONTINUE(path.subpath.size() != 0);
 			}
 		}
 
@@ -226,7 +221,7 @@ void AnimationCache::set_track_value(int p_idx, const Variant &p_value) {
 		return;
 
 	ERR_FAIL_COND(!p.object);
-	p.object->set(p.property, p_value);
+	p.object->set_indexed(p.subpath, p_value);
 }
 
 void AnimationCache::call_track(int p_idx, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {

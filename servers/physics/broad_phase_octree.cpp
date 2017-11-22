@@ -32,11 +32,11 @@
 
 BroadPhaseSW::ID BroadPhaseOctree::create(CollisionObjectSW *p_object, int p_subindex) {
 
-	ID oid = octree.create(p_object, Rect3(), p_subindex, false, 1 << p_object->get_type(), 0);
+	ID oid = octree.create(p_object, AABB(), p_subindex, false, 1 << p_object->get_type(), 0);
 	return oid;
 }
 
-void BroadPhaseOctree::move(ID p_id, const Rect3 &p_aabb) {
+void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
 
 	octree.move(p_id, p_aabb);
 }
@@ -76,7 +76,7 @@ int BroadPhaseOctree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, C
 	return octree.cull_segment(p_from, p_to, p_results, p_max_results, p_result_indices);
 }
 
-int BroadPhaseOctree::cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
+int BroadPhaseOctree::cull_aabb(const AABB &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
 	return octree.cull_aabb(p_aabb, p_results, p_max_results, p_result_indices);
 }

@@ -116,6 +116,9 @@ public:
 	float tile_get_shape_one_way_angle(int p_id, int p_shape_id) const;
 	void tile_set_shape_one_way_angle_degrees(int p_id, int p_shape_id, float p_one_way_angle_degrees);
 	float tile_get_shape_one_way_angle_degrees(int p_id, int p_shape_id) const;
+  
+	void tile_set_shape_offset(int p_id, int p_shape_id, const Vector2 &p_offset);
+	Vector2 tile_get_shape_offset(int p_id, int p_shape_id) const;
 
 	void tile_clear_shapes(int p_id);
 	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way_enabled = false, float p_one_way_angle = 0.0);

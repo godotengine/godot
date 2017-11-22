@@ -29,8 +29,8 @@
 /*************************************************************************/
 #include "os_javascript.h"
 
+#include "core/engine.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "core/project_settings.h"
 #include "dom_keys.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -78,10 +78,6 @@ void OS_JavaScript::initialize_core() {
 
 	OS_Unix::initialize_core();
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
-}
-
-void OS_JavaScript::initialize_logger() {
-	_set_logger(memnew(StdLogger));
 }
 
 void OS_JavaScript::set_opengl_extensions(const char *p_gl_extensions) {
@@ -166,14 +162,15 @@ static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent 
 	}
 
 	int mask = _input->get_mouse_button_mask();
+	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
 		// since the event is consumed, focus manually
 		if (!is_canvas_focused()) {
 			focus_canvas();
 		}
-		mask |= ev->get_button_index();
-	} else if (mask & ev->get_button_index()) {
-		mask &= ~ev->get_button_index();
+		mask |= button_flag;
+	} else if (mask & button_flag) {
+		mask &= ~button_flag;
 	} else {
 		// release event, but press was outside the canvas, so ignore
 		return false;
@@ -437,25 +434,23 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	video_mode = p_desired;
 	// can't fulfil fullscreen request due to browser security
 	video_mode.fullscreen = false;
-	set_window_size(Size2(p_desired.width, p_desired.height));
+	/* clang-format off */
+	bool resize_canvas_on_start = EM_ASM_INT_V(
+		return Module.resizeCanvasOnStart;
+	);
+	/* clang-format on */
+	if (resize_canvas_on_start) {
+		set_window_size(Size2(video_mode.width, video_mode.height));
+	} else {
+		Size2 canvas_size = get_window_size();
+		video_mode.width = canvas_size.width;
+		video_mode.height = canvas_size.height;
+	}
 
-	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
 	/* clang-format off */
-	EM_ASM_({
-		var locale = "";
-		if (Module.locale) {
-			// best case: server-side script reads Accept-Language early and
-			// defines the locale to be read here
-			locale = Module.locale;
-		} else {
-			// no luck, use what the JS engine can tell us
-			// if this turns out not compatible enough, add tests for
-			// browserLanguage, systemLanguage and userLanguage
-			locale = navigator.languages ? navigator.languages[0] : navigator.language;
-		}
-		locale = locale.split('.')[0];
-		stringToUTF8(locale, $0, 16);
+	EM_ASM_ARGS({
+		stringToUTF8(Module.locale, $0, 16);
 	}, locale_ptr);
 	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
@@ -510,11 +505,6 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 #undef SET_EM_CALLBACK_NODATA
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
-
-#ifdef JAVASCRIPT_EVAL_ENABLED
-	javascript_eval = memnew(JavaScript);
-	ProjectSettings::get_singleton()->add_singleton(ProjectSettings::Singleton("JavaScript", javascript_eval));
-#endif
 
 	visual_server->init();
 }
@@ -888,14 +878,13 @@ String OS_JavaScript::get_resource_dir() const {
 	return "/"; //javascript has it's own filesystem for resources inside the APK
 }
 
-String OS_JavaScript::get_data_dir() const {
+String OS_JavaScript::get_user_data_dir() const {
 
 	/*
-	if (get_data_dir_func)
-		return get_data_dir_func();
+	if (get_user_data_dir_func)
+		return get_user_data_dir_func();
 	*/
 	return "/userfs";
-	//return ProjectSettings::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 String OS_JavaScript::get_executable_path() const {
@@ -993,7 +982,7 @@ bool OS_JavaScript::is_userfs_persistent() const {
 	return idbfs_available;
 }
 
-OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_dir_func) {
+OS_JavaScript::OS_JavaScript(const char *p_execpath, GetUserDataDirFunc p_get_user_data_dir_func) {
 	set_cmdline(p_execpath, get_cmdline_args());
 	main_loop = NULL;
 	gl_extensions = NULL;
@@ -1001,7 +990,7 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GetDataDirFunc p_get_data_d
 	soft_fs_enabled = false;
 	canvas_size_adjustment_requested = false;
 
-	get_data_dir_func = p_get_data_dir_func;
+	get_user_data_dir_func = p_get_user_data_dir_func;
 	FileAccessUnix::close_notification_func = _close_notification_funcs;
 
 	idbfs_available = false;

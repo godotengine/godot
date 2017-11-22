@@ -3,7 +3,7 @@
 Import('env')
 
 iphone_lib = [
-
+    'godot_iphone.cpp',
     'os_iphone.cpp',
     'sem_iphone.cpp',
     'gl_view.mm',
@@ -17,10 +17,10 @@ iphone_lib = [
 ]
 
 env_ios = env.Clone()
+ios_lib = env_ios.Library('iphone', iphone_lib)
 
-obj = env_ios.Object('godot_iphone.cpp')
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    env.Execute('$IPHONEPATH/usr/bin/libtool -static -o "' + lib_path + '" ' + ' '.join([('"' + lib.srcnode().abspath + '"') for lib in source]))
 
-prog = None
-prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
-action = "$IPHONEPATH/usr/bin/dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
-env.AddPostAction(prog, action)
+combine_command = env_ios.Command('#bin/libgodot' + env_ios['LIBSUFFIX'], [ios_lib] + env_ios['LIBS'], combine_libs)

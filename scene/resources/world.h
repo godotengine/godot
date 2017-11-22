@@ -60,8 +60,8 @@ protected:
 	void _update_camera(Camera *p_camera);
 	void _remove_camera(Camera *p_camera);
 
-	void _register_notifier(VisibilityNotifier *p_notifier, const Rect3 &p_rect);
-	void _update_notifier(VisibilityNotifier *p_notifier, const Rect3 &p_rect);
+	void _register_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
+	void _update_notifier(VisibilityNotifier *p_notifier, const AABB &p_rect);
 	void _remove_notifier(VisibilityNotifier *p_notifier);
 	friend class Viewport;
 	void _update(uint64_t p_frame);

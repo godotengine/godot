@@ -88,7 +88,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 
 	} else if (p_id == BUTTON_LOCK) {
 
-		if (n->is_class("CanvasItem")) {
+		if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
 			n->set_meta("_edit_lock_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
@@ -266,6 +266,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("Spatial")) {
 
+			bool is_locked = p_node->has_meta("_edit_lock_");
+			if (is_locked)
+				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock"));
+
 			bool v = p_node->call("is_visible");
 			if (v)
 				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
@@ -354,7 +358,11 @@ void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
 
 void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
-	_update_tree();
+	if (tree_dirty)
+		return;
+
+	MessageQueue::get_singleton()->push_call(this, "_update_tree");
+	tree_dirty = true;
 	/*
 	changes the order :|
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;

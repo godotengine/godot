@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "visual_script_editor.h"
 
+#include "core/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "os/input.h"
@@ -348,7 +349,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::TRANSFORM2D: color = Color::html("#c4ec69"); break;
 			case Variant::PLANE: color = Color::html("#f77070"); break;
 			case Variant::QUAT: color = Color::html("#ec69a3"); break;
-			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::AABB: color = Color::html("#ee7991"); break;
 			case Variant::BASIS: color = Color::html("#e3ec69"); break;
 			case Variant::TRANSFORM: color = Color::html("#f6a86e"); break;
 
@@ -385,7 +386,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::TRANSFORM2D: color = Color::html("#96ce1a"); break;
 			case Variant::PLANE: color = Color::html("#f77070"); break;
 			case Variant::QUAT: color = Color::html("#ec69a3"); break;
-			case Variant::RECT3: color = Color::html("#ee7991"); break;
+			case Variant::AABB: color = Color::html("#ee7991"); break;
 			case Variant::BASIS: color = Color::html("#b2bb19"); break;
 			case Variant::TRANSFORM: color = Color::html("#f49047"); break;
 
@@ -1388,7 +1389,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "obj_property") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a Getter. Hold Shift to drop a generic signature."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Getter. Hold Shift to drop a generic signature."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."));
 #endif
@@ -1397,7 +1398,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "nodes") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a simple reference to the node."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a simple reference to the node."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a simple reference to the node."));
 #endif
@@ -1406,7 +1407,7 @@ bool VisualScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Meta to drop a Variable Setter."));
+				const_cast<VisualScriptEditor *>(this)->_show_hint(vformat(TTR("Hold %s to drop a Variable Setter."), find_keycode_name(KEY_META)));
 #else
 				const_cast<VisualScriptEditor *>(this)->_show_hint(TTR("Hold Ctrl to drop a Variable Setter."));
 #endif
@@ -2764,6 +2765,23 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 
 	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
 	default_value_edit->set_size(Size2(1, 1));
+
+	if (pinfo.type == Variant::NODE_PATH) {
+
+		Node *edited_scene = get_tree()->get_edited_scene_root();
+		Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+
+		if (script_node) {
+			//pick a node relative to the script, IF the script exists
+			pinfo.hint = PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE;
+			pinfo.hint_string = script_node->get_path();
+		} else {
+			//pick a path relative to edited scene
+			pinfo.hint = PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE;
+			pinfo.hint_string = get_tree()->get_edited_scene_root()->get_path();
+		}
+	}
+
 	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)
 			default_value_edit->popup_centered_ratio();
@@ -3241,6 +3259,8 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_member_rmb_selected", &VisualScriptEditor::_member_rmb_selected);
 
 	ClassDB::bind_method("_member_option", &VisualScriptEditor::_member_option);
+
+	ClassDB::bind_method("_update_available_nodes", &VisualScriptEditor::_update_available_nodes);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
@@ -3425,6 +3445,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	members->connect("item_rmb_selected", this, "_member_rmb_selected");
 	members->set_allow_rmb_select(true);
 	member_popup->connect("id_pressed", this, "_member_option");
+
+	_VisualScriptEditor::get_singleton()->connect("custom_nodes_updated", this, "_update_available_nodes");
 }
 
 VisualScriptEditor::~VisualScriptEditor() {
@@ -3468,4 +3490,42 @@ void VisualScriptEditor::register_editor() {
 	EditorNode::add_plugin_init_callback(register_editor_callback);
 }
 
+Ref<VisualScriptNode> _VisualScriptEditor::create_node_custom(const String &p_name) {
+
+	Ref<VisualScriptCustomNode> node;
+	node.instance();
+	node->set_script(singleton->custom_nodes[p_name]);
+	return node;
+}
+
+_VisualScriptEditor *_VisualScriptEditor::singleton = NULL;
+Map<String, RefPtr> _VisualScriptEditor::custom_nodes;
+
+_VisualScriptEditor::_VisualScriptEditor() {
+	singleton = this;
+}
+
+_VisualScriptEditor::~_VisualScriptEditor() {
+	custom_nodes.clear();
+}
+
+void _VisualScriptEditor::add_custom_node(const String &p_name, const String &p_category, const Ref<Script> &p_script) {
+	String node_name = "custom/" + p_category + "/" + p_name;
+	custom_nodes.insert(node_name, p_script.get_ref_ptr());
+	VisualScriptLanguage::singleton->add_register_func(node_name, &_VisualScriptEditor::create_node_custom);
+	emit_signal("custom_nodes_updated");
+}
+
+void _VisualScriptEditor::remove_custom_node(const String &p_name, const String &p_category) {
+	String node_name = "custom/" + p_category + "/" + p_name;
+	custom_nodes.erase(node_name);
+	VisualScriptLanguage::singleton->remove_register_func(node_name);
+	emit_signal("custom_nodes_updated");
+}
+
+void _VisualScriptEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_custom_node", "name", "category", "script"), &_VisualScriptEditor::add_custom_node);
+	ClassDB::bind_method(D_METHOD("remove_custom_node", "name", "category"), &_VisualScriptEditor::remove_custom_node);
+	ADD_SIGNAL(MethodInfo("custom_nodes_updated"));
+}
 #endif

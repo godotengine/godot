@@ -308,7 +308,7 @@ RID VisualServer::get_white_texture() {
 #define SMALL_VEC2 Vector2(0.00001, 0.00001)
 #define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
 
-Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, Rect3 &r_aabb, Vector<Rect3> r_bone_aabb) {
+Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> r_bone_aabb) {
 
 	PoolVector<uint8_t>::Write vw = r_vertex_array.write();
 
@@ -373,7 +373,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						}
 					}
 
-					r_aabb = Rect3(Vector3(aabb.position.x, aabb.position.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
+					r_aabb = AABB(Vector3(aabb.position.x, aabb.position.y, 0), Vector3(aabb.size.x, aabb.size.y, 0));
 
 				} else {
 					PoolVector<Vector3> array = p_arrays[ai];
@@ -383,7 +383,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 					const Vector3 *src = read.ptr();
 
 					// setting vertices means regenerating the AABB
-					Rect3 aabb;
+					AABB aabb;
 
 					if (p_format & ARRAY_COMPRESS_VERTEX) {
 
@@ -395,7 +395,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], SMALL_VEC3);
+								aabb = AABB(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -411,7 +411,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 							if (i == 0) {
 
-								aabb = Rect3(src[i], SMALL_VEC3);
+								aabb = AABB(src[i], SMALL_VEC3);
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -728,7 +728,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			PoolVector<int>::Read rb = bones.read();
 			PoolVector<float>::Read rw = weights.read();
 
-			Rect3 *bptr = r_bone_aabb.ptr();
+			AABB *bptr = r_bone_aabb.ptr();
 
 			for (int i = 0; i < vs; i++) {
 
@@ -743,7 +743,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 					if (bptr->size.x < 0) {
 						//first
-						bptr[idx] = Rect3(v, SMALL_VEC3);
+						bptr[idx] = AABB(v, SMALL_VEC3);
 						any_valid = true;
 					} else {
 						bptr[idx].expand_to(v);
@@ -975,8 +975,8 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	PoolVector<uint8_t> index_array;
 	index_array.resize(index_array_size);
 
-	Rect3 aabb;
-	Vector<Rect3> bone_aabb;
+	AABB aabb;
+	Vector<AABB> bone_aabb;
 
 	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
 
@@ -993,7 +993,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 		vertex_array_shape.resize(array_size);
 		PoolVector<uint8_t> noindex;
 
-		Rect3 laabb;
+		AABB laabb;
 		Error err = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
 		aabb.merge_with(laabb);
 		if (err) {
@@ -1470,7 +1470,7 @@ Array VisualServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surfac
 
 Array VisualServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
 
-	Vector<Rect3> vec = VS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
+	Vector<AABB> vec = VS::get_singleton()->mesh_surface_get_skeleton_aabb(p_mesh, p_surface);
 	Array arr;
 	for (int i = 0; i < vec.size(); i++) {
 		arr[i] = vec[i];
@@ -1856,6 +1856,8 @@ void VisualServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
 	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
+
+	ADD_SIGNAL(MethodInfo("frame_drawn_in_thread"));
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {

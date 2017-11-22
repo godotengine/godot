@@ -1028,7 +1028,10 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 					on_floor = true;
 					floor_velocity = collision.collider_vel;
 
-					if (collision.travel.length() < 1 && ABS((lv.x - floor_velocity.x)) < p_slope_stop_min_velocity) {
+					Vector2 rel_v = lv - floor_velocity;
+					Vector2 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
+
+					if (collision.travel.length() < 1 && hv.length() < p_slope_stop_min_velocity) {
 						Transform2D gt = get_global_transform();
 						gt.elements[2] -= collision.travel;
 						set_global_transform(gt);

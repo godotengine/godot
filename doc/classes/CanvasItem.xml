@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" category="Core" version="3.0.alpha.custom_build">
+<class name="CanvasItem" inherits="Node" category="Core" version="3.0-alpha">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -346,14 +346,14 @@
 				Get the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
-		<method name="get_item_and_children_rect" qualifiers="const">
+		<method name="edit_get_item_and_children_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
 				Get a [Rect2] with the boundaries of this item and its children.
 			</description>
 		</method>
-		<method name="get_item_rect" qualifiers="const">
+		<method name="edit_get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>

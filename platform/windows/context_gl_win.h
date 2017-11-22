@@ -27,18 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED)
-//
-// C++ Interface: context_gl_x11
-//
-// Description:
-//
-//
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-//
 
 #ifndef CONTEXT_GL_WIN_H
 #define CONTEXT_GL_WIN_H

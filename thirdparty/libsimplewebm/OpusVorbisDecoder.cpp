@@ -122,6 +122,43 @@ bool OpusVorbisDecoder::getPCMS16(WebMFrame &frame, short *buffer, int &numOutSa
 	return false;
 }
 
+bool OpusVorbisDecoder::getPCMF(WebMFrame &frame, float *buffer, int &numOutSamples) {
+	if (m_vorbis) {
+		m_vorbis->op.packet = frame.buffer;
+		m_vorbis->op.bytes = frame.bufferSize;
+
+		if (vorbis_synthesis(&m_vorbis->block, &m_vorbis->op))
+			return false;
+		if (vorbis_synthesis_blockin(&m_vorbis->dspState, &m_vorbis->block))
+			return false;
+
+		const int maxSamples = getBufferSamples();
+		int samplesCount, count = 0;
+		float **pcm;
+		while ((samplesCount = vorbis_synthesis_pcmout(&m_vorbis->dspState, &pcm))) {
+			const int toConvert = samplesCount <= maxSamples ? samplesCount : maxSamples;
+			for (int c = 0; c < m_channels; ++c) {
+				float *samples = pcm[c];
+				for (int i = 0, j = c; i < toConvert; ++i, j += m_channels) {
+					buffer[count + j] = samples[i];
+				}
+			}
+			vorbis_synthesis_read(&m_vorbis->dspState, toConvert);
+			count += toConvert;
+		}
+
+		numOutSamples = count;
+		return true;
+	} else if (m_opus) {
+		const int samples = opus_decode_float(m_opus, frame.buffer, frame.bufferSize, buffer, m_numSamples, 0);
+		if (samples >= 0) {
+			numOutSamples = samples;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool OpusVorbisDecoder::openVorbis(const WebMDemuxer &demuxer)
 {
 	size_t extradataSize = 0;

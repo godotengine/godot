@@ -30,56 +30,17 @@
 #include "gdnative/gdnative.h"
 
 #include "class_db.h"
+#include "engine.h"
 #include "error_macros.h"
 #include "global_constants.h"
 #include "os/os.h"
-#include "project_settings.h"
 #include "variant.h"
+
+#include "modules/gdnative/gdnative.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern "C" void _string_api_anchor();
-extern "C" void _string_name_api_anchor();
-extern "C" void _vector2_api_anchor();
-extern "C" void _rect2_api_anchor();
-extern "C" void _vector3_api_anchor();
-extern "C" void _transform2d_api_anchor();
-extern "C" void _plane_api_anchor();
-extern "C" void _quat_api_anchor();
-extern "C" void _basis_api_anchor();
-extern "C" void _rect3_api_anchor();
-extern "C" void _transform_api_anchor();
-extern "C" void _color_api_anchor();
-extern "C" void _node_path_api_anchor();
-extern "C" void _rid_api_anchor();
-extern "C" void _dictionary_api_anchor();
-extern "C" void _array_api_anchor();
-extern "C" void _pool_arrays_api_anchor();
-extern "C" void _variant_api_anchor();
-
-void _api_anchor() {
-
-	_string_api_anchor();
-	_string_name_api_anchor();
-	_vector2_api_anchor();
-	_rect2_api_anchor();
-	_vector3_api_anchor();
-	_transform2d_api_anchor();
-	_plane_api_anchor();
-	_quat_api_anchor();
-	_rect3_api_anchor();
-	_basis_api_anchor();
-	_transform_api_anchor();
-	_color_api_anchor();
-	_node_path_api_anchor();
-	_rid_api_anchor();
-	_dictionary_api_anchor();
-	_array_api_anchor();
-	_pool_arrays_api_anchor();
-	_variant_api_anchor();
-}
 
 void GDAPI godot_object_destroy(godot_object *p_o) {
 	memdelete((Object *)p_o);
@@ -88,7 +49,7 @@ void GDAPI godot_object_destroy(godot_object *p_o) {
 // Singleton API
 
 godot_object GDAPI *godot_global_get_singleton(char *p_name) {
-	return (godot_object *)ProjectSettings::get_singleton()->get_singleton_object(String(p_name));
+	return (godot_object *)Engine::get_singleton()->get_singleton_object(String(p_name));
 } // result shouldn't be freed
 
 void GDAPI *godot_get_stack_bottom() {
@@ -133,14 +94,6 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 	return ret;
 }
 
-// @Todo
-/*
-void GDAPI godot_method_bind_varcall(godot_method_bind *p_method_bind)
-{
-
-}
-*/
-
 godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
 	if (class_info)
@@ -162,6 +115,10 @@ godot_dictionary GDAPI godot_get_global_constants() {
 }
 
 // System functions
+void GDAPI godot_register_native_call_type(const char *p_call_type, native_call_cb p_callback) {
+	GDNativeCallRegistry::get_singleton()->register_native_call_type(StringName(p_call_type), p_callback);
+}
+
 void GDAPI *godot_alloc(int p_bytes) {
 	return memalloc(p_bytes);
 }
@@ -184,6 +141,32 @@ void GDAPI godot_print_warning(const char *p_description, const char *p_function
 
 void GDAPI godot_print(const godot_string *p_message) {
 	print_line(*(String *)p_message);
+}
+
+void _gdnative_report_version_mismatch(const godot_object *p_library, const char *p_ext, godot_gdnative_api_version p_want, godot_gdnative_api_version p_have) {
+	String message = "Error loading GDNative file ";
+	GDNativeLibrary *library = (GDNativeLibrary *)p_library;
+
+	message += library->get_current_library_path() + ": Extension \"" + p_ext + "\" can't be loaded.\n";
+
+	Dictionary versions;
+	versions["have_major"] = p_have.major;
+	versions["have_minor"] = p_have.minor;
+	versions["want_major"] = p_want.major;
+	versions["want_minor"] = p_want.minor;
+
+	message += String("Got version {have_major}.{have_minor} but needs {want_major}.{want_minor}!").format(versions);
+
+	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
+}
+
+void _gdnative_report_loading_error(const godot_object *p_library, const char *p_what) {
+	String message = "Error loading GDNative file ";
+	GDNativeLibrary *library = (GDNativeLibrary *)p_library;
+
+	message += library->get_current_library_path() + ": " + p_what;
+
+	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
 }
 
 #ifdef __cplusplus

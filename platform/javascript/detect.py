@@ -19,7 +19,6 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable
     return [
-        BoolVariable('wasm', 'Compile to WebAssembly', False),
         BoolVariable('javascript_eval', 'Enable JavaScript eval interface', True),
     ]
 
@@ -103,20 +102,13 @@ def configure(env):
 
     ## Link flags
 
-    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
+    env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
+    env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS="[\'FS\']"'])
 
-    if env['wasm']:
-        env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-        # In contrast to asm.js, enabling memory growth on WebAssembly has no
-        # major performance impact, and causes only a negligible increase in
-        # memory size.
-        env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
-        env.extra_suffix = '.webassembly' + env.extra_suffix
-    else:
-        env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
-        env.Append(LINKFLAGS=['--separate-asm'])
-        env.Append(LINKFLAGS=['--memory-init-file', '1'])
+    env.Append(LINKFLAGS=['-s', 'INVOKE_RUN=0'])
+    env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
 
     # TODO: Move that to opus module's config
     if 'module_opus_enabled' in env and env['module_opus_enabled']:
