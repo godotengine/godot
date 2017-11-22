@@ -57,12 +57,10 @@ void RemoteTransform::_update_remote() {
 	if (!n->is_inside_tree())
 		return;
 
-	//todo make faster
+	//Todo: make faster
 	if (use_global_coordinates) {
 
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
-		} else {
+		if (remote_mode == REMOTE_MODE_LEAD) {
 			Transform n_trans = n->get_global_transform();
 			Transform our_trans = get_global_transform();
 
@@ -76,12 +74,25 @@ void RemoteTransform::_update_remote() {
 
 			if (!update_remote_scale)
 				n->set_scale(n_trans.basis.get_scale());
+		} else {
+			Transform n_trans = n->get_global_transform();
+			Transform our_trans = get_global_transform();
+
+			if (!update_remote_position)
+				n_trans.set_origin(our_trans.get_origin());
+
+			set_global_transform(n_trans);
+
+			if (!update_remote_rotation)
+				set_rotation(our_trans.basis.get_rotation());
+
+			if (!update_remote_scale)
+				set_scale(our_trans.basis.get_scale());
 		}
 
 	} else {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
-		} else {
+
+		if (remote_mode == REMOTE_MODE_LEAD) {
 			Transform n_trans = n->get_transform();
 			Transform our_trans = get_transform();
 
@@ -95,6 +106,20 @@ void RemoteTransform::_update_remote() {
 
 			if (!update_remote_scale)
 				n->set_scale(n_trans.basis.get_scale());
+		} else {
+			Transform n_trans = n->get_transform();
+			Transform our_trans = get_transform();
+
+			if (!update_remote_position)
+				n_trans.set_origin(our_trans.get_origin());
+
+			set_transform(n_trans);
+
+			if (!update_remote_rotation)
+				set_rotation(our_trans.basis.get_rotation());
+
+			if (!update_remote_scale)
+				set_scale(our_trans.basis.get_scale());
 		}
 	}
 }
@@ -117,6 +142,15 @@ void RemoteTransform::_notification(int p_what) {
 				_update_remote();
 			}
 
+		} break;
+		// NOTE: Because we don't know when the remote_node has moved
+		// NOTE: have to update every physics process.
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (!is_inside_tree() || remote_mode != REMOTE_MODE_FOLLOW)
+				break;
+			if (cache && remote_mode) {
+				_update_remote();
+			}
 		} break;
 	}
 }
@@ -170,6 +204,15 @@ bool RemoteTransform::get_update_scale() const {
 	return update_remote_scale;
 }
 
+void RemoteTransform::set_remote_mode(const RemoteMode p_mode) {
+	remote_mode = p_mode;
+	_update_remote();
+}
+
+RemoteTransform::RemoteMode RemoteTransform::get_remote_mode() const {
+	return remote_mode;
+}
+
 String RemoteTransform::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
@@ -194,13 +237,21 @@ void RemoteTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_update_scale", "update_remote_scale"), &RemoteTransform::set_update_scale);
 	ClassDB::bind_method(D_METHOD("get_update_scale"), &RemoteTransform::get_update_scale);
 
+	ClassDB::bind_method(D_METHOD("set_remote_mode", "mode"), &RemoteTransform::set_remote_mode);
+	ClassDB::bind_method(D_METHOD("get_remote_mode"), &RemoteTransform::get_remote_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_coordinates"), "set_use_global_coordinates", "get_use_global_coordinates");
+
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Lead,Follow"), "set_remote_mode", "get_remote_mode");
 
 	ADD_GROUP("Update", "update_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_position"), "set_update_position", "get_update_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_rotation"), "set_update_rotation", "get_update_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_scale"), "set_update_scale", "get_update_scale");
+
+	BIND_ENUM_CONSTANT(REMOTE_MODE_LEAD);
+	BIND_ENUM_CONSTANT(REMOTE_MODE_FOLLOW);
 }
 
 RemoteTransform::RemoteTransform() {

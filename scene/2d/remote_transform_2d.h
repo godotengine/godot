@@ -50,6 +50,13 @@ protected:
 	void _notification(int p_what);
 
 public:
+	enum RemoteMode {
+		REMOTE_MODE_LEAD,
+		REMOTE_MODE_FOLLOW
+	};
+
+	RemoteMode remote_mode;
+
 	void set_remote_node(const NodePath &p_remote_node);
 	NodePath get_remote_node() const;
 
@@ -65,7 +72,12 @@ public:
 	void set_update_scale(const bool p_update);
 	bool get_update_scale() const;
 
+	void set_remote_mode(const RemoteMode p_mode);
+	RemoteMode get_remote_mode() const;
+
 	virtual String get_configuration_warning() const;
 
 	RemoteTransform2D();
 };
+
+VARIANT_ENUM_CAST(RemoteTransform2D::RemoteMode);
