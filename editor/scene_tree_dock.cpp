@@ -1827,14 +1827,22 @@ void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 
 void SceneTreeDock::show_remote_tree() {
 
-	button_hb->show();
 	_remote_tree_selected();
 }
 
 void SceneTreeDock::hide_remote_tree() {
 
-	button_hb->hide();
 	_local_tree_selected();
+}
+
+void SceneTreeDock::show_tab_buttons() {
+
+	button_hb->show();
+}
+
+void SceneTreeDock::hide_tab_buttons() {
+
+	button_hb->hide();
 }
 
 void SceneTreeDock::_remote_tree_selected() {
