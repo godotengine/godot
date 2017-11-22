@@ -207,7 +207,7 @@ StringName NodePath::get_concatenated_subnames() const {
 		String concatenated;
 		const StringName *ssn = data->subpath.ptr();
 		for (int i = 0; i < spc; i++) {
-			concatenated += i == 0 ? ssn[i].operator String() : "." + ssn[i];
+			concatenated += i == 0 ? ssn[i].operator String() : ":" + ssn[i];
 		}
 		data->concatenated_subpath = concatenated;
 	}
@@ -257,13 +257,17 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 
 NodePath NodePath::get_as_property_path() const {
 
-	if (data->has_slashes || !data->path.size()) {
-		return NodePath(Vector<StringName>(), data->subpath, false);
+	if (!data->path.size()) {
+		return *this;
 	} else {
-		ERR_FAIL_COND_V(data->path.size() != 1, NodePath());
-
 		Vector<StringName> new_path = data->subpath;
-		new_path.insert(0, data->path[0]);
+
+		String initial_subname = data->path[0];
+		for (size_t i = 1; i < data->path.size(); i++) {
+			initial_subname += i == 0 ? data->path[i].operator String() : "/" + data->path[i];
+		}
+		new_path.insert(0, initial_subname);
+
 		return NodePath(Vector<StringName>(), new_path, false);
 	}
 }
@@ -335,7 +339,6 @@ NodePath::NodePath(const String &p_path) {
 		return;
 
 	String path = p_path;
-	StringName property;
 	Vector<StringName> subpath;
 
 	int absolute = (path[0] == '/') ? 1 : 0;
