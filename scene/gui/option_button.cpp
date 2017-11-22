@@ -323,6 +323,7 @@ OptionButton::OptionButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	popup->set_as_toplevel(true);
+	popup->set_pass_on_modal_close_click(false);
 	add_child(popup);
 	popup->connect("id_pressed", this, "_selected");
 
