@@ -41,6 +41,7 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	String res_path;
 	String type;
 	Ref<Resource> resource;
+	uint32_t ver_format;
 
 	FileAccess *f;
 
