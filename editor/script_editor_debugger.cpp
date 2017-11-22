@@ -957,7 +957,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (connection.is_valid()) {
 				inspect_scene_tree_timeout -= get_process_delta_time();
 				if (inspect_scene_tree_timeout < 0) {
-					inspect_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/scene_tree_refresh_interval");
+					inspect_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
 					if (inspect_scene_tree->is_visible_in_tree()) {
 						_scene_tree_request();
 
@@ -1160,7 +1160,12 @@ void ScriptEditorDebugger::start() {
 		return;
 	}
 
-	EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
+	EditorNode::get_singleton()->get_scene_tree_dock()->show_tab_buttons();
+	auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
+	if (auto_switch_remote_scene_tree) {
+		EditorNode::get_singleton()->get_scene_tree_dock()->show_remote_tree();
+	}
+
 	set_process(true);
 }
 
@@ -1198,6 +1203,7 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
+	EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
 
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
@@ -1848,7 +1854,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
 
-		inspect_scene_tree_timeout = EDITOR_DEF("debugger/scene_tree_refresh_interval", 1.0);
+		auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", true);
+		inspect_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 		inspected_object_id = 0;
 		updating_scene_tree = false;

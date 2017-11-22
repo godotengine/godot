@@ -202,6 +202,8 @@ public:
 	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();
 	void hide_remote_tree();
+	void show_tab_buttons();
+	void hide_tab_buttons();
 
 	void open_script_dialog(Node *p_for_node);
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
