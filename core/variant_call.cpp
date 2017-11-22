@@ -899,11 +899,6 @@ struct _VariantCall {
 		r_ret = Basis(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
 	}
 
-	static void Basis_init3(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Basis(p_args[0]->operator Vector3());
-	}
-
 	static void Transform_init1(Variant &r_ret, const Variant **p_args) {
 
 		Transform t;
@@ -1799,7 +1794,6 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Basis_init3, Variant::BASIS, "euler", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
