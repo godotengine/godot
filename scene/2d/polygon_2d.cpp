@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "polygon_2d.h"
+#include "scene/scene_string_names.h"
 
 Rect2 Polygon2D::_edit_get_rect() const {
 
@@ -183,10 +184,16 @@ void Polygon2D::_notification(int p_what) {
 	}
 }
 
+void Polygon2D::_changed() {
+
+	update();
+	emit_signal(SceneStringNames::get_singleton()->polygon_changed);
+}
+
 void Polygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
-	update();
+	_changed();
 }
 
 PoolVector<Vector2> Polygon2D::get_polygon() const {
@@ -197,7 +204,7 @@ PoolVector<Vector2> Polygon2D::get_polygon() const {
 void Polygon2D::set_uv(const PoolVector<Vector2> &p_uv) {
 
 	uv = p_uv;
-	update();
+	_changed();
 }
 
 PoolVector<Vector2> Polygon2D::get_uv() const {
@@ -208,7 +215,7 @@ PoolVector<Vector2> Polygon2D::get_uv() const {
 void Polygon2D::set_color(const Color &p_color) {
 
 	color = p_color;
-	update();
+	_changed();
 }
 Color Polygon2D::get_color() const {
 
@@ -218,7 +225,7 @@ Color Polygon2D::get_color() const {
 void Polygon2D::set_vertex_colors(const PoolVector<Color> &p_colors) {
 
 	vertex_colors = p_colors;
-	update();
+	_changed();
 }
 PoolVector<Color> Polygon2D::get_vertex_colors() const {
 
@@ -237,7 +244,7 @@ void Polygon2D::set_texture(const Ref<Texture> &p_texture) {
 
 		texture->set_flags(flags);
 	}*/
-	update();
+	_changed();
 }
 Ref<Texture> Polygon2D::get_texture() const {
 
@@ -247,7 +254,7 @@ Ref<Texture> Polygon2D::get_texture() const {
 void Polygon2D::set_texture_offset(const Vector2 &p_offset) {
 
 	tex_ofs = p_offset;
-	update();
+	_changed();
 }
 Vector2 Polygon2D::get_texture_offset() const {
 
@@ -257,7 +264,7 @@ Vector2 Polygon2D::get_texture_offset() const {
 void Polygon2D::set_texture_rotation(float p_rot) {
 
 	tex_rot = p_rot;
-	update();
+	_changed();
 }
 float Polygon2D::get_texture_rotation() const {
 
@@ -276,7 +283,7 @@ float Polygon2D::get_texture_rotation_degrees() const {
 void Polygon2D::set_texture_scale(const Size2 &p_scale) {
 
 	tex_scale = p_scale;
-	update();
+	_changed();
 }
 Size2 Polygon2D::get_texture_scale() const {
 
@@ -286,7 +293,7 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 
 	invert = p_invert;
-	update();
+	_changed();
 }
 bool Polygon2D::get_invert() const {
 
@@ -296,7 +303,7 @@ bool Polygon2D::get_invert() const {
 void Polygon2D::set_antialiased(bool p_antialiased) {
 
 	antialiased = p_antialiased;
-	update();
+	_changed();
 }
 bool Polygon2D::get_antialiased() const {
 
@@ -306,7 +313,7 @@ bool Polygon2D::get_antialiased() const {
 void Polygon2D::set_invert_border(float p_invert_border) {
 
 	invert_border = p_invert_border;
-	update();
+	_changed();
 }
 float Polygon2D::get_invert_border() const {
 
@@ -317,7 +324,7 @@ void Polygon2D::set_offset(const Vector2 &p_offset) {
 
 	offset = p_offset;
 	rect_cache_dirty = true;
-	update();
+	_changed();
 }
 
 Vector2 Polygon2D::get_offset() const {
@@ -382,6 +389,8 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Invert", "invert_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enable"), "set_invert", "get_invert");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1"), "set_invert_border", "get_invert_border");
+
+	ADD_SIGNAL(MethodInfo("polygon_changed"));
 }
 
 Polygon2D::Polygon2D() {

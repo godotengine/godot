@@ -201,6 +201,8 @@ public:
 	};
 	StringName mesh_materials[MAX_MATERIALS];
 	StringName _mesh_changed;
+
+	StringName polygon_changed;
 };
 
 #endif // SCENE_STRING_NAMES_H

@@ -56,6 +56,7 @@ class Polygon2D : public Node2D {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _changed();
 
 public:
 	void set_polygon(const PoolVector<Vector2> &p_polygon);

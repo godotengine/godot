@@ -194,4 +194,6 @@ SceneStringNames::SceneStringNames() {
 	}
 
 	_mesh_changed = StaticCString::create("_mesh_changed");
+
+	polygon_changed = StaticCString::create("polygon_changed");
 }
