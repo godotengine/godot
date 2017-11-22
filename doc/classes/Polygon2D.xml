@@ -254,6 +254,13 @@
 			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [code]color[/code].
 		</member>
 	</members>
+	<signals>
+		<signal name="polygon_changed">
+			<description>
+				Emitted whenever there is a change in the polygon's properties (e.g. vertices, color, etc.). Use NOTIFICATION_TRANSFORM_CHANGED to detect changes in the transform.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
