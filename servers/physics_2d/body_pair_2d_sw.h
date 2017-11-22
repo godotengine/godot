@@ -76,7 +76,7 @@ class BodyPair2DSW : public Constraint2DSW {
 	Contact contacts[MAX_CONTACTS];
 	int contact_count;
 	bool collided;
-	bool oneway_disabled;
+	bool one_way_disabled;
 	int cc;
 
 	bool _test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const Transform2D &p_xform_A, Body2DSW *p_B, int p_shape_B, const Transform2D &p_xform_B, bool p_swap_result = false);

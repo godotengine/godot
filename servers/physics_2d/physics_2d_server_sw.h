@@ -182,7 +182,8 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
-	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable);
+	virtual void body_set_shape_one_way_collision_enabled(RID p_body, int p_shape_idx, bool p_enable);
+	virtual void body_set_shape_one_way_collision_angle(RID p_body, int p_shape_idx, float p_angle);
 
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;

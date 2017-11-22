@@ -701,16 +701,24 @@ void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
-void Physics2DServerSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable) {
+void Physics2DServerSW::body_set_shape_one_way_collision_enabled(RID p_body, int p_shape_idx, bool p_enable) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 
-	body->set_shape_as_one_way_collision(p_shape_idx, p_enable);
+	body->set_shape_one_way_collision_enabled(p_shape_idx, p_enable);
 }
+void Physics2DServerSW::body_set_shape_one_way_collision_angle(RID p_body, int p_shape_idx, float p_angle) {
 
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+
+	body->set_shape_one_way_collision_angle(p_shape_idx, p_angle);
+}
 void Physics2DServerSW::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {
 
 	Body2DSW *body = body_owner.get(p_body);

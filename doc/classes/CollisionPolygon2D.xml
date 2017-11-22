@@ -35,6 +35,21 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the CollisionPolygon2D is solid to other objects from only one side.
+			</description>
+		</method>
+		<method name="get_one_way_collision_angle" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the angle (in radians) at which the CollisionPolygon2D is solid to other objects from, if [code]one_way_collision_enabled[/code] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_one_way_collision_angle_degrees" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the angle (in degrees) at which the CollisionPolygon2D is solid to other objects from, if [code]one_way_collision_enabled[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_build_mode">
@@ -54,12 +69,31 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_one_way_collision">
+		<method name="set_one_way_collision_enabled">
 			<return type="void">
 			</return>
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
+				Set whether the CollisionPolygon2D is solid to other objects from only one side.
+			</description>
+		</method>
+		<method name="set_one_way_collision_angle">
+			<return type="void">
+			</return>
+			<argument index="0" name="angle" type="float">
+			</argument>
+			<description>
+				Set the angle (in radians) from which the CollisionPolygon2D is solid to other objects, if [code]one_way_collision_enabled[/code] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_one_way_collision_angle_degrees">
+			<return type="void">
+			</return>
+			<argument index="0" name="angle_degrees" type="float">
+			</argument>
+			<description>
+				Set the angle (in degrees) from which the CollisionPolygon2D is solid to other objects, if [code]one_way_collision_enabled[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_polygon">
@@ -80,8 +114,11 @@
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			If [code]true[/code] no collisions will be detected.
 		</member>
-		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
-			If [code]true[/code] only edges that face up, relative to CollisionPolygon2D's rotation, will collide with other objects.
+		<member name="one_way_collision_enabled" type="bool" setter="set_one_way_collision_enabled" getter="is_one_way_collision_enabled">
+			If [code]true[/code], the CollisionPolygon2D will only let other objects collide with it from one side. The specific angle is set by [code]one_way_collision_angle[/code].
+		</member>
+		<member name="one_way_collision_angle" type="float" setter="set_one_way_collision_angle" getter="get_one_way_collision_angle">
+			The angle (in radians) from which the CollisionPolygon2D is solid when [code]one_way_collision_enabled[/code] is [code]true[/code].
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 			The polygon's list of vertices. The final point will be connected to the first.

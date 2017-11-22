@@ -119,7 +119,8 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 				if (sb->is_shape_owner_disabled(E->get())) continue;
 
 				Transform2D shape_transform = sb->shape_owner_get_transform(E->get());
-				bool one_way = sb->is_shape_owner_one_way_collision_enabled(E->get());
+				bool one_way_enabled = sb->is_shape_owner_one_way_collision_enabled(E->get());
+				float one_way_angle = sb->shape_owner_get_one_way_collision_angle(E->get());
 
 				shape_transform.set_origin(shape_transform.get_origin() - phys_offset);
 
@@ -129,7 +130,8 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 					TileSet::ShapeData shape_data;
 					shape_data.shape = shape;
 					shape_data.shape_transform = shape_transform;
-					shape_data.one_way_collision = one_way;
+					shape_data.one_way_collision_enabled = one_way_enabled;
+					shape_data.one_way_collision_angle = one_way_angle;
 					collisions.push_back(shape_data);
 				}
 			}

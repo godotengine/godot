@@ -61,8 +61,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_shape_offset(id, 0, p_value);
 	else if (what == "shape_transform")
 		tile_set_shape_transform(id, 0, p_value);
-	else if (what == "shape_one_way")
-		tile_set_shape_one_way(id, 0, p_value);
+	else if (what == "shape_one_way_enabled")
+		tile_set_shape_one_way_enabled(id, 0, p_value);
+	else if (what == "shape_one_way_angle")
+		tile_set_shape_one_way_angle_degrees(id, 0, p_value);
 	else if (what == "shapes")
 		_tile_set_shapes(id, p_value);
 	else if (what == "occluder")
@@ -111,8 +113,10 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_shape_offset(id, 0);
 	else if (what == "shape_transform")
 		r_ret = tile_get_shape_transform(id, 0);
-	else if (what == "shape_one_way")
-		r_ret = tile_get_shape_one_way(id, 0);
+	else if (what == "shape_one_way_enabled")
+		r_ret = tile_get_shape_one_way_enabled(id, 0);
+	else if (what == "shape_one_way_angle")
+		r_ret = tile_get_shape_one_way_angle_degrees(id, 0);
 	else if (what == "shapes")
 		r_ret = _tile_get_shapes(id);
 	else if (what == "occluder")
@@ -149,7 +153,8 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::REAL, pre + "shape_one_way_angle", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
@@ -257,14 +262,15 @@ void TileSet::tile_clear_shapes(int p_id) {
 	tile_map[p_id].shapes_data.clear();
 }
 
-void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way) {
+void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way_enabled, float p_one_way_angle) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 
 	ShapeData new_data = ShapeData();
 	new_data.shape = p_shape;
 	new_data.shape_transform = p_transform;
-	new_data.one_way_collision = p_one_way;
+	new_data.one_way_collision_enabled = p_one_way_enabled;
+	new_data.one_way_collision_angle = p_one_way_angle;
 
 	tile_map[p_id].shapes_data.push_back(new_data);
 };
@@ -321,20 +327,56 @@ Vector2 TileSet::tile_get_shape_offset(int p_id, int p_shape_id) const {
 	return tile_get_shape_transform(p_id, p_shape_id).get_origin();
 }
 
-void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_way) {
+void TileSet::tile_set_shape_one_way_enabled(int p_id, int p_shape_id, const bool p_one_way_enabled) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
-	tile_map[p_id].shapes_data[p_shape_id].one_way_collision = p_one_way;
+	tile_map[p_id].shapes_data[p_shape_id].one_way_collision_enabled = p_one_way_enabled;
 	emit_changed();
 }
 
-bool TileSet::tile_get_shape_one_way(int p_id, int p_shape_id) const {
+bool TileSet::tile_get_shape_one_way_enabled(int p_id, int p_shape_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
 	if (tile_map[p_id].shapes_data.size() > p_shape_id)
-		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision;
+		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_enabled;
+
+	return false;
+}
+
+void TileSet::tile_set_shape_one_way_angle(int p_id, int p_shape_id, float p_one_way_angle) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
+		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	tile_map[p_id].shapes_data[p_shape_id].one_way_collision_angle = p_one_way_angle;
+	emit_changed();
+}
+
+float TileSet::tile_get_shape_one_way_angle(int p_id, int p_shape_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
+	if (tile_map[p_id].shapes_data.size() > p_shape_id)
+		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_angle;
+
+	return false;
+}
+
+void TileSet::tile_set_shape_one_way_angle_degrees(int p_id, int p_shape_id, float p_one_way_angle_degrees) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
+		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	tile_map[p_id].shapes_data[p_shape_id].one_way_collision_angle = p_one_way_angle_degrees * Math_PI / 180;
+	emit_changed();
+}
+
+float TileSet::tile_get_shape_one_way_angle_degrees(int p_id, int p_shape_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
+	if (tile_map[p_id].shapes_data.size() > p_shape_id)
+		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_angle * 180 / Math_PI;
 
 	return false;
 }
@@ -404,7 +446,8 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	Vector<ShapeData> shapes_data;
 	Transform2D default_transform = tile_get_shape_transform(p_id, 0);
-	bool default_one_way = tile_get_shape_one_way(p_id, 0);
+	bool default_one_way_enabled = tile_get_shape_one_way_enabled(p_id, 0);
+	float default_one_way_angle = tile_get_shape_one_way_angle(p_id, 0);
 	for (int i = 0; i < p_shapes.size(); i++) {
 		ShapeData s = ShapeData();
 
@@ -414,7 +457,8 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 
 			s.shape = shape;
 			s.shape_transform = default_transform;
-			s.one_way_collision = default_one_way;
+			s.one_way_collision_enabled = default_one_way_enabled;
+			s.one_way_collision_angle = default_one_way_angle;
 		} else if (p_shapes[i].get_type() == Variant::DICTIONARY) {
 			Dictionary d = p_shapes[i];
 
@@ -430,10 +474,15 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			else
 				s.shape_transform = default_transform;
 
-			if (d.has("one_way") && d["one_way"].get_type() == Variant::BOOL)
-				s.one_way_collision = d["one_way"];
+			if (d.has("one_way_enabled") && d["one_way_enabled"].get_type() == Variant::BOOL)
+				s.one_way_collision_enabled = d["one_way_enabled"];
 			else
-				s.one_way_collision = default_one_way;
+				s.one_way_collision_enabled = default_one_way_enabled;
+
+			if (d.has("one_way_angle") && d["one_way_angle"].get_type() == Variant::REAL)
+				s.one_way_collision_angle = d["one_way_angle"];
+			else
+				s.one_way_collision_angle = default_one_way_angle;
 
 		} else {
 			ERR_EXPLAIN("Expected an array of objects or dictionaries for tile_set_shapes");
@@ -456,7 +505,8 @@ Array TileSet::_tile_get_shapes(int p_id) const {
 		Dictionary shape_data;
 		shape_data["shape"] = data[i].shape;
 		shape_data["shape_transform"] = data[i].shape_transform;
-		shape_data["one_way"] = data[i].one_way_collision;
+		shape_data["one_way_enabled"] = data[i].one_way_collision_enabled;
+		shape_data["one_way_angle"] = data[i].one_way_collision_angle;
 		arr.push_back(shape_data);
 	}
 
@@ -539,8 +589,12 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_shape", "id", "shape_id"), &TileSet::tile_get_shape);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_transform", "id", "shape_id", "shape_transform"), &TileSet::tile_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_transform", "id", "shape_id"), &TileSet::tile_get_shape_transform);
-	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way);
-	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way", "id", "shape_id"), &TileSet::tile_get_shape_one_way);
+	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way_enabled", "id", "shape_id", "one_way_enabled"), &TileSet::tile_set_shape_one_way_enabled);
+	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way_enabled", "id", "shape_id"), &TileSet::tile_get_shape_one_way_enabled);
+	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way_angle", "id", "shape_id", "one_way_angle"), &TileSet::tile_set_shape_one_way_angle);
+	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way_angle", "id", "shape_id"), &TileSet::tile_get_shape_one_way_angle);
+	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way_angle_degrees", "id", "shape_id", "one_way_angle_degrees"), &TileSet::tile_set_shape_one_way_angle_degrees);
+	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way_angle_degrees", "id", "shape_id"), &TileSet::tile_get_shape_one_way_angle_degrees);
 	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape", "shape_transform", "one_way"), &TileSet::tile_add_shape, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);

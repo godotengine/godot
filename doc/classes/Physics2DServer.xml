@@ -628,17 +628,30 @@
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
-		<method name="body_set_shape_as_one_way_collision">
+		<method name="body_set_shape_one_way_collision_enabled">
 			<return type="void">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="enable" type="bool">
+			<argument index="2" name="enabled" type="bool">
 			</argument>
 			<description>
-				Enables one way collision on body if [code]enable is true[/code].
+				Enables one-way collision on body if [code]enabled is true[/code].
+			</description>
+		</method>
+		<method name="body_set_shape_one_way_collision_angle">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="angle" type="float">
+			</argument>
+			<description>
+				Sets the angle (in radians) from which the body is solid from to other objects, if one-way collision is enabled.
 			</description>
 		</method>
 		<method name="body_set_shape_disabled">
