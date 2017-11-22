@@ -557,10 +557,6 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
-	if (r_result) {
-		r_result->collider_id = 0;
-		r_result->collider_shape = 0;
-	}
 	AABB body_aabb;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
@@ -793,18 +789,22 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		if (rcd.best_len != 0) {
 
 			if (r_result) {
-				r_result->collider = rcd.best_object->get_self();
-				r_result->collider_id = rcd.best_object->get_instance_id();
-				r_result->collider_shape = rcd.best_shape;
-				r_result->collision_local_shape = best_shape;
-				r_result->collision_normal = rcd.best_normal;
-				r_result->collision_point = rcd.best_contact;
+				PhysicsServer::Collision col;
+
+				col.collider = rcd.best_object->get_self();
+				col.collider_id = rcd.best_object->get_instance_id();
+				col.collider_shape = rcd.best_shape;
+				col.collision_local_shape = best_shape;
+				col.collision_normal = rcd.best_normal;
+				col.collision_point = rcd.best_contact;
 				//r_result->collider_metadata = rcd.best_object->get_shape_metadata(rcd.best_shape);
 
 				const BodySW *body = static_cast<const BodySW *>(rcd.best_object);
 				//Vector3 rel_vec = r_result->collision_point - body->get_transform().get_origin();
 				//				r_result->collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
-				r_result->collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+				col.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
+
+				r_result->collisions.push_back(col);
 
 				r_result->motion = safe * p_motion;
 				r_result->remainder = p_motion - safe * p_motion;

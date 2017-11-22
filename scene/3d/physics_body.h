@@ -300,7 +300,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, Collision &r_collision);
+	bool move_and_collide(const Vector3 &p_motion, Vector<Collision> &r_collisions);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion);
 
 	void set_safe_margin(float p_margin);
