@@ -6,19 +6,20 @@
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # João Graça <jgraca95@gmail.com>, 2017.
 # Rueben Stevens <supercell03@gmail.com>, 2017.
+# Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-10-25 01:48+0000\n"
-"Last-Translator: Rueben Stevens <supercell03@gmail.com>\n"
+"PO-Revision-Date: 2017-11-10 17:48+0000\n"
+"Last-Translator: Vinicius Gonçalves <viniciusgoncalves21@gmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -35,7 +36,7 @@ msgstr "Mover Chave Adcionada"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Mudar Transição da Animação"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -43,19 +44,19 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Anim Muda Valor"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Chama Mudança Animação"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "Anim Adiciona Track"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Anim Duplica Chaves"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"

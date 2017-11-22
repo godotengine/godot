@@ -11,14 +11,15 @@
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 # Marcus Correia <marknokalt@live.com>, 2017.
-# Michael Alexsander Silva Dias <michael.a.s.dias@gmail.com>, 2017.
+# Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2017-10-22 02:54+0000\n"
-"Last-Translator: Marcus Correia <marknokalt@live.com>\n"
+"PO-Revision-Date: 2017-11-20 20:49+0000\n"
+"Last-Translator: Michael Alexsander Silva Dias <michaelalexsander@protonmail."
+"com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1698,31 +1699,33 @@ msgid "Pick a Main Scene"
 msgstr "Escolha uma Cena Principal"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "Não foi possível ativar o plugin em: '"
+msgstr ""
+"Não foi possível ativar o plugin em: '%s' processamento da configuração "
+"falhou."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 "Não foi possível encontrar o campo de script para o plugin em: 'res://addons/"
+"%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Não foi possível carregar o script de extensão no caminho: '"
+msgstr "Não foi possível carregar o script complementar do caminho: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr "Não foi possível carregar o script de extensão no caminho: '"
+msgstr ""
+"Não foi possível carregar o script complementar do caminho: '%s' Tipo base "
+"não é EditorPlugin."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr "Não foi possível carregar o script de extensão no caminho: '"
+msgstr ""
+"Não foi possível carregar o script complementar do caminho: '%s' Script não "
+"está em modo ferramenta."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2014,7 +2017,7 @@ msgstr "Classes"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
-msgstr "Docs Online"
+msgstr "Documentação Online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
@@ -2263,9 +2266,8 @@ msgid "Frame %"
 msgstr "% de Quadro"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Physics Frame %"
-msgstr "% de Quadro Fixo"
+msgstr "Quadro Físico %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
@@ -3137,7 +3139,7 @@ msgstr "Procurando:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving.."
-msgstr "Resolvendo.."
+msgstr "Resolvendo..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting.."
@@ -3939,7 +3941,6 @@ msgid "Eroding walkable area..."
 msgstr "Erodindo área caminhável..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Partitioning..."
 msgstr "Particionando..."
 
@@ -5258,11 +5259,11 @@ msgstr "Remover Tudo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme.."
-msgstr ""
+msgstr "Editar tema.."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
-msgstr ""
+msgstr "Menu de edição de tema."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5552,6 +5553,7 @@ msgid "Export With Debug"
 msgstr "Exportar Com Depuração"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "The path does not exist."
 msgstr "O caminho não existe."
 
@@ -5691,6 +5693,9 @@ msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
+"Linguagem alterada.\n"
+"A interface será atualizada na próxima vez que o editor ou o gerenciador de "
+"projetos iniciar."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -5725,9 +5730,8 @@ msgid "Exit"
 msgstr "Sair"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Restart Now"
-msgstr "Reinício (s):"
+msgstr "Reiniciar Agora"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -5951,13 +5955,12 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opção de Remapeamento de Recurso"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Changed Locale Filter"
-msgstr "Mudar Tempo de Mistura"
+msgstr "FIltro de Idiomas Alterado"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr ""
+msgstr "Modo do Filtro de Idiomas Alterado"
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
@@ -6020,28 +6023,24 @@ msgid "Locale"
 msgstr "Localidade"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Locales Filter"
-msgstr "Filtrar Imagens:"
+msgstr "Filtro de Idiomas"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Show all locales"
-msgstr "Mostrar Ossos"
+msgstr "Mostrar todos os idiomas"
 
 #: editor/project_settings_editor.cpp
 msgid "Show only selected locales"
-msgstr ""
+msgstr "Mostrar apenas os idiomas selecionados"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Filter mode:"
-msgstr "Filtrar nós"
+msgstr "Modo de filtragem:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Locales:"
-msgstr "Localidade"
+msgstr "Idiomas:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
@@ -6397,7 +6396,7 @@ msgid ""
 "Node has connection(s) and group(s)\n"
 "Click to show signals dock."
 msgstr ""
-"O nó tem conexões e grupos\n"
+"O nó tem conexão(ões) e grupo(s)\n"
 "Clique para mostrar o painel de sinais."
 
 #: editor/scene_tree_editor.cpp
@@ -6413,7 +6412,7 @@ msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"O nó tem grupos.\n"
+"O nó está em grupo(s).\n"
 "Clique para mostrar o painel de grupos."
 
 #: editor/scene_tree_editor.cpp

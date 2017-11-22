@@ -9,7 +9,7 @@
 # Carlos López <genetita@gmail.com>, 2016.
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
 # Rabid Orange <theorangerabid@gmail.com>, 2017.
-# Roger BR <drai_kin@hotmail.com>, 2016.
+# Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2017.
 # Sebastian Silva <sebastian@fuentelibre.org>, 2016.
 # Swyter <swyterzone@gmail.com>, 2016-2017.
 #
@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-10-23 01:48+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2017-11-18 08:50+0000\n"
+"Last-Translator: Roger Blanco Ribera <roger.blancoribera@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -3264,9 +3264,8 @@ msgid "Fetching:"
 msgstr "Buscando:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Resolving.."
-msgstr "Guardando…"
+msgstr "Resolviendo…"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connecting.."
@@ -4698,7 +4697,7 @@ msgstr "Minúscula"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr "Insertar mayúsculas"
+msgstr "Convertir en Mayúsculas"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
@@ -6429,9 +6428,8 @@ msgid "Sections:"
 msgstr "Selecciones:"
 
 #: editor/property_selector.cpp
-#, fuzzy
 msgid "Select Property"
-msgstr "Seleccionar puntos"
+msgstr "Seleccionar Propiedad"
 
 #: editor/property_selector.cpp
 #, fuzzy
@@ -6694,9 +6692,8 @@ msgid "Toggle CanvasItem Visible"
 msgstr "Act/Desact. CanvasItem Visible"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Node configuration warning:"
-msgstr "Alerta de configuración de Nodos:"
+msgstr "Alerta de configuración de nodos:"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
@@ -7987,7 +7984,6 @@ msgstr ""
 "mínimo personalizado manualmente."
 
 #: scene/main/scene_tree.cpp
-#, fuzzy
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."

@@ -10,6 +10,7 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Gilles Roudiere <gilles.roudiere@gmail.com>, 2017.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2017.
+# Kanabenki <lucien.menassol@gmail.com>, 2017.
 # keltwookie <keltwookie@protonmail.com>, 2017.
 # Marc <marc.gilleron@gmail.com>, 2016-2017.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2017.
@@ -26,8 +27,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-10-25 22:46+0000\n"
-"Last-Translator: Robin Arys <robinarys@hotmail.com>\n"
+"PO-Revision-Date: 2017-11-15 02:45+0000\n"
+"Last-Translator: Kanabenki <lucien.menassol@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -767,32 +768,31 @@ msgstr "Auteurs"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Sponsors Platine"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Sponsors Or"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Mini Sponsors"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Donateurs Or"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Donateurs Argent"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Donors"
-msgstr "Cloner en dessous"
+msgstr "Donateurs Bronze"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Donateurs"
 
 #: editor/editor_about.cpp
 msgid "License"
@@ -918,9 +918,8 @@ msgid "Duplicate"
 msgstr "Dupliquer"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Volume"
-msgstr "Réinitialiser le zoom"
+msgstr "Réinitialiser le volume"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
@@ -943,9 +942,8 @@ msgid "Duplicate Audio Bus"
 msgstr "Dupliquer le transport audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "Réinitialiser le zoom"
+msgstr "Réinitialiser le volume de bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
@@ -1234,9 +1232,8 @@ msgid "Move Favorite Down"
 msgstr "Déplacer le favori vers le bas"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder"
-msgstr "Impossible de créer le dossier."
+msgstr "Aller au dossier parent"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1297,27 +1294,24 @@ msgid "Brief Description:"
 msgstr "Brève description :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Membres :"
+msgstr "Membres"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Membres :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Public Methods"
-msgstr "Méthodes publiques :"
+msgstr "Méthodes Publiques"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "Méthodes publiques :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "GUI Theme Items"
-msgstr "Items de thème GUI :"
+msgstr "Items de thème GUI"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1328,9 +1322,8 @@ msgid "Signals:"
 msgstr "Signaux :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Recensements :"
+msgstr "Énumérations"
 
 #: editor/editor_help.cpp
 msgid "Enumerations:"
@@ -1341,23 +1334,20 @@ msgid "enum  "
 msgstr "enum_  "
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "Constantes :"
+msgstr "Constantes"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Constantes :"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Description :"
+msgstr "Description"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Properties"
-msgstr "Propriétés :"
+msgstr "Propriétés"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"

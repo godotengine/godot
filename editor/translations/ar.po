@@ -13,8 +13,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-10-25 20:58+0000\n"
-"Last-Translator: Wajdi Feki <wajdi.feki@gmail.com>\n"
+"PO-Revision-Date: 2017-11-02 21:44+0000\n"
+"Last-Translator: omar anwar aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -30,7 +30,7 @@ msgstr "معطّل"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "كُل الإختيار"
+msgstr "كُل المُحدد"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -74,7 +74,7 @@ msgstr "حذف مسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr "تحديد التحولات ل:"
+msgstr "تحديد التحويلات لـ:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
@@ -94,11 +94,11 @@ msgstr "تغيير صيغة الغلاف لمسار التحريك"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr "تحرير منحى العقدة"
+msgstr "تحرير منحنى العقدة"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr "تحرير منحى الإختيار"
+msgstr "تحرير منحنى الإختيار"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
@@ -114,7 +114,7 @@ msgstr "نسخ محمّل"
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr "حذف الإختيار"
+msgstr "حذف المُحدد"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
@@ -179,7 +179,7 @@ msgstr "خارج-داخل"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr "تحولات"
+msgstr "تحويلات"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
@@ -489,7 +489,7 @@ msgstr "إمسح"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "إضافة وسيطة إستدعاء إضافية"
+msgstr "إضافة وسيطة إستدعاء إضافية:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -658,9 +658,8 @@ msgstr ""
 "إمسح علي أية حال؟ (لا رجعة)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:\n"
-msgstr "لا يمكن الحل."
+msgstr "لا يمكن المسح:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -897,9 +896,8 @@ msgid "Duplicate"
 msgstr "تكرير"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Volume"
-msgstr "إرجاع التكبير"
+msgstr "إرجاع الصوت"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
@@ -922,9 +920,8 @@ msgid "Duplicate Audio Bus"
 msgstr "تكرير بيوس الصوت"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "إرجاع التكبير"
+msgstr "إرجاع صوت البيس"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
@@ -1207,9 +1204,8 @@ msgid "Move Favorite Down"
 msgstr "حرك المُفضلة للأسفل"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder"
-msgstr "لا يمكن إنشاء المجلد."
+msgstr "إذهب إلي المجلد السابق"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1270,27 +1266,24 @@ msgid "Brief Description:"
 msgstr "وصف مختصر:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "الأعضاء:"
+msgstr "الأعضاء"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "الأعضاء:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Public Methods"
-msgstr "الطرق العامة:"
+msgstr "الطرق العامة"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "الطرق العامة:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "GUI Theme Items"
-msgstr "عناصر ثيم واجهة المستخدم:"
+msgstr "عناصر ثيم واجهة المستخدم"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
@@ -1301,9 +1294,8 @@ msgid "Signals:"
 msgstr "الإشارات:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "التعدادات:"
+msgstr "التعدادات"
 
 #: editor/editor_help.cpp
 msgid "Enumerations:"
@@ -1314,18 +1306,16 @@ msgid "enum  "
 msgstr "التعداد  "
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "الثوابت:"
+msgstr "الثوابت"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "الثوابت:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "الوصف:"
+msgstr "الوصف"
 
 #: editor/editor_help.cpp
 msgid "Properties"
@@ -1344,9 +1334,8 @@ msgstr ""
 "المساهمة واحد [color=$color][url=$url]!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods"
-msgstr "قائمة الطرق:"
+msgstr "قائمة الطرق"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -1400,14 +1389,12 @@ msgid "Error while saving."
 msgstr "خطأ خلال الحفظ."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Can't open '%s'."
-msgstr "لا يمكن الحل."
+msgstr "لا يمكن فتح '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "خطأ خلال الحفظ."
+msgstr "خطأ خلال تحميل '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
@@ -1415,12 +1402,11 @@ msgstr "نهاية ملف غير مرتقبة 's%'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr ""
+msgstr "'%s' مفقود أو أحدي إعتمادته."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "خطأ خلال الحفظ."
+msgstr "خطأ خلال تحميل '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1485,18 +1471,25 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"هذا المصدر ينتمي إلي مشهد قد تم إستيراده، إذا لا يمكن تعديله.\n"
+"من فضلك إقرأ التوثيق المرتبط بإستيراد المشاهد لكي تفهم بشكل أفضل كيفية عمل "
+"هذا النظام."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
+"هذا المصدر ينتمي إلي مشهد قد تم توضيحة أو إيراثه.\n"
+"تغييره لن يُحفظ حينما يتم حفظ المشهد الحالي."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"هذا المورد قد تم إستيراده، إذا لا يمكن تعديله. غير إعدادته في قائمة "
+"الإستيراد ومن ثم أعد إستيراده."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1505,6 +1498,10 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"المشهد تم إستيراده، إذا أي تغيير فيه لن يُحفظ.\n"
+"الإيضاح أو الإيراث سوف يسمح بحفظ أي تغيير فيه.\n"
+"من فضلك إقرأ التوثيق المرتبط بإستيراد المشاهد لكي تفهم بشكل أفضل طريقة عمل "
+"هذا النظام."
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1562,6 +1559,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"المشهد المُحدد '%s' ليس ملف مشهد. حدد مشهد صالح؟\n"
+"يمكنك تغييره لاحقاً في \"إعدادات المشروع\" تحت قسم 'التطبيق'."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1569,43 +1568,43 @@ msgstr "المشهد الحالي لم يتم حفظه. الرجاء حفظ ال
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "لا يمكن بدء عملية جانبية!"
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "فتح مشهد"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "فتح مشهد أساسي"
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene.."
-msgstr ""
+msgstr "فتح سريع للمشهد..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script.."
-msgstr ""
+msgstr "فتح سريع للكود..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
-msgstr "حفظ و اغلاق"
+msgstr "حفظ و إغلاق"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr "هل تريد حفظ التغييرات ل'%s' قبل الاغلاق؟"
+msgstr "هل تريد حفظ التغييرات إلي'%s' قبل الإغلاق؟"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr "حفظ المشهد ك.."
+msgstr "حفظ المشهد كـ.."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "لا"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "نعم"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
@@ -1613,51 +1612,51 @@ msgstr "هذا المشهد لم يتم حفظه. هل تود حفظه قبل ت
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "هذه العملية لا يمكن الإكتمال من غير مشهد."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "تصدير مكتبة الأشكال"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr ""
+msgstr "تصدير مجموعة الشبكة"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr ""
+msgstr "هذه العملية لا يمكن أن تتم من غير عقدة محددة."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "لم يتم حفظ المشهد الحالي. استمر بالفتح على اية حال؟"
+msgstr "لم يتم حفظ المشهد الحالي. إفتحه علي أية حال؟"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr "لا يمكن اعادة تحميل مشهد لم يتم حفظه من قبل."
+msgstr "لا يمكن إعادة تحميل مشهد لم يتم حفظه من قبل."
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr ""
+msgstr "إرجاع"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr ""
+msgstr "هذا الفعل لا يمكن إرجاعة. إرجاع علي أية حال؟"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene.."
-msgstr ""
+msgstr "تشغيل مشهد بسرعة..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "خروج"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "خروج من المُعدل؟"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "فتح مدير المشروع؟"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -1678,14 +1677,16 @@ msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"هذا الإعداد مُعطل. الحالة حيث التحديث يجب أن يطبق بالقوة هي الأن تعتبر خطأ. "
+"من فضلك أبلغ عن الخطأ."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "إختر المشهد الأساسي"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr ""
+msgstr "غير قادر علي تفعيل إضافة البرنامج المُساعد في: '%s' تحميل الظبط فشل."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
@@ -1713,7 +1714,7 @@ msgstr ""
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Ugh"
-msgstr ""
+msgstr "آخخ"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2253,7 +2254,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
-msgstr "أكتب منطقك في الطريقة ()run_"
+msgstr "أكتب منطقك في الطريقة ()run_."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."

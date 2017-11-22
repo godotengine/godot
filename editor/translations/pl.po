@@ -18,8 +18,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-10-23 16:47+0000\n"
-"Last-Translator: Sebastian Krzyszkowiak <dos@dosowisko.net>\n"
+"PO-Revision-Date: 2017-11-07 01:47+0000\n"
+"Last-Translator: Maksymilian Świąć <maksymilian.swiac@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1942,7 +1942,7 @@ msgstr "Wyjdź do Listy Projektów"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "Debug"
+msgstr "Debuguj"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -1953,8 +1953,8 @@ msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
-"Podczas eksportu lub uruchomienia aplikacja wynikowa spróbuje połączyć się z "
-"adresem IP tego komputera w celu debugowania."
+"Podczas eksportu lub uruchomienia, aplikacja wynikowa spróbuje połączyć się "
+"z adresem IP tego komputera w celu debugowania."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
