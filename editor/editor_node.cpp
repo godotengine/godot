@@ -927,9 +927,13 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 	Ref<Image> img;
 	if (is2d) {
-		img = scene_root->get_texture()->get_data();
+		if (_get_current_main_editor() == EDITOR_2D) {
+			img = scene_root->get_texture()->get_data();
+		}
 	} else {
-		img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+		if (_get_current_main_editor() == EDITOR_3D) {
+			img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+		}
 	}
 
 	if (img.is_valid()) {
