@@ -59,9 +59,9 @@ namespace Godot
             }
         }
 
-        internal void normalize()
+        internal void Normalize()
         {
-            float length = this.length();
+            float length = this.Length();
 
             if (length == 0f)
             {
@@ -75,27 +75,27 @@ namespace Godot
             }
         }
 
-        public Vector3 abs()
+        public Vector3 Abs()
         {
-            return new Vector3(Mathf.abs(x), Mathf.abs(y), Mathf.abs(z));
+            return new Vector3(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
         }
 
-        public float angle_to(Vector3 to)
+        public float AngleTo(Vector3 to)
         {
-            return Mathf.atan2(cross(to).length(), dot(to));
+            return Mathf.Atan2(Cross(to).Length(), Dot(to));
         }
 
-        public Vector3 bounce(Vector3 n)
+        public Vector3 Bounce(Vector3 n)
         {
-            return -reflect(n);
+            return -Reflect(n);
         }
 
-        public Vector3 ceil()
+        public Vector3 Ceil()
         {
-            return new Vector3(Mathf.ceil(x), Mathf.ceil(y), Mathf.ceil(z));
+            return new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
         }
 
-        public Vector3 cross(Vector3 b)
+        public Vector3 Cross(Vector3 b)
         {
             return new Vector3
             (
@@ -105,7 +105,7 @@ namespace Godot
             );
         }
 
-        public Vector3 cubic_interpolate(Vector3 b, Vector3 preA, Vector3 postB, float t)
+        public Vector3 CubicInterpolate(Vector3 b, Vector3 preA, Vector3 postB, float t)
         {
             Vector3 p0 = preA;
             Vector3 p1 = this;
@@ -122,46 +122,46 @@ namespace Godot
                     );
         }
 
-        public float distance_squared_to(Vector3 b)
+        public float DistanceSquaredTo(Vector3 b)
         {
-            return (b - this).length_squared();
+            return (b - this).LengthSquared();
         }
 
-        public float distance_to(Vector3 b)
+        public float DistanceTo(Vector3 b)
         {
-            return (b - this).length();
+            return (b - this).Length();
         }
 
-        public float dot(Vector3 b)
+        public float Dot(Vector3 b)
         {
             return x * b.x + y * b.y + z * b.z;
         }
 
-        public Vector3 floor()
+        public Vector3 Floor()
         {
-            return new Vector3(Mathf.floor(x), Mathf.floor(y), Mathf.floor(z));
+            return new Vector3(Mathf.Floor(x), Mathf.Floor(y), Mathf.Floor(z));
         }
 
-        public Vector3 inverse()
+        public Vector3 Inverse()
         {
             return new Vector3(1.0f / x, 1.0f / y, 1.0f / z);
         }
 
-        public bool is_normalized()
+        public bool IsNormalized()
         {
-            return Mathf.abs(length_squared() - 1.0f) < Mathf.Epsilon;
+            return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
         }
 
-        public float length()
+        public float Length()
         {
             float x2 = x * x;
             float y2 = y * y;
             float z2 = z * z;
 
-            return Mathf.sqrt(x2 + y2 + z2);
+            return Mathf.Sqrt(x2 + y2 + z2);
         }
 
-        public float length_squared()
+        public float LengthSquared()
         {
             float x2 = x * x;
             float y2 = y * y;
@@ -170,7 +170,7 @@ namespace Godot
             return x2 + y2 + z2;
         }
 
-        public Vector3 linear_interpolate(Vector3 b, float t)
+        public Vector3 LinearInterpolate(Vector3 b, float t)
         {
             return new Vector3
             (
@@ -180,24 +180,24 @@ namespace Godot
             );
         }
 
-        public Axis max_axis()
+        public Axis MaxAxis()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
         }
 
-        public Axis min_axis()
+        public Axis MinAxis()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
         }
 
-        public Vector3 normalized()
+        public Vector3 Normalized()
         {
             Vector3 v = this;
-            v.normalize();
+            v.Normalize();
             return v;
         }
 
-        public Basis outer(Vector3 b)
+        public Basis Outer(Vector3 b)
         {
             return new Basis(
                 new Vector3(x * b.x, x * b.y, x * b.z),
@@ -206,36 +206,36 @@ namespace Godot
             );
         }
 
-        public Vector3 reflect(Vector3 n)
+        public Vector3 Reflect(Vector3 n)
         {
 #if DEBUG
-            if (!n.is_normalized())
+            if (!n.IsNormalized())
                 throw new ArgumentException(String.Format("{0} is not normalized", n), nameof(n));
 #endif
-            return 2.0f * n * dot(n) - this;
+            return 2.0f * n * Dot(n) - this;
         }
 
-        public Vector3 rotated(Vector3 axis, float phi)
+        public Vector3 Rotated(Vector3 axis, float phi)
         {
-            return new Basis(axis, phi).xform(this);
+            return new Basis(axis, phi).Xform(this);
         }
 
-        public Vector3 slide(Vector3 n)
+        public Vector3 Slide(Vector3 n)
         {
-            return this - n * dot(n);
+            return this - n * Dot(n);
         }
 
-        public Vector3 snapped(Vector3 by)
+        public Vector3 Snapped(Vector3 by)
         {
             return new Vector3
             (
-                Mathf.stepify(x, by.x),
-                Mathf.stepify(y, by.y),
-                Mathf.stepify(z, by.z)
+                Mathf.Stepify(x, by.x),
+                Mathf.Stepify(y, by.y),
+                Mathf.Stepify(z, by.z)
             );
         }
 
-        public Basis to_diagonal_matrix()
+        public Basis ToDiagonalMatrix()
         {
             return new Basis(
                 x, 0f, 0f,

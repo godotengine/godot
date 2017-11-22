@@ -10,15 +10,15 @@ namespace Godot
 {
     public static class StringExtensions
     {
-        private static int get_slice_count(this string instance, string splitter)
+        private static int GetSliceCount(this string instance, string splitter)
         {
-            if (instance.empty() || splitter.empty())
+            if (instance.Empty() || splitter.Empty())
                 return 0;
 
             int pos = 0;
             int slices = 1;
 
-            while ((pos = instance.find(splitter, pos)) >= 0)
+            while ((pos = instance.Find(splitter, pos)) >= 0)
             {
                 slices++;
                 pos += splitter.Length;
@@ -27,9 +27,9 @@ namespace Godot
             return slices;
         }
 
-        private static string get_slicec(this string instance, char splitter, int slice)
+        private static string GetSlicec(this string instance, char splitter, int slice)
         {
-            if (!instance.empty() && slice >= 0)
+            if (!instance.Empty() && slice >= 0)
             {
                 int i = 0;
                 int prev = 0;
@@ -60,7 +60,7 @@ namespace Godot
         // <summary>
         // If the string is a path to a file, return the path to the file without the extension.
         // </summary>
-        public static string basename(this string instance)
+        public static string Basename(this string instance)
         {
             int index = instance.LastIndexOf('.');
 
@@ -73,7 +73,7 @@ namespace Godot
         // <summary>
         // Return true if the strings begins with the given string.
         // </summary>
-        public static bool begins_with(this string instance, string text)
+        public static bool BeginsWith(this string instance, string text)
         {
             return instance.StartsWith(text);
         }
@@ -81,7 +81,7 @@ namespace Godot
         // <summary>
         // Return the bigrams (pairs of consecutive letters) of this string.
         // </summary>
-        public static string[] bigrams(this string instance)
+        public static string[] Bigrams(this string instance)
         {
             string[] b = new string[instance.Length - 1];
 
@@ -96,7 +96,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with special characters escaped using the C language standard.
         // </summary>
-        public static string c_escape(this string instance)
+        public static string CEscape(this string instance)
         {
             StringBuilder sb = new StringBuilder(string.Copy(instance));
 
@@ -118,7 +118,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with escaped characters replaced by their meanings according to the C language standard.
         // </summary>
-        public static string c_unescape(this string instance)
+        public static string CUnescape(this string instance)
         {
             StringBuilder sb = new StringBuilder(string.Copy(instance));
 
@@ -140,14 +140,14 @@ namespace Godot
         // <summary>
         // Change the case of some letters. Replace underscores with spaces, convert all letters to lowercase then capitalize first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code] it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
         // </summary>
-        public static string capitalize(this string instance)
+        public static string Capitalize(this string instance)
         {
             string aux = instance.Replace("_", " ").ToLower();
             string cap = string.Empty;
 
-            for (int i = 0; i < aux.get_slice_count(" "); i++)
+            for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
-                string slice = aux.get_slicec(' ', i);
+                string slice = aux.GetSlicec(' ', i);
                 if (slice.Length > 0)
                 {
                     slice = char.ToUpper(slice[0]) + slice.Substring(1);
@@ -163,12 +163,12 @@ namespace Godot
         // <summary>
         // Perform a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
         // </summary>
-        public static int casecmp_to(this string instance, string to)
+        public static int CasecmpTo(this string instance, string to)
         {
-            if (instance.empty())
-                return to.empty() ? 0 : -1;
+            if (instance.Empty())
+                return to.Empty() ? 0 : -1;
 
-            if (to.empty())
+            if (to.Empty())
                 return 1;
 
             int instance_idx = 0;
@@ -195,7 +195,7 @@ namespace Godot
         // <summary>
         // Return true if the string is empty.
         // </summary>
-        public static bool empty(this string instance)
+        public static bool Empty(this string instance)
         {
             return string.IsNullOrEmpty(instance);
         }
@@ -203,7 +203,7 @@ namespace Godot
         // <summary>
         // Return true if the strings ends with the given string.
         // </summary>
-        public static bool ends_with(this string instance, string text)
+        public static bool EndsWith(this string instance, string text)
         {
             return instance.EndsWith(text);
         }
@@ -211,7 +211,7 @@ namespace Godot
         // <summary>
         // Erase [code]chars[/code] characters from the string starting from [code]pos[/code].
         // </summary>
-        public static void erase(this StringBuilder instance, int pos, int chars)
+        public static void Erase(this StringBuilder instance, int pos, int chars)
         {
             instance.Remove(pos, chars);
         }
@@ -219,9 +219,9 @@ namespace Godot
         // <summary>
         // If the string is a path to a file, return the extension.
         // </summary>
-        public static string extension(this string instance)
+        public static string Extension(this string instance)
         {
-            int pos = instance.find_last(".");
+            int pos = instance.FindLast(".");
 
             if (pos < 0)
                 return instance;
@@ -232,7 +232,7 @@ namespace Godot
         // <summary>
         // Find the first occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
         // </summary>
-        public static int find(this string instance, string what, int from = 0)
+        public static int Find(this string instance, string what, int from = 0)
         {
             return instance.IndexOf(what, StringComparison.OrdinalIgnoreCase);
         }
@@ -240,7 +240,7 @@ namespace Godot
         // <summary>
         // Find the last occurrence of a substring, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
         // </summary>
-        public static int find_last(this string instance, string what)
+        public static int FindLast(this string instance, string what)
         {
             return instance.LastIndexOf(what, StringComparison.OrdinalIgnoreCase);
         }
@@ -248,7 +248,7 @@ namespace Godot
         // <summary>
         // Find the first occurrence of a substring but search as case-insensitive, return the starting position of the substring or -1 if not found. Optionally, the initial search index can be passed.
         // </summary>
-        public static int findn(this string instance, string what, int from = 0)
+        public static int FindN(this string instance, string what, int from = 0)
         {
             return instance.IndexOf(what, StringComparison.Ordinal);
         }
@@ -256,9 +256,9 @@ namespace Godot
         // <summary>
         // If the string is a path to a file, return the base directory.
         // </summary>
-        public static string get_base_dir(this string instance)
+        public static string GetBaseDir(this string instance)
         {
-            int basepos = instance.find("://");
+            int basepos = instance.Find("://");
 
             string rs = string.Empty;
             string @base = string.Empty;
@@ -271,7 +271,7 @@ namespace Godot
             }
             else
             {
-                if (instance.begins_with("/"))
+                if (instance.BeginsWith("/"))
                 {
                     rs = instance.Substring(1, instance.Length);
                     @base = "/";
@@ -282,7 +282,7 @@ namespace Godot
                 }
             }
 
-            int sep = Mathf.max(rs.find_last("/"), rs.find_last("\\"));
+            int sep = Mathf.Max(rs.FindLast("/"), rs.FindLast("\\"));
 
             if (sep == -1)
                 return @base;
@@ -293,9 +293,9 @@ namespace Godot
         // <summary>
         // If the string is a path to a file, return the file and ignore the base directory.
         // </summary>
-        public static string get_file(this string instance)
+        public static string GetFile(this string instance)
         {
-            int sep = Mathf.max(instance.find_last("/"), instance.find_last("\\"));
+            int sep = Mathf.Max(instance.FindLast("/"), instance.FindLast("\\"));
 
             if (sep == -1)
                 return instance;
@@ -306,7 +306,7 @@ namespace Godot
         // <summary>
         // Hash the string and return a 32 bits integer.
         // </summary>
-        public static int hash(this string instance)
+        public static int Hash(this string instance)
         {
             int index = 0;
             int hashv = 5381;
@@ -321,7 +321,7 @@ namespace Godot
         // <summary>
         // Convert a string containing an hexadecimal number into an int.
         // </summary>
-        public static int hex_to_int(this string instance)
+        public static int HexToInt(this string instance)
         {
             int sign = 1;
 
@@ -340,7 +340,7 @@ namespace Godot
         // <summary>
         // Insert a substring at a given position.
         // </summary>
-        public static string insert(this string instance, int pos, string what)
+        public static string Insert(this string instance, int pos, string what)
         {
             return instance.Insert(pos, what);
         }
@@ -348,7 +348,7 @@ namespace Godot
         // <summary>
         // If the string is a path to a file or directory, return true if the path is absolute.
         // </summary>
-        public static bool is_abs_path(this string instance)
+        public static bool IsAbsPath(this string instance)
         {
             return System.IO.Path.IsPathRooted(instance);
         }
@@ -356,7 +356,7 @@ namespace Godot
         // <summary>
         // If the string is a path to a file or directory, return true if the path is relative.
         // </summary>
-        public static bool is_rel_path(this string instance)
+        public static bool IsRelPath(this string instance)
         {
             return !System.IO.Path.IsPathRooted(instance);
         }
@@ -364,7 +364,7 @@ namespace Godot
         // <summary>
         // Check whether this string is a subsequence of the given string.
         // </summary>
-        public static bool is_subsequence_of(this string instance, string text, bool case_insensitive)
+        public static bool IsSubsequenceOf(this string instance, string text, bool case_insensitive)
         {
             int len = instance.Length;
 
@@ -407,23 +407,23 @@ namespace Godot
         // <summary>
         // Check whether this string is a subsequence of the given string, considering case.
         // </summary>
-        public static bool is_subsequence_of(this string instance, string text)
+        public static bool IsSubsequenceOf(this string instance, string text)
         {
-            return instance.is_subsequence_of(text, false);
+            return instance.IsSubsequenceOf(text, false);
         }
 
         // <summary>
         // Check whether this string is a subsequence of the given string, without considering case.
         // </summary>
-        public static bool is_subsequence_ofi(this string instance, string text)
+        public static bool IsSubsequenceOfI(this string instance, string text)
         {
-            return instance.is_subsequence_of(text, true);
+            return instance.IsSubsequenceOf(text, true);
         }
 
         // <summary>
         // Check whether the string contains a valid float.
         // </summary>
-        public static bool is_valid_float(this string instance)
+        public static bool IsValidFloat(this string instance)
         {
             float f;
             return float.TryParse(instance, out f);
@@ -432,15 +432,15 @@ namespace Godot
         // <summary>
         // Check whether the string contains a valid color in HTML notation.
         // </summary>
-        public static bool is_valid_html_color(this string instance)
+        public static bool IsValidHtmlColor(this string instance)
         {
-            return Color.html_is_valid(instance);
+            return Color.HtmlIsValid(instance);
         }
 
         // <summary>
         // Check whether the string is a valid identifier. As is common in programming languages, a valid identifier may contain only letters, digits and underscores (_) and the first character may not be a digit.
         // </summary>
-        public static bool is_valid_identifier(this string instance)
+        public static bool IsValidIdentifier(this string instance)
         {
             int len = instance.Length;
 
@@ -467,7 +467,7 @@ namespace Godot
         // <summary>
         // Check whether the string contains a valid integer.
         // </summary>
-        public static bool is_valid_integer(this string instance)
+        public static bool IsValidInteger(this string instance)
         {
             int f;
             return int.TryParse(instance, out f);
@@ -476,7 +476,7 @@ namespace Godot
         // <summary>
         // Check whether the string contains a valid IP address.
         // </summary>
-        public static bool is_valid_ip_address(this string instance)
+        public static bool IsValidIpAddress(this string instance)
         {
             string[] ip = instance.split(".");
 
@@ -486,7 +486,7 @@ namespace Godot
             for (int i = 0; i < ip.Length; i++)
             {
                 string n = ip[i];
-                if (!n.is_valid_integer())
+                if (!n.IsValidInteger())
                     return false;
 
                 int val = n.to_int();
@@ -500,7 +500,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with special characters escaped using the JSON standard.
         // </summary>
-        public static string json_escape(this string instance)
+        public static string JsonEscape(this string instance)
         {
             StringBuilder sb = new StringBuilder(string.Copy(instance));
 
@@ -519,7 +519,7 @@ namespace Godot
         // <summary>
         // Return an amount of characters from the left of the string.
         // </summary>
-        public static string left(this string instance, int pos)
+        public static string Left(this string instance, int pos)
         {
             if (pos <= 0)
                 return string.Empty;
@@ -533,7 +533,7 @@ namespace Godot
         /// <summary>
         /// Return the length of the string in characters.
         /// </summary>
-        public static int length(this string instance)
+        public static int Length(this string instance)
         {
             return instance.Length;
         }
@@ -541,7 +541,7 @@ namespace Godot
         // <summary>
         // Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
         // </summary>
-        public static bool expr_match(this string instance, string expr, bool case_sensitive)
+        public static bool ExprMatch(this string instance, string expr, bool caseSensitive)
         {
             if (expr.Length == 0 || instance.Length == 0)
                 return false;
@@ -551,21 +551,21 @@ namespace Godot
                 case '\0':
                     return instance[0] == 0;
                 case '*':
-                    return expr_match(expr + 1, instance, case_sensitive) || (instance[0] != 0 && expr_match(expr, instance + 1, case_sensitive));
+                    return ExprMatch(expr + 1, instance, caseSensitive) || (instance[0] != 0 && ExprMatch(expr, instance + 1, caseSensitive));
                 case '?':
-                    return instance[0] != 0 && instance[0] != '.' && expr_match(expr + 1, instance + 1, case_sensitive);
+                    return instance[0] != 0 && instance[0] != '.' && ExprMatch(expr + 1, instance + 1, caseSensitive);
                 default:
-                    return (case_sensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
-                                expr_match(expr + 1, instance + 1, case_sensitive);
+                    return (caseSensitive ? instance[0] == expr[0] : char.ToUpper(instance[0]) == char.ToUpper(expr[0])) &&
+                                ExprMatch(expr + 1, instance + 1, caseSensitive);
             }
         }
 
         // <summary>
         // Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
         // </summary>
-        public static bool match(this string instance, string expr)
+        public static bool Match(this string instance, string expr)
         {
-            return instance.expr_match(expr, true);
+            return instance.ExprMatch(expr, true);
         }
 
         // <summary>
@@ -573,13 +573,13 @@ namespace Godot
         // </summary>
         public static bool matchn(this string instance, string expr)
         {
-            return instance.expr_match(expr, false);
+            return instance.ExprMatch(expr, false);
         }
 
         // <summary>
         // Return the MD5 hash of the string as an array of bytes.
         // </summary>
-        public static byte[] md5_buffer(this string instance)
+        public static byte[] Md5Buffer(this string instance)
         {
 			return NativeCalls.godot_icall_String_md5_buffer(instance);
         }
@@ -587,7 +587,7 @@ namespace Godot
         // <summary>
         // Return the MD5 hash of the string as a string.
         // </summary>
-        public static string md5_text(this string instance)
+        public static string Md5Text(this string instance)
         {
 			return NativeCalls.godot_icall_String_md5_text(instance);
         }
@@ -595,12 +595,12 @@ namespace Godot
         // <summary>
         // Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
         // </summary>
-        public static int nocasecmp_to(this string instance, string to)
+        public static int NocasecmpTo(this string instance, string to)
         {
-            if (instance.empty())
-                return to.empty() ? 0 : -1;
+            if (instance.Empty())
+                return to.Empty() ? 0 : -1;
 
-            if (to.empty())
+            if (to.Empty())
                 return 1;
 
             int instance_idx = 0;
@@ -627,7 +627,7 @@ namespace Godot
         // <summary>
         // Return the character code at position [code]at[/code].
         // </summary>
-        public static int ord_at(this string instance, int at)
+        public static int OrdAt(this string instance, int at)
         {
             return instance[at];
         }
@@ -635,9 +635,9 @@ namespace Godot
         // <summary>
         // Format a number to have an exact number of [code]digits[/code] after the decimal point.
         // </summary>
-        public static string pad_decimals(this string instance, int digits)
+        public static string PadDecimals(this string instance, int digits)
         {
-            int c = instance.find(".");
+            int c = instance.Find(".");
 
             if (c == -1)
             {
@@ -671,10 +671,10 @@ namespace Godot
         // <summary>
         // Format a number to have an exact number of [code]digits[/code] before the decimal point.
         // </summary>
-        public static string pad_zeros(this string instance, int digits)
+        public static string PadZeros(this string instance, int digits)
         {
             string s = instance;
-            int end = s.find(".");
+            int end = s.Find(".");
 
             if (end == -1)
                 end = s.Length;
@@ -704,7 +704,7 @@ namespace Godot
         // <summary>
         // Decode a percent-encoded string. See [method percent_encode].
         // </summary>
-        public static string percent_decode(this string instance)
+        public static string PercentDecode(this string instance)
         {
             return Uri.UnescapeDataString(instance);
         }
@@ -712,7 +712,7 @@ namespace Godot
         // <summary>
         // Percent-encode a string. This is meant to encode parameters in a URL when sending a HTTP GET request and bodies of form-urlencoded POST request.
         // </summary>
-        public static string percent_encode(this string instance)
+        public static string PercentEncode(this string instance)
         {
             return Uri.EscapeDataString(instance);
         }
@@ -720,7 +720,7 @@ namespace Godot
         // <summary>
         // If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
         // </summary>
-        public static string plus_file(this string instance, string file)
+        public static string PlusFile(this string instance, string file)
         {
             if (instance.Length > 0 && instance[instance.Length - 1] == '/')
                 return instance + file;
@@ -731,7 +731,7 @@ namespace Godot
         // <summary>
         // Replace occurrences of a substring for different ones inside the string.
         // </summary>
-        public static string replace(this string instance, string what, string forwhat)
+        public static string Replace(this string instance, string what, string forwhat)
         {
             return instance.Replace(what, forwhat);
         }
@@ -739,7 +739,7 @@ namespace Godot
         // <summary>
         // Replace occurrences of a substring for different ones inside the string, but search case-insensitive.
         // </summary>
-        public static string replacen(this string instance, string what, string forwhat)
+        public static string Replacen(this string instance, string what, string forwhat)
         {
             return Regex.Replace(instance, what, forwhat, RegexOptions.IgnoreCase);
         }
@@ -747,7 +747,7 @@ namespace Godot
         // <summary>
         // Perform a search for a substring, but start from the end of the string instead of the beginning.
         // </summary>
-        public static int rfind(this string instance, string what, int from = -1)
+        public static int Rfind(this string instance, string what, int from = -1)
         {
 			return NativeCalls.godot_icall_String_rfind(instance, what, from);
         }
@@ -755,7 +755,7 @@ namespace Godot
         // <summary>
         // Perform a search for a substring, but start from the end of the string instead of the beginning. Also search case-insensitive.
         // </summary>
-        public static int rfindn(this string instance, string what, int from = -1)
+        public static int Rfindn(this string instance, string what, int from = -1)
         {
 			return NativeCalls.godot_icall_String_rfindn(instance, what, from);
         }
@@ -763,7 +763,7 @@ namespace Godot
         // <summary>
         // Return the right side of the string from a given position.
         // </summary>
-        public static string right(this string instance, int pos)
+        public static string Right(this string instance, int pos)
         {
             if (pos >= instance.Length)
                 return instance;
@@ -774,7 +774,7 @@ namespace Godot
             return instance.Substring(pos, (instance.Length - pos));
         }
 
-        public static byte[] sha256_buffer(this string instance)
+        public static byte[] Sha256Buffer(this string instance)
         {
 			return NativeCalls.godot_icall_String_sha256_buffer(instance);
         }
@@ -782,7 +782,7 @@ namespace Godot
         // <summary>
         // Return the SHA-256 hash of the string as a string.
         // </summary>
-        public static string sha256_text(this string instance)
+        public static string Sha256Text(this string instance)
         {
 			return NativeCalls.godot_icall_String_sha256_text(instance);
         }
@@ -790,7 +790,7 @@ namespace Godot
         // <summary>
         // Return the similarity index of the text compared to this string. 1 means totally similar and 0 means totally dissimilar.
         // </summary>
-        public static float similarity(this string instance, string text)
+        public static float Similarity(this string instance, string text)
         {
             if (instance == text)
             {
@@ -803,11 +803,11 @@ namespace Godot
                 return 0.0f;
             }
 
-            string[] src_bigrams = instance.bigrams();
-            string[] tgt_bigrams = text.bigrams();
+            string[] srcBigrams = instance.Bigrams();
+            string[] tgtBigrams = text.Bigrams();
 
-            int src_size = src_bigrams.Length;
-            int tgt_size = tgt_bigrams.Length;
+            int src_size = srcBigrams.Length;
+            int tgt_size = tgtBigrams.Length;
 
             float sum = src_size + tgt_size;
             float inter = 0;
@@ -816,7 +816,7 @@ namespace Godot
             {
                 for (int j = 0; j < tgt_size; j++)
                 {
-                    if (src_bigrams[i] == tgt_bigrams[j])
+                    if (srcBigrams[i] == tgtBigrams[j])
                     {
                         inter++;
                         break;
@@ -846,7 +846,7 @@ namespace Godot
 
             while (true)
             {
-                int end = instance.find(divisor, from);
+                int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
                 if (allow_empty || (end > from))
