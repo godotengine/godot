@@ -50,6 +50,7 @@ class OS {
 	List<String> _cmdline;
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
+	int low_processor_usage_mode_sleep_usec;
 	bool _verbose_stdout;
 	String _local_clipboard;
 	uint64_t _msec_splash;
@@ -202,6 +203,8 @@ public:
 	virtual bool is_keep_screen_on() const;
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
+	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
+	virtual int get_low_processor_usage_mode_sleep_usec() const;
 
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
