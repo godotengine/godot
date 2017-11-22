@@ -919,14 +919,14 @@ RigidBody::~RigidBody() {
 
 Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion) {
 
-	Collision col;
-	if (move_and_collide(p_motion, col)) {
+	Vector<Collision> cols;
+	if (move_and_collide(p_motion, cols)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
 		}
 
-		motion_cache->collision = col;
+		motion_cache->collision = cols[0]; // fix
 
 		return motion_cache;
 	}
@@ -934,22 +934,28 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion) {
 	return Ref<KinematicCollision>();
 }
 
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, Collision &r_collision) {
+bool KinematicBody::move_and_collide(const Vector3 &p_motion, Vector<Collision> &r_collisions) {
 
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
 	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, &result);
 
 	if (colliding) {
-		r_collision.collider_metadata = result.collider_metadata;
-		r_collision.collider_shape = result.collider_shape;
-		r_collision.collider_vel = result.collider_velocity;
-		r_collision.collision = result.collision_point;
-		r_collision.normal = result.collision_normal;
-		r_collision.collider = result.collider_id;
-		r_collision.travel = result.motion;
-		r_collision.remainder = result.remainder;
-		r_collision.local_shape = result.collision_local_shape;
+		for (int i = 0; i < result.collisions.size(); ++i) {
+			Collision col =
+					{
+					  .collider_metadata = result.collisions[i].collider_metadata,
+					  .collider_shape = result.collisions[i].collider_shape,
+					  .collider_vel = result.collisions[i].collider_velocity,
+					  .collision = result.collisions[i].collision_point,
+					  .normal = result.collisions[i].collision_normal,
+					  .collider = result.collisions[i].collider_id,
+					  .travel = result.motion,
+					  .remainder = result.remainder,
+					  .local_shape = result.collisions[i].collision_local_shape
+					};
+			r_collisions.push_back(col);
+		}
 	}
 
 	gt.origin += result.motion;
@@ -971,45 +977,45 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 	while (p_max_slides) {
 
-		Collision collision;
+		Vector<Collision> collisions; // multiple collisions
 
-		bool collided = move_and_collide(motion, collision);
+		bool collided = move_and_collide(motion, collisions);
 
 		if (collided) {
+			for (int i = 0; i < collisions.size(); ++i) {
+				motion = collisions[i].remainder;
 
-			motion = collision.remainder;
-
-			if (p_floor_direction == Vector3()) {
-				//all is a wall
-				on_wall = true;
-			} else {
-				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
-
-					on_floor = true;
-					floor_velocity = collision.collider_vel;
-
-					Vector3 rel_v = lv - floor_velocity;
-					Vector3 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
-
-					if (collision.travel.length() < 0.05 && hv.length() < p_slope_stop_min_velocity) {
-						Transform gt = get_global_transform();
-						gt.origin -= collision.travel;
-						set_global_transform(gt);
-						return floor_velocity - p_floor_direction * p_floor_direction.dot(floor_velocity);
-					}
-				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
-					on_ceiling = true;
-				} else {
+				if (p_floor_direction == Vector3()) {
+					//all is a wall
 					on_wall = true;
+				} else {
+					if (collisions[i].normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+
+						on_floor = true;
+						floor_velocity = collisions[i].collider_vel;
+
+						Vector3 rel_v = lv - floor_velocity;
+						Vector3 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
+
+						if (collisions[i].travel.length() < 0.05 && hv.length() < p_slope_stop_min_velocity) {
+							Transform gt = get_global_transform();
+							gt.origin -= collisions[i].travel;
+							set_global_transform(gt);
+							return floor_velocity - p_floor_direction * p_floor_direction.dot(floor_velocity);
+						}
+					} else if (collisions[i].normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
+						on_ceiling = true;
+					} else {
+						on_wall = true;
+					}
 				}
+
+				Vector3 n = collisions[i].normal;
+				motion = motion.slide(n);
+				lv = lv.slide(n);
+
+				colliders.push_back(collisions[i]);
 			}
-
-			Vector3 n = collision.normal;
-			motion = motion.slide(n);
-			lv = lv.slide(n);
-
-			colliders.push_back(collision);
-
 		} else {
 			break;
 		}
