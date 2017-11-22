@@ -84,8 +84,10 @@ enum {
 	OBJECT_INTERNAL_RESOURCE = 2,
 	OBJECT_EXTERNAL_RESOURCE_INDEX = 3,
 	//version 2: added 64 bits support for float and int
-	FORMAT_VERSION = 2,
-	FORMAT_VERSION_CAN_RENAME_DEPS = 1
+	//version 3: changed nodepath encoding
+	FORMAT_VERSION = 3,
+	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
+	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 
 };
 
@@ -273,6 +275,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			uint32_t subname_count = f->get_16();
 			absolute = subname_count & 0x8000;
 			subname_count &= 0x7FFF;
+			if (ver_format < FORMAT_VERSION_NO_NODEPATH_PROPERTY) {
+				subname_count += 1; // has a property field, so we should count it as well
+			}
 
 			for (int i = 0; i < name_count; i++)
 				names.push_back(_get_string());
@@ -854,7 +859,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	uint32_t ver_format = f->get_32();
+	ver_format = f->get_32();
 
 	print_bl("big endian: " + itos(big_endian));
 #ifdef BIG_ENDIAN_ENABLED
