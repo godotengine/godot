@@ -4481,15 +4481,24 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(ResourceCache::get(path)));
 	Size2 texture_size = texture->get_size();
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
-	editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
-	editor_data->get_undo_redo().add_do_reference(child);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
+	if (parent) {
+		editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(child);
+		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
+	} else { // if we haven't parent, lets try to make a child as a parent.
+		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
+		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(child);
+		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+	}
 
-	String new_name = parent->validate_child_name(child);
-	ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-	editor_data->get_undo_redo().add_do_method(sed, "live_debug_create_node", editor->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
-	editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	if (parent) {
+		String new_name = parent->validate_child_name(child);
+		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+		editor_data->get_undo_redo().add_do_method(sed, "live_debug_create_node", editor->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	}
 
 	// handle with different property for texture
 	String property = "texture";
@@ -4522,8 +4531,8 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	}
 
 	// locate at preview position
-	Point2 pos;
-	if (parent->has_method("get_global_position")) {
+	Point2 pos = Point2(0, 0);
+	if (parent && parent->has_method("get_global_position")) {
 		pos = parent->call("get_global_position");
 	}
 	Transform2D trans = canvas->get_canvas_transform();
@@ -4684,6 +4693,18 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	return false;
 }
 
+void CanvasItemEditorViewport::_show_resource_type_selector() {
+	List<BaseButton *> btn_list;
+	button_group->get_buttons(&btn_list);
+
+	for (int i = 0; i < btn_list.size(); i++) {
+		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+		check->set_pressed(check->get_text() == default_type);
+	}
+	selector->set_title(vformat(TTR("Add %s"), default_type));
+	selector->popup_centered_minsize();
+}
+
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
 	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 	bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
@@ -4700,10 +4721,8 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		if (root_node) {
 			list.push_back(root_node);
 		} else {
-			accept->get_ok()->set_text(TTR("OK :("));
-			accept->set_text(TTR("No parent to instance a child at."));
-			accept->popup_centered_minsize();
-			_remove_preview();
+			drop_pos = p_point;
+			_show_resource_type_selector();
 			return;
 		}
 	}
@@ -4722,15 +4741,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	drop_pos = p_point;
 
 	if (is_alt) {
-		List<BaseButton *> btn_list;
-		button_group->get_buttons(&btn_list);
-
-		for (int i = 0; i < btn_list.size(); i++) {
-			CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
-			check->set_pressed(check->get_text() == default_type);
-		}
-		selector->set_title(vformat(TTR("Add %s"), default_type));
-		selector->popup_centered_minsize();
+		_show_resource_type_selector();
 	} else {
 		_perform_drop_data();
 	}
