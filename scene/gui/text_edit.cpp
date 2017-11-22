@@ -303,6 +303,8 @@ void TextEdit::_update_scrollbars() {
 	int total_rows = (is_hiding_enabled() ? get_total_unhidden_rows() : text.size());
 	if (scroll_past_end_of_file_enabled) {
 		total_rows += visible_rows - 1;
+	} else {
+		total_rows -= 1;
 	}
 
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
@@ -355,6 +357,10 @@ void TextEdit::_update_scrollbars() {
 		}
 
 		update_line_scroll_pos();
+		if (fabs(v_scroll->get_value() - get_line_scroll_pos()) >= 1) {
+			cursor.line_ofs += v_scroll->get_value() - get_line_scroll_pos();
+		}
+
 	} else {
 		cursor.line_ofs = 0;
 		line_scroll_pos = 0;
@@ -796,7 +802,9 @@ void TextEdit::_notification(int p_what) {
 			update_line_scroll_pos();
 
 			int line = cursor.line_ofs - 1;
-			for (int i = 0; i < visible_rows; i++) {
+			// another row may be visible during smooth scrolling
+			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
+			for (int i = 0; i < draw_amount; i++) {
 
 				line++;
 
@@ -3073,7 +3081,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 	if (smooth_scroll_enabled) {
 		int max_v_scroll = get_total_unhidden_rows();
 		if (!scroll_past_end_of_file_enabled) {
-			max_v_scroll -= get_visible_rows();
+			max_v_scroll -= get_visible_rows() + 1;
 			max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 		}
 
@@ -3114,12 +3122,12 @@ void TextEdit::_scroll_lines_up() {
 	scrolling = false;
 
 	// adjust the vertical scroll
-	if (get_v_scroll() > 0) {
+	if (get_v_scroll() >= 0) {
 		set_v_scroll(get_v_scroll() - 1);
 	}
 
 	// adjust the cursor
-	int num_lines = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), get_visible_rows()) - 1;
+	int num_lines = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), get_visible_rows());
 	if (cursor.line >= cursor.line_ofs + num_lines && !selection.active) {
 		cursor_set_line(cursor.line_ofs + num_lines, false, false);
 	}
@@ -3131,7 +3139,7 @@ void TextEdit::_scroll_lines_down() {
 	// calculate the maximum vertical scroll position
 	int max_v_scroll = get_total_unhidden_rows();
 	if (!scroll_past_end_of_file_enabled) {
-		max_v_scroll -= get_visible_rows();
+		max_v_scroll -= get_visible_rows() + 1;
 		max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 	}
 
@@ -3462,23 +3470,27 @@ void TextEdit::adjust_viewport_to_cursor() {
 	visible_width -= 20; // give it a little more space
 
 	int visible_rows = get_visible_rows();
-	if (h_scroll->is_visible_in_tree())
+	if (h_scroll->is_visible_in_tree() && !scroll_past_end_of_file_enabled)
 		visible_rows -= ((h_scroll->get_combined_minimum_size().height - 1) / get_row_height());
 	int num_rows = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(visible_rows, text.size() - 1 - cursor.line_ofs));
 
-	// if the cursor is off the screen
-	if (cursor.line >= (cursor.line_ofs + MAX(num_rows, visible_rows))) {
-		cursor.line_ofs = cursor.line - (num_lines_from(CLAMP(cursor.line, 0, text.size() - 1), -visible_rows) - 1);
+	// make sure the cursor is on the screen
+	if (cursor.line > (cursor.line_ofs + MAX(num_rows, visible_rows))) {
+		cursor.line_ofs = cursor.line - num_lines_from(cursor.line, -visible_rows) + 1;
 	}
 	if (cursor.line < cursor.line_ofs) {
 		cursor.line_ofs = cursor.line;
 	}
-
-	// fixes deleting lines from moving the line ofs in a bad way
-	if (!scroll_past_end_of_file_enabled && get_total_unhidden_rows() > visible_rows && num_rows < visible_rows) {
-		cursor.line_ofs = text.size() - 1 - (num_lines_from(text.size() - 1, -visible_rows) - 1);
+	int line_ofs_max = text.size() - 1;
+	if (!scroll_past_end_of_file_enabled) {
+		line_ofs_max -= num_lines_from(text.size() - 1, -visible_rows) - 1;
+		line_ofs_max += (h_scroll->is_visible_in_tree() ? 1 : 0);
+		line_ofs_max += (cursor.line == text.size() - 1 ? 1 : 0);
 	}
+	line_ofs_max = MAX(line_ofs_max, 0);
+	cursor.line_ofs = CLAMP(cursor.line_ofs, 0, line_ofs_max);
 
+	// adjust x offset
 	int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
 
 	if (cursor_x > (cursor.x_ofs + visible_width))
@@ -3487,11 +3499,9 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
 
+	h_scroll->set_value(cursor.x_ofs);
 	update_line_scroll_pos();
-	if (get_line_scroll_pos() == 0)
-		v_scroll->set_value(0);
-	else
-		v_scroll->set_value(get_line_scroll_pos() + 1);
+	v_scroll->set_value(get_line_scroll_pos());
 	update();
 	/*
 	get_range()->set_max(text.size());
@@ -3530,6 +3540,7 @@ void TextEdit::center_viewport_to_cursor() {
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
 
+	h_scroll->set_value(cursor.x_ofs);
 	update_line_scroll_pos();
 	v_scroll->set_value(get_line_scroll_pos());
 
@@ -4448,7 +4459,7 @@ int TextEdit::num_lines_from(int p_line_from, int unhidden_amount) const {
 	ERR_FAIL_INDEX_V(p_line_from, text.size(), ABS(unhidden_amount));
 
 	if (!is_hiding_enabled())
-		return unhidden_amount;
+		return ABS(unhidden_amount);
 	int num_visible = 0;
 	int num_total = 0;
 	if (unhidden_amount >= 0) {
