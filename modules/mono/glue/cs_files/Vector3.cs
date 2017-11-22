@@ -217,7 +217,7 @@ namespace Godot
 
         public Vector3 rotated(Vector3 axis, float phi)
         {
-            return new Basis(axis, phi).xform(this);
+            return new Basis(axis, phi).Xform(this);
         }
 
         public Vector3 slide(Vector3 n)
