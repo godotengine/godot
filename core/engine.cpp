@@ -54,16 +54,6 @@ uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }
 
-void Engine::set_frame_delay(uint32_t p_msec) {
-
-	_frame_delay = p_msec;
-}
-
-uint32_t Engine::get_frame_delay() const {
-
-	return _frame_delay;
-}
-
 void Engine::set_time_scale(float p_scale) {
 
 	_time_scale = p_scale;
@@ -136,7 +126,6 @@ Engine::Engine() {
 	singleton = this;
 	frames_drawn = 0;
 	ips = 60;
-	_frame_delay = 0;
 	_fps = 1;
 	_target_fps = 0;
 	_time_scale = 1.0;

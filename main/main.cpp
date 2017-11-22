@@ -109,7 +109,6 @@ static bool init_use_custom_pos = false;
 static bool debug_collisions = false;
 static bool debug_navigation = false;
 #endif
-static int frame_delay = 0;
 static Vector2 init_custom_pos;
 static int video_driver_idx = -1;
 static int audio_driver_idx = -1;
@@ -564,17 +563,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "--frame-delay") { // force frame delay
-
-			if (I->next()) {
-
-				frame_delay = I->next()->get().to_int();
-				N = I->next()->next();
-			} else {
-				OS::get_singleton()->print("Missing frame delay argument, aborting.\n");
-				goto error;
-			}
-
 		} else if (I->get() == "--time-scale") { // force time scale
 
 			if (I->next()) {
@@ -899,18 +887,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps", 60));
-	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
+	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("application/run/max_fps", 0));
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		Engine::get_singleton()->set_target_fps(60);
+	}
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
-
-	if (frame_delay == 0) {
-		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
-	}
-
-	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew(MessageQueue);
 
@@ -1771,14 +1757,6 @@ bool Main::iteration() {
 
 	if (fixed_fps != -1)
 		return exit;
-
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
-		OS::get_singleton()->delay_usec(16600); //apply some delay to force idle time (results in about 60 FPS max)
-	else {
-		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-		if (frame_delay)
-			OS::get_singleton()->delay_usec(Engine::get_singleton()->get_frame_delay() * 1000);
-	}
 
 	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps > 0) {

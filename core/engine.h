@@ -51,7 +51,6 @@ private:
 	friend class Main;
 
 	uint64_t frames_drawn;
-	uint32_t _frame_delay;
 	uint64_t _frame_ticks;
 	float _frame_step;
 
@@ -93,9 +92,6 @@ public:
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
-
-	void set_frame_delay(uint32_t p_msec);
-	uint32_t get_frame_delay() const;
 
 	void add_singleton(const Singleton &p_singleton);
 	void get_singletons(List<Singleton> *p_singletons);
