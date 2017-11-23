@@ -955,31 +955,28 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 
 			if (connection.is_valid()) {
+
 				inspect_scene_tree_timeout -= get_process_delta_time();
 				if (inspect_scene_tree_timeout < 0) {
 					inspect_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
 					if (inspect_scene_tree->is_visible_in_tree()) {
 						_scene_tree_request();
-
-						if (inspected_object_id != 0) {
-							//take the chance and re-inspect selected object
-							Array msg;
-							msg.push_back("inspect_object");
-							msg.push_back(inspected_object_id);
-							ppeer->put_var(msg);
-						}
 					}
 				}
 
 				inspect_edited_object_timeout -= get_process_delta_time();
 				if (inspect_edited_object_timeout < 0) {
 					inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
-					if (inspect_scene_tree->is_visible_in_tree() && inspected_object_id) {
-						//take the chance and re-inspect selected object
-						Array msg;
-						msg.push_back("inspect_object");
-						msg.push_back(inspected_object_id);
-						ppeer->put_var(msg);
+					if (inspected_object_id) {
+						if (ScriptEditorDebuggerInspectedObject *obj = Object::cast_to<ScriptEditorDebuggerInspectedObject>(ObjectDB::get_instance(editor->get_editor_history()->get_current()))) {
+							if (obj->remote_object_id == inspected_object_id) {
+								//take the chance and re-inspect selected object
+								Array msg;
+								msg.push_back("inspect_object");
+								msg.push_back(inspected_object_id);
+								ppeer->put_var(msg);
+							}
+						}
 					}
 				}
 			}
@@ -1850,6 +1847,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		inspect_scene_tree = memnew(Tree);
 		EditorNode::get_singleton()->get_scene_tree_dock()->add_remote_tree_editor(inspect_scene_tree);
+		EditorNode::get_singleton()->get_scene_tree_dock()->connect("remote_tree_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
