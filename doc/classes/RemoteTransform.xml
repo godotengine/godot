@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RemoteTransform" inherits="Spatial" category="Core" version="3.0-alpha">
 	<brief_description>
-		RemoteTransform mirrors the [Transform] of another [Spatial] derived Node in the scene.
+		RemoteTransform leads the [Transform] of another [Spatial] derived Node in the scene.
 	</brief_description>
 	<description>
-		RemoteTransform mirrors the [Transform] of another [Spatial] derived Node (called the remote node) in the scene.
-		It can be set to track another Node's position, rotation and/or scale and update its own accordingly, using either global or local coordinates.
+		RemoteTransform leads the [Transform] of another [Spatial] derived Node (called the remote node) in the scene.
+		It can be set to track another Node's position, rotation and/or scale. It can update using either global or local coordinates.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,30 +16,35 @@
 			<return type="NodePath">
 			</return>
 			<description>
+				Returns the [NodePath] to the remote node, relative to the RemoteTransform's position in the scene.
 			</description>
 		</method>
 		<method name="get_update_position" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns if the RemoteTransform is tracking position.
 			</description>
 		</method>
 		<method name="get_update_rotation" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns if the RemoteTransform is tracking rotation.
 			</description>
 		</method>
 		<method name="get_update_scale" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns if the RemoteTransform2D is tracking scale.
 			</description>
 		</method>
 		<method name="get_use_global_coordinates" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns if the RemoteTransform is tracking using global coordinates.
 			</description>
 		</method>
 		<method name="set_remote_node">
@@ -48,6 +53,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+				Sets the [NodePath] to the remote node, relative to the RemoteTransform's position in the node scene.
 			</description>
 		</method>
 		<method name="set_update_position">
@@ -56,6 +62,7 @@
 			<argument index="0" name="update_remote_position" type="bool">
 			</argument>
 			<description>
+				Sets whether or not the position will be tracked.
 			</description>
 		</method>
 		<method name="set_update_rotation">
@@ -64,6 +71,7 @@
 			<argument index="0" name="update_remote_rotation" type="bool">
 			</argument>
 			<description>
+				Sets whether or not the rotation will be tracked.
 			</description>
 		</method>
 		<method name="set_update_scale">
@@ -72,6 +80,7 @@
 			<argument index="0" name="update_remote_scale" type="bool">
 			</argument>
 			<description>
+				Sets whether or not the scale will be tracked.
 			</description>
 		</method>
 		<method name="set_use_global_coordinates">
@@ -80,21 +89,25 @@
 			<argument index="0" name="use_global_coordinates" type="bool">
 			</argument>
 			<description>
+				Set whether or not to use global coordinates for tracking.
+
+				If [code]true[/code], RemoteTransform will track using global coordinates, while if it's
+				[code]false[/code] it will track using local coordinates.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node">
-			The remote node's [NodePath].
+			The [NodePath] to the remote node, relative to the RemoteTransform's position in the scene.
 		</member>
 		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position">
-			If [code]true[/code] the remote node's position is mirrored.
+			If [code]true[/code] the remote node's position is tracked. Default value: [code]true[/code].
 		</member>
 		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation">
-			If [code]true[/code] the remote node's rotation is mirrored.
+			If [code]true[/code] the remote node's rotation is tracked. Default value: [code]true[/code].
 		</member>
 		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale">
-			If [code]true[/code] the remote node's scale is mirrored.
+			If [code]true[/code] the remote node's scale is tracked. Default value: [code]true[/code].
 		</member>
 		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates">
 			If [code]true[/code] global coordinates are used. If [code]false[/code] local coordinates are used. Default value: [code]true[/code].
