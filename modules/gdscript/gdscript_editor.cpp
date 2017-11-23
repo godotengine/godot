@@ -1497,11 +1497,15 @@ static void _find_identifiers(GDScriptCompletionContext &context, int p_line, bo
 		clss = clss->owner;
 	}
 
-	for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
+	// language reserved words such as if, while, func, pass and built-in functions
+	List<String> reserved_words;
+	GDScriptLanguage::get_singleton()->get_reserved_words(&reserved_words);
 
-		result.insert(GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i)));
+	for (const List<String>::Element *E = reserved_words.front(); E; E = E->next()) {
+		result.insert(E->get());
 	}
 
+	// other built-in types
 	static const char *_type_names[Variant::VARIANT_MAX] = {
 		"null", "bool", "int", "float", "String", "Vector2", "Rect2", "Vector3", "Transform2D", "Plane", "Quat", "AABB", "Basis", "Transform",
 		"Color", "NodePath", "RID", "Object", "Dictionary", "Array", "PoolByteArray", "PoolIntArray", "PoolRealArray", "PoolStringArray",
@@ -1516,7 +1520,7 @@ static void _find_identifiers(GDScriptCompletionContext &context, int p_line, bo
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 
-	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+	for (const List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 		String s = E->get().name;
 		if (!s.begins_with("autoload/"))
