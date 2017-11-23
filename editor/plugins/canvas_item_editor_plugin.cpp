@@ -4700,11 +4700,28 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		if (root_node) {
 			list.push_back(root_node);
 		} else {
-			accept->get_ok()->set_text(TTR("OK :("));
-			accept->set_text(TTR("No parent to instance a child at."));
-			accept->popup_centered_minsize();
-			_remove_preview();
-			return;
+			Object *obj = ClassDB::instance("Node");
+			Node *node = Object::cast_to<Node>(obj);
+
+			// Instead of giving them "No parent to instance a child at", let create a first root node child if they still haven't one.
+			if (node) {
+				editor_data->get_undo_redo().create_action(TTR("Create Node"));
+
+				editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
+				editor_data->get_undo_redo().add_do_method(editor->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+				editor_data->get_undo_redo().add_do_reference(node);
+				editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+
+				editor_data->get_undo_redo().commit_action();
+				editor->push_item(obj);
+
+				// Here we should have our newly added root node.
+				root_node = editor->get_edited_scene();
+				if (root_node)
+					list.push_back(root_node);
+				else // even if we haven't, no problem, next line will work fine too!
+					list.push_back(node);
+			}
 		}
 	}
 	if (list.size() != 1) {
