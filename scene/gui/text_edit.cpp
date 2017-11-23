@@ -4536,7 +4536,7 @@ bool TextEdit::can_fold(int p_line) const {
 bool TextEdit::is_folded(int p_line) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	if (p_line + 1 >= text.size() - 1)
+	if (p_line + 1 >= text.size())
 		return false;
 	if (!is_line_hidden(p_line) && is_line_hidden(p_line + 1))
 		return true;
