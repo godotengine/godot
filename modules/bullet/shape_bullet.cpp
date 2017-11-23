@@ -45,6 +45,7 @@ ShapeBullet::~ShapeBullet() {}
 
 btCollisionShape *ShapeBullet::prepare(btCollisionShape *p_btShape) const {
 	p_btShape->setUserPointer(const_cast<ShapeBullet *>(this));
+	p_btShape->setMargin(0.);
 	return p_btShape;
 }
 

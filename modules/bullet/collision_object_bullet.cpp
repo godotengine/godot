@@ -285,10 +285,10 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	const int size = shapes.size();
 	for (i = 0; i < size; ++i) {
 		shpWrapper = &shapes[i];
-		if (!shpWrapper->bt_shape) {
-			shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape();
-		}
 		if (shpWrapper->active) {
+			if (!shpWrapper->bt_shape) {
+				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape();
+			}
 			compoundShape->addChildShape(shpWrapper->transform, shpWrapper->bt_shape);
 		} else {
 			compoundShape->addChildShape(shpWrapper->transform, BulletPhysicsServer::get_empty_shape());
