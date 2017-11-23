@@ -467,6 +467,7 @@ void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 	} else {
 		dynamicsWorld->addRigidBody(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
+		p_body->scratch_space_override_modificator();
 	}
 }
 
