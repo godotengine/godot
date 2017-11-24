@@ -1168,6 +1168,16 @@ void ScriptEditor::_menu_option(int p_option) {
 				current->get_text_edit()->cut();
 				current->get_text_edit()->call_deferred("grab_focus");
 			} break;
+			case EDIT_UPPERCASE: {
+
+				current->get_text_edit()->convert_case(current->get_text_edit()->UPPERCASE);
+				current->get_text_edit()->call_deferred("grab_focus");
+			} break;
+			case EDIT_LOWERCASE: {
+
+				current->get_text_edit()->convert_case(current->get_text_edit()->LOWERCASE);
+				current->get_text_edit()->call_deferred("grab_focus");
+			} break;
 			case EDIT_COPY: {
 				current->get_text_edit()->copy();
 				current->get_text_edit()->call_deferred("grab_focus");
@@ -2768,6 +2778,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/paste", TTR("Paste"), KEY_MASK_CMD | KEY_V), EDIT_PASTE);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/select_all", TTR("Select All"), KEY_MASK_CMD | KEY_A), EDIT_SELECT_ALL);
+	edit_menu->get_popup()->add_separator();
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/convert_to_uppercase", TTR("Convert to UpperCase")), EDIT_UPPERCASE);
+	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/convert_to_lowercase", TTR("Convert to LowerCase")), EDIT_LOWERCASE);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/move_up", TTR("Move Up"), KEY_MASK_ALT | KEY_UP), EDIT_MOVE_LINE_UP);
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/move_down", TTR("Move Down"), KEY_MASK_ALT | KEY_DOWN), EDIT_MOVE_LINE_DOWN);

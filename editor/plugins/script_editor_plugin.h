@@ -125,6 +125,8 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_COPY,
 		EDIT_PASTE,
 		EDIT_SELECT_ALL,
+		EDIT_UPPERCASE,
+		EDIT_LOWERCASE,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
@@ -288,7 +290,7 @@ class ScriptEditor : public VBoxContainer {
 
 	void _script_selected(int p_idx);
 
-	void _script_rmb_selected(int p_idx, const Vector2 & p_pos);
+	void _script_rmb_selected(int p_idx, const Vector2 &p_pos);
 
 	void _find_scripts(Node *p_base, Node *p_current, Set<Ref<Script> > &used);
 
