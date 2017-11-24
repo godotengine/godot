@@ -39,7 +39,7 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_SORT_CHILDREN" value="50" enum="">
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="50">
 			Notification for when sorting the children, it must be obeyed immediately.
 		</constant>
 	</constants>

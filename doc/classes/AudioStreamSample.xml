@@ -36,22 +36,22 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FORMAT_8_BITS" value="0">
+		<constant name="FORMAT_8_BITS" value="0" enum="Format">
 			Audio codec 8 bit.
 		</constant>
-		<constant name="FORMAT_16_BITS" value="1">
+		<constant name="FORMAT_16_BITS" value="1" enum="Format">
 			Audio codec 16 bit.
 		</constant>
-		<constant name="FORMAT_IMA_ADPCM" value="2">
+		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
 			Audio codec IMA ADPCM.
 		</constant>
-		<constant name="LOOP_DISABLED" value="0">
+		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
 			Audio does not loop.
 		</constant>
-		<constant name="LOOP_FORWARD" value="1">
+		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing forward only.
 		</constant>
-		<constant name="LOOP_PING_PONG" value="2">
+		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing back and forth.
 		</constant>
 	</constants>

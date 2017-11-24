@@ -49,13 +49,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0">
+		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
 			Doesn't do anything at the time of writing. Default value for [code]axis_stretch_horizontal[/code] and [code]axis_stretch_vertical[/code].
 		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE" value="1">
+		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 			Doesn't do anything at the time of writing.
 		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2">
+		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
 			Doesn't do anything at the time of writing.
 		</constant>
 	</constants>

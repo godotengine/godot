@@ -31,17 +31,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="FLAG_USE_BAKED_LIGHT" value="0">
+		<constant name="FLAG_USE_BAKED_LIGHT" value="0" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="1">
+		<constant name="FLAG_MAX" value="1" enum="Flags">
 		</constant>
 	</constants>
 </class>

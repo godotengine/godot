@@ -33,15 +33,15 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SHADOW_ORTHOGONAL" value="0">
+		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1">
+		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2">
+		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0">
+		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0" enum="ShadowDepthRange">
 		</constant>
-		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1">
+		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="ShadowDepthRange">
 		</constant>
 	</constants>
 </class>

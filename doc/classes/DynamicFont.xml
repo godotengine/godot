@@ -84,16 +84,16 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SPACING_TOP" value="0">
+		<constant name="SPACING_TOP" value="0" enum="SpacingType">
 			Spacing at the top.
 		</constant>
-		<constant name="SPACING_BOTTOM" value="1">
+		<constant name="SPACING_BOTTOM" value="1" enum="SpacingType">
 			Spacing at the bottom.
 		</constant>
-		<constant name="SPACING_CHAR" value="2">
+		<constant name="SPACING_CHAR" value="2" enum="SpacingType">
 			Character spacing.
 		</constant>
-		<constant name="SPACING_SPACE" value="3">
+		<constant name="SPACING_SPACE" value="3" enum="SpacingType">
 			Space spacing.
 		</constant>
 	</constants>

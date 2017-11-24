@@ -17,21 +17,21 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="BLEND_MODE_MIX" value="0">
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 		</constant>
-		<constant name="LIGHT_MODE_NORMAL" value="0">
+		<constant name="LIGHT_MODE_NORMAL" value="0" enum="LightMode">
 		</constant>
-		<constant name="LIGHT_MODE_UNSHADED" value="1">
+		<constant name="LIGHT_MODE_UNSHADED" value="1" enum="LightMode">
 		</constant>
-		<constant name="LIGHT_MODE_LIGHT_ONLY" value="2">
+		<constant name="LIGHT_MODE_LIGHT_ONLY" value="2" enum="LightMode">
 		</constant>
 	</constants>
 </class>

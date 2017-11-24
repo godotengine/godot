@@ -69,31 +69,31 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="STORAGE_RAW" value="0">
+		<constant name="STORAGE_RAW" value="0" enum="Storage">
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+		<constant name="STORAGE_COMPRESS_LOSSY" value="1" enum="Storage">
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2" enum="Storage">
 		</constant>
-		<constant name="SIDE_LEFT" value="0">
+		<constant name="SIDE_LEFT" value="0" enum="Side">
 		</constant>
-		<constant name="SIDE_RIGHT" value="1">
+		<constant name="SIDE_RIGHT" value="1" enum="Side">
 		</constant>
-		<constant name="SIDE_BOTTOM" value="2">
+		<constant name="SIDE_BOTTOM" value="2" enum="Side">
 		</constant>
-		<constant name="SIDE_TOP" value="3">
+		<constant name="SIDE_TOP" value="3" enum="Side">
 		</constant>
-		<constant name="SIDE_FRONT" value="4">
+		<constant name="SIDE_FRONT" value="4" enum="Side">
 		</constant>
-		<constant name="SIDE_BACK" value="5">
+		<constant name="SIDE_BACK" value="5" enum="Side">
 		</constant>
-		<constant name="FLAG_MIPMAPS" value="1">
+		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
 		</constant>
-		<constant name="FLAG_REPEAT" value="2">
+		<constant name="FLAG_REPEAT" value="2" enum="Flags">
 		</constant>
-		<constant name="FLAG_FILTER" value="4">
+		<constant name="FLAG_FILTER" value="4" enum="Flags">
 		</constant>
-		<constant name="FLAGS_DEFAULT" value="7">
+		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
 		</constant>
 	</constants>
 </class>

@@ -19,9 +19,9 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="RENDER_PRIORITY_MAX" value="127" enum="">
+		<constant name="RENDER_PRIORITY_MAX" value="127">
 		</constant>
-		<constant name="RENDER_PRIORITY_MIN" value="-128" enum="">
+		<constant name="RENDER_PRIORITY_MIN" value="-128">
 		</constant>
 	</constants>
 </class>

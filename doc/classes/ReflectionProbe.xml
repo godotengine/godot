@@ -37,9 +37,9 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="UPDATE_ONCE" value="0">
+		<constant name="UPDATE_ONCE" value="0" enum="UpdateMode">
 		</constant>
-		<constant name="UPDATE_ALWAYS" value="1">
+		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
 		</constant>
 	</constants>
 </class>

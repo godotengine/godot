@@ -273,11 +273,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="OVERLAY_DISABLED" value="0">
+		<constant name="OVERLAY_DISABLED" value="0" enum="Overlay">
 		</constant>
-		<constant name="OVERLAY_BREAKPOINT" value="1">
+		<constant name="OVERLAY_BREAKPOINT" value="1" enum="Overlay">
 		</constant>
-		<constant name="OVERLAY_POSITION" value="2">
+		<constant name="OVERLAY_POSITION" value="2" enum="Overlay">
 		</constant>
 	</constants>
 	<theme_items>

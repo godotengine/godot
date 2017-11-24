@@ -197,159 +197,159 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="TEXTURE_ALBEDO" value="0">
+		<constant name="TEXTURE_ALBEDO" value="0" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_METALLIC" value="1">
+		<constant name="TEXTURE_METALLIC" value="1" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_ROUGHNESS" value="2">
+		<constant name="TEXTURE_ROUGHNESS" value="2" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_EMISSION" value="3">
+		<constant name="TEXTURE_EMISSION" value="3" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_NORMAL" value="4">
+		<constant name="TEXTURE_NORMAL" value="4" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_RIM" value="5">
+		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_CLEARCOAT" value="6">
+		<constant name="TEXTURE_CLEARCOAT" value="6" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_FLOWMAP" value="7">
+		<constant name="TEXTURE_FLOWMAP" value="7" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8">
+		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DEPTH" value="9">
+		<constant name="TEXTURE_DEPTH" value="9" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10">
+		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_TRANSMISSION" value="11">
+		<constant name="TEXTURE_TRANSMISSION" value="11" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_REFRACTION" value="12">
+		<constant name="TEXTURE_REFRACTION" value="12" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_MASK" value="13">
+		<constant name="TEXTURE_DETAIL_MASK" value="13" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_ALBEDO" value="14">
+		<constant name="TEXTURE_DETAIL_ALBEDO" value="14" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_NORMAL" value="15">
+		<constant name="TEXTURE_DETAIL_NORMAL" value="15" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_MAX" value="16">
+		<constant name="TEXTURE_MAX" value="16" enum="TextureParam">
 		</constant>
-		<constant name="DETAIL_UV_1" value="0">
+		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
 		</constant>
-		<constant name="DETAIL_UV_2" value="1">
+		<constant name="DETAIL_UV_2" value="1" enum="DetailUV">
 		</constant>
-		<constant name="FEATURE_TRANSPARENT" value="0">
+		<constant name="FEATURE_TRANSPARENT" value="0" enum="Feature">
 		</constant>
-		<constant name="FEATURE_EMISSION" value="1">
+		<constant name="FEATURE_EMISSION" value="1" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NORMAL_MAPPING" value="2">
+		<constant name="FEATURE_NORMAL_MAPPING" value="2" enum="Feature">
 		</constant>
-		<constant name="FEATURE_RIM" value="3">
+		<constant name="FEATURE_RIM" value="3" enum="Feature">
 		</constant>
-		<constant name="FEATURE_CLEARCOAT" value="4">
+		<constant name="FEATURE_CLEARCOAT" value="4" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ANISOTROPY" value="5">
+		<constant name="FEATURE_ANISOTROPY" value="5" enum="Feature">
 		</constant>
-		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6">
+		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6" enum="Feature">
 		</constant>
-		<constant name="FEATURE_DEPTH_MAPPING" value="7">
+		<constant name="FEATURE_DEPTH_MAPPING" value="7" enum="Feature">
 		</constant>
-		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8">
+		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8" enum="Feature">
 		</constant>
-		<constant name="FEATURE_TRANSMISSION" value="9">
+		<constant name="FEATURE_TRANSMISSION" value="9" enum="Feature">
 		</constant>
-		<constant name="FEATURE_REFRACTION" value="10">
+		<constant name="FEATURE_REFRACTION" value="10" enum="Feature">
 		</constant>
-		<constant name="FEATURE_DETAIL" value="11">
+		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 		</constant>
-		<constant name="FEATURE_MAX" value="12">
+		<constant name="FEATURE_MAX" value="12" enum="Feature">
 		</constant>
-		<constant name="BLEND_MODE_MIX" value="0">
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0">
+		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_ALWAYS" value="1">
+		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_DISABLED" value="2">
+		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3">
+		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3" enum="DepthDrawMode">
 		</constant>
-		<constant name="CULL_BACK" value="0">
+		<constant name="CULL_BACK" value="0" enum="CullMode">
 		</constant>
-		<constant name="CULL_FRONT" value="1">
+		<constant name="CULL_FRONT" value="1" enum="CullMode">
 		</constant>
-		<constant name="CULL_DISABLED" value="2">
+		<constant name="CULL_DISABLED" value="2" enum="CullMode">
 		</constant>
-		<constant name="FLAG_UNSHADED" value="0">
+		<constant name="FLAG_UNSHADED" value="0" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_VERTEX_LIGHTING" value="1">
+		<constant name="FLAG_USE_VERTEX_LIGHTING" value="1" enum="Flags">
 		</constant>
-		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2">
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2" enum="Flags">
 		</constant>
-		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="3">
+		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="3" enum="Flags">
 		</constant>
-		<constant name="FLAG_SRGB_VERTEX_COLOR" value="4">
+		<constant name="FLAG_SRGB_VERTEX_COLOR" value="4" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_POINT_SIZE" value="5">
+		<constant name="FLAG_USE_POINT_SIZE" value="5" enum="Flags">
 		</constant>
-		<constant name="FLAG_FIXED_SIZE" value="6">
+		<constant name="FLAG_FIXED_SIZE" value="6" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV1_USE_TRIPLANAR" value="7">
+		<constant name="FLAG_UV1_USE_TRIPLANAR" value="7" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8">
+		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8" enum="Flags">
 		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="10">
+		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11">
+		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11" enum="Flags">
 		</constant>
-		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9">
+		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="12">
+		<constant name="FLAG_MAX" value="12" enum="Flags">
 		</constant>
-		<constant name="DIFFUSE_BURLEY" value="0">
+		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT" value="1">
+		<constant name="DIFFUSE_LAMBERT" value="1" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT_WRAP" value="2">
+		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="3">
+		<constant name="DIFFUSE_OREN_NAYAR" value="3" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_TOON" value="4">
+		<constant name="DIFFUSE_TOON" value="4" enum="DiffuseMode">
 		</constant>
-		<constant name="SPECULAR_SCHLICK_GGX" value="0">
+		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_BLINN" value="1">
+		<constant name="SPECULAR_BLINN" value="1" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_PHONG" value="2">
+		<constant name="SPECULAR_PHONG" value="2" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_TOON" value="3">
+		<constant name="SPECULAR_TOON" value="3" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_DISABLED" value="4">
+		<constant name="SPECULAR_DISABLED" value="4" enum="SpecularMode">
 		</constant>
-		<constant name="BILLBOARD_DISABLED" value="0">
+		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_ENABLED" value="1">
+		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_FIXED_Y" value="2">
+		<constant name="BILLBOARD_FIXED_Y" value="2" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_PARTICLES" value="3">
+		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_RED" value="0">
+		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_GREEN" value="1">
+		<constant name="TEXTURE_CHANNEL_GREEN" value="1" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_BLUE" value="2">
+		<constant name="TEXTURE_CHANNEL_BLUE" value="2" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_ALPHA" value="3">
+		<constant name="TEXTURE_CHANNEL_ALPHA" value="3" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4">
+		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4" enum="TextureChannel">
 		</constant>
-		<constant name="EMISSION_OP_ADD" value="0">
+		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
 		</constant>
-		<constant name="EMISSION_OP_MULTIPLY" value="1">
+		<constant name="EMISSION_OP_MULTIPLY" value="1" enum="EmissionOperator">
 		</constant>
 	</constants>
 </class>

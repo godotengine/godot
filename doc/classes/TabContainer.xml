@@ -154,11 +154,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="TabAlign">
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="TabAlign">
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="TabAlign">
 		</constant>
 	</constants>
 	<theme_items>

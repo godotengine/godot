@@ -49,15 +49,15 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SUBDIV_64" value="0">
+		<constant name="SUBDIV_64" value="0" enum="Subdiv">
 		</constant>
-		<constant name="SUBDIV_128" value="1">
+		<constant name="SUBDIV_128" value="1" enum="Subdiv">
 		</constant>
-		<constant name="SUBDIV_256" value="2">
+		<constant name="SUBDIV_256" value="2" enum="Subdiv">
 		</constant>
-		<constant name="SUBDIV_512" value="3">
+		<constant name="SUBDIV_512" value="3" enum="Subdiv">
 		</constant>
-		<constant name="SUBDIV_MAX" value="4">
+		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
 		</constant>
 	</constants>
 </class>

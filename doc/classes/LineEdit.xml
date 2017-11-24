@@ -139,39 +139,39 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
 			Aligns the text on the left hand side of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
 			Centers the text in the middle of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
 			Aligns the text on the right hand side of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_FILL" value="3">
+		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Stretches whitespaces to fit the [LineEdit]'s width.
 		</constant>
-		<constant name="MENU_CUT" value="0">
+		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (Copies and clears) the selected text.
 		</constant>
-		<constant name="MENU_COPY" value="1">
+		<constant name="MENU_COPY" value="1" enum="MenuItems">
 			Copies the selected text.
 		</constant>
-		<constant name="MENU_PASTE" value="2">
+		<constant name="MENU_PASTE" value="2" enum="MenuItems">
 			Pastes the clipboard text over the selected text (or at the cursor's position).
 		</constant>
-		<constant name="MENU_CLEAR" value="3">
+		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 			Erases the whole [Linedit] text.
 		</constant>
-		<constant name="MENU_SELECT_ALL" value="4">
+		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
 			Selects the whole [Linedit] text.
 		</constant>
-		<constant name="MENU_UNDO" value="5">
+		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 			Undoes the previous action.
 		</constant>
-		<constant name="MENU_REDO" value="6">
+		<constant name="MENU_REDO" value="6" enum="MenuItems">
 		</constant>
-		<constant name="MENU_MAX" value="7">
+		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>

@@ -61,10 +61,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="VISIBILITY_ALWAYS" value="0">
+		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
 			Always visible.
 		</constant>
-		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1">
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
 			Visible on touch screens only.
 		</constant>
 	</constants>

@@ -31,35 +31,35 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="CALL_MODE_SELF" value="0">
+		<constant name="CALL_MODE_SELF" value="0" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_NODE_PATH" value="1">
+		<constant name="CALL_MODE_NODE_PATH" value="1" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_INSTANCE" value="2">
+		<constant name="CALL_MODE_INSTANCE" value="2" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_BASIC_TYPE" value="3">
+		<constant name="CALL_MODE_BASIC_TYPE" value="3" enum="CallMode">
 		</constant>
-		<constant name="ASSIGN_OP_NONE" value="0">
+		<constant name="ASSIGN_OP_NONE" value="0" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_ADD" value="1">
+		<constant name="ASSIGN_OP_ADD" value="1" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_SUB" value="2">
+		<constant name="ASSIGN_OP_SUB" value="2" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_MUL" value="3">
+		<constant name="ASSIGN_OP_MUL" value="3" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_DIV" value="4">
+		<constant name="ASSIGN_OP_DIV" value="4" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_MOD" value="5">
+		<constant name="ASSIGN_OP_MOD" value="5" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_SHIFT_LEFT" value="6">
+		<constant name="ASSIGN_OP_SHIFT_LEFT" value="6" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_SHIFT_RIGHT" value="7">
+		<constant name="ASSIGN_OP_SHIFT_RIGHT" value="7" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_BIT_AND" value="8">
+		<constant name="ASSIGN_OP_BIT_AND" value="8" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_BIT_OR" value="9">
+		<constant name="ASSIGN_OP_BIT_OR" value="9" enum="AssignOp">
 		</constant>
-		<constant name="ASSIGN_OP_BIT_XOR" value="10">
+		<constant name="ASSIGN_OP_BIT_XOR" value="10" enum="AssignOp">
 		</constant>
 	</constants>
 </class>

@@ -386,13 +386,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ICON_MODE_TOP" value="0">
+		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
 		</constant>
-		<constant name="ICON_MODE_LEFT" value="1">
+		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
 		</constant>
-		<constant name="SELECT_SINGLE" value="0">
+		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
 		</constant>
-		<constant name="SELECT_MULTI" value="1">
+		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
 		</constant>
 	</constants>
 	<theme_items>

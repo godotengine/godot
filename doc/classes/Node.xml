@@ -768,74 +768,74 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_ENTER_TREE" value="10" enum="">
+		<constant name="NOTIFICATION_ENTER_TREE" value="10">
 		</constant>
-		<constant name="NOTIFICATION_EXIT_TREE" value="11" enum="">
+		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" enum="">
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 		</constant>
-		<constant name="NOTIFICATION_READY" value="13" enum="">
+		<constant name="NOTIFICATION_READY" value="13">
 		</constant>
-		<constant name="NOTIFICATION_PAUSED" value="14" enum="">
+		<constant name="NOTIFICATION_PAUSED" value="14">
 		</constant>
-		<constant name="NOTIFICATION_UNPAUSED" value="15" enum="">
+		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
-		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16" enum="">
+		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16">
 			Notification received every frame when the physics process flag is set (see [method set_physics_process]).
 		</constant>
-		<constant name="NOTIFICATION_PROCESS" value="17" enum="">
+		<constant name="NOTIFICATION_PROCESS" value="17">
 			Notification received every frame when the process flag is set (see [method set_process]).
 		</constant>
-		<constant name="NOTIFICATION_PARENTED" value="18" enum="">
+		<constant name="NOTIFICATION_PARENTED" value="18">
 			Notification received when a node is set as a child of another node. Note that this doesn't mean that a node entered the Scene Tree.
 		</constant>
-		<constant name="NOTIFICATION_UNPARENTED" value="19" enum="">
+		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).
 		</constant>
-		<constant name="NOTIFICATION_INSTANCED" value="20" enum="">
+		<constant name="NOTIFICATION_INSTANCED" value="20">
 		</constant>
-		<constant name="NOTIFICATION_DRAG_BEGIN" value="21" enum="">
+		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
 		</constant>
-		<constant name="NOTIFICATION_DRAG_END" value="22" enum="">
+		<constant name="NOTIFICATION_DRAG_END" value="22">
 		</constant>
-		<constant name="NOTIFICATION_PATH_CHANGED" value="23" enum="">
+		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24" enum="">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24">
 		</constant>
-		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25" enum="">
+		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 		</constant>
-		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26" enum="">
+		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
 		</constant>
-		<constant name="RPC_MODE_DISABLED" value="0">
+		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
 		</constant>
-		<constant name="RPC_MODE_REMOTE" value="1">
+		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
 			Call a method remotely.
 		</constant>
-		<constant name="RPC_MODE_SYNC" value="2">
+		<constant name="RPC_MODE_SYNC" value="2" enum="RPCMode">
 			Call a method both remotely and locally.
 		</constant>
-		<constant name="RPC_MODE_MASTER" value="3">
+		<constant name="RPC_MODE_MASTER" value="3" enum="RPCMode">
 			Call a method if the Node is Master.
 		</constant>
-		<constant name="RPC_MODE_SLAVE" value="4">
+		<constant name="RPC_MODE_SLAVE" value="4" enum="RPCMode">
 			Call a method if the Node is Slave.
 		</constant>
-		<constant name="PAUSE_MODE_INHERIT" value="0">
+		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from parent. For root node, it is equivalent to PAUSE_MODE_STOP.
 		</constant>
-		<constant name="PAUSE_MODE_STOP" value="1">
+		<constant name="PAUSE_MODE_STOP" value="1" enum="PauseMode">
 			Stop processing when SceneTree is paused.
 		</constant>
-		<constant name="PAUSE_MODE_PROCESS" value="2">
+		<constant name="PAUSE_MODE_PROCESS" value="2" enum="PauseMode">
 			Continue to process regardless of SceneTree pause state.
 		</constant>
-		<constant name="DUPLICATE_SIGNALS" value="1">
+		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_GROUPS" value="2">
+		<constant name="DUPLICATE_GROUPS" value="2" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_SCRIPTS" value="4">
+		<constant name="DUPLICATE_SCRIPTS" value="4" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_USE_INSTANCING" value="8">
+		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 		</constant>
 	</constants>
 </class>

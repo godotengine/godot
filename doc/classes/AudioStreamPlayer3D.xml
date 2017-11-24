@@ -106,28 +106,28 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0">
+		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
 			Linear dampening of loudness according to distance.
 		</constant>
-		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1">
+		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
 			Squared dampening of loudness according to distance.
 		</constant>
-		<constant name="ATTENUATION_LOGARITHMIC" value="2">
+		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
 			Logarithmic dampening of loudness according to distance.
 		</constant>
-		<constant name="OUT_OF_RANGE_MIX" value="0">
+		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
 			Mix this audio in, even when it's out of range.
 		</constant>
-		<constant name="OUT_OF_RANGE_PAUSE" value="1">
+		<constant name="OUT_OF_RANGE_PAUSE" value="1" enum="OutOfRangeMode">
 			Pause this audio when it gets out of range.
 		</constant>
-		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.
 		</constant>
-		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
 			Executes doppler tracking in idle step.
 		</constant>
-		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
 			Executes doppler tracking in physics step.
 		</constant>
 	</constants>

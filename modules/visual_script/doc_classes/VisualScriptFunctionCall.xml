@@ -35,25 +35,25 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="CALL_MODE_SELF" value="0">
+		<constant name="CALL_MODE_SELF" value="0" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_NODE_PATH" value="1">
+		<constant name="CALL_MODE_NODE_PATH" value="1" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_INSTANCE" value="2">
+		<constant name="CALL_MODE_INSTANCE" value="2" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_BASIC_TYPE" value="3">
+		<constant name="CALL_MODE_BASIC_TYPE" value="3" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_SINGLETON" value="4">
+		<constant name="CALL_MODE_SINGLETON" value="4" enum="CallMode">
 		</constant>
-		<constant name="RPC_DISABLED" value="0">
+		<constant name="RPC_DISABLED" value="0" enum="RPCCallMode">
 		</constant>
-		<constant name="RPC_RELIABLE" value="1">
+		<constant name="RPC_RELIABLE" value="1" enum="RPCCallMode">
 		</constant>
-		<constant name="RPC_UNRELIABLE" value="2">
+		<constant name="RPC_UNRELIABLE" value="2" enum="RPCCallMode">
 		</constant>
-		<constant name="RPC_RELIABLE_TO_ID" value="3">
+		<constant name="RPC_RELIABLE_TO_ID" value="3" enum="RPCCallMode">
 		</constant>
-		<constant name="RPC_UNRELIABLE_TO_ID" value="4">
+		<constant name="RPC_UNRELIABLE_TO_ID" value="4" enum="RPCCallMode">
 		</constant>
 	</constants>
 </class>

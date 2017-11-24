@@ -49,11 +49,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MODE_SPATIAL" value="0">
+		<constant name="MODE_SPATIAL" value="0" enum="Mode">
 		</constant>
-		<constant name="MODE_CANVAS_ITEM" value="1">
+		<constant name="MODE_CANVAS_ITEM" value="1" enum="Mode">
 		</constant>
-		<constant name="MODE_PARTICLES" value="2">
+		<constant name="MODE_PARTICLES" value="2" enum="Mode">
 		</constant>
 	</constants>
 </class>

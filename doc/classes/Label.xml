@@ -86,28 +86,28 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
 			Align rows to the left (default).
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
 			Align rows centered.
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
 			Align rows to the right (default).
 		</constant>
-		<constant name="ALIGN_FILL" value="3">
+		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Expand row whitespaces to fit the width.
 		</constant>
-		<constant name="VALIGN_TOP" value="0">
+		<constant name="VALIGN_TOP" value="0" enum="VAlign">
 			Align the whole text to the top.
 		</constant>
-		<constant name="VALIGN_CENTER" value="1">
+		<constant name="VALIGN_CENTER" value="1" enum="VAlign">
 			Align the whole text to the center.
 		</constant>
-		<constant name="VALIGN_BOTTOM" value="2">
+		<constant name="VALIGN_BOTTOM" value="2" enum="VAlign">
 			Align the whole text to the bottom.
 		</constant>
-		<constant name="VALIGN_FILL" value="3">
+		<constant name="VALIGN_FILL" value="3" enum="VAlign">
 			Align the whole text by spreading the rows.
 		</constant>
 	</constants>

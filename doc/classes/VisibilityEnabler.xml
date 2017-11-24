@@ -19,13 +19,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0" enum="Enabler">
 			This enabler will pause [AnimationPlayer] nodes.
 		</constant>
-		<constant name="ENABLER_FREEZE_BODIES" value="1">
+		<constant name="ENABLER_FREEZE_BODIES" value="1" enum="Enabler">
 			This enabler will freeze [RigidBody] nodes.
 		</constant>
-		<constant name="ENABLER_MAX" value="2">
+		<constant name="ENABLER_MAX" value="2" enum="Enabler">
 		</constant>
 	</constants>
 </class>

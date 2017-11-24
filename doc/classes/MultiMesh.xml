@@ -77,15 +77,15 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="TRANSFORM_2D" value="0">
+		<constant name="TRANSFORM_2D" value="0" enum="TransformFormat">
 		</constant>
-		<constant name="TRANSFORM_3D" value="1">
+		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
 		</constant>
-		<constant name="COLOR_NONE" value="0">
+		<constant name="COLOR_NONE" value="0" enum="ColorFormat">
 		</constant>
-		<constant name="COLOR_8BIT" value="1">
+		<constant name="COLOR_8BIT" value="1" enum="ColorFormat">
 		</constant>
-		<constant name="COLOR_FLOAT" value="2">
+		<constant name="COLOR_FLOAT" value="2" enum="ColorFormat">
 		</constant>
 	</constants>
 </class>

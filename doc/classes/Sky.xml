@@ -15,21 +15,21 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="RADIANCE_SIZE_32" value="0">
+		<constant name="RADIANCE_SIZE_32" value="0" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_64" value="1">
+		<constant name="RADIANCE_SIZE_64" value="1" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_128" value="2">
+		<constant name="RADIANCE_SIZE_128" value="2" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_256" value="3">
+		<constant name="RADIANCE_SIZE_256" value="3" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_512" value="4">
+		<constant name="RADIANCE_SIZE_512" value="4" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_1024" value="5">
+		<constant name="RADIANCE_SIZE_1024" value="5" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_2048" value="6">
+		<constant name="RADIANCE_SIZE_2048" value="6" enum="RadianceSize">
 		</constant>
-		<constant name="RADIANCE_SIZE_MAX" value="7">
+		<constant name="RADIANCE_SIZE_MAX" value="7" enum="RadianceSize">
 		</constant>
 	</constants>
 </class>

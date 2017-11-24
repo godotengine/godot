@@ -136,22 +136,22 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TRACKER_CONTROLLER" value="1">
+		<constant name="TRACKER_CONTROLLER" value="1" enum="TrackerType">
 			Our tracker tracks the location of a controller.
 		</constant>
-		<constant name="TRACKER_BASESTATION" value="2">
+		<constant name="TRACKER_BASESTATION" value="2" enum="TrackerType">
 			Our tracker tracks the location of a base station.
 		</constant>
-		<constant name="TRACKER_ANCHOR" value="4">
+		<constant name="TRACKER_ANCHOR" value="4" enum="TrackerType">
 			Our tracker tracks the location and size of an AR anchor.
 		</constant>
-		<constant name="TRACKER_ANY_KNOWN" value="127">
+		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">
 			Used internally to filter trackers of any known type.
 		</constant>
-		<constant name="TRACKER_UNKNOWN" value="128">
+		<constant name="TRACKER_UNKNOWN" value="128" enum="TrackerType">
 			Used internally if we haven't set the tracker type yet.
 		</constant>
-		<constant name="TRACKER_ANY" value="255">
+		<constant name="TRACKER_ANY" value="255" enum="TrackerType">
 			Used internally to select all trackers.
 		</constant>
 	</constants>

@@ -87,11 +87,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SAMPLE_PARTITION_WATERSHED" value="0" enum="">
+		<constant name="SAMPLE_PARTITION_WATERSHED" value="0">
 		</constant>
-		<constant name="SAMPLE_PARTITION_MONOTONE" value="1" enum="">
+		<constant name="SAMPLE_PARTITION_MONOTONE" value="1">
 		</constant>
-		<constant name="SAMPLE_PARTITION_LAYERS" value="2" enum="">
+		<constant name="SAMPLE_PARTITION_LAYERS" value="2">
 		</constant>
 	</constants>
 </class>

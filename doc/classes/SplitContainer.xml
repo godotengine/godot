@@ -30,13 +30,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="DRAGGER_VISIBLE" value="0">
+		<constant name="DRAGGER_VISIBLE" value="0" enum="DraggerVisibility">
 			The split dragger is visible.
 		</constant>
-		<constant name="DRAGGER_HIDDEN" value="1">
+		<constant name="DRAGGER_HIDDEN" value="1" enum="DraggerVisibility">
 			The split dragger is invisible.
 		</constant>
-		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2" enum="DraggerVisibility">
 			The split dragger is invisible and collapsed.
 		</constant>
 	</constants>

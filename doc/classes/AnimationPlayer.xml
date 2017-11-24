@@ -332,10 +332,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0">
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
 			Process animation during the physics process. This is especially useful when animating physics bodies.
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1">
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
 			Process animation during the idle process.
 		</constant>
 	</constants>

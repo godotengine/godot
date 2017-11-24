@@ -172,64 +172,64 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set initial velocity properties.
 		</constant>
-		<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angular velocity properties.
 		</constant>
-		<constant name="PARAM_ORBIT_VELOCITY" value="2">
+		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set orbital_velocity properties.
 		</constant>
-		<constant name="PARAM_LINEAR_ACCEL" value="3">
+		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set linear acceleration properties.
 		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="4">
+		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set radial acceleration properties.
 		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set tangential acceleration properties.
 		</constant>
-		<constant name="PARAM_DAMPING" value="6">
+		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set damping properties.
 		</constant>
-		<constant name="PARAM_ANGLE" value="7">
+		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angle properties.
 		</constant>
-		<constant name="PARAM_SCALE" value="8">
+		<constant name="PARAM_SCALE" value="8" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set scale properties.
 		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="9">
+		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set hue_variation properties.
 		</constant>
-		<constant name="PARAM_ANIM_SPEED" value="10">
+		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation speed properties.
 		</constant>
-		<constant name="PARAM_ANIM_OFFSET" value="11">
+		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation offset properties.
 		</constant>
-		<constant name="PARAM_MAX" value="12">
+		<constant name="PARAM_MAX" value="12" enum="Parameter">
 		</constant>
-		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
 			Use with [method set_flag] to set [member flag_align_y].
 		</constant>
-		<constant name="FLAG_ROTATE_Y" value="1">
+		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
 			Use with [method set_flag] to set [member flag_rotate_y]
 		</constant>
-		<constant name="FLAG_MAX" value="4">
+		<constant name="FLAG_MAX" value="4" enum="Flags">
 		</constant>
-		<constant name="EMISSION_SHAPE_POINT" value="0">
+		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.
 		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE" value="1">
+		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
 			Particles will be emitted in the volume of a sphere.
 		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="2">
+		<constant name="EMISSION_SHAPE_BOX" value="2" enum="EmissionShape">
 			Particles will be emitted in the volume of a box.
 		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="3">
+		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
 		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4">
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 		</constant>
 	</constants>
 </class>

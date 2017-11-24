@@ -716,172 +716,172 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="FOCUS_NONE" value="0">
+		<constant name="FOCUS_NONE" value="0" enum="FocusMode">
 			The node cannot grab focus. Use with [member set_focus_mode].
 		</constant>
-		<constant name="FOCUS_CLICK" value="1">
+		<constant name="FOCUS_CLICK" value="1" enum="FocusMode">
 			The node can only grab focus on mouse clicks. Use with [member set_focus_mode].
 		</constant>
-		<constant name="FOCUS_ALL" value="2">
+		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
 			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member set_focus_mode].
 		</constant>
-		<constant name="NOTIFICATION_RESIZED" value="40" enum="">
+		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member rect_size] to get the new size.
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_ENTER" value="41" enum="">
+		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
 			Sent when the mouse pointer enters the node's [code]Rect[/code] area.
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_EXIT" value="42" enum="">
+		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
 			Sent when the mouse pointer exits the node's [code]Rect[/code] area.
 		</constant>
-		<constant name="NOTIFICATION_FOCUS_ENTER" value="43" enum="">
+		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
 		</constant>
-		<constant name="NOTIFICATION_FOCUS_EXIT" value="44" enum="">
+		<constant name="NOTIFICATION_FOCUS_EXIT" value="44">
 			Sent when the node loses focus.
 		</constant>
-		<constant name="NOTIFICATION_THEME_CHANGED" value="45" enum="">
+		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
 			Sent when the node's [member theme] changes, right before Godot redraws the [code]Control[/code]. Happens when you call one of the [code]add_*_override[/code]
 		</constant>
-		<constant name="NOTIFICATION_MODAL_CLOSE" value="46" enum="">
+		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
 		</constant>
-		<constant name="CURSOR_ARROW" value="0">
+		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
 		</constant>
-		<constant name="CURSOR_IBEAM" value="1">
+		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
 			Show the system's I-beam mouse cursor when the user hovers the node. The I-beam pointer has a shape similar to "I". It tells the user they can highlight or insert text.
 		</constant>
-		<constant name="CURSOR_POINTING_HAND" value="2">
+		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
 			Show the system's pointing hand mouse cursor when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_CROSS" value="3">
+		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
 			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_WAIT" value="4">
+		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
 			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_BUSY" value="5">
+		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
 			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
-		<constant name="CURSOR_DRAG" value="6">
+		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
 		</constant>
-		<constant name="CURSOR_CAN_DROP" value="7">
+		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
 			Show the system's drop mouse cursor when the user hovers the node. It can be an open hand. It tells the user they can drop an item they're currently grabbing, like a node in the Scene dock.
 		</constant>
-		<constant name="CURSOR_FORBIDDEN" value="8">
+		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
 			Show the system's forbidden mouse cursor when the user hovers the node. Often a crossed circle.
 		</constant>
-		<constant name="CURSOR_VSIZE" value="9">
+		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
 			Show the system's vertical resize mouse cursor when the user hovers the node. A double headed vertical arrow. It tells the user they can resize the window or the panel vertically.
 		</constant>
-		<constant name="CURSOR_HSIZE" value="10">
+		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
 			Show the system's horizontal resize mouse cursor when the user hovers the node. A double headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
 		</constant>
-		<constant name="CURSOR_BDIAGSIZE" value="11">
+		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
 			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
-		<constant name="CURSOR_FDIAGSIZE" value="12">
+		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
 			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
-		<constant name="CURSOR_MOVE" value="13">
+		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
 			Show the system's move mouse cursor when the user hovers the node. It shows 2 double-headed arrows at a 90 degree angle. It tells the user they can move a UI element freely.
 		</constant>
-		<constant name="CURSOR_VSPLIT" value="14">
+		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
 			Show the system's vertical split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
 		</constant>
-		<constant name="CURSOR_HSPLIT" value="15">
+		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
 			Show the system's horizontal split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
 		</constant>
-		<constant name="CURSOR_HELP" value="16">
+		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Show the system's help mouse cursor when the user hovers the node, a question mark.
 		</constant>
-		<constant name="PRESET_TOP_LEFT" value="0">
+		<constant name="PRESET_TOP_LEFT" value="0" enum="LayoutPreset">
 			Snap all 4 anchors to the top-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_TOP_RIGHT" value="1">
+		<constant name="PRESET_TOP_RIGHT" value="1" enum="LayoutPreset">
 			Snap all 4 anchors to the top-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_LEFT" value="2">
+		<constant name="PRESET_BOTTOM_LEFT" value="2" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_RIGHT" value="3">
+		<constant name="PRESET_BOTTOM_RIGHT" value="3" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_LEFT" value="4">
+		<constant name="PRESET_CENTER_LEFT" value="4" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the left edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_TOP" value="5">
+		<constant name="PRESET_CENTER_TOP" value="5" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the top edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_RIGHT" value="6">
+		<constant name="PRESET_CENTER_RIGHT" value="6" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the right edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_BOTTOM" value="7">
+		<constant name="PRESET_CENTER_BOTTOM" value="7" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the bottom edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER" value="8">
+		<constant name="PRESET_CENTER" value="8" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_LEFT_WIDE" value="9">
+		<constant name="PRESET_LEFT_WIDE" value="9" enum="LayoutPreset">
 			Snap all 4 anchors to the left edge of the parent container. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_TOP_WIDE" value="10">
+		<constant name="PRESET_TOP_WIDE" value="10" enum="LayoutPreset">
 			Snap all 4 anchors to the top edge of the parent container. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_RIGHT_WIDE" value="11">
+		<constant name="PRESET_RIGHT_WIDE" value="11" enum="LayoutPreset">
 			Snap all 4 anchors to the right edge of the parent container. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_WIDE" value="12">
+		<constant name="PRESET_BOTTOM_WIDE" value="12" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom edge of the parent container. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_VCENTER_WIDE" value="13">
+		<constant name="PRESET_VCENTER_WIDE" value="13" enum="LayoutPreset">
 			Snap all 4 anchors to a vertical line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_HCENTER_WIDE" value="14">
+		<constant name="PRESET_HCENTER_WIDE" value="14" enum="LayoutPreset">
 			Snap all 4 anchors to a horizontal line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_WIDE" value="15">
+		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
 			Snap all 4 anchors to the respective corners of the parent container. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent container. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_MODE_MINSIZE" value="0">
+		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_WIDTH" value="1">
+		<constant name="PRESET_MODE_KEEP_WIDTH" value="1" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2">
+		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_SIZE" value="3">
+		<constant name="PRESET_MODE_KEEP_SIZE" value="3" enum="LayoutPresetMode">
 		</constant>
-		<constant name="SIZE_FILL" value="1">
+		<constant name="SIZE_FILL" value="1" enum="SizeFlags">
 			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND" value="2">
+		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND_FILL" value="3">
+		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags">
 			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
 		</constant>
-		<constant name="SIZE_SHRINK_CENTER" value="4">
+		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
 			Tells the parent [Container] to center the node in itself. It centers the [code]Control[/code] based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_SHRINK_END" value="8">
+		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="MOUSE_FILTER_STOP" value="0">
+		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
 		</constant>
-		<constant name="MOUSE_FILTER_PASS" value="1">
+		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
 		</constant>
-		<constant name="MOUSE_FILTER_IGNORE" value="2">
+		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 		</constant>
-		<constant name="GROW_DIRECTION_BEGIN" value="0">
+		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 		</constant>
-		<constant name="GROW_DIRECTION_END" value="1">
+		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
 		</constant>
-		<constant name="ANCHOR_BEGIN" value="0">
+		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
-		<constant name="ANCHOR_END" value="1">
+		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 	</constants>

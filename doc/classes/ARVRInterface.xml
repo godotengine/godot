@@ -78,43 +78,43 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ARVR_NONE" value="0">
+		<constant name="ARVR_NONE" value="0" enum="Capabilities">
 			No ARVR capabilities.
 		</constant>
-		<constant name="ARVR_MONO" value="1">
+		<constant name="ARVR_MONO" value="1" enum="Capabilities">
 			This interface can work with normal rendering output (non-HMD based AR).
 		</constant>
-		<constant name="ARVR_STEREO" value="2">
+		<constant name="ARVR_STEREO" value="2" enum="Capabilities">
 			This interface supports stereoscopic rendering.
 		</constant>
-		<constant name="ARVR_AR" value="4">
+		<constant name="ARVR_AR" value="4" enum="Capabilities">
 			This interface support AR (video background and real world tracking).
 		</constant>
-		<constant name="ARVR_EXTERNAL" value="8">
+		<constant name="ARVR_EXTERNAL" value="8" enum="Capabilities">
 			This interface outputs to an external device, if the main viewport is used the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of get_render_targetsize. Using a seperate viewport node frees up the main viewport for other purposes.
 		</constant>
-		<constant name="EYE_MONO" value="0">
+		<constant name="EYE_MONO" value="0" enum="Eyes">
 			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.
 		</constant>
-		<constant name="EYE_LEFT" value="1">
+		<constant name="EYE_LEFT" value="1" enum="Eyes">
 			Left eye output, this is mostly used internally when rendering the image for the left eye and obtaining positioning and projection information.
 		</constant>
-		<constant name="EYE_RIGHT" value="2">
+		<constant name="EYE_RIGHT" value="2" enum="Eyes">
 			Right eye output, this is mostly used internally when rendering the image for the right eye and obtaining positioning and projection information.
 		</constant>
-		<constant name="ARVR_NORMAL_TRACKING" value="0">
+		<constant name="ARVR_NORMAL_TRACKING" value="0" enum="Tracking_status">
 			Tracking is behaving as expected.
 		</constant>
-		<constant name="ARVR_EXCESSIVE_MOTION" value="1">
+		<constant name="ARVR_EXCESSIVE_MOTION" value="1" enum="Tracking_status">
 			Tracking is hindered by excessive motion, player is moving faster then tracking can keep up.
 		</constant>
-		<constant name="ARVR_INSUFFICIENT_FEATURES" value="2">
+		<constant name="ARVR_INSUFFICIENT_FEATURES" value="2" enum="Tracking_status">
 			Tracking is hindered by insufficient features, it's too dark (for camera based tracking), player is blocked, etc.
 		</constant>
-		<constant name="ARVR_UNKNOWN_TRACKING" value="3">
+		<constant name="ARVR_UNKNOWN_TRACKING" value="3" enum="Tracking_status">
 			We don't know the status of the tracking or this interface does not provide feedback.
 		</constant>
-		<constant name="ARVR_NOT_TRACKING" value="4">
+		<constant name="ARVR_NOT_TRACKING" value="4" enum="Tracking_status">
 			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.)
 		</constant>
 	</constants>

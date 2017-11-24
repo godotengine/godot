@@ -40,25 +40,25 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="STRETCH_SCALE" value="0">
+		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
 			Scale to fit the node's bounding rectangle.
 		</constant>
-		<constant name="STRETCH_TILE" value="1">
+		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
 			Tile inside the node's bounding rectangle.
 		</constant>
-		<constant name="STRETCH_KEEP" value="2">
+		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
 			The texture keeps its original size and stays in the bounding rectangle's top-left corner.
 		</constant>
-		<constant name="STRETCH_KEEP_CENTERED" value="3">
+		<constant name="STRETCH_KEEP_CENTERED" value="3" enum="StretchMode">
 			The texture keeps its original size and stays centered in the node's bounding rectangle.
 		</constant>
-		<constant name="STRETCH_KEEP_ASPECT" value="4">
+		<constant name="STRETCH_KEEP_ASPECT" value="4" enum="StretchMode">
 			Scale the texture to fit the node's bounding rectangle, but maintain the texture's aspect ratio.
 		</constant>
-		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5">
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5" enum="StretchMode">
 			Scale the texture to fit the node's bounding rectangle, center it, and maintain its aspect ratio.
 		</constant>
-		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6">
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6" enum="StretchMode">
 			Scale the texture so that the shorter side fits the bounding rectangle. The other side clips to the node's limits.
 		</constant>
 	</constants>

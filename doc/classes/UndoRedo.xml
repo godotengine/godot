@@ -144,11 +144,11 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="MERGE_DISABLE" value="0">
+		<constant name="MERGE_DISABLE" value="0" enum="MergeMode">
 		</constant>
-		<constant name="MERGE_ENDS" value="1">
+		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
 		</constant>
-		<constant name="MERGE_ALL" value="2">
+		<constant name="MERGE_ALL" value="2" enum="MergeMode">
 		</constant>
 	</constants>
 </class>

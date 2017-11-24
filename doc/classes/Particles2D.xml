@@ -79,10 +79,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="DRAW_ORDER_INDEX" value="0">
+		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
 			Particles are drawn in the order emitted.
 		</constant>
-		<constant name="DRAW_ORDER_LIFETIME" value="1">
+		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
 			Particles are drawn in order of remaining lifetime.
 		</constant>
 	</constants>

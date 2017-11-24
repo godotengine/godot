@@ -27,10 +27,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="BUILD_SOLIDS" value="0">
+		<constant name="BUILD_SOLIDS" value="0" enum="BuildMode">
 			Collisions will include the polygon and its contained area.
 		</constant>
-		<constant name="BUILD_SEGMENTS" value="1">
+		<constant name="BUILD_SEGMENTS" value="1" enum="BuildMode">
 			Collisions will only include the polygon edges.
 		</constant>
 	</constants>

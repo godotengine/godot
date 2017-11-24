@@ -23,13 +23,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SHADOW_DUAL_PARABOLOID" value="0">
+		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_CUBE" value="1">
+		<constant name="SHADOW_CUBE" value="1" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_DETAIL_VERTICAL" value="0">
+		<constant name="SHADOW_DETAIL_VERTICAL" value="0" enum="ShadowDetail">
 		</constant>
-		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1">
+		<constant name="SHADOW_DETAIL_HORIZONTAL" value="1" enum="ShadowDetail">
 		</constant>
 	</constants>
 </class>

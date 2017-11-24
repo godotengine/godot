@@ -39,37 +39,37 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_ENERGY" value="0">
+		<constant name="PARAM_ENERGY" value="0" enum="Param">
 		</constant>
-		<constant name="PARAM_INDIRECT_ENERGY" value="1">
+		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
 		</constant>
-		<constant name="PARAM_SPECULAR" value="2">
+		<constant name="PARAM_SPECULAR" value="2" enum="Param">
 		</constant>
-		<constant name="PARAM_RANGE" value="3">
+		<constant name="PARAM_RANGE" value="3" enum="Param">
 		</constant>
-		<constant name="PARAM_ATTENUATION" value="4">
+		<constant name="PARAM_ATTENUATION" value="4" enum="Param">
 		</constant>
-		<constant name="PARAM_SPOT_ANGLE" value="5">
+		<constant name="PARAM_SPOT_ANGLE" value="5" enum="Param">
 		</constant>
-		<constant name="PARAM_SPOT_ATTENUATION" value="6">
+		<constant name="PARAM_SPOT_ATTENUATION" value="6" enum="Param">
 		</constant>
-		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="7">
+		<constant name="PARAM_CONTACT_SHADOW_SIZE" value="7" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8">
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9">
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10">
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11">
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="12">
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="12" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS" value="13">
+		<constant name="PARAM_SHADOW_BIAS" value="13" enum="Param">
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14">
+		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
 		</constant>
-		<constant name="PARAM_MAX" value="15">
+		<constant name="PARAM_MAX" value="15" enum="Param">
 		</constant>
 	</constants>
 </class>

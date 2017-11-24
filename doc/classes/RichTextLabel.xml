@@ -345,43 +345,43 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
 		</constant>
-		<constant name="ALIGN_FILL" value="3">
+		<constant name="ALIGN_FILL" value="3" enum="Align">
 		</constant>
-		<constant name="LIST_NUMBERS" value="0">
+		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 		</constant>
-		<constant name="LIST_LETTERS" value="1">
+		<constant name="LIST_LETTERS" value="1" enum="ListType">
 		</constant>
-		<constant name="LIST_DOTS" value="2">
+		<constant name="LIST_DOTS" value="2" enum="ListType">
 		</constant>
-		<constant name="ITEM_FRAME" value="0">
+		<constant name="ITEM_FRAME" value="0" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TEXT" value="1">
+		<constant name="ITEM_TEXT" value="1" enum="ItemType">
 		</constant>
-		<constant name="ITEM_IMAGE" value="2">
+		<constant name="ITEM_IMAGE" value="2" enum="ItemType">
 		</constant>
-		<constant name="ITEM_NEWLINE" value="3">
+		<constant name="ITEM_NEWLINE" value="3" enum="ItemType">
 		</constant>
-		<constant name="ITEM_FONT" value="4">
+		<constant name="ITEM_FONT" value="4" enum="ItemType">
 		</constant>
-		<constant name="ITEM_COLOR" value="5">
+		<constant name="ITEM_COLOR" value="5" enum="ItemType">
 		</constant>
-		<constant name="ITEM_UNDERLINE" value="6">
+		<constant name="ITEM_UNDERLINE" value="6" enum="ItemType">
 		</constant>
-		<constant name="ITEM_ALIGN" value="7">
+		<constant name="ITEM_ALIGN" value="7" enum="ItemType">
 		</constant>
-		<constant name="ITEM_INDENT" value="8">
+		<constant name="ITEM_INDENT" value="8" enum="ItemType">
 		</constant>
-		<constant name="ITEM_LIST" value="9">
+		<constant name="ITEM_LIST" value="9" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TABLE" value="10">
+		<constant name="ITEM_TABLE" value="10" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="11">
+		<constant name="ITEM_META" value="11" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>

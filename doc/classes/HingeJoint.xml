@@ -44,39 +44,39 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_BIAS" value="0">
+		<constant name="PARAM_BIAS" value="0" enum="Param">
 			The speed with wich the two bodies get pulled together when they move in different directions.
 		</constant>
-		<constant name="PARAM_LIMIT_UPPER" value="1">
+		<constant name="PARAM_LIMIT_UPPER" value="1" enum="Param">
 			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_LIMIT_LOWER" value="2">
+		<constant name="PARAM_LIMIT_LOWER" value="2" enum="Param">
 			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_LIMIT_BIAS" value="3">
+		<constant name="PARAM_LIMIT_BIAS" value="3" enum="Param">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</constant>
-		<constant name="PARAM_LIMIT_SOFTNESS" value="4">
+		<constant name="PARAM_LIMIT_SOFTNESS" value="4" enum="Param">
 		</constant>
-		<constant name="PARAM_LIMIT_RELAXATION" value="5">
+		<constant name="PARAM_LIMIT_RELAXATION" value="5" enum="Param">
 			The lower this value, the more the rotation gets slowed down.
 		</constant>
-		<constant name="PARAM_MOTOR_TARGET_VELOCITY" value="6">
+		<constant name="PARAM_MOTOR_TARGET_VELOCITY" value="6" enum="Param">
 			Target speed for the motor.
 		</constant>
-		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7">
+		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7" enum="Param">
 			Maximum acceleration for the motor.
 		</constant>
-		<constant name="PARAM_MAX" value="8">
+		<constant name="PARAM_MAX" value="8" enum="Param">
 			End flag of PARAM_* constants, used internally.
 		</constant>
-		<constant name="FLAG_USE_LIMIT" value="0">
+		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">
 			If [code]true[/code] the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="1">
+		<constant name="FLAG_ENABLE_MOTOR" value="1" enum="Flag">
 			When activated, a motor turns the hinge.
 		</constant>
-		<constant name="FLAG_MAX" value="2">
+		<constant name="FLAG_MAX" value="2" enum="Flag">
 			End flag of FLAG_* constants, used internally.
 		</constant>
 	</constants>

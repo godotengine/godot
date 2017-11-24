@@ -45,17 +45,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="TEXTURE_SIZE_256" value="0">
+		<constant name="TEXTURE_SIZE_256" value="0" enum="TextureSize">
 		</constant>
-		<constant name="TEXTURE_SIZE_512" value="1">
+		<constant name="TEXTURE_SIZE_512" value="1" enum="TextureSize">
 		</constant>
-		<constant name="TEXTURE_SIZE_1024" value="2">
+		<constant name="TEXTURE_SIZE_1024" value="2" enum="TextureSize">
 		</constant>
-		<constant name="TEXTURE_SIZE_2048" value="3">
+		<constant name="TEXTURE_SIZE_2048" value="3" enum="TextureSize">
 		</constant>
-		<constant name="TEXTURE_SIZE_4096" value="4">
+		<constant name="TEXTURE_SIZE_4096" value="4" enum="TextureSize">
 		</constant>
-		<constant name="TEXTURE_SIZE_MAX" value="5">
+		<constant name="TEXTURE_SIZE_MAX" value="5" enum="TextureSize">
 		</constant>
 	</constants>
 </class>

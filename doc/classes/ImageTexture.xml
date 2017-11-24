@@ -107,13 +107,13 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="STORAGE_RAW" value="0">
+		<constant name="STORAGE_RAW" value="0" enum="Storage">
 			[Image] data is stored raw and unaltered.
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSY" value="1">
+		<constant name="STORAGE_COMPRESS_LOSSY" value="1" enum="Storage">
 			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [method set_lossy_storage_quality].
 		</constant>
-		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2">
+		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2" enum="Storage">
 			[Image] data is compressed with a lossless algorithm.
 		</constant>
 	</constants>

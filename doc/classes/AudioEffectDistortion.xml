@@ -32,18 +32,18 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MODE_CLIP" value="0">
+		<constant name="MODE_CLIP" value="0" enum="Mode">
 			Digital distortion effect which cuts off peaks at the top and bottom of the waveform.
 		</constant>
-		<constant name="MODE_ATAN" value="1">
+		<constant name="MODE_ATAN" value="1" enum="Mode">
 		</constant>
-		<constant name="MODE_LOFI" value="2">
+		<constant name="MODE_LOFI" value="2" enum="Mode">
 			Low-resolution digital distortion effect. You can use it to emulate the sound of early digital audio devices.
 		</constant>
-		<constant name="MODE_OVERDRIVE" value="3">
+		<constant name="MODE_OVERDRIVE" value="3" enum="Mode">
 			Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers.
 		</constant>
-		<constant name="MODE_WAVESHAPE" value="4">
+		<constant name="MODE_WAVESHAPE" value="4" enum="Mode">
 			Waveshaper distortions are used mainly by electronic musicians to achieve an extra-abrasive sound.
 		</constant>
 	</constants>

@@ -219,19 +219,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SPACE_OVERRIDE_DISABLED" value="0">
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride">
 			This area does not affect gravity/damping.
 		</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE" value="1">
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
 			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order).
 		</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
 			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order), ignoring any lower priority areas.
 		</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE" value="3">
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
 			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
 		</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
 			This area replaces any gravity/damping calculated so far (in [code]priority[/code] order), but keeps calculating the rest of the areas.
 		</constant>
 	</constants>

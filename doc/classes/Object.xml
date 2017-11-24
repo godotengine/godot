@@ -402,19 +402,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_POSTINITIALIZE" value="0" enum="">
+		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
 			Called right when the object is initialized. Not available in script.
 		</constant>
-		<constant name="NOTIFICATION_PREDELETE" value="1" enum="">
+		<constant name="NOTIFICATION_PREDELETE" value="1">
 			Called before the object is about to be deleted.
 		</constant>
-		<constant name="CONNECT_DEFERRED" value="1">
+		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Connect a signal in deferred mode. This way, signal emissions are stored in a queue, then set on idle time.
 		</constant>
-		<constant name="CONNECT_PERSIST" value="2">
+		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are saved when the object is serialized to file.
 		</constant>
-		<constant name="CONNECT_ONESHOT" value="4">
+		<constant name="CONNECT_ONESHOT" value="4" enum="ConnectFlags">
 			One shot connections disconnect themselves after emission.
 		</constant>
 	</constants>

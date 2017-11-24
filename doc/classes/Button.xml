@@ -30,13 +30,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
 			Align the text to the left.
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
 			Align the text to the center.
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
 			Align the text to the right.
 		</constant>
 	</constants>

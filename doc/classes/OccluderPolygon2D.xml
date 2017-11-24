@@ -24,13 +24,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="CULL_DISABLED" value="0">
+		<constant name="CULL_DISABLED" value="0" enum="CullMode">
 			Culling mode for the occlusion. Disabled means no culling. See [member cull_mode].
 		</constant>
-		<constant name="CULL_CLOCKWISE" value="1">
+		<constant name="CULL_CLOCKWISE" value="1" enum="CullMode">
 			Culling mode for the occlusion. Sets the culling to be in clockwise direction. See [member cull_mode].
 		</constant>
-		<constant name="CULL_COUNTER_CLOCKWISE" value="2">
+		<constant name="CULL_COUNTER_CLOCKWISE" value="2" enum="CullMode">
 			Culling mode for the occlusion. Sets the culling to be in counter clockwise direction. See [member cull_mode].
 		</constant>
 	</constants>

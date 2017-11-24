@@ -73,13 +73,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MIX_TARGET_STEREO" value="0">
+		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
 			The audio will be played only on the first channel.
 		</constant>
-		<constant name="MIX_TARGET_SURROUND" value="1">
+		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
 			The audio will be played on all surround channels.
 		</constant>
-		<constant name="MIX_TARGET_CENTER" value="2">
+		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
 			The audio will be played on the second channel, which is usually the center.
 		</constant>
 	</constants>

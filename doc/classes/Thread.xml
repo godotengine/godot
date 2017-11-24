@@ -50,11 +50,11 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PRIORITY_LOW" value="0">
+		<constant name="PRIORITY_LOW" value="0" enum="Priority">
 		</constant>
-		<constant name="PRIORITY_NORMAL" value="1">
+		<constant name="PRIORITY_NORMAL" value="1" enum="Priority">
 		</constant>
-		<constant name="PRIORITY_HIGH" value="2">
+		<constant name="PRIORITY_HIGH" value="2" enum="Priority">
 		</constant>
 	</constants>
 </class>

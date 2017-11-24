@@ -393,28 +393,28 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SEARCH_MATCH_CASE" value="1">
+		<constant name="SEARCH_MATCH_CASE" value="1" enum="SearchFlags">
 			Match case when searching.
 		</constant>
-		<constant name="SEARCH_WHOLE_WORDS" value="2">
+		<constant name="SEARCH_WHOLE_WORDS" value="2" enum="SearchFlags">
 			Match whole words when searching.
 		</constant>
-		<constant name="SEARCH_BACKWARDS" value="4">
+		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
-		<constant name="MENU_CUT" value="0">
+		<constant name="MENU_CUT" value="0" enum="MenuItems">
 		</constant>
-		<constant name="MENU_COPY" value="1">
+		<constant name="MENU_COPY" value="1" enum="MenuItems">
 		</constant>
-		<constant name="MENU_PASTE" value="2">
+		<constant name="MENU_PASTE" value="2" enum="MenuItems">
 		</constant>
-		<constant name="MENU_CLEAR" value="3">
+		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 		</constant>
-		<constant name="MENU_SELECT_ALL" value="4">
+		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
 		</constant>
-		<constant name="MENU_UNDO" value="5">
+		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 		</constant>
-		<constant name="MENU_MAX" value="6">
+		<constant name="MENU_MAX" value="6" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>

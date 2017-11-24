@@ -233,73 +233,73 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="BG_KEEP" value="5">
+		<constant name="BG_KEEP" value="5" enum="BGMode">
 			Keep on screen every pixel drawn in the background.
 		</constant>
-		<constant name="BG_CLEAR_COLOR" value="0">
+		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
 			Clear the background using the project's clear color.
 		</constant>
-		<constant name="BG_COLOR" value="1">
+		<constant name="BG_COLOR" value="1" enum="BGMode">
 			Clear the background using a custom clear color.
 		</constant>
-		<constant name="BG_SKY" value="2">
+		<constant name="BG_SKY" value="2" enum="BGMode">
 			Display a user-defined sky in the background.
 		</constant>
-		<constant name="BG_COLOR_SKY" value="3">
+		<constant name="BG_COLOR_SKY" value="3" enum="BGMode">
 			Clear the background using a custom clear color and allows defining a sky for shading and reflection.
 		</constant>
-		<constant name="BG_CANVAS" value="4">
+		<constant name="BG_CANVAS" value="4" enum="BGMode">
 			Display a [CanvasLayer] in the background.
 		</constant>
-		<constant name="BG_MAX" value="6">
+		<constant name="BG_MAX" value="6" enum="BGMode">
 			Helper constant keeping track of the enum's size, has no direct usage in API calls.
 		</constant>
-		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0">
+		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
-		<constant name="GLOW_BLEND_MODE_SCREEN" value="1">
+		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="GlowBlendMode">
 			Screen glow blending mode. Increases brightness, used frequently with bloom.
 		</constant>
-		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2">
+		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="GlowBlendMode">
 			Softlight glow blending mode. Modifies contrast, exposes shadows and highlights, vivid bloom.
 		</constant>
-		<constant name="GLOW_BLEND_MODE_REPLACE" value="3">
+		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="GlowBlendMode">
 			Replace glow blending mode. Replaces all pixels' color by the glow value.
 		</constant>
-		<constant name="TONE_MAPPER_LINEAR" value="0">
+		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
 			Linear tonemapper operator. Reads the linear data and performs an exposure adjustment.
 		</constant>
-		<constant name="TONE_MAPPER_REINHARDT" value="1">
+		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
 			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: color = color / (1 + color).
 		</constant>
-		<constant name="TONE_MAPPER_FILMIC" value="2">
+		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
 			Filmic tonemapper operator.
 		</constant>
-		<constant name="TONE_MAPPER_ACES" value="3">
+		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
 			Academy Color Encoding System tonemapper operator.
 		</constant>
-		<constant name="DOF_BLUR_QUALITY_LOW" value="0">
+		<constant name="DOF_BLUR_QUALITY_LOW" value="0" enum="DOFBlurQuality">
 			Low depth-of-field blur quality.
 		</constant>
-		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="1">
+		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="1" enum="DOFBlurQuality">
 			Medium depth-of-field blur quality.
 		</constant>
-		<constant name="DOF_BLUR_QUALITY_HIGH" value="2">
+		<constant name="DOF_BLUR_QUALITY_HIGH" value="2" enum="DOFBlurQuality">
 			High depth-of-field blur quality.
 		</constant>
-		<constant name="SSAO_BLUR_DISABLED" value="0">
+		<constant name="SSAO_BLUR_DISABLED" value="0" enum="SSAOBlur">
 		</constant>
-		<constant name="SSAO_BLUR_1x1" value="1">
+		<constant name="SSAO_BLUR_1x1" value="1" enum="SSAOBlur">
 		</constant>
-		<constant name="SSAO_BLUR_2x2" value="2">
+		<constant name="SSAO_BLUR_2x2" value="2" enum="SSAOBlur">
 		</constant>
-		<constant name="SSAO_BLUR_3x3" value="3">
+		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
 		</constant>
-		<constant name="SSAO_QUALITY_LOW" value="0">
+		<constant name="SSAO_QUALITY_LOW" value="0" enum="SSAOQuality">
 		</constant>
-		<constant name="SSAO_QUALITY_MEDIUM" value="1">
+		<constant name="SSAO_QUALITY_MEDIUM" value="1" enum="SSAOQuality">
 		</constant>
-		<constant name="SSAO_QUALITY_HIGH" value="2">
+		<constant name="SSAO_QUALITY_HIGH" value="2" enum="SSAOQuality">
 		</constant>
 	</constants>
 </class>

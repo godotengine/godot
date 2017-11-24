@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventMagnifyGesture" inherits="InputEventGesture" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="factor" type="float" setter="set_factor" getter="get_factor">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

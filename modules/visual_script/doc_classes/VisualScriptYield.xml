@@ -17,11 +17,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="YIELD_FRAME" value="1">
+		<constant name="YIELD_FRAME" value="1" enum="YieldMode">
 		</constant>
-		<constant name="YIELD_PHYSICS_FRAME" value="2">
+		<constant name="YIELD_PHYSICS_FRAME" value="2" enum="YieldMode">
 		</constant>
-		<constant name="YIELD_WAIT" value="3">
+		<constant name="YIELD_WAIT" value="3" enum="YieldMode">
 		</constant>
 	</constants>
 </class>

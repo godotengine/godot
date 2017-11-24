@@ -90,22 +90,22 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="DRAW_NORMAL" value="0">
+		<constant name="DRAW_NORMAL" value="0" enum="DrawMode">
 			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
 		</constant>
-		<constant name="DRAW_PRESSED" value="1">
+		<constant name="DRAW_PRESSED" value="1" enum="DrawMode">
 			The state of buttons are pressed.
 		</constant>
-		<constant name="DRAW_HOVER" value="2">
+		<constant name="DRAW_HOVER" value="2" enum="DrawMode">
 			The state of buttons are hovered.
 		</constant>
-		<constant name="DRAW_DISABLED" value="3">
+		<constant name="DRAW_DISABLED" value="3" enum="DrawMode">
 			The state of buttons are disabled.
 		</constant>
-		<constant name="ACTION_MODE_BUTTON_PRESS" value="0">
+		<constant name="ACTION_MODE_BUTTON_PRESS" value="0" enum="ActionMode">
 			Require just a press to consider the button clicked.
 		</constant>
-		<constant name="ACTION_MODE_BUTTON_RELEASE" value="1">
+		<constant name="ACTION_MODE_BUTTON_RELEASE" value="1" enum="ActionMode">
 			Require a press and a subsequent release before considering the button clicked.
 		</constant>
 	</constants>

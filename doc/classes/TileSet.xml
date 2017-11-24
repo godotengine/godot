@@ -412,25 +412,25 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="BITMASK_2X2" value="0">
+		<constant name="BITMASK_2X2" value="0" enum="BitmaskMode">
 		</constant>
-		<constant name="BITMASK_3X3" value="1">
+		<constant name="BITMASK_3X3" value="1" enum="BitmaskMode">
 		</constant>
-		<constant name="BIND_TOPLEFT" value="1">
+		<constant name="BIND_TOPLEFT" value="1" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_TOP" value="2">
+		<constant name="BIND_TOP" value="2" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_TOPRIGHT" value="4">
+		<constant name="BIND_TOPRIGHT" value="4" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_LEFT" value="8">
+		<constant name="BIND_LEFT" value="8" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_RIGHT" value="32">
+		<constant name="BIND_RIGHT" value="32" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_BOTTOMLEFT" value="64">
+		<constant name="BIND_BOTTOMLEFT" value="64" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_BOTTOM" value="128">
+		<constant name="BIND_BOTTOM" value="128" enum="AutotileBindings">
 		</constant>
-		<constant name="BIND_BOTTOMRIGHT" value="256">
+		<constant name="BIND_BOTTOMRIGHT" value="256" enum="AutotileBindings">
 		</constant>
 	</constants>
 </class>

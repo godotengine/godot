@@ -215,7 +215,7 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50" enum="">
+		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>
 	</constants>
 </class>

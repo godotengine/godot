@@ -65,10 +65,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_POST_POPUP" value="80" enum="">
+		<constant name="NOTIFICATION_POST_POPUP" value="80">
 			Notification sent right after the popup is shown.
 		</constant>
-		<constant name="NOTIFICATION_POPUP_HIDE" value="81" enum="">
+		<constant name="NOTIFICATION_POPUP_HIDE" value="81">
 			Notification sent right after the popup is hidden.
 		</constant>
 	</constants>

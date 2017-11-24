@@ -281,17 +281,17 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 			In order for NOTIFICATION_TRANSFORM_CHANGED to work user first needs to ask for it, with set_notify_transform(true).
 		</constant>
-		<constant name="NOTIFICATION_ENTER_WORLD" value="41" enum="">
+		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Spatial nodes receives this notification when they are registered to new [World] resource.
 		</constant>
-		<constant name="NOTIFICATION_EXIT_WORLD" value="42" enum="">
+		<constant name="NOTIFICATION_EXIT_WORLD" value="42">
 			Spatial nodes receives this notification when they are unregistered from current [World] resource.
 		</constant>
-		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43" enum="">
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Spatial nodes receives this notification when their visibility changes.
 		</constant>
 	</constants>

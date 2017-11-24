@@ -477,34 +477,34 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="BLEND_MODE_MIX" value="0">
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
 		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
 			Additive blending mode.
 		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
 			Subtractive blending mode.
 		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			Multiplicative blending mode.
 		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.
 		</constant>
-		<constant name="NOTIFICATION_DRAW" value="30" enum="">
+		<constant name="NOTIFICATION_DRAW" value="30">
 			CanvasItem is requested to draw.
 		</constant>
-		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31" enum="">
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31">
 			Canvas item visibility has changed.
 		</constant>
-		<constant name="NOTIFICATION_ENTER_CANVAS" value="32" enum="">
+		<constant name="NOTIFICATION_ENTER_CANVAS" value="32">
 			Canvas item has entered the canvas.
 		</constant>
-		<constant name="NOTIFICATION_EXIT_CANVAS" value="33" enum="">
+		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			Canvas item has exited the canvas.
 		</constant>
 	</constants>
