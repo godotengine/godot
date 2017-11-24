@@ -109,7 +109,7 @@ class EditorFileSystem : public Node {
 			ACTION_DIR_REMOVE,
 			ACTION_FILE_ADD,
 			ACTION_FILE_REMOVE,
-			ACTION_FILE_REIMPORT
+			ACTION_FILE_TEST_REIMPORT
 		};
 
 		Action action;
@@ -200,7 +200,7 @@ class EditorFileSystem : public Node {
 
 	void _reimport_file(const String &p_file);
 
-	bool _check_missing_imported_files(const String &p_path);
+	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
 
 	bool reimport_on_missing_imported_files;
 
