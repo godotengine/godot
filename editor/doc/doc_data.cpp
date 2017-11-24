@@ -214,10 +214,11 @@ void DocData::generate(bool p_basic_types) {
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
-	Set<StringName> setters_getters;
 	bool skip_setter_getter_methods = true;
 
 	while (classes.size()) {
+
+		Set<StringName> setters_getters;
 
 		String name = classes.front()->get();
 		String cname = name;
