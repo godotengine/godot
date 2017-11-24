@@ -45,8 +45,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.max(r, Mathf.max(g, b));
-                float min = Mathf.min(r, Mathf.min(g, b));
+                float max = Mathf.Max(r, Mathf.Max(g, b));
+                float min = Mathf.Min(r, Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -71,7 +71,7 @@ namespace Godot
             }
             set
             {
-                this = from_hsv(value, s, v);
+                this = FromHsv(value, s, v);
             }
         }
 
@@ -79,8 +79,8 @@ namespace Godot
         {
             get
             {
-                float max = Mathf.max(r, Mathf.max(g, b));
-                float min = Mathf.min(r, Mathf.min(g, b));
+                float max = Mathf.Max(r, Mathf.Max(g, b));
+                float min = Mathf.Min(r, Mathf.Min(g, b));
 
                 float delta = max - min;
 
@@ -88,7 +88,7 @@ namespace Godot
             }
             set
             {
-                this = from_hsv(h, value, v);
+                this = FromHsv(h, value, v);
             }
         }
 
@@ -96,11 +96,11 @@ namespace Godot
         {
             get
             {
-                return Mathf.max(r, Mathf.max(g, b));
+                return Mathf.Max(r, Mathf.Max(g, b));
             }
             set
             {
-                this = from_hsv(h, s, value);
+                this = FromHsv(h, s, value);
             }
         }
 
@@ -154,10 +154,10 @@ namespace Godot
             }
         }
 
-        public static void to_hsv(Color color, out float hue, out float saturation, out float value)
+        public static void ToHsv(Color color, out float hue, out float saturation, out float value)
         {
-            int max = Mathf.max(color.r8, Mathf.max(color.g8, color.b8));
-            int min = Mathf.min(color.r8, Mathf.min(color.g8, color.b8));
+            int max = Mathf.Max(color.r8, Mathf.Max(color.g8, color.b8));
+            int min = Mathf.Min(color.r8, Mathf.Min(color.g8, color.b8));
 
             float delta = max - min;
 
@@ -184,7 +184,7 @@ namespace Godot
             value = max / 255f;
         }
 
-        public static Color from_hsv(float hue, float saturation, float value, float alpha = 1.0f)
+        public static Color FromHsv(float hue, float saturation, float value, float alpha = 1.0f)
         {
             if (saturation == 0)
             {
@@ -221,7 +221,7 @@ namespace Godot
             }
         }
 
-        public Color blend(Color over)
+        public Color Blend(Color over)
         {
             Color res;
 
@@ -242,7 +242,7 @@ namespace Godot
             return res;
         }
 
-        public Color contrasted()
+        public Color Contrasted()
         {
             return new Color(
                 (r + 0.5f) % 1.0f,
@@ -251,12 +251,12 @@ namespace Godot
             );
         }
 
-        public float gray()
+        public float Gray()
         {
             return (r + g + b) / 3.0f;
         }
 
-        public Color inverted()
+        public Color Inverted()
         {
             return new Color(
                 1.0f - r,
@@ -265,7 +265,7 @@ namespace Godot
             );
         }
 
-        public Color linear_interpolate(Color b, float t)
+        public Color LinearInterpolate(Color b, float t)
         {
             Color res = this;
 
@@ -277,7 +277,7 @@ namespace Godot
             return res;
         }
 
-        public int to_32()
+        public int To32()
         {
             int c = (byte)(a * 255);
             c <<= 8;
@@ -290,7 +290,7 @@ namespace Godot
             return c;
         }
 
-        public int to_ARGB32()
+        public int ToArgb32()
         {
             int c = (byte)(a * 255);
             c <<= 8;
@@ -303,7 +303,7 @@ namespace Godot
             return c;
         }
 
-        public string to_html(bool include_alpha = true)
+        public string ToHtml(bool include_alpha = true)
         {
             String txt = string.Empty;
 
@@ -375,7 +375,7 @@ namespace Godot
 
         private String _to_hex(float val)
         {
-            int v = (int)Mathf.clamp(val * 255.0f, 0, 255);
+            int v = (int)Mathf.Clamp(val * 255.0f, 0, 255);
 
             string ret = string.Empty;
 
@@ -396,7 +396,7 @@ namespace Godot
             return ret;
         }
 
-        internal static bool html_is_valid(string color)
+        internal static bool HtmlIsValid(string color)
         {
             if (color.Length == 0)
                 return false;

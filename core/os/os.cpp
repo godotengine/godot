@@ -122,6 +122,16 @@ bool OS::is_in_low_processor_usage_mode() const {
 	return low_processor_usage_mode;
 }
 
+void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
+
+	low_processor_usage_mode_sleep_usec = p_usec;
+}
+
+int OS::get_low_processor_usage_mode_sleep_usec() const {
+
+	return low_processor_usage_mode_sleep_usec;
+}
+
 void OS::set_clipboard(const String &p_text) {
 
 	_local_clipboard = p_text;
@@ -599,6 +609,7 @@ OS::OS() {
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode = false;
+	low_processor_usage_mode_sleep_usec = 10000;
 	_verbose_stdout = false;
 	_no_window = false;
 	_exit_code = 0;

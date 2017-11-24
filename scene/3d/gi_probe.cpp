@@ -410,7 +410,7 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
 	if (min > rad || max < -rad) return false;
 
-	/*======================== Z-tests ========================*/
+/*======================== Z-tests ========================*/
 
 #define AXISTEST_Z12(a, b, fa, fb)                 \
 	p1 = a * v1.x - b * v1.y;                      \
@@ -1511,7 +1511,7 @@ GIProbe::GIProbe() {
 	energy = 1.0;
 	bias = 1.5;
 	normal_bias = 0.0;
-	propagation = 1.0;
+	propagation = 0.7;
 	extents = Vector3(10, 10, 10);
 	color_scan_cell_width = 4;
 	bake_texture_size = 128;

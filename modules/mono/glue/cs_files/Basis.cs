@@ -56,9 +56,9 @@ namespace Godot
             {
                 return new Vector3
                 (
-                    new Vector3(this[0, 0], this[1, 0], this[2, 0]).length(),
-                    new Vector3(this[0, 1], this[1, 1], this[2, 1]).length(),
-                    new Vector3(this[0, 2], this[1, 2], this[2, 2]).length()
+                    new Vector3(this[0, 0], this[1, 0], this[2, 0]).Length(),
+                    new Vector3(this[0, 1], this[1, 1], this[2, 1]).Length(),
+                    new Vector3(this[0, 2], this[1, 2], this[2, 2]).Length()
                 );
             }
         }
@@ -133,7 +133,7 @@ namespace Godot
             }
         }
 
-        internal static Basis create_from_axes(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
+        internal static Basis CreateFromAxes(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
         {
             return new Basis
             (
@@ -143,21 +143,21 @@ namespace Godot
             );
         }
 
-        public float determinant()
+        public float Determinant()
         {
             return this[0, 0] * (this[1, 1] * this[2, 2] - this[2, 1] * this[1, 2]) -
                     this[1, 0] * (this[0, 1] * this[2, 2] - this[2, 1] * this[0, 2]) +
                     this[2, 0] * (this[0, 1] * this[1, 2] - this[1, 1] * this[0, 2]);
         }
 
-        public Vector3 get_axis(int axis)
+        public Vector3 GetAxis(int axis)
         {
             return new Vector3(this[0, axis], this[1, axis], this[2, axis]);
         }
 
-        public Vector3 get_euler()
+        public Vector3 GetEuler()
         {
-            Basis m = this.orthonormalized();
+            Basis m = this.Orthonormalized();
 
             Vector3 euler;
             euler.z = 0.0f;
@@ -169,26 +169,26 @@ namespace Godot
             {
                 if (mxy > -1.0f)
                 {
-                    euler.x = Mathf.asin(-mxy);
-                    euler.y = Mathf.atan2(m.x[2], m.z[2]);
-                    euler.z = Mathf.atan2(m.y[0], m.y[1]);
+                    euler.x = Mathf.Asin(-mxy);
+                    euler.y = Mathf.Atan2(m.x[2], m.z[2]);
+                    euler.z = Mathf.Atan2(m.y[0], m.y[1]);
                 }
                 else
                 {
                     euler.x = Mathf.PI * 0.5f;
-                    euler.y = -Mathf.atan2(-m.x[1], m.x[0]);
+                    euler.y = -Mathf.Atan2(-m.x[1], m.x[0]);
                 }
             }
             else
             {
                 euler.x = -Mathf.PI * 0.5f;
-                euler.y = -Mathf.atan2(m.x[1], m.x[0]);
+                euler.y = -Mathf.Atan2(m.x[1], m.x[0]);
             }
 
             return euler;
         }
 
-        public int get_orthogonal_index()
+        public int GetOrthogonalIndex()
         {
             Basis orth = this;
 
@@ -218,7 +218,7 @@ namespace Godot
             return 0;
         }
 
-        public Basis inverse()
+        public Basis Inverse()
         {
             Basis inv = this;
 
@@ -259,27 +259,27 @@ namespace Godot
             return inv;
         }
 
-        public Basis orthonormalized()
+        public Basis Orthonormalized()
         {
-            Vector3 xAxis = get_axis(0);
-            Vector3 yAxis = get_axis(1);
-            Vector3 zAxis = get_axis(2);
+            Vector3 xAxis = GetAxis(0);
+            Vector3 yAxis = GetAxis(1);
+            Vector3 zAxis = GetAxis(2);
 
-            xAxis.normalize();
-            yAxis = (yAxis - xAxis * (xAxis.dot(yAxis)));
-            yAxis.normalize();
-            zAxis = (zAxis - xAxis * (xAxis.dot(zAxis)) - yAxis * (yAxis.dot(zAxis)));
-            zAxis.normalize();
+            xAxis.Normalize();
+            yAxis = (yAxis - xAxis * (xAxis.Dot(yAxis)));
+            yAxis.Normalize();
+            zAxis = (zAxis - xAxis * (xAxis.Dot(zAxis)) - yAxis * (yAxis.Dot(zAxis)));
+            zAxis.Normalize();
 
-            return Basis.create_from_axes(xAxis, yAxis, zAxis);
+            return Basis.CreateFromAxes(xAxis, yAxis, zAxis);
         }
 
-        public Basis rotated(Vector3 axis, float phi)
+        public Basis Rotated(Vector3 axis, float phi)
         {
             return new Basis(axis, phi) * this;
         }
 
-        public Basis scaled(Vector3 scale)
+        public Basis Scaled(Vector3 scale)
         {
             Basis m = this;
 
@@ -296,22 +296,22 @@ namespace Godot
             return m;
         }
 
-        public float tdotx(Vector3 with)
+        public float Tdotx(Vector3 with)
         {
             return this[0, 0] * with[0] + this[1, 0] * with[1] + this[2, 0] * with[2];
         }
 
-        public float tdoty(Vector3 with)
+        public float Tdoty(Vector3 with)
         {
             return this[0, 1] * with[0] + this[1, 1] * with[1] + this[2, 1] * with[2];
         }
 
-        public float tdotz(Vector3 with)
+        public float Tdotz(Vector3 with)
         {
             return this[0, 2] * with[0] + this[1, 2] * with[1] + this[2, 2] * with[2];
         }
 
-        public Basis transposed()
+        public Basis Transposed()
         {
             Basis tr = this;
 
@@ -330,17 +330,17 @@ namespace Godot
             return tr;
         }
 
-        public Vector3 xform(Vector3 v)
+        public Vector3 Xform(Vector3 v)
         {
             return new Vector3
             (
-                this[0].dot(v),
-                this[1].dot(v),
-                this[2].dot(v)
+                this[0].Dot(v),
+                this[1].Dot(v),
+                this[2].Dot(v)
             );
         }
 
-        public Vector3 xform_inv(Vector3 v)
+        public Vector3 XformInv(Vector3 v)
         {
             return new Vector3
             (
@@ -354,7 +354,7 @@ namespace Godot
 			float trace = x[0] + y[1] + z[2];
 
 			if (trace > 0.0f) {
-				float s = Mathf.sqrt(trace + 1.0f) * 2f;
+				float s = Mathf.Sqrt(trace + 1.0f) * 2f;
 				float inv_s = 1f / s;
 				return new Quat(
 					(z[1] - y[2]) * inv_s,
@@ -363,7 +363,7 @@ namespace Godot
 					s * 0.25f
 				);
 			} else if (x[0] > y[1] && x[0] > z[2]) {
-				float s = Mathf.sqrt(x[0] - y[1] - z[2] + 1.0f) * 2f;
+				float s = Mathf.Sqrt(x[0] - y[1] - z[2] + 1.0f) * 2f;
 				float inv_s = 1f / s;
 				return new Quat(
 					s * 0.25f,
@@ -372,7 +372,7 @@ namespace Godot
 					(z[1] - y[2]) * inv_s
 				);
 			} else if (y[1] > z[2]) {
-				float s = Mathf.sqrt(-x[0] + y[1] - z[2] + 1.0f) * 2f;
+				float s = Mathf.Sqrt(-x[0] + y[1] - z[2] + 1.0f) * 2f;
 				float inv_s = 1f / s;
 				return new Quat(
 					(x[1] + y[0]) * inv_s,
@@ -381,7 +381,7 @@ namespace Godot
 					(x[2] - z[0]) * inv_s
 				);
 			} else {
-				float s = Mathf.sqrt(-x[0] - y[1] + z[2] + 1.0f) * 2f;
+				float s = Mathf.Sqrt(-x[0] - y[1] + z[2] + 1.0f) * 2f;
 				float inv_s = 1f / s;
 				return new Quat(
 					(x[2] + z[0]) * inv_s,
@@ -394,7 +394,7 @@ namespace Godot
 
         public Basis(Quat quat)
         {
-            float s = 2.0f / quat.length_squared();
+            float s = 2.0f / quat.LengthSquared();
 
             float xs = quat.x * s;
             float ys = quat.y * s;
@@ -418,8 +418,8 @@ namespace Godot
         {
             Vector3 axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
 
-            float cosine = Mathf.cos(phi);
-            float sine = Mathf.sin(phi);
+            float cosine = Mathf.Cos(phi);
+            float sine = Mathf.Sin(phi);
 
             this.x = new Vector3
             (
@@ -461,9 +461,9 @@ namespace Godot
         {
             return new Basis
             (
-                right.tdotx(left[0]), right.tdoty(left[0]), right.tdotz(left[0]),
-                right.tdotx(left[1]), right.tdoty(left[1]), right.tdotz(left[1]),
-                right.tdotx(left[2]), right.tdoty(left[2]), right.tdotz(left[2])
+                right.Tdotx(left[0]), right.Tdoty(left[0]), right.Tdotz(left[0]),
+                right.Tdotx(left[1]), right.Tdoty(left[1]), right.Tdotz(left[1]),
+                right.Tdotx(left[2]), right.Tdoty(left[2]), right.Tdotz(left[2])
             );
         }
 

@@ -56,11 +56,6 @@ uint32_t RayCast2D::get_collision_mask() const {
 	return collision_mask;
 }
 
-void RayCast2D::set_type_mask(uint32_t p_mask) {
-
-	type_mask = p_mask;
-}
-
 void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
 
 	uint32_t mask = get_collision_mask();
@@ -74,11 +69,6 @@ void RayCast2D::set_collision_mask_bit(int p_bit, bool p_value) {
 bool RayCast2D::get_collision_mask_bit(int p_bit) const {
 
 	return get_collision_mask() & (1 << p_bit);
-}
-
-uint32_t RayCast2D::get_type_mask() const {
-
-	return type_mask;
 }
 
 bool RayCast2D::is_colliding() const {
@@ -218,7 +208,7 @@ void RayCast2D::_update_raycast_state() {
 
 	Physics2DDirectSpaceState::RayResult rr;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, type_mask)) {
+	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask)) {
 
 		collided = true;
 		against = rr.collider_id;
@@ -297,9 +287,6 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &RayCast2D::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &RayCast2D::get_collision_mask_bit);
 
-	ClassDB::bind_method(D_METHOD("set_type_mask", "mask"), &RayCast2D::set_type_mask);
-	ClassDB::bind_method(D_METHOD("get_type_mask"), &RayCast2D::get_type_mask);
-
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast2D::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast2D::get_exclude_parent_body);
 
@@ -307,7 +294,6 @@ void RayCast2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cast_to"), "set_cast_to", "get_cast_to");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type_mask", PROPERTY_HINT_FLAGS, "Static,Kinematic,Rigid,Character,Area"), "set_type_mask", "get_type_mask");
 }
 
 RayCast2D::RayCast2D() {
@@ -317,7 +303,6 @@ RayCast2D::RayCast2D() {
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;
-	type_mask = Physics2DDirectSpaceState::TYPE_MASK_COLLISION;
 	cast_to = Vector2(0, 50);
 	exclude_parent_body = true;
 }

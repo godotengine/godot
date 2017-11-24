@@ -1827,14 +1827,22 @@ void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 
 void SceneTreeDock::show_remote_tree() {
 
-	button_hb->show();
 	_remote_tree_selected();
 }
 
 void SceneTreeDock::hide_remote_tree() {
 
-	button_hb->hide();
 	_local_tree_selected();
+}
+
+void SceneTreeDock::show_tab_buttons() {
+
+	button_hb->show();
+}
+
+void SceneTreeDock::hide_tab_buttons() {
+
+	button_hb->hide();
 }
 
 void SceneTreeDock::_remote_tree_selected() {
@@ -1844,6 +1852,8 @@ void SceneTreeDock::_remote_tree_selected() {
 		remote_tree->show();
 	edit_remote->set_pressed(true);
 	edit_local->set_pressed(false);
+
+	emit_signal("remote_tree_selected");
 }
 
 void SceneTreeDock::_local_tree_selected() {
@@ -1886,6 +1896,8 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_local_tree_selected"), &SceneTreeDock::_local_tree_selected);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
+
+	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
 }
 
 SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {

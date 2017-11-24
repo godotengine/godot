@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tile_set.h"
+#include "array.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -55,7 +56,74 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_modulate(id, p_value);
 	else if (what == "region")
 		tile_set_region(id, p_value);
-	else if (what == "shape")
+	else if (what == "is_autotile")
+		tile_set_is_autotile(id, p_value);
+	else if (what.left(9) == "autotile/") {
+		what = what.right(9);
+		if (what == "bitmask_mode")
+			autotile_set_bitmask_mode(id, (BitmaskMode)((int)p_value));
+		else if (what == "icon_coordinate")
+			autotile_set_icon_coordinate(id, p_value);
+		else if (what == "tile_size")
+			autotile_set_size(id, p_value);
+		else if (what == "spacing")
+			autotile_set_spacing(id, p_value);
+		else if (what == "bitmask_flags") {
+			tile_map[id].autotile_data.flags.clear();
+			if (p_value.is_array()) {
+				Array p = p_value;
+				Vector2 last_coord;
+				while (p.size() > 0) {
+					if (p[0].get_type() == Variant::VECTOR2) {
+						last_coord = p[0];
+					} else if (p[0].get_type() == Variant::INT) {
+						autotile_set_bitmask(id, last_coord, p[0]);
+					}
+					p.pop_front();
+				}
+			}
+		} else if (what == "occluder_map") {
+			tile_map[id].autotile_data.ocludder_map.clear();
+			Array p = p_value;
+			Vector2 last_coord;
+			while (p.size() > 0) {
+				if (p[0].get_type() == Variant::VECTOR2) {
+					last_coord = p[0];
+				} else if (p[0].get_type() == Variant::OBJECT) {
+					autotile_set_light_occluder(id, p[0], last_coord);
+				}
+				p.pop_front();
+			}
+		} else if (what == "navpoly_map") {
+			tile_map[id].autotile_data.navpoly_map.clear();
+			Array p = p_value;
+			Vector2 last_coord;
+			while (p.size() > 0) {
+				if (p[0].get_type() == Variant::VECTOR2) {
+					last_coord = p[0];
+				} else if (p[0].get_type() == Variant::OBJECT) {
+					autotile_set_navigation_polygon(id, p[0], last_coord);
+				}
+				p.pop_front();
+			}
+		} else if (what == "priority_map") {
+			tile_map[id].autotile_data.priority_map.clear();
+			Array p = p_value;
+			Vector3 val;
+			Vector2 v;
+			int priority;
+			while (p.size() > 0) {
+				val = p[0];
+				if (val.z > 1) {
+					v.x = val.x;
+					v.y = val.y;
+					priority = (int)val.z;
+					tile_map[id].autotile_data.priority_map[v] = priority;
+				}
+				p.pop_front();
+			}
+		}
+	} else if (what == "shape")
 		tile_set_shape(id, 0, p_value);
 	else if (what == "shape_offset")
 		tile_set_shape_offset(id, 0, p_value);
@@ -105,7 +173,54 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_modulate(id);
 	else if (what == "region")
 		r_ret = tile_get_region(id);
-	else if (what == "shape")
+	else if (what == "is_autotile")
+		r_ret = tile_get_is_autotile(id);
+	else if (what.left(9) == "autotile/") {
+		what = what.right(9);
+		if (what == "bitmask_mode")
+			r_ret = autotile_get_bitmask_mode(id);
+		else if (what == "icon_coordinate")
+			r_ret = autotile_get_icon_coordinate(id);
+		else if (what == "tile_size")
+			r_ret = autotile_get_size(id);
+		else if (what == "spacing")
+			r_ret = autotile_get_spacing(id);
+		else if (what == "bitmask_flags") {
+			Array p;
+			for (Map<Vector2, uint16_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
+				p.push_back(E->key());
+				p.push_back(E->value());
+			}
+			r_ret = p;
+		} else if (what == "occluder_map") {
+			Array p;
+			for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = tile_map[id].autotile_data.ocludder_map.front(); E; E = E->next()) {
+				p.push_back(E->key());
+				p.push_back(E->value());
+			}
+			r_ret = p;
+		} else if (what == "navpoly_map") {
+			Array p;
+			for (Map<Vector2, Ref<NavigationPolygon> >::Element *E = tile_map[id].autotile_data.navpoly_map.front(); E; E = E->next()) {
+				p.push_back(E->key());
+				p.push_back(E->value());
+			}
+			r_ret = p;
+		} else if (what == "priority_map") {
+			Array p;
+			Vector3 v;
+			for (Map<Vector2, int>::Element *E = tile_map[id].autotile_data.priority_map.front(); E; E = E->next()) {
+				if (E->value() > 1) {
+					//Dont save default value
+					v.x = E->key().x;
+					v.y = E->key().y;
+					v.z = E->value();
+					p.push_back(v);
+				}
+			}
+			r_ret = p;
+		}
+	} else if (what == "shape")
 		r_ret = tile_get_shape(id, 0);
 	else if (what == "shape_offset")
 		r_ret = tile_get_shape_offset(id, 0);
@@ -142,6 +257,17 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, pre + "modulate"));
 		p_list->push_back(PropertyInfo(Variant::RECT2, pre + "region"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "is_autotile", PROPERTY_HINT_NONE, ""));
+		if (tile_get_is_autotile(id)) {
+			p_list->push_back(PropertyInfo(Variant::INT, pre + "autotile/bitmask_mode", PROPERTY_HINT_ENUM, "2X2,3X3", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/icon_coordinate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::INT, pre + "autotile/spacing", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/bitmask_flags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/occluder_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/navpoly_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/priority_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		}
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "occluder_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "navigation_offset"));
@@ -158,8 +284,23 @@ void TileSet::create_tile(int p_id) {
 
 	ERR_FAIL_COND(tile_map.has(p_id));
 	tile_map[p_id] = TileData();
+	tile_map[p_id].autotile_data = AutotileData();
 	_change_notify("");
 	emit_changed();
+}
+
+void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].autotile_data.bitmask_mode = p_mode;
+	_change_notify("");
+	emit_changed();
+}
+
+TileSet::BitmaskMode TileSet::autotile_get_bitmask_mode(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), BITMASK_2X2);
+	return tile_map[p_id].autotile_data.bitmask_mode;
 }
 
 void TileSet::tile_set_texture(int p_id, const Ref<Texture> &p_texture) {
@@ -240,6 +381,152 @@ Rect2 TileSet::tile_get_region(int p_id) const {
 	return tile_map[p_id].region;
 }
 
+void TileSet::tile_set_is_autotile(int p_id, bool p_is_autotile) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].is_autotile = p_is_autotile;
+	_change_notify("");
+	emit_changed();
+}
+
+bool TileSet::tile_get_is_autotile(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
+	return tile_map[p_id].is_autotile;
+}
+
+void TileSet::autotile_set_icon_coordinate(int p_id, Vector2 coord) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].autotile_data.icon_coord = coord;
+	emit_changed();
+}
+
+Vector2 TileSet::autotile_get_icon_coordinate(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
+	return tile_map[p_id].autotile_data.icon_coord;
+}
+
+void TileSet::autotile_set_spacing(int p_id, int p_spacing) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	ERR_FAIL_COND(p_spacing < 0);
+	tile_map[p_id].autotile_data.spacing = p_spacing;
+	emit_changed();
+}
+
+int TileSet::autotile_get_spacing(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	return tile_map[p_id].autotile_data.spacing;
+}
+
+void TileSet::autotile_set_size(int p_id, Size2 p_size) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	ERR_FAIL_COND(p_size.x <= 0 || p_size.y <= 0);
+	tile_map[p_id].autotile_data.size = p_size;
+}
+
+Size2 TileSet::autotile_get_size(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Size2());
+	return tile_map[p_id].autotile_data.size;
+}
+
+void TileSet::autotile_clear_bitmask_map(int p_id) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].autotile_data.flags.clear();
+}
+
+void TileSet::autotile_set_subtile_priority(int p_id, const Vector2 &p_coord, int p_priority) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	ERR_FAIL_COND(p_priority <= 0);
+	tile_map[p_id].autotile_data.priority_map[p_coord] = p_priority;
+}
+
+int TileSet::autotile_get_subtile_priority(int p_id, const Vector2 &p_coord) {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 1);
+	if (tile_map[p_id].autotile_data.priority_map.has(p_coord)) {
+		return tile_map[p_id].autotile_data.priority_map[p_coord];
+	}
+	//When not custom priority set return the default value
+	return 1;
+}
+
+const Map<Vector2, int> &TileSet::autotile_get_priority_map(int p_id) const {
+
+	static Map<Vector2, int> dummy;
+	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
+	return tile_map[p_id].autotile_data.priority_map;
+}
+
+void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (p_flag == 0) {
+		if (tile_map[p_id].autotile_data.flags.has(p_coord))
+			tile_map[p_id].autotile_data.flags.erase(p_coord);
+	} else {
+		tile_map[p_id].autotile_data.flags[p_coord] = p_flag;
+	}
+}
+
+uint16_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	if (!tile_map[p_id].autotile_data.flags.has(p_coord)) {
+		return 0;
+	}
+	return tile_map[p_id].autotile_data.flags[p_coord];
+}
+
+const Map<Vector2, uint16_t> &TileSet::autotile_get_bitmask_map(int p_id) {
+
+	static Map<Vector2, uint16_t> dummy;
+	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
+	return tile_map[p_id].autotile_data.flags;
+}
+
+Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
+	//First try to forward selection to script
+	if (p_tilemap_node->get_class_name() == "TileMap") {
+		if (get_script_instance() != NULL) {
+			if (get_script_instance()->has_method("_forward_subtile_selection")) {
+				Variant ret = get_script_instance()->call("_forward_subtile_selection", p_id, p_bitmask, p_tilemap_node, p_tile_location);
+				if (ret.get_type() == Variant::VECTOR2) {
+					return ret;
+				}
+			}
+		}
+	}
+
+	List<Vector2> coords;
+	uint16_t mask;
+	for (Map<Vector2, uint16_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
+		mask = E->get();
+		if (tile_map[p_id].autotile_data.bitmask_mode == BITMASK_2X2) {
+			mask &= (BIND_BOTTOMLEFT | BIND_BOTTOMRIGHT | BIND_TOPLEFT | BIND_TOPRIGHT);
+		}
+		if (mask == p_bitmask) {
+			for (int i = 0; i < autotile_get_subtile_priority(p_id, E->key()); i++) {
+				coords.push_back(E->key());
+			}
+		}
+	}
+	if (coords.size() == 0) {
+		return autotile_get_icon_coordinate(p_id);
+	} else {
+		return coords[Math::random(0, (int)coords.size())];
+	}
+}
+
 void TileSet::tile_set_name(int p_id, const String &p_name) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -257,7 +544,7 @@ void TileSet::tile_clear_shapes(int p_id) {
 	tile_map[p_id].shapes_data.clear();
 }
 
-void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way) {
+void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way, const Vector2 &p_autotile_coord) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 
@@ -265,15 +552,17 @@ void TileSet::tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transf
 	new_data.shape = p_shape;
 	new_data.shape_transform = p_transform;
 	new_data.one_way_collision = p_one_way;
+	new_data.autotile_coord = p_autotile_coord;
 
 	tile_map[p_id].shapes_data.push_back(new_data);
-};
+}
+
 int TileSet::tile_get_shape_count(int p_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
 
 	return tile_map[p_id].shapes_data.size();
-};
+}
 
 void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape) {
 
@@ -351,6 +640,26 @@ Ref<OccluderPolygon2D> TileSet::tile_get_light_occluder(int p_id) const {
 	return tile_map[p_id].occluder;
 }
 
+void TileSet::autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord) {
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (p_light_occluder.is_null()) {
+		if (tile_map[p_id].autotile_data.ocludder_map.has(p_coord)) {
+			tile_map[p_id].autotile_data.ocludder_map.erase(p_coord);
+		}
+	} else {
+		tile_map[p_id].autotile_data.ocludder_map[p_coord] = p_light_occluder;
+	}
+}
+
+Ref<OccluderPolygon2D> TileSet::autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const {
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<OccluderPolygon2D>());
+	if (!tile_map[p_id].autotile_data.ocludder_map.has(p_coord)) {
+		return Ref<OccluderPolygon2D>();
+	} else {
+		return tile_map[p_id].autotile_data.ocludder_map[p_coord];
+	}
+}
+
 void TileSet::tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offset) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -358,6 +667,7 @@ void TileSet::tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offs
 }
 
 Vector2 TileSet::tile_get_navigation_polygon_offset(int p_id) const {
+
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	return tile_map[p_id].navigation_polygon_offset;
 }
@@ -374,6 +684,42 @@ Ref<NavigationPolygon> TileSet::tile_get_navigation_polygon(int p_id) const {
 	return tile_map[p_id].navigation_polygon;
 }
 
+const Map<Vector2, Ref<OccluderPolygon2D> > &TileSet::autotile_get_light_oclusion_map(int p_id) const {
+
+	static Map<Vector2, Ref<OccluderPolygon2D> > dummy;
+	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
+	return tile_map[p_id].autotile_data.ocludder_map;
+}
+
+void TileSet::autotile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_coord) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (p_navigation_polygon.is_null()) {
+		if (tile_map[p_id].autotile_data.navpoly_map.has(p_coord)) {
+			tile_map[p_id].autotile_data.navpoly_map.erase(p_coord);
+		}
+	} else {
+		tile_map[p_id].autotile_data.navpoly_map[p_coord] = p_navigation_polygon;
+	}
+}
+
+Ref<NavigationPolygon> TileSet::autotile_get_navigation_polygon(int p_id, const Vector2 &p_coord) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<NavigationPolygon>());
+	if (!tile_map[p_id].autotile_data.navpoly_map.has(p_coord)) {
+		return Ref<NavigationPolygon>();
+	} else {
+		return tile_map[p_id].autotile_data.navpoly_map[p_coord];
+	}
+}
+
+const Map<Vector2, Ref<NavigationPolygon> > &TileSet::autotile_get_navigation_map(int p_id) const {
+
+	static Map<Vector2, Ref<NavigationPolygon> > dummy;
+	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
+	return tile_map[p_id].autotile_data.navpoly_map;
+}
+
 void TileSet::tile_set_occluder_offset(int p_id, const Vector2 &p_offset) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -381,6 +727,7 @@ void TileSet::tile_set_occluder_offset(int p_id, const Vector2 &p_offset) {
 }
 
 Vector2 TileSet::tile_get_occluder_offset(int p_id) const {
+
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	return tile_map[p_id].occluder_offset;
 }
@@ -405,6 +752,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 	Vector<ShapeData> shapes_data;
 	Transform2D default_transform = tile_get_shape_transform(p_id, 0);
 	bool default_one_way = tile_get_shape_one_way(p_id, 0);
+	Vector2 default_autotile_coord = Vector2();
 	for (int i = 0; i < p_shapes.size(); i++) {
 		ShapeData s = ShapeData();
 
@@ -415,6 +763,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			s.shape = shape;
 			s.shape_transform = default_transform;
 			s.one_way_collision = default_one_way;
+			s.autotile_coord = default_autotile_coord;
 		} else if (p_shapes[i].get_type() == Variant::DICTIONARY) {
 			Dictionary d = p_shapes[i];
 
@@ -434,6 +783,11 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 				s.one_way_collision = d["one_way"];
 			else
 				s.one_way_collision = default_one_way;
+
+			if (d.has("autotile_coord") && d["autotile_coord"].get_type() == Variant::VECTOR2)
+				s.autotile_coord = d["autotile_coord"];
+			else
+				s.autotile_coord = default_autotile_coord;
 
 		} else {
 			ERR_EXPLAIN("Expected an array of objects or dictionaries for tile_set_shapes");
@@ -457,6 +811,7 @@ Array TileSet::_tile_get_shapes(int p_id) const {
 		shape_data["shape"] = data[i].shape;
 		shape_data["shape_transform"] = data[i].shape_transform;
 		shape_data["one_way"] = data[i].one_way_collision;
+		shape_data["autotile_coord"] = data[i].autotile_coord;
 		arr.push_back(shape_data);
 	}
 
@@ -485,6 +840,21 @@ void TileSet::get_tile_list(List<int> *p_tiles) const {
 bool TileSet::has_tile(int p_id) const {
 
 	return tile_map.has(p_id);
+}
+
+bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
+
+	if (p_drawn_id == p_neighbor_id) {
+		return true;
+	} else if (get_script_instance() != NULL) {
+		if (get_script_instance()->has_method("_is_tile_bound")) {
+			Variant ret = get_script_instance()->call("_is_tile_bound", p_drawn_id, p_neighbor_id);
+			if (ret.get_type() == Variant::BOOL) {
+				return ret;
+			}
+		}
+	}
+	return false;
 }
 
 void TileSet::remove_tile(int p_id) {
@@ -523,6 +893,8 @@ void TileSet::clear() {
 void TileSet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_tile", "id"), &TileSet::create_tile);
+	ClassDB::bind_method(D_METHOD("autotile_set_bitmask_mode", "mode"), &TileSet::autotile_set_bitmask_mode);
+	ClassDB::bind_method(D_METHOD("autotile_get_bitmask_mode"), &TileSet::autotile_get_bitmask_mode);
 	ClassDB::bind_method(D_METHOD("tile_set_name", "id", "name"), &TileSet::tile_set_name);
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
 	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture"), &TileSet::tile_set_texture);
@@ -559,6 +931,21 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_unused_tile_id"), &TileSet::get_last_unused_tile_id);
 	ClassDB::bind_method(D_METHOD("find_tile_by_name", "name"), &TileSet::find_tile_by_name);
 	ClassDB::bind_method(D_METHOD("get_tiles_ids"), &TileSet::_get_tiles_ids);
+
+	BIND_VMETHOD(MethodInfo("_is_tile_bound", PropertyInfo(Variant::INT, "drawn_id"), PropertyInfo(Variant::INT, "neighbor_id")));
+	BIND_VMETHOD(MethodInfo("_forward_subtile_selection", PropertyInfo(Variant::INT, "autotile_id"), PropertyInfo(Variant::INT, "bitmask"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));
+
+	BIND_ENUM_CONSTANT(BITMASK_2X2);
+	BIND_ENUM_CONSTANT(BITMASK_3X3);
+
+	BIND_ENUM_CONSTANT(BIND_TOPLEFT);
+	BIND_ENUM_CONSTANT(BIND_TOP);
+	BIND_ENUM_CONSTANT(BIND_TOPRIGHT);
+	BIND_ENUM_CONSTANT(BIND_LEFT);
+	BIND_ENUM_CONSTANT(BIND_RIGHT);
+	BIND_ENUM_CONSTANT(BIND_BOTTOMLEFT);
+	BIND_ENUM_CONSTANT(BIND_BOTTOM);
+	BIND_ENUM_CONSTANT(BIND_BOTTOMRIGHT);
 }
 
 TileSet::TileSet() {

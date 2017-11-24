@@ -75,6 +75,7 @@ class ScriptEditorDebugger : public Control {
 	bool updating_scene_tree;
 	float inspect_scene_tree_timeout;
 	float inspect_edited_object_timeout;
+	bool auto_switch_remote_scene_tree;
 	ObjectID inspected_object_id;
 	ScriptEditorDebuggerVariables *variables;
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;

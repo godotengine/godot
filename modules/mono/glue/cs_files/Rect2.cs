@@ -28,36 +28,36 @@ namespace Godot
 
         public float Area
         {
-            get { return get_area(); }
+            get { return GetArea(); }
         }
 
-        public Rect2 clip(Rect2 b)
+        public Rect2 Clip(Rect2 b)
         {
             Rect2 newRect = b;
 
-            if (!intersects(newRect))
+            if (!Intersects(newRect))
                 return new Rect2();
 
-            newRect.position.x = Mathf.max(b.position.x, position.x);
-            newRect.position.y = Mathf.max(b.position.y, position.y);
+            newRect.position.x = Mathf.Max(b.position.x, position.x);
+            newRect.position.y = Mathf.Max(b.position.y, position.y);
 
             Vector2 bEnd = b.position + b.size;
             Vector2 end = position + size;
 
-            newRect.size.x = Mathf.min(bEnd.x, end.x) - newRect.position.x;
-            newRect.size.y = Mathf.min(bEnd.y, end.y) - newRect.position.y;
+            newRect.size.x = Mathf.Min(bEnd.x, end.x) - newRect.position.x;
+            newRect.size.y = Mathf.Min(bEnd.y, end.y) - newRect.position.y;
 
             return newRect;
         }
 
-        public bool encloses(Rect2 b)
+        public bool Encloses(Rect2 b)
         {
             return (b.position.x >= position.x) && (b.position.y >= position.y) &&
                ((b.position.x + b.size.x) < (position.x + size.x)) &&
                ((b.position.y + b.size.y) < (position.y + size.y));
         }
 
-        public Rect2 expand(Vector2 to)
+        public Rect2 Expand(Vector2 to)
         {
             Rect2 expanded = this;
 
@@ -80,12 +80,12 @@ namespace Godot
             return expanded;
         }
 
-        public float get_area()
+        public float GetArea()
         {
             return size.x * size.y;
         }
 
-        public Rect2 grow(float by)
+        public Rect2 Grow(float by)
         {
             Rect2 g = this;
 
@@ -97,7 +97,7 @@ namespace Godot
             return g;
         }
 
-        public Rect2 grow_individual(float left, float top, float right, float bottom)
+        public Rect2 GrowIndividual(float left, float top, float right, float bottom)
         {
             Rect2 g = this;
 
@@ -109,11 +109,11 @@ namespace Godot
             return g;
         }
 
-        public Rect2 grow_margin(int margin, float by)
+        public Rect2 GrowMargin(int margin, float by)
         {
             Rect2 g = this;
 
-            g.grow_individual((GD.MARGIN_LEFT == margin) ? by : 0,
+            g.GrowIndividual((GD.MARGIN_LEFT == margin) ? by : 0,
                     (GD.MARGIN_TOP == margin) ? by : 0,
                     (GD.MARGIN_RIGHT == margin) ? by : 0,
                     (GD.MARGIN_BOTTOM == margin) ? by : 0);
@@ -121,12 +121,12 @@ namespace Godot
             return g;
         }
 
-        public bool has_no_area()
+        public bool HasNoArea()
         {
             return size.x <= 0 || size.y <= 0;
         }
 
-        public bool has_point(Vector2 point)
+        public bool HasPoint(Vector2 point)
         {
             if (point.x < position.x)
                 return false;
@@ -141,7 +141,7 @@ namespace Godot
             return true;
         }
 
-        public bool intersects(Rect2 b)
+        public bool Intersects(Rect2 b)
         {
             if (position.x > (b.position.x + b.size.x))
                 return false;
@@ -155,15 +155,15 @@ namespace Godot
             return true;
         }
 
-        public Rect2 merge(Rect2 b)
+        public Rect2 Merge(Rect2 b)
         {
             Rect2 newRect;
 
-            newRect.position.x = Mathf.min(b.position.x, position.x);
-            newRect.position.y = Mathf.min(b.position.y, position.y);
+            newRect.position.x = Mathf.Min(b.position.x, position.x);
+            newRect.position.y = Mathf.Min(b.position.y, position.y);
 
-            newRect.size.x = Mathf.max(b.position.x + b.size.x, position.x + size.x);
-            newRect.size.y = Mathf.max(b.position.y + b.size.y, position.y + size.y);
+            newRect.size.x = Mathf.Max(b.position.x + b.size.x, position.x + size.x);
+            newRect.size.y = Mathf.Max(b.position.y + b.size.y, position.y + size.y);
 
             newRect.size = newRect.size - newRect.position; // Make relative again
 

@@ -333,6 +333,7 @@ static const char *locale_list[] = {
 	"sq_KV", //  Albanian (Kosovo)
 	"sq_MK", //  Albanian (Macedonia)
 	"sr", //  Serbian
+	"sr_Cyrl", //  Serbian (Cyrillic)
 	"sr_ME", //  Serbian (Montenegro)
 	"sr_RS", //  Serbian (Serbia)
 	"ss_ZA", //  Swati (South Africa)
@@ -693,6 +694,7 @@ static const char *locale_names[] = {
 	"Albanian (Kosovo)",
 	"Albanian (Macedonia)",
 	"Serbian",
+	"Serbian (Cyrillic)",
 	"Serbian (Montenegro)",
 	"Serbian (Serbia)",
 	"Swati (South Africa)",

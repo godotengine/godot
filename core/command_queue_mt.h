@@ -302,7 +302,7 @@ class CommandQueueMT {
 	/***** BASE *******/
 
 	enum {
-		COMMAND_MEM_SIZE_KB = 256 * 1024,
+		COMMAND_MEM_SIZE_KB = 256,
 		COMMAND_MEM_SIZE = COMMAND_MEM_SIZE_KB * 1024,
 		SYNC_SEMAPHORES = 8
 	};

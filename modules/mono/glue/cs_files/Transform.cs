@@ -9,38 +9,38 @@ namespace Godot
         public Basis basis;
         public Vector3 origin;
 
-        public Transform affine_inverse()
+        public Transform AffineInverse()
         {
-            Basis basisInv = basis.inverse();
-            return new Transform(basisInv, basisInv.xform(-origin));
+            Basis basisInv = basis.Inverse();
+            return new Transform(basisInv, basisInv.Xform(-origin));
         }
 
-        public Transform inverse()
+        public Transform Inverse()
         {
-            Basis basisTr = basis.transposed();
-            return new Transform(basisTr, basisTr.xform(-origin));
+            Basis basisTr = basis.Transposed();
+            return new Transform(basisTr, basisTr.Xform(-origin));
         }
 
-        public Transform looking_at(Vector3 target, Vector3 up)
+        public Transform LookingAt(Vector3 target, Vector3 up)
         {
             Transform t = this;
             t.set_look_at(origin, target, up);
             return t;
         }
 
-        public Transform orthonormalized()
+        public Transform Orthonormalized()
         {
-            return new Transform(basis.orthonormalized(), origin);
+            return new Transform(basis.Orthonormalized(), origin);
         }
 
-        public Transform rotated(Vector3 axis, float phi)
+        public Transform Rotated(Vector3 axis, float phi)
         {
             return new Transform(new Basis(axis, phi), new Vector3()) * this;
         }
 
-        public Transform scaled(Vector3 scale)
+        public Transform Scaled(Vector3 scale)
         {
-            return new Transform(basis.scaled(scale), origin * scale);
+            return new Transform(basis.Scaled(scale), origin * scale);
         }
 
         public void set_look_at(Vector3 eye, Vector3 target, Vector3 up)
@@ -49,44 +49,44 @@ namespace Godot
             // Z vector
             Vector3 zAxis = eye - target;
 
-            zAxis.normalize();
+            zAxis.Normalize();
 
             Vector3 yAxis = up;
 
-            Vector3 xAxis = yAxis.cross(zAxis);
+            Vector3 xAxis = yAxis.Cross(zAxis);
 
             // Recompute Y = Z cross X
-            yAxis = zAxis.cross(xAxis);
+            yAxis = zAxis.Cross(xAxis);
 
-            xAxis.normalize();
-            yAxis.normalize();
+            xAxis.Normalize();
+            yAxis.Normalize();
 
-            basis = Basis.create_from_axes(xAxis, yAxis, zAxis);
+            basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
 
             origin = eye;
         }
 
-        public Transform translated(Vector3 ofs)
+        public Transform Translated(Vector3 ofs)
         {
             return new Transform(basis, new Vector3
             (
-                origin[0] += basis[0].dot(ofs),
-                origin[1] += basis[1].dot(ofs),
-                origin[2] += basis[2].dot(ofs)
+                origin[0] += basis[0].Dot(ofs),
+                origin[1] += basis[1].Dot(ofs),
+                origin[2] += basis[2].Dot(ofs)
             ));
         }
 
-        public Vector3 xform(Vector3 v)
+        public Vector3 Xform(Vector3 v)
         {
             return new Vector3
             (
-                basis[0].dot(v) + origin.x,
-                basis[1].dot(v) + origin.y,
-                basis[2].dot(v) + origin.z
+                basis[0].Dot(v) + origin.x,
+                basis[1].Dot(v) + origin.y,
+                basis[2].Dot(v) + origin.z
             );
         }
 
-        public Vector3 xform_inv(Vector3 v)
+        public Vector3 XformInv(Vector3 v)
         {
             Vector3 vInv = v - origin;
 
@@ -100,7 +100,7 @@ namespace Godot
 
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
-            this.basis = Basis.create_from_axes(xAxis, yAxis, zAxis);
+            this.basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
             this.origin = origin;
         }
 
@@ -118,7 +118,7 @@ namespace Godot
 
         public static Transform operator *(Transform left, Transform right)
         {
-            left.origin = left.xform(right.origin);
+            left.origin = left.Xform(right.origin);
             left.basis *= right.basis;
             return left;
         }
