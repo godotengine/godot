@@ -1081,9 +1081,9 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 			ConstantDoc &k = c.constants[i];
 			if (k.enumeration != String()) {
-				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
-			} else {
 				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
+			} else {
+				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\">");
 			}
 			_write_string(f, 3, k.description.strip_edges().xml_escape());
 			_write_string(f, 2, "</constant>");
