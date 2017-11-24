@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="KinematicCollision" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
-		Collision data for KinematicBody2D collisions.
+		Collision data for KinematicBody collisions.
 	</brief_description>
 	<description>
 		Contains collision data for KinematicBody collisions. When a [KinematicBody] is moved using [method KinematicBody.move_and_collide], it stops if it detects a collision with another body. If a collision is detected, a KinematicCollision object is returned.
