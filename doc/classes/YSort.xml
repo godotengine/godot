@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="is_sort_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the children nodes are being sorted.
-			</description>
-		</method>
-		<method name="set_sort_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set whether the children nodes are sorted or not. (default true)
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled">

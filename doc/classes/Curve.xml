@@ -43,24 +43,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_bake_resolution" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_min_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_point_left_mode" qualifiers="const">
 			<return type="int" enum="Curve.TangentMode">
 			</return>
@@ -121,30 +103,6 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bake_resolution">
-			<return type="void">
-			</return>
-			<argument index="0" name="resolution" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="max" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_min_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="min" type="float">
 			</argument>
 			<description>
 			</description>

@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the text of the button.
-			</description>
-		</method>
-		<method name="get_underline_mode" qualifiers="const">
-			<return type="int" enum="LinkButton.UnderlineMode">
-			</return>
-			<description>
-				Returns the underline mode for this button.
-			</description>
-		</method>
-		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Sets the text of the button.
-			</description>
-		</method>
-		<method name="set_underline_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="underline_mode" type="int" enum="LinkButton.UnderlineMode">
-			</argument>
-			<description>
-				Sets the underline mode for this button, the argument must be one of the [code]LinkButton[/code] constants (see constants section).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="text" type="String" setter="set_text" getter="get_text">

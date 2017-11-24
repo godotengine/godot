@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_points" qualifiers="const">
-			<return type="PoolVector3Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_points">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector3Array">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="points" type="PoolVector3Array" setter="set_points" getter="get_points">

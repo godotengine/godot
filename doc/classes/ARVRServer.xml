@@ -82,13 +82,6 @@
 				Get the number of trackers currently registered.
 			</description>
 		</method>
-		<method name="get_world_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns our world scale (see ARVROrigin for more information).
-			</description>
-		</method>
 		<method name="set_primary_interface">
 			<return type="void">
 			</return>
@@ -96,15 +89,6 @@
 			</argument>
 			<description>
 				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.
-			</description>
-		</method>
-		<method name="set_world_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="arg0" type="float">
-			</argument>
-			<description>
-				Changing the world scale, see the ARVROrigin documentation for more information.
 			</description>
 		</method>
 	</methods>

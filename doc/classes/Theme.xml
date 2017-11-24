@@ -104,12 +104,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_default_font" qualifiers="const">
-			<return type="Font">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_font" qualifiers="const">
 			<return type="Font">
 			</return>
@@ -248,14 +242,6 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<argument index="2" name="constant" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_default_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
 			</argument>
 			<description>
 			</description>

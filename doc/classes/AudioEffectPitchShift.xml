@@ -12,20 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_pitch_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_pitch_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="rate" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">

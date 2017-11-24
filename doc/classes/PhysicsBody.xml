@@ -20,23 +20,11 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="get_collision_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="bit" type="int">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -57,28 +45,12 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_collision_layer_bit">
 			<return type="void">
 			</return>
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
 			</description>

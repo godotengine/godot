@@ -12,13 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_anchor_detection_is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if achor detection is enabled (AR only).
-			</description>
-		</method>
 		<method name="get_capabilities" qualifiers="const">
 			<return type="int">
 			</return>
@@ -58,52 +51,11 @@
 				While currently not used you can activate additional interfaces, you may wish to do this if you want to track controllers from other platforms. However at this point in time only one interface can render to an HMD.
 			</description>
 		</method>
-		<method name="is_initialized">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if this interface is active.
-			</description>
-		</method>
-		<method name="is_primary">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if this interface is currently the primary interface (the interface responsible for showing the output).
-			</description>
-		</method>
 		<method name="is_stereo">
 			<return type="bool">
 			</return>
 			<description>
 				Returns true if the current output of this interface is in stereo.
-			</description>
-		</method>
-		<method name="set_anchor_detection_is_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Enables anchor detection, this is used on AR interfaces and enables the extra logic that will detect planes, features, objects, etc. and adds/modifies anchor points.
-			</description>
-		</method>
-		<method name="set_is_initialized">
-			<return type="void">
-			</return>
-			<argument index="0" name="initialized" type="bool">
-			</argument>
-			<description>
-				Initialize/uninitialize this interface (same effect as calling initialize/uninitialize).
-			</description>
-		</method>
-		<method name="set_is_primary">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set this interface to the primary interface (unset the old one).
 			</description>
 		</method>
 		<method name="uninitialize">

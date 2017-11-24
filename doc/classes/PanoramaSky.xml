@@ -9,20 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_panorama" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_panorama">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="panorama" type="Texture" setter="set_panorama" getter="get_panorama">

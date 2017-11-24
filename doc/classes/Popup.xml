@@ -11,13 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="is_exclusive" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the popup will hide other popups when shown on the screen.
-			</description>
-		</method>
 		<method name="popup">
 			<return type="void">
 			</return>
@@ -52,15 +45,6 @@
 			</argument>
 			<description>
 				Popup (show the control in modal form) in the center of the screen, scaled at a ratio of size of the screen.
-			</description>
-		</method>
-		<method name="set_exclusive">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Make the popup hide other popups when shown on the screen.
 			</description>
 		</method>
 	</methods>

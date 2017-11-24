@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="is_percent_visible" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_percent_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="visible" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible">

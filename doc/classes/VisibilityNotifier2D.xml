@@ -11,27 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Returns the bounding rectangle of the VisibilityNotifier2D.
-			</description>
-		</method>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				If [code]true[/code] the bounding rectangle is on the screen.
-			</description>
-		</method>
-		<method name="set_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<description>
-				Set the visibility bounding rectangle of the VisibilityNotifier2D.
 			</description>
 		</method>
 	</methods>

@@ -85,13 +85,6 @@
 				Returns the speed that has been set from editor GUI or [method set_repeat].
 			</description>
 		</method>
-		<method name="get_tween_process_mode" qualifiers="const">
-			<return type="int" enum="Tween.TweenProcessMode">
-			</return>
-			<description>
-				Returns the process mode that has been set from editor GUI or [method set_tween_process_mode]
-			</description>
-		</method>
 		<method name="interpolate_callback">
 			<return type="bool">
 			</return>
@@ -288,15 +281,6 @@
 			</argument>
 			<description>
 				Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
-			</description>
-		</method>
-		<method name="set_tween_process_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Tween.TweenProcessMode">
-			</argument>
-			<description>
-				Set whether the Tween uses [code]_process[/code] or [code]_physics_process[/code] (accepts TWEEN_PROCESS_IDLE and TWEEN_PROCESS_PHYSICS constants, respectively).
 			</description>
 		</method>
 		<method name="start">

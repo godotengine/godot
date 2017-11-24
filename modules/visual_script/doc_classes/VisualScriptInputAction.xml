@@ -9,34 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_action_mode" qualifiers="const">
-			<return type="int" enum="VisualScriptInputAction.Mode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_action_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_action_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="VisualScriptInputAction.Mode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_action_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="action" type="String" setter="set_action_name" getter="get_action_name">

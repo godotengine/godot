@@ -11,34 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_shadow_detail" qualifiers="const">
-			<return type="int" enum="OmniLight.ShadowDetail">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shadow_mode" qualifiers="const">
-			<return type="int" enum="OmniLight.ShadowMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_detail">
-			<return type="void">
-			</return>
-			<argument index="0" name="detail" type="int" enum="OmniLight.ShadowDetail">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="OmniLight.ShadowMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param">

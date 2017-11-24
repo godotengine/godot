@@ -12,22 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_segments" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-				Return the array of segments.
-			</description>
-		</method>
-		<method name="set_segments">
-			<return type="void">
-			</return>
-			<argument index="0" name="segments" type="PoolVector2Array">
-			</argument>
-			<description>
-				Set the array of segments.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="segments" type="PoolVector2Array" setter="set_segments" getter="get_segments">

@@ -11,62 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_cutoff" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_db" qualifiers="const">
-			<return type="int" enum="AudioEffectFilter.FilterDB">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_gain" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_resonance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_cutoff">
-			<return type="void">
-			</return>
-			<argument index="0" name="freq" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int" enum="AudioEffectFilter.FilterDB">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_gain">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_resonance">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">

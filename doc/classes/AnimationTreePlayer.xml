@@ -189,13 +189,6 @@
 				Disconnects nodes connected to [code]id[/code] at the specified input slot.
 			</description>
 		</method>
-		<method name="get_animation_process_mode" qualifiers="const">
-			<return type="int" enum="AnimationTreePlayer.AnimationProcessMode">
-			</return>
-			<description>
-				Returns playback process mode of this AnimationTreePlayer.
-			</description>
-		</method>
 		<method name="get_base_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
@@ -478,15 +471,6 @@
 			</argument>
 			<description>
 				Sets whether this AnimationTreePlayer is active. AnimationTreePlayer will start processing if set to active.
-			</description>
-		</method>
-		<method name="set_animation_process_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AnimationTreePlayer.AnimationProcessMode">
-			</argument>
-			<description>
-				Sets process mode (ANIMATION_PROCESS_*) of this AnimationTreePlayer.
 			</description>
 		</method>
 		<method name="set_base_path">

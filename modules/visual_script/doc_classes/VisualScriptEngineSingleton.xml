@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_singleton">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_singleton">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="constant" type="String" setter="set_singleton" getter="get_singleton">

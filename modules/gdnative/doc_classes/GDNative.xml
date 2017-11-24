@@ -21,23 +21,9 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_library">
-			<return type="GDNativeLibrary">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="initialize">
 			<return type="bool">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_library">
-			<return type="void">
-			</return>
-			<argument index="0" name="library" type="GDNativeLibrary">
-			</argument>
 			<description>
 			</description>
 		</method>

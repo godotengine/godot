@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_custom_step" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_custom_step">
-			<return type="void">
-			</return>
-			<argument index="0" name="step" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step">

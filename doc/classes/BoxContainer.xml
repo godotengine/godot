@@ -20,22 +20,6 @@
 				Adds a control to the box as a spacer. If [code]true[/code], [i]begin[/i] will insert the spacer control in front of other children.
 			</description>
 		</method>
-		<method name="get_alignment" qualifiers="const">
-			<return type="int" enum="BoxContainer.AlignMode">
-			</return>
-			<description>
-				Return the alignment of children in the container.
-			</description>
-		</method>
-		<method name="set_alignment">
-			<return type="void">
-			</return>
-			<argument index="0" name="alignment" type="int" enum="BoxContainer.AlignMode">
-			</argument>
-			<description>
-				Set the alignment of children in the container(Must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode">

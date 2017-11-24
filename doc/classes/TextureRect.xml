@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_stretch_mode" qualifiers="const">
-			<return type="int" enum="TextureRect.StretchMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="has_expand" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stretch_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="stretch_mode" type="int" enum="TextureRect.StretchMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand">

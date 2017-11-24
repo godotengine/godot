@@ -313,13 +313,6 @@
 				Get the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
-		<method name="get_light_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Get this item's light mask number.
-			</description>
-		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -327,39 +320,11 @@
 				Get the mouse position relative to this item's position.
 			</description>
 		</method>
-		<method name="get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-				Get the material of this item.
-			</description>
-		</method>
-		<method name="get_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Get the modulate of the CanvasItem, which affects children items too.
-			</description>
-		</method>
-		<method name="get_self_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Get the self-modulate of the CanvasItem.
-			</description>
-		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Get the transform matrix of this item.
-			</description>
-		</method>
-		<method name="get_use_parent_material" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether this item uses its parent's material.
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
@@ -390,13 +355,6 @@
 				Hide the CanvasItem currently visible.
 			</description>
 		</method>
-		<method name="is_draw_behind_parent_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the item is drawn behind its parent.
-			</description>
-		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -414,13 +372,6 @@
 			<return type="bool">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="is_visible" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if this CanvasItem is visible. It may be invisible because itself or a parent canvas item is hidden.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -454,42 +405,6 @@
 				Set as top level. This means that it will not inherit transform from parent canvas items.
 			</description>
 		</method>
-		<method name="set_draw_behind_parent">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether the canvas item is drawn behind its parent.
-			</description>
-		</method>
-		<method name="set_light_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="light_mask" type="int">
-			</argument>
-			<description>
-				Set the ligtht mask number of this item.
-			</description>
-		</method>
-		<method name="set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
-			<description>
-				Set the material of this item.
-			</description>
-		</method>
-		<method name="set_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="modulate" type="Color">
-			</argument>
-			<description>
-				Set the modulate of the CanvasItem. This [i]affects[/i] the modulation of children items.
-			</description>
-		</method>
 		<method name="set_notify_local_transform">
 			<return type="void">
 			</return>
@@ -504,34 +419,6 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_self_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="self_modulate" type="Color">
-			</argument>
-			<description>
-				Set the self-modulate of the CanvasItem. This does not affect the modulation of children items.
-			</description>
-		</method>
-		<method name="set_use_parent_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether or not this item should use its parent's material.
-			</description>
-		</method>
-		<method name="set_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="visible" type="bool">
-			</argument>
-			<description>
-				Set whether this item should be visible or not.
-				Note that a hidden CanvasItem will make all children hidden too, so no matter what is set here this item won't be shown if its parent or grandparents nodes are hidden.
 			</description>
 		</method>
 		<method name="show">

@@ -12,34 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_axis" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_axis_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_axis">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_axis_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis_value" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis">

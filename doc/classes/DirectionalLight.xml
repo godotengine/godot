@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_shadow_depth_range" qualifiers="const">
-			<return type="int" enum="DirectionalLight.ShadowDepthRange">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shadow_mode" qualifiers="const">
-			<return type="int" enum="DirectionalLight.ShadowMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_blend_splits_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_splits">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_depth_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowDepthRange">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param">

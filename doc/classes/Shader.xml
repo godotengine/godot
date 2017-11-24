@@ -11,12 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_code" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_default_texture_param" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -35,14 +29,6 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_code">
-			<return type="void">
-			</return>
-			<argument index="0" name="code" type="String">
 			</argument>
 			<description>
 			</description>

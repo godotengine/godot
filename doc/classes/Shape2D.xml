@@ -75,23 +75,6 @@
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
-		<method name="get_custom_solver_bias" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the custom solver bias.
-			</description>
-		</method>
-		<method name="set_custom_solver_bias">
-			<return type="void">
-			</return>
-			<argument index="0" name="bias" type="float">
-			</argument>
-			<description>
-				Use a custom solver bias. No need to change this unless you really know what you are doing.
-				The solver bias is a factor controlling how much two objects "rebound" off each other, when colliding, to avoid them getting into each other because of numerical imprecision.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias">

@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_environment" qualifiers="const">
-			<return type="Environment">
-			</return>
-			<description>
-				Return the [Environment] currently bound.
-			</description>
-		</method>
-		<method name="set_environment">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="Environment">
-			</argument>
-			<description>
-				Set the currently bound [Environment] to the one specified.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">

@@ -12,13 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_points" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-				Returns a list of points in either clockwise or counter clockwise order, forming a convex polygon.
-			</description>
-		</method>
 		<method name="set_point_cloud">
 			<return type="void">
 			</return>
@@ -26,15 +19,6 @@
 			</argument>
 			<description>
 				Currently, this method does nothing.
-			</description>
-		</method>
-		<method name="set_points">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<description>
-				Sets a list of points in either clockwise or counter clockwise order, forming a convex polygon.
 			</description>
 		</method>
 	</methods>

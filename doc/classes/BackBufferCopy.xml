@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_copy_mode" qualifiers="const">
-			<return type="int" enum="BackBufferCopy.CopyMode">
-			</return>
-			<description>
-				Return the copy mode currently applied to the BackBufferCopy. See [code]COPY_MODE_*[/code] constants.
-			</description>
-		</method>
-		<method name="get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Return the area covered by the BackBufferCopy.
-			</description>
-		</method>
-		<method name="set_copy_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="copy_mode" type="int" enum="BackBufferCopy.CopyMode">
-			</argument>
-			<description>
-				Set the copy mode of the BackBufferCopy. See [code]COPY_MODE_*[/code] constants.
-			</description>
-		</method>
-		<method name="set_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<description>
-				Defines the area covered by the BackBufferCopy.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" enum="BackBufferCopy.CopyMode">

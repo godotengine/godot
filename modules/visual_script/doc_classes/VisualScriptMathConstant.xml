@@ -15,20 +15,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_math_constant">
-			<return type="int" enum="VisualScriptMathConstant.MathConstant">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_math_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="which" type="int" enum="VisualScriptMathConstant.MathConstant">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="constant" type="int" setter="set_math_constant" getter="get_math_constant" enum="VisualScriptMathConstant.MathConstant">

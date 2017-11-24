@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Gets the canvas tint color
-			</description>
-		</method>
-		<method name="set_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-				Sets the canvas tint color
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color">

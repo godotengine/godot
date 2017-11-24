@@ -18,36 +18,6 @@
 				Return the close [TextureButton].
 			</description>
 		</method>
-		<method name="get_resizable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_title" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Return the title of the window.
-			</description>
-		</method>
-		<method name="set_resizable">
-			<return type="void">
-			</return>
-			<argument index="0" name="resizable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
-			<description>
-				Set the title of the window.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable">

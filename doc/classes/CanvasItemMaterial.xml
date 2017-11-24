@@ -9,34 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_blend_mode" qualifiers="const">
-			<return type="int" enum="CanvasItemMaterial.BlendMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_light_mode" qualifiers="const">
-			<return type="int" enum="CanvasItemMaterial.LightMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="blend_mode" type="int" enum="CanvasItemMaterial.BlendMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_light_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="light_mode" type="int" enum="CanvasItemMaterial.LightMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode">

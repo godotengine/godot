@@ -280,13 +280,6 @@
 				Return the relative path from the current node to the specified node in "node" argument. Both nodes must be in the same scene, or else the function will fail.
 			</description>
 		</method>
-		<method name="get_pause_mode" qualifiers="const">
-			<return type="int" enum="Node.PauseMode">
-			</return>
-			<description>
-				Return the pause mode (PAUSE_MODE_*) of this Node.
-			</description>
-		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
 			<return type="float">
 			</return>
@@ -351,12 +344,6 @@
 			</argument>
 			<description>
 				Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
-			</description>
-		</method>
-		<method name="is_displayed_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="is_greater_than" qualifiers="const">
@@ -649,14 +636,6 @@
 				Remotely change property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
-		<method name="set_display_folded">
-			<return type="void">
-			</return>
-			<argument index="0" name="fold" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_filename">
 			<return type="void">
 			</return>
@@ -692,15 +671,6 @@
 			</argument>
 			<description>
 				Set the node owner. A node can have any other node as owner (as long as a valid parent, grandparent, etc ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows to create complex SceneTrees, with instancing and subinstancing.
-			</description>
-		</method>
-		<method name="set_pause_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Node.PauseMode">
-			</argument>
-			<description>
-				Set pause mode (PAUSE_MODE_*) of this Node.
 			</description>
 		</method>
 		<method name="set_physics_process">

@@ -12,20 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="volume" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">

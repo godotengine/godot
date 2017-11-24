@@ -91,13 +91,6 @@
 				Return the text of the item at index "idx".
 			</description>
 		</method>
-		<method name="get_selected" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the current item index
-			</description>
-		</method>
 		<method name="get_selected_id" qualifiers="const">
 			<return type="int">
 			</return>

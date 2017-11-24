@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_a" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the first point's position.
-			</description>
-		</method>
-		<method name="get_b" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the second point's position.
-			</description>
-		</method>
-		<method name="set_a">
-			<return type="void">
-			</return>
-			<argument index="0" name="a" type="Vector2">
-			</argument>
-			<description>
-				Set the first point's position.
-			</description>
-		</method>
-		<method name="set_b">
-			<return type="void">
-			</return>
-			<argument index="0" name="b" type="Vector2">
-			</argument>
-			<description>
-				Set the second point's position.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="a" type="Vector2" setter="set_a" getter="get_a">

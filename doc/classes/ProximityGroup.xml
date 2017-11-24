@@ -21,24 +21,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_grid_radius" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_dispatch_mode">
 			<return type="void">
 			</return>
 			<argument index="0" name="mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_grid_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="Vector3">
 			</argument>
 			<description>
 			</description>

@@ -15,20 +15,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_preload" qualifiers="const">
-			<return type="Resource">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_preload">
-			<return type="void">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="resource" type="Resource" setter="set_preload" getter="get_preload">

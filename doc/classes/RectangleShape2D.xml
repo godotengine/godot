@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_extents" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the half extents, the actual width and height of this shape is twice the half extents.
-			</description>
-		</method>
-		<method name="set_extents">
-			<return type="void">
-			</return>
-			<argument index="0" name="extents" type="Vector2">
-			</argument>
-			<description>
-				Set the half extents, the actual width and height of this shape is twice the half extents.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="extents" type="Vector2" setter="set_extents" getter="get_extents">

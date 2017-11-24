@@ -24,12 +24,6 @@
 				Returns the CubeMap's height.
 			</description>
 		</method>
-		<method name="get_lossy_storage_quality" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_side" qualifiers="const">
 			<return type="Image">
 			</return>
@@ -37,12 +31,6 @@
 			</argument>
 			<description>
 				Returns an [Image] for a side of the CubeMap using one of the [code]SIDE_*[/code] constants or an integer 0-5.
-			</description>
-		</method>
-		<method name="get_storage" qualifiers="const">
-			<return type="int" enum="CubeMap.Storage">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="get_width" qualifiers="const">
@@ -60,14 +48,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_lossy_storage_quality">
-			<return type="void">
-			</return>
-			<argument index="0" name="quality" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_side">
 			<return type="void">
 			</return>
@@ -77,14 +57,6 @@
 			</argument>
 			<description>
 				Sets an [Image] for a side of the CubeMap using one of the [code]SIDE_*[/code] constants or an integer 0-5.
-			</description>
-		</method>
-		<method name="set_storage">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="CubeMap.Storage">
-			</argument>
-			<description>
 			</description>
 		</method>
 	</methods>

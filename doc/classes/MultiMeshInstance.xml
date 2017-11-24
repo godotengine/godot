@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_multimesh" qualifiers="const">
-			<return type="MultiMesh">
-			</return>
-			<description>
-				Return the [MultiMesh] that is used for instancing.
-			</description>
-		</method>
-		<method name="set_multimesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="multimesh" type="MultiMesh">
-			</argument>
-			<description>
-				Set the [MultiMesh] to be instanced.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">

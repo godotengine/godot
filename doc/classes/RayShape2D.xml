@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the length of the ray.
-			</description>
-		</method>
-		<method name="set_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="length" type="float">
-			</argument>
-			<description>
-				Set the length of the ray.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length">

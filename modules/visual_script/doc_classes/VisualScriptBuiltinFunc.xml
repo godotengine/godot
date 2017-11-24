@@ -12,20 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_func">
-			<return type="int" enum="VisualScriptBuiltinFunc.BuiltinFunc">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_func">
-			<return type="void">
-			</return>
-			<argument index="0" name="which" type="int" enum="VisualScriptBuiltinFunc.BuiltinFunc">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="function" type="int" setter="set_func" getter="get_func" enum="VisualScriptBuiltinFunc.BuiltinFunc">

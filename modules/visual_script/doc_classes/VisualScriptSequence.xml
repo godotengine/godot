@@ -17,20 +17,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_steps" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_steps">
-			<return type="void">
-			</return>
-			<argument index="0" name="steps" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="steps" type="int" setter="set_steps" getter="get_steps">

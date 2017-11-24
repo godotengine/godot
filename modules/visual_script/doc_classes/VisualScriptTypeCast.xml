@@ -9,34 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_base_script" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_base_type" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_script">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">

@@ -9,20 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_plane" qualifiers="const">
-			<return type="Plane">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_plane">
-			<return type="void">
-			</return>
-			<argument index="0" name="plane" type="Plane">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="plane" type="Plane" setter="set_plane" getter="get_plane">

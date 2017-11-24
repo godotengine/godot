@@ -9,37 +9,9 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_class_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_library" qualifiers="const">
-			<return type="GDNativeLibrary">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="new" qualifiers="vararg">
 			<return type="Object">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_class_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="class_name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_library">
-			<return type="void">
-			</return>
-			<argument index="0" name="library" type="GDNativeLibrary">
-			</argument>
 			<description>
 			</description>
 		</method>

@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_columns" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the number of columns in this container
-			</description>
-		</method>
-		<method name="set_columns">
-			<return type="void">
-			</return>
-			<argument index="0" name="columns" type="int">
-			</argument>
-			<description>
-				Sets the numbers of columns in the container, then reorder its children to accommodate the new layout
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">

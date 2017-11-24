@@ -11,23 +11,9 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
 			<description>
 			</description>
 		</method>

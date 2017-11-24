@@ -26,13 +26,6 @@
 				Return the response body length.
 			</description>
 		</method>
-		<method name="get_body_size_limit" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return current body size limit.
-			</description>
-		</method>
 		<method name="get_download_file" qualifiers="const">
 			<return type="String">
 			</return>
@@ -54,20 +47,6 @@
 				Return the current status of the underlying [HTTPClient].
 			</description>
 		</method>
-		<method name="get_max_redirects" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the maximum amount of redirects that will be followed.
-			</description>
-		</method>
-		<method name="is_using_threads" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Whether this request is using threads.
-			</description>
-		</method>
 		<method name="request">
 			<return type="int" enum="Error">
 			</return>
@@ -84,15 +63,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_body_size_limit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bytes" type="int">
-			</argument>
-			<description>
-				Set the response body size limit.
-			</description>
-		</method>
 		<method name="set_download_file">
 			<return type="void">
 			</return>
@@ -100,24 +70,6 @@
 			</argument>
 			<description>
 				Set the file to download into. Outputs the response body into the file.
-			</description>
-		</method>
-		<method name="set_max_redirects">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Set the maximum amount of redirects the request will follow.
-			</description>
-		</method>
-		<method name="set_use_threads">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Make this HTTPRequest use threads.
 			</description>
 		</method>
 	</methods>

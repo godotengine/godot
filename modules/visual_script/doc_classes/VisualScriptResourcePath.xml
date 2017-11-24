@@ -9,20 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_resource_path">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_resource_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="path" type="String" setter="set_resource_path" getter="get_resource_path">
