@@ -1392,6 +1392,14 @@ void EditorNode::_property_editor_back() {
 		_edit_current();
 }
 
+void EditorNode::_menu_collapseall() {
+	property_editor->collapse_all_parent_nodes();
+}
+
+void EditorNode::_menu_expandall() {
+	property_editor->expand_all_parent_nodes();
+}
+
 void EditorNode::_save_default_environment() {
 
 	Ref<Environment> fallback = get_tree()->get_root()->get_world()->get_fallback_environment();
@@ -1466,6 +1474,7 @@ void EditorNode::_edit_current() {
 	object_menu->set_disabled(true);
 
 	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
+	bool expandall = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
@@ -1537,6 +1546,10 @@ void EditorNode::_edit_current() {
 		property_editor->set_enable_capitalize_paths(capitalize);
 	}
 
+	if (property_editor->is_expand_all_properties_enabled() != expandall) {
+		property_editor->set_use_folding(expandall == false);
+	}
+
 	/* Take care of PLUGIN EDITOR */
 
 	EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
@@ -1596,6 +1609,9 @@ void EditorNode::_edit_current() {
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand all properties")), EXPAND_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse all properties")), COLLAPSE_ALL);
+	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Params")), OBJECT_PASTE_PARAMS);
 	p->add_separator();
@@ -2224,6 +2240,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			_set_editing_top_editors(NULL);
 			_set_editing_top_editors(current);
+
+		} break;
+		case COLLAPSE_ALL: {
+			_menu_collapseall();
+
+		} break;
+		case EXPAND_ALL: {
+			_menu_expandall();
 
 		} break;
 		case RUN_PLAY: {
@@ -5376,11 +5400,11 @@ EditorNode::EditorNode() {
 	property_editor = memnew(PropertyEditor);
 	property_editor->set_autoclear(true);
 	property_editor->set_show_categories(true);
-	property_editor->set_use_folding(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	property_editor->set_use_doc_hints(true);
 	property_editor->set_hide_script(false);
 	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	property_editor->set_use_folding(bool(EDITOR_DEF("interface/editor/expand_all_properties", false)) == false);
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
