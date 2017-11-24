@@ -310,7 +310,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed", "OptionButton", sb_optbutton_pressed);
 	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
 	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
-	theme->set_stylebox("focus", "OptionButton", sb_button_focus);
+	theme->set_stylebox("focus", "OptionButton", sb_optbutton_focus);
 
 	theme->set_icon("arrow", "OptionButton", make_icon(option_arrow_png));
 
@@ -328,8 +328,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("normal", "MenuButton", sb_button_normal);
 	theme->set_stylebox("pressed", "MenuButton", sb_button_pressed);
-	theme->set_stylebox("hover", "MenuButton", sb_button_pressed);
-	theme->set_stylebox("disabled", "MenuButton", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("hover", "MenuButton", sb_button_hover);
+	theme->set_stylebox("disabled", "MenuButton", sb_button_disabled);
 	theme->set_stylebox("focus", "MenuButton", sb_button_focus);
 
 	theme->set_font("font", "MenuButton", default_font);
