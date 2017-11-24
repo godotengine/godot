@@ -143,6 +143,7 @@ private:
 	void _recent_selected(int p_idx);
 
 	void _item_selected(int p_item);
+	void _items_clear_selection();
 	void _item_dc_selected(int p_item);
 
 	void _select_drive(int p_idx);
@@ -171,6 +172,8 @@ private:
 	void _request_single_thumbnail(const String &p_path);
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
+
+	bool _is_open_should_be_disabled();
 
 protected:
 	void _notification(int p_what);
