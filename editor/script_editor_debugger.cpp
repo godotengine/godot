@@ -45,6 +45,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
+#include "ustring.h"
 
 class ScriptEditorDebuggerVariables : public Object {
 
@@ -642,7 +643,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 							v /= 1024.0;
 						}
 						tt += " bytes";
-						vs = rtos(v) + " " + unit;
+						vs = String::num(v, 2) + " " + unit;
 					} break;
 					case Performance::MONITOR_TYPE_TIME: {
 						tt += " seconds";
