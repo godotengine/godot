@@ -48,6 +48,9 @@ class CollisionShape : public Spatial {
 	void resource_changed(RES res);
 	bool disabled;
 
+	real_t custom_bias;
+	int custom_priority;
+
 	void _create_debug_shape();
 
 protected:
@@ -62,6 +65,12 @@ public:
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
+
+	void set_custom_bias(real_t p_bias);
+	real_t get_custom_bias() const;
+
+	void set_custom_priority(int p_bias);
+	int get_custom_priority() const;
 
 	String get_configuration_warning() const;
 

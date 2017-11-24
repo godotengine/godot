@@ -66,7 +66,16 @@ private:
 		ShapeSW *shape;
 		bool disabled;
 
-		Shape() { disabled = false; }
+		// only used for rigid bodies
+		real_t custom_bias;
+		int custom_priority;
+
+		Shape() {
+
+			disabled = false;
+			custom_bias = 0;
+			custom_priority = 0;
+		}
 	};
 
 	Vector<Shape> shapes;
@@ -135,6 +144,12 @@ public:
 
 	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes[p_idx].disabled = p_enable; }
 	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
+
+	_FORCE_INLINE_ void set_shape_custom_bias(int p_idx, real_t p_bias) { shapes[p_idx].custom_bias = p_bias; }
+	_FORCE_INLINE_ real_t get_shape_custom_bias(int p_idx) const { return shapes[p_idx].custom_bias; }
+
+	_FORCE_INLINE_ void set_shape_custom_priority(int p_idx, int p_priority) { shapes[p_idx].custom_priority = p_priority; }
+	_FORCE_INLINE_ int get_shape_custom_priority(int p_idx) const { return shapes[p_idx].custom_priority; }
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }

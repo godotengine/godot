@@ -85,7 +85,6 @@ const Map<ShapeOwnerSW *, int> &ShapeSW::get_owners() const {
 
 ShapeSW::ShapeSW() {
 
-	custom_bias = 0;
 	configured = false;
 }
 
@@ -1023,7 +1022,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 	Vector3 n = p_normal;
 
 	/** TEST FACE AS SUPPORT **/
-	if (normal.dot(n) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
+	if (Math::abs(normal.dot(n)) > _FACE_IS_VALID_SUPPORT_THRESHOLD) {
 
 		r_amount = 3;
 		for (int i = 0; i < 3; i++) {

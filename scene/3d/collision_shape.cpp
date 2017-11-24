@@ -76,6 +76,8 @@ void CollisionShape::_notification(int p_what) {
 				}
 				parent->shape_owner_set_transform(owner_id, get_transform());
 				parent->shape_owner_set_disabled(owner_id, disabled);
+				parent->shape_owner_set_custom_bias(owner_id, custom_bias);
+				parent->shape_owner_set_custom_priority(owner_id, custom_priority);
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -125,11 +127,17 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape::get_shape);
 	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape::is_disabled);
+	ClassDB::bind_method(D_METHOD("set_custom_bias", "custom_bias"), &CollisionShape::set_custom_bias);
+	ClassDB::bind_method(D_METHOD("get_custom_bias"), &CollisionShape::get_custom_bias);
+	ClassDB::bind_method(D_METHOD("set_custom_priority", "custom_priority"), &CollisionShape::set_custom_priority);
+	ClassDB::bind_method(D_METHOD("get_custom_priority"), &CollisionShape::get_custom_priority);
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "custom_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_custom_bias", "get_custom_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_priority", PROPERTY_HINT_RANGE, "0,8,1"), "set_custom_priority", "get_custom_priority");
 }
 
 void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
@@ -169,10 +177,38 @@ bool CollisionShape::is_disabled() const {
 	return disabled;
 }
 
+void CollisionShape::set_custom_bias(real_t p_bias) {
+
+	custom_bias = MIN(MAX(p_bias, 0.0), 1.0);
+	if (parent) {
+		parent->shape_owner_set_custom_bias(owner_id, custom_bias);
+	}
+}
+
+real_t CollisionShape::get_custom_bias() const {
+
+	return custom_bias;
+}
+
+void CollisionShape::set_custom_priority(int p_priority) {
+
+	custom_priority = MIN(MAX(p_priority, 0), 8);
+	if (parent) {
+		parent->shape_owner_set_custom_priority(owner_id, custom_priority);
+	}
+}
+
+int CollisionShape::get_custom_priority() const {
+
+	return custom_priority;
+}
+
 CollisionShape::CollisionShape() {
 
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
+	custom_bias = 0;
+	custom_priority = 0;
 	debug_shape = NULL;
 	parent = NULL;
 	owner_id = 0;
