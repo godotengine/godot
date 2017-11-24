@@ -1410,7 +1410,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	f->store_line("");
 
-	f->store_line("[deps]");
+	f->store_line("[deps]\n");
 
 	if (gen_files.size()) {
 		Array genf;
@@ -1424,7 +1424,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		f->store_line("");
 	}
 
-	f->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
+	f->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"\n");
 
 	f->store_line("[params]");
 	f->store_line("");
