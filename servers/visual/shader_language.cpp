@@ -1357,7 +1357,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "atan2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
 	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
