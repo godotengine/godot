@@ -156,7 +156,6 @@ public:
 
 	void select(int p_idx, bool p_single = true);
 	void unselect(int p_idx);
-	void unselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
 
