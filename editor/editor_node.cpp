@@ -357,8 +357,6 @@ void EditorNode::_notification(int p_what) {
 		editor_history_menu->set_icon(gui_base->get_icon("History", "EditorIcons"));
 
 		search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
-		collapseall_button->set_icon(gui_base->get_icon("CollapseAll", "EditorIcons"));
-		expandall_button->set_icon(gui_base->get_icon("ExpandAll", "EditorIcons"));
 		object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
 		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); dont have access to that node. needs to become a class property
 		update_menu->set_icon(gui_base->get_icon("Collapse", "EditorIcons"));
@@ -1466,8 +1464,6 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit(NULL);
 		node_dock->set_node(NULL);
-		collapseall_button->set_disabled(true);
-		expandall_button->set_disabled(true);
 		object_menu->set_disabled(true);
 
 		_display_top_editors(false);
@@ -1475,11 +1471,10 @@ void EditorNode::_edit_current() {
 		return;
 	}
 
-	collapseall_button->set_disabled(true);
-	expandall_button->set_disabled(true);
 	object_menu->set_disabled(true);
 
 	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
+	bool expandall = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
@@ -1491,8 +1486,6 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit(current_res);
 		node_dock->set_node(NULL);
-		collapseall_button->set_disabled(false);
-		expandall_button->set_disabled(false);
 		object_menu->set_disabled(false);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
@@ -1553,6 +1546,10 @@ void EditorNode::_edit_current() {
 		property_editor->set_enable_capitalize_paths(capitalize);
 	}
 
+	if (property_editor->is_expand_all_properties_enabled() != expandall) {
+		property_editor->set_expand_all_properties(expandall);
+	}
+
 	/* Take care of PLUGIN EDITOR */
 
 	EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
@@ -1607,13 +1604,14 @@ void EditorNode::_edit_current() {
 		_hide_top_editors();
 	}
 
-	collapseall_button->set_disabled(false);
-	expandall_button->set_disabled(false);
 	object_menu->set_disabled(false);
 
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand all properties")), EXPAND_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse all properties")), COLLAPSE_ALL);
+	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Params")), OBJECT_PASTE_PARAMS);
 	p->add_separator();
@@ -2242,6 +2240,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			_set_editing_top_editors(NULL);
 			_set_editing_top_editors(current);
+
+		} break;
+		case COLLAPSE_ALL: {
+			_menu_collapseall();
+
+		} break;
+		case EXPAND_ALL: {
+			_menu_expandall();
 
 		} break;
 		case RUN_PLAY: {
@@ -4544,8 +4550,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_resource_selected", &EditorNode::_resource_selected, DEFVAL(""));
 	ClassDB::bind_method("_property_editor_forward", &EditorNode::_property_editor_forward);
 	ClassDB::bind_method("_property_editor_back", &EditorNode::_property_editor_back);
-	ClassDB::bind_method("_menu_collapseall", &EditorNode::_menu_collapseall);
-	ClassDB::bind_method("_menu_expandall", &EditorNode::_menu_expandall);
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
@@ -5358,20 +5362,6 @@ EditorNode::EditorNode() {
 	prop_editor_hb->add_child(search_button);
 	search_button->connect("toggled", this, "_toggle_search_bar");
 
-	collapseall_button = memnew(ToolButton);
-	collapseall_button->set_icon(gui_base->get_icon("Back", "EditorIcons"));
-	collapseall_button->set_flat(true);
-	collapseall_button->set_tooltip(TTR("Collapse all properties."));
-	collapseall_button->set_disabled(true);
-	prop_editor_hb->add_child(collapseall_button);
-
-	expandall_button = memnew(ToolButton);
-	expandall_button->set_icon(gui_base->get_icon("Back", "EditorIcons"));
-	expandall_button->set_flat(true);
-	expandall_button->set_tooltip(TTR("Expand all properties."));
-	expandall_button->set_disabled(true);
-	prop_editor_hb->add_child(expandall_button);
-
 	object_menu = memnew(MenuButton);
 	object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
 	prop_editor_hb->add_child(object_menu);
@@ -5415,6 +5405,7 @@ EditorNode::EditorNode() {
 	property_editor->set_use_doc_hints(true);
 	property_editor->set_hide_script(false);
 	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	property_editor->set_expand_all_properties(bool(EDITOR_DEF("interface/editor/expand_all_properties", false)));
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
@@ -5545,9 +5536,6 @@ EditorNode::EditorNode() {
 
 	property_forward->connect("pressed", this, "_property_editor_forward");
 	property_back->connect("pressed", this, "_property_editor_back");
-
-	collapseall_button->connect("pressed", this, "_menu_collapseall");
-	expandall_button->connect("pressed", this, "_menu_expandall");
 
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	object_menu->get_popup()->connect("id_pressed", this, "_menu_option");

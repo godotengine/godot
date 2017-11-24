@@ -153,6 +153,9 @@ private:
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
 
+		COLLAPSE_ALL,
+		EXPAND_ALL,
+
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_NATIVE,
@@ -242,8 +245,6 @@ private:
 	PopupMenu *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
-	ToolButton *collapseall_button;
-	ToolButton *expandall_button;
 	MenuButton *object_menu;
 	ToolButton *play_button;
 	MenuButton *native_play_button;

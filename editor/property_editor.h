@@ -205,11 +205,13 @@ class PropertyEditor : public Control {
 	bool property_selectable;
 
 	bool updating_folding;
+	bool expandall_forced;
 
 	enum FOLDING_BEHAVIOUR {
 		FB_UNDEFINED,
 		FB_COLLAPSEALL,
-		FB_EXPANDALL
+		FB_EXPANDALL,
+		FB_EXPANDALL_FORCE
 	};
 	FOLDING_BEHAVIOUR folding_behaviour;
 
@@ -311,6 +313,10 @@ public:
 	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
+
+	bool is_expand_all_properties_enabled() const;
+	void set_expand_all_properties(bool p_expand);
+
 	void collapse_all_parent_nodes();
 	void expand_all_parent_nodes();
 	PropertyEditor();

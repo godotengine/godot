@@ -2668,10 +2668,12 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		if (use_folding) {
 			if (!obj->editor_is_section_unfolded(p_path)) {
 				updating_folding = true;
-				if (folding_behaviour == FB_COLLAPSEALL || folding_behaviour == FB_UNDEFINED)
+				if (folding_behaviour == FB_COLLAPSEALL)
 					item->set_collapsed(true);
-				else
+				else if (folding_behaviour == FB_EXPANDALL || expandall_forced == true)
 					item->set_collapsed(false);
+				else
+					item->set_collapsed(true);
 				updating_folding = false;
 			}
 			item->set_metadata(0, p_path);
@@ -4210,6 +4212,17 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 	update_tree();
 }
 
+bool PropertyEditor::is_expand_all_properties_enabled() const {
+
+	return expandall_forced;
+}
+
+void PropertyEditor::set_expand_all_properties(bool p_expand) {
+
+	expandall_forced = p_expand;
+	update_tree_pending = true;
+}
+
 void PropertyEditor::set_use_folding(bool p_enable) {
 
 	use_folding = p_enable;
@@ -4303,6 +4316,7 @@ PropertyEditor::PropertyEditor() {
 	property_selectable = false;
 	show_type_icons = false; // maybe one day will return.
 	folding_behaviour = FB_UNDEFINED;
+	expandall_forced = false;
 }
 
 PropertyEditor::~PropertyEditor() {
