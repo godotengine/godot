@@ -192,6 +192,19 @@ static const char *android_perms[] = {
 	NULL
 };
 
+struct LauncherIcon {
+	char *option_id;
+	char *export_path;
+};
+
+static const LauncherIcon launcher_icons[] = {
+	{ "launcher_icons/xxxhdpi_192x192", "res/drawable-xxxhdpi-v4/icon.png" },
+	{ "launcher_icons/xxhdpi_144x144", "res/drawable-xxhdpi-v4/icon.png" },
+	{ "launcher_icons/xhdpi_96x96", "res/drawable-xhdpi-v4/icon.png" },
+	{ "launcher_icons/hdpi_72x72", "res/drawable-hdpi-v4/icon.png" },
+	{ "launcher_icons/mdpi_48x48", "res/drawable-mdpi-v4/icon.png" }
+};
+
 class EditorExportAndroid : public EditorExportPlatform {
 
 	GDCLASS(EditorExportAndroid, EditorExportPlatform)
@@ -1002,7 +1015,6 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name"), "org.godotengine.$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/icon", PROPERTY_HINT_FILE, "png"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "screen/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait"), 0));
@@ -1010,6 +1022,11 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
+
+		for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "png"), ""));
+		}
+
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release", PROPERTY_HINT_GLOBAL_FILE, "keystore"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_user"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password"), ""));
@@ -1390,23 +1407,20 @@ public:
 			}
 
 			if (file == "res/drawable/icon.png") {
-
-				String icon = p_preset->get("package/icon");
-				icon = icon.strip_edges();
 				bool found = false;
-
-				if (icon != "" && icon.ends_with(".png")) {
-
-					FileAccess *f = FileAccess::open(icon, FileAccess::READ);
-					if (f) {
-
-						data.resize(f->get_len());
-						f->get_buffer(data.ptr(), data.size());
-						memdelete(f);
-						found = true;
+				for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
+					if (icon_path != "" && icon_path.ends_with(".png")) {
+						FileAccess *f = FileAccess::open(icon_path, FileAccess::READ);
+						if (f) {
+							data.resize(f->get_len());
+							f->get_buffer(data.ptr(), data.size());
+							memdelete(f);
+							found = true;
+							break;
+						}
 					}
 				}
-
 				if (!found) {
 
 					String appicon = ProjectSettings::get_singleton()->get("application/config/icon");
@@ -1514,6 +1528,19 @@ public:
 				ed.apk = unaligned_apk;
 
 				err = export_project_files(p_preset, save_apk_file, &ed, save_apk_so);
+			}
+
+			if (!err) {
+				APKExportData ed;
+				ed.ep = &ep;
+				ed.apk = unaligned_apk;
+				for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
+					if (icon_path != "" && icon_path.ends_with(".png") && FileAccess::exists(icon_path)) {
+						Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);
+						store_in_apk(&ed, launcher_icons[i].export_path, data);
+					}
+				}
 			}
 		}
 
