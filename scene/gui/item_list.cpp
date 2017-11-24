@@ -28,8 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "item_list.h"
+#include "os/input.h"
 #include "os/os.h"
 #include "project_settings.h"
+#include <joypad.h>
 
 void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
 
@@ -257,6 +259,20 @@ void ItemList::unselect(int p_idx) {
 	}
 	update();
 }
+
+void ItemList::unselect_all() {
+
+	if (items.size() < 1)
+		return;
+
+	for (int i = 0; i < items.size(); i++) {
+
+		items[i].selected = false;
+	}
+
+	update();
+}
+
 bool ItemList::is_selected(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
@@ -530,6 +546,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 			return;
 		}
+
+		// Since closest is null, more likely we clicked on empty space, so send signal to interested controls. Allows, for example, implement items deselecting.
+		emit_signal("nothing_selected");
 	}
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 
@@ -710,6 +729,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 						break;
 					}
 				}
+			} else if (Input::get_singleton()->is_key_pressed(KEY_BACKSPACE)) {
+				// Allow interested controls to handle this if they want to implement something specific, go back to previous folder for example.
+				emit_signal("backspace_pressed");
 			}
 		}
 	}
@@ -1409,6 +1431,8 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("multi_selected", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "selected")));
 	ADD_SIGNAL(MethodInfo("item_activated", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("rmb_clicked", PropertyInfo(Variant::VECTOR2, "at_position")));
+	ADD_SIGNAL(MethodInfo("nothing_selected"));
+	ADD_SIGNAL(MethodInfo("backspace_pressed"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
 }
