@@ -559,6 +559,10 @@ private:
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_dock_slots_visibility();
 
+	bool restoring_scenes;
+	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void _load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
 
