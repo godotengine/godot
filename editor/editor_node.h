@@ -153,6 +153,9 @@ private:
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
 
+		COLLAPSE_ALL,
+		EXPAND_ALL,
+
 		RUN_STOP,
 		RUN_PLAY_SCENE,
 		RUN_PLAY_NATIVE,
@@ -425,6 +428,9 @@ private:
 
 	void _property_editor_forward();
 	void _property_editor_back();
+
+	void _menu_collapseall();
+	void _menu_expandall();
 
 	void _select_history(int p_idx);
 	void _prepare_history();
