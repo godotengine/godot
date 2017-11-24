@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="AStar" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		AStar class representation that uses vectors as edges.
 	</brief_description>

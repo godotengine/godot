@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FuncRef" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="FuncRef" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		Reference to a function in an object.
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedDataContainer" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="PackedDataContainer" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
