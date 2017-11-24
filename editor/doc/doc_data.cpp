@@ -214,6 +214,9 @@ void DocData::generate(bool p_basic_types) {
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
+	Set<StringName> setters_getters;
+	bool skip_setter_getter_methods = true;
+
 	while (classes.size()) {
 
 		String name = classes.front()->get();
@@ -266,6 +269,13 @@ void DocData::generate(bool p_basic_types) {
 						prop.type = Variant::get_type_name(retinfo.type);
 					}
 				}
+
+				setters_getters.insert(getter);
+			}
+
+			if (setter != StringName()) {
+
+				setters_getters.insert(setter);
 			}
 
 			if (!found_type) {
@@ -287,6 +297,9 @@ void DocData::generate(bool p_basic_types) {
 
 			if (E->get().name == "" || (E->get().name[0] == '_' && !(E->get().flags & METHOD_FLAG_VIRTUAL)))
 				continue; //hidden, don't count
+
+			if (skip_setter_getter_methods && setters_getters.has(E->get().name) && E->get().name.find("/") == -1)
+				continue;
 
 			MethodDoc method;
 
