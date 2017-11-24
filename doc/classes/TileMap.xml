@@ -252,10 +252,12 @@
 			</argument>
 			<argument index="5" name="transpose" type="bool" default="false">
 			</argument>
+			<argument index="6" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
 			<description>
 				Set the tile index for the cell referenced by its grid-based X and Y coordinates.
 				A tile index of -1 clears the cell.
-				Optionally, the tile can also be flipped over the X and Y coordinates or transposed.
+				Optionally, the tile can also be flipped over the X and Y coordinates, transposed, or be given autotile coordinates.
 			</description>
 		</method>
 		<method name="set_cell_size">
@@ -504,9 +506,6 @@
 		</member>
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask">
 			The light mask assigned to all light occluders in the TileMap.  The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
-		</member>
-		<member name="tile_data" type="PoolIntArray" setter="_set_tile_data" getter="_get_tile_data">
-			A [PoolIntArray] containing
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

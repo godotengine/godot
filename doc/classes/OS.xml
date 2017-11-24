@@ -127,13 +127,6 @@
 				Returns the current screen index (0 padded).
 			</description>
 		</method>
-		<method name="get_user_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the absolute directory path where user data is written ([code]user://[/code]).
-			</description>
-		</method>
 		<method name="get_date" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -395,6 +388,13 @@
 				Get an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
+			</description>
+		</method>
+		<method name="get_user_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the absolute directory path where user data is written ([code]user://[/code]).
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">

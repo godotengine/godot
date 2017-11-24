@@ -35,6 +35,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_offset_buttons_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scrolling_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_tab_align" qualifiers="const">
 			<return type="int" enum="Tabs.TabAlign">
 			</return>
@@ -66,6 +78,12 @@
 			</return>
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_tab_offset" qualifiers="const">
+			<return type="int">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -109,6 +127,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_scrolling_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -162,6 +188,8 @@
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		</member>
+		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
 		</member>

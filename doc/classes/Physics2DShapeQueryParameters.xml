@@ -39,13 +39,6 @@
 				Return the current movement speed of the shape.
 			</description>
 		</method>
-		<method name="get_object_type_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the type of object the shape belongs to.
-			</description>
-		</method>
 		<method name="get_shape_rid" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -94,15 +87,6 @@
 			</argument>
 			<description>
 				Set the current movement speed of the shape.
-			</description>
-		</method>
-		<method name="set_object_type_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="object_type_mask" type="int">
-			</argument>
-			<description>
-				Set the type of object the shape belongs to (see Physics2DDirectSpaceState.TYPE_MASK_*).
 			</description>
 		</method>
 		<method name="set_shape">

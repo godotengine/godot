@@ -37,6 +37,14 @@
 				Add a keyword and its color.
 			</description>
 		</method>
+		<method name="can_fold" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="clear_colors">
 			<return type="void">
 			</return>
@@ -137,6 +145,8 @@
 			</argument>
 			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
+			<argument index="2" name="can_be_hidden" type="bool" default="true">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -145,6 +155,20 @@
 			</return>
 			<description>
 				Cut the current selection.
+			</description>
+		</method>
+		<method name="fold_all_lines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="fold_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -239,6 +263,20 @@
 				Returns true if the context menu is enabled.
 			</description>
 		</method>
+		<method name="is_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_hiding_enabled" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -249,6 +287,14 @@
 		<method name="is_highlight_current_line_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_line_hidden" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -360,6 +406,14 @@
 				Set the status of the context menu. When enabled, the context menu will appear when the [code]TextEdit[/code] is right clicked.
 			</description>
 		</method>
+		<method name="set_hiding_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_highlight_all_occurrences">
 			<return type="void">
 			</return>
@@ -373,6 +427,16 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_as_hidden">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -462,6 +526,20 @@
 				Perform undo operation.
 			</description>
 		</method>
+		<method name="unfold_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="unhide_all_lines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
@@ -471,6 +549,8 @@
 		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+		</member>
+		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>

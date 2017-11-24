@@ -33,12 +33,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_current_library_statically_linked" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_singleton" qualifiers="const">
 			<return type="bool">
 			</return>

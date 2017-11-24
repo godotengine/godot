@@ -113,13 +113,6 @@
 				Returns whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
-		<method name="get_type_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [Physics2DDirectSpaceState].
-			</description>
-		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -198,15 +191,6 @@
 				Toggle whether this ray should hit your parent node, if it's a body.
 			</description>
 		</method>
-		<method name="set_type_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [Physics2DDirectSpaceState], eg. [code]Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="cast_to" type="Vector2" setter="set_cast_to" getter="get_cast_to">
@@ -220,13 +204,6 @@
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
 			If [code]true[/code], the parent node will be excluded from collision detection. Default value: [code]true[/code].
-		</member>
-		<member name="type_mask" type="int" setter="set_type_mask" getter="get_type_mask">
-			Object types to detect using a logical sum (OR operation) of type constants defined in [Physics2DDirectSpaceState].
-			Example:
-			[codeblock]
-			RayCast.type_mask = Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY
-			[/codeblock]
 		</member>
 	</members>
 	<constants>

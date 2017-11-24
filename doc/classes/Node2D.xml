@@ -20,15 +20,6 @@
 				Multiplies the current scale by the 'ratio' vector.
 			</description>
 		</method>
-		<method name="edit_set_pivot">
-			<return type="void">
-			</return>
-			<argument index="0" name="pivot" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's pivot position.
-			</description>
-		</method>
 		<method name="get_angle_to" qualifiers="const">
 			<return type="float">
 			</return>

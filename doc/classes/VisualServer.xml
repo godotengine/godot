@@ -1942,33 +1942,33 @@
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0">
 		</constant>
-		<constant name="LIGHT_PARAM_SPECULAR" value="1">
+		<constant name="LIGHT_PARAM_SPECULAR" value="2">
 		</constant>
-		<constant name="LIGHT_PARAM_RANGE" value="2">
+		<constant name="LIGHT_PARAM_RANGE" value="3">
 		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="3">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="4">
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="4">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="5">
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="5">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="6">
 		</constant>
-		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="6">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="7">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="7">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="8">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="9">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="10">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="11">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="12">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="13">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="14">
+		<constant name="LIGHT_PARAM_MAX" value="15">
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0">
 		</constant>

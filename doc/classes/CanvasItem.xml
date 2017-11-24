@@ -271,39 +271,6 @@
 				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
-		<method name="edit_get_state" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<description>
-				Used for editing, returns an opaque value representing the transform state.
-			</description>
-		</method>
-		<method name="edit_rotate">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Used for editing, handle rotation.
-			</description>
-		</method>
-		<method name="edit_set_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="edit_set_state">
-			<return type="void">
-			</return>
-			<argument index="0" name="state" type="Variant">
-			</argument>
-			<description>
-				Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation (radians) and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
-			</description>
-		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -344,20 +311,6 @@
 			</return>
 			<description>
 				Get the global transform matrix of this item in relation to the canvas.
-			</description>
-		</method>
-		<method name="edit_get_item_and_children_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Get a [Rect2] with the boundaries of this item and its children.
-			</description>
-		</method>
-		<method name="edit_get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Return a rect containing the editable boundaries of the item.
 			</description>
 		</method>
 		<method name="get_light_mask" qualifiers="const">

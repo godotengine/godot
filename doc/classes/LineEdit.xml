@@ -274,7 +274,7 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 			If [code]false[/code] existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="expand_to_len" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
+		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
 			If [code]true[/code] the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
