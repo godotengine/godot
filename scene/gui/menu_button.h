@@ -44,8 +44,6 @@ class MenuButton : public Button {
 	virtual void pressed();
 
 	void _unhandled_key_input(Ref<InputEvent> p_event);
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
 
 	void _gui_input(Ref<InputEvent> p_event);
 
@@ -54,6 +52,10 @@ protected:
 
 public:
 	PopupMenu *get_popup();
+
+	Array get_items() const;
+	void set_items(const Array &p_items);
+
 	MenuButton();
 	~MenuButton();
 };

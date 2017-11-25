@@ -183,9 +183,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items">
+		<member name="items" type="Array" setter="set_items" getter="get_items">
 		</member>
-		<member name="selected" type="int" setter="_select_int" getter="get_selected">
+		<member name="selected" type="int" setter="set_selected" getter="get_selected">
 		</member>
 	</members>
 	<signals>

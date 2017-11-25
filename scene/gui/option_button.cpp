@@ -207,16 +207,16 @@ void OptionButton::_select(int p_which, bool p_emit) {
 		emit_signal("item_selected", current);
 }
 
-void OptionButton::_select_int(int p_which) {
+void OptionButton::select(int p_idx) {
+
+	_select(p_idx, false);
+}
+
+void OptionButton::set_selected(int p_which) {
 
 	if (p_which < 0 || p_which >= popup->get_item_count())
 		return;
 	_select(p_which, false);
-}
-
-void OptionButton::select(int p_idx) {
-
-	_select(p_idx, false);
 }
 
 int OptionButton::get_selected() const {
@@ -244,7 +244,7 @@ void OptionButton::remove_item(int p_idx) {
 	popup->remove_item(p_idx);
 }
 
-Array OptionButton::_get_items() const {
+Array OptionButton::get_items() const {
 
 	Array items;
 	for (int i = 0; i < get_item_count(); i++) {
@@ -258,7 +258,7 @@ Array OptionButton::_get_items() const {
 
 	return items;
 }
-void OptionButton::_set_items(const Array &p_items) {
+void OptionButton::set_items(const Array &p_items) {
 
 	ERR_FAIL_COND(p_items.size() % 5);
 	clear();
@@ -304,17 +304,17 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
+	ClassDB::bind_method(D_METHOD("set_selected"), &OptionButton::set_selected);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_id"), &OptionButton::get_selected_id);
 	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &OptionButton::remove_item);
-	ClassDB::bind_method(D_METHOD("_select_int"), &OptionButton::_select_int);
 
-	ClassDB::bind_method(D_METHOD("_set_items"), &OptionButton::_set_items);
-	ClassDB::bind_method(D_METHOD("_get_items"), &OptionButton::_get_items);
+	ClassDB::bind_method(D_METHOD("set_items"), &OptionButton::set_items);
+	ClassDB::bind_method(D_METHOD("get_items"), &OptionButton::get_items);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_items", "_get_items");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "set_selected", "get_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_items", "get_items");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "ID")));
 }
 
