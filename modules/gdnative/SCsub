@@ -245,7 +245,7 @@ if ARGUMENTS.get('gdnative_wrapper', False):
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
-    # I think this doesn't work on MSVC yet...
-    gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
+    if not env.msvc:
+        gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
 
     gd_wrapper_env.Library("#bin/gdnative_wrapper_code", [gensource])
