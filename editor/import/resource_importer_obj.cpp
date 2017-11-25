@@ -58,6 +58,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 
 			current_name = l.replace("newmtl", "").strip_edges();
 			current.instance();
+			current->set_name(current_name);
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
 			//uv

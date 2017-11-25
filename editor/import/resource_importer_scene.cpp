@@ -952,7 +952,10 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 							for (int i = 0; i < mesh->get_surface_count(); i++) {
 								mat = mesh->surface_get_material(i);
-								if (!mat.is_valid() || mat->get_name() == "")
+
+								if (!mat.is_valid())
+									continue;
+								if (mat->get_name() == "")
 									continue;
 
 								if (!p_materials.has(mat)) {
