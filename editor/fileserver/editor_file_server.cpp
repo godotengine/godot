@@ -31,7 +31,6 @@
 
 #include "../editor_settings.h"
 #include "io/marshalls.h"
-#include "io/marshalls.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 #define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, OS::get_singleton()->get_ticks_usec());
@@ -240,7 +239,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->files[id]->seek(offset);
 				Vector<uint8_t> buf;
 				buf.resize(blocklen);
-				int read = cd->files[id]->get_buffer(buf.ptr(), blocklen);
+				int read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
 				ERR_CONTINUE(read < 0);
 
 				print_line("GET BLOCK - offset: " + itos(offset) + ", blocklen: " + itos(blocklen));

@@ -115,7 +115,7 @@ void String::copy_from(const char *p_cstr) {
 
 	resize(len + 1); // include 0
 
-	CharType *dst = this->ptr();
+	CharType *dst = this->ptrw();
 
 	for (int i = 0; i < len + 1; i++) {
 
@@ -1119,7 +1119,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 		chars++;
 	String s;
 	s.resize(chars + 1);
-	CharType *c = s.ptr();
+	CharType *c = s.ptrw();
 	c[chars] = 0;
 	n = num;
 	do {

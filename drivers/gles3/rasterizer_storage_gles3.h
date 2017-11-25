@@ -719,7 +719,7 @@ public:
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
 
-	void mesh_render_blend_shapes(Surface *s, float *p_weights);
+	void mesh_render_blend_shapes(Surface *s, const float *p_weights);
 
 	/* MULTIMESH API */
 

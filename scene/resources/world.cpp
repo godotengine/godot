@@ -159,9 +159,9 @@ struct SpatialIndexer {
 
 			Vector<Plane> planes = c->get_frustum();
 
-			int culled = octree.cull_convex(planes, cull.ptr(), cull.size());
+			int culled = octree.cull_convex(planes, cull.ptrw(), cull.size());
 
-			VisibilityNotifier **ptr = cull.ptr();
+			VisibilityNotifier **ptr = cull.ptrw();
 
 			List<VisibilityNotifier *> added;
 			List<VisibilityNotifier *> removed;

@@ -597,7 +597,7 @@ void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
 	ERR_FAIL_COND(!instance);
 	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
 
-	if(p_aabb != AABB()) {
+	if (p_aabb != AABB()) {
 
 		// Set custom AABB
 		if (instance->custom_aabb == NULL)
@@ -1855,7 +1855,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 	probe->dynamic.level_cell_lists.resize(header->cell_subdiv);
 
-	_gi_probe_fill_local_data(0, 0, 0, 0, 0, cells, header, ldw.ptr(), probe->dynamic.level_cell_lists.ptr());
+	_gi_probe_fill_local_data(0, 0, 0, 0, 0, cells, header, ldw.ptr(), probe->dynamic.level_cell_lists.ptrw());
 
 	bool compress = VSG::storage->gi_probe_is_compressed(p_instance->base);
 

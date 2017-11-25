@@ -150,7 +150,7 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 		Polygon &p = E->get();
 
 		int ec = p.edges.size();
-		Polygon::Edge *edges = p.edges.ptr();
+		Polygon::Edge *edges = p.edges.ptrw();
 
 		for (int i = 0; i < ec; i++) {
 			int next = (i + 1) % ec;

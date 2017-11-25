@@ -182,7 +182,7 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 	}
 
 	int l = p_canvas->child_items.size();
-	Canvas::ChildItem *ci = p_canvas->child_items.ptr();
+	Canvas::ChildItem *ci = p_canvas->child_items.ptrw();
 
 	bool has_mirror = false;
 	for (int i = 0; i < l; i++) {

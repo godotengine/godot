@@ -449,7 +449,7 @@ void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_v
 void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip) {
 
 	int cc = p_item->commands.size();
-	Item::Command **commands = p_item->commands.ptr();
+	Item::Command **commands = p_item->commands.ptrw();
 
 	for (int i = 0; i < cc; i++) {
 
@@ -1084,8 +1084,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 				}
 
 				int tc = material_ptr->textures.size();
-				RID *textures = material_ptr->textures.ptr();
-				ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = shader_ptr->texture_hints.ptr();
+				RID *textures = material_ptr->textures.ptrw();
+				ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = shader_ptr->texture_hints.ptrw();
 
 				for (int i = 0; i < tc; i++) {
 

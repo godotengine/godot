@@ -220,7 +220,7 @@ void StreamPeer::put_var(const Variant &p_variant) {
 	encode_variant(p_variant, NULL, len);
 	buf.resize(len);
 	put_32(len);
-	encode_variant(p_variant, buf.ptr(), len);
+	encode_variant(p_variant, buf.ptrw(), len);
 	put_data(buf.ptr(), buf.size());
 }
 
@@ -340,7 +340,7 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 	Vector<uint8_t> buf;
 	Error err = buf.resize(p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
-	err = get_data(buf.ptr(), p_bytes);
+	err = get_data(buf.ptrw(), p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
 
 	String ret;
@@ -353,7 +353,7 @@ Variant StreamPeer::get_var() {
 	Vector<uint8_t> var;
 	Error err = var.resize(len);
 	ERR_FAIL_COND_V(err != OK, Variant());
-	err = get_data(var.ptr(), len);
+	err = get_data(var.ptrw(), len);
 	ERR_FAIL_COND_V(err != OK, Variant());
 
 	Variant ret;

@@ -499,7 +499,7 @@ struct _VariantCall {
 			PoolByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size() + 1);
-			copymem(cs.ptr(), r.ptr(), ba->size());
+			copymem(cs.ptrw(), r.ptr(), ba->size());
 			cs[ba->size()] = 0;
 
 			s = cs.get_data();

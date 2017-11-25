@@ -96,7 +96,7 @@ class Vector {
 	void _copy_on_write();
 
 public:
-	_FORCE_INLINE_ T *ptr() {
+	_FORCE_INLINE_ T *ptrw() {
 		if (!_ptr) return NULL;
 		_copy_on_write();
 		return (T *)_get_data();
@@ -361,7 +361,7 @@ template <class T>
 void Vector<T>::remove(int p_index) {
 
 	ERR_FAIL_INDEX(p_index, size());
-	T *p = ptr();
+	T *p = ptrw();
 	int len = size();
 	for (int i = p_index; i < len - 1; i++) {
 

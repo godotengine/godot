@@ -29,11 +29,11 @@
 /*************************************************************************/
 #include "gdscript.h"
 
+#include "core/engine.h"
 #include "editor/editor_settings.h"
 #include "gdscript_compiler.h"
 #include "global_constants.h"
 #include "os/file_access.h"
-#include "core/engine.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
@@ -791,7 +791,7 @@ static bool _guess_expression_type(GDScriptCompletionContext &context, const GDS
 									}
 
 									Variant::CallError ce;
-									Variant ret = mb->call(baseptr, argptr.ptr(), argptr.size(), ce);
+									Variant ret = mb->call(baseptr, (const Variant **)argptr.ptr(), argptr.size(), ce);
 
 									if (ce.error == Variant::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
 
@@ -1795,7 +1795,7 @@ static void _find_type_arguments(GDScriptCompletionContext &context, const GDScr
 			}
 
 		} else {
-		//regular method
+//regular method
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 			if (p_argidx < m->get_argument_count()) {

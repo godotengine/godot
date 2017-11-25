@@ -241,7 +241,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 		} else {
 			ad->lock();
 
-			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptr());
+			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 
 			ad->unlock();
 

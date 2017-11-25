@@ -2466,7 +2466,7 @@ VisualScriptNode::TypeGuess VisualScriptEditor::_guess_output_type(int p_port_ac
 		in_guesses.push_back(g);
 	}
 
-	return node->guess_output_type(in_guesses.ptr(), p_port_action_output);
+	return node->guess_output_type(in_guesses.ptrw(), p_port_action_output);
 }
 
 void VisualScriptEditor::_port_action_menu(int p_option) {

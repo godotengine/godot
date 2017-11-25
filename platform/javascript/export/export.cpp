@@ -214,7 +214,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 		//read
 		unzOpenCurrentFile(pkg);
-		unzReadCurrentFile(pkg, data.ptr(), data.size());
+		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
 		//write
@@ -257,7 +257,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		}
 		Vector<uint8_t> buf;
 		buf.resize(f->get_len());
-		f->get_buffer(buf.ptr(), buf.size());
+		f->get_buffer(buf.ptrw(), buf.size());
 		memdelete(f);
 		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug);
 

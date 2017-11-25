@@ -189,8 +189,8 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(Ref<NavigationMesh> 
 
 		ERR_FAIL_COND(tri_areas.size() == 0);
 
-		memset(tri_areas.ptr(), 0, ntris * sizeof(unsigned char));
-		rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts, nverts, tris, ntris, tri_areas.ptr());
+		memset(tri_areas.ptrw(), 0, ntris * sizeof(unsigned char));
+		rcMarkWalkableTriangles(&ctx, cfg.walkableSlopeAngle, verts, nverts, tris, ntris, tri_areas.ptrw());
 
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));
 	}

@@ -80,11 +80,11 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 
 		data.resize(ds);
 
-		uint32_t blen = p_base->get_buffer(data.ptr(), ds);
+		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
 		aes256_context ctx;
-		aes256_init(&ctx, key.ptr());
+		aes256_init(&ctx, key.ptrw());
 
 		for (size_t i = 0; i < ds; i += 16) {
 
@@ -97,7 +97,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 
 		MD5_CTX md5;
 		MD5Init(&md5);
-		MD5Update(&md5, data.ptr(), data.size());
+		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
 		MD5Final(&md5);
 
 		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
@@ -141,17 +141,17 @@ void FileAccessEncrypted::close() {
 
 		MD5_CTX md5;
 		MD5Init(&md5);
-		MD5Update(&md5, data.ptr(), data.size());
+		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
 		MD5Final(&md5);
 
 		compressed.resize(len);
-		zeromem(compressed.ptr(), len);
+		zeromem(compressed.ptrw(), len);
 		for (int i = 0; i < data.size(); i++) {
 			compressed[i] = data[i];
 		}
 
 		aes256_context ctx;
-		aes256_init(&ctx, key.ptr());
+		aes256_init(&ctx, key.ptrw());
 
 		for (size_t i = 0; i < len; i += 16) {
 

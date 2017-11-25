@@ -68,7 +68,7 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 		unsigned int local_rb_pos = buffer_pos;
 		AudioFrame *dst_buff = p_dst_frames;
-		AudioFrame *rb_buff = audio_buffer.ptr();
+		AudioFrame *rb_buff = audio_buffer.ptrw();
 
 		double delay_msec = v.delay;
 		unsigned int delay_frames = Math::fast_ftoi((delay_msec / 1000.0) * mix_rate);

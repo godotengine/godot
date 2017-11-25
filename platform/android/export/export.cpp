@@ -1391,7 +1391,7 @@ public:
 
 			//read
 			unzOpenCurrentFile(pkg);
-			unzReadCurrentFile(pkg, data.ptr(), data.size());
+			unzReadCurrentFile(pkg, data.ptrw(), data.size());
 			unzCloseCurrentFile(pkg);
 
 			//write
@@ -1414,7 +1414,7 @@ public:
 						FileAccess *f = FileAccess::open(icon_path, FileAccess::READ);
 						if (f) {
 							data.resize(f->get_len());
-							f->get_buffer(data.ptr(), data.size());
+							f->get_buffer(data.ptrw(), data.size());
 							memdelete(f);
 							found = true;
 							break;
@@ -1428,7 +1428,7 @@ public:
 						FileAccess *f = FileAccess::open(appicon, FileAccess::READ);
 						if (f) {
 							data.resize(f->get_len());
-							f->get_buffer(data.ptr(), data.size());
+							f->get_buffer(data.ptrw(), data.size());
 							memdelete(f);
 						}
 					}
@@ -1703,7 +1703,7 @@ public:
 			int method, level;
 			unzOpenCurrentFile2(tmp_unaligned, &method, &level, 1); // raw read
 			long file_offset = unzGetCurrentFileZStreamPos64(tmp_unaligned);
-			unzReadCurrentFile(tmp_unaligned, data.ptr(), data.size());
+			unzReadCurrentFile(tmp_unaligned, data.ptrw(), data.size());
 			unzCloseCurrentFile(tmp_unaligned);
 
 			// align
