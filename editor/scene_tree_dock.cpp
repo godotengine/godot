@@ -290,6 +290,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!scene) {
 				EditorNode::get_singleton()->new_inherited_scene();
+				break;
 			}
 
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
