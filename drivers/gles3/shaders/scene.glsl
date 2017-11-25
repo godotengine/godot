@@ -458,12 +458,7 @@ VERTEX_SHADER_CODE
 
 #endif //RENDER_DEPTH
 
-
-#if !defined(SKIP_TRANSFORM_USED) && !defined(RENDER_DEPTH_DUAL_PARABOLOID)
 	gl_Position = projection_matrix * vec4(vertex_interp,1.0);
-#else
-	gl_Position = vertex;
-#endif
 
 	position_interp=gl_Position;
 
