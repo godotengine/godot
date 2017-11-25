@@ -677,7 +677,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_ray(const Vector3 &p_from, co
 
 	int culled = 0;
 	Instance *cull[1024];
-	culled = scenario->octree.cull_segment(p_from, p_to * 10000, cull, 1024);
+	culled = scenario->octree.cull_segment(p_from, p_from + p_to * 10000, cull, 1024);
 
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
