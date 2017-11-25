@@ -370,7 +370,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 		Vector<uint8_t> data;
 		data.resize(file_data.uncompressed_size);
-		Compression::decompress(data.ptr(), file_data.uncompressed_size, file_data.data, file_data.compressed_size, Compression::MODE_DEFLATE);
+		Compression::decompress(data.ptrw(), file_data.uncompressed_size, file_data.data, file_data.compressed_size, Compression::MODE_DEFLATE);
 
 		if (file_name.get_basename() == BINDINGS_GLOBAL_SCOPE_CLASS) {
 			// GD.cs must be formatted to include the generated global constants
@@ -382,7 +382,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 			CharString data_utf8 = data_str.utf8();
 			data.resize(data_utf8.length());
-			copymem(data.ptr(), reinterpret_cast<const uint8_t *>(data_utf8.get_data()), data_utf8.length());
+			copymem(data.ptrw(), reinterpret_cast<const uint8_t *>(data_utf8.get_data()), data_utf8.length());
 		}
 
 		FileAccessRef file = FileAccess::open(output_file, FileAccess::WRITE);
