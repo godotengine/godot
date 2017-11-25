@@ -68,7 +68,7 @@ name is available.
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Kostadin Damyanov (Max-Might)
-    L. Krause (eska014)
+    Leon Krause (eska014)
     Marc Gilleron (Zylann)
     Marcelo Fernandez (marcelofg55)
     Mariano Javier Suligoy (MarianoGnu)
