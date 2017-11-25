@@ -173,12 +173,12 @@ private:
 	void _push_to_history();
 
 	void _dir_selected();
-	void _dir_rmb_pressed(const Vector2 & p_pos);
+	void _dir_rmb_pressed(const Vector2 &p_pos);
 	void _make_dir_confirm();
 	void _rename_operation_confirm();
-	void _move_operation_confirm(const String & p_to_path);
-	void _try_move_item(const FileOrFolder & p_item, const String & p_new_path, Map<String, String>& p_renames);
-	void _get_all_files_in_dir(EditorFileSystemDirectory * efsd, Vector<String>& files);
+	void _move_operation_confirm(const String &p_to_path);
+	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, Map<String, String> &p_renames);
+	void _get_all_files_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files);
 	void _update_dependencies_after_move(Map<String, String> &p_renames);
 	void _update_tree();
 	void _rescan();

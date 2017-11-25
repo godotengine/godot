@@ -259,8 +259,7 @@ void FileSystemDock::_make_dir_confirm() {
 	if (dir_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
 		return;
-	}
-	else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1) {
+	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1) {
 		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters"));
 		return;
 	}
@@ -276,8 +275,7 @@ void FileSystemDock::_make_dir_confirm() {
 	if (err == OK) {
 		print_line("call rescan!");
 		_rescan();
-	}
-	else {
+	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
 	}
 }
@@ -288,8 +286,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	}
-	else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -339,12 +336,10 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 
 	if (new_path == old_path) {
 		return;
-	}
-	else if (old_path == "res://") {
+	} else if (old_path == "res://") {
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
 		return;
-	}
-	else if (!p_item.is_file && new_path.begins_with(old_path)) {
+	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
 		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
 		return;
@@ -354,8 +349,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	Vector<String> changed_paths;
 	if (p_item.is_file) {
 		changed_paths.push_back(old_path);
-	}
-	else {
+	} else {
 		_get_all_files_in_dir(EditorFileSystem::get_singleton()->get_path(old_path), changed_paths);
 	}
 
@@ -368,8 +362,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			p_renames[changed_paths[i]] = changed_paths[i].replace_first(old_path, new_path);
 			print_line("  Remap: " + changed_paths[i] + " -> " + p_renames[changed_paths[i]]);
 		}
-	}
-	else {
+	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:\n") + old_path + "\n");
 	}
 	memdelete(da);
@@ -1041,40 +1034,40 @@ void FileSystemDock::_file_option(int p_option) {
 		case FILE_SHOW_IN_EXPLORER:
 		case FILE_OPEN: {
 			int idx = -1;
+			int selectcount = files->get_selected_items().size();
 			for (int i = 0; i < files->get_item_count(); i++) {
 				if (files->is_selected(i)) {
-					idx = i;
-					break;
-				}
-			}
+					String path = files->get_item_metadata(i);
+					if (selectcount == 1) {
+						if (p_option == FILE_SHOW_IN_EXPLORER) {
+							String dir = Globals::get_singleton()->globalize_path(path);
+							dir = dir.substr(0, dir.find_last("/"));
+							OS::get_singleton()->shell_open(String("file://") + dir);
+							return;
+						}
+						if (path.ends_with("/")) {
+							if (path != "res://") {
+								path = path.substr(0, path.length() - 1);
+							}
+							this->path = path;
+							_update_files(false);
+							current_path->set_text(path);
+							_push_to_history();
+						} else {
 
-			if (idx < 0)
-				return;
+							if (ResourceLoader::get_resource_type(path) == "PackedScene") {
 
-			String path = files->get_item_metadata(idx);
-			if (p_option == FILE_SHOW_IN_EXPLORER) {
-				String dir = Globals::get_singleton()->globalize_path(path);
-				dir = dir.substr(0, dir.find_last("/"));
-				OS::get_singleton()->shell_open(String("file://") + dir);
-				return;
-			}
+								editor->open_request(path);
+							} else {
 
-			if (path.ends_with("/")) {
-				if (path != "res://") {
-					path = path.substr(0, path.length() - 1);
-				}
-				this->path = path;
-				_update_files(false);
-				current_path->set_text(path);
-				_push_to_history();
-			} else {
-
-				if (ResourceLoader::get_resource_type(path) == "PackedScene") {
-
-					editor->open_request(path);
-				} else {
-
-					editor->load_resource(path);
+								editor->load_resource(path);
+							}
+						}
+					} else if (selectcount > 1) {
+						if (ResourceLoader::get_resource_type(path) == "PackedScene") {
+							editor->open_request(path);
+						}
+					}
 				}
 			}
 		} break;
@@ -1221,69 +1214,69 @@ void FileSystemDock::_folder_option(int p_option) {
 	TreeItem *selected = tree->get_selected();
 
 	switch (p_option) {
-	case FOLDER_EXPAND_ALL:
-	case FOLDER_COLLAPSE_ALL: {
-		bool is_collapsed = (p_option == FOLDER_COLLAPSE_ALL);
-		Vector<TreeItem *> needs_check;
-		needs_check.push_back(selected);
+		case FOLDER_EXPAND_ALL:
+		case FOLDER_COLLAPSE_ALL: {
+			bool is_collapsed = (p_option == FOLDER_COLLAPSE_ALL);
+			Vector<TreeItem *> needs_check;
+			needs_check.push_back(selected);
 
-		while (needs_check.size()) {
-			needs_check[0]->set_collapsed(is_collapsed);
+			while (needs_check.size()) {
+				needs_check[0]->set_collapsed(is_collapsed);
 
-			TreeItem *child = needs_check[0]->get_children();
-			while (child) {
-				needs_check.push_back(child);
-				child = child->get_next();
+				TreeItem *child = needs_check[0]->get_children();
+				while (child) {
+					needs_check.push_back(child);
+					child = child->get_next();
+				}
+
+				needs_check.remove(0);
 			}
-
-			needs_check.remove(0);
-		}
-	} break;
-	case FOLDER_MOVE: {
-		to_move.clear();
-		String fpath = selected->get_metadata(tree->get_selected_column());
-		if (fpath != "res://") {
-			fpath = fpath.ends_with("/") ? fpath.substr(0, fpath.length() - 1) : fpath;
-			to_move.push_back(FileOrFolder(fpath, false));
-			move_dir_dialog->popup_centered_ratio();
-		}
-	} break;
-	case FOLDER_RENAME: {
-		to_rename.path = selected->get_metadata(tree->get_selected_column());
-		to_rename.is_file = false;
-		if (to_rename.path != "res://") {
-			String name = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1).get_file() : to_rename.path.get_file();
-			rename_dir_dialog->set_title(TTR("Renaming folder:") + " " + name);
-			rename_dialog_text->set_text(name);
-			rename_dialog_text->select(0, name.length());
-			rename_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			rename_dialog_text->grab_focus();
-		}
-	} break;
-	case FOLDER_REMOVE: {
-		Vector<String> remove_folders;
-		Vector<String> remove_files;
-		String fpath = selected->get_metadata(tree->get_selected_column());
-		if (fpath != "res://") {
-			remove_folders.push_back(fpath);
-			remove_dialog->show(remove_folders);
-		}
-	} break;
-	case FOLDER_NEW_FOLDER: {
-		make_dir_dialog_text->set_text("new folder");
-		make_dir_dialog_text->select_all();
-		make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-		make_dir_dialog_text->grab_focus();
-	} break;
-	case FOLDER_COPY_PATH: {
-		String fpath = selected->get_metadata(tree->get_selected_column());
-		OS::get_singleton()->set_clipboard(fpath);
-	} break;
-	case FOLDER_SHOW_IN_EXPLORER: {
-		String fpath = selected->get_metadata(tree->get_selected_column());
-		String dir = Globals::get_singleton()->globalize_path(fpath);
-		OS::get_singleton()->shell_open(String("file://") + dir);
-	} break;
+		} break;
+		case FOLDER_MOVE: {
+			to_move.clear();
+			String fpath = selected->get_metadata(tree->get_selected_column());
+			if (fpath != "res://") {
+				fpath = fpath.ends_with("/") ? fpath.substr(0, fpath.length() - 1) : fpath;
+				to_move.push_back(FileOrFolder(fpath, false));
+				move_dir_dialog->popup_centered_ratio();
+			}
+		} break;
+		case FOLDER_RENAME: {
+			to_rename.path = selected->get_metadata(tree->get_selected_column());
+			to_rename.is_file = false;
+			if (to_rename.path != "res://") {
+				String name = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1).get_file() : to_rename.path.get_file();
+				rename_dir_dialog->set_title(TTR("Renaming folder:") + " " + name);
+				rename_dialog_text->set_text(name);
+				rename_dialog_text->select(0, name.length());
+				rename_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+				rename_dialog_text->grab_focus();
+			}
+		} break;
+		case FOLDER_REMOVE: {
+			Vector<String> remove_folders;
+			Vector<String> remove_files;
+			String fpath = selected->get_metadata(tree->get_selected_column());
+			if (fpath != "res://") {
+				remove_folders.push_back(fpath);
+				remove_dialog->show(remove_folders);
+			}
+		} break;
+		case FOLDER_NEW_FOLDER: {
+			make_dir_dialog_text->set_text("new folder");
+			make_dir_dialog_text->select_all();
+			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_dir_dialog_text->grab_focus();
+		} break;
+		case FOLDER_COPY_PATH: {
+			String fpath = selected->get_metadata(tree->get_selected_column());
+			OS::get_singleton()->set_clipboard(fpath);
+		} break;
+		case FOLDER_SHOW_IN_EXPLORER: {
+			String fpath = selected->get_metadata(tree->get_selected_column());
+			String dir = Globals::get_singleton()->globalize_path(fpath);
+			OS::get_singleton()->shell_open(String("file://") + dir);
+		} break;
 	}
 }
 
@@ -1885,7 +1878,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_dir_dialog_text = memnew(LineEdit);
 	make_folder_dialog_vb->add_margin_child(TTR("Name:"), make_dir_dialog_text);
 	add_child(make_dir_dialog);
-	
+
 	make_dir_dialog->add_child(make_folder_dialog_vb);
 	make_dir_dialog->set_child_rect(make_folder_dialog_vb);
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
