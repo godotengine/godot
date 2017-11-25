@@ -45,7 +45,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 		bool b;
 		double d;
 		char *s;
-	} js_data[4];
+	} js_data;
 
 	PoolByteArray arr;
 	PoolByteArray::Write arr_write;
@@ -56,9 +56,8 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 		const CODE = $0;
 		const USE_GLOBAL_EXEC_CONTEXT = $1;
 		const PTR = $2;
-		const ELEM_LEN = $3;
-		const BYTEARRAY_PTR = $4;
-		const BYTEARRAY_WRITE_PTR = $5;
+		const BYTEARRAY_PTR = $3;
+		const BYTEARRAY_WRITE_PTR = $4;
 		var eval_ret;
 		try {
 			if (USE_GLOBAL_EXEC_CONTEXT) {
@@ -118,56 +117,25 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 					HEAPU8.set(eval_ret, bytes_ptr);
 					return 20; // POOL_BYTE_ARRAY
 				}
-
-				if (typeof eval_ret.x==='number' && typeof eval_ret.y==='number') {
-					setValue(PTR, eval_ret.x, 'double');
-					setValue(PTR + ELEM_LEN, eval_ret.y, 'double');
-					if (typeof eval_ret.z==='number') {
-						setValue(PTR + ELEM_LEN*2, eval_ret.z, 'double');
-						return 7; // VECTOR3
-					}
-					else if (typeof eval_ret.width==='number' && typeof eval_ret.height==='number') {
-						setValue(PTR + ELEM_LEN*2, eval_ret.width, 'double');
-						setValue(PTR + ELEM_LEN*3, eval_ret.height, 'double');
-						return 6; // RECT2
-					}
-					return 5; // VECTOR2
-				}
-
-				if (typeof eval_ret.r === 'number' && typeof eval_ret.g === 'number' && typeof eval_ret.b === 'number') {
-					setValue(PTR, eval_ret.r, 'double');
-					setValue(PTR + ELEM_LEN, eval_ret.g, 'double');
-					setValue(PTR + ELEM_LEN*2, eval_ret.b, 'double');
-					setValue(PTR + ELEM_LEN*3, typeof eval_ret.a === 'number' ? eval_ret.a : 1, 'double');
-					return 14; // COLOR
-				}
 				break;
 		}
 		return 0; // NIL
 
-	}, p_code.utf8().get_data(), p_use_global_exec_context, js_data, sizeof *js_data, &arr, &arr_write));
+	}, p_code.utf8().get_data(), p_use_global_exec_context, &js_data, &arr, &arr_write));
 	/* clang-format on */
 
 	switch (return_type) {
 		case Variant::BOOL:
-			return js_data->b;
+			return js_data.b;
 		case Variant::REAL:
-			return js_data->d;
+			return js_data.d;
 		case Variant::STRING: {
-			String str = String::utf8(js_data->s);
+			String str = String::utf8(js_data.s);
 			/* clang-format off */
-				EM_ASM_({ _free($0); }, js_data->s);
+				EM_ASM_({ _free($0); }, js_data.s);
 			/* clang-format on */
 			return str;
 		}
-		case Variant::VECTOR2:
-			return Vector2(js_data[0].d, js_data[1].d);
-		case Variant::VECTOR3:
-			return Vector3(js_data[0].d, js_data[1].d, js_data[2].d);
-		case Variant::RECT2:
-			return Rect2(js_data[0].d, js_data[1].d, js_data[2].d, js_data[3].d);
-		case Variant::COLOR:
-			return Color(js_data[0].d, js_data[1].d, js_data[2].d, js_data[3].d);
 		case Variant::POOL_BYTE_ARRAY:
 			arr_write = PoolByteArray::Write();
 			return arr;
