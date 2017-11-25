@@ -59,7 +59,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			r_error.argument = pc;
 			continue;
 		}
-		uint32_t *ptypes = E->get().param_types.ptr();
+		uint32_t *ptypes = E->get().param_types.ptrw();
 		bool valid = true;
 
 		for (int i = 0; i < pc; i++) {
