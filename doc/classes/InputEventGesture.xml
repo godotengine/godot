@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventGesture" inherits="InputEventWithModifiers" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

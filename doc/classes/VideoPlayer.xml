@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoPlayer" inherits="Control" category="Core" version="3.0-alpha">
+<class name="VideoPlayer" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Control to play video files.
 	</brief_description>
@@ -11,31 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_audio_track" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Get the selected audio track (for multitrack videos).
-			</description>
-		</method>
 		<method name="get_buffering_msec" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
 				Get the amount of milliseconds to store in buffer while playing.
-			</description>
-		</method>
-		<method name="get_bus" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_stream" qualifiers="const">
-			<return type="VideoStream">
-			</return>
-			<description>
-				Get the video stream.
 			</description>
 		</method>
 		<method name="get_stream_name" qualifiers="const">
@@ -66,34 +46,6 @@
 				Get the volume of the audio track as a linear value.
 			</description>
 		</method>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the volume of the audio track in decibels.
-			</description>
-		</method>
-		<method name="has_autoplay" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether or not the video is set as autoplay.
-			</description>
-		</method>
-		<method name="has_expand" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether or not the expand property is set.
-			</description>
-		</method>
-		<method name="is_paused" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether or not the video is paused.
-			</description>
-		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -108,24 +60,6 @@
 				Start the video playback.
 			</description>
 		</method>
-		<method name="set_audio_track">
-			<return type="void">
-			</return>
-			<argument index="0" name="track" type="int">
-			</argument>
-			<description>
-				Set the audio track (for multitrack videos).
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set whether this node should start playing automatically.
-			</description>
-		</method>
 		<method name="set_buffering_msec">
 			<return type="void">
 			</return>
@@ -133,41 +67,6 @@
 			</argument>
 			<description>
 				Set the amount of milliseconds to buffer during playback.
-			</description>
-		</method>
-		<method name="set_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set the expand property. If enabled, the video will grow or shrink to fit the player size, otherwise it will play at the stream resolution.
-			</description>
-		</method>
-		<method name="set_paused">
-			<return type="void">
-			</return>
-			<argument index="0" name="paused" type="bool">
-			</argument>
-			<description>
-				Set whether the video should pause the playback.
-			</description>
-		</method>
-		<method name="set_stream">
-			<return type="void">
-			</return>
-			<argument index="0" name="stream" type="VideoStream">
-			</argument>
-			<description>
-				Set the video stream for this player.
 			</description>
 		</method>
 		<method name="set_stream_position">
@@ -186,15 +85,6 @@
 			</argument>
 			<description>
 				Set the audio volume as a linear value.
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="db" type="float">
-			</argument>
-			<description>
-				Set the audio volume in decibels.
 			</description>
 		</method>
 		<method name="stop">

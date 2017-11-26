@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrimitiveMesh" inherits="Mesh" category="Core" version="3.0-alpha">
+<class name="PrimitiveMesh" inherits="Mesh" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
@@ -11,23 +11,9 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
 			<description>
 			</description>
 		</method>

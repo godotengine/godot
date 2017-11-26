@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.0-alpha">
+<class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.0-beta">
 	<brief_description>
 		A body that is controlled by the 2D physics engine.
 	</brief_description>
@@ -49,20 +49,6 @@
 				Applies a positioned impulse to the body (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied instantaneously. Both the impulse and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
-		<method name="get_angular_damp" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the angular damp for this body.
-			</description>
-		</method>
-		<method name="get_angular_velocity" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body angular velocity. This changes by physics granularity. See [method set_angular_velocity].
-			</description>
-		</method>
 		<method name="get_applied_force" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -77,13 +63,6 @@
 				Returns the body's total applied torque.
 			</description>
 		</method>
-		<method name="get_bounce" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body bounciness.
-			</description>
-		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -91,120 +70,11 @@
 				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].
 			</description>
 		</method>
-		<method name="get_continuous_collision_detection_mode" qualifiers="const">
-			<return type="int" enum="RigidBody2D.CCDMode">
-			</return>
-			<description>
-				Return whether this body is using continuous collision detection.
-			</description>
-		</method>
-		<method name="get_friction" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body friction.
-			</description>
-		</method>
-		<method name="get_gravity_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the gravity factor.
-			</description>
-		</method>
 		<method name="get_inertia" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Returns the body's moment of inertia, which is computed automatically from the body's mass and assigned [Shape2D]s during the physics frame. Note that it will not yet have a value in the [code]_ready()[/code] function.
-			</description>
-		</method>
-		<method name="get_linear_damp" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the linear damp for this body.
-			</description>
-		</method>
-		<method name="get_linear_velocity" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the body's linear velocity. This changes when a physics frame has passed, not during a normal update. See [method set_linear_velocity].
-			</description>
-		</method>
-		<method name="get_mass" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body mass.
-			</description>
-		</method>
-		<method name="get_max_contacts_reported" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the maximum contacts that can be reported. See [method set_max_contacts_reported].
-			</description>
-		</method>
-		<method name="get_mode" qualifiers="const">
-			<return type="int" enum="RigidBody2D.Mode">
-			</return>
-			<description>
-				Return the current body mode, see [method set_mode].
-			</description>
-		</method>
-		<method name="get_weight" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body weight given standard earth-weight (gravity 9.8).
-			</description>
-		</method>
-		<method name="is_able_to_sleep" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if the body has the ability to fall asleep when not moving. See [method set_can_sleep].
-			</description>
-		</method>
-		<method name="is_contact_monitor_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether contact monitoring is enabled.
-			</description>
-		</method>
-		<method name="is_sleeping" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the body is sleeping.
-			</description>
-		</method>
-		<method name="is_using_custom_integrator">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if the body is not doing any built-in force integration.
-			</description>
-		</method>
-		<method name="set_angular_damp">
-			<return type="void">
-			</return>
-			<argument index="0" name="angular_damp" type="float">
-			</argument>
-			<description>
-				Set the angular damp for this body. If this value is different from -1, any angular damp derived from the world or areas will be overridden.
-			</description>
-		</method>
-		<method name="set_angular_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="angular_velocity" type="float">
-			</argument>
-			<description>
-				Set the body angular velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="set_applied_force">
@@ -234,62 +104,6 @@
 				Sets the body's velocity on the given axis. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
-		<method name="set_bounce">
-			<return type="void">
-			</return>
-			<argument index="0" name="bounce" type="float">
-			</argument>
-			<description>
-				Set the body bounciness, from 0 (no bounce) to 1 (full bounce).
-			</description>
-		</method>
-		<method name="set_can_sleep">
-			<return type="void">
-			</return>
-			<argument index="0" name="able_to_sleep" type="bool">
-			</argument>
-			<description>
-				Set the body ability to fall asleep when not moving. This saves an enormous amount of processor time when there are plenty of rigid bodies (non static) in a scene.
-				Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
-			</description>
-		</method>
-		<method name="set_contact_monitor">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Enable contact monitoring. This allows the body to emit signals when it collides with another.
-			</description>
-		</method>
-		<method name="set_continuous_collision_detection_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="RigidBody2D.CCDMode">
-			</argument>
-			<description>
-				Set the continuous collision detection mode from the enum CCD_MODE_*.
-				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. The first is more precise, and misses less impacts by small, fast-moving objects. The second is faster to compute, but can miss small, fast-moving objects.
-			</description>
-		</method>
-		<method name="set_friction">
-			<return type="void">
-			</return>
-			<argument index="0" name="friction" type="float">
-			</argument>
-			<description>
-				Set the body friction, from 0 (frictionless) to 1 (full friction).
-			</description>
-		</method>
-		<method name="set_gravity_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="gravity_scale" type="float">
-			</argument>
-			<description>
-				Set the gravity factor. This factor multiplies gravity intensity just for this body.
-			</description>
-		</method>
 		<method name="set_inertia">
 			<return type="void">
 			</return>
@@ -297,78 +111,6 @@
 			</argument>
 			<description>
 				Set the body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
-			</description>
-		</method>
-		<method name="set_linear_damp">
-			<return type="void">
-			</return>
-			<argument index="0" name="linear_damp" type="float">
-			</argument>
-			<description>
-				Set the linear damp for this body. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
-			</description>
-		</method>
-		<method name="set_linear_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="linear_velocity" type="Vector2">
-			</argument>
-			<description>
-				Set the body linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may be running in another thread and definitely runs at a different granularity. Use [method _integrate_forces] as your process loop if you want to have precise control of the body state.
-			</description>
-		</method>
-		<method name="set_mass">
-			<return type="void">
-			</return>
-			<argument index="0" name="mass" type="float">
-			</argument>
-			<description>
-				Set the body mass.
-			</description>
-		</method>
-		<method name="set_max_contacts_reported">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Set the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
-			</description>
-		</method>
-		<method name="set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="RigidBody2D.Mode">
-			</argument>
-			<description>
-				Set the body mode, from the MODE_* enum. This allows to change to a static body or a character body.
-			</description>
-		</method>
-		<method name="set_sleeping">
-			<return type="void">
-			</return>
-			<argument index="0" name="sleeping" type="bool">
-			</argument>
-			<description>
-				Set whether a body is sleeping or not. Sleeping bodies are not affected by forces until a collision or an [method apply_impulse] / [method set_applied_force] wakes them up. Until then, they behave like a static body.
-			</description>
-		</method>
-		<method name="set_use_custom_integrator">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Pass true to disable the internal force integration (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
-			</description>
-		</method>
-		<method name="set_weight">
-			<return type="void">
-			</return>
-			<argument index="0" name="weight" type="float">
-			</argument>
-			<description>
-				Set the body weight given standard earth-weight (gravity 9.8). Not really useful for 2D since most measures for this node are in pixels.
 			</description>
 		</method>
 		<method name="test_motion">
@@ -484,25 +226,25 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_RIGID" value="0">
+		<constant name="MODE_RIGID" value="0" enum="Mode">
 			Rigid mode. The body behaves as a physical object. It collides with other bodies and responds to forces applied to it. This is the default mode.
 		</constant>
-		<constant name="MODE_STATIC" value="1">
+		<constant name="MODE_STATIC" value="1" enum="Mode">
 			Static mode. The body behaves like a [StaticBody2D] and does not move.
 		</constant>
-		<constant name="MODE_CHARACTER" value="2">
+		<constant name="MODE_CHARACTER" value="2" enum="Mode">
 			Character mode. Similar to [code]MODE_RIGID[/code], but the body can not rotate.
 		</constant>
-		<constant name="MODE_KINEMATIC" value="3">
+		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
 			Kinematic mode. The body behaves like a [KinematicBody2D], and must be moved by code.
 		</constant>
-		<constant name="CCD_MODE_DISABLED" value="0">
+		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Continuous collision detection disabled. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
-		<constant name="CCD_MODE_CAST_RAY" value="1">
+		<constant name="CCD_MODE_CAST_RAY" value="1" enum="CCDMode">
 			Continuous collision detection enabled using raycasting. This is faster than shapecasting but less precise.
 		</constant>
-		<constant name="CCD_MODE_CAST_SHAPE" value="2">
+		<constant name="CCD_MODE_CAST_SHAPE" value="2" enum="CCDMode">
 			Continuous collision detection enabled using shapecasting. This is the slowest CCD method and the most precise.
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Navigation" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="Navigation" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -57,12 +57,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_up_vector" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="navmesh_create">
 			<return type="int">
 			</return>
@@ -89,14 +83,6 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="xform" type="Transform">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_up_vector">
-			<return type="void">
-			</return>
-			<argument index="0" name="up" type="Vector3">
 			</argument>
 			<description>
 			</description>

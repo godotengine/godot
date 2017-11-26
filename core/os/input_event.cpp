@@ -939,6 +939,14 @@ void InputEventGesture::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
 
+void InputEventGesture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_position", "position"), &InputEventGesture::set_position);
+	ClassDB::bind_method(D_METHOD("get_position"), &InputEventGesture::get_position);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
+}
+
 Vector2 InputEventGesture::get_position() const {
 
 	return pos;
@@ -970,6 +978,14 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 	return ev;
 }
 
+void InputEventMagnifyGesture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_factor", "factor"), &InputEventMagnifyGesture::set_factor);
+	ClassDB::bind_method(D_METHOD("get_factor"), &InputEventMagnifyGesture::get_factor);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "factor"), "set_factor", "get_factor");
+}
+
 InputEventMagnifyGesture::InputEventMagnifyGesture() {
 
 	factor = 1.0;
@@ -998,6 +1014,14 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 	ev->set_delta(get_delta());
 
 	return ev;
+}
+
+void InputEventPanGesture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_delta", "delta"), &InputEventPanGesture::set_delta);
+	ClassDB::bind_method(D_METHOD("get_delta"), &InputEventPanGesture::get_delta);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "delta"), "set_delta", "get_delta");
 }
 
 InputEventPanGesture::InputEventPanGesture() {

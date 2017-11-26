@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node2D" inherits="CanvasItem" category="Core" version="3.0-alpha">
+<class name="Node2D" inherits="CanvasItem" category="Core" version="3.0-beta">
 	<brief_description>
 		A 2D game object, parent of all 2D related nodes. Has a position, rotation, scale and Z-index.
 	</brief_description>
@@ -20,15 +20,6 @@
 				Multiplies the current scale by the 'ratio' vector.
 			</description>
 		</method>
-		<method name="edit_set_pivot">
-			<return type="void">
-			</return>
-			<argument index="0" name="pivot" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's pivot position.
-			</description>
-		</method>
 		<method name="get_angle_to" qualifiers="const">
 			<return type="float">
 			</return>
@@ -36,41 +27,6 @@
 			</argument>
 			<description>
 				Returns the angle between the node and the 'point' in radians.
-			</description>
-		</method>
-		<method name="get_global_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the node's global position.
-			</description>
-		</method>
-		<method name="get_global_rotation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the node's global rotation in radians.
-			</description>
-		</method>
-		<method name="get_global_rotation_degrees" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the node's global rotation in degrees.
-			</description>
-		</method>
-		<method name="get_global_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the node's global scale.
-			</description>
-		</method>
-		<method name="get_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the node's position.
 			</description>
 		</method>
 		<method name="get_relative_transform_to_parent" qualifiers="const">
@@ -82,34 +38,6 @@
 				Returns the [Transform2D] relative to this node's parent.
 			</description>
 		</method>
-		<method name="get_rotation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the node's rotation in radians.
-			</description>
-		</method>
-		<method name="get_rotation_degrees" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the node's rotation in degrees.
-			</description>
-		</method>
-		<method name="get_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the node's scale.
-			</description>
-		</method>
-		<method name="get_z" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the node's Z-index.
-			</description>
-		</method>
 		<method name="global_translate">
 			<return type="void">
 			</return>
@@ -117,13 +45,6 @@
 			</argument>
 			<description>
 				Adds the 'offset' vector to the node's global position.
-			</description>
-		</method>
-		<method name="is_z_relative" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if this node's Z-index is relative to its parent's. Else, returns false.
 			</description>
 		</method>
 		<method name="look_at">
@@ -164,114 +85,6 @@
 			</argument>
 			<description>
 				Applies a rotation to the node, in radians, starting from its current rotation.
-			</description>
-		</method>
-		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's global position.
-			</description>
-		</method>
-		<method name="set_global_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="radians" type="float">
-			</argument>
-			<description>
-				Sets the node's global rotation in radians.
-			</description>
-		</method>
-		<method name="set_global_rotation_degrees">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Sets the node's global rotation in degrees.
-			</description>
-		</method>
-		<method name="set_global_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's global scale.
-			</description>
-		</method>
-		<method name="set_global_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
-			<description>
-				Sets the node's global [Transform2D].
-			</description>
-		</method>
-		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's position.
-			</description>
-		</method>
-		<method name="set_rotation">
-			<return type="void">
-			</return>
-			<argument index="0" name="radians" type="float">
-			</argument>
-			<description>
-				Sets the node's rotation in radians.
-			</description>
-		</method>
-		<method name="set_rotation_degrees">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Sets the node's rotation in degrees.
-			</description>
-		</method>
-		<method name="set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-				Sets the node's scale.
-			</description>
-		</method>
-		<method name="set_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="xform" type="Transform2D">
-			</argument>
-			<description>
-				Sets the node's local [Transform2D].
-			</description>
-		</method>
-		<method name="set_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="z" type="int">
-			</argument>
-			<description>
-				Sets the node's Z-index.
-			</description>
-		</method>
-		<method name="set_z_as_relative">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Makes the node's Z-index relative to its parent's Z-index. If this node's Z-index is 2 and its parent's effective Z-index is 3, then this node's effective Z-index will be 2 + 3 = 5.
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">

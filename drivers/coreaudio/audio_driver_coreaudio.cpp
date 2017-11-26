@@ -220,7 +220,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->audio_server_process(frames, ad->samples_in.ptr());
+			ad->audio_server_process(frames, ad->samples_in.ptrw());
 
 			for (int j = 0; j < frames * ad->channels; j++) {
 

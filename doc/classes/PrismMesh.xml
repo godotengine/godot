@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrismMesh" inherits="PrimitiveMesh" category="Core" version="3.0-alpha">
+<class name="PrismMesh" inherits="PrimitiveMesh" category="Core" version="3.0-beta">
 	<brief_description>
 		Class representing a prism-shaped [PrimitiveMesh].
 	</brief_description>
@@ -11,76 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_left_to_right" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subdivide_depth" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subdivide_height" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subdivide_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_left_to_right">
-			<return type="void">
-			</return>
-			<argument index="0" name="left_to_right" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subdivide_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="segments" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subdivide_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="segments" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subdivide_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="segments" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirectionalLight" inherits="Light" category="Core" version="3.0-alpha">
+<class name="DirectionalLight" inherits="Light" category="Core" version="3.0-beta">
 	<brief_description>
 		Directional Light, such as the Sun or the Moon.
 	</brief_description>
@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_shadow_depth_range" qualifiers="const">
-			<return type="int" enum="DirectionalLight.ShadowDepthRange">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shadow_mode" qualifiers="const">
-			<return type="int" enum="DirectionalLight.ShadowMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_blend_splits_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_splits">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_depth_range">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowDepthRange">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="DirectionalLight.ShadowMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param">
@@ -75,15 +33,15 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SHADOW_ORTHOGONAL" value="0">
+		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1">
+		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2">
+		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2" enum="ShadowMode">
 		</constant>
-		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0">
+		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0" enum="ShadowDepthRange">
 		</constant>
-		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1">
+		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="ShadowDepthRange">
 		</constant>
 	</constants>
 </class>

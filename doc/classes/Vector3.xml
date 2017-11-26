@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3" category="Built-In Types" version="3.0-alpha">
+<class name="Vector3" category="Built-In Types" version="3.0-beta">
 	<brief_description>
 		Vector class, which performs basic 3D vector math operations.
 	</brief_description>
@@ -241,13 +241,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0" enum="">
+		<constant name="AXIS_X" value="0">
 			Enumerated value for the X axis. Returned by functions like max_axis or min_axis.
 		</constant>
-		<constant name="AXIS_Y" value="1" enum="">
+		<constant name="AXIS_Y" value="1">
 			Enumerated value for the Y axis.
 		</constant>
-		<constant name="AXIS_Z" value="2" enum="">
+		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis.
 		</constant>
 	</constants>

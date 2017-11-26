@@ -3477,7 +3477,7 @@ void RasterizerStorageGLES3::mesh_clear(RID p_mesh) {
 	}
 }
 
-void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, float *p_weights) {
+void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p_weights) {
 
 	glBindVertexArray(s->array_id);
 
@@ -4063,7 +4063,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 
 			int stride = multimesh->color_floats + multimesh->xform_floats;
 			int count = multimesh->data.size();
-			float *data = multimesh->data.ptr();
+			float *data = multimesh->data.ptrw();
 
 			AABB aabb;
 
@@ -4327,7 +4327,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform(RID p_skeleton, int p_b
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(skeleton->use_2d);
 
-	float *texture = skeleton->skel_texture.ptr();
+	float *texture = skeleton->skel_texture.ptrw();
 
 	int base_ofs = ((p_bone / 256) * 256) * 3 * 4 + (p_bone % 256) * 4;
 
@@ -4390,7 +4390,7 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton, int 
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
-	float *texture = skeleton->skel_texture.ptr();
+	float *texture = skeleton->skel_texture.ptrw();
 
 	int base_ofs = ((p_bone / 256) * 256) * 2 * 4 + (p_bone % 256) * 4;
 
@@ -5632,8 +5632,8 @@ void RasterizerStorageGLES3::update_particles() {
 			}
 
 			int tc = material->textures.size();
-			RID *textures = material->textures.ptr();
-			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptr();
+			RID *textures = material->textures.ptrw();
+			ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
 			for (int i = 0; i < tc; i++) {
 

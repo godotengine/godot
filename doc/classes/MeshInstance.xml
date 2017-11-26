@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance" inherits="GeometryInstance" category="Core" version="3.0-alpha">
+<class name="MeshInstance" inherits="GeometryInstance" category="Core" version="3.0-beta">
 	<brief_description>
 		Node that instances meshes into a scenario.
 	</brief_description>
@@ -31,19 +31,6 @@
 				This helper creates a [StaticBody] child [Node] with a [ConcavePolygonShape] [CollisionShape] calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
-		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
-			<description>
-				Returns the current [Mesh] resource for the instance.
-			</description>
-		</method>
-		<method name="get_skeleton_path">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_surface_material" qualifiers="const">
 			<return type="Material">
 			</return>
@@ -51,22 +38,6 @@
 			</argument>
 			<description>
 				Returns the [Material] for a surface of the [Mesh] resource.
-			</description>
-		</method>
-		<method name="set_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="mesh" type="Mesh">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_skeleton_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="skeleton_path" type="NodePath">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_surface_material">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" category="Core" version="3.0-alpha">
+<class name="VisualScriptPropertyGet" inherits="VisualScriptNode" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,104 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_base_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_base_script" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_base_type" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_basic_type" qualifiers="const">
-			<return type="int" enum="Variant.Type">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_call_mode" qualifiers="const">
-			<return type="int" enum="VisualScriptPropertyGet.CallMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_index" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_property" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="base_path" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_script">
-			<return type="void">
-			</return>
-			<argument index="0" name="base_script" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="base_type" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_basic_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="basic_type" type="int" enum="Variant.Type">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_call_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="VisualScriptPropertyGet.CallMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_property">
-			<return type="void">
-			</return>
-			<argument index="0" name="property" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
@@ -127,11 +29,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="CALL_MODE_SELF" value="0">
+		<constant name="CALL_MODE_SELF" value="0" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_NODE_PATH" value="1">
+		<constant name="CALL_MODE_NODE_PATH" value="1" enum="CallMode">
 		</constant>
-		<constant name="CALL_MODE_INSTANCE" value="2">
+		<constant name="CALL_MODE_INSTANCE" value="2" enum="CallMode">
 		</constant>
 	</constants>
 </class>

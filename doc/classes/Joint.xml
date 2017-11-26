@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Joint" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="Joint" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all 3D joints
 	</brief_description>
@@ -11,62 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_exclude_nodes_from_collision" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_node_a" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_node_b" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_solver_priority" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_exclude_nodes_from_collision">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_node_a">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_node_b">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_solver_priority">
-			<return type="void">
-			</return>
-			<argument index="0" name="priority" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="collision/exclude_nodes" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">

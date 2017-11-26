@@ -137,7 +137,7 @@ class AppxPackager {
 	ZPOS64_T end_of_central_dir_offset;
 	Vector<uint8_t> central_dir_data;
 
-	String hash_block(uint8_t *p_block_data, size_t p_block_len);
+	String hash_block(const uint8_t *p_block_data, size_t p_block_len);
 
 	void make_block_map();
 	void make_content_types();
@@ -188,14 +188,14 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////
 
-String AppxPackager::hash_block(uint8_t *p_block_data, size_t p_block_len) {
+String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 
 	char hash[32];
 	char base64[45];
 
 	sha256_context ctx;
 	sha256_init(&ctx);
-	sha256_hash(&ctx, p_block_data, p_block_len);
+	sha256_hash(&ctx, (uint8_t *)p_block_data, p_block_len);
 	sha256_done(&ctx, (uint8_t *)hash);
 
 	base64_encode(base64, hash, 32);
@@ -510,8 +510,8 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 
 			strm.avail_in = block_size;
 			strm.avail_out = strm_out.size();
-			strm.next_in = strm_in.ptr();
-			strm.next_out = strm_out.ptr();
+			strm.next_in = (uint8_t *)strm_in.ptr();
+			strm.next_out = strm_out.ptrw();
 
 			int total_out_before = strm.total_out;
 
@@ -541,8 +541,8 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 
 		strm.avail_in = 0;
 		strm.avail_out = strm_out.size();
-		strm.next_in = strm_in.ptr();
-		strm.next_out = strm_out.ptr();
+		strm.next_in = (uint8_t *)strm_in.ptr();
+		strm.next_out = strm_out.ptrw();
 
 		int total_out_before = strm.total_out;
 
@@ -588,7 +588,7 @@ void AppxPackager::finish() {
 	Vector<uint8_t> blockmap_buffer;
 	blockmap_buffer.resize(blockmap_file->get_len());
 
-	blockmap_file->get_buffer(blockmap_buffer.ptr(), blockmap_buffer.size());
+	blockmap_file->get_buffer(blockmap_buffer.ptrw(), blockmap_buffer.size());
 
 	add_file("AppxBlockMap.xml", blockmap_buffer.ptr(), blockmap_buffer.size(), -1, -1, true);
 
@@ -604,7 +604,7 @@ void AppxPackager::finish() {
 	Vector<uint8_t> types_buffer;
 	types_buffer.resize(types_file->get_len());
 
-	types_file->get_buffer(types_buffer.ptr(), types_buffer.size());
+	types_file->get_buffer(types_buffer.ptrw(), types_buffer.size());
 
 	add_file("[Content_Types].xml", types_buffer.ptr(), types_buffer.size(), -1, -1, true);
 
@@ -911,7 +911,7 @@ class EditorExportUWP : public EditorExportPlatform {
 		}
 
 		data.resize(f->get_len());
-		f->get_buffer(data.ptr(), data.size());
+		f->get_buffer(data.ptrw(), data.size());
 
 		f->close();
 		memdelete(f);
@@ -1301,7 +1301,7 @@ public:
 			if (do_read) {
 				data.resize(info.uncompressed_size);
 				unzOpenCurrentFile(pkg);
-				unzReadCurrentFile(pkg, data.ptr(), data.size());
+				unzReadCurrentFile(pkg, data.ptrw(), data.size());
 				unzCloseCurrentFile(pkg);
 			}
 
@@ -1341,7 +1341,7 @@ public:
 
 		// Argc
 		clf.resize(4);
-		encode_uint32(cl.size(), clf.ptr());
+		encode_uint32(cl.size(), clf.ptrw());
 
 		for (int i = 0; i < cl.size(); i++) {
 

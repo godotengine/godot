@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Polygon2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="Polygon2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		A 2D polygon.
 	</brief_description>
@@ -11,163 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_antialiased" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Return the polygon fill color.
-			</description>
-		</method>
-		<method name="get_invert" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether this polygon is inverted or not.
-			</description>
-		</method>
-		<method name="get_invert_border" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the added padding around the bounding box.
-			</description>
-		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the offset for the polygon vertices.
-			</description>
-		</method>
-		<method name="get_polygon" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-				Return the set of vertices that defines this polygon.
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-				Return the polygon texture
-			</description>
-		</method>
-		<method name="get_texture_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the polygon texture offset.
-			</description>
-		</method>
 		<method name="get_texture_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Return the rotation in radians of the texture polygon.
-			</description>
-		</method>
-		<method name="get_texture_rotation_degrees" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_texture_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the uv coordinate multiplier.
-			</description>
-		</method>
-		<method name="get_uv" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-				Return the texture coordinates associated with every vertex of the polygon.
-			</description>
-		</method>
-		<method name="get_vertex_colors" qualifiers="const">
-			<return type="PoolColorArray">
-			</return>
-			<description>
-				Return the list of vertex colors.
-			</description>
-		</method>
-		<method name="set_antialiased">
-			<return type="void">
-			</return>
-			<argument index="0" name="antialiased" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-				Set the polygon fill color. If the polygon has a texture defined, the defined texture will be multiplied by the polygon fill color. This, also, is the default color for those vertices that are not defined by [method get_vertex_colors].
-			</description>
-		</method>
-		<method name="set_invert">
-			<return type="void">
-			</return>
-			<argument index="0" name="invert" type="bool">
-			</argument>
-			<description>
-				Set the polygon as the defined polygon bounding box minus the defined polygon (the defined polygon will appear as a hole on the square that contains the defined polygon).
-			</description>
-		</method>
-		<method name="set_invert_border">
-			<return type="void">
-			</return>
-			<argument index="0" name="invert_border" type="float">
-			</argument>
-			<description>
-				Add extra padding around the bounding box, making it bigger. Too small a value can make the polygon triangulate strangely, due to numerical imprecision.
-			</description>
-		</method>
-		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Set the an offset that will be added to the vertices' position. E.g. if the offset is set to (10,10) then all the polygon points will move 10 units to the right and 10 units to the bottom.
-			</description>
-		</method>
-		<method name="set_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="PoolVector2Array">
-			</argument>
-			<description>
-				Define the set of vertices that will represent the polygon.
-			</description>
-		</method>
-		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture_offset" type="Vector2">
-			</argument>
-			<description>
-				Set the offset of the polygon texture. Initially the texture will appear anchored to the polygon position, the offset is used to move the texture location away from that point (notice that the texture origin is set to its top left corner, so when offset is 0,0 the top left corner of the texture is at the polygon position), for example setting the offset to 10, 10 will move the texture 10 units to the left and 10 units to the top.
 			</description>
 		</method>
 		<method name="set_texture_rotation">
@@ -177,42 +25,6 @@
 			</argument>
 			<description>
 				Set the amount of rotation of the polygon texture, [code]texture_rotation[/code] is specified in radians and clockwise rotation.
-			</description>
-		</method>
-		<method name="set_texture_rotation_degrees">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture_rotation" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture_scale" type="Vector2">
-			</argument>
-			<description>
-				Set the value that will multiply the uv coordinates ([method get_uv]) when applying the texture. Larger values make the texture smaller, and vice versa.
-			</description>
-		</method>
-		<method name="set_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="uv" type="PoolVector2Array">
-			</argument>
-			<description>
-				Set the texture coordinates for every vertex of the polygon. There should be one uv vertex for every vertex in the polygon. If there are less, the undefined ones will be assumed to be (0,0). Extra uv vertices are ignored.
-			</description>
-		</method>
-		<method name="set_vertex_colors">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertex_colors" type="PoolColorArray">
-			</argument>
-			<description>
-				Set the color for each vertex of the polygon. There should be one color for every vertex in the polygon. If there are less, the undefined ones will be assumed to be [method get_color]. Extra color entries are ignored.
-	Colors are interpolated between vertices, resulting in smooth gradients when they differ.
 			</description>
 		</method>
 	</methods>

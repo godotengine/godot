@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StaticBody" inherits="PhysicsBody" category="Core" version="3.0-alpha">
+<class name="StaticBody" inherits="PhysicsBody" category="Core" version="3.0-beta">
 	<brief_description>
 		Static body for 3D Physics.
 	</brief_description>
@@ -13,70 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_bounce" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body bounciness.
-			</description>
-		</method>
-		<method name="get_constant_angular_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				Return the constant angular velocity for the body.
-			</description>
-		</method>
-		<method name="get_constant_linear_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-				Return the constant linear velocity for the body.
-			</description>
-		</method>
-		<method name="get_friction" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the body friction.
-			</description>
-		</method>
-		<method name="set_bounce">
-			<return type="void">
-			</return>
-			<argument index="0" name="bounce" type="float">
-			</argument>
-			<description>
-				Set the body bounciness, from 0 (not bouncy) to 1 (bouncy).
-			</description>
-		</method>
-		<method name="set_constant_angular_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="vel" type="Vector3">
-			</argument>
-			<description>
-				Set a constant angular velocity for the body. This does not rotate the body, but affects other bodies touching it, as if it was rotating.
-			</description>
-		</method>
-		<method name="set_constant_linear_velocity">
-			<return type="void">
-			</return>
-			<argument index="0" name="vel" type="Vector3">
-			</argument>
-			<description>
-				Set a constant linear velocity for the body. This does not move the body, but affects other bodies touching it, as if it was moving.
-			</description>
-		</method>
-		<method name="set_friction">
-			<return type="void">
-			</return>
-			<argument index="0" name="friction" type="float">
-			</argument>
-			<description>
-				Set the body friction, from 0 (frictionless) to 1 (full friction).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">

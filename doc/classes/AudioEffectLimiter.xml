@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectLimiter" inherits="AudioEffect" category="Core" version="3.0-alpha">
+<class name="AudioEffectLimiter" inherits="AudioEffect" category="Core" version="3.0-beta">
 	<brief_description>
 		Adds a soft clip Limiter audio effect to an Audio bus.
 	</brief_description>
@@ -12,62 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_ceiling_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_soft_clip_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_soft_clip_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_threshold_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_ceiling_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="ceiling" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_soft_clip_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="soft_clip" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_soft_clip_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="soft_clip" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_threshold_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="threshold" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db">

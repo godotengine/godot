@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpatialMaterial" inherits="Material" category="Core" version="3.0-alpha">
+<class name="SpatialMaterial" inherits="Material" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,788 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_albedo" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_alpha_scissor_threshold" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_anisotropy" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_ao_light_affect" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_ao_texture_channel" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.TextureChannel">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_billboard_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.BillboardMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_blend_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.BlendMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_clearcoat" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_clearcoat_gloss" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cull_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.CullMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth_deep_parallax_max_layers" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth_deep_parallax_min_layers" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth_draw_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.DepthDrawMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_blend_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.BlendMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_uv" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.DetailUV">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_diffuse_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.DiffuseMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_distance_fade_max_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_distance_fade_min_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_operator" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.EmissionOperator">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="feature" type="int" enum="SpatialMaterial.Feature">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="SpatialMaterial.Flags">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_grow" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_line_width" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_metallic" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_metallic_texture_channel" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.TextureChannel">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_normal_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_particles_anim_h_frames" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_particles_anim_loop" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_particles_anim_v_frames" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_point_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_proximity_fade_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_refraction" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_refraction_texture_channel" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.TextureChannel">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_rim" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_rim_tint" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_roughness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_roughness_texture_channel" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.TextureChannel">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_specular" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_specular_mode" qualifiers="const">
-			<return type="int" enum="SpatialMaterial.SpecularMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subsurface_scattering_strength" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="param" type="int" enum="SpatialMaterial.TextureParam">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_transmission" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv1_offset" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv1_scale" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv1_triplanar_blend_sharpness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv2_offset" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv2_scale" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv2_triplanar_blend_sharpness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_depth_deep_parallax_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_distance_fade_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_grow_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_proximity_fade_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_albedo">
-			<return type="void">
-			</return>
-			<argument index="0" name="albedo" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_alpha_scissor_threshold">
-			<return type="void">
-			</return>
-			<argument index="0" name="threshold" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_anisotropy">
-			<return type="void">
-			</return>
-			<argument index="0" name="anisotropy" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_ao_light_affect">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_ao_texture_channel">
-			<return type="void">
-			</return>
-			<argument index="0" name="channel" type="int" enum="SpatialMaterial.TextureChannel">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_billboard_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="SpatialMaterial.BillboardMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="blend_mode" type="int" enum="SpatialMaterial.BlendMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_clearcoat">
-			<return type="void">
-			</return>
-			<argument index="0" name="clearcoat" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_clearcoat_gloss">
-			<return type="void">
-			</return>
-			<argument index="0" name="clearcoat_gloss" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cull_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="cull_mode" type="int" enum="SpatialMaterial.CullMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_deep_parallax">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_deep_parallax_max_layers">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_deep_parallax_min_layers">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_draw_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="depth_draw_mode" type="int" enum="SpatialMaterial.DepthDrawMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="depth_scale" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_blend_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="detail_blend_mode" type="int" enum="SpatialMaterial.BlendMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_uv">
-			<return type="void">
-			</return>
-			<argument index="0" name="detail_uv" type="int" enum="SpatialMaterial.DetailUV">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_diffuse_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="diffuse_mode" type="int" enum="SpatialMaterial.DiffuseMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_distance_fade">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_distance_fade_max_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="distance" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_distance_fade_min_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="distance" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission">
-			<return type="void">
-			</return>
-			<argument index="0" name="emission" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="emission_energy" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_operator">
-			<return type="void">
-			</return>
-			<argument index="0" name="operator" type="int" enum="SpatialMaterial.EmissionOperator">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="feature" type="int" enum="SpatialMaterial.Feature">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="SpatialMaterial.Flags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_grow">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_grow_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_line_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="line_width" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_metallic">
-			<return type="void">
-			</return>
-			<argument index="0" name="metallic" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_metallic_texture_channel">
-			<return type="void">
-			</return>
-			<argument index="0" name="channel" type="int" enum="SpatialMaterial.TextureChannel">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_normal_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="normal_scale" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_particles_anim_h_frames">
-			<return type="void">
-			</return>
-			<argument index="0" name="frames" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_particles_anim_loop">
-			<return type="void">
-			</return>
-			<argument index="0" name="frames" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_particles_anim_v_frames">
-			<return type="void">
-			</return>
-			<argument index="0" name="frames" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_point_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="point_size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_proximity_fade">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_proximity_fade_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="distance" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_refraction">
-			<return type="void">
-			</return>
-			<argument index="0" name="refraction" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_refraction_texture_channel">
-			<return type="void">
-			</return>
-			<argument index="0" name="channel" type="int" enum="SpatialMaterial.TextureChannel">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_rim">
-			<return type="void">
-			</return>
-			<argument index="0" name="rim" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_rim_tint">
-			<return type="void">
-			</return>
-			<argument index="0" name="rim_tint" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_roughness">
-			<return type="void">
-			</return>
-			<argument index="0" name="roughness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_roughness_texture_channel">
-			<return type="void">
-			</return>
-			<argument index="0" name="channel" type="int" enum="SpatialMaterial.TextureChannel">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_specular">
-			<return type="void">
-			</return>
-			<argument index="0" name="specular" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_specular_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="specular_mode" type="int" enum="SpatialMaterial.SpecularMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subsurface_scattering_strength">
-			<return type="void">
-			</return>
-			<argument index="0" name="strength" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="SpatialMaterial.TextureParam">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_transmission">
-			<return type="void">
-			</return>
-			<argument index="0" name="transmission" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv1_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv1_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv1_triplanar_blend_sharpness">
-			<return type="void">
-			</return>
-			<argument index="0" name="sharpness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv2_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv2_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv2_triplanar_blend_sharpness">
-			<return type="void">
-			</return>
-			<argument index="0" name="sharpness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo">
@@ -979,159 +197,159 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="TEXTURE_ALBEDO" value="0">
+		<constant name="TEXTURE_ALBEDO" value="0" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_METALLIC" value="1">
+		<constant name="TEXTURE_METALLIC" value="1" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_ROUGHNESS" value="2">
+		<constant name="TEXTURE_ROUGHNESS" value="2" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_EMISSION" value="3">
+		<constant name="TEXTURE_EMISSION" value="3" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_NORMAL" value="4">
+		<constant name="TEXTURE_NORMAL" value="4" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_RIM" value="5">
+		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_CLEARCOAT" value="6">
+		<constant name="TEXTURE_CLEARCOAT" value="6" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_FLOWMAP" value="7">
+		<constant name="TEXTURE_FLOWMAP" value="7" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8">
+		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DEPTH" value="9">
+		<constant name="TEXTURE_DEPTH" value="9" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10">
+		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_TRANSMISSION" value="11">
+		<constant name="TEXTURE_TRANSMISSION" value="11" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_REFRACTION" value="12">
+		<constant name="TEXTURE_REFRACTION" value="12" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_MASK" value="13">
+		<constant name="TEXTURE_DETAIL_MASK" value="13" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_ALBEDO" value="14">
+		<constant name="TEXTURE_DETAIL_ALBEDO" value="14" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_DETAIL_NORMAL" value="15">
+		<constant name="TEXTURE_DETAIL_NORMAL" value="15" enum="TextureParam">
 		</constant>
-		<constant name="TEXTURE_MAX" value="16">
+		<constant name="TEXTURE_MAX" value="16" enum="TextureParam">
 		</constant>
-		<constant name="DETAIL_UV_1" value="0">
+		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
 		</constant>
-		<constant name="DETAIL_UV_2" value="1">
+		<constant name="DETAIL_UV_2" value="1" enum="DetailUV">
 		</constant>
-		<constant name="FEATURE_TRANSPARENT" value="0">
+		<constant name="FEATURE_TRANSPARENT" value="0" enum="Feature">
 		</constant>
-		<constant name="FEATURE_EMISSION" value="1">
+		<constant name="FEATURE_EMISSION" value="1" enum="Feature">
 		</constant>
-		<constant name="FEATURE_NORMAL_MAPPING" value="2">
+		<constant name="FEATURE_NORMAL_MAPPING" value="2" enum="Feature">
 		</constant>
-		<constant name="FEATURE_RIM" value="3">
+		<constant name="FEATURE_RIM" value="3" enum="Feature">
 		</constant>
-		<constant name="FEATURE_CLEARCOAT" value="4">
+		<constant name="FEATURE_CLEARCOAT" value="4" enum="Feature">
 		</constant>
-		<constant name="FEATURE_ANISOTROPY" value="5">
+		<constant name="FEATURE_ANISOTROPY" value="5" enum="Feature">
 		</constant>
-		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6">
+		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6" enum="Feature">
 		</constant>
-		<constant name="FEATURE_DEPTH_MAPPING" value="7">
+		<constant name="FEATURE_DEPTH_MAPPING" value="7" enum="Feature">
 		</constant>
-		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8">
+		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8" enum="Feature">
 		</constant>
-		<constant name="FEATURE_TRANSMISSION" value="9">
+		<constant name="FEATURE_TRANSMISSION" value="9" enum="Feature">
 		</constant>
-		<constant name="FEATURE_REFRACTION" value="10">
+		<constant name="FEATURE_REFRACTION" value="10" enum="Feature">
 		</constant>
-		<constant name="FEATURE_DETAIL" value="11">
+		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 		</constant>
-		<constant name="FEATURE_MAX" value="12">
+		<constant name="FEATURE_MAX" value="12" enum="Feature">
 		</constant>
-		<constant name="BLEND_MODE_MIX" value="0">
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
 		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0">
+		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_ALWAYS" value="1">
+		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_DISABLED" value="2">
+		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
 		</constant>
-		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3">
+		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3" enum="DepthDrawMode">
 		</constant>
-		<constant name="CULL_BACK" value="0">
+		<constant name="CULL_BACK" value="0" enum="CullMode">
 		</constant>
-		<constant name="CULL_FRONT" value="1">
+		<constant name="CULL_FRONT" value="1" enum="CullMode">
 		</constant>
-		<constant name="CULL_DISABLED" value="2">
+		<constant name="CULL_DISABLED" value="2" enum="CullMode">
 		</constant>
-		<constant name="FLAG_UNSHADED" value="0">
+		<constant name="FLAG_UNSHADED" value="0" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_VERTEX_LIGHTING" value="1">
+		<constant name="FLAG_USE_VERTEX_LIGHTING" value="1" enum="Flags">
 		</constant>
-		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2">
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="2" enum="Flags">
 		</constant>
-		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="3">
+		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="3" enum="Flags">
 		</constant>
-		<constant name="FLAG_SRGB_VERTEX_COLOR" value="4">
+		<constant name="FLAG_SRGB_VERTEX_COLOR" value="4" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_POINT_SIZE" value="5">
+		<constant name="FLAG_USE_POINT_SIZE" value="5" enum="Flags">
 		</constant>
-		<constant name="FLAG_FIXED_SIZE" value="6">
+		<constant name="FLAG_FIXED_SIZE" value="6" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV1_USE_TRIPLANAR" value="7">
+		<constant name="FLAG_UV1_USE_TRIPLANAR" value="7" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8">
+		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8" enum="Flags">
 		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="10">
+		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11">
+		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11" enum="Flags">
 		</constant>
-		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9">
+		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="12">
+		<constant name="FLAG_MAX" value="12" enum="Flags">
 		</constant>
-		<constant name="DIFFUSE_BURLEY" value="0">
+		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT" value="1">
+		<constant name="DIFFUSE_LAMBERT" value="1" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_LAMBERT_WRAP" value="2">
+		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="3">
+		<constant name="DIFFUSE_OREN_NAYAR" value="3" enum="DiffuseMode">
 		</constant>
-		<constant name="DIFFUSE_TOON" value="4">
+		<constant name="DIFFUSE_TOON" value="4" enum="DiffuseMode">
 		</constant>
-		<constant name="SPECULAR_SCHLICK_GGX" value="0">
+		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_BLINN" value="1">
+		<constant name="SPECULAR_BLINN" value="1" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_PHONG" value="2">
+		<constant name="SPECULAR_PHONG" value="2" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_TOON" value="3">
+		<constant name="SPECULAR_TOON" value="3" enum="SpecularMode">
 		</constant>
-		<constant name="SPECULAR_DISABLED" value="4">
+		<constant name="SPECULAR_DISABLED" value="4" enum="SpecularMode">
 		</constant>
-		<constant name="BILLBOARD_DISABLED" value="0">
+		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_ENABLED" value="1">
+		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_FIXED_Y" value="2">
+		<constant name="BILLBOARD_FIXED_Y" value="2" enum="BillboardMode">
 		</constant>
-		<constant name="BILLBOARD_PARTICLES" value="3">
+		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_RED" value="0">
+		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_GREEN" value="1">
+		<constant name="TEXTURE_CHANNEL_GREEN" value="1" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_BLUE" value="2">
+		<constant name="TEXTURE_CHANNEL_BLUE" value="2" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_ALPHA" value="3">
+		<constant name="TEXTURE_CHANNEL_ALPHA" value="3" enum="TextureChannel">
 		</constant>
-		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4">
+		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4" enum="TextureChannel">
 		</constant>
-		<constant name="EMISSION_OP_ADD" value="0">
+		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
 		</constant>
-		<constant name="EMISSION_OP_MULTIPLY" value="1">
+		<constant name="EMISSION_OP_MULTIPLY" value="1" enum="EmissionOperator">
 		</constant>
 	</constants>
 </class>

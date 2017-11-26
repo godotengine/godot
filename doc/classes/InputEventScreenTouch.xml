@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventScreenTouch" inherits="InputEvent" category="Core" version="3.0-alpha">
+<class name="InputEventScreenTouch" inherits="InputEvent" category="Core" version="3.0-beta">
 	<brief_description>
 		Input event type for screen touch events.
 		(only available on mobile devices)
@@ -13,42 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_pressed">
-			<return type="void">
-			</return>
-			<argument index="0" name="pressed" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index">

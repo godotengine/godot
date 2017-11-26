@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PlaneMesh" inherits="PrimitiveMesh" category="Core" version="3.0-alpha">
+<class name="PlaneMesh" inherits="PrimitiveMesh" category="Core" version="3.0-beta">
 	<brief_description>
 		Class representing a planar [PrimitiveMesh].
 	</brief_description>
@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subdivide_depth" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subdivide_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subdivide_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="subdivide" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subdivide_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="subdivide" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size">

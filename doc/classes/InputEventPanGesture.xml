@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventPanGesture" inherits="InputEventGesture" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

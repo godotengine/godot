@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayCast2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="RayCast2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Query the closest object intersecting a ray.
 	</brief_description>
@@ -46,13 +46,6 @@
 				Updates the collision information for the ray.  Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state. Note: [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
-		<method name="get_cast_to" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the destination point of this ray object.
-			</description>
-		</method>
 		<method name="get_collider" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -77,13 +70,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the collision mask for this ray.
-			</description>
-		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -106,32 +92,11 @@
 				Returns the collision point at which the ray intersects the closest object. Note: this point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
-		<method name="get_exclude_parent_body" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this ray should hit your parent node, if it's a body.
-			</description>
-		</method>
-		<method name="get_type_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the type mask (types of objects to detect) for this ray. The value is a sum (bitwise OR'd) of constants available for [Physics2DDirectSpaceState].
-			</description>
-		</method>
 		<method name="is_colliding" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
-			</description>
-		</method>
-		<method name="is_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this raycast is enabled or not.
 			</description>
 		</method>
 		<method name="remove_exception">
@@ -152,24 +117,6 @@
 				Removes a collision exception so the ray does report collisions with the specified [RID].
 			</description>
 		</method>
-		<method name="set_cast_to">
-			<return type="void">
-			</return>
-			<argument index="0" name="local_point" type="Vector2">
-			</argument>
-			<description>
-				Sets the ray destination point, so that the ray will test from the ray's origin to [code]local_point[/code]
-			</description>
-		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Set the mask to filter objects. Only objects in at least one collision layer enabled in the mask will be detected.
-			</description>
-		</method>
 		<method name="set_collision_mask_bit">
 			<return type="void">
 			</return>
@@ -178,33 +125,6 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Enables the RayCast2D. Only enabled raycasts will be able to query the space and report collisions.
-			</description>
-		</method>
-		<method name="set_exclude_parent_body">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="bool">
-			</argument>
-			<description>
-				Toggle whether this ray should hit your parent node, if it's a body.
-			</description>
-		</method>
-		<method name="set_type_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Set the types of objects to detect. For [code]mask[/code] use a logic sum (OR operation) of constants defined in [Physics2DDirectSpaceState], eg. [code]Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY[/code] to detect only those two types.
 			</description>
 		</method>
 	</methods>
@@ -220,13 +140,6 @@
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
 			If [code]true[/code], the parent node will be excluded from collision detection. Default value: [code]true[/code].
-		</member>
-		<member name="type_mask" type="int" setter="set_type_mask" getter="get_type_mask">
-			Object types to detect using a logical sum (OR operation) of type constants defined in [Physics2DDirectSpaceState].
-			Example:
-			[codeblock]
-			RayCast.type_mask = Physics2DDirectSpaceState.TYPE_MASK_STATIC_BODY | Physics2DDirectSpaceState.TYPE_MASK_KINEMATIC_BODY
-			[/codeblock]
 		</member>
 	</members>
 	<constants>

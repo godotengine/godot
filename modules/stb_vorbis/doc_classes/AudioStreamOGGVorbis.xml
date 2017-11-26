@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamOGGVorbis" inherits="AudioStream" category="Core" version="3.0-alpha">
+<class name="AudioStreamOGGVorbis" inherits="AudioStream" category="Core" version="3.0-beta">
 	<brief_description>
 		OGG Vorbis audio stream driver.
 	</brief_description>
@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_data" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_loop_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="has_loop" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="PoolByteArray">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_loop">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_loop_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="seconds" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">

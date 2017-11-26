@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DServer" inherits="Object" category="Core" version="3.0-alpha">
+<class name="Physics2DServer" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Physics 2D Server.
 	</brief_description>
@@ -989,183 +989,183 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
+		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
-		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
+		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
+		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3">
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3" enum="SpaceParameter">
 			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4">
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
 			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
+		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
-		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6">
+		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="6" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
-		<constant name="SHAPE_LINE" value="0">
+		<constant name="SHAPE_LINE" value="0" enum="ShapeType">
 			This is the constant for creating line shapes. A line shape is an infinite line with an origin point, and a normal. Thus, it can be used for front/behind checks.
 		</constant>
-		<constant name="SHAPE_RAY" value="1">
+		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
 		</constant>
-		<constant name="SHAPE_SEGMENT" value="2">
+		<constant name="SHAPE_SEGMENT" value="2" enum="ShapeType">
 			This is the constant for creating segment shapes. A segment shape is a line from a point A to a point B. It can be checked for intersections.
 		</constant>
-		<constant name="SHAPE_CIRCLE" value="3">
+		<constant name="SHAPE_CIRCLE" value="3" enum="ShapeType">
 			This is the constant for creating circle shapes. A circle shape only has a radius. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_RECTANGLE" value="4">
+		<constant name="SHAPE_RECTANGLE" value="4" enum="ShapeType">
 			This is the constant for creating rectangle shapes. A rectangle shape is defined by a width and a height. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="5">
+		<constant name="SHAPE_CAPSULE" value="5" enum="ShapeType">
 			This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="6">
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the method [method CollisionPolygon2D.set_polygon], polygons modified with [method shape_set_data] do not verify that the points supplied form is a convex polygon.
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="7">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks.
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="8">
+		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0">
+		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
 			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
 			Constant to set/get the linear dampening factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6" enum="AreaParameter">
 			Constant to set/get the angular dampening factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7">
+		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1" enum="AreaSpaceOverrideMode">
 			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="AreaSpaceOverrideMode">
 			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3" enum="AreaSpaceOverrideMode">
 			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="AreaSpaceOverrideMode">
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
-		<constant name="BODY_MODE_STATIC" value="0">
+		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
 			Constant for static bodies.
 		</constant>
-		<constant name="BODY_MODE_KINEMATIC" value="1">
+		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies.
 		</constant>
-		<constant name="BODY_MODE_RIGID" value="2">
+		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="3">
+		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
-		<constant name="BODY_PARAM_BOUNCE" value="0">
+		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.
 		</constant>
-		<constant name="BODY_PARAM_FRICTION" value="1">
+		<constant name="BODY_PARAM_FRICTION" value="1" enum="BodyParameter">
 			Constant to set/get a body's friction.
 		</constant>
-		<constant name="BODY_PARAM_MASS" value="2">
+		<constant name="BODY_PARAM_MASS" value="2" enum="BodyParameter">
 			Constant to set/get a body's mass.
 		</constant>
-		<constant name="BODY_PARAM_INERTIA" value="3">
+		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
 			Constant to set/get a body's inertia.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4">
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="4" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="5">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="5" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="6" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="7">
+		<constant name="BODY_PARAM_MAX" value="7" enum="BodyParameter">
 			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
 		</constant>
-		<constant name="BODY_STATE_TRANSFORM" value="0">
+		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.
 		</constant>
-		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1" enum="BodyState">
 			Constant to set/get the current linear velocity of the body.
 		</constant>
-		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2" enum="BodyState">
 			Constant to set/get the current angular velocity of the body.
 		</constant>
-		<constant name="BODY_STATE_SLEEPING" value="3">
+		<constant name="BODY_STATE_SLEEPING" value="3" enum="BodyState">
 			Constant to sleep/wake up a body, or to get whether it is sleeping.
 		</constant>
-		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
 			Constant to set/get whether the body can sleep.
 		</constant>
-		<constant name="JOINT_PIN" value="0">
+		<constant name="JOINT_PIN" value="0" enum="JointType">
 			Constant to create pin joints.
 		</constant>
-		<constant name="JOINT_GROOVE" value="1">
+		<constant name="JOINT_GROOVE" value="1" enum="JointType">
 			Constant to create groove joints.
 		</constant>
-		<constant name="JOINT_DAMPED_SPRING" value="2">
+		<constant name="JOINT_DAMPED_SPRING" value="2" enum="JointType">
 			Constant to create damped spring joints.
 		</constant>
-		<constant name="DAMPED_STRING_REST_LENGTH" value="0">
+		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
 			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>
-		<constant name="DAMPED_STRING_STIFFNESS" value="1">
+		<constant name="DAMPED_STRING_STIFFNESS" value="1" enum="DampedStringParam">
 			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 		</constant>
-		<constant name="DAMPED_STRING_DAMPING" value="2">
+		<constant name="DAMPED_STRING_DAMPING" value="2" enum="DampedStringParam">
 			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 		</constant>
-		<constant name="CCD_MODE_DISABLED" value="0">
+		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.
 		</constant>
-		<constant name="CCD_MODE_CAST_RAY" value="1">
+		<constant name="CCD_MODE_CAST_RAY" value="1" enum="CCDMode">
 			Enables continuous collision detection by raycasting. It is faster than shapecasting, but less precise.
 		</constant>
-		<constant name="CCD_MODE_CAST_SHAPE" value="2">
+		<constant name="CCD_MODE_CAST_SHAPE" value="2" enum="CCDMode">
 			Enables continuous collision detection by shapecasting. It is the slowest CCD method, and the most precise.
 		</constant>
-		<constant name="AREA_BODY_ADDED" value="0">
+		<constant name="AREA_BODY_ADDED" value="0" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
 		</constant>
-		<constant name="AREA_BODY_REMOVED" value="1">
+		<constant name="AREA_BODY_REMOVED" value="1" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
 		</constant>
-		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+		<constant name="INFO_ACTIVE_OBJECTS" value="0" enum="ProcessInfo">
 			Constant to get the number of objects that are not sleeping.
 		</constant>
-		<constant name="INFO_COLLISION_PAIRS" value="1">
+		<constant name="INFO_COLLISION_PAIRS" value="1" enum="ProcessInfo">
 			Constant to get the number of possible collisions.
 		</constant>
-		<constant name="INFO_ISLAND_COUNT" value="2">
+		<constant name="INFO_ISLAND_COUNT" value="2" enum="ProcessInfo">
 			Constant to get the number of space regions where a collision could occur.
 		</constant>
 	</constants>

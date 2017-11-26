@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.0-alpha">
+<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -169,25 +169,25 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_OPEN_FILE" value="0">
+		<constant name="MODE_OPEN_FILE" value="0" enum="Mode">
 		</constant>
-		<constant name="MODE_OPEN_FILES" value="1">
+		<constant name="MODE_OPEN_FILES" value="1" enum="Mode">
 		</constant>
-		<constant name="MODE_OPEN_DIR" value="2">
+		<constant name="MODE_OPEN_DIR" value="2" enum="Mode">
 		</constant>
-		<constant name="MODE_OPEN_ANY" value="3">
+		<constant name="MODE_OPEN_ANY" value="3" enum="Mode">
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="4">
+		<constant name="MODE_SAVE_FILE" value="4" enum="Mode">
 		</constant>
-		<constant name="ACCESS_RESOURCES" value="0">
+		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
 		</constant>
-		<constant name="ACCESS_USERDATA" value="1">
+		<constant name="ACCESS_USERDATA" value="1" enum="Access">
 		</constant>
-		<constant name="ACCESS_FILESYSTEM" value="2">
+		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 		</constant>
-		<constant name="DISPLAY_THUMBNAILS" value="0">
+		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
 		</constant>
-		<constant name="DISPLAY_LIST" value="1">
+		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
 		</constant>
 	</constants>
 </class>

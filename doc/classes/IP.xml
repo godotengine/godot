@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="IP" inherits="Object" category="Core" version="3.0-alpha">
+<class name="IP" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		IP Protocol support functions.
 	</brief_description>
@@ -78,25 +78,25 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="RESOLVER_STATUS_NONE" value="0">
+		<constant name="RESOLVER_STATUS_NONE" value="0" enum="ResolverStatus">
 		</constant>
-		<constant name="RESOLVER_STATUS_WAITING" value="1">
+		<constant name="RESOLVER_STATUS_WAITING" value="1" enum="ResolverStatus">
 		</constant>
-		<constant name="RESOLVER_STATUS_DONE" value="2">
+		<constant name="RESOLVER_STATUS_DONE" value="2" enum="ResolverStatus">
 		</constant>
-		<constant name="RESOLVER_STATUS_ERROR" value="3">
+		<constant name="RESOLVER_STATUS_ERROR" value="3" enum="ResolverStatus">
 		</constant>
-		<constant name="RESOLVER_MAX_QUERIES" value="32" enum="">
+		<constant name="RESOLVER_MAX_QUERIES" value="32">
 		</constant>
-		<constant name="RESOLVER_INVALID_ID" value="-1" enum="">
+		<constant name="RESOLVER_INVALID_ID" value="-1">
 		</constant>
-		<constant name="TYPE_NONE" value="0">
+		<constant name="TYPE_NONE" value="0" enum="Type">
 		</constant>
-		<constant name="TYPE_IPV4" value="1">
+		<constant name="TYPE_IPV4" value="1" enum="Type">
 		</constant>
-		<constant name="TYPE_IPV6" value="2">
+		<constant name="TYPE_IPV6" value="2" enum="Type">
 		</constant>
-		<constant name="TYPE_ANY" value="3">
+		<constant name="TYPE_ANY" value="3" enum="Type">
 		</constant>
 	</constants>
 </class>

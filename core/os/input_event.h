@@ -476,6 +476,9 @@ class InputEventGesture : public InputEventWithModifiers {
 
 	Vector2 pos;
 
+protected:
+	static void _bind_methods();
+
 public:
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;
@@ -485,6 +488,9 @@ class InputEventMagnifyGesture : public InputEventGesture {
 
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture)
 	real_t factor;
+
+protected:
+	static void _bind_methods();
 
 public:
 	void set_factor(real_t p_factor);
@@ -499,6 +505,9 @@ class InputEventPanGesture : public InputEventGesture {
 
 	GDCLASS(InputEventPanGesture, InputEventGesture)
 	Vector2 delta;
+
+protected:
+	static void _bind_methods();
 
 public:
 	void set_delta(const Vector2 &p_delta);

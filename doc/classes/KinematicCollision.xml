@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicCollision" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="KinematicCollision" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
-		Collision data for KinematicBody2D collisions.
+		Collision data for KinematicBody collisions.
 	</brief_description>
 	<description>
 		Contains collision data for KinematicBody collisions. When a [KinematicBody] is moved using [method KinematicBody.move_and_collide], it stops if it detects a collision with another body. If a collision is detected, a KinematicCollision object is returned.
@@ -12,72 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_collider" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_metadata" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_shape" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_shape_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_collider_velocity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_local_shape" qualifiers="const">
-			<return type="Object">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_normal" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_position" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_remainder" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_travel" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="collider" type="Object" setter="" getter="get_collider">

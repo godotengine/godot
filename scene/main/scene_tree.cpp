@@ -1001,7 +1001,7 @@ Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 
 	ret.resize(nc);
 
-	Node **ptr = E->get().nodes.ptr();
+	Node **ptr = E->get().nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 
 		ret[i] = ptr[i];
@@ -1024,7 +1024,7 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 	int nc = E->get().nodes.size();
 	if (nc == 0)
 		return;
-	Node **ptr = E->get().nodes.ptr();
+	Node **ptr = E->get().nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 
 		p_list->push_back(ptr[i]);
@@ -1997,9 +1997,9 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 
 				Variant::CallError ce;
 
-				node->call(name, argp.ptr(), argc, ce);
+				node->call(name, (const Variant **)argp.ptr(), argc, ce);
 				if (ce.error != Variant::CallError::CALL_OK) {
-					String error = Variant::get_call_error_text(node, name, argp.ptr(), argc, ce);
+					String error = Variant::get_call_error_text(node, name, (const Variant **)argp.ptr(), argc, ce);
 					error = "RPC - " + error;
 					ERR_PRINTS(error);
 				}

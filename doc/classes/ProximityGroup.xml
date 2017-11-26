@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProximityGroup" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="ProximityGroup" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		General purpose proximity-detection node.
 	</brief_description>
@@ -21,24 +21,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_grid_radius" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_dispatch_mode">
 			<return type="void">
 			</return>
 			<argument index="0" name="mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_grid_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="Vector3">
 			</argument>
 			<description>
 			</description>

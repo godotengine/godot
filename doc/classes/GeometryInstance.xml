@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GeometryInstance" inherits="VisualInstance" category="Core" version="3.0-alpha">
+<class name="GeometryInstance" inherits="VisualInstance" category="Core" version="3.0-beta">
 	<brief_description>
 		Base node for geometry based visual instances.
 	</brief_description>
@@ -11,124 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_cast_shadows_setting" qualifiers="const">
-			<return type="int" enum="GeometryInstance.ShadowCastingSetting">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_extra_cull_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_lod_max_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_lod_max_hysteresis" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_lod_min_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_lod_min_hysteresis" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_material_override" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-				Return the material override for the whole geometry.
-			</description>
-		</method>
-		<method name="set_cast_shadows_setting">
-			<return type="void">
-			</return>
-			<argument index="0" name="shadow_casting_setting" type="int" enum="GeometryInstance.ShadowCastingSetting">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_extra_cull_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="GeometryInstance.Flags">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_lod_max_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_lod_max_hysteresis">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_lod_min_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_lod_min_hysteresis">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_material_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
-			<description>
-				Set the material override for the whole geometry.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance.ShadowCastingSetting">
@@ -149,17 +31,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 		</constant>
-		<constant name="FLAG_USE_BAKED_LIGHT" value="0">
+		<constant name="FLAG_USE_BAKED_LIGHT" value="0" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="1">
+		<constant name="FLAG_MAX" value="1" enum="Flags">
 		</constant>
 	</constants>
 </class>

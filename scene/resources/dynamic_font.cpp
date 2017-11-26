@@ -125,7 +125,7 @@ Error DynamicFontAtSize::_load() {
 			_fontdata[font->font_path] = Vector<uint8_t>();
 			Vector<uint8_t> &fontdata = _fontdata[font->font_path];
 			fontdata.resize(len);
-			f->get_buffer(fontdata.ptr(), len);
+			f->get_buffer(fontdata.ptrw(), len);
 			font->set_font_ptr(fontdata.ptr(), len);
 			f->close();
 		}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CapsuleShape" inherits="Shape" category="Core" version="3.0-alpha">
+<class name="CapsuleShape" inherits="Shape" category="Core" version="3.0-beta">
 	<brief_description>
 		Capsule shape for collisions.
 	</brief_description>
@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the capsule height.
-			</description>
-		</method>
-		<method name="get_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the capsule radius.
-			</description>
-		</method>
-		<method name="set_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="height" type="float">
-			</argument>
-			<description>
-				Set the capsule height.
-			</description>
-		</method>
-		<method name="set_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-				Set the capsule radius.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height">

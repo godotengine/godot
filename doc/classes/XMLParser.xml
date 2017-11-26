@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="XMLParser" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		Low-level class for creating parsers for XML files.
 	</brief_description>
@@ -148,25 +148,25 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NODE_NONE" value="0">
+		<constant name="NODE_NONE" value="0" enum="NodeType">
 			There's no node (no file or buffer opened)
 		</constant>
-		<constant name="NODE_ELEMENT" value="1">
+		<constant name="NODE_ELEMENT" value="1" enum="NodeType">
 			Element (tag)
 		</constant>
-		<constant name="NODE_ELEMENT_END" value="2">
+		<constant name="NODE_ELEMENT_END" value="2" enum="NodeType">
 			End of element
 		</constant>
-		<constant name="NODE_TEXT" value="3">
+		<constant name="NODE_TEXT" value="3" enum="NodeType">
 			Text node
 		</constant>
-		<constant name="NODE_COMMENT" value="4">
+		<constant name="NODE_COMMENT" value="4" enum="NodeType">
 			Comment node
 		</constant>
-		<constant name="NODE_CDATA" value="5">
+		<constant name="NODE_CDATA" value="5" enum="NodeType">
 			CDATA content
 		</constant>
-		<constant name="NODE_UNKNOWN" value="6">
+		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
 			Unknown node
 		</constant>
 	</constants>

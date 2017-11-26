@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBox" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="StyleBox" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for drawing stylized boxes for the UI.
 	</brief_description>
@@ -27,15 +27,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_default_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return the default offset of the margin "margin" (see MARGIN_* enum) of a StyleBox, Controls that draw styleboxes with context inside need to know the margin, so the border of the stylebox is not occluded.
-			</description>
-		</method>
 		<method name="get_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -57,17 +48,6 @@
 			</return>
 			<description>
 				Return the "offset" of a stylebox, this is a helper function, like writing [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
-			</description>
-		</method>
-		<method name="set_default_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
-			<description>
-				Set the default offset "offset" of the margin "margin" (see MARGIN_* enum) for a StyleBox, Controls that draw styleboxes with context inside need to know the margin, so the border of the stylebox is not occluded.
 			</description>
 		</method>
 		<method name="test_mask" qualifiers="const">

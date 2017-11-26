@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="Camera" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Camera node, displays from a point of view.
 	</brief_description>
@@ -249,25 +249,25 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PROJECTION_PERSPECTIVE" value="0">
+		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="Projection">
 			Perspective Projection (object's size on the screen becomes smaller when far away).
 		</constant>
-		<constant name="PROJECTION_ORTHOGONAL" value="1">
+		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
 			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
 		</constant>
-		<constant name="KEEP_WIDTH" value="0">
+		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's width by changing the height. Height is [code]sizey[/code] for orthographic projection, [code]fovy[/code] for perspective projection.
 		</constant>
-		<constant name="KEEP_HEIGHT" value="1">
+		<constant name="KEEP_HEIGHT" value="1" enum="KeepAspect">
 			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's height by changing the width. Width is [code]sizex[/code] for orthographic projection, [code]fovx[/code] for perspective projection.
 		</constant>
-		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disable Doppler effect simulation (default).
 		</constant>
-		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
 			Simulate Doppler effect by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
-		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
 			Simulate Doppler effect by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this Camera compared to those objects affect how Audio is perceived (changing the Audio's [code]pitch shift[/code]).
 		</constant>
 	</constants>

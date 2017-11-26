@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer" inherits="Node" category="Core" version="3.0-alpha">
+<class name="AudioStreamPlayer" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Plays back audio.
 	</brief_description>
@@ -12,47 +12,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_bus" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mix_target" qualifiers="const">
-			<return type="int" enum="AudioStreamPlayer.MixTarget">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_playback_position">
 			<return type="float">
 			</return>
 			<description>
 				Returns the position in the [AudioStream].
-			</description>
-		</method>
-		<method name="get_stream" qualifiers="const">
-			<return type="AudioStream">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_autoplay_enabled">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="play">
@@ -71,46 +35,6 @@
 			</argument>
 			<description>
 				Sets the position from which audio will be played, in seconds.
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mix_target">
-			<return type="void">
-			</return>
-			<argument index="0" name="mix_target" type="int" enum="AudioStreamPlayer.MixTarget">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stream">
-			<return type="void">
-			</return>
-			<argument index="0" name="stream" type="AudioStream">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="volume_db" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="stop">
@@ -149,13 +73,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MIX_TARGET_STEREO" value="0">
+		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
 			The audio will be played only on the first channel.
 		</constant>
-		<constant name="MIX_TARGET_SURROUND" value="1">
+		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
 			The audio will be played on all surround channels.
 		</constant>
-		<constant name="MIX_TARGET_CENTER" value="2">
+		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
 			The audio will be played on the second channel, which is usually the center.
 		</constant>
 	</constants>

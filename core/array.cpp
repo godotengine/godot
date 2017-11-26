@@ -261,7 +261,7 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 	SortArray<Variant, _ArrayVariantSortCustom> avs;
 	avs.compare.obj = p_obj;
 	avs.compare.func = p_function;
-	avs.sort(_p->array.ptr(), _p->array.size());
+	avs.sort(_p->array.ptrw(), _p->array.size());
 	return *this;
 }
 

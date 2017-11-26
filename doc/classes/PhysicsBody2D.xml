@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsBody2D" inherits="CollisionObject2D" category="Core" version="3.0-alpha">
+<class name="PhysicsBody2D" inherits="CollisionObject2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all objects affected by physics in 2D space.
 	</brief_description>
@@ -20,13 +20,6 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="get_collision_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the physics layer this area is in.
-			</description>
-		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -34,13 +27,6 @@
 			</argument>
 			<description>
 				Return an individual bit on the collision mask.
-			</description>
-		</method>
-		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the physics layers this area can scan for collisions.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -61,17 +47,6 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-				Set the physics layers this area is in.
-				Collidable objects can exist in any of 32 different layers. These layers are not visual, but more of a tagging system instead. A collidable can use these layers/tags to select with which objects it can collide, using [method set_collision_mask].
-				A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
-			</description>
-		</method>
 		<method name="set_collision_layer_bit">
 			<return type="void">
 			</return>
@@ -81,15 +56,6 @@
 			</argument>
 			<description>
 				Set/clear individual bits on the layer mask. This makes getting a body in/out of only one layer easier.
-			</description>
-		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Set the physics layers this area can scan for collisions.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">

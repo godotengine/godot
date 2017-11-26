@@ -156,12 +156,12 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return p_what;
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map) {
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode) {
 
 	// children first..
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map);
+		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map, p_light_bake_mode);
 		if (!r) {
 			print_line("was erased..");
 			i--; //was erased
@@ -204,6 +204,11 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}
+		}
+
+		if (p_light_bake_mode != LIGHT_BAKE_DISABLED) {
+
+			mi->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
 		}
 	}
 
@@ -947,7 +952,10 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 							for (int i = 0; i < mesh->get_surface_count(); i++) {
 								mat = mesh->surface_get_material(i);
-								if (!mat.is_valid() || mat->get_name() == "")
+
+								if (!mat.is_valid())
+									continue;
+								if (mat->get_name() == "")
 									continue;
 
 								if (!p_materials.has(mat)) {
@@ -1022,6 +1030,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
@@ -1131,10 +1140,11 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_linerr = p_options["animation/optimizer/max_linear_error"];
 	float anim_optimizer_angerr = p_options["animation/optimizer/max_angular_error"];
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
+	int light_bake_mode = p_options["meshes/light_baking"];
 
 	Map<Ref<ArrayMesh>, Ref<Shape> > collision_map;
 
-	scene = _fix_node(scene, scene, collision_map);
+	scene = _fix_node(scene, scene, collision_map, LightBakeMode(light_bake_mode));
 
 	if (use_optimizer) {
 		_optimize_animations(scene, anim_optimizer_linerr, anim_optimizer_angerr, anim_optimizer_maxang);

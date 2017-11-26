@@ -290,6 +290,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (!scene) {
 				EditorNode::get_singleton()->new_inherited_scene();
+				break;
 			}
 
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -1358,7 +1359,7 @@ void SceneTreeDock::_create() {
 
 		editor_data->get_undo_redo().commit_action();
 		editor->push_item(c);
-
+		editor_selection->clear();
 		if (Object::cast_to<Control>(c)) {
 			//make editor more comfortable, so some controls don't appear super shrunk
 			Control *ct = Object::cast_to<Control>(c);

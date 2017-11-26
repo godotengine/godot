@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Path2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="Path2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Contains a [Curve2D] path for [PathFollow2D] nodes to follow.
 	</brief_description>
@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_curve" qualifiers="const">
-			<return type="Curve2D">
-			</return>
-			<description>
-				Returns the [Curve2D] contained.
-			</description>
-		</method>
-		<method name="set_curve">
-			<return type="void">
-			</return>
-			<argument index="0" name="curve" type="Curve2D">
-			</argument>
-			<description>
-				Sets the [Curve2D].
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve">

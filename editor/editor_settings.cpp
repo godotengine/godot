@@ -1388,7 +1388,7 @@ EditorSettings::EditorSettings() {
 
 		Vector<uint8_t> data;
 		data.resize(etl->uncomp_size);
-		Compression::decompress(data.ptr(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+		Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
 
 		FileAccessMemory *fa = memnew(FileAccessMemory);
 		fa->open_custom(data.ptr(), data.size());

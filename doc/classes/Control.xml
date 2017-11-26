@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" category="Core" version="3.0-alpha">
+<class name="Control" inherits="CanvasItem" category="Core" version="3.0-beta">
 	<brief_description>
 		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
 	</brief_description>
@@ -137,15 +137,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_anchor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return the anchor type (ANCHOR_BEGIN, ANCHOR_END, ANCHOR_RATIO) for a given margin (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM).
-			</description>
-		</method>
 		<method name="get_begin" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -187,12 +178,6 @@
 				Returns the mouse cursor shape the control displays on mouse hover, one of the [code]CURSOR_*[/code] constants.
 			</description>
 		</method>
-		<method name="get_custom_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_default_cursor_shape" qualifiers="const">
 			<return type="int" enum="Control.CursorShape">
 			</return>
@@ -222,34 +207,11 @@
 				Returns the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL) (see [method set_focus_mode]).
 			</description>
 		</method>
-		<method name="get_focus_neighbour" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return the forced neighbour for moving the input focus to. When pressing directional/joypad directions, focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
-			</description>
-		</method>
-		<method name="get_focus_next" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-				Return the 'focus_next' for moving input focus to. When pressing TAB, focus is moved to the next control in the tree. However, the control to move to can be forced with this function.
-			</description>
-		</method>
 		<method name="get_focus_owner" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
 				Return which control is owning the keyboard focus, or null if no one.
-			</description>
-		</method>
-		<method name="get_focus_previous" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-				Return the 'focus_previous' for moving input focus to. When pressing Shift+TAB focus is moved to the previous control in the tree. However, the control to move to can be forced with this function.
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -276,19 +238,6 @@
 				Return position and size of the Control, relative to the top-left corner of the [i]window[/i] Control. This is a helper (see [method get_global_position], [method get_size]).
 			</description>
 		</method>
-		<method name="get_h_grow_direction" qualifiers="const">
-			<return type="int" enum="Control.GrowDirection">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_h_size_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Hint for containers, return horizontal positioning flags.
-			</description>
-		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -299,27 +248,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return a margin offset. Margin can be one of (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Offset value being returned depends on the anchor mode.
-			</description>
-		</method>
 		<method name="get_minimum_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Return the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
-			</description>
-		</method>
-		<method name="get_mouse_filter" qualifiers="const">
-			<return type="int" enum="Control.MouseFilter">
-			</return>
-			<description>
-				Return when the control is ignoring mouse events (even touchpad events send mouse events).
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
@@ -332,19 +265,6 @@
 			<return type="Control">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="get_pivot_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the Control position, relative to the top-left corner of the parent Control and independent of the anchor mode.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -361,33 +281,6 @@
 				Return the rotation (in radians)
 			</description>
 		</method>
-		<method name="get_rotation_degrees" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the rotation (in degrees)
-			</description>
-		</method>
-		<method name="get_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Returns the size of the Control, computed from all margins, however the size returned will [b]never be smaller than the minimum size reported by[/b] [method get_minimum_size]. This means that even if end position of the Control rectangle is smaller than the begin position, the Control will still display and interact correctly. (see description, [method get_minimum_size], [method set_margin], [method set_anchor]).
-			</description>
-		</method>
-		<method name="get_stretch_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Hint for containers, return the stretch ratio. This value is relative to other stretch ratio, so if this control has 2 and another has 1, this one will be twice as big.
-			</description>
-		</method>
 		<method name="get_stylebox" qualifiers="const">
 			<return type="StyleBox">
 			</return>
@@ -398,13 +291,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_theme" qualifiers="const">
-			<return type="Theme">
-			</return>
-			<description>
-				Return a [Theme] override, if one exists (see [method set_theme]).
-			</description>
-		</method>
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String">
 			</return>
@@ -412,19 +298,6 @@
 			</argument>
 			<description>
 				Return the tooltip, which will appear when the cursor is resting over this control.
-			</description>
-		</method>
-		<method name="get_v_grow_direction" qualifiers="const">
-			<return type="int" enum="Control.GrowDirection">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_v_size_flags" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Hint for containers, return vertical positioning flags.
 			</description>
 		</method>
 		<method name="grab_click_focus">
@@ -545,12 +418,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_clipping_contents">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="minimum_size_changed">
 			<return type="void">
 			</return>
@@ -623,22 +490,6 @@
 				Sets MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
 			</description>
 		</method>
-		<method name="set_clip_contents">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_custom_minimum_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_default_cursor_shape">
 			<return type="void">
 			</return>
@@ -682,35 +533,6 @@
 				Set the focus access mode for the control (FOCUS_NONE, FOCUS_CLICK, FOCUS_ALL). Only one Control can be focused at the same time, and it will receive keyboard signals.
 			</description>
 		</method>
-		<method name="set_focus_neighbour">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="neighbour" type="NodePath">
-			</argument>
-			<description>
-				Force a neighbour for moving the input focus to. When pressing directional/joypad directions, focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
-			</description>
-		</method>
-		<method name="set_focus_next">
-			<return type="void">
-			</return>
-			<argument index="0" name="next" type="NodePath">
-			</argument>
-			<description>
-				Force the 'focus_next' for moving input focus to. When pressing TAB, focus is moved to the next control in the tree. However, the control to move to can be forced with this function.
-			</description>
-		</method>
-		<method name="set_focus_previous">
-			<return type="void">
-			</return>
-			<argument index="0" name="previous" type="NodePath">
-			</argument>
-			<description>
-				Force the 'focus_previous' for moving input focus to. When pressing Shift+TAB, focus is moved to the previous control in the tree. However, the control to move to can be forced with this function.
-			</description>
-		</method>
 		<method name="set_global_position">
 			<return type="void">
 			</return>
@@ -718,34 +540,6 @@
 			</argument>
 			<description>
 				Move the Control to a new position, relative to the top-left corner of the [i]window[/i] Control, and without changing current anchor mode. (see [method set_margin]).
-			</description>
-		</method>
-		<method name="set_h_grow_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="direction" type="int" enum="Control.GrowDirection">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_h_size_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-				Hint for containers, set horizontal positioning flags.
-			</description>
-		</method>
-		<method name="set_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
-			<description>
-				Set a margin offset. Margin can be one of (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Offset value being set depends on the anchor mode.
 			</description>
 		</method>
 		<method name="set_margins_preset">
@@ -760,32 +554,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_mouse_filter">
-			<return type="void">
-			</return>
-			<argument index="0" name="filter" type="int" enum="Control.MouseFilter">
-			</argument>
-			<description>
-				Set when the control is ignoring mouse events (even touchpad events send mouse events). (see the MOUSE_FILTER_* constants)
-			</description>
-		</method>
-		<method name="set_pivot_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="pivot_offset" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<description>
-				Move the Control to a new position, relative to the top-left corner of the parent Control, changing all margins if needed and without changing current anchor mode. This is a helper (see [method set_margin]).
-			</description>
-		</method>
 		<method name="set_rotation">
 			<return type="void">
 			</return>
@@ -793,76 +561,6 @@
 			</argument>
 			<description>
 				Set the rotation (in radians).
-			</description>
-		</method>
-		<method name="set_rotation_degrees">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Set the rotation (in degrees).
-			</description>
-		</method>
-		<method name="set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-				Changes MARGIN_RIGHT and MARGIN_BOTTOM to fit a given size. This is a helper (see [method set_margin]).
-			</description>
-		</method>
-		<method name="set_stretch_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="ratio" type="float">
-			</argument>
-			<description>
-				Hint for containers, set the stretch ratio. This value is relative to other stretch ratio, so if this control has 2 and another has 1, this one will be twice as big.
-			</description>
-		</method>
-		<method name="set_theme">
-			<return type="void">
-			</return>
-			<argument index="0" name="theme" type="Theme">
-			</argument>
-			<description>
-				Overrides the whole [Theme] for this node and all its [code]Control[/code] children.
-			</description>
-		</method>
-		<method name="set_tooltip">
-			<return type="void">
-			</return>
-			<argument index="0" name="tooltip" type="String">
-			</argument>
-			<description>
-				Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments.
-			</description>
-		</method>
-		<method name="set_v_grow_direction">
-			<return type="void">
-			</return>
-			<argument index="0" name="direction" type="int" enum="Control.GrowDirection">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_v_size_flags">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-				Hint for containers, set vertical positioning flags.
 			</description>
 		</method>
 		<method name="show_modal">
@@ -908,6 +606,10 @@
 		</member>
 		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
 			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab, the top arrow on the keyboard or top on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
+		</member>
+		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next">
+		</member>
+		<member name="focus_previous" type="NodePath" setter="set_focus_previous" getter="get_focus_previous">
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection">
 		</member>
@@ -1014,172 +716,172 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="FOCUS_NONE" value="0">
+		<constant name="FOCUS_NONE" value="0" enum="FocusMode">
 			The node cannot grab focus. Use with [member set_focus_mode].
 		</constant>
-		<constant name="FOCUS_CLICK" value="1">
+		<constant name="FOCUS_CLICK" value="1" enum="FocusMode">
 			The node can only grab focus on mouse clicks. Use with [member set_focus_mode].
 		</constant>
-		<constant name="FOCUS_ALL" value="2">
+		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
 			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member set_focus_mode].
 		</constant>
-		<constant name="NOTIFICATION_RESIZED" value="40" enum="">
+		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member rect_size] to get the new size.
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_ENTER" value="41" enum="">
+		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
 			Sent when the mouse pointer enters the node's [code]Rect[/code] area.
 		</constant>
-		<constant name="NOTIFICATION_MOUSE_EXIT" value="42" enum="">
+		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
 			Sent when the mouse pointer exits the node's [code]Rect[/code] area.
 		</constant>
-		<constant name="NOTIFICATION_FOCUS_ENTER" value="43" enum="">
+		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
 		</constant>
-		<constant name="NOTIFICATION_FOCUS_EXIT" value="44" enum="">
+		<constant name="NOTIFICATION_FOCUS_EXIT" value="44">
 			Sent when the node loses focus.
 		</constant>
-		<constant name="NOTIFICATION_THEME_CHANGED" value="45" enum="">
+		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
 			Sent when the node's [member theme] changes, right before Godot redraws the [code]Control[/code]. Happens when you call one of the [code]add_*_override[/code]
 		</constant>
-		<constant name="NOTIFICATION_MODAL_CLOSE" value="46" enum="">
+		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
 		</constant>
-		<constant name="CURSOR_ARROW" value="0">
+		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
 		</constant>
-		<constant name="CURSOR_IBEAM" value="1">
+		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
 			Show the system's I-beam mouse cursor when the user hovers the node. The I-beam pointer has a shape similar to "I". It tells the user they can highlight or insert text.
 		</constant>
-		<constant name="CURSOR_POINTING_HAND" value="2">
+		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
 			Show the system's pointing hand mouse cursor when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_CROSS" value="3">
+		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
 			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_WAIT" value="4">
+		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
 			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
 		</constant>
-		<constant name="CURSOR_BUSY" value="5">
+		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
 			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
-		<constant name="CURSOR_DRAG" value="6">
+		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
 		</constant>
-		<constant name="CURSOR_CAN_DROP" value="7">
+		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
 			Show the system's drop mouse cursor when the user hovers the node. It can be an open hand. It tells the user they can drop an item they're currently grabbing, like a node in the Scene dock.
 		</constant>
-		<constant name="CURSOR_FORBIDDEN" value="8">
+		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
 			Show the system's forbidden mouse cursor when the user hovers the node. Often a crossed circle.
 		</constant>
-		<constant name="CURSOR_VSIZE" value="9">
+		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
 			Show the system's vertical resize mouse cursor when the user hovers the node. A double headed vertical arrow. It tells the user they can resize the window or the panel vertically.
 		</constant>
-		<constant name="CURSOR_HSIZE" value="10">
+		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
 			Show the system's horizontal resize mouse cursor when the user hovers the node. A double headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
 		</constant>
-		<constant name="CURSOR_BDIAGSIZE" value="11">
+		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
 			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
-		<constant name="CURSOR_FDIAGSIZE" value="12">
+		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
 			Show the system's window resize mouse cursor when the user hovers the node. The cursor is a double headed arrow that goes from the top left to the bottom right, the opposite of [code]CURSOR_BDIAGSIZE[/code]. It tells the user they can resize the window or the panel both horizontally and vertically.
 		</constant>
-		<constant name="CURSOR_MOVE" value="13">
+		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
 			Show the system's move mouse cursor when the user hovers the node. It shows 2 double-headed arrows at a 90 degree angle. It tells the user they can move a UI element freely.
 		</constant>
-		<constant name="CURSOR_VSPLIT" value="14">
+		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
 			Show the system's vertical split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_VSIZE[/code].
 		</constant>
-		<constant name="CURSOR_HSPLIT" value="15">
+		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
 			Show the system's horizontal split mouse cursor when the user hovers the node. On Windows, it's the same as [code]CURSOR_HSIZE[/code].
 		</constant>
-		<constant name="CURSOR_HELP" value="16">
+		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Show the system's help mouse cursor when the user hovers the node, a question mark.
 		</constant>
-		<constant name="PRESET_TOP_LEFT" value="0">
+		<constant name="PRESET_TOP_LEFT" value="0" enum="LayoutPreset">
 			Snap all 4 anchors to the top-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_TOP_RIGHT" value="1">
+		<constant name="PRESET_TOP_RIGHT" value="1" enum="LayoutPreset">
 			Snap all 4 anchors to the top-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_LEFT" value="2">
+		<constant name="PRESET_BOTTOM_LEFT" value="2" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom-left of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_RIGHT" value="3">
+		<constant name="PRESET_BOTTOM_RIGHT" value="3" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom-right of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_LEFT" value="4">
+		<constant name="PRESET_CENTER_LEFT" value="4" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the left edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_TOP" value="5">
+		<constant name="PRESET_CENTER_TOP" value="5" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the top edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_RIGHT" value="6">
+		<constant name="PRESET_CENTER_RIGHT" value="6" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the right edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER_BOTTOM" value="7">
+		<constant name="PRESET_CENTER_BOTTOM" value="7" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the bottom edge of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_CENTER" value="8">
+		<constant name="PRESET_CENTER" value="8" enum="LayoutPreset">
 			Snap all 4 anchors to the center of the parent container's bounds. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_LEFT_WIDE" value="9">
+		<constant name="PRESET_LEFT_WIDE" value="9" enum="LayoutPreset">
 			Snap all 4 anchors to the left edge of the parent container. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_TOP_WIDE" value="10">
+		<constant name="PRESET_TOP_WIDE" value="10" enum="LayoutPreset">
 			Snap all 4 anchors to the top edge of the parent container. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_RIGHT_WIDE" value="11">
+		<constant name="PRESET_RIGHT_WIDE" value="11" enum="LayoutPreset">
 			Snap all 4 anchors to the right edge of the parent container. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_BOTTOM_WIDE" value="12">
+		<constant name="PRESET_BOTTOM_WIDE" value="12" enum="LayoutPreset">
 			Snap all 4 anchors to the bottom edge of the parent container. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_VCENTER_WIDE" value="13">
+		<constant name="PRESET_VCENTER_WIDE" value="13" enum="LayoutPreset">
 			Snap all 4 anchors to a vertical line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_HCENTER_WIDE" value="14">
+		<constant name="PRESET_HCENTER_WIDE" value="14" enum="LayoutPreset">
 			Snap all 4 anchors to a horizontal line that cuts the parent container in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_WIDE" value="15">
+		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
 			Snap all 4 anchors to the respective corners of the parent container. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent container. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_MODE_MINSIZE" value="0">
+		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_WIDTH" value="1">
+		<constant name="PRESET_MODE_KEEP_WIDTH" value="1" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2">
+		<constant name="PRESET_MODE_KEEP_HEIGHT" value="2" enum="LayoutPresetMode">
 		</constant>
-		<constant name="PRESET_MODE_KEEP_SIZE" value="3">
+		<constant name="PRESET_MODE_KEEP_SIZE" value="3" enum="LayoutPresetMode">
 		</constant>
-		<constant name="SIZE_FILL" value="1">
+		<constant name="SIZE_FILL" value="1" enum="SizeFlags">
 			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND" value="2">
+		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND_FILL" value="3">
+		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags">
 			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
 		</constant>
-		<constant name="SIZE_SHRINK_CENTER" value="4">
+		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
 			Tells the parent [Container] to center the node in itself. It centers the [code]Control[/code] based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_SHRINK_END" value="8">
+		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="MOUSE_FILTER_STOP" value="0">
+		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
 		</constant>
-		<constant name="MOUSE_FILTER_PASS" value="1">
+		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
 		</constant>
-		<constant name="MOUSE_FILTER_IGNORE" value="2">
+		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 		</constant>
-		<constant name="GROW_DIRECTION_BEGIN" value="0">
+		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 		</constant>
-		<constant name="GROW_DIRECTION_END" value="1">
+		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
 		</constant>
-		<constant name="ANCHOR_BEGIN" value="0">
+		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
-		<constant name="ANCHOR_END" value="1">
+		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 	</constants>

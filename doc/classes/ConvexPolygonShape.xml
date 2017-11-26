@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvexPolygonShape" inherits="Shape" category="Core" version="3.0-alpha">
+<class name="ConvexPolygonShape" inherits="Shape" category="Core" version="3.0-beta">
 	<brief_description>
 		Convex polygon shape for 3D physics.
 	</brief_description>
@@ -11,20 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_points" qualifiers="const">
-			<return type="PoolVector3Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_points">
-			<return type="void">
-			</return>
-			<argument index="0" name="points" type="PoolVector3Array">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="points" type="PoolVector3Array" setter="set_points" getter="get_points">

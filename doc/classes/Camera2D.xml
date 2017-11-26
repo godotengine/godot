@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="Camera2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Camera node for 2D scenes.
 	</brief_description>
@@ -32,12 +32,6 @@
 				Force the camera to update scroll immediately.
 			</description>
 		</method>
-		<method name="get_anchor_mode" qualifiers="const">
-			<return type="int" enum="Camera2D.AnchorMode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_camera_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -57,106 +51,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_drag_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return the margins needed to drag the camera (see [method set_drag_margin]).
-			</description>
-		</method>
-		<method name="get_follow_smoothing" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_h_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 			</description>
 		</method>
-		<method name="get_limit" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-				Return the scrolling limit in pixels.
-			</description>
-		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the scroll offset.
-			</description>
-		</method>
 		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_zoom" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_current" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true of this is the current camera (see [method make_current]).
-			</description>
-		</method>
-		<method name="is_follow_smoothing_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_h_drag_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_limit_drawing_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_limit_smoothing_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_margin_drawing_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_rotating" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_screen_drawing_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_v_drag_enabled" qualifiers="const">
-			<return type="bool">
 			</return>
 			<description>
 			</description>
@@ -176,53 +78,10 @@
 				This has no effect if smoothing is disabled.
 			</description>
 		</method>
-		<method name="set_anchor_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="anchor_mode" type="int" enum="Camera2D.AnchorMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_custom_viewport">
 			<return type="void">
 			</return>
 			<argument index="0" name="viewport" type="Node">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_drag_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="drag_margin" type="float">
-			</argument>
-			<description>
-				Set the margins needed to drag the camera (relative to the screen size). Margin uses the MARGIN_* enum. Drag margins of 0,0,0,0 will keep the camera at the center of the screen, while drag margins of 1,1,1,1 will only move when the camera is at the edges.
-			</description>
-		</method>
-		<method name="set_enable_follow_smoothing">
-			<return type="void">
-			</return>
-			<argument index="0" name="follow_smoothing" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_follow_smoothing">
-			<return type="void">
-			</return>
-			<argument index="0" name="follow_smoothing" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_h_drag_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -235,88 +94,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_limit">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="limit" type="int">
-			</argument>
-			<description>
-				Set the scrolling limit in pixels.
-			</description>
-		</method>
-		<method name="set_limit_drawing_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="limit_drawing_enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_limit_smoothing_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="limit_smoothing_enabled" type="bool">
-			</argument>
-			<description>
-				Smooth camera when reaching camera limits.
-				This requires camera smoothing being enabled to have a noticeable effect.
-			</description>
-		</method>
-		<method name="set_margin_drawing_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin_drawing_enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Set the scroll offset. Useful for looking around or camera shake animations.
-			</description>
-		</method>
-		<method name="set_rotating">
-			<return type="void">
-			</return>
-			<argument index="0" name="rotating" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_screen_drawing_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="screen_drawing_enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_v_drag_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_v_offset">
 			<return type="void">
 			</return>
 			<argument index="0" name="ofs" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_zoom">
-			<return type="void">
-			</return>
-			<argument index="0" name="zoom" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -388,9 +169,9 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
+		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0" enum="AnchorMode">
 		</constant>
-		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
+		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1" enum="AnchorMode">
 		</constant>
 	</constants>
 </class>

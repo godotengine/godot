@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Button" inherits="BaseButton" category="Core" version="3.0-alpha">
+<class name="Button" inherits="BaseButton" category="Core" version="3.0-beta">
 	<brief_description>
 		Standard themed Button.
 	</brief_description>
@@ -11,76 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_button_icon" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_clip_text" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_text_align" qualifiers="const">
-			<return type="int" enum="Button.TextAlign">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_flat" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_button_icon">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_clip_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flat">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_text_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="Button.TextAlign">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" enum="Button.TextAlign">
@@ -100,13 +30,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
 			Align the text to the left.
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="TextAlign">
 			Align the text to the center.
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="TextAlign">
 			Align the text to the right.
 		</constant>
 	</constants>

@@ -40,7 +40,7 @@ class StringBuffer {
 	int string_length = 0;
 
 	_FORCE_INLINE_ CharType *current_buffer_ptr() {
-		return static_cast<Vector<CharType> &>(buffer).empty() ? short_buffer : buffer.ptr();
+		return static_cast<Vector<CharType> &>(buffer).empty() ? short_buffer : buffer.ptrw();
 	}
 
 public:

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PinJoint" inherits="Joint" category="Core" version="3.0-alpha">
+<class name="PinJoint" inherits="Joint" category="Core" version="3.0-beta">
 	<brief_description>
 		Pin Joint for 3D Shapes.
 	</brief_description>
@@ -11,24 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="PinJoint.Param">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="PinJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="params/bias" type="float" setter="set_param" getter="get_param">
@@ -44,15 +26,15 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_BIAS" value="0">
+		<constant name="PARAM_BIAS" value="0" enum="Param">
 			The force with wich the pinned objects stay in positional relation to each other.
 			The higher, the stronger.
 		</constant>
-		<constant name="PARAM_DAMPING" value="1">
+		<constant name="PARAM_DAMPING" value="1" enum="Param">
 			The force with wich the pinned objects stay in velocity relation to each other.
 			The higher, the stronger.
 		</constant>
-		<constant name="PARAM_IMPULSE_CLAMP" value="2">
+		<constant name="PARAM_IMPULSE_CLAMP" value="2" enum="Param">
 			If above 0, this value is the maximum value for an impulse that this Joint produces.
 		</constant>
 	</constants>

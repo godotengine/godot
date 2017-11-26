@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayShape2D" inherits="Shape2D" category="Core" version="3.0-alpha">
+<class name="RayShape2D" inherits="Shape2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Ray shape for 2D collisions.
 	</brief_description>
@@ -11,22 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the length of the ray.
-			</description>
-		</method>
-		<method name="set_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="length" type="float">
-			</argument>
-			<description>
-				Set the length of the ray.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length">

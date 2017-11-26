@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CurveTexture" inherits="Texture" category="Core" version="3.0-alpha">
+<class name="CurveTexture" inherits="Texture" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,28 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_curve" qualifiers="const">
-			<return type="Curve">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_curve">
-			<return type="void">
-			</return>
-			<argument index="0" name="curve" type="Curve">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">

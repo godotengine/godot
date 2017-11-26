@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.0-alpha">
+<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.0-beta">
 	<brief_description>
 		Texture Based 3x3 scale style.
 	</brief_description>
@@ -11,72 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_expand_margin_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_h_axis_stretch_mode" qualifiers="const">
-			<return type="int" enum="StyleBoxTexture.AxisStretchMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_margin_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_normal_map" qualifiers="const">
-			<return type="Resource">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_region_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Resource">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_v_axis_stretch_mode" qualifiers="const">
-			<return type="int" enum="StyleBoxTexture.AxisStretchMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_draw_center_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_draw_center">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_expand_margin_all">
 			<return type="void">
 			</return>
@@ -95,74 +29,6 @@
 			<argument index="2" name="size_right" type="float">
 			</argument>
 			<argument index="3" name="size_bottom" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_expand_margin_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_h_axis_stretch_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="StyleBoxTexture.AxisStretchMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_margin_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Margin">
-			</argument>
-			<argument index="1" name="size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_normal_map">
-			<return type="void">
-			</return>
-			<argument index="0" name="normal_map" type="Resource">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_region_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="region" type="Rect2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Resource">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_v_axis_stretch_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="StyleBoxTexture.AxisStretchMode">
 			</argument>
 			<description>
 			</description>
@@ -207,11 +73,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0">
+		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
 		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE" value="1">
+		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2">
+		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
 		</constant>
 	</constants>
 </class>

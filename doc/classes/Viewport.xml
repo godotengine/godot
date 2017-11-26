@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Viewport" inherits="Node" category="Core" version="3.0-alpha">
+<class name="Viewport" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Creates a sub-view into the screen.
 	</brief_description>
@@ -44,18 +44,6 @@
 				Get the canvas transform of the viewport.
 			</description>
 		</method>
-		<method name="get_clear_mode" qualifiers="const">
-			<return type="int" enum="Viewport.ClearMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_debug_draw" qualifiers="const">
-			<return type="int" enum="Viewport.DebugDraw">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
@@ -70,31 +58,11 @@
 				Get the global canvas transform of the viewport.
 			</description>
 		</method>
-		<method name="get_hdr" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether the rendered texture has filters enabled.
-			</description>
-		</method>
 		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Get the mouse position, relative to the viewport.
-			</description>
-		</method>
-		<method name="get_msaa" qualifiers="const">
-			<return type="int" enum="Viewport.MSAA">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_physics_object_picking">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether picking for all physics objects inside the viewport is enabled.
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -103,27 +71,6 @@
 			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="get_shadow_atlas_quadrant_subdiv" qualifiers="const">
-			<return type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_shadow_atlas_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the viewport rect. If the viewport is child of a control, it will use the same rect as the parent. Otherwise, if the rect is empty, the viewport will use all the allowed space.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">
@@ -140,26 +87,6 @@
 				Get the viewport's texture, for use with various objects that you want to texture with the viewport.
 			</description>
 		</method>
-		<method name="get_update_mode" qualifiers="const">
-			<return type="int" enum="Viewport.UpdateMode">
-			</return>
-			<description>
-				Get when the viewport would be updated, will be one of the [code]UPDATE_*[/code] constants.
-			</description>
-		</method>
-		<method name="get_usage" qualifiers="const">
-			<return type="int" enum="Viewport.Usage">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_vflip" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Set whether the render target is flipped on the Y axis.
-			</description>
-		</method>
 		<method name="get_viewport_rid" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -172,13 +99,6 @@
 			</return>
 			<description>
 				Return the final, visible rect in global screen coordinates.
-			</description>
-		</method>
-		<method name="get_world" qualifiers="const">
-			<return type="World">
-			</return>
-			<description>
-				Return the 3D world of the viewport.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
@@ -202,46 +122,12 @@
 				Returns whether there are shown modals on-screen.
 			</description>
 		</method>
-		<method name="has_transparent_background" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the viewport lets whatever is behind it to show.
-			</description>
-		</method>
 		<method name="input">
 			<return type="void">
 			</return>
 			<argument index="0" name="local_event" type="InputEvent">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="is_3d_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_audio_listener" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the viewport sends sounds to the speakers.
-			</description>
-		</method>
-		<method name="is_audio_listener_2d" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the viewport sends soundsfrom 2D emitters to the speakers.
-			</description>
-		</method>
-		<method name="is_input_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether input to the viewport is disabled.
 			</description>
 		</method>
 		<method name="is_size_override_enabled" qualifiers="const">
@@ -256,37 +142,6 @@
 			</return>
 			<description>
 				Get the enabled status of the size strech override set with [method set_size_override_stretch].
-			</description>
-		</method>
-		<method name="is_snap_controls_to_pixels_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_using_own_world" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the viewport is using a world separate from the parent viewport's world.
-			</description>
-		</method>
-		<method name="set_as_audio_listener">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Makes the viewport send sounds to the speakers.
-			</description>
-		</method>
-		<method name="set_as_audio_listener_2d">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Makes the viewport send sounds from 2D emitters to the speakers.
 			</description>
 		</method>
 		<method name="set_attach_to_screen_rect">
@@ -306,39 +161,6 @@
 				Set the canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 			</description>
 		</method>
-		<method name="set_clear_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Viewport.ClearMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_debug_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="debug_draw" type="int" enum="Viewport.DebugDraw">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_disable_3d">
-			<return type="void">
-			</return>
-			<argument index="0" name="disable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_disable_input">
-			<return type="void">
-			</return>
-			<argument index="0" name="disable" type="bool">
-			</argument>
-			<description>
-				Set whether input to the viewport is disabled.
-			</description>
-		</method>
 		<method name="set_global_canvas_transform">
 			<return type="void">
 			</return>
@@ -346,58 +168,6 @@
 			</argument>
 			<description>
 				Set the global canvas transform of the viewport. The canvas transform is relative to this.
-			</description>
-		</method>
-		<method name="set_hdr">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_msaa">
-			<return type="void">
-			</return>
-			<argument index="0" name="msaa" type="int" enum="Viewport.MSAA">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_physics_object_picking">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Enable/disable picking for all physics objects inside the viewport.
-			</description>
-		</method>
-		<method name="set_shadow_atlas_quadrant_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="quadrant" type="int">
-			</argument>
-			<argument index="1" name="subdiv" type="int" enum="Viewport.ShadowAtlasQuadrantSubdiv">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shadow_atlas_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-				Set the size of the viewport.
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -422,79 +192,6 @@
 				Set whether the size override affects stretch as well.
 			</description>
 		</method>
-		<method name="set_snap_controls_to_pixels">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_transparent_background">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If this viewport is a child of another viewport, keep the previously drawn background visible.
-			</description>
-		</method>
-		<method name="set_update_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Viewport.UpdateMode">
-			</argument>
-			<description>
-				Set when the render target would be updated, using the [code]UPDATE_*[/code] constants
-			</description>
-		</method>
-		<method name="set_usage">
-			<return type="void">
-			</return>
-			<argument index="0" name="usage" type="int" enum="Viewport.Usage">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_use_arvr">
-			<return type="void">
-			</return>
-			<argument index="0" name="use" type="bool">
-			</argument>
-			<description>
-				If true this viewport will be bound to our ARVR Server.
-				If this is our main Godot viewport our AR/VR output will be displayed on screen.
-				If output is redirected to an HMD we'll see the output of just one of the eyes without any distortion applied else we'll see the stereo buffer with distortion applied if applicable
-				If this is an extra viewport output will only work if redirection to an HMD is supported by the interface. The render target will allow you to use the undistorted output for the right eye in the display.
-			</description>
-		</method>
-		<method name="set_use_own_world">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Make the viewport use a world separate from the parent viewport's world.
-			</description>
-		</method>
-		<method name="set_vflip">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether the viewport is flipped on the Y axis.
-			</description>
-		</method>
-		<method name="set_world">
-			<return type="void">
-			</return>
-			<argument index="0" name="world" type="World">
-			</argument>
-			<description>
-				Change the 3D world of the viewport.
-			</description>
-		</method>
 		<method name="set_world_2d">
 			<return type="void">
 			</return>
@@ -516,13 +213,6 @@
 			</return>
 			<description>
 				Force update of the 2D and 3D worlds.
-			</description>
-		</method>
-		<method name="use_arvr">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this viewport is using our ARVR Server
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -591,78 +281,78 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="UPDATE_DISABLED" value="0">
+		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
 			Do not update the render target.
 		</constant>
-		<constant name="UPDATE_ONCE" value="1">
+		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
 			Update the render target once, then switch to [code]UPDATE_DISABLED[/code]
 		</constant>
-		<constant name="UPDATE_WHEN_VISIBLE" value="2">
+		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
 			Update the render target only when it is visible. This is the default value.
 		</constant>
-		<constant name="UPDATE_ALWAYS" value="3">
+		<constant name="UPDATE_ALWAYS" value="3" enum="UpdateMode">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7">
+		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
 		</constant>
-		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0">
+		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_VERTICES_IN_FRAME" value="1">
+		<constant name="RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2">
+		<constant name="RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3">
+		<constant name="RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4">
+		<constant name="RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5">
+		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
 		</constant>
-		<constant name="RENDER_INFO_MAX" value="6">
+		<constant name="RENDER_INFO_MAX" value="6" enum="RenderInfo">
 		</constant>
-		<constant name="DEBUG_DRAW_DISABLED" value="0">
+		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_UNSHADED" value="1">
+		<constant name="DEBUG_DRAW_UNSHADED" value="1" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_OVERDRAW" value="2">
+		<constant name="DEBUG_DRAW_OVERDRAW" value="2" enum="DebugDraw">
 		</constant>
-		<constant name="DEBUG_DRAW_WIREFRAME" value="3">
+		<constant name="DEBUG_DRAW_WIREFRAME" value="3" enum="DebugDraw">
 		</constant>
-		<constant name="MSAA_DISABLED" value="0">
+		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
 		</constant>
-		<constant name="MSAA_2X" value="1">
+		<constant name="MSAA_2X" value="1" enum="MSAA">
 		</constant>
-		<constant name="MSAA_4X" value="2">
+		<constant name="MSAA_4X" value="2" enum="MSAA">
 		</constant>
-		<constant name="MSAA_8X" value="3">
+		<constant name="MSAA_8X" value="3" enum="MSAA">
 		</constant>
-		<constant name="MSAA_16X" value="4">
+		<constant name="MSAA_16X" value="4" enum="MSAA">
 		</constant>
-		<constant name="USAGE_2D" value="0">
+		<constant name="USAGE_2D" value="0" enum="Usage">
 		</constant>
-		<constant name="USAGE_2D_NO_SAMPLING" value="1">
+		<constant name="USAGE_2D_NO_SAMPLING" value="1" enum="Usage">
 		</constant>
-		<constant name="USAGE_3D" value="2">
+		<constant name="USAGE_3D" value="2" enum="Usage">
 		</constant>
-		<constant name="USAGE_3D_NO_EFFECTS" value="3">
+		<constant name="USAGE_3D_NO_EFFECTS" value="3" enum="Usage">
 		</constant>
-		<constant name="CLEAR_MODE_ALWAYS" value="0">
+		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
 		</constant>
-		<constant name="CLEAR_MODE_NEVER" value="1">
+		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
 		</constant>
-		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2">
+		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
 		</constant>
 	</constants>
 </class>

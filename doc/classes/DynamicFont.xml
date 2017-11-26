@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DynamicFont" inherits="Font" category="Core" version="3.0-alpha">
+<class name="DynamicFont" inherits="Font" category="Core" version="3.0-beta">
 	<brief_description>
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
@@ -36,42 +36,6 @@
 				Returns the number of fallback fonts.
 			</description>
 		</method>
-		<method name="get_font_data" qualifiers="const">
-			<return type="DynamicFontData">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the font size in pixels.
-			</description>
-		</method>
-		<method name="get_spacing" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
-			<description>
-				Returns the given type of spacing in pixels. See [code]SPACING_*[/code] constants.
-			</description>
-		</method>
-		<method name="get_use_filter" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if filtering is used.
-			</description>
-		</method>
-		<method name="get_use_mipmaps" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if mipmapping is used.
-			</description>
-		</method>
 		<method name="remove_fallback">
 			<return type="void">
 			</return>
@@ -90,53 +54,6 @@
 			</argument>
 			<description>
 				Sets the fallback font at index [code]idx[/code].
-			</description>
-		</method>
-		<method name="set_font_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="DynamicFontData">
-			</argument>
-			<description>
-				Sets the [DynamicFontData].
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="int">
-			</argument>
-			<description>
-				Sets the font size.
-			</description>
-		</method>
-		<method name="set_spacing">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
-			<description>
-				Sets the spacing of the given type. See [code]SPACING_*[/code] constants.
-			</description>
-		</method>
-		<method name="set_use_filter">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to [code]true[/code] to use filtering.
-			</description>
-		</method>
-		<method name="set_use_mipmaps">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to [code]true[/code] to use mipmapping.
 			</description>
 		</method>
 	</methods>
@@ -167,16 +84,16 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SPACING_TOP" value="0">
+		<constant name="SPACING_TOP" value="0" enum="SpacingType">
 			Spacing at the top.
 		</constant>
-		<constant name="SPACING_BOTTOM" value="1">
+		<constant name="SPACING_BOTTOM" value="1" enum="SpacingType">
 			Spacing at the bottom.
 		</constant>
-		<constant name="SPACING_CHAR" value="2">
+		<constant name="SPACING_CHAR" value="2" enum="SpacingType">
 			Character spacing.
 		</constant>
-		<constant name="SPACING_SPACE" value="3">
+		<constant name="SPACING_SPACE" value="3" enum="SpacingType">
 			Space spacing.
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" category="Core" version="3.0-alpha">
+<class name="TextEdit" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Multiline text editing control.
 	</brief_description>
@@ -37,6 +37,14 @@
 				Add a keyword and its color.
 			</description>
 		</method>
+		<method name="can_fold" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="clear_colors">
 			<return type="void">
 			</return>
@@ -58,20 +66,6 @@
 				Copy the current selection.
 			</description>
 		</method>
-		<method name="cursor_get_blink_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Gets whether the text editor caret is blinking.
-			</description>
-		</method>
-		<method name="cursor_get_blink_speed" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Gets the text editor caret blink speed.
-			</description>
-		</method>
 		<method name="cursor_get_column" qualifiers="const">
 			<return type="int">
 			</return>
@@ -84,40 +78,6 @@
 			</return>
 			<description>
 				Return the line the editing cursor is at.
-			</description>
-		</method>
-		<method name="cursor_is_block_mode" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Gets whether the text editor caret is in block mode.
-			</description>
-		</method>
-		<method name="cursor_set_blink_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set the text editor caret to blink.
-			</description>
-		</method>
-		<method name="cursor_set_blink_speed">
-			<return type="void">
-			</return>
-			<argument index="0" name="blink_speed" type="float">
-			</argument>
-			<description>
-				Set the text editor caret blink speed. Cannot be less then or equal to 0.
-			</description>
-		</method>
-		<method name="cursor_set_block_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set the text editor caret to block mode.
 			</description>
 		</method>
 		<method name="cursor_set_column">
@@ -137,6 +97,8 @@
 			</argument>
 			<argument index="1" name="adjust_viewport" type="bool" default="true">
 			</argument>
+			<argument index="2" name="can_be_hidden" type="bool" default="true">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -145,6 +107,20 @@
 			</return>
 			<description>
 				Cut the current selection.
+			</description>
+		</method>
+		<method name="fold_all_lines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="fold_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -204,19 +180,6 @@
 				Return the selection end line.
 			</description>
 		</method>
-		<method name="get_text">
-			<return type="String">
-			</return>
-			<description>
-				Return the whole text.
-			</description>
-		</method>
-		<method name="get_v_scroll_speed" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_word_under_cursor" qualifiers="const">
 			<return type="String">
 			</return>
@@ -232,37 +195,20 @@
 				Insert a given text at the cursor position.
 			</description>
 		</method>
-		<method name="is_context_menu_enabled">
+		<method name="is_folded" qualifiers="const">
 			<return type="bool">
 			</return>
-			<description>
-				Returns true if the context menu is enabled.
-			</description>
-		</method>
-		<method name="is_highlight_all_occurrences_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if highlight all occurrences is enabled.
-			</description>
-		</method>
-		<method name="is_highlight_current_line_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="is_overriding_selected_font_color" qualifiers="const">
+		<method name="is_line_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="is_readonly" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if the text editor is in read-only mode (see [method set_readonly]).
 			</description>
 		</method>
 		<method name="is_selection_active" qualifiers="const">
@@ -270,26 +216,6 @@
 			</return>
 			<description>
 				Return true if the selection is active.
-			</description>
-		</method>
-		<method name="is_show_line_numbers_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if line numbers are enabled.
-			</description>
-		</method>
-		<method name="is_smooth_scroll_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_syntax_coloring_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if the syntax coloring is enabled.
 			</description>
 		</method>
 		<method name="menu_option">
@@ -351,28 +277,12 @@
 				Select all the text.
 			</description>
 		</method>
-		<method name="set_context_menu_enabled">
+		<method name="set_line_as_hidden">
 			<return type="void">
 			</return>
-			<argument index="0" name="enable" type="bool">
+			<argument index="0" name="line" type="int">
 			</argument>
-			<description>
-				Set the status of the context menu. When enabled, the context menu will appear when the [code]TextEdit[/code] is right clicked.
-			</description>
-		</method>
-		<method name="set_highlight_all_occurrences">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to enable highlighting all occurrences of the current selection.
-			</description>
-		</method>
-		<method name="set_highlight_current_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -384,66 +294,6 @@
 			</argument>
 			<description>
 				Set the maximum amount of characters editable.
-			</description>
-		</method>
-		<method name="set_override_selected_font_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="override" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_readonly">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set the text editor as read-only. Text can be displayed but not edited.
-			</description>
-		</method>
-		<method name="set_show_line_numbers">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to enable showing line numbers.
-			</description>
-		</method>
-		<method name="set_smooth_scroll_enable">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_syntax_coloring">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set to enable the syntax coloring.
-			</description>
-		</method>
-		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Set the entire text.
-			</description>
-		</method>
-		<method name="set_v_scroll_speed">
-			<return type="void">
-			</return>
-			<argument index="0" name="speed" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_wrap">
@@ -462,6 +312,20 @@
 				Perform undo operation.
 			</description>
 		</method>
+		<method name="unfold_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="unhide_all_lines">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
@@ -471,6 +335,8 @@
 		<member name="caret_block_mode" type="bool" setter="cursor_set_block_mode" getter="cursor_is_block_mode">
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
+		</member>
+		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 		</member>
@@ -527,28 +393,28 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SEARCH_MATCH_CASE" value="1">
+		<constant name="SEARCH_MATCH_CASE" value="1" enum="SearchFlags">
 			Match case when searching.
 		</constant>
-		<constant name="SEARCH_WHOLE_WORDS" value="2">
+		<constant name="SEARCH_WHOLE_WORDS" value="2" enum="SearchFlags">
 			Match whole words when searching.
 		</constant>
-		<constant name="SEARCH_BACKWARDS" value="4">
+		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
-		<constant name="MENU_CUT" value="0">
+		<constant name="MENU_CUT" value="0" enum="MenuItems">
 		</constant>
-		<constant name="MENU_COPY" value="1">
+		<constant name="MENU_COPY" value="1" enum="MenuItems">
 		</constant>
-		<constant name="MENU_PASTE" value="2">
+		<constant name="MENU_PASTE" value="2" enum="MenuItems">
 		</constant>
-		<constant name="MENU_CLEAR" value="3">
+		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 		</constant>
-		<constant name="MENU_SELECT_ALL" value="4">
+		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
 		</constant>
-		<constant name="MENU_UNDO" value="5">
+		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 		</constant>
-		<constant name="MENU_MAX" value="6">
+		<constant name="MENU_MAX" value="6" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>

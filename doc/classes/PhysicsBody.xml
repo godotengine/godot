@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsBody" inherits="CollisionObject" category="Core" version="3.0-alpha">
+<class name="PhysicsBody" inherits="CollisionObject" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all objects affected by physics in 3D space.
 	</brief_description>
@@ -20,23 +20,11 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="get_collision_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="bit" type="int">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -57,28 +45,12 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
-		<method name="set_collision_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_collision_layer_bit">
 			<return type="void">
 			</return>
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<argument index="1" name="value" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
 			</argument>
 			<description>
 			</description>

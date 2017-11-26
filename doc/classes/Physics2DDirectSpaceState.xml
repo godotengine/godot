@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DDirectSpaceState" inherits="Object" category="Core" version="3.0-alpha">
+<class name="Physics2DDirectSpaceState" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Direct access object to a space in the [Physics2DServer].
 	</brief_description>
@@ -18,7 +18,7 @@
 			</argument>
 			<description>
 				Check whether the shape can travel to a point. If it can, the method will return an array with two floats: The first is the distance the shape can move in that direction without colliding, and the second is the distance at which it will collide.
-	If the shape can not move, the array will be empty.
+				If the shape can not move, the array will be empty.
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -61,8 +61,6 @@
 			</argument>
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="15">
-			</argument>
 			<description>
 				Check whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				shape: Shape index within the object the point is in.
@@ -70,7 +68,7 @@
 				collider_id: Id of the object the point is in.
 				collider: Object the point is inside of.
 				rid: [RID] of the object the point is in.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -84,8 +82,6 @@
 			</argument>
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="15">
-			</argument>
 			<description>
 				Intersect a ray in a given space. The returned object is a dictionary with the following fields:
 				position: Place where ray is stopped.
@@ -96,7 +92,7 @@
 				collider: Object against which the ray was stopped.
 				rid: [RID] of the object against which the ray was stopped.
 				If the ray did not intersect anything, then an empty dictionary (dir.empty()==true) is returned instead.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, a bitmask representing the physics layers to check in, and another bitmask for the types of objects to check (see TYPE_MASK_* constants).
+				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -118,23 +114,5 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="TYPE_MASK_STATIC_BODY" value="1">
-			Check for collisions with static bodies.
-		</constant>
-		<constant name="TYPE_MASK_KINEMATIC_BODY" value="2">
-			Check for collisions with kinematic bodies.
-		</constant>
-		<constant name="TYPE_MASK_RIGID_BODY" value="4">
-			Check for collisions with rigid bodies.
-		</constant>
-		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
-			Check for collisions with rigid bodies in character mode.
-		</constant>
-		<constant name="TYPE_MASK_COLLISION" value="15">
-			Check for collisions with any kind of bodies (but not areas).
-		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-			Check for collisions with areas.
-		</constant>
 	</constants>
 </class>

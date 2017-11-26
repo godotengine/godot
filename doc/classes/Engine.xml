@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Engine" inherits="Object" category="Core" version="3.0-alpha">
+<class name="Engine" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Access to basic engine properties.
 	</brief_description>

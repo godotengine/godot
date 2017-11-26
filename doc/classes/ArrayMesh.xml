@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.0-alpha">
+<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -213,66 +213,66 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NO_INDEX_ARRAY" value="-1" enum="">
+		<constant name="NO_INDEX_ARRAY" value="-1">
 			Default value used for index_array_len when no indices are present.
 		</constant>
-		<constant name="ARRAY_WEIGHTS_SIZE" value="4" enum="">
+		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
 			Amount of weights/bone indices per vertex (always 4).
 		</constant>
-		<constant name="ARRAY_VERTEX" value="0">
+		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Vertex array (array of [Vector3] vertices).
 		</constant>
-		<constant name="ARRAY_NORMAL" value="1">
+		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 			Normal array (array of [Vector3] normals).
 		</constant>
-		<constant name="ARRAY_TANGENT" value="2">
+		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
 			Tangent array, array of groups of 4 floats. first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
 		</constant>
-		<constant name="ARRAY_COLOR" value="3">
+		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
 			Vertex array (array of [Color] colors).
 		</constant>
-		<constant name="ARRAY_TEX_UV" value="4">
+		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
 			UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
 		</constant>
-		<constant name="ARRAY_TEX_UV2" value="5">
+		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
 			Second UV array (array of [Vector3] UVs or float array of groups of 2 floats (u,v)).
 		</constant>
-		<constant name="ARRAY_BONES" value="6">
+		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
 			Array of bone indices, as a float array. Each element in groups of 4 floats.
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7">
+		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
 			Array of bone weights, as a float array. Each element in groups of 4 floats.
 		</constant>
-		<constant name="ARRAY_INDEX" value="8">
+		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
 			Array of integers, used as indices referencing vertices. No index can be beyond the vertex array size.
 		</constant>
-		<constant name="ARRAY_MAX" value="9">
+		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Array format will include vertices (mandatory).
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
 			Array format will include normals
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
 			Array format will include tangents
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
 			Array format will include a color array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
 			Array format will include UVs.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
 			Array format will include another set of UVs.
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64">
+		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
 			Array format will include bone indices.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
 			Array format will include bone weights.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 			Index array will be used.
 		</constant>
 	</constants>

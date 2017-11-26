@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicBody2D" inherits="PhysicsBody2D" category="Core" version="3.0-alpha">
+<class name="KinematicBody2D" inherits="PhysicsBody2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Kinematic body 2D node.
 	</brief_description>
@@ -18,12 +18,6 @@
 			</return>
 			<description>
 				Returns the velocity of the floor. Only updates when calling [method move_and_slide].
-			</description>
-		</method>
-		<method name="get_safe_margin" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -93,14 +87,6 @@
 				If the body collides, it will change direction a maximum of [code]max_bounces[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
 				Returns the movement that remained when the body stopped. To get more detailed information about collisions that occured, use [method get_slide_collision].
-			</description>
-		</method>
-		<method name="set_safe_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="pixels" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="test_move">

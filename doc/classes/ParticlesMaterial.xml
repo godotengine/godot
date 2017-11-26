@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticlesMaterial" inherits="Material" category="Core" version="3.0-alpha">
+<class name="ParticlesMaterial" inherits="Material" category="Core" version="3.0-beta">
 	<brief_description>
 		Particle properties for [Particles] and [Particles2D] nodes.
 	</brief_description>
@@ -12,288 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_color_ramp" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_box_extents" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_color_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_normal_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_point_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_point_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_shape" qualifiers="const">
-			<return type="int" enum="ParticlesMaterial.EmissionShape">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_sphere_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="ParticlesMaterial.Flags">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_flatness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_gravity" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_param_randomness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_param_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_spread" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_trail_color_modifier" qualifiers="const">
-			<return type="GradientTexture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_trail_divisor" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_trail_size_modifier" qualifiers="const">
-			<return type="CurveTexture">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_color_ramp">
-			<return type="void">
-			</return>
-			<argument index="0" name="ramp" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_box_extents">
-			<return type="void">
-			</return>
-			<argument index="0" name="extents" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_color_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_normal_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_point_count">
-			<return type="void">
-			</return>
-			<argument index="0" name="point_count" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_point_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="int" enum="ParticlesMaterial.EmissionShape">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_sphere_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="ParticlesMaterial.Flags">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flatness">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_gravity">
-			<return type="void">
-			</return>
-			<argument index="0" name="accel_vec" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_param_randomness">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="randomness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_param_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ParticlesMaterial.Parameter">
-			</argument>
-			<argument index="1" name="texture" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_spread">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_trail_color_modifier">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="GradientTexture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_trail_divisor">
-			<return type="void">
-			</return>
-			<argument index="0" name="divisor" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_trail_size_modifier">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="CurveTexture">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="angle" type="float" setter="set_param" getter="get_param">
@@ -454,64 +172,64 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set initial velocity properties.
 		</constant>
-		<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angular velocity properties.
 		</constant>
-		<constant name="PARAM_ORBIT_VELOCITY" value="2">
+		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set orbital_velocity properties.
 		</constant>
-		<constant name="PARAM_LINEAR_ACCEL" value="3">
+		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set linear acceleration properties.
 		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="4">
+		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set radial acceleration properties.
 		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set tangential acceleration properties.
 		</constant>
-		<constant name="PARAM_DAMPING" value="6">
+		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set damping properties.
 		</constant>
-		<constant name="PARAM_ANGLE" value="7">
+		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set angle properties.
 		</constant>
-		<constant name="PARAM_SCALE" value="8">
+		<constant name="PARAM_SCALE" value="8" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set scale properties.
 		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="9">
+		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set hue_variation properties.
 		</constant>
-		<constant name="PARAM_ANIM_SPEED" value="10">
+		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation speed properties.
 		</constant>
-		<constant name="PARAM_ANIM_OFFSET" value="11">
+		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
 			Use with [method set_param], [method set_param_randomness], and [method set_param_texture] to set animation offset properties.
 		</constant>
-		<constant name="PARAM_MAX" value="12">
+		<constant name="PARAM_MAX" value="12" enum="Parameter">
 		</constant>
-		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
 			Use with [method set_flag] to set [member flag_align_y].
 		</constant>
-		<constant name="FLAG_ROTATE_Y" value="1">
+		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
 			Use with [method set_flag] to set [member flag_rotate_y]
 		</constant>
-		<constant name="FLAG_MAX" value="4">
+		<constant name="FLAG_MAX" value="4" enum="Flags">
 		</constant>
-		<constant name="EMISSION_SHAPE_POINT" value="0">
+		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.
 		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE" value="1">
+		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
 			Particles will be emitted in the volume of a sphere.
 		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="2">
+		<constant name="EMISSION_SHAPE_BOX" value="2" enum="EmissionShape">
 			Particles will be emitted in the volume of a box.
 		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="3">
+		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
 		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4">
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
 		</constant>
 	</constants>
 </class>

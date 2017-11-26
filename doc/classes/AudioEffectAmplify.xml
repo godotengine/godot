@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectAmplify" inherits="AudioEffect" category="Core" version="3.0-alpha">
+<class name="AudioEffectAmplify" inherits="AudioEffect" category="Core" version="3.0-beta">
 	<brief_description>
 		Adds a Amplify audio effect to an Audio bus.
 		Increases or decreases the volume of the selected audio bus.
@@ -12,20 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="volume" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">

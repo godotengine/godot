@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionObject" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="CollisionObject" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Base node for collision objects.
 	</brief_description>
@@ -36,12 +36,6 @@
 				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
 			</description>
 		</method>
-		<method name="get_capture_input_on_drag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_rid" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -54,12 +48,6 @@
 			</return>
 			<description>
 				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
-			</description>
-		</method>
-		<method name="is_ray_pickable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="is_shape_owner_disabled" qualifiers="const">
@@ -78,22 +66,6 @@
 			</argument>
 			<description>
 				Removes the given shape owner.
-			</description>
-		</method>
-		<method name="set_capture_input_on_drag">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_ray_pickable">
-			<return type="void">
-			</return>
-			<argument index="0" name="ray_pickable" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">

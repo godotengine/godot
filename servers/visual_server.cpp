@@ -728,7 +728,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 			PoolVector<int>::Read rb = bones.read();
 			PoolVector<float>::Read rw = weights.read();
 
-			AABB *bptr = r_bone_aabb.ptr();
+			AABB *bptr = r_bone_aabb.ptrw();
 
 			for (int i = 0; i < vs; i++) {
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="GridMap" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>
@@ -220,7 +220,7 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="INVALID_CELL_ITEM" value="-1" enum="">
+		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="NavigationMesh" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -31,84 +31,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_agent_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_agent_max_climb" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_agent_max_slope" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_agent_radius">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cell_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cell_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_sample_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_sample_max_error" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_edge_max_error" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_edge_max_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_filter_ledge_spans" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_filter_low_hanging_obstacles" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_filter_walkable_low_height_spans" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_polygon">
 			<return type="PoolIntArray">
 			</return>
@@ -120,180 +42,6 @@
 		<method name="get_polygon_count" qualifiers="const">
 			<return type="int">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_region_merge_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_region_min_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_sample_partition_type" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_vertices" qualifiers="const">
-			<return type="PoolVector3Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_verts_per_poly" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_agent_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="agent_height" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_agent_max_climb">
-			<return type="void">
-			</return>
-			<argument index="0" name="agent_max_climb" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_agent_max_slope">
-			<return type="void">
-			</return>
-			<argument index="0" name="agent_max_slope" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_agent_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="agent_radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cell_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="cell_height" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cell_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="cell_size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_sample_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="detail_sample_dist" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_sample_max_error">
-			<return type="void">
-			</return>
-			<argument index="0" name="detail_sample_max_error" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_edge_max_error">
-			<return type="void">
-			</return>
-			<argument index="0" name="edge_max_error" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_edge_max_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="edge_max_length" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_filter_ledge_spans">
-			<return type="void">
-			</return>
-			<argument index="0" name="filter_ledge_spans" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_filter_low_hanging_obstacles">
-			<return type="void">
-			</return>
-			<argument index="0" name="filter_low_hanging_obstacles" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_filter_walkable_low_height_spans">
-			<return type="void">
-			</return>
-			<argument index="0" name="filter_walkable_low_height_spans" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_region_merge_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="region_merge_size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_region_min_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="region_min_size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_sample_partition_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="sample_partition_type" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_vertices">
-			<return type="void">
-			</return>
-			<argument index="0" name="vertices" type="PoolVector3Array">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_verts_per_poly">
-			<return type="void">
-			</return>
-			<argument index="0" name="verts_per_poly" type="float">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -339,11 +87,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="SAMPLE_PARTITION_WATERSHED" value="0" enum="">
+		<constant name="SAMPLE_PARTITION_WATERSHED" value="0">
 		</constant>
-		<constant name="SAMPLE_PARTITION_MONOTONE" value="1" enum="">
+		<constant name="SAMPLE_PARTITION_MONOTONE" value="1">
 		</constant>
-		<constant name="SAMPLE_PARTITION_LAYERS" value="2" enum="">
+		<constant name="SAMPLE_PARTITION_LAYERS" value="2">
 		</constant>
 	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FileDialog" inherits="ConfirmationDialog" category="Core" version="3.0-alpha">
+<class name="FileDialog" inherits="ConfirmationDialog" category="Core" version="3.0-beta">
 	<brief_description>
 		Dialog for selecting files or directories in the filesystem.
 	</brief_description>
@@ -27,13 +27,6 @@
 				Clear all the added filters in the dialog.
 			</description>
 		</method>
-		<method name="get_access" qualifiers="const">
-			<return type="int" enum="FileDialog.Access">
-			</return>
-			<description>
-				Return the file access permission of the dialog.
-			</description>
-		</method>
 		<method name="get_current_dir" qualifiers="const">
 			<return type="String">
 			</return>
@@ -55,19 +48,6 @@
 				Get the current selected path (directory and file) of the file dialog (empty if none).
 			</description>
 		</method>
-		<method name="get_filters" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mode" qualifiers="const">
-			<return type="int" enum="FileDialog.Mode">
-			</return>
-			<description>
-				Get the file dialog mode from the MODE_* enum.
-			</description>
-		</method>
 		<method name="get_vbox">
 			<return type="VBoxContainer">
 			</return>
@@ -80,22 +60,6 @@
 			</return>
 			<description>
 				Invalidate and update the current dialog content list.
-			</description>
-		</method>
-		<method name="is_showing_hidden_files" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if the dialog allows show hidden files.
-			</description>
-		</method>
-		<method name="set_access">
-			<return type="void">
-			</return>
-			<argument index="0" name="access" type="int" enum="FileDialog.Access">
-			</argument>
-			<description>
-				Set the file access permission of the dialog(Must be one of [ACCESS_RESOURCES], [ACCESS_USERDATA] or [ACCESS_FILESYSTEM]).
 			</description>
 		</method>
 		<method name="set_current_dir">
@@ -123,32 +87,6 @@
 			</argument>
 			<description>
 				Set the current selected file path of the file dialog.
-			</description>
-		</method>
-		<method name="set_filters">
-			<return type="void">
-			</return>
-			<argument index="0" name="filters" type="PoolStringArray">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="FileDialog.Mode">
-			</argument>
-			<description>
-				Set the file dialog mode from the MODE_* enum.
-			</description>
-		</method>
-		<method name="set_show_hidden_files">
-			<return type="void">
-			</return>
-			<argument index="0" name="show" type="bool">
-			</argument>
-			<description>
-				Set the dialog should show hidden files.
 			</description>
 		</method>
 	</methods>
@@ -186,28 +124,28 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MODE_OPEN_FILE" value="0">
+		<constant name="MODE_OPEN_FILE" value="0" enum="Mode">
 			The dialog allows the selection of one, and only one file.
 		</constant>
-		<constant name="MODE_OPEN_FILES" value="1">
+		<constant name="MODE_OPEN_FILES" value="1" enum="Mode">
 			The dialog allows the selection of multiple files.
 		</constant>
-		<constant name="MODE_OPEN_DIR" value="2">
+		<constant name="MODE_OPEN_DIR" value="2" enum="Mode">
 			The dialog functions as a folder selector, disallowing the selection of any file.
 		</constant>
-		<constant name="MODE_OPEN_ANY" value="3">
+		<constant name="MODE_OPEN_ANY" value="3" enum="Mode">
 			The dialog allows the selection of a file or a directory.
 		</constant>
-		<constant name="MODE_SAVE_FILE" value="4">
+		<constant name="MODE_SAVE_FILE" value="4" enum="Mode">
 			The dialog will warn when a file exists.
 		</constant>
-		<constant name="ACCESS_RESOURCES" value="0">
+		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
 			The dialog allows the selection of file and directory.
 		</constant>
-		<constant name="ACCESS_USERDATA" value="1">
+		<constant name="ACCESS_USERDATA" value="1" enum="Access">
 			The dialog allows access files under [Resource] path(res://) .
 		</constant>
-		<constant name="ACCESS_FILESYSTEM" value="2">
+		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows access files in whole file system.
 		</constant>
 	</constants>

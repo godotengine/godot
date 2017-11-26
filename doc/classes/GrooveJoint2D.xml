@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GrooveJoint2D" inherits="Joint2D" category="Core" version="3.0-alpha">
+<class name="GrooveJoint2D" inherits="Joint2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Groove constraint for 2D physics.
 	</brief_description>
@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_initial_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Set the final offset of the groove on body A.
-			</description>
-		</method>
-		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the length of the groove.
-			</description>
-		</method>
-		<method name="set_initial_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="float">
-			</argument>
-			<description>
-				Set the initial offset of the groove on body A.
-			</description>
-		</method>
-		<method name="set_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="length" type="float">
-			</argument>
-			<description>
-				Set the length of the groove.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset">

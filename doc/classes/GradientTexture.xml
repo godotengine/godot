@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GradientTexture" inherits="Texture" category="Core" version="3.0-alpha">
+<class name="GradientTexture" inherits="Texture" category="Core" version="3.0-beta">
 	<brief_description>
 		Gradient filled texture.
 	</brief_description>
@@ -11,28 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_gradient" qualifiers="const">
-			<return type="Gradient">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_gradient">
-			<return type="void">
-			</return>
-			<argument index="0" name="gradient" type="Gradient">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">

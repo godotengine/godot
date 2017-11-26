@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioServer" inherits="Object" category="Core" version="3.0-alpha">
+<class name="AudioServer" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Server interface for low level audio access.
 	</brief_description>
@@ -341,13 +341,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SPEAKER_MODE_STEREO" value="0">
+		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
 			Two or fewer speakers are detected.
 		</constant>
-		<constant name="SPEAKER_SURROUND_51" value="2">
+		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
 			A 5.1 channel surround setup detected.
 		</constant>
-		<constant name="SPEAKER_SURROUND_71" value="3">
+		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
 			A 7.1 channel surround setup detected.
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NetworkedMultiplayerPeer" inherits="PacketPeer" category="Core" version="3.0-alpha">
+<class name="NetworkedMultiplayerPeer" inherits="PacketPeer" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -98,21 +98,21 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TRANSFER_MODE_UNRELIABLE" value="0">
+		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
 		</constant>
-		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1">
+		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1" enum="TransferMode">
 		</constant>
-		<constant name="TRANSFER_MODE_RELIABLE" value="2">
+		<constant name="TRANSFER_MODE_RELIABLE" value="2" enum="TransferMode">
 		</constant>
-		<constant name="CONNECTION_DISCONNECTED" value="0">
+		<constant name="CONNECTION_DISCONNECTED" value="0" enum="ConnectionStatus">
 		</constant>
-		<constant name="CONNECTION_CONNECTING" value="1">
+		<constant name="CONNECTION_CONNECTING" value="1" enum="ConnectionStatus">
 		</constant>
-		<constant name="CONNECTION_CONNECTED" value="2">
+		<constant name="CONNECTION_CONNECTED" value="2" enum="ConnectionStatus">
 		</constant>
-		<constant name="TARGET_PEER_BROADCAST" value="0" enum="">
+		<constant name="TARGET_PEER_BROADCAST" value="0">
 		</constant>
-		<constant name="TARGET_PEER_SERVER" value="1" enum="">
+		<constant name="TARGET_PEER_SERVER" value="1">
 		</constant>
 	</constants>
 </class>

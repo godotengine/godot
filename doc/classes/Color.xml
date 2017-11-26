@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Color" category="Built-In Types" version="3.0-alpha">
+<class name="Color" category="Built-In Types" version="3.0-beta">
 	<brief_description>
 		Color in RGBA format with some support for ARGB format.
 	</brief_description>
@@ -103,6 +103,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="darkened">
+			<return type="Color">
+			</return>
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+				Returns a new color resulting from making this color darker by the specified percentage (0-1).
+				[codeblock]
+				var green = Color(0.0, 1.0, 0.0)
+				var darkgreen = green.darkened(0.2) # 20% darker than regular green
+				[/codeblock]
+			</description>
+		</method>
 		<method name="gray">
 			<return type="float">
 			</return>
@@ -136,19 +149,6 @@
 				[codeblock]
 				var green = Color(0.0, 1.0, 0.0)
 				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
-				[/codeblock]
-			</description>
-		</method>
-		<method name="darkened">
-			<return type="Color">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-				Returns a new color resulting from making this color darker by the specified percentage (0-1).
-				[codeblock]
-				var green = Color(0.0, 1.0, 0.0)
-				var darkgreen = green.darkened(0.2) # 20% darker than regular green
 				[/codeblock]
 			</description>
 		</method>

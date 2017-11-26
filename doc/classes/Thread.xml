@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Thread" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="Thread" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		A unit of execution in a process.
 	</brief_description>
@@ -50,11 +50,11 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PRIORITY_LOW" value="0">
+		<constant name="PRIORITY_LOW" value="0" enum="Priority">
 		</constant>
-		<constant name="PRIORITY_NORMAL" value="1">
+		<constant name="PRIORITY_NORMAL" value="1" enum="Priority">
 		</constant>
-		<constant name="PRIORITY_HIGH" value="2">
+		<constant name="PRIORITY_HIGH" value="2" enum="Priority">
 		</constant>
 	</constants>
 </class>

@@ -212,7 +212,7 @@ void ScriptDebuggerLocal::idle_poll() {
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
-	sort.sort(pinfo.ptr(), ofs);
+	sort.sort(pinfo.ptrw(), ofs);
 
 	//falta el frame time
 
@@ -264,7 +264,7 @@ void ScriptDebuggerLocal::profiling_end() {
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
-	sort.sort(pinfo.ptr(), ofs);
+	sort.sort(pinfo.ptrw(), ofs);
 
 	uint64_t total_us = 0;
 	for (int i = 0; i < ofs; i++) {

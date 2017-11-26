@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LightOccluder2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="LightOccluder2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Occludes light cast by a Light2D, casting shadows.
 	</brief_description>
@@ -11,38 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_occluder_light_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the light mask of the LightOccluder2D.
-			</description>
-		</method>
-		<method name="get_occluder_polygon" qualifiers="const">
-			<return type="OccluderPolygon2D">
-			</return>
-			<description>
-				Return the OccluderPolygon2D that defines the LightOccluder2D.
-			</description>
-		</method>
-		<method name="set_occluder_light_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Set the LightOccluder2D light mask. The LightOccluder2D will cast shadows only from Light2Ds that belong to the same light mask(s).
-			</description>
-		</method>
-		<method name="set_occluder_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="OccluderPolygon2D">
-			</argument>
-			<description>
-				Set the OccluderPolygon2D that defines the LightOccluder2D.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask">

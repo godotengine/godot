@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DShapeQueryParameters" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="Physics2DShapeQueryParameters" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		Parameters to be sent to a 2D shape physics query.
 	</brief_description>
@@ -37,13 +37,6 @@
 			</return>
 			<description>
 				Return the current movement speed of the shape.
-			</description>
-		</method>
-		<method name="get_object_type_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the type of object the shape belongs to.
 			</description>
 		</method>
 		<method name="get_shape_rid" qualifiers="const">
@@ -94,15 +87,6 @@
 			</argument>
 			<description>
 				Set the current movement speed of the shape.
-			</description>
-		</method>
-		<method name="set_object_type_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="object_type_mask" type="int">
-			</argument>
-			<description>
-				Set the type of object the shape belongs to (see Physics2DDirectSpaceState.TYPE_MASK_*).
 			</description>
 		</method>
 		<method name="set_shape">

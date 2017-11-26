@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NodePath" category="Built-In Types" version="3.0-alpha">
+<class name="NodePath" category="Built-In Types" version="3.0-beta">
 	<brief_description>
 		Pre-parsed scene tree path.
 	</brief_description>
@@ -22,6 +22,18 @@
 				Create a NodePath from a string, e.g. "Path2D/PathFollow2D/Sprite:texture:size". A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
 			</description>
 		</method>
+		<method name="get_as_property_path">
+			<return type="NodePath">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_concatenated_subnames">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_name">
 			<return type="String">
 			</return>
@@ -36,13 +48,6 @@
 			</return>
 			<description>
 				Get the number of node names which make up the path.
-			</description>
-		</method>
-		<method name="get_property">
-			<return type="String">
-			</return>
-			<description>
-				Get the path's property name, or an empty string if the path doesn't have a property.
 			</description>
 		</method>
 		<method name="get_subname">

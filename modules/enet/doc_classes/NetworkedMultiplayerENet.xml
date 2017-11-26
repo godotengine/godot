@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.0-alpha">
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.0-beta">
 	<brief_description>
 		PacketPeer implementation using the ENet library.
 	</brief_description>
@@ -71,15 +71,15 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="COMPRESS_NONE" value="0">
+		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">
 		</constant>
-		<constant name="COMPRESS_RANGE_CODER" value="1">
+		<constant name="COMPRESS_RANGE_CODER" value="1" enum="CompressionMode">
 		</constant>
-		<constant name="COMPRESS_FASTLZ" value="2">
+		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
 		</constant>
-		<constant name="COMPRESS_ZLIB" value="3">
+		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
 		</constant>
-		<constant name="COMPRESS_ZSTD" value="4">
+		<constant name="COMPRESS_ZSTD" value="4" enum="CompressionMode">
 		</constant>
 	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Gradient" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Gradient" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Color interpolator node.
 	</brief_description>
@@ -31,13 +31,6 @@
 				Returns the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
-		<method name="get_colors" qualifiers="const">
-			<return type="PoolColorArray">
-			</return>
-			<description>
-				Returns the colors in the ramp
-			</description>
-		</method>
 		<method name="get_offset" qualifiers="const">
 			<return type="float">
 			</return>
@@ -45,13 +38,6 @@
 			</argument>
 			<description>
 				Returns the offset of the ramp color at index [i]point[/i]
-			</description>
-		</method>
-		<method name="get_offsets" qualifiers="const">
-			<return type="PoolRealArray">
-			</return>
-			<description>
-				Returns the offsets for the colors in this ramp
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
@@ -90,15 +76,6 @@
 				Sets the color of the ramp color at index [i]point[/i]
 			</description>
 		</method>
-		<method name="set_colors">
-			<return type="void">
-			</return>
-			<argument index="0" name="colors" type="PoolColorArray">
-			</argument>
-			<description>
-				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements.
-			</description>
-		</method>
 		<method name="set_offset">
 			<return type="void">
 			</return>
@@ -108,15 +85,6 @@
 			</argument>
 			<description>
 				Sets the offset for the ramp color at index [i]point[/i]
-			</description>
-		</method>
-		<method name="set_offsets">
-			<return type="void">
-			</return>
-			<argument index="0" name="offsets" type="PoolRealArray">
-			</argument>
-			<description>
-				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements, all new colors will be black by default.
 			</description>
 		</method>
 	</methods>

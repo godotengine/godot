@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionPolygon" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="CollisionPolygon" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Editor-only class for defining a collision polygon in 3D space.
 	</brief_description>
@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_depth" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_polygon" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="depth" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_disabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="disabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="PoolVector2Array">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="depth" type="float" setter="set_depth" getter="get_depth">

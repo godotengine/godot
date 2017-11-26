@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Container" inherits="Control" category="Core" version="3.0-alpha">
+<class name="Container" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Base node for containers.
 	</brief_description>
@@ -39,7 +39,7 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_SORT_CHILDREN" value="50" enum="">
+		<constant name="NOTIFICATION_SORT_CHILDREN" value="50">
 			Notification for when sorting the children, it must be obeyed immediately.
 		</constant>
 	</constants>

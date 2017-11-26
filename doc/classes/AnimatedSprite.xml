@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedSprite" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="AnimatedSprite" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Sprite node that can use multiple textures for animation.
 	</brief_description>
@@ -11,55 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_animation" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Return the name of the current animation set to the node.
-			</description>
-		</method>
-		<method name="get_frame" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the visible frame index.
-			</description>
-		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the offset of the sprite in the node origin.
-			</description>
-		</method>
-		<method name="get_sprite_frames" qualifiers="const">
-			<return type="SpriteFrames">
-			</return>
-			<description>
-				Get the [SpriteFrames] resource, which contains all frames.
-			</description>
-		</method>
-		<method name="is_centered" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true when centered. See [method set_centered].
-			</description>
-		</method>
-		<method name="is_flipped_h" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if sprite is flipped horizontally.
-			</description>
-		</method>
-		<method name="is_flipped_v" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if sprite is flipped vertically.
-			</description>
-		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -74,69 +25,6 @@
 			</argument>
 			<description>
 				Play the animation set in parameter. If no parameter is provided, the current animation is played.
-			</description>
-		</method>
-		<method name="set_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="animation" type="String">
-			</argument>
-			<description>
-				Set the current animation of the node and reinits the frame counter of the animation.
-			</description>
-		</method>
-		<method name="set_centered">
-			<return type="void">
-			</return>
-			<argument index="0" name="centered" type="bool">
-			</argument>
-			<description>
-				When turned on, offset at (0,0) is the center of the sprite, when off, the top-left corner is.
-			</description>
-		</method>
-		<method name="set_flip_h">
-			<return type="void">
-			</return>
-			<argument index="0" name="flip_h" type="bool">
-			</argument>
-			<description>
-				If true, sprite is flipped horizontally.
-			</description>
-		</method>
-		<method name="set_flip_v">
-			<return type="void">
-			</return>
-			<argument index="0" name="flip_v" type="bool">
-			</argument>
-			<description>
-				If true, sprite is flipped vertically.
-			</description>
-		</method>
-		<method name="set_frame">
-			<return type="void">
-			</return>
-			<argument index="0" name="frame" type="int">
-			</argument>
-			<description>
-				Set the visible sprite frame index (from the list of frames inside the [SpriteFrames] resource).
-			</description>
-		</method>
-		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Set the offset of the sprite in the node origin. Position varies depending on whether it is centered or not.
-			</description>
-		</method>
-		<method name="set_sprite_frames">
-			<return type="void">
-			</return>
-			<argument index="0" name="sprite_frames" type="SpriteFrames">
-			</argument>
-			<description>
-				Set the [SpriteFrames] resource, which contains all frames.
 			</description>
 		</method>
 		<method name="stop">

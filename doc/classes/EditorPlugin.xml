@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" category="Core" version="3.0-alpha">
+<class name="EditorPlugin" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
@@ -354,39 +354,39 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="CONTAINER_TOOLBAR" value="0">
+		<constant name="CONTAINER_TOOLBAR" value="0" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1">
+		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE" value="2">
+		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE" value="2" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="3">
+		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="3" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="4">
+		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="4" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
+		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="6">
+		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="6" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="7">
+		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="7" enum="CustomControlContainer">
 		</constant>
-		<constant name="DOCK_SLOT_LEFT_UL" value="0">
+		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_LEFT_BL" value="1">
+		<constant name="DOCK_SLOT_LEFT_BL" value="1" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_LEFT_UR" value="2">
+		<constant name="DOCK_SLOT_LEFT_UR" value="2" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_LEFT_BR" value="3">
+		<constant name="DOCK_SLOT_LEFT_BR" value="3" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_RIGHT_UL" value="4">
+		<constant name="DOCK_SLOT_RIGHT_UL" value="4" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_RIGHT_BL" value="5">
+		<constant name="DOCK_SLOT_RIGHT_BL" value="5" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_RIGHT_UR" value="6">
+		<constant name="DOCK_SLOT_RIGHT_UR" value="6" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_RIGHT_BR" value="7">
+		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="8">
+		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
 		</constant>
 	</constants>
 </class>

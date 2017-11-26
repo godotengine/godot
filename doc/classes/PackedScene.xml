@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="PackedScene" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -45,11 +45,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="GEN_EDIT_STATE_DISABLED" value="0">
+		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
 		</constant>
-		<constant name="GEN_EDIT_STATE_INSTANCE" value="1">
+		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
 		</constant>
-		<constant name="GEN_EDIT_STATE_MAIN" value="2">
+		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
 		</constant>
 	</constants>
 </class>

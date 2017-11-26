@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.0-alpha">
+<class name="AudioEffectFilter" inherits="AudioEffect" category="Core" version="3.0-beta">
 	<brief_description>
 		Adds a filter to the Audio Bus.
 	</brief_description>
@@ -11,62 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_cutoff" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_db" qualifiers="const">
-			<return type="int" enum="AudioEffectFilter.FilterDB">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_gain" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_resonance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_cutoff">
-			<return type="void">
-			</return>
-			<argument index="0" name="freq" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int" enum="AudioEffectFilter.FilterDB">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_gain">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_resonance">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="cutoff_hz" type="float" setter="set_cutoff" getter="get_cutoff">
@@ -82,13 +26,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FILTER_6DB" value="0">
+		<constant name="FILTER_6DB" value="0" enum="FilterDB">
 		</constant>
-		<constant name="FILTER_12DB" value="1">
+		<constant name="FILTER_12DB" value="1" enum="FilterDB">
 		</constant>
-		<constant name="FILTER_18DB" value="2">
+		<constant name="FILTER_18DB" value="2" enum="FilterDB">
 		</constant>
-		<constant name="FILTER_24DB" value="3">
+		<constant name="FILTER_24DB" value="3" enum="FilterDB">
 		</constant>
 	</constants>
 </class>

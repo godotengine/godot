@@ -818,7 +818,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	}
 
 	Variant::CallError ce;
-	return call(p_method, argptrs.ptr(), p_args.size(), ce);
+	return call(p_method, (const Variant **)argptrs.ptr(), p_args.size(), ce);
 }
 
 Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {
@@ -1183,7 +1183,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 				bind_mem[p_argcount + j] = &c.binds[j];
 			}
 
-			args = bind_mem.ptr();
+			args = (const Variant **)bind_mem.ptr();
 			argc = bind_mem.size();
 		}
 
@@ -1748,6 +1748,13 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
+
+	if (p_path.size() == 0) {
+		if (r_valid)
+			*r_valid = false;
+
+		return Variant::NIL;
+	}
 
 	bool valid = false;
 	Variant::Type t = get_static_property_type(p_path[0], &valid);

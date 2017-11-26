@@ -207,7 +207,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 
 			//read
 			unzOpenCurrentFile(pkg);
-			ret = unzReadCurrentFile(pkg, data.ptr(), data.size());
+			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
 			unzCloseCurrentFile(pkg);
 
 			String data_str;
@@ -277,7 +277,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 
 		//read
 		unzOpenCurrentFile(pkg);
-		unzReadCurrentFile(pkg, data.ptr(), data.size());
+		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
 		print_line(fname);

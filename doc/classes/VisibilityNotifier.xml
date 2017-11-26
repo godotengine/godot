@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibilityNotifier" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="VisibilityNotifier" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Detects when the node is visible on screen.
 	</brief_description>
@@ -11,27 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<description>
-				Returns the bounding box of the VisibilityNotifier.
-			</description>
-		</method>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				If [code]true[/code] the bounding box is on the screen.
-			</description>
-		</method>
-		<method name="set_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="AABB">
-			</argument>
-			<description>
-				Set the visibility bounding box of the VisibilityNotifier.
 			</description>
 		</method>
 	</methods>

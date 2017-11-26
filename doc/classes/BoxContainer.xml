@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BoxContainer" inherits="Container" category="Core" version="3.0-alpha">
+<class name="BoxContainer" inherits="Container" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for box containers.
 	</brief_description>
@@ -20,22 +20,6 @@
 				Adds a control to the box as a spacer. If [code]true[/code], [i]begin[/i] will insert the spacer control in front of other children.
 			</description>
 		</method>
-		<method name="get_alignment" qualifiers="const">
-			<return type="int" enum="BoxContainer.AlignMode">
-			</return>
-			<description>
-				Return the alignment of children in the container.
-			</description>
-		</method>
-		<method name="set_alignment">
-			<return type="void">
-			</return>
-			<argument index="0" name="alignment" type="int" enum="BoxContainer.AlignMode">
-			</argument>
-			<description>
-				Set the alignment of children in the container(Must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignMode">
@@ -43,13 +27,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="ALIGN_BEGIN" value="0">
+		<constant name="ALIGN_BEGIN" value="0" enum="AlignMode">
 			Aligns children with the beginning of the container.
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="AlignMode">
 			Aligns children with the center of the container.
 		</constant>
-		<constant name="ALIGN_END" value="2">
+		<constant name="ALIGN_END" value="2" enum="AlignMode">
 			Aligns children with the end of the container.
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer2D" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="AudioStreamPlayer2D" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Plays audio in 2D.
 	</brief_description>
@@ -12,59 +12,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_area_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_attenuation" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_bus" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_playback_position">
 			<return type="float">
 			</return>
 			<description>
 				Returns the position in the [AudioStream].
-			</description>
-		</method>
-		<method name="get_stream" qualifiers="const">
-			<return type="AudioStream">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_volume_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_autoplay_enabled">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="play">
@@ -83,62 +35,6 @@
 			</argument>
 			<description>
 				Sets the position from which audio will be played, in seconds.
-			</description>
-		</method>
-		<method name="set_area_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_attenuation">
-			<return type="void">
-			</return>
-			<argument index="0" name="curve" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="pixels" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stream">
-			<return type="void">
-			</return>
-			<argument index="0" name="stream" type="AudioStream">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_volume_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="volume_db" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="stop">

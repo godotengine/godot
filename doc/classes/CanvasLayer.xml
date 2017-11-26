@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasLayer" inherits="Node" category="Core" version="3.0-alpha">
+<class name="CanvasLayer" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Canvas drawing layer.
 	</brief_description>
@@ -17,39 +17,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_layer" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the layer index, determines the draw order, a lower value will be below a higher one.
-			</description>
-		</method>
-		<method name="get_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the base offset for this layer (helper).
-			</description>
-		</method>
 		<method name="get_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Return the base rotation for this layer in radians (helper).
-			</description>
-		</method>
-		<method name="get_rotation_degrees" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the base rotation for this layer in degrees.
-			</description>
-		</method>
-		<method name="get_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-				Return the base scale for this layer (helper).
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -74,24 +46,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_layer">
-			<return type="void">
-			</return>
-			<argument index="0" name="layer" type="int">
-			</argument>
-			<description>
-				Set the layer index, determines the draw order, a lower value will be below a higher one.
-			</description>
-		</method>
-		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-				Set the base offset for this layer (helper).
-			</description>
-		</method>
 		<method name="set_rotation">
 			<return type="void">
 			</return>
@@ -99,24 +53,6 @@
 			</argument>
 			<description>
 				Set the base rotation for this layer in radians (helper).
-			</description>
-		</method>
-		<method name="set_rotation_degrees">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Set the base rotation for this layer in degrees (helper).
-			</description>
-		</method>
-		<method name="set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-				Set the base scale for this layer (helper).
 			</description>
 		</method>
 		<method name="set_transform">

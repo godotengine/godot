@@ -38,7 +38,7 @@ void BitMap::create(const Size2 &p_size) {
 	width = p_size.width;
 	height = p_size.height;
 	bitmask.resize(((width * height) / 8) + 1);
-	zeromem(bitmask.ptr(), bitmask.size());
+	zeromem(bitmask.ptrw(), bitmask.size());
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
@@ -51,7 +51,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
 	create(Size2(img->get_width(), img->get_height()));
 
 	PoolVector<uint8_t>::Read r = img->get_data().read();
-	uint8_t *w = bitmask.ptr();
+	uint8_t *w = bitmask.ptrw();
 
 	for (int i = 0; i < width * height; i++) {
 
@@ -65,7 +65,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
 void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
 
 	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
-	uint8_t *data = bitmask.ptr();
+	uint8_t *data = bitmask.ptrw();
 
 	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
 

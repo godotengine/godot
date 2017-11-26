@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.0-alpha">
+<class name="OS" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -125,13 +125,6 @@
 			</return>
 			<description>
 				Returns the current screen index (0 padded).
-			</description>
-		</method>
-		<method name="get_user_data_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the absolute directory path where user data is written ([code]user://[/code]).
 			</description>
 		</method>
 		<method name="get_date" qualifiers="const">
@@ -395,6 +388,13 @@
 				Get an epoch time value from a dictionary of time values.
 				[code]datetime[/code] must be populated with the following keys: year, month, day, hour, minute, second.
 				You can pass the output from [method get_datetime_from_unix_time] directly into this function. Daylight savings time (dst), if present, is ignored.
+			</description>
+		</method>
+		<method name="get_user_data_dir" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the absolute directory path where user data is written ([code]user://[/code]).
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
@@ -828,83 +828,83 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="DAY_SUNDAY" value="0">
+		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 		</constant>
-		<constant name="DAY_MONDAY" value="1">
+		<constant name="DAY_MONDAY" value="1" enum="Weekday">
 		</constant>
-		<constant name="DAY_TUESDAY" value="2">
+		<constant name="DAY_TUESDAY" value="2" enum="Weekday">
 		</constant>
-		<constant name="DAY_WEDNESDAY" value="3">
+		<constant name="DAY_WEDNESDAY" value="3" enum="Weekday">
 		</constant>
-		<constant name="DAY_THURSDAY" value="4">
+		<constant name="DAY_THURSDAY" value="4" enum="Weekday">
 		</constant>
-		<constant name="DAY_FRIDAY" value="5">
+		<constant name="DAY_FRIDAY" value="5" enum="Weekday">
 		</constant>
-		<constant name="DAY_SATURDAY" value="6">
+		<constant name="DAY_SATURDAY" value="6" enum="Weekday">
 		</constant>
-		<constant name="MONTH_JANUARY" value="1">
+		<constant name="MONTH_JANUARY" value="1" enum="Month">
 		</constant>
-		<constant name="MONTH_FEBRUARY" value="2">
+		<constant name="MONTH_FEBRUARY" value="2" enum="Month">
 		</constant>
-		<constant name="MONTH_MARCH" value="3">
+		<constant name="MONTH_MARCH" value="3" enum="Month">
 		</constant>
-		<constant name="MONTH_APRIL" value="4">
+		<constant name="MONTH_APRIL" value="4" enum="Month">
 		</constant>
-		<constant name="MONTH_MAY" value="5">
+		<constant name="MONTH_MAY" value="5" enum="Month">
 		</constant>
-		<constant name="MONTH_JUNE" value="6">
+		<constant name="MONTH_JUNE" value="6" enum="Month">
 		</constant>
-		<constant name="MONTH_JULY" value="7">
+		<constant name="MONTH_JULY" value="7" enum="Month">
 		</constant>
-		<constant name="MONTH_AUGUST" value="8">
+		<constant name="MONTH_AUGUST" value="8" enum="Month">
 		</constant>
-		<constant name="MONTH_SEPTEMBER" value="9">
+		<constant name="MONTH_SEPTEMBER" value="9" enum="Month">
 		</constant>
-		<constant name="MONTH_OCTOBER" value="10">
+		<constant name="MONTH_OCTOBER" value="10" enum="Month">
 		</constant>
-		<constant name="MONTH_NOVEMBER" value="11">
+		<constant name="MONTH_NOVEMBER" value="11" enum="Month">
 		</constant>
-		<constant name="MONTH_DECEMBER" value="12">
+		<constant name="MONTH_DECEMBER" value="12" enum="Month">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0">
+		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_PORTRAIT" value="1">
+		<constant name="SCREEN_ORIENTATION_PORTRAIT" value="1" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_REVERSE_LANDSCAPE" value="2">
+		<constant name="SCREEN_ORIENTATION_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_REVERSE_PORTRAIT" value="3">
+		<constant name="SCREEN_ORIENTATION_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_SENSOR_LANDSCAPE" value="4">
+		<constant name="SCREEN_ORIENTATION_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_SENSOR_PORTRAIT" value="5">
+		<constant name="SCREEN_ORIENTATION_SENSOR_PORTRAIT" value="5" enum="ScreenOrientation">
 		</constant>
-		<constant name="SCREEN_ORIENTATION_SENSOR" value="6">
+		<constant name="SCREEN_ORIENTATION_SENSOR" value="6" enum="ScreenOrientation">
 		</constant>
-		<constant name="SYSTEM_DIR_DESKTOP" value="0">
+		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_DCIM" value="1">
+		<constant name="SYSTEM_DIR_DCIM" value="1" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_DOCUMENTS" value="2">
+		<constant name="SYSTEM_DIR_DOCUMENTS" value="2" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_DOWNLOADS" value="3">
+		<constant name="SYSTEM_DIR_DOWNLOADS" value="3" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_MOVIES" value="4">
+		<constant name="SYSTEM_DIR_MOVIES" value="4" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_MUSIC" value="5">
+		<constant name="SYSTEM_DIR_MUSIC" value="5" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_PICTURES" value="6">
+		<constant name="SYSTEM_DIR_PICTURES" value="6" enum="SystemDir">
 		</constant>
-		<constant name="SYSTEM_DIR_RINGTONES" value="7">
+		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
 		</constant>
-		<constant name="POWERSTATE_UNKNOWN" value="0">
+		<constant name="POWERSTATE_UNKNOWN" value="0" enum="PowerState">
 		</constant>
-		<constant name="POWERSTATE_ON_BATTERY" value="1">
+		<constant name="POWERSTATE_ON_BATTERY" value="1" enum="PowerState">
 		</constant>
-		<constant name="POWERSTATE_NO_BATTERY" value="2">
+		<constant name="POWERSTATE_NO_BATTERY" value="2" enum="PowerState">
 		</constant>
-		<constant name="POWERSTATE_CHARGING" value="3">
+		<constant name="POWERSTATE_CHARGING" value="3" enum="PowerState">
 		</constant>
-		<constant name="POWERSTATE_CHARGED" value="4">
+		<constant name="POWERSTATE_CHARGED" value="4" enum="PowerState">
 		</constant>
 	</constants>
 </class>

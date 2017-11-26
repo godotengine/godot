@@ -429,7 +429,7 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
 		d.resize(vlen);
-		f->get_buffer(d.ptr(), vlen);
+		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
 		Error err = decode_variant(value, d.ptr(), d.size());
 		ERR_EXPLAIN("Error decoding property: " + key);

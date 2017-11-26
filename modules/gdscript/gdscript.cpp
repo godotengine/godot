@@ -100,7 +100,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 #endif
 	instance->owner->set_script_instance(instance);
 
-	/* STEP 2, INITIALIZE AND CONSRTUCT */
+/* STEP 2, INITIALIZE AND CONSRTUCT */
 
 #ifndef NO_THREADS
 	GDScriptLanguage::singleton->lock->lock();
@@ -738,7 +738,7 @@ Error GDScript::load_byte_code(const String &p_path) {
 		Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_READ);
 		ERR_FAIL_COND_V(err, err);
 		bytecode.resize(fae->get_len());
-		fae->get_buffer(bytecode.ptr(), bytecode.size());
+		fae->get_buffer(bytecode.ptrw(), bytecode.size());
 		memdelete(fae);
 	} else {
 
@@ -1324,7 +1324,7 @@ void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_va
 	}
 	globals[p_name] = global_array.size();
 	global_array.push_back(p_value);
-	_global_array = global_array.ptr();
+	_global_array = global_array.ptrw();
 }
 
 void GDScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {

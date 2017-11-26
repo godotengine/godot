@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer3D" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="AudioStreamPlayer3D" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Plays 3D sound in 3D space
 	</brief_description>
@@ -12,113 +12,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_area_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_attenuation_filter_cutoff_hz" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_attenuation_filter_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_attenuation_model" qualifiers="const">
-			<return type="int" enum="AudioStreamPlayer3D.AttenuationModel">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_bus" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_doppler_tracking" qualifiers="const">
-			<return type="int" enum="AudioStreamPlayer3D.DopplerTracking">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_angle" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_angle_filter_attenuation_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_out_of_range_mode" qualifiers="const">
-			<return type="int" enum="AudioStreamPlayer3D.OutOfRangeMode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_playback_position">
 			<return type="float">
 			</return>
 			<description>
 				Returns the position in the [AudioStream].
-			</description>
-		</method>
-		<method name="get_stream" qualifiers="const">
-			<return type="AudioStream">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_unit_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_unit_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_autoplay_enabled">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_emission_angle_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="play">
@@ -137,134 +35,6 @@
 			</argument>
 			<description>
 				Sets the position from which audio will be played, in seconds.
-			</description>
-		</method>
-		<method name="set_area_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_attenuation_filter_cutoff_hz">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_attenuation_filter_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="db" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_attenuation_model">
-			<return type="void">
-			</return>
-			<argument index="0" name="model" type="int" enum="AudioStreamPlayer3D.AttenuationModel">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bus">
-			<return type="void">
-			</return>
-			<argument index="0" name="bus" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_doppler_tracking">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AudioStreamPlayer3D.DopplerTracking">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_angle">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_angle_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_angle_filter_attenuation_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="db" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="max_db" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="metres" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_out_of_range_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AudioStreamPlayer3D.OutOfRangeMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stream">
-			<return type="void">
-			</return>
-			<argument index="0" name="stream" type="AudioStream">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_unit_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="unit_db" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_unit_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="unit_size" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="stop">
@@ -336,28 +106,28 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0">
+		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
 			Linear dampening of loudness according to distance.
 		</constant>
-		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1">
+		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
 			Squared dampening of loudness according to distance.
 		</constant>
-		<constant name="ATTENUATION_LOGARITHMIC" value="2">
+		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
 			Logarithmic dampening of loudness according to distance.
 		</constant>
-		<constant name="OUT_OF_RANGE_MIX" value="0">
+		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
 			Mix this audio in, even when it's out of range.
 		</constant>
-		<constant name="OUT_OF_RANGE_PAUSE" value="1">
+		<constant name="OUT_OF_RANGE_PAUSE" value="1" enum="OutOfRangeMode">
 			Pause this audio when it gets out of range.
 		</constant>
-		<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.
 		</constant>
-		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
 			Executes doppler tracking in idle step.
 		</constant>
-		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
 			Executes doppler tracking in physics step.
 		</constant>
 	</constants>

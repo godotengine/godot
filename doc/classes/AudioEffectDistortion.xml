@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.0-alpha">
+<class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.0-beta">
 	<brief_description>
 		Adds a Distortion audio effect to an Audio bus.
 		Modify the sound to make it dirty.
@@ -13,76 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_drive" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_keep_hf_hz" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mode" qualifiers="const">
-			<return type="int" enum="AudioEffectDistortion.Mode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_post_gain" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_pre_gain" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_drive">
-			<return type="void">
-			</return>
-			<argument index="0" name="drive" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_keep_hf_hz">
-			<return type="void">
-			</return>
-			<argument index="0" name="keep_hf_hz" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AudioEffectDistortion.Mode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_post_gain">
-			<return type="void">
-			</return>
-			<argument index="0" name="post_gain" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_pre_gain">
-			<return type="void">
-			</return>
-			<argument index="0" name="pre_gain" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="drive" type="float" setter="set_drive" getter="get_drive">
@@ -102,18 +32,18 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="MODE_CLIP" value="0">
+		<constant name="MODE_CLIP" value="0" enum="Mode">
 			Digital distortion effect which cuts off peaks at the top and bottom of the waveform.
 		</constant>
-		<constant name="MODE_ATAN" value="1">
+		<constant name="MODE_ATAN" value="1" enum="Mode">
 		</constant>
-		<constant name="MODE_LOFI" value="2">
+		<constant name="MODE_LOFI" value="2" enum="Mode">
 			Low-resolution digital distortion effect. You can use it to emulate the sound of early digital audio devices.
 		</constant>
-		<constant name="MODE_OVERDRIVE" value="3">
+		<constant name="MODE_OVERDRIVE" value="3" enum="Mode">
 			Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers.
 		</constant>
-		<constant name="MODE_WAVESHAPE" value="4">
+		<constant name="MODE_WAVESHAPE" value="4" enum="Mode">
 			Waveshaper distortions are used mainly by electronic musicians to achieve an extra-abrasive sound.
 		</constant>
 	</constants>

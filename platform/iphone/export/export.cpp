@@ -793,7 +793,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 		//read
 		unzOpenCurrentFile(src_pkg_zip);
-		unzReadCurrentFile(src_pkg_zip, data.ptr(), data.size());
+		unzReadCurrentFile(src_pkg_zip, data.ptrw(), data.size());
 		unzCloseCurrentFile(src_pkg_zip);
 
 		//write

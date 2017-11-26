@@ -36,7 +36,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
 	//get data
-	AudioFrame *buffer = mix_buffer.ptr();
+	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
 	if (p_fadeout) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReflectionProbe" inherits="VisualInstance" category="Core" version="3.0-alpha">
+<class name="ReflectionProbe" inherits="VisualInstance" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,174 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="are_shadows_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cull_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_extents" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_intensity" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_interior_ambient" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_interior_ambient_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_interior_ambient_probe_contribution" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_distance" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_origin_offset" qualifiers="const">
-			<return type="Vector3">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_update_mode" qualifiers="const">
-			<return type="int" enum="ReflectionProbe.UpdateMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_box_projection_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_set_as_interior" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_as_interior">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cull_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="layers" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_enable_box_projection">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_enable_shadows">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_extents">
-			<return type="void">
-			</return>
-			<argument index="0" name="extents" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_intensity">
-			<return type="void">
-			</return>
-			<argument index="0" name="intensity" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_interior_ambient">
-			<return type="void">
-			</return>
-			<argument index="0" name="ambient" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_interior_ambient_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="ambient_energy" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_interior_ambient_probe_contribution">
-			<return type="void">
-			</return>
-			<argument index="0" name="ambient_probe_contribution" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_distance">
-			<return type="void">
-			</return>
-			<argument index="0" name="max_distance" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_origin_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="origin_offset" type="Vector3">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_update_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="ReflectionProbe.UpdateMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="box_projection" type="bool" setter="set_enable_box_projection" getter="is_box_projection_enabled">
@@ -205,9 +37,9 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="UPDATE_ONCE" value="0">
+		<constant name="UPDATE_ONCE" value="0" enum="UpdateMode">
 		</constant>
-		<constant name="UPDATE_ALWAYS" value="1">
+		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
 		</constant>
 	</constants>
 </class>

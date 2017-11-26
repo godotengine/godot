@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mesh" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Mesh" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		A [Resource] that contains vertex-array based geometry.
 	</brief_description>
@@ -50,94 +50,94 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PRIMITIVE_POINTS" value="0">
+		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Render array as points (one vertex equals one point).
 		</constant>
-		<constant name="PRIMITIVE_LINES" value="1">
+		<constant name="PRIMITIVE_LINES" value="1" enum="PrimitiveType">
 			Render array as lines (every two vertices a line is created).
 		</constant>
-		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
 			Render array as line strip.
 		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
 			Render array as line loop (like line strip, but closed).
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4">
+		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
 			Render array as triangles (every three vertices a triangle is created).
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
 			Render array as triangle strips.
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
 			Render array as triangle fans.
 		</constant>
-		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0">
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 		</constant>
-		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1">
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64">
+		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_BASE" value="9">
+		<constant name="ARRAY_COMPRESS_BASE" value="9" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_VERTEX" value="512">
+		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_NORMAL" value="1024">
+		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TANGENT" value="2048">
+		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_COLOR" value="4096">
+		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192">
+		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384">
+		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_BONES" value="32768">
+		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536">
+		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_INDEX" value="131072">
+		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144">
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288">
+		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_VERTEX" value="0">
+		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_NORMAL" value="1">
+		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TANGENT" value="2">
+		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_COLOR" value="3">
+		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TEX_UV" value="4">
+		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TEX_UV2" value="5">
+		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_BONES" value="6">
+		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7">
+		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_INDEX" value="8">
+		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_MAX" value="9">
+		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
 		</constant>
 	</constants>
 </class>

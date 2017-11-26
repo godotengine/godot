@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Anchor point in AR Space
 	</brief_description>
@@ -13,13 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_anchor_id" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the anchor id for this anchor.
-			</description>
-		</method>
 		<method name="get_anchor_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -46,15 +39,6 @@
 			</return>
 			<description>
 				Returns the estimated size of the plane that was detected. Say when the anchor relates to a table in the real world, this is the estimated size of the surface of that table.
-			</description>
-		</method>
-		<method name="set_anchor_id">
-			<return type="void">
-			</return>
-			<argument index="0" name="anchor_id" type="int">
-			</argument>
-			<description>
-				Binds this anchor node to an anchor with this id. You can set this before the anchor itself exists. The first anchor that is identified gets id 1, the second id 2, etc. When anchors get removed that slot remains free and can be assigned to the next anchor that is identified. The most common situation where anchors 'disappear' is when the AR server identifies that two anchors represent different parts of the same plane and merge them.
 			</description>
 		</method>
 	</methods>

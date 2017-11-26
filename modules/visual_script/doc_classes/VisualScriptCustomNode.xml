@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.0-alpha">
+<class name="VisualScriptCustomNode" inherits="VisualScriptNode" category="Core" version="3.0-beta">
 	<brief_description>
 		A scripted Visual Script node.
 	</brief_description>
@@ -136,28 +136,28 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="START_MODE_BEGIN_SEQUENCE" value="0">
+		<constant name="START_MODE_BEGIN_SEQUENCE" value="0" enum="StartMode">
 			The start mode used the first time when [method _step] is called.
 		</constant>
-		<constant name="START_MODE_CONTINUE_SEQUENCE" value="1">
+		<constant name="START_MODE_CONTINUE_SEQUENCE" value="1" enum="StartMode">
 			The start mode used when [method _step] is called after coming back from a STEP_PUSH_STACK_BIT.
 		</constant>
-		<constant name="START_MODE_RESUME_YIELD" value="2">
+		<constant name="START_MODE_RESUME_YIELD" value="2" enum="StartMode">
 			The start mode used when [method _step] is called after resuming from STEP_YIELD_BIT.
 		</constant>
-		<constant name="STEP_PUSH_STACK_BIT" value="16777216" enum="">
+		<constant name="STEP_PUSH_STACK_BIT" value="16777216">
 			Hint used by [method _step] to tell that control should return to it when there is no other node left to execute.
 			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the true/false branch has finished execution.
 		</constant>
-		<constant name="STEP_GO_BACK_BIT" value="33554432" enum="">
+		<constant name="STEP_GO_BACK_BIT" value="33554432">
 			Hint used by [method _step] to tell that control should return back, either hitting a previous STEP_PUSH_STACK_BIT or exiting the function.
 		</constant>
-		<constant name="STEP_NO_ADVANCE_BIT" value="67108864" enum="">
+		<constant name="STEP_NO_ADVANCE_BIT" value="67108864">
 		</constant>
-		<constant name="STEP_EXIT_FUNCTION_BIT" value="134217728" enum="">
+		<constant name="STEP_EXIT_FUNCTION_BIT" value="134217728">
 			Hint used by [method _step] to tell that control should stop and exit the function.
 		</constant>
-		<constant name="STEP_YIELD_BIT" value="268435456" enum="">
+		<constant name="STEP_YIELD_BIT" value="268435456">
 			Hint used by [method _step] to tell that the function should be yielded.
 			Using this requires you to have at least one working memory slot, which is used for the [VisualScriptFunctionState].
 		</constant>

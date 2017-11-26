@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" category="Core" version="3.0-alpha">
+<class name="@GDScript" category="Core" version="3.0-beta">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
@@ -1138,16 +1138,16 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="PI" value="3.141593" enum="">
+		<constant name="PI" value="3.141593">
 			Constant that represents how many times the diameter of a circle fits around its perimeter.
 		</constant>
-		<constant name="TAU" value="6.283185" enum="">
+		<constant name="TAU" value="6.283185">
 			The circle constant, the circumference of the unit circle.
 		</constant>
-		<constant name="INF" value="inf" enum="">
+		<constant name="INF" value="inf">
 			A positive infinity. (For negative infinity, use -INF).
 		</constant>
-		<constant name="NAN" value="nan" enum="">
+		<constant name="NAN" value="nan">
 			Macro constant that expands to an expression of type float that represents a NaN.
 			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>

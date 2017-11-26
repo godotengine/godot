@@ -268,7 +268,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 				//read
 				unzOpenCurrentFile(pkg);
-				unzReadCurrentFile(pkg, data.ptr(), data.size());
+				unzReadCurrentFile(pkg, data.ptrw(), data.size());
 				unzCloseCurrentFile(pkg);
 
 				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);

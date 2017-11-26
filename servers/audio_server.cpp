@@ -191,7 +191,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 			if (master->channels[k].active) {
 
-				AudioFrame *buf = master->channels[k].buffer.ptr();
+				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
 
@@ -296,7 +296,7 @@ void AudioServer::_mix_step() {
 
 			if (bus->channels[k].active && !bus->channels[k].used) {
 				//buffer was not used, but it's still active, so it must be cleaned
-				AudioFrame *buf = bus->channels[k].buffer.ptr();
+				AudioFrame *buf = bus->channels[k].buffer.ptrw();
 
 				for (uint32_t j = 0; j < buffer_size; j++) {
 
@@ -316,7 +316,7 @@ void AudioServer::_mix_step() {
 
 					if (!bus->channels[k].active)
 						continue;
-					bus->channels[k].effect_instances[j]->process(bus->channels[k].buffer.ptr(), temp_buffer[k].ptr(), buffer_size);
+					bus->channels[k].effect_instances[j]->process(bus->channels[k].buffer.ptr(), temp_buffer[k].ptrw(), buffer_size);
 				}
 
 				//swap buffers, so internal buffer always has the right data
@@ -350,7 +350,7 @@ void AudioServer::_mix_step() {
 			if (!bus->channels[k].active)
 				continue;
 
-			AudioFrame *buf = bus->channels[k].buffer.ptr();
+			AudioFrame *buf = bus->channels[k].buffer.ptrw();
 
 			AudioFrame peak = AudioFrame(0, 0);
 
@@ -414,7 +414,7 @@ AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) 
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), NULL);
 	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), NULL);
 
-	AudioFrame *data = buses[p_bus]->channels[p_buffer].buffer.ptr();
+	AudioFrame *data = buses[p_bus]->channels[p_buffer].buffer.ptrw();
 
 	if (!buses[p_bus]->channels[p_buffer].used) {
 		buses[p_bus]->channels[p_buffer].used = true;

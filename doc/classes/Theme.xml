@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Theme" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Theme" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Theme for controls.
 	</brief_description>
@@ -101,12 +101,6 @@
 			</return>
 			<argument index="0" name="type" type="String">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_default_font" qualifiers="const">
-			<return type="Font">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -248,14 +242,6 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<argument index="2" name="constant" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_default_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
 			</argument>
 			<description>
 			</description>

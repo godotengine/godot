@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.0-alpha">
+<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.0-beta">
 	<brief_description>
 		Plays audio.
 	</brief_description>
@@ -11,104 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_data" qualifiers="const">
-			<return type="PoolByteArray">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_format" qualifiers="const">
-			<return type="int" enum="AudioStreamSample.Format">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_loop_begin" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_loop_end" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_loop_mode" qualifiers="const">
-			<return type="int" enum="AudioStreamSample.LoopMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mix_rate" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_stereo" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_data">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="PoolByteArray">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="format" type="int" enum="AudioStreamSample.Format">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_loop_begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="loop_begin" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_loop_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="loop_end" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_loop_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="loop_mode" type="int" enum="AudioStreamSample.LoopMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mix_rate">
-			<return type="void">
-			</return>
-			<argument index="0" name="mix_rate" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_stereo">
-			<return type="void">
-			</return>
-			<argument index="0" name="stereo" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
@@ -134,22 +36,22 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FORMAT_8_BITS" value="0">
+		<constant name="FORMAT_8_BITS" value="0" enum="Format">
 			Audio codec 8 bit.
 		</constant>
-		<constant name="FORMAT_16_BITS" value="1">
+		<constant name="FORMAT_16_BITS" value="1" enum="Format">
 			Audio codec 16 bit.
 		</constant>
-		<constant name="FORMAT_IMA_ADPCM" value="2">
+		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
 			Audio codec IMA ADPCM.
 		</constant>
-		<constant name="LOOP_DISABLED" value="0">
+		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
 			Audio does not loop.
 		</constant>
-		<constant name="LOOP_FORWARD" value="1">
+		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing forward only.
 		</constant>
-		<constant name="LOOP_PING_PONG" value="2">
+		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing back and forth.
 		</constant>
 	</constants>

@@ -71,7 +71,7 @@ StringBuffer &StringBuffer::reserve(int p_size) {
 	bool need_copy = string_length > 0 && buffer.empty();
 	buffer.resize(next_power_of_2(p_size));
 	if (need_copy) {
-		memcpy(buffer.ptr(), short_buffer, string_length * sizeof(CharType));
+		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(CharType));
 	}
 
 	return *this;

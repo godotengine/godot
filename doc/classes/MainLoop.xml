@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MainLoop" inherits="Object" category="Core" version="3.0-alpha">
+<class name="MainLoop" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Main loop is the abstract main loop base class.
 	</brief_description>
@@ -114,25 +114,25 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="2" enum="">
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="2">
 		</constant>
-		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="3" enum="">
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="3">
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="4" enum="">
+		<constant name="NOTIFICATION_WM_FOCUS_IN" value="4">
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="5" enum="">
+		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="5">
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="6" enum="">
+		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="6">
 		</constant>
-		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="7" enum="">
+		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="7">
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="8" enum="">
+		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="8">
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="9" enum="">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="9">
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="90" enum="">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="90">
 		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="91" enum="">
+		<constant name="NOTIFICATION_WM_ABOUT" value="91">
 		</constant>
 	</constants>
 </class>

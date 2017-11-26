@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WindowDialog" inherits="Popup" category="Core" version="3.0-alpha">
+<class name="WindowDialog" inherits="Popup" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for window dialogs.
 	</brief_description>
@@ -16,36 +16,6 @@
 			</return>
 			<description>
 				Return the close [TextureButton].
-			</description>
-		</method>
-		<method name="get_resizable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_title" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Return the title of the window.
-			</description>
-		</method>
-		<method name="set_resizable">
-			<return type="void">
-			</return>
-			<argument index="0" name="resizable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_title">
-			<return type="void">
-			</return>
-			<argument index="0" name="title" type="String">
-			</argument>
-			<description>
-				Set the title of the window.
 			</description>
 		</method>
 	</methods>

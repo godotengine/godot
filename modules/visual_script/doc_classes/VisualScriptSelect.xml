@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptSelect" inherits="VisualScriptNode" category="Core" version="3.0-alpha">
+<class name="VisualScriptSelect" inherits="VisualScriptNode" category="Core" version="3.0-beta">
 	<brief_description>
 		Chooses between two input values.
 	</brief_description>
@@ -17,20 +17,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_typed" qualifiers="const">
-			<return type="int" enum="Variant.Type">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_typed">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="Variant.Type">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="type" type="int" setter="set_typed" getter="get_typed" enum="Variant.Type">

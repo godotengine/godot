@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tree" inherits="Control" category="Core" version="3.0-alpha">
+<class name="Tree" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Control to show a tree of items.
 	</brief_description>
@@ -407,19 +407,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SELECT_SINGLE" value="0">
+		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
 			Allow selection of a single item at a time.
 		</constant>
-		<constant name="SELECT_ROW" value="1">
+		<constant name="SELECT_ROW" value="1" enum="SelectMode">
 		</constant>
-		<constant name="SELECT_MULTI" value="2">
+		<constant name="SELECT_MULTI" value="2" enum="SelectMode">
 			Allow selection of multiple items at the same time.
 		</constant>
-		<constant name="DROP_MODE_DISABLED" value="0">
+		<constant name="DROP_MODE_DISABLED" value="0" enum="DropModeFlags">
 		</constant>
-		<constant name="DROP_MODE_ON_ITEM" value="1">
+		<constant name="DROP_MODE_ON_ITEM" value="1" enum="DropModeFlags">
 		</constant>
-		<constant name="DROP_MODE_INBETWEEN" value="2">
+		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
 		</constant>
 	</constants>
 	<theme_items>

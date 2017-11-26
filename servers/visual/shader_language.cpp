@@ -1357,7 +1357,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "atan2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
 	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
@@ -3606,7 +3606,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 						uniform.default_value.resize(cn->values.size());
 
-						if (!convert_constant(cn, uniform.type, uniform.default_value.ptr())) {
+						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
 							_set_error("Can't convert constant to " + get_datatype_name(uniform.type));
 							return ERR_PARSE_ERROR;
 						}

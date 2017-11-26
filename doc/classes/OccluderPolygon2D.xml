@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OccluderPolygon2D" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="OccluderPolygon2D" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Defines a 2D polygon for LightOccluder2D.
 	</brief_description>
@@ -11,48 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_cull_mode" qualifiers="const">
-			<return type="int" enum="OccluderPolygon2D.CullMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_polygon" qualifiers="const">
-			<return type="PoolVector2Array">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_closed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_closed">
-			<return type="void">
-			</return>
-			<argument index="0" name="closed" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cull_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="cull_mode" type="int" enum="OccluderPolygon2D.CullMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_polygon">
-			<return type="void">
-			</return>
-			<argument index="0" name="polygon" type="PoolVector2Array">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="closed" type="bool" setter="set_closed" getter="is_closed">
@@ -66,13 +24,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="CULL_DISABLED" value="0">
+		<constant name="CULL_DISABLED" value="0" enum="CullMode">
 			Culling mode for the occlusion. Disabled means no culling. See [member cull_mode].
 		</constant>
-		<constant name="CULL_CLOCKWISE" value="1">
+		<constant name="CULL_CLOCKWISE" value="1" enum="CullMode">
 			Culling mode for the occlusion. Sets the culling to be in clockwise direction. See [member cull_mode].
 		</constant>
-		<constant name="CULL_COUNTER_CLOCKWISE" value="2">
+		<constant name="CULL_COUNTER_CLOCKWISE" value="2" enum="CullMode">
 			Culling mode for the occlusion. Sets the culling to be in counter clockwise direction. See [member cull_mode].
 		</constant>
 	</constants>

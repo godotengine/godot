@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState" inherits="Object" category="Core" version="3.0-alpha">
+<class name="PhysicsDirectSpaceState" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -48,8 +48,6 @@
 			</argument>
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
-			<argument index="4" name="type_mask" type="int" default="15">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -65,17 +63,5 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="TYPE_MASK_STATIC_BODY" value="1">
-		</constant>
-		<constant name="TYPE_MASK_KINEMATIC_BODY" value="2">
-		</constant>
-		<constant name="TYPE_MASK_RIGID_BODY" value="4">
-		</constant>
-		<constant name="TYPE_MASK_CHARACTER_BODY" value="8">
-		</constant>
-		<constant name="TYPE_MASK_COLLISION" value="15">
-		</constant>
-		<constant name="TYPE_MASK_AREA" value="16">
-		</constant>
 	</constants>
 </class>

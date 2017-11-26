@@ -84,7 +84,7 @@ void VideoPlayer::_mix_audio() {
 		return;
 	}
 
-	AudioFrame *buffer = mix_buffer.ptr();
+	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
 	// Resample

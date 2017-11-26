@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Animation" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Animation" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Contains data used to animate everything in the engine.
 	</brief_description>
@@ -424,31 +424,31 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="TYPE_VALUE" value="0">
+		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="1">
+		<constant name="TYPE_TRANSFORM" value="1" enum="TrackType">
 			Transform tracks are used to change node local transforms or skeleton pose bones. Transitions are Interpolated.
 		</constant>
-		<constant name="TYPE_METHOD" value="2">
+		<constant name="TYPE_METHOD" value="2" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="INTERPOLATION_NEAREST" value="0">
+		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).
 		</constant>
-		<constant name="INTERPOLATION_LINEAR" value="1">
+		<constant name="INTERPOLATION_LINEAR" value="1" enum="InterpolationType">
 			Linear interpolation.
 		</constant>
-		<constant name="INTERPOLATION_CUBIC" value="2">
+		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
 			Cubic interpolation.
 		</constant>
-		<constant name="UPDATE_CONTINUOUS" value="0">
+		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
 			Update between keyframes.
 		</constant>
-		<constant name="UPDATE_DISCRETE" value="1">
+		<constant name="UPDATE_DISCRETE" value="1" enum="UpdateMode">
 			Update at the keyframes and hold the value.
 		</constant>
-		<constant name="UPDATE_TRIGGER" value="2">
+		<constant name="UPDATE_TRIGGER" value="2" enum="UpdateMode">
 			Update at the keyframes.
 		</constant>
 	</constants>

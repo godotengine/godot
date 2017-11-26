@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MobileVRInterface" inherits="ARVRInterface" category="Core" version="3.0-alpha">
+<class name="MobileVRInterface" inherits="ARVRInterface" category="Core" version="3.0-beta">
 	<brief_description>
 		Generic mobile VR implementation
 	</brief_description>
@@ -12,102 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_display_to_lens" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the distance between the display and the lens.
-			</description>
-		</method>
-		<method name="get_display_width" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the width of the LCD screen of the device.
-			</description>
-		</method>
-		<method name="get_iod" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the interocular distance.
-			</description>
-		</method>
-		<method name="get_k1" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the k1 lens constant.
-			</description>
-		</method>
-		<method name="get_k2" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Retuns the k2 lens constant
-			</description>
-		</method>
-		<method name="get_oversample" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the oversampling setting.
-			</description>
-		</method>
-		<method name="set_display_to_lens">
-			<return type="void">
-			</return>
-			<argument index="0" name="display_to_lens" type="float">
-			</argument>
-			<description>
-				Sets the distance between display and the lens.
-			</description>
-		</method>
-		<method name="set_display_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="display_width" type="float">
-			</argument>
-			<description>
-				Sets the width of the LCD screen of the device.
-			</description>
-		</method>
-		<method name="set_iod">
-			<return type="void">
-			</return>
-			<argument index="0" name="iod" type="float">
-			</argument>
-			<description>
-				Sets the interocular distance.
-			</description>
-		</method>
-		<method name="set_k1">
-			<return type="void">
-			</return>
-			<argument index="0" name="k" type="float">
-			</argument>
-			<description>
-				Sets the k1 lens constant.
-			</description>
-		</method>
-		<method name="set_k2">
-			<return type="void">
-			</return>
-			<argument index="0" name="k" type="float">
-			</argument>
-			<description>
-				Sets the k2 lens constant.
-			</description>
-		</method>
-		<method name="set_oversample">
-			<return type="void">
-			</return>
-			<argument index="0" name="oversample" type="float">
-			</argument>
-			<description>
-				Sets the oversampling setting.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="display_to_lens" type="float" setter="set_display_to_lens" getter="get_display_to_lens">

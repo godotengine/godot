@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer" inherits="Object" category="Core" version="3.0-alpha">
+<class name="PhysicsServer" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Server interface for low level physics access.
 	</brief_description>
@@ -1170,365 +1170,365 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="JOINT_PIN" value="0">
+		<constant name="JOINT_PIN" value="0" enum="JointType">
 			The [Joint] is a [PinJoint].
 		</constant>
-		<constant name="JOINT_HINGE" value="1">
+		<constant name="JOINT_HINGE" value="1" enum="JointType">
 			The [Joint] is a [HingeJoint].
 		</constant>
-		<constant name="JOINT_SLIDER" value="2">
+		<constant name="JOINT_SLIDER" value="2" enum="JointType">
 			The [Joint] is a [SliderJoint].
 		</constant>
-		<constant name="JOINT_CONE_TWIST" value="3">
+		<constant name="JOINT_CONE_TWIST" value="3" enum="JointType">
 			The [Joint] is a [ConeTwistJoint].
 		</constant>
-		<constant name="JOINT_6DOF" value="4">
+		<constant name="JOINT_6DOF" value="4" enum="JointType">
 			The [Joint] is a [Generic6DOFJoint].
 		</constant>
-		<constant name="PIN_JOINT_BIAS" value="0">
+		<constant name="PIN_JOINT_BIAS" value="0" enum="PinJointParam">
 			The strength with which the pinned objects try to stay in positional relation to each other.
 			The higher, the stronger.
 		</constant>
-		<constant name="PIN_JOINT_DAMPING" value="1">
+		<constant name="PIN_JOINT_DAMPING" value="1" enum="PinJointParam">
 			The strength with which the pinned objects try to stay in velocity relation to each other.
 			The higher, the stronger.
 		</constant>
-		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2">
+		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2" enum="PinJointParam">
 			If above 0, this value is the maximum value for an impulse that this Joint puts on it's ends.
 		</constant>
-		<constant name="HINGE_JOINT_BIAS" value="0">
+		<constant name="HINGE_JOINT_BIAS" value="0" enum="HingeJointParam">
 			The speed with wich the two bodies get pulled together when they move in different directions.
 		</constant>
-		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1">
+		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1" enum="HingeJointParam">
 			The maximum rotation across the Hinge.
 		</constant>
-		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2">
+		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2" enum="HingeJointParam">
 			The minimum rotation across the Hinge.
 		</constant>
-		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3">
+		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3" enum="HingeJointParam">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</constant>
-		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4">
+		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4" enum="HingeJointParam">
 		</constant>
-		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5">
+		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5" enum="HingeJointParam">
 			The lower this value, the more the rotation gets slowed down.
 		</constant>
-		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6">
+		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6" enum="HingeJointParam">
 			Target speed for the motor.
 		</constant>
-		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7">
+		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7" enum="HingeJointParam">
 			Maximum acceleration for the motor.
 		</constant>
-		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0">
+		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0" enum="HingeJointFlag">
 			If [code]true[/code] the Hinge has a maximum and a minimum rotation.
 		</constant>
-		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1">
+		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
 			If [code]true[/code] a motor turns the Hinge
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0">
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
 			The maximum difference between the pivot points on their x-axis before damping happens.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1">
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1" enum="SliderJointParam">
 			The minimum difference between the pivot points on their x-axis before damping happens.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="SliderJointParam">
 			A factor applied to the movement accross the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3">
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
 			The amount of restitution once the limits are surpassed. The lower, the more velocityenergy gets lost.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4">
+		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
 			The amount of damping once the slider limits are surpassed.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5">
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5" enum="SliderJointParam">
 			A factor applied to the movement accross the slider axis as long as the slider is in the limits. The lower, the slower the movement.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6">
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6" enum="SliderJointParam">
 			The amount of restitution inside the slider limits.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7">
+		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7" enum="SliderJointParam">
 			The amount of damping inside the slider limits.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8" enum="SliderJointParam">
 			A factor applied to the movement accross axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9" enum="SliderJointParam">
 			The amount of restitution when movement is accross axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10">
+		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10" enum="SliderJointParam">
 			The amount of damping when movement is accross axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11">
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11" enum="SliderJointParam">
 			The upper limit of rotation in the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12">
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12" enum="SliderJointParam">
 			The lower limit of rotation in the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13">
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13" enum="SliderJointParam">
 			A factor applied to the all rotation once the limit is surpassed.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14">
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14" enum="SliderJointParam">
 			The amount of restitution of the rotation when the limit is surpassed.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15">
+		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15" enum="SliderJointParam">
 			The amount of damping of the rotation when the limit is surpassed.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16">
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16" enum="SliderJointParam">
 			A factor that gets applied to the all rotation in the limits.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17">
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17" enum="SliderJointParam">
 			The amount of restitution of the rotation in the limits.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18">
+		<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18" enum="SliderJointParam">
 			The amount of damping of the rotation in the limits.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19" enum="SliderJointParam">
 			A factor that gets applied to the all rotation across axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20" enum="SliderJointParam">
 			The amount of restitution of the rotation across axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21">
+		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21" enum="SliderJointParam">
 			The amount of damping of the rotation across axes orthogonal to the slider.
 		</constant>
-		<constant name="SLIDER_JOINT_MAX" value="22">
+		<constant name="SLIDER_JOINT_MAX" value="22" enum="SliderJointParam">
 			End flag of SLIDER_JOINT_* constants, used internally.
 		</constant>
-		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0">
+		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
-		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
+		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1" enum="ConeTwistJointParam">
 			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
 			Twist is locked if below 0.05.
 		</constant>
-		<constant name="CONE_TWIST_JOINT_BIAS" value="2">
+		<constant name="CONE_TWIST_JOINT_BIAS" value="2" enum="ConeTwistJointParam">
 			The speed with which the swing or twist will take place.
 			The higher, the faster.
 		</constant>
-		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
+		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3" enum="ConeTwistJointParam">
 			The ease with which the Joint twists, if it's too low, it takes more force to twist the joint.
 		</constant>
-		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4">
+		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4" enum="ConeTwistJointParam">
 			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
 		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0">
+		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0" enum="G6DOFJointAxisParam">
 			The minimum difference between the pivot points' axes.
 		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1">
+		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1" enum="G6DOFJointAxisParam">
 			The maximum difference between the pivot points' axes.
 		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="G6DOFJointAxisParam">
 			A factor that gets applied to the movement accross the axes. The lower, the slower the movement.
 		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3">
+		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3" enum="G6DOFJointAxisParam">
 			The amount of restitution on the axes movement. The lower, the more velocity-energy gets lost.
 		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4">
+		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4" enum="G6DOFJointAxisParam">
 			The amount of damping that happens at the linear motion across the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5">
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate arround the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6">
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6" enum="G6DOFJointAxisParam">
 			The minimum rotation in positive direction to break loose and rotate arround the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7">
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7" enum="G6DOFJointAxisParam">
 			A factor that gets multiplied onto all rotations accross the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8">
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8" enum="G6DOFJointAxisParam">
 			The amount of rotational damping accross the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9">
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution accross the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10">
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10" enum="G6DOFJointAxisParam">
 			The maximum amount of force that can occur, when rotating arround the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11">
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11" enum="G6DOFJointAxisParam">
 			When correcting the crossing of limits in rotation accross the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12" enum="G6DOFJointAxisParam">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is linear motion possible within the given limits.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is rotational motion possible.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="SHAPE_PLANE" value="0">
+		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape] is a [PlaneShape].
 		</constant>
-		<constant name="SHAPE_RAY" value="1">
+		<constant name="SHAPE_RAY" value="1" enum="ShapeType">
 			The [Shape] is a [RayShape].
 		</constant>
-		<constant name="SHAPE_SPHERE" value="2">
+		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
 			The [Shape] is a [SphereShape].
 		</constant>
-		<constant name="SHAPE_BOX" value="3">
+		<constant name="SHAPE_BOX" value="3" enum="ShapeType">
 			The [Shape] is a [BoxShape].
 		</constant>
-		<constant name="SHAPE_CAPSULE" value="4">
+		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape] is a [CapsuleShape].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5">
+		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
 			The [Shape] is a [ConvexPolygonShape].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
 			The [Shape] is a [ConcavePolygonShape].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7">
+		<constant name="SHAPE_HEIGHTMAP" value="7" enum="ShapeType">
 			The [Shape] is a [HeightMapShape].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="8">
+		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="0">
+		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
 			Constant to set/get gravity strength in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1">
+		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="1" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2">
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3">
+		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
 			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4">
+		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by AREA_PARAM_GRAVITY_DISTANCE_SCALE.
 		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="5">
+		<constant name="AREA_PARAM_LINEAR_DAMP" value="5" enum="AreaParameter">
 			Constant to set/get the linear dampening factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6">
+		<constant name="AREA_PARAM_ANGULAR_DAMP" value="6" enum="AreaParameter">
 			Constant to set/get the angular dampening factor of an area.
 		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="7">
+		<constant name="AREA_PARAM_PRIORITY" value="7" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1" enum="AreaSpaceOverrideMode">
 			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="AreaSpaceOverrideMode">
 			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3" enum="AreaSpaceOverrideMode">
 			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
 		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="AreaSpaceOverrideMode">
 			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
 		</constant>
-		<constant name="BODY_MODE_STATIC" value="0">
+		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
 			Constant for static bodies.
 		</constant>
-		<constant name="BODY_MODE_KINEMATIC" value="1">
+		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies.
 		</constant>
-		<constant name="BODY_MODE_RIGID" value="2">
+		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_SOFT" value="3">
+		<constant name="BODY_MODE_SOFT" value="3" enum="BodyMode">
 		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="4">
+		<constant name="BODY_MODE_CHARACTER" value="4" enum="BodyMode">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
-		<constant name="BODY_PARAM_BOUNCE" value="0">
+		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.
 		</constant>
-		<constant name="BODY_PARAM_FRICTION" value="1">
+		<constant name="BODY_PARAM_FRICTION" value="1" enum="BodyParameter">
 			Constant to set/get a body's friction.
 		</constant>
-		<constant name="BODY_PARAM_MASS" value="2">
+		<constant name="BODY_PARAM_MASS" value="2" enum="BodyParameter">
 			Constant to set/get a body's mass.
 		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3">
+		<constant name="BODY_PARAM_GRAVITY_SCALE" value="3" enum="BodyParameter">
 			Constant to set/get a body's gravity multiplier.
 		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="4">
+		<constant name="BODY_PARAM_LINEAR_DAMP" value="4" enum="BodyParameter">
 			Constant to set/get a body's linear dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5">
+		<constant name="BODY_PARAM_ANGULAR_DAMP" value="5" enum="BodyParameter">
 			Constant to set/get a body's angular dampening factor.
 		</constant>
-		<constant name="BODY_PARAM_MAX" value="6">
+		<constant name="BODY_PARAM_MAX" value="6" enum="BodyParameter">
 			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
 		</constant>
-		<constant name="BODY_STATE_TRANSFORM" value="0">
+		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.
 		</constant>
-		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1" enum="BodyState">
 			Constant to set/get the current linear velocity of the body.
 		</constant>
-		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2" enum="BodyState">
 			Constant to set/get the current angular velocity of the body.
 		</constant>
-		<constant name="BODY_STATE_SLEEPING" value="3">
+		<constant name="BODY_STATE_SLEEPING" value="3" enum="BodyState">
 			Constant to sleep/wake up a body, or to get whether it is sleeping.
 		</constant>
-		<constant name="BODY_STATE_CAN_SLEEP" value="4">
+		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
 			Constant to set/get whether the body can sleep.
 		</constant>
-		<constant name="AREA_BODY_ADDED" value="0">
+		<constant name="AREA_BODY_ADDED" value="0" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
 		</constant>
-		<constant name="AREA_BODY_REMOVED" value="1">
+		<constant name="AREA_BODY_REMOVED" value="1" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
 		</constant>
-		<constant name="INFO_ACTIVE_OBJECTS" value="0">
+		<constant name="INFO_ACTIVE_OBJECTS" value="0" enum="ProcessInfo">
 			Constant to get the number of objects that are not sleeping.
 		</constant>
-		<constant name="INFO_COLLISION_PAIRS" value="1">
+		<constant name="INFO_COLLISION_PAIRS" value="1" enum="ProcessInfo">
 			Constant to get the number of possible collisions.
 		</constant>
-		<constant name="INFO_ISLAND_COUNT" value="2">
+		<constant name="INFO_ISLAND_COUNT" value="2" enum="ProcessInfo">
 			Constant to get the number of space regions where a collision could occur.
 		</constant>
-		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
+		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
 			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
 		</constant>
-		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
+		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can be from another before they are considered separated.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2">
+		<constant name="SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
 			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3">
+		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="3" enum="SpaceParameter">
 			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4">
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
 			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5">
+		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="5" enum="SpaceParameter">
 			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
 		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO" value="6">
+		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO" value="6" enum="SpaceParameter">
 		</constant>
-		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7">
+		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
-		<constant name="BODY_AXIS_LOCK_DISABLED" value="0">
+		<constant name="BODY_AXIS_LOCK_DISABLED" value="0" enum="BodyAxisLock">
 			The [Body] can rotate and move freely.
 		</constant>
-		<constant name="BODY_AXIS_LOCK_X" value="1">
+		<constant name="BODY_AXIS_LOCK_X" value="1" enum="BodyAxisLock">
 			The [Body] cannot move across x axis can only rotate across x axis.
 		</constant>
-		<constant name="BODY_AXIS_LOCK_Y" value="2">
+		<constant name="BODY_AXIS_LOCK_Y" value="2" enum="BodyAxisLock">
 			The [Body] cannot move across y axis can only rotate across y axis.
 		</constant>
-		<constant name="BODY_AXIS_LOCK_Z" value="3">
+		<constant name="BODY_AXIS_LOCK_Z" value="3" enum="BodyAxisLock">
 			The [Body] cannot move across z axis can only rotate across z axis.
 		</constant>
 	</constants>

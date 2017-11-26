@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tween" inherits="Node" category="Core" version="3.0-alpha">
+<class name="Tween" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Node useful for animations with unknown start and end points.
 	</brief_description>
@@ -50,13 +50,13 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="NodePath">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
 			<argument index="3" name="target" type="Object">
 			</argument>
-			<argument index="4" name="target_property" type="String">
+			<argument index="4" name="target_property" type="NodePath">
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
@@ -83,13 +83,6 @@
 			</return>
 			<description>
 				Returns the speed that has been set from editor GUI or [method set_repeat].
-			</description>
-		</method>
-		<method name="get_tween_process_mode" qualifiers="const">
-			<return type="int" enum="Tween.TweenProcessMode">
-			</return>
-			<description>
-				Returns the process mode that has been set from editor GUI or [method set_tween_process_mode]
 			</description>
 		</method>
 		<method name="interpolate_callback">
@@ -167,7 +160,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="NodePath">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
@@ -290,15 +283,6 @@
 				Set the speed multiplier of the tween. Set it to 1 for normal speed, 2 for two times nromal speed, and 0.5 for half of the normal speed. Setting it to 0 would pause the animation, but you might consider using [method set_active] or [method stop_all] and [method resume_all] for this.
 			</description>
 		</method>
-		<method name="set_tween_process_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Tween.TweenProcessMode">
-			</argument>
-			<description>
-				Set whether the Tween uses [code]_process[/code] or [code]_physics_process[/code] (accepts TWEEN_PROCESS_IDLE and TWEEN_PROCESS_PHYSICS constants, respectively).
-			</description>
-		</method>
 		<method name="start">
 			<return type="bool">
 			</return>
@@ -355,11 +339,11 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="property" type="String">
+			<argument index="1" name="property" type="NodePath">
 			</argument>
 			<argument index="2" name="initial" type="Object">
 			</argument>
-			<argument index="3" name="initial_val" type="String">
+			<argument index="3" name="initial_val" type="NodePath">
 			</argument>
 			<argument index="4" name="final_val" type="Variant">
 			</argument>
@@ -422,55 +406,55 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TWEEN_PROCESS_PHYSICS" value="0">
+		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
 			The [code]Tween[/code] should use [code]_physics_process[/code] for timekeeping when this is enabled.
 		</constant>
-		<constant name="TWEEN_PROCESS_IDLE" value="1">
+		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
 			The [code]Tween[/code] should use [code]_process[/code] for timekeeping when this is enabled (default).
 		</constant>
-		<constant name="TRANS_LINEAR" value="0">
+		<constant name="TRANS_LINEAR" value="0" enum="TransitionType">
 			Means that the animation is interpolated linearly.
 		</constant>
-		<constant name="TRANS_SINE" value="1">
+		<constant name="TRANS_SINE" value="1" enum="TransitionType">
 			Means that the animation is interpolated using a sine wave.
 		</constant>
-		<constant name="TRANS_QUINT" value="2">
+		<constant name="TRANS_QUINT" value="2" enum="TransitionType">
 			Means that the animation is interpolated with a quinary (to the power of 5) function.
 		</constant>
-		<constant name="TRANS_QUART" value="3">
+		<constant name="TRANS_QUART" value="3" enum="TransitionType">
 			Means that the animation is interpolated with a quartic (to the power of 4) function.
 		</constant>
-		<constant name="TRANS_QUAD" value="4">
+		<constant name="TRANS_QUAD" value="4" enum="TransitionType">
 			Means that the animation is interpolated with a quadratic (to the power of 2) function.
 		</constant>
-		<constant name="TRANS_EXPO" value="5">
+		<constant name="TRANS_EXPO" value="5" enum="TransitionType">
 			Means that the animation is interpolated with an exponential (some number to the power of x) function.
 		</constant>
-		<constant name="TRANS_ELASTIC" value="6">
+		<constant name="TRANS_ELASTIC" value="6" enum="TransitionType">
 			Means that the animation is interpolated with elasticity, wiggling around the edges.
 		</constant>
-		<constant name="TRANS_CUBIC" value="7">
+		<constant name="TRANS_CUBIC" value="7" enum="TransitionType">
 			Means that the animation is interpolated with a cubic (to the power of 3) function.
 		</constant>
-		<constant name="TRANS_CIRC" value="8">
+		<constant name="TRANS_CIRC" value="8" enum="TransitionType">
 			Means that the animation is interpolated with a function using square roots.
 		</constant>
-		<constant name="TRANS_BOUNCE" value="9">
+		<constant name="TRANS_BOUNCE" value="9" enum="TransitionType">
 			Means that the animation is interpolated by bouncing at, but never surpassing, the end.
 		</constant>
-		<constant name="TRANS_BACK" value="10">
+		<constant name="TRANS_BACK" value="10" enum="TransitionType">
 			Means that the animation is interpolated backing out at edges.
 		</constant>
-		<constant name="EASE_IN" value="0">
+		<constant name="EASE_IN" value="0" enum="EaseType">
 			Signifies that the interpolation should be focused in the beginning.
 		</constant>
-		<constant name="EASE_OUT" value="1">
+		<constant name="EASE_OUT" value="1" enum="EaseType">
 			Signifies that the interpolation should be focused in the end.
 		</constant>
-		<constant name="EASE_IN_OUT" value="2">
+		<constant name="EASE_IN_OUT" value="2" enum="EaseType">
 			Signifies that the interpolation should be focused in both ends.
 		</constant>
-		<constant name="EASE_OUT_IN" value="3">
+		<constant name="EASE_OUT_IN" value="3" enum="EaseType">
 			Signifies that the interpolation should be focused in both ends, but they should be switched (a bit hard to explain, try it for yourself to be sure).
 		</constant>
 	</constants>

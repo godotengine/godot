@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptOperator" inherits="VisualScriptNode" category="Core" version="3.0-alpha">
+<class name="VisualScriptOperator" inherits="VisualScriptNode" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -14,34 +14,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_operator" qualifiers="const">
-			<return type="int" enum="Variant.Operator">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_typed" qualifiers="const">
-			<return type="int" enum="Variant.Type">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_operator">
-			<return type="void">
-			</return>
-			<argument index="0" name="op" type="int" enum="Variant.Operator">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_typed">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="Variant.Type">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="Variant.Operator">

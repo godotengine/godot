@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConeTwistJoint" inherits="Joint" category="Core" version="3.0-alpha">
+<class name="ConeTwistJoint" inherits="Joint" category="Core" version="3.0-beta">
 	<brief_description>
 		A twist joint between two 3D bodies
 	</brief_description>
@@ -13,24 +13,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_param" getter="get_param">
@@ -55,27 +37,27 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_SWING_SPAN" value="0">
+		<constant name="PARAM_SWING_SPAN" value="0" enum="Param">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
 			Could be defined as looseness in the [code]ConeTwistJoint[/code].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
-		<constant name="PARAM_TWIST_SPAN" value="1">
+		<constant name="PARAM_TWIST_SPAN" value="1" enum="Param">
 			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
 			Twist is locked if below 0.05.
 		</constant>
-		<constant name="PARAM_BIAS" value="2">
+		<constant name="PARAM_BIAS" value="2" enum="Param">
 			The speed with which the swing or twist will take place.
 			The higher, the faster.
 		</constant>
-		<constant name="PARAM_SOFTNESS" value="3">
+		<constant name="PARAM_SOFTNESS" value="3" enum="Param">
 			The ease with which the joint starts to twist. If it's too low, it takes more force to start twisting the joint.
 		</constant>
-		<constant name="PARAM_RELAXATION" value="4">
+		<constant name="PARAM_RELAXATION" value="4" enum="Param">
 			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
 		</constant>
-		<constant name="PARAM_MAX" value="5">
+		<constant name="PARAM_MAX" value="5" enum="Param">
 			End flag of PARAM_* constants, used internally.
 		</constant>
 	</constants>

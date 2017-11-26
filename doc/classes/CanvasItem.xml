@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" category="Core" version="3.0-alpha">
+<class name="CanvasItem" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -271,39 +271,6 @@
 				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
-		<method name="edit_get_state" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<description>
-				Used for editing, returns an opaque value representing the transform state.
-			</description>
-		</method>
-		<method name="edit_rotate">
-			<return type="void">
-			</return>
-			<argument index="0" name="degrees" type="float">
-			</argument>
-			<description>
-				Used for editing, handle rotation.
-			</description>
-		</method>
-		<method name="edit_set_rect">
-			<return type="void">
-			</return>
-			<argument index="0" name="rect" type="Rect2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="edit_set_state">
-			<return type="void">
-			</return>
-			<argument index="0" name="state" type="Variant">
-			</argument>
-			<description>
-				Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation (radians) and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
-			</description>
-		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -346,27 +313,6 @@
 				Get the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
-		<method name="edit_get_item_and_children_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Get a [Rect2] with the boundaries of this item and its children.
-			</description>
-		</method>
-		<method name="edit_get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
-			<description>
-				Return a rect containing the editable boundaries of the item.
-			</description>
-		</method>
-		<method name="get_light_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Get this item's light mask number.
-			</description>
-		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -374,39 +320,11 @@
 				Get the mouse position relative to this item's position.
 			</description>
 		</method>
-		<method name="get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-				Get the material of this item.
-			</description>
-		</method>
-		<method name="get_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Get the modulate of the CanvasItem, which affects children items too.
-			</description>
-		</method>
-		<method name="get_self_modulate" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-				Get the self-modulate of the CanvasItem.
-			</description>
-		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Get the transform matrix of this item.
-			</description>
-		</method>
-		<method name="get_use_parent_material" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Get whether this item uses its parent's material.
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
@@ -437,13 +355,6 @@
 				Hide the CanvasItem currently visible.
 			</description>
 		</method>
-		<method name="is_draw_behind_parent_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether the item is drawn behind its parent.
-			</description>
-		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -461,13 +372,6 @@
 			<return type="bool">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="is_visible" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if this CanvasItem is visible. It may be invisible because itself or a parent canvas item is hidden.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -501,42 +405,6 @@
 				Set as top level. This means that it will not inherit transform from parent canvas items.
 			</description>
 		</method>
-		<method name="set_draw_behind_parent">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether the canvas item is drawn behind its parent.
-			</description>
-		</method>
-		<method name="set_light_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="light_mask" type="int">
-			</argument>
-			<description>
-				Set the ligtht mask number of this item.
-			</description>
-		</method>
-		<method name="set_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
-			<description>
-				Set the material of this item.
-			</description>
-		</method>
-		<method name="set_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="modulate" type="Color">
-			</argument>
-			<description>
-				Set the modulate of the CanvasItem. This [i]affects[/i] the modulation of children items.
-			</description>
-		</method>
 		<method name="set_notify_local_transform">
 			<return type="void">
 			</return>
@@ -551,34 +419,6 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="set_self_modulate">
-			<return type="void">
-			</return>
-			<argument index="0" name="self_modulate" type="Color">
-			</argument>
-			<description>
-				Set the self-modulate of the CanvasItem. This does not affect the modulation of children items.
-			</description>
-		</method>
-		<method name="set_use_parent_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set whether or not this item should use its parent's material.
-			</description>
-		</method>
-		<method name="set_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="visible" type="bool">
-			</argument>
-			<description>
-				Set whether this item should be visible or not.
-				Note that a hidden CanvasItem will make all children hidden too, so no matter what is set here this item won't be shown if its parent or grandparents nodes are hidden.
 			</description>
 		</method>
 		<method name="show">
@@ -637,34 +477,34 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="BLEND_MODE_MIX" value="0">
+		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
 		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
+		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
 			Additive blending mode.
 		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
+		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
 			Subtractive blending mode.
 		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
+		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			Multiplicative blending mode.
 		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29" enum="">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.
 		</constant>
-		<constant name="NOTIFICATION_DRAW" value="30" enum="">
+		<constant name="NOTIFICATION_DRAW" value="30">
 			CanvasItem is requested to draw.
 		</constant>
-		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31" enum="">
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31">
 			Canvas item visibility has changed.
 		</constant>
-		<constant name="NOTIFICATION_ENTER_CANVAS" value="32" enum="">
+		<constant name="NOTIFICATION_ENTER_CANVAS" value="32">
 			Canvas item has entered the canvas.
 		</constant>
-		<constant name="NOTIFICATION_EXIT_CANVAS" value="33" enum="">
+		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			Canvas item has exited the canvas.
 		</constant>
 	</constants>

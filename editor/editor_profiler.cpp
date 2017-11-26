@@ -221,7 +221,7 @@ void EditorProfiler::_update_plot() {
 		Vector<int> columnv;
 		columnv.resize(h * 4);
 
-		int *column = columnv.ptr();
+		int *column = columnv.ptrw();
 
 		Map<StringName, int> plot_prev;
 		//Map<StringName,int> plot_max;

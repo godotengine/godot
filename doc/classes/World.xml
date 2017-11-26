@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="World" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="World" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Class that has everything pertaining to a world.
 	</brief_description>
@@ -17,18 +17,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_environment" qualifiers="const">
-			<return type="Environment">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_fallback_environment" qualifiers="const">
-			<return type="Environment">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_scenario" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -38,22 +26,6 @@
 		<method name="get_space" qualifiers="const">
 			<return type="RID">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_environment">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="Environment">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_fallback_environment">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="Environment">
-			</argument>
 			<description>
 			</description>
 		</method>

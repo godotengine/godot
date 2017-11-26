@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" category="Core" version="3.0-alpha">
+<class name="Input" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		A Singleton that deals with inputs.
 	</brief_description>
@@ -336,16 +336,16 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="MOUSE_MODE_VISIBLE" value="0">
+		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
-		<constant name="MOUSE_MODE_HIDDEN" value="1">
+		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
 			Makes the mouse cursor hidden if it is visible.
 		</constant>
-		<constant name="MOUSE_MODE_CAPTURED" value="2">
+		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
 			Captures the mouse. The mouse will be hidden and unable to leave the game window. But it will still register movement and mouse button presses.
 		</constant>
-		<constant name="MOUSE_MODE_CONFINED" value="3">
+		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
 		</constant>
 	</constants>
 </class>

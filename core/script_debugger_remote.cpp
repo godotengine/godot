@@ -749,7 +749,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
-	sa.sort(profile_info_ptrs.ptr(), ofs);
+	sa.sort(profile_info_ptrs.ptrw(), ofs);
 
 	int to_send = MIN(ofs, max_frame_functions);
 

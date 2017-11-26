@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualServer" inherits="Object" category="Core" version="3.0-alpha">
+<class name="VisualServer" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
@@ -1798,315 +1798,315 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NO_INDEX_ARRAY" value="-1" enum="">
+		<constant name="NO_INDEX_ARRAY" value="-1">
 		</constant>
-		<constant name="ARRAY_WEIGHTS_SIZE" value="4" enum="">
+		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
 		</constant>
-		<constant name="CANVAS_ITEM_Z_MIN" value="-4096" enum="">
+		<constant name="CANVAS_ITEM_Z_MIN" value="-4096">
 		</constant>
-		<constant name="CANVAS_ITEM_Z_MAX" value="4096" enum="">
+		<constant name="CANVAS_ITEM_Z_MAX" value="4096">
 		</constant>
-		<constant name="MAX_GLOW_LEVELS" value="7" enum="">
+		<constant name="MAX_GLOW_LEVELS" value="7">
 		</constant>
-		<constant name="MAX_CURSORS" value="8" enum="">
+		<constant name="MAX_CURSORS" value="8">
 		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128" enum="">
+		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
 		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127" enum="">
+		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
 		</constant>
-		<constant name="CUBEMAP_LEFT" value="0">
+		<constant name="CUBEMAP_LEFT" value="0" enum="CubeMapSide">
 		</constant>
-		<constant name="CUBEMAP_RIGHT" value="1">
+		<constant name="CUBEMAP_RIGHT" value="1" enum="CubeMapSide">
 		</constant>
-		<constant name="CUBEMAP_BOTTOM" value="2">
+		<constant name="CUBEMAP_BOTTOM" value="2" enum="CubeMapSide">
 		</constant>
-		<constant name="CUBEMAP_TOP" value="3">
+		<constant name="CUBEMAP_TOP" value="3" enum="CubeMapSide">
 		</constant>
-		<constant name="CUBEMAP_FRONT" value="4">
+		<constant name="CUBEMAP_FRONT" value="4" enum="CubeMapSide">
 		</constant>
-		<constant name="CUBEMAP_BACK" value="5">
+		<constant name="CUBEMAP_BACK" value="5" enum="CubeMapSide">
 		</constant>
-		<constant name="TEXTURE_FLAG_MIPMAPS" value="1">
+		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_REPEAT" value="2">
+		<constant name="TEXTURE_FLAG_REPEAT" value="2" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_FILTER" value="4">
+		<constant name="TEXTURE_FLAG_FILTER" value="4" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8">
+		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16">
+		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32">
+		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048">
+		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="4096">
+		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="4096" enum="TextureFlags">
 		</constant>
-		<constant name="TEXTURE_FLAGS_DEFAULT" value="7">
+		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
 		</constant>
-		<constant name="SHADER_SPATIAL" value="0">
+		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 		</constant>
-		<constant name="SHADER_CANVAS_ITEM" value="1">
+		<constant name="SHADER_CANVAS_ITEM" value="1" enum="ShaderMode">
 		</constant>
-		<constant name="SHADER_PARTICLES" value="2">
+		<constant name="SHADER_PARTICLES" value="2" enum="ShaderMode">
 		</constant>
-		<constant name="SHADER_MAX" value="3">
+		<constant name="SHADER_MAX" value="3" enum="ShaderMode">
 		</constant>
-		<constant name="ARRAY_VERTEX" value="0">
+		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_NORMAL" value="1">
+		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TANGENT" value="2">
+		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_COLOR" value="3">
+		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TEX_UV" value="4">
+		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_TEX_UV2" value="5">
+		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_BONES" value="6">
+		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_WEIGHTS" value="7">
+		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_INDEX" value="8">
+		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_MAX" value="9">
+		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="64">
+		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="128">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="256">
+		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_VERTEX" value="512">
+		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_NORMAL" value="1024">
+		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TANGENT" value="2048">
+		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_COLOR" value="4096">
+		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192">
+		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384">
+		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_BONES" value="32768">
+		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536">
+		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_INDEX" value="131072">
+		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144">
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288">
+		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
 		</constant>
-		<constant name="PRIMITIVE_POINTS" value="0">
+		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_LINES" value="1">
+		<constant name="PRIMITIVE_LINES" value="1" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_LINE_STRIP" value="2">
+		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_LINE_LOOP" value="3">
+		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLES" value="4">
+		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5">
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6">
+		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
 		</constant>
-		<constant name="PRIMITIVE_MAX" value="7">
+		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
 		</constant>
-		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0">
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 		</constant>
-		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1">
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
 		</constant>
-		<constant name="LIGHT_DIRECTIONAL" value="0">
+		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 		</constant>
-		<constant name="LIGHT_OMNI" value="1">
+		<constant name="LIGHT_OMNI" value="1" enum="LightType">
 		</constant>
-		<constant name="LIGHT_SPOT" value="2">
+		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 		</constant>
-		<constant name="LIGHT_PARAM_ENERGY" value="0">
+		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SPECULAR" value="1">
+		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_RANGE" value="2">
+		<constant name="LIGHT_PARAM_RANGE" value="3" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="3">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="4" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="4">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="5" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="5">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="6" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="6">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="7" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="7">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="8">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="9">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="10">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="11">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="12" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="12">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="13" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="13">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="14">
+		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
 		</constant>
-		<constant name="VIEWPORT_UPDATE_DISABLED" value="0">
+		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 		</constant>
-		<constant name="VIEWPORT_UPDATE_ONCE" value="1">
+		<constant name="VIEWPORT_UPDATE_ONCE" value="1" enum="ViewportUpdateMode">
 		</constant>
-		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2">
+		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2" enum="ViewportUpdateMode">
 		</constant>
-		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3">
+		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3" enum="ViewportUpdateMode">
 		</constant>
-		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0">
+		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0" enum="ViewportClearMode">
 		</constant>
-		<constant name="VIEWPORT_CLEAR_NEVER" value="1">
+		<constant name="VIEWPORT_CLEAR_NEVER" value="1" enum="ViewportClearMode">
 		</constant>
-		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2">
+		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
 		</constant>
-		<constant name="VIEWPORT_MSAA_DISABLED" value="0">
+		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_MSAA_2X" value="1">
+		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_MSAA_4X" value="2">
+		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_MSAA_8X" value="3">
+		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_MSAA_16X" value="4">
+		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
 		</constant>
-		<constant name="VIEWPORT_USAGE_2D" value="0">
+		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
 		</constant>
-		<constant name="VIEWPORT_USAGE_2D_NO_SAMPLING" value="1">
+		<constant name="VIEWPORT_USAGE_2D_NO_SAMPLING" value="1" enum="ViewportUsage">
 		</constant>
-		<constant name="VIEWPORT_USAGE_3D" value="2">
+		<constant name="VIEWPORT_USAGE_3D" value="2" enum="ViewportUsage">
 		</constant>
-		<constant name="VIEWPORT_USAGE_3D_NO_EFFECTS" value="3">
+		<constant name="VIEWPORT_USAGE_3D_NO_EFFECTS" value="3" enum="ViewportUsage">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0">
+		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME" value="1">
+		<constant name="VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME" value="1" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2">
+		<constant name="VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3">
+		<constant name="VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4">
+		<constant name="VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5">
+		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6">
+		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0">
+		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1">
+		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="2">
+		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="2" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3">
+		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3" enum="ViewportDebugDraw">
 		</constant>
-		<constant name="SCENARIO_DEBUG_DISABLED" value="0">
+		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 		</constant>
-		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1">
+		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1" enum="ScenarioDebugMode">
 		</constant>
-		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2">
+		<constant name="SCENARIO_DEBUG_OVERDRAW" value="2" enum="ScenarioDebugMode">
 		</constant>
-		<constant name="SCENARIO_DEBUG_SHADELESS" value="3">
+		<constant name="SCENARIO_DEBUG_SHADELESS" value="3" enum="ScenarioDebugMode">
 		</constant>
-		<constant name="INSTANCE_NONE" value="0">
+		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MESH" value="1">
+		<constant name="INSTANCE_MESH" value="1" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MULTIMESH" value="2">
+		<constant name="INSTANCE_MULTIMESH" value="2" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_IMMEDIATE" value="3">
+		<constant name="INSTANCE_IMMEDIATE" value="3" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_PARTICLES" value="4">
+		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_LIGHT" value="5">
+		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_REFLECTION_PROBE" value="6">
+		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="7">
+		<constant name="INSTANCE_GI_PROBE" value="7" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MAX" value="8">
+		<constant name="INSTANCE_MAX" value="8" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_GEOMETRY_MASK" value="30">
+		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
 		</constant>
-		<constant name="NINE_PATCH_STRETCH" value="0">
+		<constant name="NINE_PATCH_STRETCH" value="0" enum="NinePatchAxisMode">
 		</constant>
-		<constant name="NINE_PATCH_TILE" value="1">
+		<constant name="NINE_PATCH_TILE" value="1" enum="NinePatchAxisMode">
 		</constant>
-		<constant name="NINE_PATCH_TILE_FIT" value="2">
+		<constant name="NINE_PATCH_TILE_FIT" value="2" enum="NinePatchAxisMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_ADD" value="0">
+		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_SUB" value="1">
+		<constant name="CANVAS_LIGHT_MODE_SUB" value="1" enum="CanvasLightMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MIX" value="2">
+		<constant name="CANVAS_LIGHT_MODE_MIX" value="2" enum="CanvasLightMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MASK" value="3">
+		<constant name="CANVAS_LIGHT_MODE_MASK" value="3" enum="CanvasLightMode">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0">
+		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF3" value="1">
+		<constant name="CANVAS_LIGHT_FILTER_PCF3" value="1" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="2">
+		<constant name="CANVAS_LIGHT_FILTER_PCF5" value="2" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF7" value="3">
+		<constant name="CANVAS_LIGHT_FILTER_PCF7" value="3" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF9" value="4">
+		<constant name="CANVAS_LIGHT_FILTER_PCF9" value="4" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5">
+		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5" enum="CanvasLightShadowFilter">
 		</constant>
-		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0">
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
 		</constant>
-		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE" value="1">
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE" value="1" enum="CanvasOccluderPolygonCullMode">
 		</constant>
-		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2">
+		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 		</constant>
-		<constant name="INFO_OBJECTS_IN_FRAME" value="0">
+		<constant name="INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_VERTICES_IN_FRAME" value="1">
+		<constant name="INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_MATERIAL_CHANGES_IN_FRAME" value="2">
+		<constant name="INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3">
+		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4">
+		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5">
+		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6">
+		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_VIDEO_MEM_USED" value="7">
+		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_TEXTURE_MEM_USED" value="8">
+		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
 		</constant>
-		<constant name="INFO_VERTEX_MEM_USED" value="9">
+		<constant name="INFO_VERTEX_MEM_USED" value="9" enum="RenderInfo">
 		</constant>
-		<constant name="FEATURE_SHADERS" value="0">
+		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 		</constant>
-		<constant name="FEATURE_MULTITHREADED" value="1">
+		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features">
 		</constant>
 	</constants>
 </class>

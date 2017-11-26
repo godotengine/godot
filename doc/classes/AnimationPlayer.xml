@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" category="Core" version="3.0-alpha">
+<class name="AnimationPlayer" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
@@ -90,13 +90,6 @@
 				Get the list of names of the animations stored in the player.
 			</description>
 		</method>
-		<method name="get_animation_process_mode" qualifiers="const">
-			<return type="int" enum="AnimationPlayer.AnimationProcessMode">
-			</return>
-			<description>
-				Return the mode in which the animation player processes. See [method set_animation_process_mode].
-			</description>
-		</method>
 		<method name="get_autoplay" qualifiers="const">
 			<return type="String">
 			</return>
@@ -136,25 +129,11 @@
 				Get the position (in seconds) of the currently being played animation.
 			</description>
 		</method>
-		<method name="get_default_blend_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the default blend time between animations.
-			</description>
-		</method>
 		<method name="get_position" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
 				Return the playback position (in seconds) in an animation channel (or channel 0 if none is provided).
-			</description>
-		</method>
-		<method name="get_root" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-				Return path to root node (see [method set_root]).
 			</description>
 		</method>
 		<method name="get_speed_scale" qualifiers="const">
@@ -262,15 +241,6 @@
 				Set the player as active (playing). If false, it will do nothing.
 			</description>
 		</method>
-		<method name="set_animation_process_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="AnimationPlayer.AnimationProcessMode">
-			</argument>
-			<description>
-				Set the mode in which the animation player processes. By default, it processes on idle time (framerate dependent), but using fixed time works well for animating static collision bodies in 2D and 3D. See enum ANIMATION_PROCESS_*.
-			</description>
-		</method>
 		<method name="set_autoplay">
 			<return type="void">
 			</return>
@@ -300,24 +270,6 @@
 			</argument>
 			<description>
 				Set the current animation (even if no playback occurs). Using set_current_animation() and set_active() are similar to calling play().
-			</description>
-		</method>
-		<method name="set_default_blend_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="sec" type="float">
-			</argument>
-			<description>
-				Set the default blend time between animations.
-			</description>
-		</method>
-		<method name="set_root">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<description>
-				AnimationPlayer resolves animation track paths from this node (which is relative to itself), by default root is "..", but it can be changed.
 			</description>
 		</method>
 		<method name="set_speed_scale">
@@ -380,10 +332,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0">
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
 			Process animation during the physics process. This is especially useful when animating physics bodies.
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1">
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
 			Process animation during the idle process.
 		</constant>
 	</constants>

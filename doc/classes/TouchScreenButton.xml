@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TouchScreenButton" inherits="Node2D" category="Core" version="3.0-alpha">
+<class name="TouchScreenButton" inherits="Node2D" category="Core" version="3.0-beta">
 	<brief_description>
 		Button for touch screen devices.
 	</brief_description>
@@ -11,152 +11,11 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_action" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the button's action.
-			</description>
-		</method>
-		<method name="get_bitmask" qualifiers="const">
-			<return type="BitMap">
-			</return>
-			<description>
-				Returns the button's bitmask.
-			</description>
-		</method>
-		<method name="get_shape" qualifiers="const">
-			<return type="Shape2D">
-			</return>
-			<description>
-				Returns the button's shape.
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-				Returns the button's texture for the normal state.
-			</description>
-		</method>
-		<method name="get_texture_pressed" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<description>
-				Returns the button's texture for the pressed state.
-			</description>
-		</method>
-		<method name="get_visibility_mode" qualifiers="const">
-			<return type="int" enum="TouchScreenButton.VisibilityMode">
-			</return>
-			<description>
-				Sets the button's visibility mode. See [code]VISIBILITY_*[/code] constants.
-			</description>
-		</method>
-		<method name="is_passby_press_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
 				Returns [code]true[/code] if this button is currently pressed.
-			</description>
-		</method>
-		<method name="is_shape_centered" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_shape_visible" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_action">
-			<return type="void">
-			</return>
-			<argument index="0" name="action" type="String">
-			</argument>
-			<description>
-				Sets the button's action.
-			</description>
-		</method>
-		<method name="set_bitmask">
-			<return type="void">
-			</return>
-			<argument index="0" name="bitmask" type="BitMap">
-			</argument>
-			<description>
-				Sets the button's [BitMap] bitmask.
-			</description>
-		</method>
-		<method name="set_passby_press">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] passby presses are enabled for this button.
-			</description>
-		</method>
-		<method name="set_shape">
-			<return type="void">
-			</return>
-			<argument index="0" name="shape" type="Shape2D">
-			</argument>
-			<description>
-				Sets the button's shape.
-			</description>
-		</method>
-		<method name="set_shape_centered">
-			<return type="void">
-			</return>
-			<argument index="0" name="bool" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the button's shape is centered.
-			</description>
-		</method>
-		<method name="set_shape_visible">
-			<return type="void">
-			</return>
-			<argument index="0" name="bool" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] the button's shape is visible.
-			</description>
-		</method>
-		<method name="set_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture" type="Texture">
-			</argument>
-			<description>
-				Sets the button's [Texture] for the normal state.
-			</description>
-		</method>
-		<method name="set_texture_pressed">
-			<return type="void">
-			</return>
-			<argument index="0" name="texture_pressed" type="Texture">
-			</argument>
-			<description>
-				Sets the button's [Texture] for the pressed state.
-			</description>
-		</method>
-		<method name="set_visibility_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="TouchScreenButton.VisibilityMode">
-			</argument>
-			<description>
-				Sets the button's visibility mode. See the [code]VISIBILITY_*[/code] constants.
 			</description>
 		</method>
 	</methods>
@@ -202,10 +61,10 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="VISIBILITY_ALWAYS" value="0">
+		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
 			Always visible.
 		</constant>
-		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1">
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
 			Visible on touch screens only.
 		</constant>
 	</constants>

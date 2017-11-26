@@ -82,8 +82,8 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 	const AudioFrame *src = p_src_frames;
 	AudioFrame *dst = p_dst_frames;
-	AudioFrame *rb_buf = ring_buffer.ptr();
-	AudioFrame *fb_buf = feedback_buffer.ptr();
+	AudioFrame *rb_buf = ring_buffer.ptrw();
+	AudioFrame *fb_buf = feedback_buffer.ptrw();
 
 	for (int i = 0; i < p_frame_count; i++) {
 

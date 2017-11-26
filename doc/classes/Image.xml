@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Image" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -414,109 +414,109 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="FORMAT_L8" value="0">
+		<constant name="FORMAT_L8" value="0" enum="Format">
 		</constant>
-		<constant name="FORMAT_LA8" value="1">
+		<constant name="FORMAT_LA8" value="1" enum="Format">
 		</constant>
-		<constant name="FORMAT_R8" value="2">
+		<constant name="FORMAT_R8" value="2" enum="Format">
 		</constant>
-		<constant name="FORMAT_RG8" value="3">
+		<constant name="FORMAT_RG8" value="3" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGB8" value="4">
+		<constant name="FORMAT_RGB8" value="4" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBA8" value="5">
+		<constant name="FORMAT_RGBA8" value="5" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBA4444" value="6">
+		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBA5551" value="7">
+		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
 		</constant>
-		<constant name="FORMAT_RF" value="8">
+		<constant name="FORMAT_RF" value="8" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGF" value="9">
+		<constant name="FORMAT_RGF" value="9" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBF" value="10">
+		<constant name="FORMAT_RGBF" value="10" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBAF" value="11">
+		<constant name="FORMAT_RGBAF" value="11" enum="Format">
 		</constant>
-		<constant name="FORMAT_RH" value="12">
+		<constant name="FORMAT_RH" value="12" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGH" value="13">
+		<constant name="FORMAT_RGH" value="13" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBH" value="14">
+		<constant name="FORMAT_RGBH" value="14" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBAH" value="15">
+		<constant name="FORMAT_RGBAH" value="15" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGBE9995" value="16">
+		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT1" value="17">
+		<constant name="FORMAT_DXT1" value="17" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT3" value="18">
+		<constant name="FORMAT_DXT3" value="18" enum="Format">
 		</constant>
-		<constant name="FORMAT_DXT5" value="19">
+		<constant name="FORMAT_DXT5" value="19" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGTC_R" value="20">
+		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
 		</constant>
-		<constant name="FORMAT_RGTC_RG" value="21">
+		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBA" value="22">
+		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBF" value="23">
+		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
 		</constant>
-		<constant name="FORMAT_BPTC_RGBFU" value="24">
+		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC2" value="25">
+		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC2A" value="26">
+		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC4" value="27">
+		<constant name="FORMAT_PVRTC4" value="27" enum="Format">
 		</constant>
-		<constant name="FORMAT_PVRTC4A" value="28">
+		<constant name="FORMAT_PVRTC4A" value="28" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC" value="29">
+		<constant name="FORMAT_ETC" value="29" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_R11" value="30">
+		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_R11S" value="31">
+		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RG11" value="32">
+		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RG11S" value="33">
+		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8" value="34">
+		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGBA8" value="35">
+		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
 		</constant>
-		<constant name="FORMAT_ETC2_RGB8A1" value="36">
+		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
 		</constant>
-		<constant name="FORMAT_MAX" value="37">
+		<constant name="FORMAT_MAX" value="37" enum="Format">
 		</constant>
-		<constant name="INTERPOLATE_NEAREST" value="0">
+		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
 		</constant>
-		<constant name="INTERPOLATE_BILINEAR" value="1">
+		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">
 		</constant>
-		<constant name="INTERPOLATE_CUBIC" value="2">
+		<constant name="INTERPOLATE_CUBIC" value="2" enum="Interpolation">
 		</constant>
-		<constant name="ALPHA_NONE" value="0">
+		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 		</constant>
-		<constant name="ALPHA_BIT" value="1">
+		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
 		</constant>
-		<constant name="ALPHA_BLEND" value="2">
+		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
 		</constant>
-		<constant name="COMPRESS_S3TC" value="0">
+		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
 		</constant>
-		<constant name="COMPRESS_PVRTC2" value="1">
+		<constant name="COMPRESS_PVRTC2" value="1" enum="CompressMode">
 		</constant>
-		<constant name="COMPRESS_PVRTC4" value="2">
+		<constant name="COMPRESS_PVRTC4" value="2" enum="CompressMode">
 		</constant>
-		<constant name="COMPRESS_ETC" value="3">
+		<constant name="COMPRESS_ETC" value="3" enum="CompressMode">
 		</constant>
-		<constant name="COMPRESS_ETC2" value="4">
+		<constant name="COMPRESS_ETC2" value="4" enum="CompressMode">
 		</constant>
-		<constant name="COMPRESS_SOURCE_GENERIC" value="0">
+		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
 		</constant>
-		<constant name="COMPRESS_SOURCE_SRGB" value="1">
+		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
 		</constant>
-		<constant name="COMPRESS_SOURCE_NORMAL" value="2">
+		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 		</constant>
 	</constants>
 </class>

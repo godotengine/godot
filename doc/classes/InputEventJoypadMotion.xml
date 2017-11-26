@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventJoypadMotion" inherits="InputEvent" category="Core" version="3.0-alpha">
+<class name="InputEventJoypadMotion" inherits="InputEvent" category="Core" version="3.0-beta">
 	<brief_description>
 		Input event type for gamepad joysticks and other motions. For buttons see [code]InputEventJoypadMotion[/code].
 	</brief_description>
@@ -12,34 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_axis" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_axis_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_axis">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_axis_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis_value" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis">

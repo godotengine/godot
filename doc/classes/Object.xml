@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" category="Core" version="3.0-alpha">
+<class name="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all non built-in types.
 	</brief_description>
@@ -178,6 +178,14 @@
 				- "method_name" is a name of method to which signal is connected.
 			</description>
 		</method>
+		<method name="get_indexed" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="property" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_instance_id" qualifiers="const">
 			<return type="int">
 			</return>
@@ -338,6 +346,16 @@
 				If set to true, signal emission is blocked.
 			</description>
 		</method>
+		<method name="set_indexed">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="NodePath">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_message_translation">
 			<return type="void">
 			</return>
@@ -384,19 +402,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_POSTINITIALIZE" value="0" enum="">
+		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
 			Called right when the object is initialized. Not available in script.
 		</constant>
-		<constant name="NOTIFICATION_PREDELETE" value="1" enum="">
+		<constant name="NOTIFICATION_PREDELETE" value="1">
 			Called before the object is about to be deleted.
 		</constant>
-		<constant name="CONNECT_DEFERRED" value="1">
+		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Connect a signal in deferred mode. This way, signal emissions are stored in a queue, then set on idle time.
 		</constant>
-		<constant name="CONNECT_PERSIST" value="2">
+		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are saved when the object is serialized to file.
 		</constant>
-		<constant name="CONNECT_ONESHOT" value="4">
+		<constant name="CONNECT_ONESHOT" value="4" enum="ConnectFlags">
 			One shot connections disconnect themselves after emission.
 		</constant>
 	</constants>

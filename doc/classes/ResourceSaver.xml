@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceSaver" inherits="Object" category="Core" version="3.0-alpha">
+<class name="ResourceSaver" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Resource Saving Interface.
 	</brief_description>
@@ -35,17 +35,17 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="FLAG_RELATIVE_PATHS" value="1">
+		<constant name="FLAG_RELATIVE_PATHS" value="1" enum="SaverFlags">
 		</constant>
-		<constant name="FLAG_BUNDLE_RESOURCES" value="2">
+		<constant name="FLAG_BUNDLE_RESOURCES" value="2" enum="SaverFlags">
 		</constant>
-		<constant name="FLAG_CHANGE_PATH" value="4">
+		<constant name="FLAG_CHANGE_PATH" value="4" enum="SaverFlags">
 		</constant>
-		<constant name="FLAG_OMIT_EDITOR_PROPERTIES" value="8">
+		<constant name="FLAG_OMIT_EDITOR_PROPERTIES" value="8" enum="SaverFlags">
 		</constant>
-		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16">
+		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16" enum="SaverFlags">
 		</constant>
-		<constant name="FLAG_COMPRESS" value="32">
+		<constant name="FLAG_COMPRESS" value="32" enum="SaverFlags">
 		</constant>
 	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Particles" inherits="GeometryInstance" category="Core" version="3.0-alpha">
+<class name="Particles" inherits="GeometryInstance" category="Core" version="3.0-beta">
 	<brief_description>
 		3D particle emitter.
 	</brief_description>
@@ -18,237 +18,9 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_amount" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_draw_order" qualifiers="const">
-			<return type="int" enum="Particles.DrawOrder">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_draw_pass_mesh" qualifiers="const">
-			<return type="Mesh">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_draw_passes" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_explosiveness_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_fixed_fps" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_fractional_delta" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_lifetime" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_one_shot" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_pre_process_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_process_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_randomness_ratio" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_speed_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_use_local_coordinates" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_visibility_aabb" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_emitting" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="restart">
 			<return type="void">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_amount">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_draw_order">
-			<return type="void">
-			</return>
-			<argument index="0" name="order" type="int" enum="Particles.DrawOrder">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_draw_pass_mesh">
-			<return type="void">
-			</return>
-			<argument index="0" name="pass" type="int">
-			</argument>
-			<argument index="1" name="mesh" type="Mesh">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_draw_passes">
-			<return type="void">
-			</return>
-			<argument index="0" name="passes" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emitting">
-			<return type="void">
-			</return>
-			<argument index="0" name="emitting" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_explosiveness_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="ratio" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_fixed_fps">
-			<return type="void">
-			</return>
-			<argument index="0" name="fps" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_fractional_delta">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_lifetime">
-			<return type="void">
-			</return>
-			<argument index="0" name="secs" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_one_shot">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_pre_process_time">
-			<return type="void">
-			</return>
-			<argument index="0" name="secs" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_process_material">
-			<return type="void">
-			</return>
-			<argument index="0" name="material" type="Material">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_randomness_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="ratio" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_speed_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_use_local_coordinates">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_visibility_aabb">
-			<return type="void">
-			</return>
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
 			<description>
 			</description>
 		</method>
@@ -304,16 +76,16 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="DRAW_ORDER_INDEX" value="0">
+		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
 			Particles are drawn in the order emitted.
 		</constant>
-		<constant name="DRAW_ORDER_LIFETIME" value="1">
+		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
 			Particles are drawn in order of remaining lifetime.
 		</constant>
-		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2">
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
 			Particles are drawn in order of depth.
 		</constant>
-		<constant name="MAX_DRAW_PASSES" value="4" enum="">
+		<constant name="MAX_DRAW_PASSES" value="4">
 		</constant>
 	</constants>
 </class>

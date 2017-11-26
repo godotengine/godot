@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDNative" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="GDNative" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -21,23 +21,9 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_library">
-			<return type="GDNativeLibrary">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="initialize">
 			<return type="bool">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_library">
-			<return type="void">
-			</return>
-			<argument index="0" name="library" type="GDNativeLibrary">
-			</argument>
 			<description>
 			</description>
 		</method>

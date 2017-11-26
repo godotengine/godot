@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" category="Core" version="3.0-alpha">
+<class name="File" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>
@@ -394,28 +394,28 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="READ" value="1">
+		<constant name="READ" value="1" enum="ModeFlags">
 			Opens the file for read operations.
 		</constant>
-		<constant name="WRITE" value="2">
+		<constant name="WRITE" value="2" enum="ModeFlags">
 			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
-		<constant name="READ_WRITE" value="3">
+		<constant name="READ_WRITE" value="3" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file.
 		</constant>
-		<constant name="WRITE_READ" value="7">
+		<constant name="WRITE_READ" value="7" enum="ModeFlags">
 			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
-		<constant name="COMPRESSION_FASTLZ" value="0">
+		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the FastLZ compression method.
 		</constant>
-		<constant name="COMPRESSION_DEFLATE" value="1">
+		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
 			Uses the Deflate compression method.
 		</constant>
-		<constant name="COMPRESSION_ZSTD" value="2">
+		<constant name="COMPRESSION_ZSTD" value="2" enum="CompressionMode">
 			Uses the Zstd compression method.
 		</constant>
-		<constant name="COMPRESSION_GZIP" value="3">
+		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
 			Uses the gzip compression method.
 		</constant>
 	</constants>

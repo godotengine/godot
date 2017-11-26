@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" category="Core" version="3.0-alpha">
+<class name="ItemList" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
@@ -53,34 +53,8 @@
 				Ensure selection is visible, adjusting the scroll position as necessary.
 			</description>
 		</method>
-		<method name="get_allow_rmb_select" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return whether or not items may be selected via right mouse clicking.
-			</description>
-		</method>
-		<method name="get_fixed_column_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				If column size has been fixed to a value, return that value.
-			</description>
-		</method>
 		<method name="get_fixed_icon_size" qualifiers="const">
 			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_icon_mode" qualifiers="const">
-			<return type="int" enum="ItemList.IconMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_icon_scale" qualifiers="const">
-			<return type="float">
 			</return>
 			<description>
 			</description>
@@ -153,26 +127,6 @@
 				Return tooltip hint for specified item index.
 			</description>
 		</method>
-		<method name="get_max_columns" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return total number of columns in use by the list.
-			</description>
-		</method>
-		<method name="get_max_text_lines" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return total number of lines currently in use by the list.
-			</description>
-		</method>
-		<method name="get_select_mode" qualifiers="const">
-			<return type="int" enum="ItemList.SelectMode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_selected_items">
 			<return type="PoolIntArray">
 			</return>
@@ -185,12 +139,6 @@
 			</return>
 			<description>
 				Returns the current vertical scroll bar for the List.
-			</description>
-		</method>
-		<method name="has_auto_height" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -218,13 +166,6 @@
 			</argument>
 			<description>
 				Returns whether the tooltip is enabled for specified item index.
-			</description>
-		</method>
-		<method name="is_same_column_width" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether or not all columns of the list are of the same size.
 			</description>
 		</method>
 		<method name="is_selected" qualifiers="const">
@@ -257,52 +198,10 @@
 				Note:  This method does not trigger the item selection signal.
 			</description>
 		</method>
-		<method name="set_allow_rmb_select">
-			<return type="void">
-			</return>
-			<argument index="0" name="allow" type="bool">
-			</argument>
-			<description>
-				Allow (or disallow) selection of (selectable) items in the list using right mouse button.
-			</description>
-		</method>
-		<method name="set_auto_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_fixed_column_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<description>
-				Set the size (width) all columns in the list are to use.
-			</description>
-		</method>
 		<method name="set_fixed_icon_size">
 			<return type="void">
 			</return>
 			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_icon_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="ItemList.IconMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_icon_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="scale" type="float">
 			</argument>
 			<description>
 			</description>
@@ -405,41 +304,6 @@
 				Sets whether the tooltip is enabled for specified item index.
 			</description>
 		</method>
-		<method name="set_max_columns">
-			<return type="void">
-			</return>
-			<argument index="0" name="amount" type="int">
-			</argument>
-			<description>
-				Set maximum number of columns to use for the list.
-			</description>
-		</method>
-		<method name="set_max_text_lines">
-			<return type="void">
-			</return>
-			<argument index="0" name="lines" type="int">
-			</argument>
-			<description>
-				Set maximum number of lines to use for the list.
-			</description>
-		</method>
-		<method name="set_same_column_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets a fixed size (width) to use for all columns of the list.
-			</description>
-		</method>
-		<method name="set_select_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="ItemList.SelectMode">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="sort_items_by_text">
 			<return type="void">
 			</return>
@@ -514,15 +378,21 @@
 				Fired when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
+		<signal name="rmb_clicked">
+			<argument index="0" name="at_position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
-		<constant name="ICON_MODE_TOP" value="0">
+		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
 		</constant>
-		<constant name="ICON_MODE_LEFT" value="1">
+		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
 		</constant>
-		<constant name="SELECT_SINGLE" value="0">
+		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
 		</constant>
-		<constant name="SELECT_MULTI" value="1">
+		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
 		</constant>
 	</constants>
 	<theme_items>

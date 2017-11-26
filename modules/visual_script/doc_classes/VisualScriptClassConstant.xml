@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core" version="3.0-alpha">
+<class name="VisualScriptClassConstant" inherits="VisualScriptNode" category="Core" version="3.0-beta">
 	<brief_description>
 		Gets a constant from a given class.
 	</brief_description>
@@ -15,34 +15,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_base_type">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_class_constant">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_base_type">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_class_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">

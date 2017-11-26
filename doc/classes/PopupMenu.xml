@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PopupMenu" inherits="Popup" category="Core" version="3.0-alpha">
+<class name="PopupMenu" inherits="Popup" category="Core" version="3.0-beta">
 	<brief_description>
 		PopupMenu displays a list of options.
 	</brief_description>
@@ -233,20 +233,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_hide_on_checkable_item_selection">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean that indicates whether or not the PopupMenu will hide on checkable item selection.
-			</description>
-		</method>
-		<method name="is_hide_on_item_selection">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
-			</description>
-		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -290,24 +276,6 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
-			</description>
-		</method>
-		<method name="set_hide_on_checkable_item_selection">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets whether or not the PopupMenu will hide on checkable item selection.
-			</description>
-		</method>
-		<method name="set_hide_on_item_selection">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Sets whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
 		<method name="set_item_accelerator">

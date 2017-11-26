@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CylinderMesh" inherits="PrimitiveMesh" category="Core" version="3.0-alpha">
+<class name="CylinderMesh" inherits="PrimitiveMesh" category="Core" version="3.0-beta">
 	<brief_description>
 		Class representing a cylindrical [PrimitiveMesh].
 	</brief_description>
@@ -11,76 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_bottom_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_height" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_radial_segments" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_rings" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_top_radius" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_bottom_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="height" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_radial_segments">
-			<return type="void">
-			</return>
-			<argument index="0" name="segments" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_rings">
-			<return type="void">
-			</return>
-			<argument index="0" name="rings" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_top_radius">
-			<return type="void">
-			</return>
-			<argument index="0" name="radius" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius">

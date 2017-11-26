@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVROrigin" inherits="Spatial" category="Core" version="3.0-alpha">
+<class name="ARVROrigin" inherits="Spatial" category="Core" version="3.0-beta">
 	<brief_description>
 		Our origin point in AR/VR.
 	</brief_description>
@@ -14,24 +14,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_world_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the world scale applied to our positioning.
-			</description>
-		</method>
-		<method name="set_world_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="world_scale" type="float">
-			</argument>
-			<description>
-				Changes the world scaling factor.
-				Most AR/VR platforms will assume a unit size of 1 unit in your game world = 1 meter in the real world. This scale allows you to adjust this to the unit system you use in your game. 
-				Note that this method is a passthrough to the ARVRServer itself.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">

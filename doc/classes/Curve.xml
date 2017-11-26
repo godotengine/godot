@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Curve" inherits="Resource" category="Core" version="3.0-alpha">
+<class name="Curve" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -39,24 +39,6 @@
 		</method>
 		<method name="clear_points">
 			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_bake_resolution" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_min_value" qualifiers="const">
-			<return type="float">
 			</return>
 			<description>
 			</description>
@@ -121,30 +103,6 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bake_resolution">
-			<return type="void">
-			</return>
-			<argument index="0" name="resolution" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="max" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_min_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="min" type="float">
 			</argument>
 			<description>
 			</description>
@@ -227,11 +185,11 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TANGENT_FREE" value="0">
+		<constant name="TANGENT_FREE" value="0" enum="TangentMode">
 		</constant>
-		<constant name="TANGENT_LINEAR" value="1">
+		<constant name="TANGENT_LINEAR" value="1" enum="TangentMode">
 		</constant>
-		<constant name="TANGENT_MODE_COUNT" value="2">
+		<constant name="TANGENT_MODE_COUNT" value="2" enum="TangentMode">
 		</constant>
 	</constants>
 </class>

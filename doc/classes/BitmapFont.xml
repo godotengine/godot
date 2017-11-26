@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BitmapFont" inherits="Font" category="Core" version="3.0-alpha">
+<class name="BitmapFont" inherits="Font" category="Core" version="3.0-beta">
 	<brief_description>
 		Renders text using [code]*.fnt[/code] fonts.
 	</brief_description>
@@ -77,13 +77,6 @@
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
 			</description>
 		</method>
-		<method name="get_fallback" qualifiers="const">
-			<return type="BitmapFont">
-			</return>
-			<description>
-				Returns the fallback BitmapFont.
-			</description>
-		</method>
 		<method name="get_kerning_pair" qualifiers="const">
 			<return type="int">
 			</return>
@@ -109,42 +102,6 @@
 			</return>
 			<description>
 				Returns the number of textures in the BitmapFont atlas.
-			</description>
-		</method>
-		<method name="set_ascent">
-			<return type="void">
-			</return>
-			<argument index="0" name="px" type="float">
-			</argument>
-			<description>
-				Sets the font ascent (number of pixels above the baseline).
-			</description>
-		</method>
-		<method name="set_distance_field_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code] distance field hint is enabled.
-			</description>
-		</method>
-		<method name="set_fallback">
-			<return type="void">
-			</return>
-			<argument index="0" name="fallback" type="BitmapFont">
-			</argument>
-			<description>
-				Sets the fallback BitmapFont.
-			</description>
-		</method>
-		<method name="set_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="px" type="float">
-			</argument>
-			<description>
-				Sets the total font height (ascent plus descent) in pixels.
 			</description>
 		</method>
 	</methods>

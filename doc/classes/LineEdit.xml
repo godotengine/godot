@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" category="Core" version="3.0-alpha">
+<class name="LineEdit" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Control that provides single line string editing.
 	</brief_description>
@@ -27,45 +27,6 @@
 				Erases the [LineEdit] text.
 			</description>
 		</method>
-		<method name="cursor_get_blink_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Gets whether the line edit caret is blinking.
-			</description>
-		</method>
-		<method name="cursor_get_blink_speed" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Gets the line edit caret blink speed.
-			</description>
-		</method>
-		<method name="cursor_set_blink_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set the line edit caret to blink.
-			</description>
-		</method>
-		<method name="cursor_set_blink_speed">
-			<return type="void">
-			</return>
-			<argument index="0" name="blink_speed" type="float">
-			</argument>
-			<description>
-				Set the line edit caret blink speed. Cannot be less then or equal to 0.
-			</description>
-		</method>
-		<method name="get_align" qualifiers="const">
-			<return type="int" enum="LineEdit.Align">
-			</return>
-			<description>
-				Return the align mode of the [code]LineEdit[/code].
-			</description>
-		</method>
 		<method name="get_cursor_position" qualifiers="const">
 			<return type="int">
 			</return>
@@ -73,66 +34,11 @@
 				Returns the cursor position inside the [code]LineEdit[/code].
 			</description>
 		</method>
-		<method name="get_expand_to_text_length" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_max_length" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the maximum amount of characters the [code]LineEdit[/code] can edit. If 0 is returned, no limit exists.
-			</description>
-		</method>
 		<method name="get_menu" qualifiers="const">
 			<return type="PopupMenu">
 			</return>
 			<description>
 				Returns the [PopupMenu] of this [code]LineEdit[/code]. By default, this menu is displayed when right-clicking on the [LineEdit].
-			</description>
-		</method>
-		<method name="get_placeholder" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Return the placeholder text.
-			</description>
-		</method>
-		<method name="get_placeholder_alpha" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return transparency of the placeholder text.
-			</description>
-		</method>
-		<method name="get_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Return the text in the [code]LineEdit[/code].
-			</description>
-		</method>
-		<method name="is_context_menu_enabled">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the context menu is enabled.
-			</description>
-		</method>
-		<method name="is_editable" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return the [i]editable[/i] status of the [code]LineEdit[/code] (see [method set_editable]).
-			</description>
-		</method>
-		<method name="is_secret" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return the [i]secret[/i] status of the [code]LineEdit[/code] (see [method set_secret]).
 			</description>
 		</method>
 		<method name="menu_option">
@@ -168,24 +74,6 @@
 				Selects the whole [String].
 			</description>
 		</method>
-		<method name="set_align">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="LineEdit.Align">
-			</argument>
-			<description>
-				Set text alignment of the [code]LineEdit[/code].
-			</description>
-		</method>
-		<method name="set_context_menu_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set the status of the context menu. When enabled, the context menu will appear when the [code]LineEdit[/code] is right clicked.
-			</description>
-		</method>
 		<method name="set_cursor_position">
 			<return type="void">
 			</return>
@@ -193,68 +81,6 @@
 			</argument>
 			<description>
 				Sets the cursor position inside the [code]LineEdit[/code]. The text may scroll if needed.
-			</description>
-		</method>
-		<method name="set_editable">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set the [i]editable[/i] status of the [code]LineEdit[/code]. When disabled, existing text can't be modified and new text can't be added.
-			</description>
-		</method>
-		<method name="set_expand_to_text_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="chars" type="int">
-			</argument>
-			<description>
-				Set the maximum amount of characters the [code]LineEdit[/code] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
-			</description>
-		</method>
-		<method name="set_placeholder">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Set the placeholder text.
-			</description>
-		</method>
-		<method name="set_placeholder_alpha">
-			<return type="void">
-			</return>
-			<argument index="0" name="alpha" type="float">
-			</argument>
-			<description>
-				Set transparency of the placeholder text.
-			</description>
-		</method>
-		<method name="set_secret">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Set the [i]secret[/i] status of the [code]LineEdit[/code]. When enabled, every character is displayed as "*".
-			</description>
-		</method>
-		<method name="set_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-				Set the text in the [code]LineEdit[/code], clearing the existing one and the selection.
 			</description>
 		</method>
 	</methods>
@@ -274,7 +100,7 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 			If [code]false[/code] existing text cannot be modified and new text cannot be added.
 		</member>
-		<member name="expand_to_len" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
+		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
 			If [code]true[/code] the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
@@ -313,39 +139,39 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0">
+		<constant name="ALIGN_LEFT" value="0" enum="Align">
 			Aligns the text on the left hand side of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_CENTER" value="1">
+		<constant name="ALIGN_CENTER" value="1" enum="Align">
 			Centers the text in the middle of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_RIGHT" value="2">
+		<constant name="ALIGN_RIGHT" value="2" enum="Align">
 			Aligns the text on the right hand side of the [LineEdit].
 		</constant>
-		<constant name="ALIGN_FILL" value="3">
+		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Stretches whitespaces to fit the [LineEdit]'s width.
 		</constant>
-		<constant name="MENU_CUT" value="0">
+		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (Copies and clears) the selected text.
 		</constant>
-		<constant name="MENU_COPY" value="1">
+		<constant name="MENU_COPY" value="1" enum="MenuItems">
 			Copies the selected text.
 		</constant>
-		<constant name="MENU_PASTE" value="2">
+		<constant name="MENU_PASTE" value="2" enum="MenuItems">
 			Pastes the clipboard text over the selected text (or at the cursor's position).
 		</constant>
-		<constant name="MENU_CLEAR" value="3">
+		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
 			Erases the whole [Linedit] text.
 		</constant>
-		<constant name="MENU_SELECT_ALL" value="4">
+		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
 			Selects the whole [Linedit] text.
 		</constant>
-		<constant name="MENU_UNDO" value="5">
+		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 			Undoes the previous action.
 		</constant>
-		<constant name="MENU_REDO" value="6">
+		<constant name="MENU_REDO" value="6" enum="MenuItems">
 		</constant>
-		<constant name="MENU_MAX" value="7">
+		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>

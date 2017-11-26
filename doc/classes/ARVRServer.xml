@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" category="Core" version="3.0-alpha">
+<class name="ARVRServer" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		This is our AR/VR Server.
 	</brief_description>
@@ -82,13 +82,6 @@
 				Get the number of trackers currently registered.
 			</description>
 		</method>
-		<method name="get_world_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns our world scale (see ARVROrigin for more information).
-			</description>
-		</method>
 		<method name="set_primary_interface">
 			<return type="void">
 			</return>
@@ -96,15 +89,6 @@
 			</argument>
 			<description>
 				Changes the primary interface to the specified interface. Again mostly exposed for GDNative interfaces.
-			</description>
-		</method>
-		<method name="set_world_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="arg0" type="float">
-			</argument>
-			<description>
-				Changing the world scale, see the ARVROrigin documentation for more information.
 			</description>
 		</method>
 	</methods>
@@ -152,22 +136,22 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="TRACKER_CONTROLLER" value="1">
+		<constant name="TRACKER_CONTROLLER" value="1" enum="TrackerType">
 			Our tracker tracks the location of a controller.
 		</constant>
-		<constant name="TRACKER_BASESTATION" value="2">
+		<constant name="TRACKER_BASESTATION" value="2" enum="TrackerType">
 			Our tracker tracks the location of a base station.
 		</constant>
-		<constant name="TRACKER_ANCHOR" value="4">
+		<constant name="TRACKER_ANCHOR" value="4" enum="TrackerType">
 			Our tracker tracks the location and size of an AR anchor.
 		</constant>
-		<constant name="TRACKER_ANY_KNOWN" value="127">
+		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">
 			Used internally to filter trackers of any known type.
 		</constant>
-		<constant name="TRACKER_UNKNOWN" value="128">
+		<constant name="TRACKER_UNKNOWN" value="128" enum="TrackerType">
 			Used internally if we haven't set the tracker type yet.
 		</constant>
-		<constant name="TRACKER_ANY" value="255">
+		<constant name="TRACKER_ANY" value="255" enum="TrackerType">
 			Used internally to select all trackers.
 		</constant>
 	</constants>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" category="Core" version="3.0-alpha">
+<class name="Node" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
 		Base class for all the [i]scene[/i] elements.
 	</brief_description>
@@ -280,13 +280,6 @@
 				Return the relative path from the current node to the specified node in "node" argument. Both nodes must be in the same scene, or else the function will fail.
 			</description>
 		</method>
-		<method name="get_pause_mode" qualifiers="const">
-			<return type="int" enum="Node.PauseMode">
-			</return>
-			<description>
-				Return the pause mode (PAUSE_MODE_*) of this Node.
-			</description>
-		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
 			<return type="float">
 			</return>
@@ -351,12 +344,6 @@
 			</argument>
 			<description>
 				Return [i]true[/i] if the "node" argument is a direct or indirect child of the current node, otherwise return [i]false[/i].
-			</description>
-		</method>
-		<method name="is_displayed_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
 			</description>
 		</method>
 		<method name="is_greater_than" qualifiers="const">
@@ -649,14 +636,6 @@
 				Remotely change property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
-		<method name="set_display_folded">
-			<return type="void">
-			</return>
-			<argument index="0" name="fold" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_filename">
 			<return type="void">
 			</return>
@@ -692,15 +671,6 @@
 			</argument>
 			<description>
 				Set the node owner. A node can have any other node as owner (as long as a valid parent, grandparent, etc ascending in the tree). When saving a node (using SceneSaver) all the nodes it owns will be saved with it. This allows to create complex SceneTrees, with instancing and subinstancing.
-			</description>
-		</method>
-		<method name="set_pause_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Node.PauseMode">
-			</argument>
-			<description>
-				Set pause mode (PAUSE_MODE_*) of this Node.
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -798,74 +768,74 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_ENTER_TREE" value="10" enum="">
+		<constant name="NOTIFICATION_ENTER_TREE" value="10">
 		</constant>
-		<constant name="NOTIFICATION_EXIT_TREE" value="11" enum="">
+		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 		</constant>
-		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12" enum="">
+		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 		</constant>
-		<constant name="NOTIFICATION_READY" value="13" enum="">
+		<constant name="NOTIFICATION_READY" value="13">
 		</constant>
-		<constant name="NOTIFICATION_PAUSED" value="14" enum="">
+		<constant name="NOTIFICATION_PAUSED" value="14">
 		</constant>
-		<constant name="NOTIFICATION_UNPAUSED" value="15" enum="">
+		<constant name="NOTIFICATION_UNPAUSED" value="15">
 		</constant>
-		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16" enum="">
+		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16">
 			Notification received every frame when the physics process flag is set (see [method set_physics_process]).
 		</constant>
-		<constant name="NOTIFICATION_PROCESS" value="17" enum="">
+		<constant name="NOTIFICATION_PROCESS" value="17">
 			Notification received every frame when the process flag is set (see [method set_process]).
 		</constant>
-		<constant name="NOTIFICATION_PARENTED" value="18" enum="">
+		<constant name="NOTIFICATION_PARENTED" value="18">
 			Notification received when a node is set as a child of another node. Note that this doesn't mean that a node entered the Scene Tree.
 		</constant>
-		<constant name="NOTIFICATION_UNPARENTED" value="19" enum="">
+		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).
 		</constant>
-		<constant name="NOTIFICATION_INSTANCED" value="20" enum="">
+		<constant name="NOTIFICATION_INSTANCED" value="20">
 		</constant>
-		<constant name="NOTIFICATION_DRAG_BEGIN" value="21" enum="">
+		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
 		</constant>
-		<constant name="NOTIFICATION_DRAG_END" value="22" enum="">
+		<constant name="NOTIFICATION_DRAG_END" value="22">
 		</constant>
-		<constant name="NOTIFICATION_PATH_CHANGED" value="23" enum="">
+		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24" enum="">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24">
 		</constant>
-		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25" enum="">
+		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 		</constant>
-		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26" enum="">
+		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
 		</constant>
-		<constant name="RPC_MODE_DISABLED" value="0">
+		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
 		</constant>
-		<constant name="RPC_MODE_REMOTE" value="1">
+		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
 			Call a method remotely.
 		</constant>
-		<constant name="RPC_MODE_SYNC" value="2">
+		<constant name="RPC_MODE_SYNC" value="2" enum="RPCMode">
 			Call a method both remotely and locally.
 		</constant>
-		<constant name="RPC_MODE_MASTER" value="3">
+		<constant name="RPC_MODE_MASTER" value="3" enum="RPCMode">
 			Call a method if the Node is Master.
 		</constant>
-		<constant name="RPC_MODE_SLAVE" value="4">
+		<constant name="RPC_MODE_SLAVE" value="4" enum="RPCMode">
 			Call a method if the Node is Slave.
 		</constant>
-		<constant name="PAUSE_MODE_INHERIT" value="0">
+		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from parent. For root node, it is equivalent to PAUSE_MODE_STOP.
 		</constant>
-		<constant name="PAUSE_MODE_STOP" value="1">
+		<constant name="PAUSE_MODE_STOP" value="1" enum="PauseMode">
 			Stop processing when SceneTree is paused.
 		</constant>
-		<constant name="PAUSE_MODE_PROCESS" value="2">
+		<constant name="PAUSE_MODE_PROCESS" value="2" enum="PauseMode">
 			Continue to process regardless of SceneTree pause state.
 		</constant>
-		<constant name="DUPLICATE_SIGNALS" value="1">
+		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_GROUPS" value="2">
+		<constant name="DUPLICATE_GROUPS" value="2" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_SCRIPTS" value="4">
+		<constant name="DUPLICATE_SCRIPTS" value="4" enum="DuplicateFlags">
 		</constant>
-		<constant name="DUPLICATE_USE_INSTANCING" value="8">
+		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
 		</constant>
 	</constants>
 </class>

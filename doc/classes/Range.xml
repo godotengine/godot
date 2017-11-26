@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Range" inherits="Control" category="Core" version="3.0-alpha">
+<class name="Range" inherits="Control" category="Core" version="3.0-beta">
 	<brief_description>
 		Abstract base class for range-based controls.
 	</brief_description>
@@ -18,52 +18,6 @@
 				Return value mapped to 0 to 1 range.
 			</description>
 		</method>
-		<method name="get_max" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the maximum value.
-			</description>
-		</method>
-		<method name="get_min" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the minimum value.
-			</description>
-		</method>
-		<method name="get_page" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the page size, if page is 0, paging is disabled.
-			</description>
-		</method>
-		<method name="get_step" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Return the stepping, if step is 0, stepping is disabled.
-			</description>
-		</method>
-		<method name="get_value" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_ratio_exp" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_using_rounded_values" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_as_ratio">
 			<return type="void">
 			</return>
@@ -71,65 +25,6 @@
 			</argument>
 			<description>
 				Set value mapped to 0 to 1 (unit) range, it will then be converted to the actual value within min and max.
-			</description>
-		</method>
-		<method name="set_exp_ratio">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_max">
-			<return type="void">
-			</return>
-			<argument index="0" name="maximum" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_min">
-			<return type="void">
-			</return>
-			<argument index="0" name="minimum" type="float">
-			</argument>
-			<description>
-				Set minimum value, clamped range value to it if it's less.
-			</description>
-		</method>
-		<method name="set_page">
-			<return type="void">
-			</return>
-			<argument index="0" name="pagesize" type="float">
-			</argument>
-			<description>
-				Set page size. Page is mainly used for scrollbars or anything that controls text scrolling.
-			</description>
-		</method>
-		<method name="set_step">
-			<return type="void">
-			</return>
-			<argument index="0" name="step" type="float">
-			</argument>
-			<description>
-				Set step value. If step is 0, stepping will be disabled.
-			</description>
-		</method>
-		<method name="set_use_rounded_values">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="value" type="float">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="share">
