@@ -4828,8 +4828,8 @@ void SpatialEditor::_bind_methods() {
 
 void SpatialEditor::clear() {
 
-	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 55.0));
-	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.1));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 70.0));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.05));
 	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far", 1500.0));
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
@@ -5072,14 +5072,14 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_fov->set_max(MAX_FOV);
 	settings_fov->set_min(MIN_FOV);
 	settings_fov->set_step(0.01);
-	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 55.0));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov", 70.0));
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
 	settings_znear->set_max(MAX_Z);
 	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
-	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.1));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near", 0.05));
 	settings_vbc->add_margin_child(TTR("View Z-Near:"), settings_znear);
 
 	settings_zfar = memnew(SpinBox);
