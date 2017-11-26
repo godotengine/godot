@@ -289,6 +289,7 @@ void EditorNode::_notification(int p_what) {
 
 		_editor_select(EDITOR_3D);
 		_update_debug_options();
+		_load_docks();
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
@@ -3110,6 +3111,10 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	push_item(new_scene);
 
+	if (!restoring_scenes) {
+		save_layout();
+	}
+
 	return OK;
 }
 
@@ -3630,6 +3635,7 @@ void EditorNode::_save_docks() {
 	config.instance();
 
 	_save_docks_to_config(config, "docks");
+	_save_open_scenes_to_config(config, "EditorNode");
 	editor_data.get_plugin_window_layout(config);
 
 	config->save(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
@@ -3680,6 +3686,18 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 	}
 }
 
+void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	Array scenes;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		String path = editor_data.get_scene_path(i);
+		if (path == "") {
+			continue;
+		}
+		scenes.push_back(path);
+	}
+	p_layout->set_value(p_section, "open_scenes", scenes);
+}
+
 void EditorNode::save_layout() {
 
 	dock_drag_timer->start();
@@ -3704,6 +3722,7 @@ void EditorNode::_load_docks() {
 	}
 
 	_load_docks_from_config(config, "docks");
+	_load_open_scenes_from_config(config, "EditorNode");
 	editor_data.set_plugin_window_layout(config);
 }
 
@@ -3850,6 +3869,25 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 	}
 }
 
+void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	if (!bool(EDITOR_DEF("interface/scene_tabs/restore_scenes_on_load", false))) {
+		return;
+	}
+
+	if (!p_layout->has_section(p_section) || !p_layout->has_section_key(p_section, "open_scenes")) {
+		return;
+	}
+
+	restoring_scenes = true;
+
+	Array scenes = p_layout->get_value(p_section, "open_scenes");
+	for (int i = 0; i < scenes.size(); i++) {
+		load_scene(scenes[i]);
+	}
+
+	restoring_scenes = false;
+}
+
 void EditorNode::_update_layouts_menu() {
 
 	editor_layouts->clear();
@@ -3948,6 +3986,8 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 	} else {
 		_discard_changes();
 	}
+
+	save_layout();
 	_update_scene_tabs();
 }
 
@@ -4645,6 +4685,7 @@ EditorNode::EditorNode() {
 	changing_scene = false;
 	_initializing_addons = false;
 	docks_visible = true;
+	restoring_scenes = false;
 
 	scene_distraction = false;
 	script_distraction = false;
@@ -5720,8 +5761,6 @@ EditorNode::EditorNode() {
 		}
 		_initializing_addons = false;
 	}
-
-	_load_docks();
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 
