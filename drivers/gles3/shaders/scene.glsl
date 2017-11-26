@@ -1423,7 +1423,7 @@ uniform highp float gi_probe_normal_bias2;
 uniform bool gi_probe2_enabled;
 uniform bool gi_probe_blend_ambient2;
 
-vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, bool blend_ambient, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
+vec3 voxel_cone_trace(mediump sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, bool blend_ambient, vec3 direction, float tan_half_angle, float max_distance, float p_bias) {
 
 	float dist = p_bias;//1.0; //dot(direction,mix(vec3(-1.0),vec3(1.0),greaterThan(direction,vec3(0.0))))*2.0;
 	float alpha=0.0;
@@ -1445,7 +1445,7 @@ vec3 voxel_cone_trace(sampler3D probe, vec3 cell_size, vec3 pos, vec3 ambient, b
 	return color;
 }
 
-void gi_probe_compute(sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, vec3 ambient, vec3 environment, bool blend_ambient,float multiplier, mat3 normal_mtx,vec3 ref_vec, float roughness,float p_bias,float p_normal_bias, inout vec4 out_spec, inout vec4 out_diff) {
+void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds,vec3 cell_size,vec3 pos, vec3 ambient, vec3 environment, bool blend_ambient,float multiplier, mat3 normal_mtx,vec3 ref_vec, float roughness,float p_bias,float p_normal_bias, inout vec4 out_spec, inout vec4 out_diff) {
 
 
 
