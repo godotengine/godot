@@ -5,6 +5,7 @@ sudo: false
 env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
+    - SCONS_CACHE_LIMIT=128
 
 cache:
   directories:
