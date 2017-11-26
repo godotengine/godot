@@ -189,7 +189,7 @@ void FileDialog::_action_pressed() {
 		TreeItem *item = tree->get_selected();
 		if (item) {
 			Dictionary d = item->get_metadata(0);
-			if (d["dir"]) {
+			if (d["dir"] && d["name"] != ".." && d["name"] != ".") {
 				path = path.plus_file(d["name"]);
 			}
 		}
