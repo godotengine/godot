@@ -1712,12 +1712,12 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	rows -= cache.style_normal->get_margin(MARGIN_TOP);
 	rows /= get_row_height();
 	int lsp = get_line_scroll_pos(true);
-	int row = cursor.line_ofs + (rows + (v_scroll->get_value() - lsp));
+	int row = cursor.line_ofs + (rows + (round(v_scroll->get_value()) - lsp));
 
 	if (is_hiding_enabled()) {
 		// row will be offset by the hidden rows
 		int f_ofs = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(rows + 1, text.size() - cursor.line_ofs)) - 1;
-		row = cursor.line_ofs + (f_ofs + (v_scroll->get_value() - lsp));
+		row = cursor.line_ofs + (f_ofs + (round(v_scroll->get_value()) - lsp));
 		row = CLAMP(row, 0, text.size() - num_lines_from(text.size() - 1, -1));
 	}
 
@@ -3475,11 +3475,13 @@ void TextEdit::adjust_viewport_to_cursor() {
 	int num_rows = num_lines_from(CLAMP(cursor.line_ofs, 0, text.size() - 1), MIN(visible_rows, text.size() - 1 - cursor.line_ofs));
 
 	// make sure the cursor is on the screen
+	// above the caret
 	if (cursor.line > (cursor.line_ofs + MAX(num_rows, visible_rows))) {
 		cursor.line_ofs = cursor.line - num_lines_from(cursor.line, -visible_rows) + 1;
 	}
-	if (cursor.line < cursor.line_ofs) {
-		cursor.line_ofs = cursor.line;
+	// below the caret
+	if (cursor.line_ofs == cursor.line) {
+		cursor.line_ofs = cursor.line - 2;
 	}
 	int line_ofs_max = text.size() - 1;
 	if (!scroll_past_end_of_file_enabled) {
@@ -3499,17 +3501,17 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
 
+	updating_scrolls = true;
 	h_scroll->set_value(cursor.x_ofs);
 	update_line_scroll_pos();
-	v_scroll->set_value(get_line_scroll_pos());
+	double new_v_scroll = get_line_scroll_pos();
+	// keep offset if smooth scroll is enabled
+	if (smooth_scroll_enabled) {
+		new_v_scroll += fmod(v_scroll->get_value(), 1.0);
+	}
+	v_scroll->set_value(new_v_scroll);
+	updating_scrolls = false;
 	update();
-	/*
-	get_range()->set_max(text.size());
-
-	get_range()->set_page(get_visible_rows());
-
-	get_range()->set((int)cursor.line_ofs);
-*/
 }
 
 void TextEdit::center_viewport_to_cursor() {
@@ -3540,10 +3542,16 @@ void TextEdit::center_viewport_to_cursor() {
 	if (cursor_x < cursor.x_ofs)
 		cursor.x_ofs = cursor_x;
 
+	updating_scrolls = true;
 	h_scroll->set_value(cursor.x_ofs);
 	update_line_scroll_pos();
-	v_scroll->set_value(get_line_scroll_pos());
-
+	double new_v_scroll = get_line_scroll_pos();
+	// keep offset if smooth scroll is enabled
+	if (smooth_scroll_enabled) {
+		new_v_scroll += fmod(v_scroll->get_value(), 1.0);
+	}
+	v_scroll->set_value(new_v_scroll);
+	updating_scrolls = false;
 	update();
 }
 
@@ -3666,7 +3674,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		cursor.x_ofs = h_scroll->get_value();
 	if (v_scroll->is_visible_in_tree()) {
 		double val = v_scroll->get_value();
-		cursor.line_ofs = num_lines_from(0, (int)floor(val)) - 1;
+		cursor.line_ofs = num_lines_from(0, (int)floor(val));
 		line_scroll_pos = (int)floor(val);
 	}
 	update();
