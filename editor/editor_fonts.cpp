@@ -134,9 +134,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	//Ref<BitmapFont> doc_title_font = make_font(_bi_font_doc_title_font_height,_bi_font_doc_title_font_ascent,0,_bi_font_doc_title_font_charcount,_bi_font_doc_title_font_characters,p_theme->get_icon("DocTitleFont","EditorIcons"));
 	//Ref<BitmapFont> doc_code_font = make_font(_bi_font_doc_code_font_height,_bi_font_doc_code_font_ascent,0,_bi_font_doc_code_font_charcount,_bi_font_doc_code_font_characters,p_theme->get_icon("DocCodeFont","EditorIcons"));
 
-	MAKE_DEFAULT_FONT(df_doc_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 16)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_doc_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 23)) * EDSCALE);
 
-	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("text_editor/help/help_font_size", 14)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("text_editor/help/help_font_size", 15)) * EDSCALE);
 
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
@@ -154,7 +154,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFont> df_doc_code;
 	df_doc_code.instance();
-	df_doc_code->set_size(int(EDITOR_DEF("text_editor/help/help_source_font_size", 16)) * EDSCALE);
+	df_doc_code->set_size(int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	df_doc_code->set_spacing(DynamicFont::SPACING_TOP, -EDSCALE);
 	df_doc_code->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE);
 	df_doc_code->set_font_data(dfmono);
