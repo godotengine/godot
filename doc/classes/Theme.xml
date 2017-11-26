@@ -20,6 +20,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Clears theme [Color] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="clear_constant">
@@ -30,6 +31,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Clears theme constant at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="clear_font">
@@ -40,6 +42,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Clears [Font] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="clear_icon">
@@ -50,6 +53,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Clears icon at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="clear_stylebox">
@@ -60,12 +64,14 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Clears [StyleBox] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="copy_default_theme">
 			<return type="void">
 			</return>
 			<description>
+				Sets theme values to a copy of the default theme values.
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
@@ -76,6 +82,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns the [Color] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_color_list" qualifiers="const">
@@ -84,6 +91,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the [Color]s as a [PoolStringArray] filled with each [Color]'s name, for use in [method get_color], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_constant" qualifiers="const">
@@ -94,6 +102,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns the constant at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_constant_list" qualifiers="const">
@@ -102,6 +111,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the constants as a [PoolStringArray] filled with each constant's name, for use in [method get_constant], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -112,6 +122,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns the [Font] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_font_list" qualifiers="const">
@@ -120,6 +131,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the [Font]s as a [PoolStringArray] filled with each [Font]'s name, for use in [method get_font], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -130,6 +142,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns the icon [Texture] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_icon_list" qualifiers="const">
@@ -138,6 +151,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the icons as a [PoolStringArray] filled with each [Texture]'s name, for use in [method get_icon], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -148,6 +162,7 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns the icon [StyleBox] at [code]name[/code] if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox_list" qualifiers="const">
@@ -156,12 +171,14 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the [StyleBox]s as a [PoolStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_stylebox_types" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
+				Returns all of the [StyleBox] types as a [PoolStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
@@ -170,6 +187,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
+				Returns all of the types in [code]type[/code] as a [PoolStringArray] for use in any of the get_* functions, if Theme has [code]type[/code].
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
@@ -180,6 +198,8 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if [Color] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="has_constant" qualifiers="const">
@@ -190,6 +210,8 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if constant with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="has_font" qualifiers="const">
@@ -200,6 +222,8 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if [Font] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="has_icon" qualifiers="const">
@@ -210,6 +234,8 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="has_stylebox" qualifiers="const">
@@ -220,6 +246,8 @@
 			<argument index="1" name="type" type="String">
 			</argument>
 			<description>
+				Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in [code]type[/code].
+				Returns [code]false[/code] if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="set_color">
@@ -232,6 +260,8 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
+				Sets Theme's [Color] to [code]color[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="set_constant">
@@ -244,6 +274,8 @@
 			<argument index="2" name="constant" type="int">
 			</argument>
 			<description>
+				Sets Theme's constant to [code]constant[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="set_font">
@@ -256,6 +288,8 @@
 			<argument index="2" name="font" type="Font">
 			</argument>
 			<description>
+				Sets Theme's [Font] to [code]font[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="set_icon">
@@ -268,6 +302,8 @@
 			<argument index="2" name="texture" type="Texture">
 			</argument>
 			<description>
+				Sets Theme's icon [Texture] to [code]texture[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if Theme does not have [code]type[/code].
 			</description>
 		</method>
 		<method name="set_stylebox">
@@ -280,11 +316,14 @@
 			<argument index="2" name="texture" type="StyleBox">
 			</argument>
 			<description>
+				Sets Theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in [code]type[/code].
+				Does nothing if Theme does not have [code]type[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
+			The theme's default font.
 		</member>
 	</members>
 	<constants>

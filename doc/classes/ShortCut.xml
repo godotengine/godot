@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ShortCut" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
+		A shortcut for binding input.
 	</brief_description>
 	<description>
+		A shortcut for binding input.
+		Shortcuts are commonly used for interacting with a [Control] element from a [InputEvent].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +16,7 @@
 			<return type="String">
 			</return>
 			<description>
+				Returns the Shortcut's [InputEvent] as a [String].
 			</description>
 		</method>
 		<method name="is_shortcut" qualifiers="const">
@@ -21,17 +25,21 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the Shortcut's [InputEvent] equals [code]event[/code].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				If [code]true[/code] this Shortcut is valid.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
+			The Shortcut's [InputEvent].
+			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
 		</member>
 	</members>
 	<constants>
