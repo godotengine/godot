@@ -1,4 +1,4 @@
-﻿/*************************************************************************/
+/*************************************************************************/
 /*  property_editor.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -206,6 +206,14 @@ class PropertyEditor : public Control {
 
 	bool updating_folding;
 
+	enum FOLDING_BEHAVIOUR {
+		FB_UNDEFINED,
+		FB_COLLAPSEALL,
+		FB_EXPANDALL,
+		FB_EXPANDALL_FORCE
+	};
+	FOLDING_BEHAVIOUR folding_behaviour;
+
 	HashMap<String, String> pending;
 	String selected_property;
 
@@ -304,6 +312,11 @@ public:
 	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
+
+	bool is_expand_all_properties_enabled() const;
+
+	void collapse_all_parent_nodes();
+	void expand_all_parent_nodes();
 	PropertyEditor();
 	~PropertyEditor();
 };
