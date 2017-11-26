@@ -1565,6 +1565,7 @@ void FileSystemDock::_bind_methods() {
 
 FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
+	set_name("FileSystem");
 	editor = p_editor;
 	path = "res://";
 

@@ -1903,6 +1903,7 @@ void SceneTreeDock::_bind_methods() {
 
 SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
 
+	set_name("Scene");
 	editor = p_editor;
 	edited_scene = NULL;
 	editor_data = &p_editor_data;
