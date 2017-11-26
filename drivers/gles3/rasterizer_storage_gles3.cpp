@@ -5694,13 +5694,9 @@ void RasterizerStorageGLES3::update_particles() {
 			else
 				frame_time = 1.0 / 30.0;
 
-			float delta = particles->pre_process_time;
-			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
-				delta = 0.1;
-			}
-			float todo = delta;
+			float todo = particles->pre_process_time;
 
-			while (todo >= frame_time) {
+			while (todo >= 0) {
 				_particles_process(particles, frame_time);
 				todo -= frame_time;
 			}
