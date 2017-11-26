@@ -403,6 +403,7 @@ void ImportDock::initialize_import_options() const {
 
 ImportDock::ImportDock() {
 
+	set_name("Import");
 	imported = memnew(Label);
 	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
 	add_child(imported);

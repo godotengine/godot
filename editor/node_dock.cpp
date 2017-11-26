@@ -93,9 +93,10 @@ void NodeDock::set_node(Node *p_node) {
 }
 
 NodeDock::NodeDock() {
+
 	singleton = this;
 
-	set_name(TTR("Node"));
+	set_name("Node");
 	mode_hb = memnew(HBoxContainer);
 	add_child(mode_hb);
 	mode_hb->hide();

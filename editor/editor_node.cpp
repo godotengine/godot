@@ -5262,13 +5262,14 @@ EditorNode::EditorNode() {
 	}
 
 	scene_tree_dock = memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
-	scene_tree_dock->set_name(TTR("Scene"));
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(scene_tree_dock);
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
 	dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 
 	VBoxContainer *prop_editor_base = memnew(VBoxContainer);
-	prop_editor_base->set_name(TTR("Inspector")); // Properties?
+	prop_editor_base->set_name("Inspector");
 	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(prop_editor_base);
+	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(prop_editor_base->get_index(), TTR("Inspector"));
 
 	HBoxContainer *prop_editor_hb = memnew(HBoxContainer);
 
@@ -5391,28 +5392,31 @@ EditorNode::EditorNode() {
 
 	import_dock = memnew(ImportDock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
-	import_dock->set_name(TTR("Import"));
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(import_dock->get_index(), TTR("Import"));
 
 	bool use_single_dock_column = (OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x < 1200);
 
 	node_dock = memnew(NodeDock);
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
+		dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(node_dock->get_index(), TTR("Node"));
 	} else {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+		dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(node_dock->get_index(), TTR("Node"));
 	}
 
 	filesystem_dock = memnew(FileSystemDock(this));
-	filesystem_dock->set_name(TTR("FileSystem"));
 	filesystem_dock->set_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(filesystem_dock);
+		dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
 		left_r_vsplit->hide();
 		dock_slot[DOCK_SLOT_LEFT_UR]->hide();
 		dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 	} else {
 		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
+		dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
 	}
 	filesystem_dock->connect("open", this, "open_request");
 	filesystem_dock->connect("instance", this, "_instance_request");
@@ -5421,9 +5425,9 @@ EditorNode::EditorNode() {
 
 	overridden_default_layout = -1;
 	default_layout.instance();
-	default_layout->set_value(docks_section, "dock_3", TTR("FileSystem"));
-	default_layout->set_value(docks_section, "dock_5", TTR("Scene") + "," + TTR("Import"));
-	default_layout->set_value(docks_section, "dock_6", TTR("Inspector") + "," + TTR("Node"));
+	default_layout->set_value(docks_section, "dock_3", "FileSystem");
+	default_layout->set_value(docks_section, "dock_5", "Scene,Import");
+	default_layout->set_value(docks_section, "dock_6", "Inspector,Node");
 
 	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++)
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), 0);
