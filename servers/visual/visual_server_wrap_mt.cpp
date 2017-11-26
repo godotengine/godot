@@ -89,7 +89,7 @@ void VisualServerWrapMT::sync() {
 	}
 }
 
-void VisualServerWrapMT::draw() {
+void VisualServerWrapMT::draw(bool p_swap_buffers) {
 
 	if (create_thread) {
 
@@ -97,7 +97,7 @@ void VisualServerWrapMT::draw() {
 		command_queue.push(this, &VisualServerWrapMT::thread_draw);
 	} else {
 
-		visual_server->draw();
+		visual_server->draw(p_swap_buffers);
 	}
 }
 

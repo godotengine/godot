@@ -38,6 +38,24 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+#ifdef TOOLS_ENABLED
+// To save/restore animated values
+class AnimatedValuesBackup {
+	struct Entry {
+		Object *object;
+		Vector<StringName> subpath; // Unused if bone
+		int bone_idx; // -1 if not a bone
+		Variant value;
+	};
+	Vector<Entry> entries;
+
+	friend class AnimationPlayer;
+
+public:
+	void update_skeletons();
+};
+#endif
+
 class AnimationPlayer : public Node {
 	GDCLASS(AnimationPlayer, Node);
 	OBJ_CATEGORY("Animation Nodes");
@@ -198,7 +216,7 @@ private:
 
 	void _animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_allow_discrete = true);
 
-	void _generate_node_caches(AnimationData *p_anim);
+	void _ensure_node_caches(AnimationData *p_anim);
 	void _animation_process_data(PlaybackData &cd, float p_delta, float p_blend);
 	void _animation_process2(float p_delta);
 	void _animation_update_transforms();
@@ -290,6 +308,12 @@ public:
 	void clear_caches(); ///< must be called by hand if an animation was modified after added
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
+#ifdef TOOLS_ENABLED
+	// These may be interesting for games, but are too dangerous for general use
+	AnimatedValuesBackup backup_animated_values();
+	void restore_animated_values(const AnimatedValuesBackup &p_backup);
+#endif
 
 	AnimationPlayer();
 	~AnimationPlayer();

@@ -33,6 +33,17 @@
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 
+#ifdef TOOLS_ENABLED
+void AnimatedValuesBackup::update_skeletons() {
+
+	for (int i = 0; i < entries.size(); i++) {
+		if (entries[i].bone_idx != -1) {
+			Object::cast_to<Skeleton>(entries[i].object)->notification(Skeleton::NOTIFICATION_UPDATE_SKELETON);
+		}
+	}
+}
+#endif
+
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;
@@ -228,7 +239,11 @@ void AnimationPlayer::_notification(int p_what) {
 	}
 }
 
-void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
+void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
+
+	// Already cached?
+	if (p_anim->node_cache.size() == p_anim->animation->get_track_count())
+		return;
 
 	Node *parent = get_node(root);
 
@@ -336,11 +351,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData *p_anim) {
 
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_allow_discrete) {
 
-	if (p_anim->node_cache.size() != p_anim->animation->get_track_count()) {
-		// animation hasn't been "node-cached"
-		_generate_node_caches(p_anim);
-	}
-
+	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
 	Animation *a = p_anim->animation.operator->();
@@ -1204,6 +1215,70 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);
 }
+
+#ifdef TOOLS_ENABLED
+AnimatedValuesBackup AnimationPlayer::backup_animated_values() {
+
+	if (!playback.current.from)
+		return AnimatedValuesBackup();
+
+	_ensure_node_caches(playback.current.from);
+
+	AnimatedValuesBackup backup;
+
+	for (int i = 0; i < playback.current.from->node_cache.size(); i++) {
+		TrackNodeCache *nc = playback.current.from->node_cache[i];
+		if (!nc)
+			continue;
+
+		if (nc->skeleton) {
+			if (nc->bone_idx == -1)
+				continue;
+
+			AnimatedValuesBackup::Entry entry;
+			entry.object = nc->skeleton;
+			entry.bone_idx = nc->bone_idx;
+			entry.value = nc->skeleton->get_bone_pose(nc->bone_idx);
+			backup.entries.push_back(entry);
+		} else {
+			if (nc->spatial) {
+				AnimatedValuesBackup::Entry entry;
+				entry.object = nc->spatial;
+				entry.subpath.push_back("transform");
+				entry.value = nc->spatial->get_transform();
+				entry.bone_idx = -1;
+				backup.entries.push_back(entry);
+			} else {
+				for (Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.front(); E; E = E->next()) {
+					AnimatedValuesBackup::Entry entry;
+					entry.object = E->value().object;
+					entry.subpath = E->value().subpath;
+					bool valid;
+					entry.value = E->value().object->get_indexed(E->value().subpath, &valid);
+					entry.bone_idx = -1;
+					if (valid)
+						backup.entries.push_back(entry);
+				}
+			}
+		}
+	}
+
+	return backup;
+}
+
+void AnimationPlayer::restore_animated_values(const AnimatedValuesBackup &p_backup) {
+
+	for (int i = 0; i < p_backup.entries.size(); i++) {
+
+		const AnimatedValuesBackup::Entry *entry = &p_backup.entries[i];
+		if (entry->bone_idx == -1) {
+			entry->object->set_indexed(entry->subpath, entry->value);
+		} else {
+			Object::cast_to<Skeleton>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
+		}
+	}
+}
+#endif
 
 void AnimationPlayer::_bind_methods() {
 

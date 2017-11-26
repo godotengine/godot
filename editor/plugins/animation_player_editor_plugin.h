@@ -42,17 +42,32 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class AnimationKeyEditor;
+class AnimationPlayerEditorPlugin;
 class AnimationPlayerEditor : public VBoxContainer {
 
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
 	EditorNode *editor;
+	AnimationPlayerEditorPlugin *plugin;
 	AnimationPlayer *player;
 
 	enum {
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
 		TOOL_EDIT_RESOURCE
+	};
+
+	enum {
+		ONION_SKINNING_ENABLE,
+		ONION_SKINNING_PAST,
+		ONION_SKINNING_FUTURE,
+		ONION_SKINNING_1_STEP,
+		ONION_SKINNING_2_STEPS,
+		ONION_SKINNING_3_STEPS,
+		ONION_SKINNING_LAST_STEPS_OPTION = ONION_SKINNING_3_STEPS,
+		ONION_SKINNING_DIFFERENCES_ONLY,
+		ONION_SKINNING_FORCE_WHITE_MODULATE,
+		ONION_SKINNING_INCLUDE_GIZMOS,
 	};
 
 	enum {
@@ -84,6 +99,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *blend_anim;
 	Button *remove_anim;
 	MenuButton *tool_anim;
+	MenuButton *onion_skinning;
 	ToolButton *pin;
 	SpinBox *frame;
 	LineEdit *scale;
@@ -114,6 +130,36 @@ class AnimationPlayerEditor : public VBoxContainer {
 	bool updating_blends;
 
 	AnimationKeyEditor *key_editor;
+
+	// Onion skinning
+	struct {
+		// Settings
+		bool enabled;
+		bool past;
+		bool future;
+		int steps;
+		bool differences_only;
+		bool force_white_modulate;
+		bool include_gizmos;
+
+		int get_needed_capture_count() const {
+			// 'Differences only' needs a capture of the present
+			return (past && future ? 2 * steps : steps) + (differences_only ? 1 : 0);
+		}
+
+		// Rendering
+		int64_t last_frame;
+		int can_overlay;
+		Size2 capture_size;
+		Vector<RID> captures;
+		Vector<bool> captures_valid;
+		struct {
+			RID canvas;
+			RID canvas_item;
+			Ref<ShaderMaterial> material;
+			Ref<Shader> shader;
+		} capture;
+	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
 	void _play_pressed();
@@ -161,8 +207,19 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 	void _animation_tool_menu(int p_option);
 	void _animation_save_menu(int p_option);
+	void _onion_skinning_menu(int p_option);
+
+	void _editor_visibility_changed();
+	bool _are_onion_layers_valid();
+	void _allocate_onion_layers();
+	void _free_onion_layers();
+	void _prepare_onion_layers_1();
+	void _prepare_onion_layers_2();
+	void _start_onion_skinning();
+	void _stop_onion_skinning();
 
 	AnimationPlayerEditor();
+	~AnimationPlayerEditor();
 
 protected:
 	void _notification(int p_what);
@@ -182,7 +239,9 @@ public:
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
-	AnimationPlayerEditor(EditorNode *p_editor);
+	void forward_force_draw_over_viewport(Control *p_overlay);
+
+	AnimationPlayerEditor(EditorNode *p_editor, AnimationPlayerEditorPlugin *p_plugin);
 };
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
@@ -191,6 +250,9 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 
 	AnimationPlayerEditor *anim_editor;
 	EditorNode *editor;
+
+protected:
+	void _notification(int p_what);
 
 public:
 	virtual Dictionary get_state() const { return anim_editor->get_state(); }
@@ -201,6 +263,8 @@ public:
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
+
+	virtual void forward_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();

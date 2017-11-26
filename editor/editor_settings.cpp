@@ -462,6 +462,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("editors/animation/autorename_animation_tracks", true);
 	_initial_set("editors/animation/confirm_insert_track", true);
+	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
+	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
 	_initial_set("docks/property_editor/texture_preview_width", 48);
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);

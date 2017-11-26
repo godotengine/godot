@@ -184,7 +184,7 @@ public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_canvas(Control *p_canvas);
+	void forward_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_tile_map);
 
@@ -200,7 +200,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_canvas(Control *p_canvas) { tile_map_editor->forward_draw_over_canvas(p_canvas); }
+	virtual void forward_draw_over_viewport(Control *p_overlay) { tile_map_editor->forward_draw_over_viewport(p_overlay); }
 
 	virtual String get_name() const { return "TileMap"; }
 	bool has_main_screen() const { return false; }

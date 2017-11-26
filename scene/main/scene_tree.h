@@ -157,7 +157,6 @@ private:
 	Map<UGCall, Vector<Variant> > unique_group_calls;
 	bool ugc_locked;
 	void _flush_ugc();
-	void _flush_transform_notifications();
 
 	_FORCE_INLINE_ void _update_group_order(Group &g);
 	void _update_listener();
@@ -343,6 +342,8 @@ public:
 	void call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group(const StringName &p_group, int p_notification);
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
+
+	void flush_transform_notifications();
 
 	virtual void input_text(const String &p_text);
 	virtual void input_event(const Ref<InputEvent> &p_event);

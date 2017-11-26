@@ -102,6 +102,7 @@ class EditorPlugin : public Node {
 	UndoRedo *_get_undo_redo() { return undo_redo; }
 
 	bool input_event_forwarding_always_enabled;
+	bool force_draw_over_forwarding_enabled;
 
 	String last_main_screen_name;
 
@@ -151,13 +152,17 @@ public:
 	void set_input_event_forwarding_always_enabled();
 	bool is_input_event_forwarding_always_enabled() { return input_event_forwarding_always_enabled; }
 
+	void set_force_draw_over_forwarding_enabled();
+	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
+
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
-	virtual void forward_draw_over_canvas(Control *p_canvas);
+	virtual void forward_draw_over_viewport(Control *p_overlay);
+	virtual void forward_force_draw_over_viewport(Control *p_overlay);
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
@@ -178,7 +183,7 @@ public:
 
 	EditorInterface *get_editor_interface();
 
-	void update_canvas();
+	int update_overlays() const;
 
 	void queue_save_layout() const;
 

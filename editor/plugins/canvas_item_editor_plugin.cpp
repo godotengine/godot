@@ -2955,8 +2955,13 @@ void CanvasItemEditor::_draw_viewport() {
 
 	EditorPluginList *over_plugin_list = editor->get_editor_plugins_over();
 	if (!over_plugin_list->empty()) {
-		over_plugin_list->forward_draw_over_canvas(viewport);
+		over_plugin_list->forward_draw_over_viewport(viewport);
 	}
+	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
+	if (!force_over_plugin_list->empty()) {
+		force_over_plugin_list->forward_force_draw_over_viewport(viewport);
+	}
+
 	_draw_bones();
 }
 

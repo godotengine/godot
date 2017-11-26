@@ -1183,7 +1183,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void TileMapEditor::forward_draw_over_canvas(Control *p_canvas) {
+void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 
 	if (!node)
 		return;
