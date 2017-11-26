@@ -141,7 +141,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 
-	MAKE_DEFAULT_FONT(df_rulers, int(EDITOR_DEF("canvas_item_editor/rulers", 8)) * EDSCALE);
+	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
 	Ref<DynamicFont> df_code;
