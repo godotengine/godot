@@ -318,7 +318,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the data and prevents changes.
+				Locks the data for writing access.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -376,13 +376,13 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is unlocked. Example:
+				Sets the [Color] of the pixel at [code](x, y)[/code] if the image is locked. Example:
 				[codeblock]
 				var img = Image.new()
 				img.lock()
-				img.set_pixel(x, y, color) # Does not have an effect
-				img.unlock()
 				img.set_pixel(x, y, color) # Works
+				img.unlock()
+				img.set_pixel(x, y, color) # Does not have an effect
 				[/codeblock]
 			</description>
 		</method>
@@ -404,7 +404,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Unlocks the data for writing access.
+				Unlocks the data and prevents changes.
 			</description>
 		</method>
 	</methods>
