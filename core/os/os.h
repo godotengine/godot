@@ -338,7 +338,7 @@ public:
 
 	virtual String get_locale() const;
 
-	String get_safe_application_name() const;
+	String get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator = false) const;
 	virtual String get_godot_dir_name() const;
 
 	virtual String get_data_path() const;

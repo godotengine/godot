@@ -891,7 +891,8 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "tscn,scn,res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
-	GLOBAL_DEF("application/config/use_shared_user_dir", true);
+	GLOBAL_DEF("application/config/use_custom_user_dir", false);
+	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 
 	key.instance();
 	key->set_scancode(KEY_ENTER);

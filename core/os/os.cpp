@@ -279,14 +279,22 @@ String OS::get_locale() const {
 	return "en";
 }
 
-// Helper function used by OS_Unix and OS_Windows
-String OS::get_safe_application_name() const {
-	String an = ProjectSettings::get_singleton()->get("application/config/name");
-	Vector<String> invalid_char = String("\\ / : * ? \" < > |").split(" ");
-	for (int i = 0; i < invalid_char.size(); i++) {
-		an = an.replace(invalid_char[i], "-");
+// Helper function to ensure that a dir name/path will be valid on the OS
+String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
+
+	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
+	if (p_allow_dir_separator) {
+		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
+		invalid_chars.push_back("..");
+	} else {
+		invalid_chars.push_back("/");
 	}
-	return an;
+
+	String safe_dir_name = p_dir_name.replace("\\", "/").strip_edges();
+	for (int i = 0; i < invalid_chars.size(); i++) {
+		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
+	}
+	return safe_dir_name;
 }
 
 // Path to data, config, cache, etc. OS-specific folders
