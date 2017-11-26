@@ -394,6 +394,11 @@ if selected_platform in platform_list:
     if (env['verbose'] == 'no'):
         methods.no_verbose(sys, env)
 
+    scons_cache_path = os.environ.get("SCONS_CACHE")
+    if scons_cache_path != None:
+        CacheDir(scons_cache_path)
+        print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+
     Export('env')
 
     # build subdirs, the build order is dependent on link order.
