@@ -1352,15 +1352,54 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 	//builtins - trigonometry
 	{ "sin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "sin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "sin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "sin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "cos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "cos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "cos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "cos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "tan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "tan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "tan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "tan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "asin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "asin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "asin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "acos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "acos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "acos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
+	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
+	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+
 	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "sinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "sinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "sinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "cosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "cosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "cosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "tanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "tanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "tanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
 	//builtins - exponential
 	{ "pow", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
 	{ "pow", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
