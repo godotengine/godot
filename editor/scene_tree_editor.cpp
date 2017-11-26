@@ -481,6 +481,12 @@ void SceneTreeEditor::_selected_changed() {
 	blocked--;
 }
 
+void SceneTreeEditor::_deselect_items() {
+
+	// Clear currently elected items in scene tree dock.
+	editor_selection->clear();
+}
+
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_object);
@@ -929,6 +935,7 @@ void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_update_tree", &SceneTreeEditor::_update_tree);
 	ClassDB::bind_method("_node_removed", &SceneTreeEditor::_node_removed);
 	ClassDB::bind_method("_selected_changed", &SceneTreeEditor::_selected_changed);
+	ClassDB::bind_method("_deselect_items", &SceneTreeEditor::_deselect_items);
 	ClassDB::bind_method("_renamed", &SceneTreeEditor::_renamed);
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
@@ -1005,6 +1012,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("item_edited", this, "_renamed", varray(), CONNECT_DEFERRED);
 	tree->connect("multi_selected", this, "_cell_multi_selected");
 	tree->connect("button_pressed", this, "_cell_button_pressed");
+	tree->connect("nothing_selected", this, "_deselect_items");
 	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
