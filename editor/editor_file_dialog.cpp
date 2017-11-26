@@ -197,6 +197,9 @@ Vector<String> EditorFileDialog::get_selected_files() const {
 void EditorFileDialog::update_dir() {
 
 	dir->set_text(dir_access->get_current_dir());
+
+	// Disable "Open" button only when we in selecting file(s) mode or open dir mode.
+	get_ok()->set_disabled(_is_open_should_be_disabled());
 }
 
 void EditorFileDialog::_dir_entered(String p_dir) {
@@ -452,6 +455,28 @@ void EditorFileDialog::_item_selected(int p_item) {
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 	}
+
+	get_ok()->set_disabled(_is_open_should_be_disabled());
+}
+
+void EditorFileDialog::_items_clear_selection() {
+
+	item_list->unselect_all();
+
+	// If nothing is selected, then block Open button.
+	switch (mode) {
+
+		case MODE_OPEN_FILE:
+		case MODE_OPEN_FILES:
+			get_ok()->set_text(TTR("Open"));
+			get_ok()->set_disabled(item_list->is_anything_selected() == false);
+			break;
+
+		case MODE_OPEN_DIR:
+			get_ok()->set_disabled(false);
+			get_ok()->set_text(TTR("Select Current Folder"));
+			break;
+	}
 }
 
 void EditorFileDialog::_push_history() {
@@ -485,6 +510,26 @@ void EditorFileDialog::_item_dc_selected(int p_item) {
 
 		_action_pressed();
 	}
+}
+
+bool EditorFileDialog::_is_open_should_be_disabled() {
+
+	if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE)
+		return false;
+
+	Vector<int> items = item_list->get_selected_items();
+	if (items.size() == 0)
+		return true;
+
+	for (int i = 0; i < items.size(); i++) {
+
+		Dictionary d = item_list->get_item_metadata(items.get(i));
+
+		if (((mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES) && d["dir"]) || (mode == MODE_OPEN_DIR && !d["dir"]))
+			return true;
+	}
+
+	return false;
 }
 
 void EditorFileDialog::update_file_list() {
@@ -681,6 +726,7 @@ void EditorFileDialog::update_file_list() {
 	favorite->set_pressed(false);
 	fav_up->set_disabled(true);
 	fav_down->set_disabled(true);
+	get_ok()->set_disabled(_is_open_should_be_disabled());
 	for (int i = 0; i < favorites->get_item_count(); i++) {
 		if (favorites->get_item_metadata(i) == base_dir) {
 			favorites->select(i);
@@ -1139,6 +1185,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorFileDialog::_unhandled_input);
 
 	ClassDB::bind_method(D_METHOD("_item_selected"), &EditorFileDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_items_clear_selection"), &EditorFileDialog::_items_clear_selection);
 	ClassDB::bind_method(D_METHOD("_item_db_selected"), &EditorFileDialog::_item_dc_selected);
 	ClassDB::bind_method(D_METHOD("_dir_entered"), &EditorFileDialog::_dir_entered);
 	ClassDB::bind_method(D_METHOD("_file_entered"), &EditorFileDialog::_file_entered);
@@ -1415,6 +1462,7 @@ EditorFileDialog::EditorFileDialog() {
 	//cancel->connect("pressed", this,"_cancel_pressed");
 	item_list->connect("item_selected", this, "_item_selected", varray(), CONNECT_DEFERRED);
 	item_list->connect("item_activated", this, "_item_db_selected", varray());
+	item_list->connect("nothing_selected", this, "_items_clear_selection");
 	dir->connect("text_entered", this, "_dir_entered");
 	file->connect("text_entered", this, "_file_entered");
 	filter->connect("item_selected", this, "_filter_selected");

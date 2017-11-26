@@ -33,7 +33,6 @@
 #include "box_container.h"
 #include "os/dir_access.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tool_button.h"
@@ -116,6 +115,8 @@ private:
 	void _update_drives();
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);
+
+	bool _is_open_should_be_disabled();
 
 	virtual void _post_popup();
 
