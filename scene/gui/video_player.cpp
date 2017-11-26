@@ -490,6 +490,7 @@ VideoPlayer::VideoPlayer() {
 	expand = true;
 
 	audio_track = 0;
+	bus_index = 0;
 
 	buffering_ms = 500;
 	server_mix_rate = 44100;
