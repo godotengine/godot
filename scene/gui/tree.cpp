@@ -1924,7 +1924,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				item_h += child_h;
 			}
 
-			if (!c && !p_mod->get_shift() && !p_mod->get_control() && !p_mod->get_command() && !click_handled)
+			if (!c && !p_mod->get_shift() && !p_mod->get_control() && !p_mod->get_command() && p_button != BUTTON_RIGHT && !click_handled)
 				emit_signal("nothing_selected");
 		}
 	}
