@@ -117,22 +117,26 @@
 	</methods>
 	<constants>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
-			Generate mipmaps, to enable smooth zooming out of the texture.
+			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
-			Repeat (instead of clamp to edge).
+			Repeats texture (instead of clamp to edge).
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
-			Turn on magnifying filter, to enable smooth zooming in of the texture.
+			Magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
 		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
 			Default flags. Generate mipmaps, repeat, and filter are enabled.
 		</constant>
 		<constant name="FLAG_ANISOTROPIC_FILTER" value="8" enum="Flags">
+			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
+			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
 		</constant>
 		<constant name="FLAG_CONVERT_TO_LINEAR" value="16" enum="Flags">
+			Converts texture to SRGB color space. 
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
+			Repeats texture with alternate sections mirrored.
 		</constant>
 		<constant name="FLAG_VIDEO_SURFACE" value="4096" enum="Flags">
 			Texture is a video surface.
