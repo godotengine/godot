@@ -76,6 +76,9 @@ class ProjectManager : public Control {
 
 	Control *gui_base;
 
+	ConfirmationDialog *open_templates;
+
+	void _open_asset_library();
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();

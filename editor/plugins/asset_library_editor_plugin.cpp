@@ -1268,6 +1268,10 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_tit
 	emit_signal("install_asset", p_zip_path, p_title);
 }
 
+void EditorAssetLibrary::disable_community_support() {
+	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, false);
+}
+
 void EditorAssetLibrary::_bind_methods() {
 
 	ClassDB::bind_method("_http_request_completed", &EditorAssetLibrary::_http_request_completed);

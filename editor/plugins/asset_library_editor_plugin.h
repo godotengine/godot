@@ -301,6 +301,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void disable_community_support();
+
 	EditorAssetLibrary(bool p_templates_only = false);
 };
 
