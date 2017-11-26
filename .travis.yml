@@ -4,7 +4,13 @@ dist: trusty
 
 sudo: false
 
-cache: ccache
+env:
+  global:
+    - SCONS_CACHE=$HOME/.scons_cache
+
+cache:
+  directories:
+    - $SCONS_CACHE
 
 matrix:
   include:
@@ -67,20 +73,12 @@ install:
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       misc/travis/scons-local-osx.sh;
-      misc/travis/ccache-osx.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
       misc/travis/android-tools-osx.sh;
     fi
 
 before_script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      export CCACHE="/usr/bin/ccache";
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      export CCACHE="/usr/local/bin/ccache";
-      export PATH="/usr/local/opt/ccache/libexec:$PATH";
-    fi
   - if [ "$GODOT_TARGET" = "android" ]; then
       export ANDROID_HOME=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-sdk;
       export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-ndk;
@@ -92,10 +90,3 @@ script:
     else
       scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
     fi
-
-after_success:
-  - if [ "$STATIC_CHECKS" != "yes" ] && [ $(command -v ccache) ]; then
-      which ccache;
-      ccache --version | grep "ccache version";
-      ccache -s;
-    fi;
