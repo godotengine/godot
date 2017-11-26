@@ -447,13 +447,17 @@ int OS_Unix::get_processor_count() const {
 
 String OS_Unix::get_user_data_dir() const {
 
-	String appname = get_safe_application_name();
+	String appname = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/name"));
 	if (appname != "") {
-		bool use_godot_dir = ProjectSettings::get_singleton()->get("application/config/use_shared_user_dir");
-		if (use_godot_dir) {
-			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname);
+		bool use_custom_dir = ProjectSettings::get_singleton()->get("application/config/use_custom_user_dir");
+		if (use_custom_dir) {
+			String custom_dir = get_safe_dir_name(ProjectSettings::get_singleton()->get("application/config/custom_user_dir_name"), true);
+			if (custom_dir == "") {
+				custom_dir = appname;
+			}
+			return get_data_path().plus_file(custom_dir);
 		} else {
-			return get_data_path().plus_file(appname);
+			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname);
 		}
 	}
 
