@@ -1923,6 +1923,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				c = c->next;
 				item_h += child_h;
 			}
+
+			if (!c && !p_mod->get_shift() && !p_mod->get_control() && !p_mod->get_command() && !click_handled && p_button != BUTTON_RIGHT)
+				emit_signal("nothing_selected");
 		}
 	}
 
@@ -3750,6 +3753,7 @@ void Tree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("custom_popup_edited", PropertyInfo(Variant::BOOL, "arrow_clicked")));
 	ADD_SIGNAL(MethodInfo("item_activated"));
 	ADD_SIGNAL(MethodInfo("column_title_pressed", PropertyInfo(Variant::INT, "column")));
+	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	BIND_ENUM_CONSTANT(SELECT_SINGLE);
 	BIND_ENUM_CONSTANT(SELECT_ROW);
