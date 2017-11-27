@@ -394,6 +394,7 @@ void SpriteFramesEditor::_animation_add() {
 	edited_anim = name;
 
 	undo_redo->commit_action();
+	animations->grab_focus();
 }
 void SpriteFramesEditor::_animation_remove() {
 
