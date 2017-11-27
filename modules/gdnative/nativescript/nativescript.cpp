@@ -920,6 +920,9 @@ void NativeScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int
 void NativeScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
 }
 
+void NativeScriptLanguage::remove_global_constant(const StringName &p_variable) {
+}
+
 // Debugging stuff here. Not used for now.
 String NativeScriptLanguage::debug_get_error() const {
 	return "";

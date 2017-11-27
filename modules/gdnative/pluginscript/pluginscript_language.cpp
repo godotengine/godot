@@ -186,6 +186,11 @@ void PluginScriptLanguage::add_global_constant(const StringName &p_variable, con
 	_desc.add_global_constant(_data, (godot_string *)&variable, (godot_variant *)&p_value);
 }
 
+void PluginScriptLanguage::remove_global_constant(const StringName &p_variable) {
+	const String variable = String(p_variable);
+	_desc.remove_global_constant(_data, (godot_string *)&variable);
+}
+
 /* LOADER FUNCTIONS */
 
 void PluginScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {

@@ -916,6 +916,8 @@ void Viewport::_camera_set(Camera *p_camera) {
 		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
 	}
 
+	emit_signal("current_camera_changed", camera);
+
 	_update_listener();
 	_camera_transform_changed_notify();
 #endif
@@ -2758,6 +2760,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "shadow_atlas_quad_3", PROPERTY_HINT_ENUM, "Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv", 3);
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
+	ADD_SIGNAL(MethodInfo("current_camera_changed", PropertyInfo(Variant::OBJECT, "camera")));
 
 	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);

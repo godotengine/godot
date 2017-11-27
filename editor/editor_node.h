@@ -167,6 +167,7 @@ private:
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISONS,
 		RUN_DEBUG_NAVIGATION,
+		RUN_IN_EDITOR,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
 		SETTINGS_UPDATE_ALWAYS,
@@ -226,6 +227,8 @@ private:
 	TextureRect *tab_preview;
 	int tab_closing;
 
+	bool use_fixed_window_size_override;
+	bool editor_playback_running;
 	bool exiting;
 
 	int old_split_ofs;
@@ -470,6 +473,16 @@ private:
 	void _quick_opened();
 	void _quick_run();
 
+	void _reset_play_button_state();
+
+	// Editor Playback
+	List<String> editor_singletons;
+	void _editor_playback_init_autoloads(Node *p_root);
+	void _editor_playback_destroy_autoloads();
+
+	void _editor_playback_stop(const bool p_reload_scene);
+	void _editor_playback_run(bool p_current = false, const String &p_custom = "");
+
 	void _run(bool p_current = false, const String &p_custom = "");
 
 	void _save_optimized();
@@ -639,7 +652,8 @@ public:
 		EDITOR_2D = 0,
 		EDITOR_3D,
 		EDITOR_SCRIPT,
-		EDITOR_ASSETLIB
+		EDITOR_ASSETLIB,
+		EDITOR_PLAY
 	};
 
 	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
@@ -694,7 +708,7 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	Control *get_viewport();
 
-	void set_edited_scene(Node *p_scene);
+	void set_edited_scene(Node *p_scene, bool p_autoloads);
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
@@ -702,7 +716,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false);
+	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false, bool p_runtime_scene = false);
 	Error load_resource(const String &p_scene);
 
 	bool is_scene_open(const String &p_path);
@@ -772,6 +786,7 @@ public:
 
 	void reload_scene(const String &p_path);
 
+	bool is_editor_playback_running() const { return editor_playback_running; }
 	bool is_exiting() const { return exiting; }
 
 	ToolButton *get_pause_button() { return pause_button; }
@@ -791,6 +806,8 @@ public:
 	void remove_tool_menu_item(const String &p_name);
 
 	void dim_editor(bool p_dimming);
+
+	void set_use_fixed_window_size_override(bool p_override);
 
 	EditorNode();
 	~EditorNode();

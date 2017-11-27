@@ -1230,8 +1230,8 @@ void SceneTreeDock::_delete_confirm() {
 
 	if (entire_scene) {
 
-		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", (Object *)NULL);
-		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", edited_scene);
+		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", (Object *)NULL, false);
+		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", edited_scene, false);
 		editor_data->get_undo_redo().add_undo_method(edited_scene, "set_owner", edited_scene->get_owner());
 		editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
 		editor_data->get_undo_redo().add_undo_reference(edited_scene);
@@ -1351,10 +1351,10 @@ void SceneTreeDock::_create() {
 
 		} else {
 
-			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
+			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child, false);
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_do_reference(child);
-			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL, false);
 		}
 
 		editor_data->get_undo_redo().commit_action();
@@ -1425,7 +1425,7 @@ void SceneTreeDock::_create() {
 
 		if (n == edited_scene) {
 			edited_scene = newnode;
-			editor->set_edited_scene(newnode);
+			editor->set_edited_scene(newnode, false);
 			newnode->set_editable_instances(n->get_editable_instances());
 		}
 
