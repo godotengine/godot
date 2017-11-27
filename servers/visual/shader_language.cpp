@@ -254,6 +254,9 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_TYPE_ISAMPLER2D, "isampler2D" },
 	{ TK_TYPE_USAMPLER2D, "usampler2D" },
 	{ TK_TYPE_SAMPLERCUBE, "samplerCube" },
+	{ TK_INTERPOLATION_FLAT, "flat" },
+	{ TK_INTERPOLATION_NO_PERSPECTIVE, "noperspective" },
+	{ TK_INTERPOLATION_SMOOTH, "smooth" },
 	{ TK_PRECISION_LOW, "lowp" },
 	{ TK_PRECISION_MID, "mediump" },
 	{ TK_PRECISION_HIGH, "highp" },
@@ -656,6 +659,24 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
 
 	return DataType(p_type - TK_TYPE_VOID);
+}
+
+bool ShaderLanguage::is_token_interpolation(TokenType p_type) {
+
+	return (
+			p_type == TK_INTERPOLATION_FLAT ||
+			p_type == TK_INTERPOLATION_NO_PERSPECTIVE ||
+			p_type == TK_INTERPOLATION_SMOOTH);
+}
+
+ShaderLanguage::DataInterpolation ShaderLanguage::get_token_interpolation(TokenType p_type) {
+
+	if (p_type == TK_INTERPOLATION_FLAT)
+		return INTERPOLATION_FLAT;
+	else if (p_type == TK_INTERPOLATION_NO_PERSPECTIVE)
+		return INTERPOLATION_NO_PERSPECTIVE;
+	else
+		return INTERPOLATION_SMOOTH;
 }
 
 bool ShaderLanguage::is_token_precision(TokenType p_type) {
@@ -3576,10 +3597,16 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				bool uniform = tk.type == TK_UNIFORM;
 				DataPrecision precision = PRECISION_DEFAULT;
+				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
 				DataType type;
 				StringName name;
 
 				tk = _get_token();
+				if (is_token_interpolation(tk.type)) {
+					interpolation = get_token_interpolation(tk.type);
+					tk = _get_token();
+				}
+
 				if (is_token_precision(tk.type)) {
 					precision = get_token_precision(tk.type);
 					tk = _get_token();
@@ -3777,6 +3804,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					ShaderNode::Varying varying;
 					varying.type = type;
 					varying.precission = precision;
+					varying.interpolation = interpolation;
 					shader->varyings[name] = varying;
 
 					tk = _get_token();
