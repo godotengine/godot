@@ -44,10 +44,6 @@ class OptionButton : public Button {
 
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
-	void _select_int(int p_which);
-
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
 
 	virtual void pressed();
 
@@ -79,11 +75,15 @@ public:
 	void clear();
 
 	void select(int p_idx);
+	void set_selected(int p_which);
 	int get_selected() const;
 	int get_selected_id() const;
 	Variant get_selected_metadata() const;
 
 	void remove_item(int p_idx);
+
+	Array get_items() const;
+	void set_items(const Array &p_items);
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 

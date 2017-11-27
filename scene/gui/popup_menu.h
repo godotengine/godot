@@ -88,9 +88,6 @@ class PopupMenu : public Popup {
 	bool hide_on_checkable_item_selection;
 	Vector2 moved;
 
-	Array _get_items() const;
-	void _set_items(const Array &p_items);
-
 	Map<Ref<ShortCut>, int> shortcut_refcount;
 
 	void _ref_shortcut(Ref<ShortCut> p_sc);
@@ -156,6 +153,9 @@ public:
 	void add_separator();
 
 	void clear();
+
+	Array get_items() const;
+	void set_items(const Array &p_items);
 
 	void set_parent_rect(const Rect2 &p_rect);
 

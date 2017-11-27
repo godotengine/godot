@@ -945,7 +945,7 @@ void PopupMenu::clear() {
 	update();
 }
 
-Array PopupMenu::_get_items() const {
+Array PopupMenu::get_items() const {
 
 	Array items;
 	for (int i = 0; i < get_item_count(); i++) {
@@ -986,7 +986,7 @@ void PopupMenu::_unref_shortcut(Ref<ShortCut> p_sc) {
 	}
 }
 
-void PopupMenu::_set_items(const Array &p_items) {
+void PopupMenu::set_items(const Array &p_items) {
 
 	ERR_FAIL_COND(p_items.size() % 10);
 	clear();
@@ -1122,8 +1122,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_separator"), &PopupMenu::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
 
-	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);
-	ClassDB::bind_method(D_METHOD("_get_items"), &PopupMenu::_get_items);
+	ClassDB::bind_method(D_METHOD("set_items"), &PopupMenu::set_items);
+	ClassDB::bind_method(D_METHOD("get_items"), &PopupMenu::get_items);
 
 	ClassDB::bind_method(D_METHOD("set_hide_on_item_selection", "enable"), &PopupMenu::set_hide_on_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_item_selection"), &PopupMenu::is_hide_on_item_selection);
@@ -1133,7 +1133,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_items", "_get_items");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_items", "get_items");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 
