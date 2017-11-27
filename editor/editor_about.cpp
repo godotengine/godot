@@ -28,12 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_about.h"
+#include "editor_node.h"
 
 #include "authors.gen.h"
 #include "donors.gen.h"
 #include "license.gen.h"
 #include "version.h"
 #include "version_hash.gen.h"
+
+void EditorAbout::_notification(int p_what) {
+
+	switch (p_what) {
+
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+
+			Ref<Font> font = EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts");
+			_tpl_text->add_font_override("font", font);
+			_license_text->add_font_override("font", font);
+		} break;
+	}
+}
 
 void EditorAbout::_license_tree_selected() {
 
@@ -52,7 +67,7 @@ TextureRect *EditorAbout::get_logo() const {
 	return _logo;
 }
 
-ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[]) {
+ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[], const int p_flag_single_column) {
 
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
@@ -64,6 +79,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 
 	for (int i = 0; i < p_sections.size(); i++) {
 
+		bool single_column = p_flag_single_column & 1 << i;
 		const char **names_ptr = p_src[i];
 		if (*names_ptr) {
 
@@ -72,17 +88,16 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);
-			il->set_max_columns(16);
 			il->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			il->set_same_column_width(true);
 			il->set_auto_height(true);
+			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+			il->add_constant_override("hseparation", 16 * EDSCALE);
 			while (*names_ptr) {
 				il->add_item(String::utf8(*names_ptr++), NULL, false);
 			}
+			il->set_max_columns(il->get_item_count() < 4 || single_column ? 1 : 16);
 			vbc->add_child(il);
-			if (il->get_item_count() == 2) {
-				il->set_fixed_column_width(200 * EDSCALE);
-			}
 
 			HSeparator *hs = memnew(HSeparator);
 			hs->set_modulate(Color(0, 0, 0, 0));
@@ -134,7 +149,7 @@ EditorAbout::EditorAbout() {
 	dev_sections.push_back(TTR("Project Manager"));
 	dev_sections.push_back(TTR("Developers"));
 	const char **dev_src[] = { dev_founders, dev_lead, dev_manager, dev_names };
-	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src));
+	tc->add_child(_populate_list(TTR("Authors"), dev_sections, dev_src, 1));
 
 	// Donors
 
@@ -146,18 +161,18 @@ EditorAbout::EditorAbout() {
 	donor_sections.push_back(TTR("Silver Donors"));
 	donor_sections.push_back(TTR("Bronze Donors"));
 	const char **donor_src[] = { donor_s_plat, donor_s_gold, donor_s_mini, donor_gold, donor_silver, donor_bronze };
-	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src));
+	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License
 
-	TextEdit *license = memnew(TextEdit);
-	license->set_name(TTR("License"));
-	license->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	license->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	license->set_wrap(true);
-	license->set_readonly(true);
-	license->set_text(String::utf8(about_license));
-	tc->add_child(license);
+	_license_text = memnew(TextEdit);
+	_license_text->set_name(TTR("License"));
+	_license_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	_license_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	_license_text->set_wrap(true);
+	_license_text->set_readonly(true);
+	_license_text->set_text(String::utf8(about_license));
+	tc->add_child(_license_text);
 
 	// Thirdparty License
 
