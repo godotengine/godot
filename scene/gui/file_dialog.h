@@ -86,6 +86,8 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
+	ToolButton *dir_up;
+
 	ToolButton *refresh;
 
 	Vector<String> filters;
@@ -111,6 +113,7 @@ private:
 	void _filter_selected(int);
 	void _make_dir();
 	void _make_dir_confirm();
+	void _go_up();
 
 	void _update_drives();
 
@@ -155,6 +158,8 @@ public:
 	static void set_default_show_hidden_files(bool p_show);
 
 	void invalidate();
+
+	void deselect_items();
 
 	FileDialog();
 	~FileDialog();

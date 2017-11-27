@@ -586,7 +586,7 @@ void EditorFileDialog::update_file_list() {
 
 	while ((item = dir_access->get_next(&isdir)) != "") {
 
-		if (item == ".")
+		if (item == "." || item == "..")
 			continue;
 
 		ishidden = dir_access->current_is_hidden();
@@ -597,11 +597,6 @@ void EditorFileDialog::update_file_list() {
 			else if (item != ".." || !skip_pp)
 				dirs.push_back(item);
 		}
-	}
-
-	if (dirs.find("..") == NULL) {
-		//may happen if lacking permissions
-		dirs.push_back("..");
 	}
 
 	dirs.sort_custom<NaturalNoCaseComparator>();

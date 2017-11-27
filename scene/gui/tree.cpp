@@ -1923,9 +1923,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				c = c->next;
 				item_h += child_h;
 			}
-
-			if (!c && !p_mod->get_shift() && !p_mod->get_control() && !p_mod->get_command() && !click_handled && p_button != BUTTON_RIGHT)
-				emit_signal("nothing_selected");
 		}
 	}
 
@@ -2602,6 +2599,11 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					if (drag_touching) {
 						set_physics_process(true);
 					}
+
+					if (b->get_button_index() == BUTTON_LEFT) {
+						if (get_item_at_position(b->get_position()) == NULL && !b->get_shift() && !b->get_control() && !b->get_command())
+							emit_signal("nothing_selected");
+					}
 				}
 
 			} break;
@@ -3044,6 +3046,25 @@ void Tree::item_deselected(int p_column, TreeItem *p_item) {
 void Tree::set_select_mode(SelectMode p_mode) {
 
 	select_mode = p_mode;
+}
+
+void Tree::deselect_all() {
+
+	TreeItem *item = get_next_selected(get_root());
+	while (item) {
+		item->deselect(selected_col);
+		item = get_next_selected(get_root());
+	}
+
+	selected_item = NULL;
+	selected_col = -1;
+
+	update();
+}
+
+bool Tree::is_anything_selected() {
+
+	return (selected_item != NULL);
 }
 
 void Tree::clear() {

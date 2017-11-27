@@ -723,6 +723,7 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
 	}
 
+	export_project->set_mode(FileDialog::MODE_SAVE_FILE);
 	export_project->popup_centered_ratio();
 }
 
