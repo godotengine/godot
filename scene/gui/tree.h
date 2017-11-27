@@ -546,6 +546,8 @@ public:
 	int get_selected_column() const;
 	int get_pressed_button() const;
 	void set_select_mode(SelectMode p_mode);
+	void deselect_all();
+	bool is_anything_selected();
 
 	void set_columns(int p_columns);
 	int get_columns() const;
