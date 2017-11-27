@@ -6,11 +6,12 @@ sudo: false
 
 env:
   global:
-    - SCONS_CACHE_ROOT=$HOME/.scons_cache
+    - SCONS_CACHE=$HOME/.scons_cache
+    - SCONS_CACHE_LIMIT=128
 
 cache:
   directories:
-    - $SCONS_CACHE_ROOT
+    - $SCONS_CACHE
 
 matrix:
   include:
@@ -88,6 +89,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      export SCONS_CACHE=$SCONS_CACHE_ROOT/${GODOT_TARGET}-${CXX}-tools_${TOOLS}/;
       scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
     fi

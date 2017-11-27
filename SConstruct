@@ -484,21 +484,78 @@ screen = sys.stdout
 node_count = 0
 node_count_max = 0
 node_count_interval = 1
+node_pruning = 8 # Number of nodes to process before prunning the cache
 if ('env' in locals()):
     node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
 
-def progress_function(node):
-    global node_count, node_count_max, node_count_interval, node_count_fname
-    node_count += node_count_interval
-    if (node_count_max > 0 and node_count <= node_count_max):
-        screen.write('\r[%3d%%] ' % (node_count * 100 / node_count_max))
-        screen.flush()
-    elif (node_count_max > 0 and node_count > node_count_max):
-        screen.write('\r[100%] ')
-        screen.flush()
-    else:
-        screen.write('\r[Initial build] ')
-        screen.flush()
+import time, math
+
+class cache_progress:
+    # The default is 1 GB cache and 12 hours half life
+    def __init__(self, path = None, limit = 1073741824, half_life = 43200):
+        global node_pruning
+        self.path = path
+        self.limit = limit
+        self.exponent_scale = math.log(2) / half_life
+        self.pruning = node_pruning
+        self.delete(self.file_list())
+
+    def __call__(self, node, *args, **kw):
+        global node_count, node_count_max, node_count_interval, node_count_fname, node_pruning
+        # Print the progress percentage
+        node_count += node_count_interval
+        if (node_count_max > 0 and node_count <= node_count_max):
+            screen.write('\r[%3d%%] ' % (node_count * 100 / node_count_max))
+            screen.flush()
+        elif (node_count_max > 0 and node_count > node_count_max):
+            screen.write('\r[100%] ')
+            screen.flush()
+        else:
+            screen.write('\r[Initial build] ')
+            screen.flush()
+        # Prune if the number of nodes proccessed is 'node_pruning' or bigger
+        self.pruning -= node_count_interval
+        if self.pruning <= 0:
+            self.pruning = node_pruning
+            self.delete(self.file_list())
+
+    def delete(self, files):
+        if len(files) == 0:
+            return
+        # Utter something
+        screen.write('\rPurging %d %s from cache...\n' % (len(files), len(files) > 1 and 'files' or 'file'))
+        map(os.remove, files)
+
+    def file_list(self):
+        if self.path == None:
+            # Nothing to do
+            return []
+        # Gather a list of (filename, (size, atime)) within the
+        # cache directory
+        file_stat = [(x, os.stat(x)[6:8]) for x in glob.glob(os.path.join(self.path, '*', '*'))]
+        if file_stat == []:
+            # Nothing to do
+            return []
+        # Weight the cache files by size (assumed to be roughly
+        # proportional to the recompilation time) times an exponential
+        # decay since the ctime, and return a list with the entries
+        # (filename, size, weight).
+        current_time = time.time()
+        file_stat = [(x[0], x[1][0], x[1][0] * math.exp(self.exponent_scale * (x[1][1] - current_time))) for x in file_stat]
+        # Sort by highest weight (most sensible to keep) first
+        file_stat.sort(key=lambda x: x[2], reverse=True)
+        # Search for the first entry where the storage limit is
+        # reached
+        sum, mark = 0, None
+        for i,x in enumerate(file_stat):
+            sum += x[1]
+            if sum > self.limit:
+                mark = i
+                break
+        if mark == None:
+            return []
+        else:
+            return [x[0] for x in file_stat[mark:]]
 
 def progress_finish(target, source, env):
     global node_count
@@ -511,6 +568,11 @@ if 'env' in locals() and env['progress']:
             node_count_max = int(f.readline())
     except:
         pass
-    Progress(progress_function, interval = node_count_interval)
+    cache_directory = os.environ.get("SCONS_CACHE")
+    # Simple cache pruning, attached to SCons' progress callback. Trim the
+    # cache directory to a size not larger than cache_limit.
+    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+    progress = cache_progress(cache_directory, cache_limit)
+    Progress(progress, interval = node_count_interval)
     progress_finish_command = Command('progress_finish', [], progress_finish)
     AlwaysBuild(progress_finish_command)
