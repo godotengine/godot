@@ -25,6 +25,7 @@ if env['builtin_recast']:
     env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/Include"])
 
     lib = env.Library("recast_builtin", thirdparty_sources)
+    env.NoCache(lib)
     env.Append(LIBS=[lib])
 
 # Godot source files

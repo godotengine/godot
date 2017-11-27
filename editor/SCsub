@@ -475,6 +475,7 @@ if env['tools']:
     SConscript('plugins/SCsub')
 
     lib = env.Library("editor", env.editor_sources)
+    env.NoCache(lib)
     env.Prepend(LIBS=[lib])
 
     Export('env')

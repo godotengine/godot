@@ -1496,6 +1496,7 @@ def split_lib(self, libname):
         if base != cur_base and len(list) > max_src:
             if num > 0:
                 lib = env.Library(libname + str(num), list)
+                env.NoCache(lib)
                 lib_list.append(lib)
                 list = []
             num = num + 1
@@ -1503,6 +1504,7 @@ def split_lib(self, libname):
         list.append(f)
 
     lib = env.Library(libname + str(num), list)
+    env.NoCache(lib)
     lib_list.append(lib)
 
     if len(lib_list) > 0:
@@ -1510,11 +1512,14 @@ def split_lib(self, libname):
         if os.name == 'posix' and sys.platform == 'msys':
             env.Replace(ARFLAGS=['rcsT'])
             lib = env.Library(libname + "_collated", lib_list)
+            env.NoCache(lib)
             lib_list = [lib]
 
     lib_base = []
     env.add_source_files(lib_base, "*.cpp")
-    lib_list.insert(0, env.Library(libname, lib_base))
+    lib = env.Library(libname, lib_base)
+    env.NoCache(lib)
+    lib_list.insert(0, lib)
 
     env.Prepend(LIBS=lib_list)
 

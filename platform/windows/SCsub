@@ -28,7 +28,8 @@ obj = env.RES(restarget, 'godot_res.rc')
 
 common_win.append(obj)
 
-binary = env.Program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
+prog = env.Program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
+env.NoCache(prog)
 
 # Microsoft Visual Studio Project Generation
 if env['vsproj']:
@@ -38,4 +39,4 @@ if env['vsproj']:
 
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
-        env.AddPostAction(binary, make_debug_mingw)
+        env.AddPostAction(prog, make_debug_mingw)

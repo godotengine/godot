@@ -18,6 +18,7 @@ iphone_lib = [
 
 env_ios = env.Clone()
 ios_lib = env_ios.Library('iphone', iphone_lib)
+env_ios.NoCache(ios_lib)
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath

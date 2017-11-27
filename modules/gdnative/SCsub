@@ -248,4 +248,5 @@ if ARGUMENTS.get('gdnative_wrapper', False):
     if not env.msvc:
         gd_wrapper_env.Append(CCFLAGS=['-fPIC'])
 
-    gd_wrapper_env.Library("#bin/gdnative_wrapper_code", [gensource])
+    lib = gd_wrapper_env.Library("#bin/gdnative_wrapper_code", [gensource])
+    gd_wrapper_env.NoCache(lib)

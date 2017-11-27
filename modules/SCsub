@@ -18,5 +18,6 @@ for x in env.module_list:
     SConscript(x + "/SCsub")
 
 lib = env_modules.Library("modules", env.modules_sources)
+env_modules.NoCache(lib)
 
 env.Prepend(LIBS=[lib])

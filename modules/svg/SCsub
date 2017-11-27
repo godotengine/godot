@@ -13,6 +13,8 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 # env.add_source_files(env.modules_sources, thirdparty_sources)
 
 lib = env.Library("svg_builtin", thirdparty_sources)
+env.NoCache(lib)
+
 # Needs to be appended to arrive after libscene in the linker call,
 # but we don't want it to arrive *after* system libs, so manual hack
 # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
