@@ -356,6 +356,7 @@ private:
 	};
 
 	bool show_column_titles;
+	bool indent_children;
 	LineEdit *text_editor;
 	HSlider *value_editor;
 	bool updating_value_editor;
@@ -557,6 +558,8 @@ public:
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;
+
+	void set_indent_children(bool p_indent);
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;

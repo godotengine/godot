@@ -1394,7 +1394,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	Point2 children_pos = p_pos;
 
 	if (!skip) {
-		children_pos.x += cache.item_margin;
+		if (indent_children)
+			children_pos.x += cache.item_margin;
 		htotal += label_h;
 		children_pos.y += htotal;
 	}
@@ -3372,6 +3373,11 @@ String Tree::get_column_title(int p_column) const {
 	return columns[p_column].title;
 }
 
+void Tree::set_indent_children(bool p_indent) {
+
+	indent_children = p_indent;
+}
+
 Point2 Tree::get_scroll() const {
 
 	Point2 ofs;
@@ -3838,6 +3844,7 @@ Tree::Tree() {
 	updating_value_editor = false;
 	pressed_button = -1;
 	show_column_titles = false;
+	indent_children = true;
 
 	cache.click_type = Cache::CLICK_NONE;
 	cache.hover_type = Cache::CLICK_NONE;
