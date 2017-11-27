@@ -1481,7 +1481,7 @@ Array VisualServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surfa
 void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
-	ClassDB::bind_method(D_METHOD("force_draw"), &VisualServer::draw, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers"), &VisualServer::draw, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
@@ -1658,7 +1658,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free", "rid"), &VisualServer::free);
 
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "where", "method", "userdata"), &VisualServer::request_frame_drawn_callback);
-	ClassDB::bind_method(D_METHOD("draw"), &VisualServer::draw, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw", "swap_buffers"), &VisualServer::draw, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("sync"), &VisualServer::sync);
 	ClassDB::bind_method(D_METHOD("has_changed"), &VisualServer::has_changed);
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);

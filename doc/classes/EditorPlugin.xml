@@ -135,15 +135,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="forward_draw_over_canvas" qualifiers="virtual">
+		<method name="forward_draw_over_viewport" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="canvas_xform" type="Transform2D">
-			</argument>
-			<argument index="1" name="canvas" type="Control">
+			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
-				This function is called every time the 2D canvas editor draws (which overlays over the edited scene). Drawing over the supplied control will draw over the edited scene. To convert from control coordinates to edited scene coordinates (including zoom and offset), a transform is also provided. If you require this control to be redraw, call [method update_canvas].
+			</description>
+		</method>
+		<method name="forward_force_draw_over_viewport" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="overlay" type="Control">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="forward_spatial_gui_input" qualifiers="virtual">
@@ -297,6 +302,12 @@
 				This method is called after the editor saves the project or when it's closed. It asks the plugin to save edited external scenes/resources.
 			</description>
 		</method>
+		<method name="set_force_draw_over_forwarding_enabled">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_input_event_forwarding_always_enabled">
 			<return type="void">
 			</return>
@@ -322,11 +333,10 @@
 				Restore the plugin GUI layout saved by [method EditorPlugin.get_window_layout].
 			</description>
 		</method>
-		<method name="update_canvas">
-			<return type="void">
+		<method name="update_overlays" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
-				Updates the control used to draw the edited scene over the 2D canvas. This is used together with [method forward_canvas_input_event].
 			</description>
 		</method>
 	</methods>

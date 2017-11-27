@@ -405,6 +405,10 @@
 				Emitted instead of [code]item_selected[/code] when [code]select_mode[/code] is [code]SELECT_MULTI[/code].
 			</description>
 		</signal>
+		<signal name="nothing_selected">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">

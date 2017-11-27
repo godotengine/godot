@@ -817,6 +817,8 @@
 		<method name="draw">
 			<return type="void">
 			</return>
+			<argument index="0" name="swap_buffers" type="bool" default="true">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -829,6 +831,8 @@
 		<method name="force_draw">
 			<return type="void">
 			</return>
+			<argument index="0" name="swap_buffers" type="bool" default="true">
+			</argument>
 			<description>
 			</description>
 		</method>

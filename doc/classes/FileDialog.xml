@@ -27,6 +27,12 @@
 				Clear all the added filters in the dialog.
 			</description>
 		</method>
+		<method name="deselect_items">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_current_dir" qualifiers="const">
 			<return type="String">
 			</return>

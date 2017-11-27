@@ -378,6 +378,10 @@
 				Fired when a multiple selection is altered on a list allowing multiple selection.
 			</description>
 		</signal>
+		<signal name="nothing_selected">
+			<description>
+			</description>
+		</signal>
 		<signal name="rmb_clicked">
 			<argument index="0" name="at_position" type="Vector2">
 			</argument>
