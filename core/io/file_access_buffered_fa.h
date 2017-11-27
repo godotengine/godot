@@ -55,10 +55,10 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 
 			// on dvector
 			//PoolVector<uint8_t>::Write write = cache.buffer.write();
-			//f.get_buffer(write.ptr(), p_size);
+			//f.get_buffer(write.ptrw(), p_size);
 
 			// on vector
-			f.get_buffer(cache.buffer.ptr(), p_size);
+			f.get_buffer(cache.buffer.ptrw(), p_size);
 
 			return p_size;
 		};
