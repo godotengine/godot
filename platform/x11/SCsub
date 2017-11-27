@@ -11,4 +11,5 @@ common_x11 = [
     "joystick_linux.cpp",
 ]
 
-env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)
+prog = env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)
+env.NoCache(prog)

@@ -25,4 +25,5 @@ prog = None
 
 # env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
 
-env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")
+prog = env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")
+env.NoCache(prog)
