@@ -52,13 +52,15 @@ class EditorAbout : public AcceptDialog {
 
 private:
 	void _license_tree_selected();
-	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[]);
+	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[], const int p_flag_single_column = 0);
 
 	Tree *_tpl_tree;
+	TextEdit *_license_text;
 	TextEdit *_tpl_text;
 	TextureRect *_logo;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
