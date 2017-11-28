@@ -336,6 +336,16 @@ namespace Godot
             return x == other.x && y == other.y;
         }
 
+        public static implicit operator Vector2 (Vector3 vec)
+        {
+            return new Vector2(vec.x, vec.y);
+        }
+
+        public static implicit operator Vector3 (Vector2 vec)
+        {
+            return new Vector3(vec.x, vec.y, 0.0f);
+        }
+
         public override int GetHashCode()
         {
             return y.GetHashCode() ^ x.GetHashCode();
