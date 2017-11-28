@@ -21,6 +21,7 @@ iphone_lib = [
 # env.Depends('#core/math/vector3.h', 'vector3_psp.h')
 
 #iphone_lib = env.Library('iphone', iphone_lib)
+#env.NoCache(iphone_lib)
 
 env_ios = env.Clone()
 
@@ -33,5 +34,6 @@ obj = env_ios.Object('godot_iphone.cpp')
 
 prog = None
 prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
+env_ios.NoCache(prog)
 action = "$IPHONEPATH/usr/bin/dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
 env.AddPostAction(prog, action)

@@ -5,7 +5,7 @@ sudo: false
 env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
-    - SCONS_CACHE_LIMIT=128
+    - SCONS_CACHE_LIMIT=1024
 
 cache:
   directories:
@@ -16,22 +16,22 @@ matrix:
     - env: STATIC_CHECKS=yes
       os: linux
       compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes
+    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
       os: linux
       compiler: gcc
-    #- env: GODOT_TARGET=x11 TOOLS=no
+    #- env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
     #  os: linux
     #  compiler: clang
-    #- env: GODOT_TARGET=windows TOOLS=yes
+    #- env: GODOT_TARGET=windows TOOLS=yes CACHE_NAME=${GODOT_TARGET}-gcc-tools
     #  os: linux
     #  compiler: gcc
-    - env: GODOT_TARGET=android TOOLS=no
+    - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-gcc
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=osx TOOLS=yes
+    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-clang-tools
       os: osx
       compiler: clang
-    #- env: GODOT_TARGET=iphone TOOLS=no
+    #- env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
     #  os: osx
     #  compiler: clang
 
@@ -78,5 +78,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j 2 platform=$GODOT_TARGET progress=no verbose=yes CXX=$CXX builtin_openssl=yes;
+      scons -j 2 platform=$GODOT_TARGET CXX=$CXX builtin_openssl=yes verbose=yes progress=no;
     fi
