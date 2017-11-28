@@ -344,7 +344,7 @@ void GDAPI godot_arvr_set_controller_transform(godot_int p_controller_id, godot_
 			tracker->set_orientation(transform->basis);
 		}
 		if (p_tracks_position) {
-			tracker->set_position(transform->origin);
+			tracker->set_rw_position(transform->origin);
 		}
 	}
 }
