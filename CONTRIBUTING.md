@@ -83,7 +83,7 @@ history when coming from PRs.
 Also try to make commits that bring the engine from one stable state to another
 stable state, i.e. if your first commit has a bug that you fixed in the second
 commit, try to merge them together before making your pull request (see ``git
-rebase -i`` and relevant help about rebasing or ammending commits on the
+rebase -i`` and relevant help about rebasing or amending commits on the
 Internet).
 
 This git style guide has some good practices to have in mind:
