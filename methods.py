@@ -1495,30 +1495,26 @@ def split_lib(self, libname):
         base = string.join(fname.split("/")[:2], "/")
         if base != cur_base and len(list) > max_src:
             if num > 0:
-                lib = env.Library(libname + str(num), list)
-                env.NoCache(lib)
+                lib = env.add_library(libname + str(num), list)
                 lib_list.append(lib)
                 list = []
             num = num + 1
         cur_base = base
         list.append(f)
 
-    lib = env.Library(libname + str(num), list)
-    env.NoCache(lib)
+    lib = env.add_library(libname + str(num), list)
     lib_list.append(lib)
 
     if len(lib_list) > 0:
         import os, sys
         if os.name == 'posix' and sys.platform == 'msys':
             env.Replace(ARFLAGS=['rcsT'])
-            lib = env.Library(libname + "_collated", lib_list)
-            env.NoCache(lib)
+            lib = env.add_library(libname + "_collated", lib_list)
             lib_list = [lib]
 
     lib_base = []
     env.add_source_files(lib_base, "*.cpp")
-    lib = env.Library(libname, lib_base)
-    env.NoCache(lib)
+    lib = env.add_library(libname, lib_base)
     lib_list.insert(0, lib)
 
     env.Prepend(LIBS=lib_list)
@@ -1757,3 +1753,18 @@ def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
     return program
+
+def add_shared_library(env, name, sources, **args):
+	library = env.SharedLibrary(name, sources, **args)
+	env.NoCache(library)
+	return library
+
+def add_library(env, name, sources, **args):
+	library = env.Library(name, sources, **args)
+	env.NoCache(library)
+	return library
+
+def add_program(env, name, sources, **args):
+	program = env.Program(name, sources, **args)
+	env.NoCache(program)
+	return program

@@ -7,5 +7,4 @@ common_server = [\
     "os_server.cpp",\
 ]
 
-prog = env.Program('#bin/godot_server', ['godot_server.cpp'] + common_server)
-env.NoCache(prog)
+prog = env.add_program('#bin/godot_server', ['godot_server.cpp'] + common_server)

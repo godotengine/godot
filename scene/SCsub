@@ -30,8 +30,7 @@ SConscript('resources/SCsub')
 
 
 # Build it all as a library
-lib = env.Library("scene", env.scene_sources)
-env.NoCache(lib)
+lib = env.add_library("scene", env.scene_sources)
 env.Prepend(LIBS=[lib])
 
 Export('env')

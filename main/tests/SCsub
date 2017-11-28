@@ -9,6 +9,5 @@ Export('env')
 
 # SConscript('math/SCsub');
 
-lib = env.Library("tests", env.tests_sources)
-env.NoCache(lib)
+lib = env.add_library("tests", env.tests_sources)
 env.Prepend(LIBS=[lib])

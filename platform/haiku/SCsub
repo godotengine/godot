@@ -12,7 +12,7 @@ common_haiku = [
     'audio_driver_media_kit.cpp'
 ]
 
-target = env.Program(
+target = env.add_program(
     '#bin/godot',
     ['godot_haiku.cpp'] + common_haiku
 )

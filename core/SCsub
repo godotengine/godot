@@ -105,7 +105,6 @@ SConscript('helper/SCsub')
 
 
 # Build it all as a library
-lib = env.Library("core", env.core_sources)
-env.NoCache(lib)
+lib = env.add_library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
 Export('env')

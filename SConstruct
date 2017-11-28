@@ -121,6 +121,10 @@ env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 env_base.__class__.split_lib = methods.split_lib
 
+env_base.__class__.add_shared_library = methods.add_shared_library
+env_base.__class__.add_library = methods.add_library
+env_base.__class__.add_program = methods.add_program
+
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
 
