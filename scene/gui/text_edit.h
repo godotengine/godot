@@ -430,7 +430,6 @@ public:
 	void fold_all_lines();
 	void unhide_all_lines();
 	int num_lines_from(int p_line_from, int unhidden_amount) const;
-	int get_whitespace_level(int p_line) const;
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
 	void fold_line(int p_line);
@@ -443,6 +442,7 @@ public:
 
 	void indent_selection_left();
 	void indent_selection_right();
+	int get_indent_level(int p_line) const;
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
 		scroll_past_end_of_file_enabled = p_enabled;
