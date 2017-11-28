@@ -831,7 +831,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 			for (List<AnimationNode::TrackRef>::Element *E = anim_list->tref.front(); E; E = E->next()) {
 
 				AnimationNode::TrackRef &tr = E->get();
-				if (tr.track == NULL || tr.local_track < 0 || tr.weight < CMP_EPSILON)
+				if (tr.track == NULL || tr.local_track < 0 || tr.weight < CMP_EPSILON || !a->track_is_enabled(tr.local_track))
 					continue;
 
 				switch (a->track_get_type(tr.local_track)) {

@@ -364,6 +364,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 		if (!nc) // no node cache for this track, skip it
 			continue;
 
+		if (!a->track_is_enabled(i))
+			continue; // do nothing if the track is disabled
+
 		if (a->track_get_key_count(i) == 0)
 			continue; // do nothing if track is empty
 

@@ -1124,6 +1124,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 	Ref<Texture> add_key_icon = get_icon("TrackAddKey", "EditorIcons");
 	Ref<Texture> add_key_icon_hl = get_icon("TrackAddKeyHl", "EditorIcons");
 	Ref<Texture> down_icon = get_icon("select_arrow", "Tree");
+	Ref<Texture> checked = get_icon("checked", "Tree");
+	Ref<Texture> unchecked = get_icon("unchecked", "Tree");
 
 	Ref<Texture> wrap_icon[2] = {
 		get_icon("InterpWrapClamp", "EditorIcons"),
@@ -1170,6 +1172,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 		v_scroll->set_page(fit);
 	}
 
+	int left_check_ofs = checked->get_width();
 	int settings_limit = size.width - right_separator_ofs;
 	int name_limit = settings_limit * name_column_ratio;
 
@@ -1332,6 +1335,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 			valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
 		}
 
+		// Draw background color of the whole track
 		if (/*mouse_over.over!=MouseOver::OVER_NONE &&*/ idx == mouse_over.track) {
 			Color sepc = hover_color;
 			te->draw_rect(Rect2(ofs + Point2(0, y), Size2(size.width, h - 1)), sepc);
@@ -1343,14 +1347,20 @@ void AnimationKeyEditor::_track_editor_draw() {
 			te->draw_rect(Rect2(ofs + Point2(0, y), Size2(size.width - 1, h - 1)), tc);
 		}
 
-		te->draw_texture(type_icon[animation->track_get_type(idx)], ofs + Point2(0, y + (h - type_icon[0]->get_height()) / 2).floor());
+		// Draw track enabled state check box
+		Ref<Texture> check_box = animation->track_is_enabled(idx) ? checked : unchecked;
+		te->draw_texture(check_box, ofs + Point2(0, y + (h - checked->get_height()) / 2).floor());
+
+		// Draw track type glyph and node path
+		te->draw_texture(type_icon[animation->track_get_type(idx)], ofs + Point2(left_check_ofs + sep, y + (h - type_icon[0]->get_height()) / 2).floor());
 		NodePath np = animation->track_get_path(idx);
 		Node *n = root ? root->get_node(np) : (Node *)NULL;
 		Color ncol = color;
 		if (n && editor_selection->is_selected(n))
 			ncol = track_select_color;
-		te->draw_string(font, Point2(ofs + Point2(type_icon[0]->get_width() + sep, y + font->get_ascent() + (sep / 2))).floor(), np, ncol, name_limit - (type_icon[0]->get_width() + sep) - 5);
+		te->draw_string(font, Point2(ofs + Point2(left_check_ofs + sep + type_icon[0]->get_width() + sep, y + font->get_ascent() + (sep / 2))).floor(), np, ncol, name_limit - (type_icon[0]->get_width() + sep) - 5);
 
+		// Draw separator line below track area
 		if (!obj)
 			te->draw_line(ofs + Point2(0, y + h / 2), ofs + Point2(name_limit, y + h / 2), invalid_path_color);
 
@@ -1798,6 +1808,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 	Ref<Texture> down_icon = get_icon("select_arrow", "Tree");
 	Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
 	Ref<Texture> add_key_icon = get_icon("TrackAddKey", "EditorIcons");
+	Ref<Texture> check_icon = get_icon("checked", "Tree");
 
 	Ref<Texture> wrap_icon[2] = {
 		get_icon("InterpWrapClamp", "EditorIcons"),
@@ -1832,6 +1843,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 		v_scroll->set_page(fit);
 	}
 
+	int left_check_ofs = check_icon->get_width();
 	int settings_limit = size.width - right_separator_ofs;
 	int name_limit = settings_limit * name_column_ratio;
 
@@ -2092,7 +2104,12 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 					return;
 				}
 
-				if (mpos.x < name_limit - (type_icon[0]->get_width() / 2.0)) {
+				if (mpos.x < left_check_ofs) {
+					// Checkbox on the very left to enable/disable tracks.
+
+					animation->track_set_enabled(idx, !animation->track_is_enabled(idx));
+
+				} else if (mpos.x < name_limit - (type_icon[0]->get_width() / 2.0)) {
 					//name column
 
 					// area
@@ -2103,7 +2120,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const Ref<InputEvent> &p_input)
 						return;
 					}
 
-					Rect2 area(ofs.x, ofs.y + ((int(mpos.y) / h) + 1) * h, name_limit, h);
+					Rect2 area(ofs.x + left_check_ofs + sep, ofs.y + ((int(mpos.y) / h) + 1) * h, name_limit - left_check_ofs - sep, h);
 					track_name->set_text(animation->track_get_path(idx));
 					track_name->set_position(te->get_global_position() + area.position);
 					track_name->set_size(area.size);
