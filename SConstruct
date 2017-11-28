@@ -487,6 +487,7 @@ node_count_interval = 1
 node_pruning = 8 # Number of nodes to process before prunning the cache
 if ('env' in locals()):
     node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+show_progress = env['progress']
 
 import time, math
 
@@ -497,23 +498,26 @@ class cache_progress:
         self.path = path
         self.limit = limit
         self.exponent_scale = math.log(2) / half_life
+        if env['verbose'] and path != None:
+            screen.write('Current cache limit is ' + self.convert_size(limit) + ' (used: ' + self.convert_size(self.get_size(path)) + ')\n')
         self.pruning = node_pruning
         self.delete(self.file_list())
 
     def __call__(self, node, *args, **kw):
-        global node_count, node_count_max, node_count_interval, node_count_fname, node_pruning
-        # Print the progress percentage
-        node_count += node_count_interval
-        if (node_count_max > 0 and node_count <= node_count_max):
-            screen.write('\r[%3d%%] ' % (node_count * 100 / node_count_max))
-            screen.flush()
-        elif (node_count_max > 0 and node_count > node_count_max):
-            screen.write('\r[100%] ')
-            screen.flush()
-        else:
-            screen.write('\r[Initial build] ')
-            screen.flush()
-        # Prune if the number of nodes proccessed is 'node_pruning' or bigger
+        global node_count, node_count_max, node_count_interval, node_count_fname, node_pruning, show_progress
+        if show_progress:
+            # Print the progress percentage
+            node_count += node_count_interval
+            if (node_count_max > 0 and node_count <= node_count_max):
+                screen.write('\r[%3d%%] ' % (node_count * 100 / node_count_max))
+                screen.flush()
+            elif (node_count_max > 0 and node_count > node_count_max):
+                screen.write('\r[100%] ')
+                screen.flush()
+            else:
+                screen.write('\r[Initial build] ')
+                screen.flush()
+        # Prune if the number of nodes processed is 'node_pruning' or bigger
         self.pruning -= node_count_interval
         if self.pruning <= 0:
             self.pruning = node_pruning
@@ -522,8 +526,9 @@ class cache_progress:
     def delete(self, files):
         if len(files) == 0:
             return
-        # Utter something
-        screen.write('\rPurging %d %s from cache...\n' % (len(files), len(files) > 1 and 'files' or 'file'))
+        if env['verbose']:
+            # Utter something
+            screen.write('\rPurging %d %s from cache...\n' % (len(files), len(files) > 1 and 'files' or 'file'))
         map(os.remove, files)
 
     def file_list(self):
@@ -557,22 +562,40 @@ class cache_progress:
         else:
             return [x[0] for x in file_stat[mark:]]
 
+    def convert_size(self, size_bytes):
+       if size_bytes == 0:
+           return "0 bytes"
+       size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+       i = int(math.floor(math.log(size_bytes, 1024)))
+       p = math.pow(1024, i)
+       s = round(size_bytes / p, 2)
+       return "%s %s" % (int(s) if i == 0 else s, size_name[i])
+
+    def get_size(self, start_path = '.'):
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(start_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                total_size += os.path.getsize(fp)
+        return total_size
+
 def progress_finish(target, source, env):
-    global node_count
+    global node_count, progressor
     with open(node_count_fname, 'w') as f:
         f.write('%d\n' % node_count)
+    progressor.delete(progressor.file_list())
 
-if 'env' in locals() and env['progress']:
-    try:
-        with open(node_count_fname) as f:
-            node_count_max = int(f.readline())
-    except:
-        pass
-    cache_directory = os.environ.get("SCONS_CACHE")
-    # Simple cache pruning, attached to SCons' progress callback. Trim the
-    # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
-    progress = cache_progress(cache_directory, cache_limit)
-    Progress(progress, interval = node_count_interval)
-    progress_finish_command = Command('progress_finish', [], progress_finish)
-    AlwaysBuild(progress_finish_command)
+try:
+    with open(node_count_fname) as f:
+        node_count_max = int(f.readline())
+except:
+    pass
+cache_directory = os.environ.get("SCONS_CACHE")
+# Simple cache pruning, attached to SCons' progress callback. Trim the
+# cache directory to a size not larger than cache_limit.
+cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
+progressor = cache_progress(cache_directory, cache_limit)
+Progress(progressor, interval = node_count_interval)
+
+progress_finish_command = Command('progress_finish', [], progress_finish)
+AlwaysBuild(progress_finish_command)

@@ -14,5 +14,6 @@ SConscript('visual/SCsub')
 SConscript('audio/SCsub')
 
 lib = env.Library("servers", env.servers_sources)
+env.NoCache(lib)
 
 env.Prepend(LIBS=[lib])

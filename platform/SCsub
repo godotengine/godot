@@ -25,6 +25,8 @@ f.write(unreg_apis)
 f.close()
 platform_sources.append('register_platform_apis.gen.cpp')
 
-env.Prepend(LIBS=env.Library('platform', platform_sources))
+lib = env.Library('platform', platform_sources)
+env.NoCache(lib)
+env.Prepend(LIBS=lib)
 
 Export('env')

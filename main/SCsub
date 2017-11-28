@@ -57,5 +57,5 @@ env.Command("#main/app_icon.gen.h", "#main/app_icon.png", make_app_icon)
 SConscript('tests/SCsub')
 
 lib = env.Library("main", env.main_sources)
-
+env.NoCache(lib)
 env.Prepend(LIBS=[lib])

@@ -16,7 +16,9 @@ files = [
     'power_osx.cpp',
 ]
 
-binary = env.Program('#bin/godot', files)
+prog = env.Program('#bin/godot', files)
+env.NoCache(prog)
+
 if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
-    env.AddPostAction(binary, make_debug)
+    env.AddPostAction(prog, make_debug)
 

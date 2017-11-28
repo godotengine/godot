@@ -69,6 +69,7 @@ if env['builtin_freetype']:
         env.Append(CPPPATH=["#thirdparty/libpng"])
 
     lib = env.Library("freetype_builtin", thirdparty_sources)
+    env.NoCache(lib)
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
     # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
