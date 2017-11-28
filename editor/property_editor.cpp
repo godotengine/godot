@@ -2665,12 +2665,12 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		item->set_editable(1, false);
 		item->set_selectable(1, subsection_selectable);
 
-		if (use_folding) {
+		if (use_folding || folding_behaviour != FB_UNDEFINED) { // Even if you disabled folding (expand all by default), you still can collapse all manually.
 			if (!obj->editor_is_section_unfolded(p_path)) {
 				updating_folding = true;
 				if (folding_behaviour == FB_COLLAPSEALL)
 					item->set_collapsed(true);
-				else if (folding_behaviour == FB_EXPANDALL)
+				else if (folding_behaviour == FB_EXPANDALL || is_expandall_enabled)
 					item->set_collapsed(false);
 				else
 					item->set_collapsed(true);
@@ -4310,6 +4310,7 @@ PropertyEditor::PropertyEditor() {
 	property_selectable = false;
 	show_type_icons = false; // maybe one day will return.
 	folding_behaviour = FB_UNDEFINED;
+	is_expandall_enabled = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
 }
 
 PropertyEditor::~PropertyEditor() {

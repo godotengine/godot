@@ -1475,7 +1475,6 @@ void EditorNode::_edit_current() {
 	object_menu->set_disabled(true);
 
 	bool capitalize = bool(EDITOR_DEF("interface/editor/capitalize_properties", true));
-	bool expandall = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 	resource_save_button->set_disabled(!is_resource);
@@ -1545,10 +1544,6 @@ void EditorNode::_edit_current() {
 
 	if (property_editor->is_capitalize_paths_enabled() != capitalize) {
 		property_editor->set_enable_capitalize_paths(capitalize);
-	}
-
-	if (property_editor->is_expand_all_properties_enabled() != expandall) {
-		property_editor->set_use_folding(expandall == false);
 	}
 
 	/* Take care of PLUGIN EDITOR */
