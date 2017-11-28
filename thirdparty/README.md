@@ -57,7 +57,7 @@ Files extracted from upstream source:
 - Version: 1.06
 - License: OFL-1.1
 
-Use UI font if exists, because it has tight vertial metrix and good for UI.
+Use UI font if exists, because it has tight vertical metrics and good for UI.
 
 ### Hack Regular
 
@@ -239,7 +239,7 @@ Collection of single-file libraries used in Godot components.
   * License: RSA Message-Digest License
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
-  * Version: minimal C implemention, http://www.pcg-random.org/download.html
+  * Version: minimal C implementation, http://www.pcg-random.org/download.html
   * License: Apache 2.0
 - `sha256.{c,h}`
   * Upstream: https://github.com/ilvn/SHA256
