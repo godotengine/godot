@@ -20,5 +20,4 @@ if env['bb10_lgles_override'] == "yes":
 
 
 prog = None
-prog = env_bps.Program('#bin/godot', bb10_lib)
-env_bps.NoCache(prog)
+prog = env_bps.add_program('#bin/godot', bb10_lib)

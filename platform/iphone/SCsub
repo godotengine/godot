@@ -20,8 +20,7 @@ iphone_lib = [
 
 # env.Depends('#core/math/vector3.h', 'vector3_psp.h')
 
-#iphone_lib = env.Library('iphone', iphone_lib)
-#env.NoCache(iphone_lib)
+#iphone_lib = env.add_library('iphone', iphone_lib)
 
 env_ios = env.Clone()
 
@@ -33,7 +32,6 @@ if env['ios_gles22_override'] == "yes":
 obj = env_ios.Object('godot_iphone.cpp')
 
 prog = None
-prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
-env_ios.NoCache(prog)
+prog = env_ios.add_program('#bin/godot', [obj] + iphone_lib)
 action = "$IPHONEPATH/usr/bin/dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
 env.AddPostAction(prog, action)
