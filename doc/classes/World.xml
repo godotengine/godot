@@ -15,25 +15,30 @@
 			<return type="PhysicsDirectSpaceState">
 			</return>
 			<description>
+				Returns the World's physics space.
 			</description>
 		</method>
 		<method name="get_scenario" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the World's visual scenario.
 			</description>
 		</method>
 		<method name="get_space" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the World's sound space.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+			The World's [Environment].
 		</member>
 		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
+			The World's fallback_environment will be used if the World's [Environment] fails or is missing.
 		</member>
 	</members>
 	<constants>

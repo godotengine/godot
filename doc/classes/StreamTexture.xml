@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamTexture" inherits="Texture" category="Core" version="3.0-beta">
 	<brief_description>
+		A .stex texture.
 	</brief_description>
 	<description>
+		A texture that is loaded from a .stex file.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +14,7 @@
 	</methods>
 	<members>
 		<member name="load_path" type="String" setter="load" getter="get_load_path">
+			The StreamTexture's filepath to a .stex file.
 		</member>
 	</members>
 	<constants>

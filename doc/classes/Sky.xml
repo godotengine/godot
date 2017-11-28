@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Sky" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
+		The base class for [PanoramaSky] and [ProceduralSky].
 	</brief_description>
 	<description>
+		The base class for [PanoramaSky] and [ProceduralSky].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,24 +14,35 @@
 	</methods>
 	<members>
 		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize">
+			The Sky's radiance map size.
+			The higher the radiance map size, the more detailed the lighting from the Sky will be.
+			See RADIANCE_SIZE_* constants for values. Default size is RADIANCE_SIZE_512.
 		</member>
 	</members>
 	<constants>
 		<constant name="RADIANCE_SIZE_32" value="0" enum="RadianceSize">
+			Radiance texture size is 32x32 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_64" value="1" enum="RadianceSize">
+			Radiance texture size is 64x64 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_128" value="2" enum="RadianceSize">
+			Radiance texture size is 128x128 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_256" value="3" enum="RadianceSize">
+			Radiance texture size is 256x256 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_512" value="4" enum="RadianceSize">
+			Radiance texture size is 512x512 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_1024" value="5" enum="RadianceSize">
+			Radiance texture size is 1024x1024 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_2048" value="6" enum="RadianceSize">
+			Radiance texture size is 2048x2048 pixels.
 		</constant>
 		<constant name="RADIANCE_SIZE_MAX" value="7" enum="RadianceSize">
+			Radiance texture size is the largest size it can be.
 		</constant>
 	</constants>
 </class>
