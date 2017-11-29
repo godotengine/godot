@@ -3,48 +3,53 @@
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Calum Knott <calum@calumk.com>, 2017.
 # Zion Nimchuk <zionnimchuk@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-03-24 19:48+0000\n"
-"Last-Translator: Zion Nimchuk <zionnimchuk@gmail.com>\n"
+"PO-Revision-Date: 2017-11-23 14:48+0000\n"
+"Last-Translator: Calum Knott <calum@calumk.com>\n"
 "Language-Team: Pirate <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pr/>\n"
 "Language: pr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.12\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "Cursed"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "All yer Booty"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr ""
+msgstr "Move yer Add Key"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Change yer Anim Transition"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Change yer Anim Transform"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Change yer Anim Value"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Change yer Anim Call"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
@@ -7622,19 +7627,19 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Cant Load the FreeType Captain."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Unknown Calligraphy format."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Error loading yer Calligraphy Pen."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Yer Calligraphy be wrongly sized."
 
 #~ msgid "just pressed"
 #~ msgstr "just smashed"

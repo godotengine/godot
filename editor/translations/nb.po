@@ -3,29 +3,33 @@
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
+# Allan Nordhøy <epost@anotheragency.no>, 2017.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
+# flesk <eivindkn@gmail.com>, 2017.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
+# Norwegian Disaster <stian.furu.overbye@gmail.com>, 2017.
+# passeride <lukas@passeride.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-04-08 17:45+0000\n"
-"Last-Translator: Anonymous <GentleSaucepan@protonmail.com>\n"
+"PO-Revision-Date: 2017-11-29 08:12+0000\n"
+"Last-Translator: flesk <eivindkn@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.13-dev\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr "Avslått"
+msgstr "Deaktivert"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Hele utvalget"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -37,7 +41,7 @@ msgstr "Anim Forandre Overgang"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Anim Endre Transformering"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
@@ -45,7 +49,7 @@ msgstr "Anim Forandre Verdi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Anim Forandre Anrop"
+msgstr "Anim Forandre Kall"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
@@ -61,11 +65,11 @@ msgstr "Flytt Anim Spor Opp"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Flytt Anim Spor Ned"
+msgstr "Flytt Anim-Spor Ned"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Fjern Anim Spor"
+msgstr "Fjern Anim-Spor"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -73,11 +77,11 @@ msgstr "Sett Overganger til:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "Anim Spor Endre navn"
+msgstr "Anim-Spor Endre Navn"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "Anim Track Endre Interpolasjon"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
@@ -85,11 +89,11 @@ msgstr "Anim Spor Forandre Verdi Modus"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr ""
+msgstr "Anim Spor Endre Løkke Modus"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr "Forandre Node Kurve"
+msgstr "Forandre Nodekurve"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
@@ -134,11 +138,11 @@ msgstr "Anim Flytt Nøkler"
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Skaler Utvalg"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Skaler Fra Peker"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -146,52 +150,52 @@ msgstr "Gå til Neste Steg"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Gåtil Forrige Steg"
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Lineær"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Konstant"
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "Inn"
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "Ut"
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "Inn-Ut"
 
 #: editor/animation_editor.cpp
 msgid "Out-In"
-msgstr ""
+msgstr "Ut-Inn"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Overganger"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimaliser Animasjon"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "Rengjør Animasjon"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Lag NYTT spor for %s og sett inn nøkkel?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Lag %d NYE spor og sett inn nøkler?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -200,199 +204,201 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
-msgstr ""
+msgstr "Lag"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Anim Lag og Sett Inn"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Anim Sett inn Spor og Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Anim Sett Inn Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Endre Anim Lengde"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr ""
+msgstr "Endre Anim-Løkke"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Anim Lag Typet Verdi Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Anim Sett inn"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim Skalér Nøkler"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Anim Legg Til Call Track"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Animation zoom."
-msgstr ""
+msgstr "Animasjons-zoom."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr ""
+msgstr "Lengde (s):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr ""
+msgstr "Animasjon lengde (i sekunder)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr ""
+msgstr "Steg:"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr ""
+msgstr "Pekersteghopp (i sekunder)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr ""
+msgstr "Aktiver/Deaktiver løkke i animasjon."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "Legg til nye spor."
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "Flytt gjeldende spor opp."
 
 #: editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "Flytt gjeldende spor ned."
 
 #: editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "Fjern valgt spor."
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
-msgstr ""
+msgstr "Sporverktøy"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "Aktiver endring av individuelle nøkler ved å klikke på dem."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Anim. Optimaliserer"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr ""
+msgstr "Maks. Linær Feilmelding:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr ""
+msgstr "Max. Vinklet Feilmelding:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr ""
+msgstr "Max Optimaliserbar Vinkel:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Optimaliser"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "Marker en AnimationPlayer fra scenetreet for å endre animasjoner."
 
 #: editor/animation_editor.cpp
 msgid "Key"
-msgstr ""
+msgstr "Nøkkel"
 
 #: editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "Overgang"
 
 #: editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "Skaler Størrelsesforhold:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "Kall Funksjoner i Hvilken Node?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "Fjern ugyldige nøkler"
 
 #: editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "Fjern uløste og tomme spor"
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Rengjør alle animasjoner"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Rengjør Animasjon(er) (IKKE REVERSERBART!)"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "Rengjøring"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "Endre størrelsen på Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Endre Array verditype"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Endre Array-verdi"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Gå til Linje"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Linjenummer:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "Ingen Treff"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr ""
+msgstr "Erstattet %d forekomst(er)."
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Erstatt"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Erstatt Alle"
 
 #: editor/code_editor.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "Match Tilfelle"
 
 #: editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Hele Ord"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Kun Valgte"
 
 #: editor/code_editor.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -400,110 +406,112 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Search"
-msgstr ""
+msgstr "Søk"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
-msgstr ""
+msgstr "Finn"
 
 #: editor/code_editor.cpp
 msgid "Next"
-msgstr ""
+msgstr "Neste"
 
 #: editor/code_editor.cpp
 msgid "Not found!"
-msgstr ""
+msgstr "Ikke funnet!"
 
 #: editor/code_editor.cpp
 msgid "Replace By"
-msgstr ""
+msgstr "Erstatt Med"
 
 #: editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "Forskjell på små og store bokstaver"
 
 #: editor/code_editor.cpp
 msgid "Backwards"
-msgstr ""
+msgstr "Baklengs"
 
 #: editor/code_editor.cpp
 msgid "Prompt On Replace"
-msgstr ""
+msgstr "Spør Ved Erstatning"
 
 #: editor/code_editor.cpp
 msgid "Skip"
-msgstr ""
+msgstr "Hopp Over"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Zoom Inn"
 
 #: editor/code_editor.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Zoom Ut"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Nullstill Zoom"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "Linje:"
 
 #: editor/code_editor.cpp
 msgid "Col:"
-msgstr ""
+msgstr "Kol:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "Metode i mål-Node må spesifiseres!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Mål-metode ikke funnet! Spesifiser en gyldig metode eller fest et skript til "
+"mål-Noden."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Koble Til Node:"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Legg Til"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Fjern"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Legg til ekstra Call Argument:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Ekstra Call Argumenter:"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "Sti til Node:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr ""
+msgstr "Lag funksjon"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Utsatt"
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr ""
+msgstr "Engangs"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp
@@ -521,129 +529,135 @@ msgstr "Lukk"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Koble Til"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Koble '%s' til '%s'"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Connecting Signal:"
-msgstr ""
+msgstr "Kobler Til Signal:"
 
 #: editor/connections_dialog.cpp
 msgid "Create Subscription"
-msgstr ""
+msgstr "Lag Abonnement"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr ""
+msgstr "Koble Til.."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Koble Fra"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signaler"
 
 #: editor/create_dialog.cpp
 msgid "Create New"
-msgstr ""
+msgstr "Lag Ny"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Favoritter:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Nylige:"
 
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp editor/settings_config_dialog.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Søk:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
-msgstr ""
+msgstr "Treff:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Beskrivelse:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr ""
+msgstr "Søk Erstatning For:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr ""
+msgstr "Avhengigheter For:"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
+"Scene '%s' redigeres.\n"
+"Forandringer vil ikke tre i kraft, med mindre du laster inn på nytt."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
+"Ressurs '%s' er i bruk.\n"
+"Endringer vil tre i kraft når den lastes inn på nytt."
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Avhengigheter"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Ressurs"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Path"
-msgstr ""
+msgstr "Sti"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Avhengigheter:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Reparer Ødelagt"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Avhengighetsredigeringsverktøy"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Søk Erstatningsressurs:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Åpne"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "Eiere Av:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr ""
+msgstr "Fjerne valgte filer fra prosjektet? (kan ikke angres)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -651,138 +665,140 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
+"Filene som fjernes kreves for at andre ressurser skal virke.\n"
+"Fjern dem likevel? (kan ikke angres)"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:\n"
-msgstr ""
+msgstr "Kan ikke fjerne:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr ""
+msgstr "Feil ved innlasting:"
 
 #: editor/dependency_editor.cpp
 msgid "Scene failed to load due to missing dependencies:"
-msgstr ""
+msgstr "Scenen kunne ikke lastes, på grunn av manglende avhengigheter:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Åpne Likevel"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Hvilken handling skal utføres?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Fiks Avhengigheter"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr ""
+msgstr "Feil ved lasting!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "Slett %d ting for godt? (kan ikke angres)"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Eier"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr ""
+msgstr "Ressurser uten eksplisitt eierskap:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Foreldreløs ressursutforsker"
 
 #: editor/dependency_editor.cpp
 msgid "Delete selected files?"
-msgstr ""
+msgstr "Slett valgte filer?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 #: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
-msgstr ""
+msgstr "Slett"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "Endre Ordboksnøkkel"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "Anim Forandre Verdi"
+msgstr "Endre Ordboksverdi"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Thanks from the Godot community!"
-msgstr ""
+msgstr "Takk fra Godot-samfunnet!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr ""
+msgstr "Takk!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
-msgstr ""
+msgstr "Godot Engines bidragsytere"
 
 #: editor/editor_about.cpp
 msgid "Project Founders"
-msgstr ""
+msgstr "Prosjektgrunnleggere"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
-msgstr ""
+msgstr "Utviklingsleder"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
-msgstr ""
+msgstr "Prosjektleder"
 
 #: editor/editor_about.cpp
 msgid "Developers"
-msgstr ""
+msgstr "Utviklere"
 
 #: editor/editor_about.cpp
 msgid "Authors"
-msgstr ""
+msgstr "Forfattere"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Platinasponsorer"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Gullsponsorer"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Minisponsorer"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Gulldonorer"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Sølvdonorer"
 
 #: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr ""
+msgstr "Bronsedonorer"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Donorer"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Lisens"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr ""
+msgstr "Tredjepartslisens"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -791,253 +807,255 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine avhenger av en rekke tredjeparts fri og åpen kildekode-"
+"biblioteker, alle kompatible med begrepene i MIT-lisensen. Følgende er en "
+"utfyllende liste over alle slike tredjepartskomponenter med sine respektive "
+"opphavsrettserklæringer og lisensbegreper."
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "All Components"
-msgstr "Kontinuerlig"
+msgstr "Alle Komponenter"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Components"
-msgstr "Kontinuerlig"
+msgstr "Komponenter"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "Lisenser"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
-msgstr ""
+msgstr "Feil ved åpning av pakkefil, ikke i zip format."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Dekomprimerer Ressurser"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr ""
+msgstr "Vellykket Installering av Pakke!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "Suksess!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Install"
-msgstr ""
+msgstr "Installer"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr ""
+msgstr "Pakkeinstallasjon"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Høyttalere"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
-msgstr ""
+msgstr "Legg Til Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr ""
+msgstr "Gi nytt navn til Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr ""
+msgstr "Veksle Audio Bus Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr ""
+msgstr "Veksle Audio Bus Mute"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "Veksle Audio Bus Bypass Effekter"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr ""
+msgstr "Velg Audio Bus Send"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "Legg til Audio Bus Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr ""
+msgstr "Flytt Bus Effekt"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Bus Effect"
-msgstr "Slett Valgte"
+msgstr "Slett Bus Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr ""
+msgstr "Audio Bus, Dra og Slipp for å omorganisere."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr ""
+msgstr "Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr ""
+msgstr "Mute"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Bypass"
-msgstr ""
+msgstr "Omgå"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bus options"
-msgstr ""
+msgstr "Bus valg"
 
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr ""
+msgstr "Duplisér"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr ""
+msgstr "Nullstill Volum"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Effect"
-msgstr "Slett Valgte"
+msgstr "Fjern Effekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr ""
+msgstr "Legg til Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr ""
+msgstr "Master bus kan ikke slettes!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr ""
+msgstr "Slett Audio Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Duplicate Audio Bus"
-msgstr "Dupliser Utvalg"
+msgstr "Duplisér Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
-msgstr ""
+msgstr "Nullstill Bus Volum"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Audio Bus"
-msgstr "Flytt Legg til Nøkkel"
+msgstr "Flytt Audio Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
-msgstr ""
+msgstr "Lagre Audio Bus Oppsett som..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout.."
-msgstr ""
+msgstr "Plassering for nytt oppsett.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr ""
+msgstr "Åpne Audio Bus oppsett"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr ""
+msgstr "Det er ingen 'res://default_bus_layout.tres' fil."
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
-msgstr ""
+msgstr "Ugyldig fil, ikke et audio bus oppsett."
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
-msgstr ""
+msgstr "Legg til Bus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
-msgstr ""
+msgstr "Opprett et nytt Bus oppsett."
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
-msgstr ""
+msgstr "Last"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr ""
+msgstr "Last et eksisterende Bus oppsett."
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
-msgstr ""
+msgstr "Lagre som"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr ""
+msgstr "Lagre dette Bus oppsettet til en fil."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr ""
+msgstr "Last Standard"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr ""
+msgstr "Last standard Bus oppsettet."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr ""
+msgstr "Ugyldig navn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr ""
+msgstr "Gyldige karakterer:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing engine class name."
 msgstr ""
+"Ugyldig navn. Kan ikke kollidere med et eksisterende engine class navn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing buit-in type name."
 msgstr ""
+"Ugyldig navn. Kan ikke kollidere med et eksisterende innebygd type navn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr ""
+"Ugyldig navn. Kan ikke kollidere med et eksisterende global constant navn."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid Path."
-msgstr ""
+msgstr "Ugyldig Filsti."
 
 #: editor/editor_autoload_settings.cpp
 msgid "File does not exist."
-msgstr ""
+msgstr "Fil eksisterer ikke."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
-msgstr ""
+msgstr "Ikke i resource path."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr ""
+msgstr "Legg til AutoLoad"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr ""
+msgstr "Autoload '%s' eksisterer allerede!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr ""
+msgstr "Gi nytt navn til Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr ""
+msgstr "Veksle AutoLoad Globals"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
-msgstr ""
+msgstr "Flytt Autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
@@ -1266,9 +1284,8 @@ msgid "Brief Description:"
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Medlemmer:"
+msgstr "Medlemmer"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
@@ -1945,7 +1962,7 @@ msgstr ""
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Editor"
-msgstr "Rediger"
+msgstr "Redigeringsverktøy"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -2406,9 +2423,8 @@ msgid "Connecting to Mirror.."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Disconnected"
-msgstr "Diskret"
+msgstr "Frakoblet"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
@@ -2428,9 +2444,8 @@ msgid "Can't Conect"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connected"
-msgstr "Kutt Noder"
+msgstr "Tilkoblet"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2442,9 +2457,8 @@ msgid "Downloading"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connection Error"
-msgstr "Kutt Noder"
+msgstr "Tilkoblingsfeil"
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
@@ -2774,9 +2788,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Delete points"
-msgstr "Slett Valgte"
+msgstr "Slett punkter"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2958,9 +2971,8 @@ msgid "New name:"
 msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filters"
-msgstr "Rediger Variabel:"
+msgstr "Rediger Filtre"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -3101,9 +3113,8 @@ msgid "Free"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Kontinuerlig"
+msgstr "Innhold:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
@@ -3294,9 +3305,8 @@ msgid "Create new horizontal guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove horizontal guide"
-msgstr "Fjern Funksjon"
+msgstr "Fjern horisontal veileder"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
@@ -6811,7 +6821,7 @@ msgstr ""
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Ugyldig argument til convert(), bruk TYPE_*-konstantene."
+msgstr "Ugyldig typeargument til convert(), bruk TYPE_*-konstantene."
 
 #: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7033,8 +7043,9 @@ msgid "Name is not a valid identifier:"
 msgstr "Navn er ikke en gyldig identifikator:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Name already in use by another func/var/signal:"
-msgstr "Navn er allerede brykt av en annen funksjon/var/signal:"
+msgstr "Navn er allerede i bruk av en annen func/var/signal:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -7168,8 +7179,9 @@ msgid "Call"
 msgstr "Ring"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Get"
-msgstr "Få"
+msgstr "Hent"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
@@ -7237,7 +7249,7 @@ msgstr "Velg eller lag en funksjon for å redigere graf"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr "Forandre Signal Argumenter:"
+msgstr "Forandre Signalargumenter:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
@@ -7610,7 +7622,7 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Ugyldig fontstørrelse."
 
 #, fuzzy
 #~ msgid "Selection -> Clear"

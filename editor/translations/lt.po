@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Ignas Kiela <ignaskiela@super.lt>, 2017.
+# Kornelijus <kornelijus.github@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-10-23 18:47+0000\n"
-"Last-Translator: Ignas Kiela <ignaskiela@super.lt>\n"
+"PO-Revision-Date: 2017-11-27 00:48+0000\n"
+"Last-Translator: Kornelijus <kornelijus.github@gmail.com>\n"
 "Language-Team: Lithuanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lt/>\n"
 "Language: lt\n"
@@ -17,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=n==1 ? 0 : n%10>=2 && (n%100<10 || n"
 "%100>=20) ? 1 : n%10==0 || (n%100>10 && n%100<20) ? 2 : 3;\n"
-"X-Generator: Weblate 2.17\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
-msgstr ""
+msgstr "Išjungta"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr ""
+msgstr "Visas Pasirinkimas"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -33,23 +34,23 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Animacija: Pakeisti Perėjimą"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Animacija: Pakeisti Transformaciją"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Animacija: Pakeisti Reikšmę"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Animacija: Pakeisti Iškvietimą"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "Animacija: Pridėti Takelį"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -57,15 +58,15 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "Animacija: Perkelti Takelį Aukštyn"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "Animacija: Perkelti Takelį Žemyn"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Animacija: Panaikinti Takelį"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -73,7 +74,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Animacija: Pervadinti Takelį"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
@@ -118,7 +119,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Diskretus"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
@@ -235,8 +236,9 @@ msgid "Anim Scale Keys"
 msgstr ""
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Add Call Track"
-msgstr ""
+msgstr "Animacija: Pridėti Takelio Iškvietimą"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
@@ -244,7 +246,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Ilgis:"
+msgstr "Ilgis (sek.):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -309,6 +311,7 @@ msgstr ""
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr ""
+"Norint redaguoti animacijas pasirinkite AnimationPlayer Nodą iš Scenos."
 
 #: editor/animation_editor.cpp
 msgid "Key"
@@ -436,62 +439,64 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Priartinti"
 
 #: editor/code_editor.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Nutolinti"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Atstatyti Priartinimą"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "Linija:"
 
 #: editor/code_editor.cpp
 msgid "Col:"
-msgstr ""
+msgstr "Stulpelis:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "Metodas pasirinktame Node turi būti nurodytas!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Pasirinktas metodas nerastas! Nurodykite galiojantį metodą arba prijunkite "
+"skriptą prie pasirinkto Nodo."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Prijunkite prie Nodo:"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Pridėti"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Panaikinti"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Pridėkite Papildomą Iškvietimo Argumentą:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Papildomi Iškvietimo Argumentai:"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr ""
+msgstr "Kelias iki Nodo:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
@@ -517,7 +522,7 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Uždaryti"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
@@ -525,7 +530,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Prijungti '%s' prie '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
@@ -542,24 +547,24 @@ msgstr ""
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Atsijungti"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signalai"
 
 #: editor/create_dialog.cpp
 msgid "Create New"
-msgstr ""
+msgstr "Sukurti Naują"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Mėgstamiausi:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Naujausi:"
 
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -578,7 +583,7 @@ msgstr ""
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Aprašymas:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -635,7 +640,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr ""
+msgstr "Atidaryti"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -879,7 +884,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr ""
+msgstr "Nutildyti"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
@@ -892,15 +897,15 @@ msgstr ""
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr ""
+msgstr "Duplikuoti"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Volume"
-msgstr ""
+msgstr "Atstatyti Garsą"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr ""
+msgstr "Ištrinti Efektą"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -2135,19 +2140,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr ""
+msgstr "Atidaryti 2D Editorių"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr ""
+msgstr "Atidaryti 3D Editorių"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr ""
+msgstr "Atidaryti Skriptų Editorių"
 
 #: editor/editor_node.cpp
 msgid "Open Asset Library"
-msgstr ""
+msgstr "Atidaryti Resursų Biblioteką"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
@@ -2155,7 +2160,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr ""
+msgstr "Atidaryti praeitą Editorių"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -2163,36 +2168,36 @@ msgstr ""
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
-msgstr ""
+msgstr "Miniatūra.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "Įdiegti Priedai:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Update"
-msgstr ""
+msgstr "Atnaujinti"
 
 #: editor/editor_plugin_settings.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr ""
+msgstr "Versija:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Author:"
-msgstr ""
+msgstr "Autorius:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
-msgstr ""
+msgstr "Statusas:"
 
 #: editor/editor_profiler.cpp
 msgid "Stop Profiling"
-msgstr ""
+msgstr "Baigti Profiliavimą"
 
 #: editor/editor_profiler.cpp
 msgid "Start Profiling"
-msgstr ""
+msgstr "Pradėti Profiliavimą"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -2200,23 +2205,23 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr ""
+msgstr "Kadro Trukmė (sekundėmis)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "Vidutiniška Trukmė (sekunėmis)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr ""
+msgstr "Kadro %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr ""
+msgstr "Fizikos Kadro %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Trukmė:"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -2262,7 +2267,7 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr ""
+msgstr "Galbūt jūs pamiršote '_run' metodą?"
 
 #: editor/editor_settings.cpp
 msgid "Default (Same as Editor)"
@@ -2270,39 +2275,39 @@ msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "Pasirinkite Nodus, kuriuos norite importuoti"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "Kelias iki Scenos:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "Importuoti iš Nodo:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
-msgstr ""
+msgstr "Atsiųsti iš naujo"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr ""
+msgstr "Išinstaliuoti"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(Įdiegta)"
 
 #: editor/export_template_manager.cpp
 msgid "Download"
-msgstr ""
+msgstr "Atsiųsti"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Nerasta)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(Esama)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait.."
@@ -2310,7 +2315,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "Panaikinti šablono versiją '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2328,11 +2333,11 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "Šablonuose nerasta version.txt failo."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:\n"
-msgstr ""
+msgstr "Klaida kuriant kelią šablonams:\n"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2936,20 +2941,21 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "Animacija"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "Naujas pavadinimas:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Filters"
-msgstr ""
+msgstr "Redaguoti Filtrus"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
+#, fuzzy
 msgid "Scale:"
-msgstr ""
+msgstr "Skalė:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Fade In (s):"
@@ -2981,12 +2987,12 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Pradėti!"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
-msgstr ""
+msgstr "Kiekis:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend:"
@@ -3034,55 +3040,56 @@ msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Animacijos Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "OneShot Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Mix Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Blend2 Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Blend3 Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Blend4 Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "TimeScale Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "TimeSeek Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Transition Nodas"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr ""
+msgstr "Importuoti Animacijas.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Redaguoti Nodų Filtrus"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#, fuzzy
 msgid "Filters.."
-msgstr ""
+msgstr "Filtrai.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Nemokama"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3122,11 +3129,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Tikėtasi:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Gauta:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
@@ -3134,7 +3141,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Resurso Atsisiuntimo Klaida:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Fetching:"
@@ -3154,11 +3161,11 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Bandyti iš naujo"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Atsisiuntimo Klaida"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -3166,7 +3173,7 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "first"
-msgstr ""
+msgstr "pirmas"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "prev"
@@ -3178,16 +3185,16 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "last"
-msgstr ""
+msgstr "paskutinis"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Visi"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "Priedai"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -3200,7 +3207,7 @@ msgstr ""
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategorija:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -4218,7 +4225,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Scale Polygon"
-msgstr ""
+msgstr "Keisti Poligono Skalę"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4226,7 +4233,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Redaguoti"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
@@ -6905,7 +6912,6 @@ msgid "Erase Area"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Selection"
 msgstr "Panaikinti pasirinkimą"
 
@@ -7443,6 +7449,8 @@ msgstr ""
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
+"NavigationMesh resursas turi būti nustatytas ar sukurtas, kad šis Nodas "
+"veiktų."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
@@ -7493,15 +7501,15 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "Atšaukti"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Įspėjimas!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Prašome Patvirtinti..."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7519,7 +7527,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Kita)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -7537,16 +7545,16 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Klaida inicijuojant FreeType."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Nežinomas šrifto formatas."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Įvyko klaida kraunant šriftą."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "Netinkamas šrifto dydis."

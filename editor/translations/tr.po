@@ -6,22 +6,27 @@
 # Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
 # Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
+# Enescan Yerlikaya <enescanyerlikaya@gmail.com>, 2017.
+# Fatih Mert Doğancan <fatihmertdogancan@hotmail.com>, 2017.
 # hubbyist <hub@legrud.net>, 2017.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
 # Orkun Turan <holygatestudio@yandex.com>, 2016-2017.
+# razah <icnikerazah@gmail.com>, 2017.
+# stnmycri <satenmeycri@gmail.com>, 2017.
+# Yavuz Günay <yavuzgunay@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-08-29 13:49+0000\n"
-"Last-Translator: hubbyist <hub@legrud.net>\n"
+"PO-Revision-Date: 2017-11-29 08:13+0000\n"
+"Last-Translator: razah <icnikerazah@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -29,47 +34,47 @@ msgstr "Devre dışı"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Tüm seçim"
+msgstr "Tüm Seçim"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
-msgstr "Açar Eklemeyi Taşı"
+msgstr "Hareket Anahtar Ekle"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Canln Geçişi Değiştir"
+msgstr "Animasyon Değişikliği Geçişi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Canln Dönüşümü Değiştir"
+msgstr "Animasyon Değişikliği Dönüşümü"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr "Canln Değeri Değiştir"
+msgstr "Animasyon Değişikliği Değeri"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
-msgstr "Canln Çağrıyı Değiştir"
+msgstr "Animasyon Değişikliği Çağrısı"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr "Canln İz Ekle"
+msgstr "Animasyon İz Ekle"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Canln Açarlarını İkile"
+msgstr "Animasyon Anahtarlrını Çoğalt"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr "Canln İzini Yukarı Hareket Ettir"
+msgstr "Animasyon İzini Yukarı Taşı"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr "Canln İzini Aşağı Hareket Ettir"
+msgstr "Animasyon İzini Aşağı Taşı"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Canln İzini Sil"
+msgstr "Animasyon İzini Kaldır"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
@@ -77,19 +82,19 @@ msgstr "Geçişleri şuna ayarla:"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr "Canln İzini Yeniden Adlandır"
+msgstr "Animasyon İzini Yeniden Adlandır"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr "Canln İz Ara Değer Değiştir"
+msgstr "Anim İzi Değişikliği İnterpolasyonu"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr "Canln İzi Değer Değiştir Biçimi"
+msgstr "Animasyon İzi Değişikliği Kipi"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
-msgstr "Canlandırma İzi Hizalama Modunu Değiştir"
+msgstr "Animasyon İzi Değişikliği Sarmalama Kipi"
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
@@ -101,16 +106,16 @@ msgstr "Seçim Eğrisini Düzenle"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Canln Açarları Sil"
+msgstr "Animasyon Anahtarları Sil"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Seçimi İkile"
+msgstr "Seçimi Çoğalt"
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "Tersine Çevirmeyi İkile"
+msgstr "Tersine Çevrilmişi Çoğalt"
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
@@ -122,7 +127,7 @@ msgstr "Kesintisiz"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr "Ayrık"
+msgstr "Kesikli"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
@@ -130,11 +135,11 @@ msgstr "Tetikleyici"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr "Canln Açar Ekle"
+msgstr "Animasyon Anahtar Ekle"
 
 #: editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Canln Açarlarını Taşı"
+msgstr "Animasyon Anahtarları Taşı"
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
@@ -142,7 +147,7 @@ msgstr "Seçimi Ölçekle"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr "Göstergeden Ölçekle"
+msgstr "İmleçten Ölçekle"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -183,19 +188,19 @@ msgstr "Geçişler"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr "Canlandırmayı İyileştir"
+msgstr "Animasyonu İyileştir"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Canlandırmayı Temizle"
+msgstr "Animasyonu Temizle"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "%s için yeni iz oluştur ve açar gir?"
+msgstr "%s için YENİ iz oluştur ve anahtar gir?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "%d için yeni izler oluştur ve açar gir?"
+msgstr "%d YENİ izler oluştur ve anahtarlar gir?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -208,63 +213,63 @@ msgstr "Oluştur"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Canln Oluştur & Gir"
+msgstr "Animasyon Oluştur & Gir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Canln İz Gir & Açar"
+msgstr "Animasyon İz & Anahtar Gir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Canln Açar Gir"
+msgstr "Animasyon Anahtar Gir"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr "Canln Uzunluğu Değiştir"
+msgstr "Animasyon Uzunluğunu Değiştir"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
-msgstr "Canln Döngüsünü Değiştir"
+msgstr "Animasyon Döngüsünü Değiştir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr "Canln Yazılı Değer Açarı Oluştur"
+msgstr "Animasyon Yazılı Değer Anahtarı Oluştur"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
-msgstr "Canln Gir"
+msgstr "Animasyon Gir"
 
 #: editor/animation_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Canln Açarı Ölçekle"
+msgstr "Animasyon Anahtarı Ölçekle"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
-msgstr "Canln İzi Çağırma Ekle"
+msgstr "Animasyon Çağrı İzi Ekle"
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr "Canlandırma yaklaş."
+msgstr "Animasyon yaklaş."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Uzunluk (lar):"
+msgstr "Uzunluk (sn):"
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
-msgstr "Canlandırma uzunluğu (saniye)."
+msgstr "Animasyon uzunluğu (saniye)."
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr "Adım (lar):"
+msgstr "Adım (sn):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
-msgstr "Gösterge şipşak adımla (saniyelerde)."
+msgstr "İmleç basamak yapışması (saniye)."
 
 #: editor/animation_editor.cpp
 msgid "Enable/Disable looping in animation."
-msgstr "Canlandırma yinelemesini Aç/Kapat."
+msgstr "Animasyon yinelemesini Aç/Kapat."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
@@ -272,11 +277,11 @@ msgstr "Yeni izler ekle."
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr "Mevcut izi yukarı al."
+msgstr "Mevcut izi yukarı taşı."
 
 #: editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr "Mevcut izi aşağı al."
+msgstr "Mevcut izi aşağı taşı."
 
 #: editor/animation_editor.cpp
 msgid "Remove selected track."
@@ -288,37 +293,37 @@ msgstr "İz araçları"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr "Özgün açarların düzenlenebilmesini onları tıklayarak etkinleştirin."
+msgstr "Anahtarlara tıklayarak tek tek düzenlemeyi etkinleştir."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Cnln. İyileştirici"
+msgstr "Anim. Eniyileştirici"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "En üst Doğrusal Sorun:"
+msgstr "Maks. Doğrusal Hata:"
 
 #: editor/animation_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "En üst Açısal Sorun:"
+msgstr "Maks. Açısal Hata:"
 
 #: editor/animation_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "Max İyileştirilebilir Açı:"
+msgstr "Maks. Eniyileştirilebilir Açı:"
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
-msgstr "İyileştir"
+msgstr "Eniyileştir"
 
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr ""
-"Sahne Ağacından canlandırmaları düzenleyebilmek için bir AnimationPlayer "
+"Sahne Ağacı'ndan animasyonları düzenleyebilmek için bir AnimationPlayer "
 "seçin."
 
 #: editor/animation_editor.cpp
 msgid "Key"
-msgstr "Açar"
+msgstr "Anahtar"
 
 #: editor/animation_editor.cpp
 msgid "Transition"
@@ -330,11 +335,11 @@ msgstr "Ölçek Oranı:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr "Hangi düğümdeki İşlevler Çağrılsın?"
+msgstr "Hangi Düğümdeki Fonksiyonlar Çağrılsın?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Geçersiz açarları kaldır"
+msgstr "Geçersiz anahtarları kaldır"
 
 #: editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -342,11 +347,11 @@ msgstr "Çözümlenmemiş ve boş izleri sil"
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr "Tüm canlandırmaları temizle"
+msgstr "Tüm animasyonları temizle"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Canlandırma(ları) Temizle (GERİ ALINAMAZ!)"
+msgstr "Animasyon(ları) Temizle (GERİ ALINAMAZ!)"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
@@ -354,11 +359,11 @@ msgstr "Temizle"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Sırayı Yeniden Boyutlandır"
+msgstr "Diziyi Yeniden Boyutlandır"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Dizinin türünü degistir"
+msgstr "Dizinin Türünü Değiştir"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
@@ -366,20 +371,19 @@ msgstr "Dizi Değerini Değiştir"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr "Dizeye Git"
+msgstr "Satıra git"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Dize Numarası:"
+msgstr "Satır Numarası:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
-msgstr "Eşleşme Bulunamadı"
+msgstr "Eşleşme Yok"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Replaced %d occurrence(s)."
-msgstr "%d Olgusu(ları) ile Değiştirildi."
+msgstr "Değiştirildi %d oluş(sn)."
 
 #: editor/code_editor.cpp
 msgid "Replace"
@@ -415,7 +419,7 @@ msgstr "Bul"
 
 #: editor/code_editor.cpp
 msgid "Next"
-msgstr "İleri"
+msgstr "Sonraki"
 
 #: editor/code_editor.cpp
 msgid "Not found!"
@@ -427,11 +431,11 @@ msgstr "Şununla Değiştir"
 
 #: editor/code_editor.cpp
 msgid "Case Sensitive"
-msgstr "Büyük Küçük Damga Duyarlı"
+msgstr "Büyük Küçük Harf Duyarlı"
 
 #: editor/code_editor.cpp
 msgid "Backwards"
-msgstr "Terse doğru"
+msgstr "Tersten"
 
 #: editor/code_editor.cpp
 msgid "Prompt On Replace"
@@ -455,23 +459,23 @@ msgstr "Yaklaşmayı Sıfırla"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr "Dize:"
+msgstr "Satır:"
 
 #: editor/code_editor.cpp
 msgid "Col:"
-msgstr "Dik:"
+msgstr "Sütun:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "Hedef Node daki Yöntem belirtilmeli!"
+msgstr "Hedef Düğümdeki Fonksiyon tanımlanmış olmalı!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"Amaçlanan yöntem bulunamadı! Geçerli bir yöntem belirtin veya amaçlanan "
-"Düğüme bir betik iliştirin."
+"Amaçlanan fonksiyon bulunamadı! Geçerli bir fonksiyon tanımla ya da "
+"amaçlanan Düğüme bir betik iliştirin."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -492,11 +496,11 @@ msgstr "Kaldır"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Ayrı Çağrı Değiştirgeni Ekleyin:"
+msgstr "Ekstra Çağrı Argümanı Ekle:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr "Ayrıca Çağrı Değiştirgenler:"
+msgstr "Ekstra Çağrı Argümanları:"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
@@ -504,7 +508,7 @@ msgstr "Düğüm Yolu:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr "İşlev Yap"
+msgstr "Fonksiyon Yap"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -534,11 +538,11 @@ msgstr "Bağla"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Bunu '%s'  şuna '%s' Bağla"
+msgstr "Bunu '%s'  şuna '%s' bağla"
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr "İşarete Bağlanıyor:"
+msgstr "Bağlantı Sinyali:"
 
 #: editor/connections_dialog.cpp
 msgid "Create Subscription"
@@ -555,7 +559,7 @@ msgstr "Bağlantıyı kes"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "İşaretler"
+msgstr "Sinyaller"
 
 #: editor/create_dialog.cpp
 msgid "Create New"
@@ -591,7 +595,7 @@ msgstr "Açıklama:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr "Şunun İçin Değişikliği Ara:"
+msgstr "Şunun İçin Değiştirme Ara:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
@@ -656,7 +660,7 @@ msgstr "Bunun Sahibi:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Seçili dizeçleri tasarıdan kaldır? (Geri alınamaz)"
+msgstr "Seçili dosyaları projeden kaldır? (Geri alınamaz)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -664,13 +668,12 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"Kaldırılmakta olan dizeçler başka dizeçlerin çalışması için gerekli.\n"
+"Kaldırılmakta olan dosyalar başka kaynakların çalışması için gerekli.\n"
 "Yine de kaldırmak istiyor musunuz? (Geri alınamaz)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:\n"
-msgstr "Çözümlenemedi."
+msgstr "Kaldırılamadı:\n"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -710,11 +713,11 @@ msgstr "Belirgin Sahipliği Olmayan Kaynaklar:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
-msgstr "Orphan Kaynak Gezgini"
+msgstr "Orphan Kaynak Araştırıcı"
 
 #: editor/dependency_editor.cpp
 msgid "Delete selected files?"
-msgstr "Seçili dizeçleri sil?"
+msgstr "Seçili dosyalar silinsin mi?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
@@ -724,31 +727,28 @@ msgid "Delete"
 msgstr "Sil"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Key"
-msgstr "Canlandırmanın Adını Değiştir:"
+msgstr "Sözlükteki Anahtarı Değiştir"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "Dizi Değerini Değiştir"
+msgstr "Sözlükteki Değeri Değiştir"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
-msgstr "Godot Topluluğu Sağ Olmanızı Diliyor!"
+msgstr "Godot topluluğundan teşekkürler!"
 
 #: editor/editor_about.cpp
 msgid "Thanks!"
-msgstr "Sağ olun!"
+msgstr "Teşekkürler!"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
 msgstr "Godot Oyun Motoru katkı sağlayanlar"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Project Founders"
-msgstr "Tasarı Yöneticisi"
+msgstr "Projenin Kurucuları"
 
 #: editor/editor_about.cpp
 msgid "Lead Developer"
@@ -756,45 +756,43 @@ msgstr "Baş Geliştirici"
 
 #: editor/editor_about.cpp editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Tasarı Yöneticisi"
+msgstr "Proje Yöneticisi"
 
 #: editor/editor_about.cpp
 msgid "Developers"
 msgstr "Geliştiriciler"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Authors"
-msgstr "Yazar:"
+msgstr "Yazarlar"
 
 #: editor/editor_about.cpp
 msgid "Platinum Sponsors"
-msgstr ""
+msgstr "Platin Sponsorlar"
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
-msgstr ""
+msgstr "Altın Sponsorlar"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
-msgstr ""
+msgstr "Mini Sponsorlar"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
-msgstr ""
+msgstr "Altın Bağışçılar"
 
 #: editor/editor_about.cpp
 msgid "Silver Donors"
-msgstr ""
+msgstr "Gümüş Bağışçılar"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Donors"
-msgstr "Aşağıya Eşle"
+msgstr "Bronz Bağışçılar"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "Bağışçılar"
 
 #: editor/editor_about.cpp
 msgid "License"
@@ -811,16 +809,18 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Oyun Motoru, bazı ücretsiz ve açık kaynaklı üçüncü parti "
+"kütüphanelerden faydalanır, bunların hepsinin kullanım koşulları MIT "
+"lisansına uygundur. Aşağıda, bu üçüncü parti bileşenlerin ayrıntılı telif "
+"hakkı bildirimleri ve lisans koşulları belirtilmiştir."
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "All Components"
-msgstr "İçerikler:"
+msgstr "Tüm  Bileşenler"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Components"
-msgstr "İçerikler:"
+msgstr "Bileşenler"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
@@ -828,16 +828,15 @@ msgstr "Lisanslar"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
-msgstr ""
+msgstr "Paket dosyası açılamıyor, zip formatında değil."
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Uncompressing Assets"
-msgstr "Sıkıştırılmamış"
+msgstr "Varlıklar Çıkartılıyor"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package Installed Successfully!"
-msgstr "Çıkın Başarı ile Kuruldu!"
+msgstr "Paket Başarı ile Kuruldu!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -850,61 +849,56 @@ msgid "Install"
 msgstr "Kur"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Installer"
-msgstr "Çıkın Başarı ile Kuruldu!"
+msgstr "Paket Yükleyici"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
 msgstr "Hoparlörler"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Effect"
-msgstr "Boş Ekle"
+msgstr "Efekt Ekle"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Rename Audio Bus"
-msgstr "KendindenYüklenme'yi Yeniden Adlandır"
+msgstr "Audio Bus'ı Yeniden Adlandır"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Toggle Audio Bus Solo"
-msgstr "KendindenOynatmayı Aç/Kapat"
+msgstr "Audio Bus'ı Solo Aç/Kapat"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr ""
+msgstr "Audio Bus Sessizliği Aç/Kapat"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr ""
+msgstr "Audio Bus Baypas Efektlerini Aç/Kapat"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr ""
+msgstr "Audio Bus Gönderimini Seç"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "Audio Bus Efekti Ekle"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
-msgstr ""
+msgstr "Bus Efektini Taşı"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Bus Effect"
-msgstr "Seçilenleri Sil"
+msgstr "Bus Efekti Sil"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
-msgstr ""
+msgstr "Audio Bus, düzenlemek için Sürükle-Bırak."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
-msgstr "Tekil"
+msgstr "Tek"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
@@ -912,89 +906,76 @@ msgstr "Sessiz"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
-msgstr "Dolan"
+msgstr "Baypas"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus options"
-msgstr "Sorun ayıklama seçenekleri"
+msgstr "Bus ayarları"
 
 #: editor/editor_audio_buses.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate"
-msgstr "İkile"
+msgstr "Kopyala"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Volume"
-msgstr "Yaklaşmayı Sıfırla"
+msgstr "Ses Düzeyini Sıfırla"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Effect"
-msgstr "Seçilenleri Sil"
+msgstr "Efekt'i Sil"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Audio Bus"
-msgstr "Ekle %s"
+msgstr "Audio Bus Ekle"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr ""
+msgstr "Master bus silinemez!"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Audio Bus"
-msgstr "Tasarımı Sil"
+msgstr "Audio Bus'ı Sil"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Duplicate Audio Bus"
-msgstr "Canlandırmayı İkile"
+msgstr "Audio Bus'ın Bir Kopyasını Oluştur"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Reset Bus Volume"
-msgstr "Yaklaşmayı Sıfırla"
+msgstr "Bus Ses Düzeyini Sıfırla"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Move Audio Bus"
-msgstr "Eylemi Taşı"
+msgstr "Audio Bus'ı Taşı"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As.."
-msgstr ""
+msgstr "Audio Bus Yerleşim Düzenini Farklı Kaydet.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout.."
-msgstr ""
+msgstr "Yeni Yerleşim Düzeni için Konum.."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
-msgstr ""
+msgstr "Audio Bus Yerleşim Düzenini Aç"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr ""
+msgstr "'res://default_bus_layout.tres' dosyası bulunamadı."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Invalid file, not an audio bus layout."
-msgstr ""
-"Geçersiz dizeç uzantısı.\n"
-"Lütfen .fnt uzantısını kullanın."
+msgstr "Geçersiz dosya, bu bir audio bus yerleşim düzeni değil."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add Bus"
-msgstr "Ekle %s"
+msgstr "Bus ekle"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Create a new Bus Layout."
-msgstr "Yeni Kaynak Oluştur"
+msgstr "Yeni bir Bus Yerleşim Düzeni oluştur."
 
 #: editor/editor_audio_buses.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
@@ -1002,27 +983,25 @@ msgid "Load"
 msgstr "Yükle"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Load an existing Bus Layout."
-msgstr "Var olan bir kaynağı saklaktan yükleyin ve düzenleyin."
+msgstr "Var olan bir Bus Yerleşim Düzeni yükle."
 
 #: editor/editor_audio_buses.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
-msgstr "Başkaca Kaydet"
+msgstr "Farklı Kaydet"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save this Bus Layout to a file."
-msgstr ""
+msgstr "Bu Bus Yerleşim Düzenini bir dosyaya kaydet."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
-#, fuzzy
 msgid "Load Default"
-msgstr "Önyüklü"
+msgstr "Varsayılanı Yükle"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr ""
+msgstr "Varsayılan Bus Yerleşim Düzenini yükle."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -1050,7 +1029,7 @@ msgstr "Gecersiz Yol."
 
 #: editor/editor_autoload_settings.cpp
 msgid "File does not exist."
-msgstr "Dizeç yok."
+msgstr "Dosya yok."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
@@ -1091,7 +1070,7 @@ msgstr "KendindenYüklenme'leri Yeniden Sırala"
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Dizeç yolu:"
+msgstr "Dosya yolu:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
@@ -1122,9 +1101,8 @@ msgid "Updating scene.."
 msgstr "Sahne güncelleniyor.."
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first"
-msgstr "Lütfen önce sahneyi kaydediniz."
+msgstr "Lütfen öncelikle bir taban dizini seçin"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1153,7 +1131,7 @@ msgstr "Seç"
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr "Dizeci Depoluyor:"
+msgstr "Dosya Depolama:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1165,7 +1143,7 @@ msgstr "Biçem dosyası bulunamadı:\n"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr "Dizeç var. Üzerine Yazılsın mı?"
+msgstr "Dosya var. Üzerine Yazılsın mı?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1173,15 +1151,15 @@ msgstr "Tümü Onaylandı"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr "Tüm Dizeçler (*)"
+msgstr "Tüm Dosyalar (*)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
-msgstr "Bir Dizeç Aç"
+msgstr "Bir Dosya Aç"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open File(s)"
-msgstr "Dizeç(leri) Aç"
+msgstr "Dosya(leri) Aç"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a Directory"
@@ -1189,7 +1167,7 @@ msgstr "Bir dizin aç"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr "Bir Dizeç ya da Dizin Aç"
+msgstr "Bir Dosya ya da Dizin Aç"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -1199,7 +1177,7 @@ msgstr "Kaydet"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Save a File"
-msgstr "Dizeci Kaydet"
+msgstr "Bir Dosya Kaydet"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -1219,7 +1197,7 @@ msgstr "Yenile"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr "Gizli Dizeçleri Aç / Kapat"
+msgstr "Gizli Dosyalari Aç / Kapat"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
@@ -1242,13 +1220,12 @@ msgid "Move Favorite Down"
 msgstr "Beğenileni Aşağı Taşı"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder"
-msgstr "Dizin oluşturulamadı."
+msgstr "Üst klasöre git"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
-msgstr "Dizinler & Dizeçler:"
+msgstr "Dizinler & Dosyalar:"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
@@ -1257,7 +1234,7 @@ msgstr "Önizleme:"
 #: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
 #: scene/gui/file_dialog.cpp
 msgid "File:"
-msgstr "Dizeç:"
+msgstr "Dosya:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
@@ -1268,9 +1245,8 @@ msgid "ScanSources"
 msgstr "KaynaklarıTara"
 
 #: editor/editor_file_system.cpp
-#, fuzzy
 msgid "(Re)Importing Assets"
-msgstr "Yeniden-İçe Aktarım"
+msgstr "Varlıklar Yeniden-İçe Aktarılıyor"
 
 #: editor/editor_help.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -1306,68 +1282,60 @@ msgid "Brief Description:"
 msgstr "Kısa Açıklama:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Üyeler:"
+msgstr "Üyeler"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
 msgstr "Üyeler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Public Methods"
-msgstr "Açık Yöntemler:"
+msgstr "Açık Metodlar"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
 msgstr "Açık Yöntemler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "GUI Theme Items"
-msgstr "Arayüz Kalıbı Öğeleri:"
+msgstr "Grafik Arayüzü Tema Öğeleri"
 
 #: editor/editor_help.cpp
 msgid "GUI Theme Items:"
-msgstr "Arayüz Kalıbı Öğeleri:"
+msgstr "Grafik Arayüzü Tema Öğeleri:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr "İşaretler:"
+msgstr "Sinyaller:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Canlandırmalar"
+msgstr "Numaralandırmalar"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations:"
-msgstr "Canlandırmalar"
+msgstr "Numaralandırmalar:"
 
 #: editor/editor_help.cpp
 msgid "enum  "
 msgstr "enum…  "
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "Sabitler:"
+msgstr "Sabitler"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Sabitler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Açıklama:"
+msgstr "Açıklama"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Properties"
-msgstr "Özellikleri:"
+msgstr "Özellikler"
 
 #: editor/editor_help.cpp
 msgid "Property Description:"
@@ -1378,11 +1346,12 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Bu özellik için henüz bir açıklama yok. Bize [color=$color][url=$url]katkıda "
+"bulunarak[/url][/color] yardım edebilirsiniz!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods"
-msgstr "Yöntem Dizelgesi:"
+msgstr "Metodlar"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -1393,15 +1362,16 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Bu metod için henüz bir açıklama yok. Bize [color=$color][url=$url]katkıda "
+"bulunarak[/url][/color] yardım edebilirsiniz!"
 
 #: editor/editor_help.cpp
 msgid "Search Text"
 msgstr "Yazı Ara"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Output:"
-msgstr " Çıktı:"
+msgstr "Çıktı:"
 
 #: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/property_editor.cpp editor/script_editor_debugger.cpp
@@ -1415,7 +1385,7 @@ msgstr "Kaynak kaydedilirken sorun!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As.."
-msgstr "Kaynağı Başkaca Kaydet.."
+msgstr "Kaynağı Farklı Kaydet.."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1424,39 +1394,35 @@ msgstr "Anlıyorum.."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr "Dizeç yazmak için açılamıyor:"
+msgstr "Dosya yazmak için açılamıyor:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr "İstenilen dizeç formatı bilinmiyor:"
+msgstr "İstenilen dosya formatı bilinmiyor:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
 msgstr "Kaydedilirken sorun oluştu."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Can't open '%s'."
-msgstr "'..' üzerinde çalışılamıyor"
+msgstr "'%s' açılamıyor."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while parsing '%s'."
-msgstr "Kaydedilirken sorun oluştu."
+msgstr "'%s' ayrıştırılırken hata oluştu."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr ""
+msgstr "'%s' dosyası beklenmeyen bir biçimde bitiyor."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Missing '%s' or its dependencies."
-msgstr "Sahne '%s' bağımlılıkları koptu:"
+msgstr "'%s' veya bağımlılıkları eksik."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Error while loading '%s'."
-msgstr "Kaydedilirken sorun oluştu."
+msgstr "'%s' yüklenirken bir hata oluştu."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1471,9 +1437,8 @@ msgid "Creating Thumbnail"
 msgstr "Küçük Bediz Oluşturuluyor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a tree root."
-msgstr "Bu işlem bir sahne olmadan yapılamaz."
+msgstr "Bu işlem bir kök sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1502,19 +1467,19 @@ msgstr "TileSet kayıt edilirken sorun!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr "Tasarım kaydedilmeye çalışılırken sorun oluştu!"
+msgstr "Yerleşim Düzeni kaydedilmeye çalışılırken sorun oluştu!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "Önyüklü düzenleyici tasarımı geçersiz kılındı."
+msgstr "Önyüklü düzenleyici Yerleşim Düzeni geçersiz kılındı."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr "Tasarım adı bulunamadı!"
+msgstr "Yerleşim Düzeni adı bulunamadı!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Önyüklü tasarım temel ayarlara onarıldı."
+msgstr "Önyüklü Yerleşim Düzeni temel ayarlara onarıldı."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1522,18 +1487,26 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Bu kaynak içe aktarılmış bir sahneye ait, yani üzerinde düzenleme "
+"yapılamaz.\n"
+"Lütfen, bu iş akışını daha iyi anlamak için dökümantasyondaki sahneleri içe "
+"aktarma kısmını okuyunuz."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
+"Bu kaynak örneklenmiş veya devredilmiş bir sahneye ait.\n"
+"Yaptığınız değişiklikler geçerli sahneyi kaydederken saklanmayacaktır."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"Bu kaynak içe aktarılmış, yani üzerinde düzenleme yapılamaz. İçe aktarma "
+"panelinden ayarlarını değiştirin ve yeniden içe aktarın."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1542,6 +1515,11 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Bu sahne içe aktarılmış, yani yaptığınız değişiklikler saklanmayacak.\n"
+"Örnekleme veya devretme yapmak, üzerinde değişiklik yapmaya izin "
+"verecektir.\n"
+"Lütfen, bu iş akışını daha iyi anlamak için dökümantasyondaki sahneleri içe "
+"aktarma kısmını okuyunuz."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1549,6 +1527,9 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
+"Bu bir uzak nesne, yani yaptığınız değişiklikler saklanmayacaktır.\n"
+"Lütfen, bu iş akışını daha iyi anlamak için dökümantasyondaki sahneleri içe "
+"aktarma kısmını okuyunuz."
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1583,14 +1564,13 @@ msgid "There is no defined scene to run."
 msgstr "Çalıştırmak için herhangi bir sahne seçilmedi."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
 "Hiçbir ana sahne tanımlanmadı, birini seçiniz?\n"
-"Daha sonra \"uygulama\" kategorisinin altındaki \"Tasarı Ayarları\" ndan "
+"Daha sonra \"uygulama\" kategorisinin altındaki \"Proje Ayarları\" ndan "
 "değiştirebilirsiniz."
 
 #: editor/editor_node.cpp
@@ -1600,7 +1580,7 @@ msgid ""
 "category."
 msgstr ""
 "Seçilen sahne '%s' mevcut değil, geçerli bir tane seçin?\n"
-"Daha sonra \"uygulama\" kategorisinin altındaki \"Tasarı Ayarları\" ndan "
+"Daha sonra \"uygulama\" kategorisinin altındaki \"Proje Ayarları\" ndan "
 "değiştirebilirsiniz."
 
 #: editor/editor_node.cpp
@@ -1609,8 +1589,8 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Seçilen sahne '%s' bir sahne dizeci değil, geçerli bir tane seç?\n"
-"Daha sonra \"uygulama\" kategorisinin altındaki \"Tasarı Ayarları\" ndan "
+"Seçilen sahne '%s' bir sahne dosyası değil, geçerli bir tane seç?\n"
+"Daha sonra \"uygulama\" kategorisinin altındaki \"Proje Ayarları\" ndan "
 "değiştirebilirsiniz."
 
 #: editor/editor_node.cpp
@@ -1638,22 +1618,20 @@ msgid "Quick Open Script.."
 msgstr "Betiği Hızlı Aç.."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Close"
-msgstr "Dizeci Kaydet"
+msgstr "Kaydet & Kapat"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "Kapatmadan önce değişklikler buraya '%s' kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As.."
-msgstr "Sahneyi Başkaca Kaydet.."
+msgstr "Sahneyi Farklı Kaydet.."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "No"
-msgstr "Düğüm"
+msgstr "Hayır"
 
 #: editor/editor_node.cpp
 msgid "Yes"
@@ -1672,18 +1650,16 @@ msgid "Export Mesh Library"
 msgstr "Örüntü Betikevini Dışa Aktar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a root node."
-msgstr "Bu işlem bir sahne olmadan yapılamaz."
+msgstr "Bu işlem bir kök sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
 msgstr "Döşenti Dizi Dışa Aktar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a selected node."
-msgstr "Bu işlem bir sahne olmadan yapılamaz."
+msgstr "Bu işlem seçili bir sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1714,28 +1690,30 @@ msgid "Exit the editor?"
 msgstr "Düzenleyiciden çık?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Manager?"
-msgstr "Tasarı Yöneticisi"
+msgstr "Proje Yöneticisi Açılsın mı?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Quit"
-msgstr "Dizeci Kaydet"
+msgstr "Kaydet & Çık"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "Çıkmadan önce değişiklikler aşağıdaki sahneye(lere)  kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
+"Proje Yöneticisi açılmadan önce değişiklikler aşağıdaki sahneye(lere) "
+"kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"Bu seçenek  artık kullanılmıyor. Yenilemeye zorlayan durumlar bug olarak "
+"değerlendirilir. Lütfen bildirin."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -1744,30 +1722,34 @@ msgstr "Bir Ana Sahne Seç"
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
+"Şu eklenti etkinleştirilemedi: '%s' yapılandırma ayarlarının ayrıştırılması "
+"başarısız oldu."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
+msgstr "Eklentideki betik alanı bulunamıyor: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Yazı tipi %s yüklerken sorun oluştu"
+msgstr "Yoldaki eklenti betiği yüklenemedi: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Eklenti betiği '%s' yolundan yüklenemedi. İçerik tipi EditorPlugin değil."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
+msgstr "Eklenti betiği '%s' yolundan yüklenemedi. Betik araç modunda değil."
 
 #: editor/editor_node.cpp
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Sahne '% s' otomatik olarak içe aktarıldı, bu nedenle değiştirilemez.\n"
+"Değişiklik yapmak için miras alınmış yeni bir sahne oluşturulabilir."
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -1779,68 +1761,62 @@ msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"Sahne yüklenirken sorun oluştu, tasarı yolunun içinde olmalı. Sahneyi açmak "
-"için 'İçe Aktar' seçeneğini kullanın, ardından tasarının yolunun içine "
+"Sahne yüklenirken sorun oluştu, sahne proje yolunun içinde olmalı. Sahneyi "
+"açmak için 'İçe Aktar' seçeneğini kullanın, ardından projenin yolunun içine "
 "kaydedin."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr "Sahne '%s' bağımlılıkları koptu:"
+msgstr "Sahne '%s' kırık bağımlılıklara sahip:"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Clear Recent Scenes"
-msgstr "Kemikleri Temizle"
+msgstr "En Son Sahneleri Temizle"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr "Tasarımı Kaydet"
+msgstr "Yerleşim Düzenini Kaydet"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr "Tasarımı Sil"
+msgstr "Yerleşim Düzenini Sil"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "Önyüklü"
+msgstr "Varsayılan"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
 msgstr "Sahne Sekmesine Geç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files or folders"
-msgstr "%d daha çok dizeç(ler) veya dizin(ler)"
+msgstr "%d daha fazla dosyalar veya Klasörler"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "%d daha çok dizeç(ler)"
+msgstr "%d daha fazla klasörler"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files"
-msgstr "%d daha çok dizeç(ler)"
+msgstr "%d daha fazla dosyalar"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "Dock Pozisyonu"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr "Dikkat Dağıtmayan Biçim"
+msgstr "Dikkat Dağıtmayan Kip"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle distraction-free mode."
-msgstr "Dikkat Dağıtmayan Biçim"
+msgstr "Dikkat-Dağıtmayan Kipine geç."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Add a new scene."
-msgstr "Yeni izler ekle."
+msgstr "Yeni bir sahne ekle."
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -1859,13 +1835,12 @@ msgid "Previous tab"
 msgstr "Önceki sekme"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Filter Files.."
-msgstr "Hızlı Süzgeç Dizeçleri.."
+msgstr "Dosyaları Süz.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr "Sahne dizeçlerinin işlemleri."
+msgstr "Sahne dosyalarının işlemleri."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
@@ -1923,16 +1898,15 @@ msgstr "Sahneyi Eski Durumuna Çevir"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Türlü tasarı ya da sahne genişliğinde araçlar."
+msgstr "Çeşitli proje ya da sahne-çapında araçlar."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project"
-msgstr "Yeni Tasarı"
+msgstr "Proje"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr "Tasarı Ayarları"
+msgstr "Proje Ayarları"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
@@ -1948,7 +1922,7 @@ msgstr "Araçlar"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Tasarı Dizelgesine Git"
+msgstr "Proje Listesine Çık"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
@@ -1963,7 +1937,7 @@ msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
-"Verilen yürütülebilir dizeç, dışa aktarılırken veya dağıtıldığında, sorun "
+"Verilen yürütülebilir dosya, dışa aktarılırken veya dağıtıldığında, sorun "
 "ayıklanacak şekilde bu bilgisayarın IP'sine bağlanmaya çalışacaktır."
 
 #: editor/editor_node.cpp
@@ -1980,8 +1954,8 @@ msgid ""
 "option speeds up testing for games with a large footprint."
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, dışa aktarma veya dağıtma çok küçük bir "
-"çalıştırılabilir dizeç üretir.\n"
-"Dizeç düzeni, ağ üzerindeki düzenleyici tarafından tasarıdan sağlanacaktır.\n"
+"çalıştırılabilir dosya üretir.\n"
+"Dosya düzeni, ağ üzerindeki düzenleyici tarafından tasarıdan sağlanacaktır.\n"
 "Android'de daha hızlı verim için dağıtım uygulaması USB kablosunu "
 "kullanacak. Bu seçenek, ayak izi büyük olan oyunları denemeyi hızlandırır."
 
@@ -2022,7 +1996,7 @@ msgid ""
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, düzenleyicide bulunan sahnedeki "
 "değişiklikler çalışmakta olan oyununda çoğaltılır.\n"
-"Bir cihazda uzaktan kullanıldığında, ağ dizeç düzeni ile bu işlem daha "
+"Bir cihazda uzaktan kullanıldığında, ağ dosya sistemi ile bu işlem daha "
 "verimli olur."
 
 #: editor/editor_node.cpp
@@ -2038,13 +2012,12 @@ msgid ""
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, kaydedilen tüm betik çalışan oyunda yeniden "
 "yüklenecektir.\n"
-"Bir cihazda uzaktan kullanıldığında, ağ dizeç düzeni ile bu işlem daha "
+"Bir cihazda uzaktan kullanıldığında, ağ dosya sistemi ile bu işlem daha "
 "verimli olur."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "Düzenle"
+msgstr "Düzenleyici"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -2052,37 +2025,35 @@ msgstr "Düzenleyici Ayarları"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "Düzenleyici Tasarımı"
+msgstr "Düzenleyici Yerleşim Planı"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Tam Ekran Aç / Kapat"
 
 #: editor/editor_node.cpp editor/project_export.cpp
-#, fuzzy
 msgid "Manage Export Templates"
-msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+msgstr "Dışa Aktarım Şablonlarını Yönet"
 
 #: editor/editor_node.cpp
 msgid "Help"
-msgstr ""
+msgstr "Yardım"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Classes"
 msgstr "Bölütler"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Online Docs"
-msgstr "Belgeleri Kapat"
+msgstr "Çevrimiçi Belgeler"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "SSS"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
-msgstr ""
+msgstr "Sorun İzleyici"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2094,7 +2065,7 @@ msgstr "İlişkin"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Tasarıyı oynat."
+msgstr "Projeti oynat."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -2158,7 +2129,7 @@ msgstr "Bellekte yeni bir kaynak oluşturun ve onu düzenleyin."
 
 #: editor/editor_node.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr "Var olan bir kaynağı saklaktan yükleyin ve düzenleyin."
+msgstr "Var olan bir kaynağı diskten yükleyin ve düzenleyin."
 
 #: editor/editor_node.cpp
 msgid "Save the currently edited resource."
@@ -2166,7 +2137,7 @@ msgstr "Düzenlenen kaynağı kaydedin."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Save As.."
-msgstr "Başkaca Kaydet.."
+msgstr "Farklı Kaydet.."
 
 #: editor/editor_node.cpp
 msgid "Go to the previous edited object in history."
@@ -2185,9 +2156,8 @@ msgid "Object properties."
 msgstr "Nesne özellikleri."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Changes may be lost!"
-msgstr "Bediz Öbeğini Değiştir"
+msgstr "Değişiklikler Kaybolabilir!"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
@@ -2196,7 +2166,7 @@ msgstr "İçe Aktar"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr "DizeçDüzeni"
+msgstr "DosyaSistemi"
 
 #: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
@@ -2208,15 +2178,15 @@ msgstr "Çıktı"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "Kaydetme"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr "Kalıpları ZIP Dizecinden İçe Aktar"
+msgstr "Şablonları Zip Dosyasından İçeri Aktar"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr "Tasarıyı Dışa Aktar"
+msgstr "Projeyi Dışa Aktar"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
@@ -2235,9 +2205,8 @@ msgid "Open & Run a Script"
 msgstr "Aç & Bir Betik Çalıştır"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "New Inherited"
-msgstr "Yeni Kalıt Alınmış Sahne .."
+msgstr "Yeni Örnekleme"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
@@ -2248,43 +2217,36 @@ msgid "Select"
 msgstr "Seç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 2D Editor"
 msgstr "Düzenleyicide Aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open 3D Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "3B Düzenleyicide Aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Script Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "Betik Düzenleyiciyi Aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Asset Library"
-msgstr "Betikevini Dışa Aktar"
+msgstr "Malvarlığı Kütüphanesini Aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the next Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "Sonraki Düzenleyiciyi aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the previous Editor"
-msgstr "Düzenleyicide Aç"
+msgstr "Önceki Düzenleyiciyi Aç"
 
 #: editor/editor_plugin.cpp
-#, fuzzy
 msgid "Creating Mesh Previews"
-msgstr "Örüntü Betikevi Oluştur"
+msgstr "Mesh Önizlemeleri Oluşturuluyor"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail.."
-msgstr "Küçük Bediz.."
+msgstr "Küçük Resim.."
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2332,9 +2294,8 @@ msgid "Frame %"
 msgstr "Kare %"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Physics Frame %"
-msgstr "Sabit Kare %"
+msgstr "Fizik Kare %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
@@ -2354,13 +2315,15 @@ msgstr "Kare #:"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
-msgstr ""
+msgstr "Listeden aygıt seç"
 
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
+"Çalıştırılabilir dışa aktarma önayarı bu platform için bulunamadı.\n"
+"Lütfen dışa aktar menüsünden çalıştırılabilir bir önayar ekleyin."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -2372,7 +2335,7 @@ msgstr "Düzenlenmiş bir sahne zaten var."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr "Betik dizeci alınamadı:"
+msgstr "Betik dosyası alınamadı:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
@@ -2403,42 +2366,36 @@ msgid "Import From Node:"
 msgstr "Düğümden İçe Aktar:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Re-Download"
 msgstr "Yeniden Yükle"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uninstall"
-msgstr "Kur"
+msgstr "Kaldır"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "(Installed)"
-msgstr "Kur"
+msgstr "(Kurulu)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download"
-msgstr "Aşağı"
+msgstr "İndir"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(Mevcut Değil)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "(Current)"
-msgstr "Geçerli:"
+msgstr "(Şuanki)"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Retrieving mirrors, please wait.."
-msgstr "Bağlantı hatası, lütfen tekrar deneyiniz."
+msgstr "Aynalar alınıyor, lütfen bekleyin.."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "Şablon sürümünü kaldır '%s'?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2446,27 +2403,27 @@ msgstr "Dışa aktarım kalıplarının zipi açılamadı."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "Şablonların içinde geçersiz version.txt formatı."
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Invalid version.txt format inside templates. Revision is not a valid "
 "identifier."
 msgstr ""
+"Şablonların içinde geçersiz version.txt formatı. Revizyon geçerli bir "
+"tanımlayıcı değil."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "Şablonların içinde version.txt bulunamadı."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error creating path for templates:\n"
-msgstr "Atlas kaydedilirken sorun oluştu:"
+msgstr "Şablonlar için yol oluşturulurken hata:\n"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Extracting Export Templates"
-msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+msgstr "Dışa Aktarım Şablonları Çıkartılıyor"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
@@ -2477,6 +2434,8 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
+"Bu sürüm için indirme bağlantıları bulunamadı. Doğrudan indirme sadece resmi "
+"dağıtımlar için mecut."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2509,223 +2468,193 @@ msgid "Failed:"
 msgstr "Başarısız:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't write file."
-msgstr "Karo Bulunamadı:"
+msgstr "Dosyaya yazılamıyor."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Complete."
-msgstr "İndirme Hatası"
+msgstr "İndirme Tamamlandı."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting url: "
-msgstr "Atlas kaydedilirken sorun oluştu:"
+msgstr "Url isteği hatası: "
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to Mirror.."
-msgstr "Bağlan..."
+msgstr "Aynaya bağlanılıyor.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Disconnected"
-msgstr "Bağlantıyı kes"
+msgstr "Bağlantı kesildi"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Resolving"
-msgstr "Kaydediliyor..."
+msgstr "Çözülüyor"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Resolve"
-msgstr "Çözümlenemedi."
+msgstr "Çözümlenemedi"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Connecting.."
-msgstr "Bağlan..."
+msgstr "Bağlanılıyor.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Conect"
-msgstr "Bağlanamadı."
+msgstr "Bağlanamadı"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connected"
-msgstr "Bağla"
+msgstr "Bağlı"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Requesting.."
-msgstr "Deneme"
+msgstr "İsteniyor.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Downloading"
-msgstr "Aşağı"
+msgstr "İndiriliyor"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connection Error"
-msgstr "Bağlan..."
+msgstr "Bağlantı Hatası"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "SSL Handshake Error"
-msgstr "Sorunları Yükle"
+msgstr "SSL El Sıkışma Hatası"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Current Version:"
-msgstr "Şu anki Sahne"
+msgstr "Şu Anki Sürüm:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Installed Versions:"
-msgstr "Yüklü Eklentiler:"
+msgstr "Yüklü Sürümler:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Install From File"
-msgstr "Tasarıyı Kur:"
+msgstr "Dosyadan Kur"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove Template"
-msgstr "Öğeyi Kaldır"
+msgstr "Şablonu Kaldır"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select template file"
-msgstr "Seçili dizeçleri sil?"
+msgstr "Şablon dosyası seç"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Export Template Manager"
-msgstr "Dışa Aktarım Kalıpları Yükleniyor"
+msgstr "Dışa Aktarım Şablonu Yöneticisi"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Templates"
-msgstr "Öğeyi Kaldır"
+msgstr "Şablonları İndir"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: "
-msgstr ""
+msgstr "Listeden ayna seç: "
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
 msgstr ""
-"file_type_cache.cch yazma için açılamıyor! Dizeç türü önbelleğe "
+"file_type_cache.cch yazma için açılamıyor! dosya türü önbelleğe "
 "kaydedilmiyor!"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
+msgstr "Gidilemiyor. '%s' bu dosya sisteminde bulunamadı!"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails"
-msgstr ""
+msgstr "Öğeleri küçük resim ızgarası şeklinde göster"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a list"
-msgstr ""
+msgstr "Öğeleri liste olarak göster"
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "\n"
 "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
+"\n"
+"Durum: Dosya içe aktarma başarısız oldu. Lütfen dosyayı onarın ve tekrar içe "
+"aktarın."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move/rename resources root."
-msgstr "Kaynak yazı tipi yüklenemiyor / işlenemiyor."
+msgstr "Kaynakların kökü taşınamaz/yeniden adlandırılamaz."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Cannot move a folder into itself.\n"
-msgstr "Bir dizeç kendisi üzerine içe aktaramıyor:"
+msgstr "Bir klasör kendisinin içine taşınamaz.\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Error moving:\n"
-msgstr "İçe aktarırken sorun:"
+msgstr "Taşıma Hatası:\n"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Unable to update dependencies:\n"
-msgstr "Sahne '%s' bağımlılıkları koptu:"
+msgstr "Bağımlılıklar güncellenemedi:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
-msgstr ""
+msgstr "İsim sağlanmadı"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
+msgstr "Sağlanan isim geçersiz karakterler içeriyor"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "No name provided."
-msgstr "Yeniden Adlandır ya da Taşı.."
+msgstr "Sağlanan isim yok."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Name contains invalid characters."
-msgstr "Geçerli damgalar:"
+msgstr "İsim geçersiz karkterler içeriyor."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "A file or folder with this name already exists."
-msgstr "Öbek adı zaten var!"
+msgstr "Bu isimde zaten bir dosya ve ya klasör mevcut."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Renaming file:"
-msgstr "Değişkeni Yeniden Adlandır"
+msgstr "Dosya yeniden-adlandırma:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Renaming folder:"
-msgstr "Düğümü Yeniden Adlandır"
+msgstr "Klasör yeniden-adlandırma:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Expand all"
-msgstr "Ataya genişletin"
+msgstr "Hepsini genişlet"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "Hepsini daralt"
 
 #: editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr "Dizeç Yolunu Tıpkıla"
+msgstr "Dosya Yolunu Tıpkıla"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Rename.."
-msgstr "Yeniden Adlandır"
+msgstr "Yeniden Adlandır.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To.."
 msgstr "Şuraya Taşı.."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Folder.."
-msgstr "Dizin Oluştur"
+msgstr "Yeni Klasör.."
 
 #: editor/filesystem_dock.cpp
 msgid "Show In File Manager"
-msgstr "Dizeç Yöneticisinde Göster"
+msgstr "Dosya Yöneticisinde Göster"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -2749,7 +2678,7 @@ msgstr "Sıradaki Dizin"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr "Dizeç Düzenini Yeniden Tara"
+msgstr "Dosya Düzenini Yeniden Tara"
 
 #: editor/filesystem_dock.cpp
 msgid "Toggle folder status as Favorite"
@@ -2764,6 +2693,8 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"Dosyalar Taranıyor,\n"
+"Lütfen Bekleyiniz.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2783,47 +2714,44 @@ msgid "Remove from Group"
 msgstr "Öbekten Kaldır"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import as Single Scene"
-msgstr "Sahneyi İçe Aktarıyor..."
+msgstr "Tek Bir Sahne Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import with Separate Animations"
-msgstr "Canlandırmaları İçe Aktar.."
+msgstr "Ayrı Animasyonlar Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "Ayrı Materyaller Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "Ayrı Nesneler Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "Ayrı Nesneler+Materyaller Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "Ayrı Nesneler+Animasyonlar Şekline İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "Ayrı Materyaller+Animasyonlar Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "Ayrı Nesneler+Materyaller+Animasyonlar Şeklinde İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Import as Multiple Scenes"
-msgstr "3B Sahneyi İçe Aktar"
+msgstr "Çoklu Sahne Olarak İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "Çoklu Sahneler+Materyaller olarak İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
@@ -2840,17 +2768,17 @@ msgstr "Çalışan Özel Betik.."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
-msgstr "İçe aktarma sonrası betik dizeci yüklenemedi:"
+msgstr "İçe aktarma sonrası betik dosyası yüklenemedi:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
-"İçe aktarma işlemi sonrası için geçersiz/bozuk betik dizeci (konsolu "
+"İçe aktarma işlemi sonrası için geçersiz/bozuk betik dosyası (konsolu "
 "denetleyin):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr "İçe aktarma sonrası betik dizeci çalıştırılırken sorun oluştu:"
+msgstr "İçe aktarma sonrası betik dosyası çalıştırılırken sorun oluştu:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving.."
@@ -2858,28 +2786,25 @@ msgstr "Kaydediliyor..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "'%s' için Varsayılanı Ayarla"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "'%s' İçin Varsayılanı Temizle"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid " Files"
-msgstr "Dizeç"
+msgstr " Dosyalar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Import As:"
-msgstr "İçe Aktar"
+msgstr "Şu Şekilde İçe Aktar:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset.."
 msgstr "Ön ayar.."
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Reimport"
 msgstr "Yeniden İçe Aktar"
 
@@ -2889,11 +2814,11 @@ msgstr "MultiNode Kur"
 
 #: editor/node_dock.cpp
 msgid "Groups"
-msgstr "Öbekler"
+msgstr "Gruplar"
 
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr "İşaretleri ve Öbekleri düzenlemek için bir Düğüm seçin."
+msgstr "Sinyalleri ve Grupları düzenlemek için bir Düğüm seçin."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -2907,9 +2832,8 @@ msgid "Edit Poly"
 msgstr "Çokluyu Düzenleyin"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Insert Point"
-msgstr "Girdileme"
+msgstr "Nokta Yerleştir"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/collision_polygon_editor_plugin.cpp
@@ -2922,9 +2846,8 @@ msgid "Remove Poly And Point"
 msgstr "Çokluyu ve Noktayı Kaldır"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Create a new polygon from scratch"
-msgstr "Sıfırdan yeni bir çokgen oluşturun."
+msgstr "Sıfırdan yeni bir çokgen oluşturun"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -2933,11 +2856,14 @@ msgid ""
 "Ctrl+LMB: Split Segment.\n"
 "RMB: Erase Point."
 msgstr ""
+"Varolan çokgeni düzenle:\n"
+"FareSolTık: Noktayı Taşı.\n"
+"Ctrl+FareSolTık: Parça Ayır.\n"
+"FareSağTık: Noktayı Sil."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Delete points"
-msgstr "Noktayı Sil"
+msgstr "Noktaları sil"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2945,43 +2871,42 @@ msgstr "KendindenOynatmayı Aç/Kapat"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr "Yeni Canlandırma Adı:"
+msgstr "Yeni Animasyon Adı:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr "Yeni Canlandırma"
+msgstr "Yeni Animasyon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr "Canlandırmanın Adını Değiştir:"
+msgstr "Animasyonun Adını Değiştir:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Animation?"
-msgstr "Canlandırmayı İkile"
+msgstr "Animasyon Silinsin mi?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr "Canlandırmayı Kaldır"
+msgstr "Animasyonu Kaldır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Invalid animation name!"
-msgstr "SORUN: Geçersiz canlandırma adı!"
+msgstr "SORUN: Geçersiz animasyon adı!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr "SORUN: Bu canlandırma adı zaten var!"
+msgstr "SORUN: Bu animasyon adı zaten var!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr "Canlandırmayı Yeniden Adlandır"
+msgstr "Animasyonu Yeniden Adlandır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Canlandırma Ekle"
+msgstr "Animasyon Ekle"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -2993,79 +2918,79 @@ msgstr "Karışım Süresini Değiştir"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr "Canlandırma Yükle"
+msgstr "Animasyon Yükle"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr "Canlandırmayı İkile"
+msgstr "Animasyonu Çoğalt"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to copy!"
-msgstr "SORUN: Tıpkılamak için bir canlandırma yok!"
+msgstr "SORUN: Tıpkılamak için bir animasyon yok!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation resource on clipboard!"
-msgstr "SORUN: Bellemde canlandırma kaynağı yok!"
+msgstr "SORUN: Bellemde animasyon kaynağı yok!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr "Yapıştırılan Canlandırma"
+msgstr "Yapıştırılan Animasyon"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr "Canlandırmayı Yapıştır"
+msgstr "Animasyonu Yapıştır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: No animation to edit!"
-msgstr "SORUN: Düzenlemek için bir canlandırma yok!"
+msgstr "SORUN: Düzenlemek için bir animasyon yok!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Seçilen canlandırmayı geçerli konumdan geriye doğru oynat. (A)"
+msgstr "Seçilen animasyonu geçerli konumdan geriye doğru oynat. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Seçilen canlandırmayı geriye doğru oynat. (Shift + A)"
+msgstr "Seçilen animasyonu geriye doğru oynat. (Shift + A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr "Canlandırmayı oynatmayı durdur. (S)"
+msgstr "Animasyonu oynatmayı durdur. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr "Seçilen canlandırmayı başlangıç anından oynat. (ÜstKrkt + D)"
+msgstr "Seçilen animasyonu başlangıç anından oynat. (ÜstKrkt + D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr "Seçilen calandırmayı geçerli konumdan oynat. (D)"
+msgstr "Seçilen animasyonu geçerli konumdan oynat. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr "Canlandırma konumu (saniye olarak)."
+msgstr "Animasyon konumu (saniye olarak)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr "Düğüm için canlandırma arka oynatmasını ölçeklendir."
+msgstr "Düğüm için animasyon arka oynatmasını ölçeklendir."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create new animation in player."
-msgstr "Oynatıcıda yeni canlandırma oluşturun."
+msgstr "Oynatıcıda yeni animasyon oluşturun."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load animation from disk."
-msgstr "Canlandırmayı saklaktan yükle."
+msgstr "Animasyonu diskten yükle."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load an animation from disk."
-msgstr "Bir canlandırmayı saklaktan yükle."
+msgstr "Bir animasyonu diskten yükle."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save the current animation"
-msgstr "Geçerli canlandırmayı kaydet"
+msgstr "Geçerli animasyonu kaydet"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr "Oyuncudaki canlandırmaların dizelgesini görüntüle."
+msgstr "Oynatıcıda animasyonların listesini görüntüle."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
@@ -3077,26 +3002,26 @@ msgstr "Amaçlanan Karışma Zamanlarını Düzenle"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr "Canlandırma Araçları"
+msgstr "Animasyon Araçları"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
-msgstr "Canlandırmayı Tıpkıla"
+msgstr "Animasyonu Tıpkıla"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr "Yeni Canlandırma Oluştur"
+msgstr "Yeni Animasyon Oluştur"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr "Canlandırma Adı:"
+msgstr "Animasyon Adı:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
-msgstr "Sorun!"
+msgstr "Hata!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
@@ -3108,21 +3033,20 @@ msgstr "Sonraki (Kendiliğinden Kuyruğu):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr "Çapraz Canlandırma Karışma Süreleri"
+msgstr "Çapraz-Animasyon Karışma Süreleri"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr "Canlandırma"
+msgstr "Animasyon"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "New name:"
 msgstr "Yeni ad:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filters"
-msgstr "Düğüm Süzgeçlerini Düzenle"
+msgstr "Süzgeçleri Düzenle"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -3204,15 +3128,15 @@ msgstr "Girişi Sil"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr "Canlandırma ağacı geçerlidir."
+msgstr "Animasyon ağacı geçerlidir."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr "Canlandırma ağacı geçersizdir."
+msgstr "Animasyon ağacı geçersizdir."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Canlandırma Düğümü"
+msgstr "Animasyon Düğümü"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "OneShot Node"
@@ -3248,7 +3172,7 @@ msgstr "Geçiş Düğümü"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Import Animations.."
-msgstr "Canlandırmaları İçe Aktar.."
+msgstr "Animasyonları İçe Aktar.."
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Edit Node Filters"
@@ -3260,7 +3184,7 @@ msgstr "Süzgeçler..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr "Özgür"
+msgstr "Ücretsiz"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3296,7 +3220,7 @@ msgstr "İstem Başarısız, çok fazla yönlendirme"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Kötü indirme sağlaması, dosya üzerinde oynama yapılmış."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -3319,14 +3243,12 @@ msgid "Fetching:"
 msgstr "Alınıyor:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Resolving.."
-msgstr "Kaydediliyor..."
+msgstr "Çözümleniyor..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Error making request"
-msgstr "Kaynak kaydedilirken sorun!"
+msgstr "İstek yapma hatası"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -3400,7 +3322,7 @@ msgstr "Deneme"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr "Varlıkların ZIP Dizeci"
+msgstr "Varlıkların ZIP Dosyası"
 
 #: editor/plugins/camera_editor_plugin.cpp
 msgid "Preview"
@@ -3438,36 +3360,31 @@ msgstr "Eylemi Taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
-msgstr ""
+msgstr "Dikey kılavuzu taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new vertical guide"
-msgstr "Yeni Betik Oluştur"
+msgstr "Yeni dikey kılavuz oluştur"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove vertical guide"
-msgstr "Değişkeni Kaldır"
+msgstr "Dikey kılavuzu kaldır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move horizontal guide"
-msgstr "Noktayı Eğriye Taşı"
+msgstr "Yatay kılavuzu taşı"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new horizontal guide"
-msgstr "Yeni Betik Oluştur"
+msgstr "Yeni yatay kılavuz oluştur"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove horizontal guide"
-msgstr "Geçersiz açarları kaldır"
+msgstr "Yatay kılavuzu kaldır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
-msgstr ""
+msgstr "Yeni yatay ve dikey kılavuzlar oluştur"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
@@ -3478,14 +3395,12 @@ msgid "Edit CanvasItem"
 msgstr "CanvasItem Düzenle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Anchors only"
-msgstr "Çapa"
+msgstr "Sadece çapalar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Anchors and Margins"
-msgstr "Çapaları Değiştir"
+msgstr "Çapa ve Kenar Boşluklarını Değiştir"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
@@ -3497,7 +3412,7 @@ msgstr "Duruşu Yapıştır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Biçim Seç"
+msgstr "Kip Seç"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -3515,7 +3430,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
-msgstr "Alt + RMB: Derin dizelge seçimi"
+msgstr "Alt + RMB: Derin liste seçimi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Mode"
@@ -3531,7 +3446,7 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Tıklanan konumdaki tüm nesnelerin bir dizelgesini gösterin\n"
+"Tıklanan konumdaki tüm nesnelerin bir listesini gösterin\n"
 "(Seçme biçiminde Alt + RMB ile özdeş)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3543,9 +3458,8 @@ msgid "Pan Mode"
 msgstr "Kaydırma Biçimi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggles snapping"
-msgstr "Kesme Noktası Aç/Kapat"
+msgstr "Yapılmayı aç/kapat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3553,23 +3467,20 @@ msgid "Use Snap"
 msgstr "Yapışma Kullan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snapping options"
-msgstr "Canlandırma Seçenekleri"
+msgstr "Yapışma ayarları"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to grid"
-msgstr "Yapışma Biçimi:"
+msgstr "Izgaraya yapış"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
 msgstr "Döndürme Yapışması Kullan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Configure Snap..."
-msgstr "Yapışmayı Yapılandır.."
+msgstr "Yapışmayı Yapılandır..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -3577,33 +3488,31 @@ msgstr "Göreceli Yapış"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr "Nokta Yapışması Kullan"
+msgstr "Piksel Yapışması Kullan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart snapping"
-msgstr ""
+msgstr "Akıllı yapışma"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to parent"
-msgstr "Ataya genişletin"
+msgstr "Ebeveyne yapıştır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr ""
+msgstr "Düğüm çapasına yapıştır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr ""
+msgstr "Düğüm kenalarına yapıştır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr ""
+msgstr "Diğer düğümlere yapıştır"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to guides"
-msgstr "Yapışma Biçimi:"
+msgstr "Kılavuzlara yapış"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3654,19 +3563,16 @@ msgid "Show Grid"
 msgstr "Izgarayı Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show helpers"
-msgstr "Kemikleri Göster"
+msgstr "Yardımcıları Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show rulers"
-msgstr "Kemikleri Göster"
+msgstr "Cetvelleri göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show guides"
-msgstr "Kemikleri Göster"
+msgstr "Kılavuzları göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3677,21 +3583,20 @@ msgid "Frame Selection"
 msgstr "Kafes Seçimi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Layout"
-msgstr "Tasarımı Kaydet"
+msgstr "Yerleşim Düzeni"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Keys"
-msgstr "Açarlar Gir"
+msgstr "Anahtarları Gir"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Açar Gir"
+msgstr "Anahtar Gir"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
-msgstr "Açar Gir (Var Olan İzler)"
+msgstr "Anahtar Gir (Var Olan İzler)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
@@ -3703,20 +3608,19 @@ msgstr "Duruşu Temizle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag pivot from mouse position"
-msgstr ""
+msgstr "Pivotu Fare pozisyonundan sürükle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Set pivot at mouse position"
-msgstr "Eğri Çıkış Konumunu Ayarla"
+msgstr "Pivotu fare pozisyonunda ayarla"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "Izgara adımlarını 2 ile çarp"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "Izgara basamağını 2'ye böl"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3744,7 +3648,7 @@ msgstr "Tamam :("
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "Çocuğun örnek alacağı bir ata yok."
+msgstr "Çocuğun örnek alacağı bir ebeveyn yok."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -3795,82 +3699,71 @@ msgstr "Sahneden Güncelle"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat0"
-msgstr ""
+msgstr "Düz0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat1"
-msgstr ""
+msgstr "Düz1"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Ease in"
 msgstr "Açılma"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Ease out"
 msgstr "Kararma"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
-msgstr ""
+msgstr "Yumuşakgeçiş"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Modify Curve Point"
-msgstr "Eğri Haritasını Değiştir"
+msgstr "Eğri Noktasını Değiştir"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Modify Curve Tangent"
-msgstr "Eğri Haritasını Değiştir"
+msgstr "Eğri Tanjantını Değiştir"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Curve Preset"
-msgstr "Kaynak Yükle"
+msgstr "Eğri Önayarı Yükle"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add point"
-msgstr "Giriş Ekle"
+msgstr "Nokta Ekle"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove point"
-msgstr "Yol Noktasını Kaldır"
+msgstr "Noktayı kaldır"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Left linear"
-msgstr "Doğrusal"
+msgstr "Sol doğrusal"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right linear"
-msgstr "Sağdan Görünüm"
+msgstr "Sağ doğrusal"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load preset"
-msgstr "Kaynak Yükle"
+msgstr "Önayar yükle"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Curve Point"
 msgstr "Yol Noktasını Kaldır"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
-msgstr ""
+msgstr "Eğri Doğrusal Tanjantını Aç/Kapa"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr ""
+msgstr "Tanjantları tek tek düzenlemek için Shift'e basılı tut"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr ""
+msgstr "GI Prob Pişir"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
@@ -3898,6 +3791,8 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
+"Bu düğümde OccluderPolygon2D kaynağı yok.\n"
+"Oluştur ve bir tane ata?"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -4104,73 +3999,64 @@ msgid "Bake!"
 msgstr "Pişir!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake the navigation mesh.\n"
-msgstr "Yönlendirici Örüntüsü Oluştur"
+msgstr "Yönlendirici örüntüsünü pişir.\n"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Clear the navigation mesh."
-msgstr "Yönlendirici Örüntüsü Oluştur"
+msgstr "Yönlendirici örüntüsünü temizle."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "Konfigürasyon Ayarlanıyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "Izgara boyutu hesaplanıyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Creating heightfield..."
-msgstr "Işık Sekağacı Oluşturuyor"
+msgstr "Yükseklik-alanı Oluşturuluyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Marking walkable triangles..."
-msgstr "Çevirilebilir Dizeler.."
+msgstr "Yürünebilir üçgenler işaretleniyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr ""
+msgstr "Aralıksız yükseklialanı inşa ediliyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
-msgstr ""
+msgstr "Yürünebilir alan aşındırılıyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Partitioning..."
-msgstr "Uyarı"
+msgstr "Bölümleniyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Creating contours..."
-msgstr "Sekağaç Dokusu Oluşturuyor"
+msgstr "Konturlar oluşturuluyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Creating polymesh..."
-msgstr "Anahat Örüntüsü Oluştur.."
+msgstr "Çoklu-örüntü oluşturuluyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Converting to native navigation mesh..."
-msgstr "Yönlendirici Örüntüsü Oluştur"
+msgstr "Yerli yönlendirici örüntüsüne dönüştürülüyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr ""
+msgstr "Navigasyon Örüntüsü Üreteci Kurulumu:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
-#, fuzzy
 msgid "Parsing Geometry..."
-msgstr "Uzambilgisini Ayrıştırıyor"
+msgstr "Geometri Ayrıştırılıyor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "Oldu!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
@@ -4182,13 +4068,12 @@ msgstr "Yayma Örtecini Temizle"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generating AABB"
-msgstr "AABB Üret"
+msgstr "AABB Üretimi"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
-msgstr ""
+msgstr "Nokta sadece ParçacıkMateryal işlem materyalinin içinde ayarlanabilir"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
@@ -4204,7 +4089,7 @@ msgstr "Yayma Örtecini Ayarla"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "Görünebilirlik Dikdörtgeni Üret"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -4212,9 +4097,8 @@ msgstr "Yayma Örtecini Yükle"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Particles"
-msgstr "Başucu"
+msgstr "Parçacıklar"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -4222,24 +4106,20 @@ msgstr "Üretilen Nokta Say:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generation Time (sec):"
-msgstr "Ortalama Zaman (sn)"
+msgstr "Nesil Süresi (sn):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Mask"
-msgstr "Yayma Örtecini Ayarla"
+msgstr "Emisyon Maskesi"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Capture from Pixel"
-msgstr "Sahneden Oluştur"
+msgstr "Pikselden Yakala"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Colors"
-msgstr "Yayma Konumları:"
+msgstr "Emisyon Renkleri"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
@@ -4251,7 +4131,7 @@ msgstr "Düğüm uzambilgisi (yüzler) içermiyor."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "Bir işlemci malzeme türü 'ParticlesMaterial' gereklidir."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -4266,14 +4146,12 @@ msgid "Generate AABB"
 msgstr "AABB Üret"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Create Emission Points From Mesh"
-msgstr "Örüntüden Yayıcı Oluştur"
+msgstr "Örüntüden Emisyon Noktaları Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Create Emission Points From Node"
-msgstr "Düğümden Yayıcı Oluştur"
+msgstr "Düğümden Emisyon Noktaları Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Clear Emitter"
@@ -4284,46 +4162,40 @@ msgid "Create Emitter"
 msgstr "Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Points:"
-msgstr "Yayma Konumları:"
+msgstr "Emisyon Noktaları:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Points"
-msgstr "Yüzey %d"
+msgstr "Yüzey Noktaları"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
-msgstr ""
+msgstr "Yüzey Noktaları+Normal (Yönlendirilmiş)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Oylum"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source: "
-msgstr "Yayma Dolumu:"
+msgstr "Emisyon Kaynağı: "
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generate Visibility AABB"
-msgstr "AABB Üret"
+msgstr "Görünebilirlik AABB'si Üret"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
 msgstr "Noktayı Eğriden Kaldır"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Out-Control from Curve"
-msgstr "Eğriye Denetimsiz Taşı"
+msgstr "Çıkış-Kontrolünü Eğriden Kaldır"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove In-Control from Curve"
-msgstr "Noktayı Eğriden Kaldır"
+msgstr "Giriş-Kontrolünü Eğriden Kaldır"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4388,20 +4260,17 @@ msgstr "Eğriyi Kapat"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
-msgstr "Eğrisel Nokta #"
+msgstr "Eğri Noktası #"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Point Position"
 msgstr "Eğri Noktası Konumu Ayarla"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve In Position"
 msgstr "Eğriyi Konumda Ayarla"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Out Position"
 msgstr "Eğri Çıkış Konumunu Ayarla"
 
@@ -4414,14 +4283,12 @@ msgid "Remove Path Point"
 msgstr "Yol Noktasını Kaldır"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Out-Control Point"
-msgstr "Eğriye Denetimsiz Taşı"
+msgstr "Çıkış-Kontrol Noktasını Kaldır"
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Remove In-Control Point"
-msgstr "Eğriye Denetimli Taşı"
+msgstr "Giriş-Kontrol Noktasını Kaldır"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -4530,19 +4397,20 @@ msgid "Paste"
 msgstr "Yapıştır"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Recent Files"
-msgstr "Kemikleri Temizle"
+msgstr "En Son Dosyaları Temizle"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Close and save changes?\n"
 "\""
 msgstr ""
+"Kapa ve değişiklikleri kaydet?\n"
+"\""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
-msgstr "Kalıp kaydedilirken sorun oluştu"
+msgstr "Tema kaydedilirken sorun oluştu"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
@@ -4550,7 +4418,7 @@ msgstr "Kaydetme sorunu"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing theme"
-msgstr "Kalıp içe aktarılırken sorun oluştu"
+msgstr "Tema içe aktarılırken sorun oluştu"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error importing"
@@ -4562,16 +4430,15 @@ msgstr "Kalıbı İçe Aktar"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
-msgstr "Kalıbı Başkaca Kaydet.."
+msgstr "Temayı Farklı Kaydet.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " Sınıf Referansı"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Sort"
-msgstr "Sırala:"
+msgstr "Sırala"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
@@ -4593,7 +4460,7 @@ msgstr "Önceki betik"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
-msgstr "Dizeç"
+msgstr "Dosya"
 
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "New"
@@ -4625,7 +4492,7 @@ msgstr "Kalıbı Kaydet"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As"
-msgstr "Kalıbı Başkaca Kaydet"
+msgstr "Temayı Farklı Kaydet"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -4637,16 +4504,15 @@ msgstr "Tümünü Kapat"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "Diğer Sekmeleri Kapat"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
 msgstr "Çalıştır"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Scripts Panel"
-msgstr "Beğenileni Aç / Kapat"
+msgstr "Betikler Panelini Aç/Kapa"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4677,17 +4543,15 @@ msgstr "Devam Et"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
-msgstr "Kusurayıkları Açık Tut"
+msgstr "Hata Ayıklayıcıyı Açık Tut"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Debug with external editor"
-msgstr "Düzenleyicide Aç"
+msgstr "Harici düzenleyici ile hata ayıkla"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open Godot online documentation"
-msgstr "Başvuru belgelerinde arama yap."
+msgstr "Çevrimiçi Godot dökümanlarını aç"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the class hierarchy."
@@ -4706,9 +4570,8 @@ msgid "Go to next edited document."
 msgstr "Düzenlenmiş bir sonraki belgeye git."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Discard"
-msgstr "Ayrık"
+msgstr "Çıkart"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -4719,7 +4582,7 @@ msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
 msgstr ""
-"Aşağıdaki dizeçler saklakta daha yeni.\n"
+"Aşağıdaki dosyalar diskte daha yeni.\n"
 "Hangi eylem yapılsın?:"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -4732,39 +4595,38 @@ msgstr "Yeniden Kaydet"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
-msgstr "Kusurayıklar"
+msgstr "Hata Ayıklayıcı"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
-"Gömülü betik dizeçleri yalnızca ait oldukları sahne yüklendiğinde "
+"Gömülü betik dosyaları yalnızca ait oldukları sahne yüklendiğinde "
 "düzenlenebilirler"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
-msgstr ""
+msgstr "Sadece dosya sisteminden kaynaklar bırakılabilir."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
 msgstr "Renk Seç"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Case"
-msgstr "Bedizleri Dönüştürüyor"
+msgstr "Büyük/Küçük Harf Dönüştür"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Uppercase"
-msgstr ""
+msgstr "Büyük harf"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lowercase"
-msgstr ""
+msgstr "Küçük harf"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr ""
+msgstr "Büyük harfe çevirme"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -4783,9 +4645,8 @@ msgid "Select All"
 msgstr "Hepsini seç"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Delete Line"
-msgstr "Noktayı Sil"
+msgstr "Satırı Sil"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -4804,21 +4665,20 @@ msgid "Clone Down"
 msgstr "Aşağıya Eşle"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold Line"
-msgstr "Dizeye Git"
+msgstr "Satırı Katla"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold Line"
-msgstr ""
+msgstr "Satırı Genişlet"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr ""
+msgstr "Tüm Satırları Daralt"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr ""
+msgstr "Tüm Satırları Genişlet"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4830,11 +4690,11 @@ msgstr "İzleyenin Boşluklarını Kırp"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Spaces"
-msgstr ""
+msgstr "Girintileri Boşluklara Dönüştür"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Tabs"
-msgstr ""
+msgstr "Girintileri Sekmelere Dönüştür"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -4858,14 +4718,12 @@ msgid "Goto Previous Breakpoint"
 msgstr "Önceki Kesme Noktasına Git"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert To Uppercase"
-msgstr "Şuna Dönüştür.."
+msgstr "Büyük Harfe Dönüştür"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert To Lowercase"
-msgstr "Şuna Dönüştür.."
+msgstr "Küçük Harfe Dönüştür"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
@@ -4889,7 +4747,7 @@ msgstr "Bağlamsal Yardım"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr ""
+msgstr "Gölgelendirici"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
@@ -4997,7 +4855,7 @@ msgstr "Gölgelendirici Çizge Düğümünü Taşı"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Duplicate Graph Node(s)"
-msgstr "Çizge Düğüm(lerini) İkile"
+msgstr "Çizge Düğüm(lerini) Çoğalt"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Delete Shader Graph Node(s)"
@@ -5044,14 +4902,12 @@ msgid "View Plane Transform."
 msgstr "Düzlem Dönüşümünü Görüntüle."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scaling: "
-msgstr "Ölçekle:"
+msgstr "Ölçekleniyor: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translating: "
-msgstr "Çeviriler:"
+msgstr "Çeviriliyor: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -5103,43 +4959,39 @@ msgstr "Sağ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
-msgstr "Açar ekleme devre dışı (eklenmiş açar yok)."
+msgstr "Anahtar ekleme devre dışı (eklenmiş anahtar yok)."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Animation Key Inserted."
-msgstr "Canlandırma Açarı Eklendi."
+msgstr "Animasyon Anahtarı Eklendi."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr ""
+msgstr "Çizilmiş Nesneler"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Material Changes"
-msgstr "Değişiklikleri güncelle"
+msgstr "Materyal Değişiklikleri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes"
-msgstr "Değişiklikleri güncelle"
+msgstr "Shader Değişiklikleri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Surface Changes"
-msgstr "Değişiklikleri güncelle"
+msgstr "Yüzey Değişiklikleri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls"
-msgstr ""
+msgstr "Çizim Çağrıları"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Vertices"
-msgstr "Başucu"
+msgstr "Köşenoktalar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align with view"
@@ -5158,95 +5010,86 @@ msgid "Display Overdraw"
 msgstr "Abartı Görüntüle"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Display Unshaded"
 msgstr "Gölgesiz Görüntüle"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Environment"
-msgstr "Çevre"
+msgstr "Ortamı Göster"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Gizmos"
-msgstr "Zımbırtılar"
+msgstr "Gizmoları Göster"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
-msgstr ""
+msgstr "Bilgi Göster"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View FPS"
-msgstr "Dosyaları Görüntüle"
+msgstr "FPS'yi Göster"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Half Resolution"
-msgstr "Seçimi Ölçekle"
+msgstr "Yarım Çözünürlük"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
 msgstr "Ses Dinleyici"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Doppler Enable"
-msgstr "Etkin"
+msgstr "Çoğaltıcı Aktif"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr ""
+msgstr "Serbestbakış Sola"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr ""
+msgstr "Serbestbakış Sağa"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Forward"
-msgstr "İleri Git"
+msgstr "Serbestbakış İleri"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Backwards"
-msgstr "Terse doğru"
+msgstr "Serbestbakış Geriye"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr ""
+msgstr "Serbestbakış Yukarı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Freelook Down"
-msgstr "Tekerlek Aşağı."
+msgstr "Serbestbakış Aşağı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr ""
+msgstr "Serbestbakış Hız Değiştirici"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "preview"
-msgstr "Önizleme"
+msgstr "önizleme"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm İletişim Kutusu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Select Mode (Q)\n"
-msgstr "Biçim Seç"
+msgstr "Seçim Kipi (Q)\n"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Drag: Rotate\n"
 "Alt+Drag: Move\n"
 "Alt+RMB: Depth list selection"
-msgstr "Alt + RMB: Derin dizelge seçimi"
+msgstr ""
+"Sürükle: Döndür\n"
+"Alt+Sürükle: Taşı\n"
+"Alt+RMB: Derin liste seçimi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode (W)"
@@ -5290,7 +5133,7 @@ msgstr "Derinlik / Dikey Görünüme Değiştir"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
-msgstr "Canlandırma Açarı Ekle"
+msgstr "Animasyon Anahtarı Ekle"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
@@ -5305,29 +5148,24 @@ msgid "Align Selection With View"
 msgstr "Seçimi Görünüme Ayarla"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Select"
-msgstr "Seç"
+msgstr "Seçim Aracı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Move"
-msgstr "Taşı"
+msgstr "Taşıma Aracı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Rotate"
-msgstr "Ctrl: Döndür"
+msgstr "Döndürme Aracı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Scale"
-msgstr "Ölçekle:"
+msgstr "Ölçek Aracı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Freelook"
-msgstr "Tam Ekran Aç / Kapat"
+msgstr "Serbestbakış Aç / Kapat"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5339,7 +5177,7 @@ msgstr "Yapışmayı Yapılandır.."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
-msgstr "Yerel Konaçlar"
+msgstr "Yerel Koordlar"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog.."
@@ -5464,11 +5302,11 @@ msgstr "Boş Ekle"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Canlandırma Döngüsünü Değiştir"
+msgstr "Animasyon Döngüsünü Değiştir"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
-msgstr "Canlandırma FPS'sini Değiştir"
+msgstr "Animasyon FPS'sini Değiştir"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "(empty)"
@@ -5476,7 +5314,7 @@ msgstr "(boş)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animations"
-msgstr "Canlandırmalar"
+msgstr "Animasyonlar"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -5488,7 +5326,7 @@ msgstr "Döngü"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames"
-msgstr "Canlandırma Çerçeveleri"
+msgstr "Animasyon Çerçeveleri"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -5499,23 +5337,20 @@ msgid "Insert Empty (After)"
 msgstr "Boş Ekle (Sonra)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move (Before)"
-msgstr "Düğümleri Kaldır"
+msgstr "Taşı (Önce)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Move (After)"
-msgstr "Sola Taşı"
+msgstr "Taşı (Sonra)"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox Preview:"
 msgstr "StyleBox Önizleme:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Region Rect"
-msgstr "Doku Bölgesi"
+msgstr "Dikdörtgen Bölgesini Ayarla"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -5559,7 +5394,7 @@ msgstr "Doku Bölgesi Düzenleyicisi"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
-msgstr "Kalıbı dizece kaydedemiyoruz:"
+msgstr "Tema dosyaya kaydedilemiyor:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
@@ -5575,22 +5410,20 @@ msgid "Remove Item"
 msgstr "Öğeyi Kaldır"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Items"
-msgstr "Bölüt Öğelerini Kaldır"
+msgstr "Bütün Öğeleri Kaldır"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All"
-msgstr "Kaldır"
+msgstr "Tümünü Kaldır"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme.."
-msgstr ""
+msgstr "Tema düzenle.."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
-msgstr ""
+msgstr "Tema düzenleme menüsü."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5602,16 +5435,15 @@ msgstr "Bölüt Öğelerini Kaldır"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Template"
-msgstr "Boş Kalıp Oluştur"
+msgstr "Boş Şablon Oluştur"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
 msgstr "Boş Düzenleyici Kalıbı Oluştur"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create From Current Editor Theme"
-msgstr "Boş Düzenleyici Kalıbı Oluştur"
+msgstr "Mevcut Düzenleyici Temasından Oluştur"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -5687,7 +5519,6 @@ msgid "Color"
 msgstr "Renk"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Selection"
 msgstr "Seçimi Sil"
 
@@ -5696,18 +5527,16 @@ msgid "Paint TileMap"
 msgstr "TileMap'i Boya"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Line Draw"
-msgstr "Doğrusal"
+msgstr "Çizgi Çizimi"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
-msgstr ""
+msgstr "Dikdörtgen Boya"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Bucket Fill"
-msgstr "Kova"
+msgstr "Doldurma Kovası"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -5734,9 +5563,8 @@ msgid "Mirror Y"
 msgstr "Y'ye Aynala"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Paint Tile"
-msgstr "TileMap'i Boya"
+msgstr "Karo Boya"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -5787,28 +5615,24 @@ msgid "Error"
 msgstr "Sorun"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Runnable"
-msgstr "Etkin"
+msgstr "Koşturulabilir"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Delete patch '%s' from list?"
-msgstr "Girişi Sil"
+msgstr "'%s' yaması listeden silinsin mi?"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Delete preset '%s'?"
-msgstr "Seçili dizeçleri sil?"
+msgstr "'%s' önayarı silinsin mi?"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted: "
-msgstr ""
+msgstr "Bu platform için dışa aktarma şablonları eksik/bozulmuş: "
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Presets"
-msgstr "Ön ayar.."
+msgstr "Önayarlar"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add.."
@@ -5819,179 +5643,162 @@ msgid "Resources"
 msgstr "Kaynaklar"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export all resources in the project"
-msgstr "Tasarıdaki tüm kaynakları dışa aktarın."
+msgstr "Projedeki tüm kaynakları dışa aktarın"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export selected scenes (and dependencies)"
-msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)."
+msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export selected resources (and dependencies)"
-msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)."
+msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)"
 
 #: editor/project_export.cpp
 msgid "Export Mode:"
 msgstr "Dışa Aktarma Biçimi:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Resources to export:"
-msgstr "Dışa Aktarılacak Kaynaklar:"
+msgstr "Dışa aktarılacak kaynaklar:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"
 msgstr ""
-"Kaynak olmayan dizeçleri dışa aktarmak için kullanılan süzgeçler (virgülle "
-"ayrılmış, ör. * .json, * .txt):"
+"Kaynak olmayan dosyaları dışa aktarmak için kullanılan süzgeçler (virgülle "
+"ayrılmış, ör. * .json, * .txt)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
 msgstr ""
 "Dışa aktarma işleminden hariç tutulacak süzgeçler (virgülle ayrılmış, ör. * ."
-"json, * .txt):"
+"json, * .txt)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Patches"
-msgstr "Eşleşmeler:"
+msgstr "Yamalar"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Make Patch"
-msgstr "Amaçlanan Dizeç Yolu :"
+msgstr "Yama Yap"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Features"
-msgstr "Doku"
+msgstr "Özellikler"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
-msgstr ""
+msgstr "Özel (virgülle-ayrılmış):"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Feature List:"
-msgstr "Yöntem Dizelgesi:"
+msgstr "Özellik Listesi:"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
-msgstr "PCK/Zip Dizecini Dışa Aktar"
+msgstr "PCK/Zip Dışa Aktar"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
-msgstr ""
+msgstr "Bu platform için dışa aktarma şablonu eksik:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
-msgstr ""
+msgstr "Bu platform için dışa aktarma şablonu eksik/bozuk:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export With Debug"
-msgstr "Döşenti Dizi Dışa Aktar"
+msgstr "Hata Ayıklama İle Dışa Aktar"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path does not exist."
-msgstr "Dizeç yok."
+msgstr "Yol mevcut değil."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a 'project.godot' file."
-msgstr "Lütfen tasarı dizininin dışına aktarın!"
+msgstr "Lütfen bir 'proje.godot' dosyası seçin."
 
 #: editor/project_manager.cpp
 msgid ""
 "Your project will be created in a non empty folder (you might want to create "
 "a new folder)."
 msgstr ""
+"Projen boş olmayan bir klasörde oluşturulacak (yeni bir klasör oluşturmak "
+"isteyebilirsin)."
 
 #: editor/project_manager.cpp
 msgid "Please choose a folder that does not contain a 'project.godot' file."
-msgstr ""
+msgstr "Lütfen 'proje.godot' dosyası içermeyen bir klasör seçin."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
-msgstr "İçe Aktarılan Tasarı"
+msgstr "İçe Aktarılan Proje"
 
 #: editor/project_manager.cpp
 msgid " "
-msgstr ""
+msgstr " "
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
-msgstr ""
+msgstr "Projenizi isimlendirmek iyi bir fikir olabilir."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "Geçersiz tasarı yolu (bir şey değişti mi?)."
+msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't get project.godot in project path."
-msgstr "engine.cfg tasarı yolunda oluşturulamadı."
+msgstr "Proje yolunda proje.godot alınamadı."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't edit project.godot in project path."
-msgstr "engine.cfg tasarı yolunda oluşturulamadı."
+msgstr "proje yolundaki proje.godot düzenlenemedi."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't create project.godot in project path."
-msgstr "engine.cfg tasarı yolunda oluşturulamadı."
+msgstr "proje.godot proje yolunda oluşturulamadı."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
-msgstr "Aşağıdaki dizeçlerin, çıkından ayıklanma işlemi başarısız oldu:"
+msgstr "Aşağıdaki dosyaların, çıkından ayıklanma işlemi başarısız oldu:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Rename Project"
-msgstr "Adsız Tasarı"
+msgstr "Projeyi Yeniden Adlandır"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't get project.godot in the project path."
-msgstr "engine.cfg tasarı yolunda oluşturulamadı."
+msgstr "Proje yolunda proje.godot alınamadı."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
-msgstr "Yeni Oyun Tasarısı"
+msgstr "Yeni Oyun Projesi"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr "Var olan Tasarıyı İçe Aktar"
+msgstr "Var Olan Projeyi İçe Aktar"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr "Yeni Tasarı Oluştur"
+msgstr "Yeni Proje Oluştur"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
-msgstr "Tasarıyı Kur:"
+msgstr "Projeyi Kur:"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr "Tasarı Adı:"
+msgstr "Proje Adı:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create folder"
-msgstr "Dizin Oluştur"
+msgstr "Klasöre Oluştur"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr "Tasarı Yolu:"
+msgstr "Proje Yolu:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -6003,60 +5810,62 @@ msgstr "Yaşa BE!"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
-msgstr "Adsız Tasarı"
+msgstr "Adsız Proje"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project"
-msgstr "Bağlanamadı."
+msgstr "Proje Açılamadı"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
-msgstr "Birden fazla tasarı açmakta kararlı mısınız?"
+msgstr "Birden fazla proje açmakta kararlı mısınız?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in \"Project Settings\" under "
 "the \"Application\" category."
 msgstr ""
-"Hiçbir ana sahne tanımlanmadı, birini seçiniz?\n"
-"Daha sonra \"uygulama\" kategorisinin altındaki \"Tasarı Ayarları\" ndan "
-"değiştirebilirsiniz."
+"Proje çalıştırılamadı: tanımlanmış ana sahne yok.\n"
+"Lütfen projeyi düzenleyin ve \"Uygulama\" kategorisi altındaki \"Proje "
+"Ayarları\" kısmından ana sahneyi belirleyin."
 
 #: editor/project_manager.cpp
 msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
+"Proje Çalıştırılamadı: varlıkların içe aktarılmış olması gerekir.\n"
+"Lütfen ilk içe aktarmayı tetiklemek için projeyi düzenleyin."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run more than one project?"
-msgstr "Birden fazla tasarıyı çalıştırmaya kararlı mısınız?"
+msgstr "Birden fazla projeyi çalıştırmaya kararlı mısınız?"
 
 #: editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
-msgstr ""
-"Tasarıyı dizelgeden kaldırmak mı istiyorsunuz? (Dizin içeriği değiştirilmez)"
+msgstr "Proje listeden kaldırılsın mı? (Klasör içerikleri değiştirilmeyecek)"
 
 #: editor/project_manager.cpp
 msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
+"Dil değişti.\n"
+"Değişiklik düzenleyici veya proje yöneticisi yeniden başladığında etkili "
+"olacak."
 
 #: editor/project_manager.cpp
 msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
 msgstr ""
-"Var olan Godot tasarıları için %s dizin taraması yapıyorsunuz. Onaylıyor "
+"Var olan Godot projeleri için %s dizin taraması yapıyorsunuz. Onaylıyor "
 "musunuz?"
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr "Tasarı Dizelgesi"
+msgstr "Proje Listesi"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -6068,26 +5877,23 @@ msgstr "Tarama için bir Dizin Seç"
 
 #: editor/project_manager.cpp
 msgid "New Project"
-msgstr "Yeni Tasarı"
+msgstr "Yeni Proje"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Templates"
-msgstr "Öğeyi Kaldır"
+msgstr "Şablonlar"
 
 #: editor/project_manager.cpp
 msgid "Exit"
 msgstr "Çık"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Restart Now"
-msgstr "Yeniden Başlat (sn):"
+msgstr "Şimdi Yeniden Başlat"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't run project"
-msgstr "Bağlanamadı."
+msgstr "Proje çalıştırılamadı"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -6115,7 +5921,7 @@ msgstr "İşlem '%s' zaten var!"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
-msgstr "Giriş İşlem Olayını Yeniden Adlandır"
+msgstr "Girdi Eylem Olayını Yeniden Adlandır"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
@@ -6183,18 +5989,16 @@ msgid "Change"
 msgstr "Değiştir"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Joypad Axis Index:"
-msgstr "Oyunçubuğu Ekseni Dizini:"
+msgstr "Oyun kolu Ekseni İndeksi:"
 
 #: editor/project_settings_editor.cpp
 msgid "Axis"
 msgstr "Eksen"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Joypad Button Index:"
-msgstr "Oyunçubuğu Düğme Dizini:"
+msgstr "Oyun kolu Düğme İndeksi:"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -6205,9 +6009,8 @@ msgid "Erase Input Action Event"
 msgstr "Giriş Eylemi Olayını Sil"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add Event"
-msgstr "Boş Ekle"
+msgstr "Olay Ekle"
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
@@ -6238,37 +6041,32 @@ msgid "Wheel Down."
 msgstr "Tekerlek Aşağı."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add Global Property"
-msgstr "Alıcı Özellik Ekle"
+msgstr "Global Özellik Ekle"
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
-msgstr ""
+msgstr "Önce bir ayar öğesi seçin!"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "No property '%s' exists."
-msgstr "Özellik:"
+msgstr "'%s' özelliği mevcut değil."
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr ""
+msgstr "Ayar '%s' dahilidir  silinemez."
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Delete Item"
-msgstr "Girişi Sil"
+msgstr "Öğeyi Sil"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Can't contain '/' or ':'"
-msgstr "Ana makineye bağlanılamadı:"
+msgstr "'/' veya ':' içeremez"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Already existing"
-msgstr "Sürdürmeyi Aç/Kapat"
+msgstr "Zaten mevcut"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
@@ -6280,7 +6078,7 @@ msgstr "Ayarlar kaydedildi TAMAM."
 
 #: editor/project_settings_editor.cpp
 msgid "Override for Feature"
-msgstr ""
+msgstr "Özelliğin Üzerine Yaz"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Translation"
@@ -6311,18 +6109,16 @@ msgid "Remove Resource Remap Option"
 msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Changed Locale Filter"
-msgstr "Karışım Süresini Değiştir"
+msgstr "Değiştirilen Yerel Süzgeç"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr ""
+msgstr "Değiştirilmiş Yerel Süzgeç Kipi"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Project Settings (project.godot)"
-msgstr "Tasarı Ayarları (engine.cfg)"
+msgstr "Proje Ayarları (proje.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6334,7 +6130,7 @@ msgstr "Özellik:"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For.."
-msgstr ""
+msgstr "Şunun Üzerine Yaz.."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -6381,37 +6177,32 @@ msgid "Locale"
 msgstr "Yerel"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Locales Filter"
-msgstr "Bediz Süzgeci:"
+msgstr "Yereller Süzgeci"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Show all locales"
-msgstr "Kemikleri Göster"
+msgstr "Tüm yerelleri göster"
 
 #: editor/project_settings_editor.cpp
 msgid "Show only selected locales"
-msgstr ""
+msgstr "Sadece seçili yerelleri göster"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Filter mode:"
-msgstr "Süzgeçler"
+msgstr "Süzgeç kipi:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Locales:"
-msgstr "Yerel"
+msgstr "Yereller:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
 msgstr "KendindenYükle"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Pick a Viewport"
-msgstr "1 Görünüm"
+msgstr "Bir Görünüm Seçin"
 
 #: editor/property_editor.cpp
 msgid "Ease In"
@@ -6435,7 +6226,7 @@ msgstr "Kararma Açılma"
 
 #: editor/property_editor.cpp
 msgid "File.."
-msgstr "Dizeç.."
+msgstr "Dosya.."
 
 #: editor/property_editor.cpp
 msgid "Dir.."
@@ -6446,40 +6237,34 @@ msgid "Assign"
 msgstr "Ata"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Select Node"
-msgstr "Bir Düğüm Seç"
+msgstr "Düğüm Seç"
 
 #: editor/property_editor.cpp
 msgid "New Script"
 msgstr "Yeni Betik"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Make Unique"
-msgstr "Kemik Yap"
+msgstr "Benzersiz Yap"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Show in File System"
-msgstr "DizeçDüzeni"
+msgstr "Dosya Sisteminde Göster"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Convert To %s"
-msgstr "Şuna Dönüştür.."
+msgstr "Şuna Dönüştür %s"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr "Dizeç yüklenirken sorun oluştu: Bir kaynak değil!"
+msgstr "Dosya yüklenirken sorun oluştu: Bir kaynak değil!"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Selected node is not a Viewport!"
-msgstr "Düğüm(leri) içe Aktarmak için Seç"
+msgstr "Seçili düğüm bir Görüntükapısı değil!"
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Pick a Node"
 msgstr "Bir Düğüm Seç"
 
@@ -6493,7 +6278,7 @@ msgstr "Açık"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr "Ata"
+msgstr "Ayarla"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -6508,9 +6293,8 @@ msgid "Select Property"
 msgstr "Nitelik Seç"
 
 #: editor/property_selector.cpp
-#, fuzzy
 msgid "Select Virtual Method"
-msgstr "Yöntem Seç"
+msgstr "Sanal Metod Seç"
 
 #: editor/property_selector.cpp
 msgid "Select Method"
@@ -6526,11 +6310,11 @@ msgstr "PVRTC aracını kullanarak dönüştürülen bedizi geri yükleyemiyor:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Yeniden Ata Düğümü"
+msgstr "Düğümün Ebeveynliğini Değiştir"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "Yeniden Ata Konumu (Yeni Ata Seç):"
+msgstr "Ebeveynlik Değiştirme Konumu (Yeni Ebeveyn Seç):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -6538,11 +6322,11 @@ msgstr "Bütünsel Dönüşümü Tut"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Yeniden Ata Yap"
+msgstr "Ebeveynlik Değiştir"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
-msgstr "Çalışma Biçimi:"
+msgstr "Çalışma Kipi:"
 
 #: editor/run_settings_dialog.cpp
 msgid "Current Scene"
@@ -6567,7 +6351,7 @@ msgstr "Tamam"
 
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
-msgstr "Sahneleri örneklemek için ata yok."
+msgstr "Sahneleri örneklemek için ebeveyn yok."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
@@ -6603,7 +6387,7 @@ msgstr "Düğümleri Ataya Taşı"
 
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
-msgstr "İkile Düğüm(leri)"
+msgstr "Çoğalt Düğüm(leri)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -6611,7 +6395,7 @@ msgstr "Düğüm(ler) Silinsin mi?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
-msgstr ""
+msgstr "Kök düğüm ile gerçekleştirilemez."
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
@@ -6619,7 +6403,7 @@ msgstr "Bu işlem örneklenmiş sahnelerde yapılamaz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
-msgstr "Yeni Sahneyi Başkaca Kaydet .."
+msgstr "Yeni Sahneyi Farklı Kaydet .."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -6662,12 +6446,11 @@ msgstr "Sahne kaydedilirken sorun oluştu."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr "Kaydetmek için sahne ikilenirken sorun oluştu."
+msgstr "Kaydetmek için sahne çoğaltılırken sorun oluştu."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources:"
-msgstr "Kaynaklar:"
+msgstr "Alt Kaynaklar:"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -6710,9 +6493,8 @@ msgid "Save Branch as Scene"
 msgstr "Dalı Sahne olarak Kaydet"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Copy Node Path"
-msgstr "Dizeç Yolunu Tıpkıla"
+msgstr "Düğüm Yolunu Kopyala"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -6727,13 +6509,12 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
-"Sahne dizecini Düğüm olarak örneklendirin. Kök düğüm yoksa kalıtsal bir "
+"Sahne dosyasıni Düğüm olarak örneklendirin. Kök düğüm yoksa kalıtsal bir "
 "sahne oluşturur."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Filter nodes"
-msgstr "Süzgeçler"
+msgstr "Düğümleri Süzgeçden Geçir"
 
 #: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
@@ -6744,12 +6525,10 @@ msgid "Clear a script for the selected node."
 msgstr "Seçilen düğüm için betik temizle."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "Kaldır"
+msgstr "Uzak"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Local"
 msgstr "Yerel"
 
@@ -6771,55 +6550,63 @@ msgstr "CanvasItem'ı Görünür Duruma Getir"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr ""
+msgstr "Düğüm yapılandırma uyarısı:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node has connection(s) and group(s)\n"
 "Click to show signals dock."
 msgstr ""
+"Düğüm bağlantı(lar) ve grup(lar)a sahip\n"
+"Sinyaller dokunu göstermek için tıkla."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node has connections.\n"
 "Click to show signals dock."
 msgstr ""
+"Düğüm bağlantılara sahip.\n"
+"Sinyaller dokunu göstermek için tıkla."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
 msgstr ""
+"Düğüm grup(lar)ın içinde.\n"
+"Gruplar dokunu göstermek için tıkla."
 
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
 msgstr "Örnek:"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Open script"
-msgstr "Sonraki betik"
+msgstr "Betik Aç"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is locked.\n"
 "Click to unlock"
 msgstr ""
+"Düğüm kilitli.\n"
+"Kiliti açmak için tıkla"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Children are not selectable.\n"
 "Click to make selectable"
 msgstr ""
+"Çocuklar seçilebilir değil.\n"
+"Seçilebilir yapmak için tıkla"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "Toggle Visibility"
-msgstr "Uzaysal Görünürlüğü Aç / Kapat"
+msgstr "Görünebilirliği Aç/Kapa"
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Geçersiz düğüm adı, aşağıdaki damgalara izin verilmiyor:"
+msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -6831,21 +6618,19 @@ msgstr "Sahne Ağacı (Düğümler):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
-msgstr ""
+msgstr "Düğüm Yapılandırma Uyarısı!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
 msgstr "Bir Düğüm Seç"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading template '%s'"
-msgstr "Bediz yüklenirken sorun oluştu:"
+msgstr "Şablon '%s' yüklenirken hata"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error - Could not create script in filesystem."
-msgstr "Dizeç düzeninde betik oluşturulamadı."
+msgstr "Hata - dosyasisteminde betik oluşturulamadı."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
@@ -6869,12 +6654,11 @@ msgstr "Geçersiz üst yol"
 
 #: editor/script_create_dialog.cpp
 msgid "Directory of the same name exists"
-msgstr ""
+msgstr "Aynı isimde dizin zaten var"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "File exists, will be reused"
-msgstr "Dizeç var. Üzerine Yazılsın mı?"
+msgstr "Dosya mevcut, yeniden kullanılacak"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid extension"
@@ -6882,66 +6666,57 @@ msgstr "Geçersiz uzantı"
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen"
-msgstr ""
+msgstr "Yanlış uzantı seçili"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid Path"
-msgstr "Gecersiz Yol."
+msgstr "Geçersiz Yol"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name"
 msgstr "Geçersiz bölüt adı"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid inherited parent name or path"
-msgstr "Geçersiz dizin özelliği adı."
+msgstr "Geçersiz miras alınmış ebeveyn ismi veya yolu"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script valid"
-msgstr "Betik"
+msgstr "Betik geçerli"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9 and _"
-msgstr ""
+msgstr "İzin verilenler: a-z, A-Z, 0-9 ve _"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)"
-msgstr ""
+msgstr "Gömülü betik (sahne dosyasına)"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script file"
-msgstr "Yeni Betik Oluştur"
+msgstr "Yeni betik dosyası oluştur"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script file"
-msgstr "Var olan betiği yükle"
+msgstr "Mevcut betik dosyasını yükle"
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
 msgstr "Dil"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Inherits"
-msgstr "Kalıtçılar:"
+msgstr "Miras Alınmışlar"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name"
-msgstr "Bölüt Adı:"
+msgstr "Sınıf İsmi"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template"
-msgstr "Öğeyi Kaldır"
+msgstr "Şablon"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Built-in Script"
 msgstr "Gömme Betik"
 
@@ -6950,9 +6725,8 @@ msgid "Attach Node Script"
 msgstr "Düğüm Betiği İliştir"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "Kaldır"
+msgstr "Uzak "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6972,11 +6746,11 @@ msgstr "Kaynak:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Function:"
-msgstr "İşlev:"
+msgstr "Fonksiyon:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
-msgstr ""
+msgstr "Grafiği görüntülemek için listeden bir veya daha fazla öğe seçin."
 
 #: editor/script_editor_debugger.cpp
 msgid "Errors"
@@ -7084,7 +6858,7 @@ msgstr "Işın Çapını Değiştir"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr ""
+msgstr "AudioStreamPlayer3D Emisyon Açısı Değişimi"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -7120,29 +6894,27 @@ msgstr "Bildirim Kapsamını Değiştir"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Particles AABB"
-msgstr ""
+msgstr "Parçacık AABB Değişimi"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "Deşme Genişlemesini Değiştir"
 
 #: modules/gdnative/gd_native_library_editor.cpp
-#, fuzzy
 msgid "Library"
-msgstr "MeshLibrary .."
+msgstr "Kütüphane"
 
 #: modules/gdnative/gd_native_library_editor.cpp
-#, fuzzy
 msgid "Status"
-msgstr "Durum:"
+msgstr "Durum"
 
 #: modules/gdnative/gd_native_library_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Kütüphaneler: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
+msgstr "GDYerel"
 
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7153,7 +6925,7 @@ msgstr ""
 #: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Geçersiz biçem ya da kod çözmek için yetersiz byte sayısı."
+msgstr "Byte kodu çözmek için yetersiz byte, ya da Geçersiz format."
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "step argument is zero!"
@@ -7169,7 +6941,7 @@ msgstr "Bir betiğe bağlı değil"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Bir kaynak dizecine bağlı değil"
+msgstr "Bir kaynak dosyasıne bağlı değil"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -7189,130 +6961,115 @@ msgstr "Geçersiz örnek sözlüğü (geçersiz altbölütler)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
-msgstr ""
+msgstr "Nesne bir uzunluk sağlayamaz."
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "Seçilenleri Sil"
+msgstr "IzgaraHaritası Seçimi Sil"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Duplicate Selection"
-msgstr "Seçimi İkile"
+msgstr "IzgaraHaritası Seçimi Çoğalt"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
-msgstr ""
+msgstr "Zemin:"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Map"
-msgstr "Izgara Yapışması"
+msgstr "Izgara Haritası"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Snap View"
-msgstr "Üstten Görünüm"
+msgstr "Yapışma Görünümü"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
-msgstr "Önceki sekme"
+msgstr "Önceki Zemin"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
-msgstr ""
+msgstr "Sonraki Zemin"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clip Disabled"
-msgstr "Devre dışı"
+msgstr "Klip Devre dışı"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Above"
-msgstr ""
+msgstr "Klip Üzerine"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Below"
-msgstr ""
+msgstr "Klip Altına"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
-msgstr ""
+msgstr "X Eksenini Düzenle"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Y Axis"
-msgstr ""
+msgstr "Y Eksenini Düzenle"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Z Axis"
-msgstr ""
+msgstr "Z Eksenini Düzenle"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate X"
-msgstr "Ctrl: Döndür"
+msgstr "İmleç Döndür X"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Y"
-msgstr "Ctrl: Döndür"
+msgstr "İmleç Döndür Y"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Z"
-msgstr "Ctrl: Döndür"
+msgstr "İmleç Döndür Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
-msgstr ""
+msgstr "İmleç Geriye Döndür X"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Y"
-msgstr ""
+msgstr "İmleç Geriye Döndür Y"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate Z"
-msgstr ""
+msgstr "İmleç Geriye Döndür Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Clear Rotation"
-msgstr ""
+msgstr "İmleç Döndürme Temizle"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Area"
-msgstr "Yeni oluştur"
+msgstr "Alan Oluştur"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Exterior Connector"
-msgstr "Yeni Tasarı Oluştur"
+msgstr "Dış Bağlayıcı Oluştur"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Area"
-msgstr "TileMap'i Sil"
+msgstr "Alanı Sil"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Selection"
-msgstr "İçre Seçimi"
+msgstr "Seçimi Temizle"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Settings"
-msgstr "Yapışma Ayarları"
+msgstr "IzgaraHaritası Ayarları"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Pick Distance:"
-msgstr "Örnek:"
+msgstr "Uzaklık Seç:"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
-msgstr ""
+msgstr "İnşalar"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7327,7 +7084,7 @@ msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"Düğüm yerleştirilmiş, fakat çalışan ilk hafızada bir işlev koşulunu "
+"Düğüm yerleştirilmiş, fakat çalışan ilk hafızada bir fonksiyon koşulunu "
 "döndüremedi."
 
 #: modules/visual_script/visual_script.cpp
@@ -7351,29 +7108,24 @@ msgid "Stack overflow with stack depth: "
 msgstr "Şu derinlikte yığın taşması: "
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Signal Arguments"
-msgstr "İşaret Değiştirgenlerini Düzenle:"
+msgstr "Sinyal Argümanlarını Değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument Type"
-msgstr "Dizinin türünü degistir"
+msgstr "Argüman Tipini Seğiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument name"
-msgstr "Giriş Adını Değiştir"
+msgstr "Argüman ismini değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Default Value"
-msgstr "Önyüklü Değeri Değiştir"
+msgstr "Değişken Varsayılan Değerini Ayarla"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Type"
-msgstr "Değişkeni Düzenle:"
+msgstr "Değişken Tipini Ayarla"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
@@ -7389,7 +7141,7 @@ msgstr "Ad doğru bir belirleyici değil:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr "Ad zaten başka bir işlev/değişken/işaret tarafından kullanılıyor:"
+msgstr "Ad zaten başka bir fonk/değişken/sinyal tarafından kullanılıyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -7401,11 +7153,11 @@ msgstr "Değişkeni Yeniden Adlandır"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
-msgstr "İşareti Yeniden Adlandır"
+msgstr "Sinyali Yeniden Adlandır"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Function"
-msgstr "İşlev Ekle"
+msgstr "Fonksiyon Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
@@ -7413,7 +7165,7 @@ msgstr "Değişken Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr "İşaret Ekle"
+msgstr "Sinyal Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -7424,41 +7176,36 @@ msgid "Add Node"
 msgstr "Düğüm Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Nodes"
-msgstr "Geçersiz açarları kaldır"
+msgstr "GörselBetik Düğümlerini Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Duplicate VisualScript Nodes"
-msgstr "Çizge Düğüm(lerini) İkile"
+msgstr "GörselBetik Düğümlerini Çoğalt"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"Alıcı işlevini bırakmak için Alt'a basılı tutun. Genelgeçer imzayı bırakmak "
-"için Shift'e basılı tutun."
+"Alıcı bırakmak için %s tuşuna basılı tutun. Genel imza bırakmak için Shift'e "
+"basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"Alıcı işlevini bırakmak için Ctrl'e basılı tutun. Genelgeçer imzayı bırakmak "
-"için Shift'e basılı tutun."
+"Alıcı bırakmak için Ctrl'e basılı tutun. Genel imza bırakmak için Shift'e "
+"basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a simple reference to the node."
-msgstr "Bir düğüme basit bir başvuru bırakmak için Alt'a basılı tutun."
+msgstr "Bir düğüme basit bir referans bırakmak için %s tuşuna basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
 msgstr "Bir düğüme basit bir başvuru bırakmak için Ctrl'e basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Hold %s to drop a Variable Setter."
-msgstr "Bir Değişken Atayıcı bırakmak için Alt'a basılı tutun."
+msgstr "Bir Değişken Atayıcı bırakmak için %s tuşuna basılı tutun."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
@@ -7481,24 +7228,20 @@ msgid "Add Setter Property"
 msgstr "Düzenleyici Özellik Ekle"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type"
-msgstr "Türü Değiştir"
+msgstr "Temel Tipi Değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Move Node(s)"
-msgstr "Düğümleri Kaldır"
+msgstr "Düğüm(ler) Taşı"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Node"
-msgstr "Gölgelendirici Çizge Düğümünü Kaldır"
+msgstr "GörselBetik Düğümü Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Connect Nodes"
-msgstr "Düğüme Bağlan:"
+msgstr "Düğümleri Bağla"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
@@ -7534,49 +7277,43 @@ msgstr "Al"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
-msgstr ""
+msgstr "Betik zaten '%s' fonksiyonuna sahip"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Input Value"
-msgstr "Giriş Adını Değiştir"
+msgstr "Girdi Değerini Değiştir"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't copy the function node."
-msgstr "'..' üzerinde çalışılamıyor"
+msgstr "Fonksiyon düğümü kopyalanamıyor."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty!"
-msgstr "Kaynak bellemi boş!"
+msgstr "Pano boş!"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste VisualScript Nodes"
-msgstr "Düğümleri Yapıştır"
+msgstr "GörselBetik Düğümleri Yapıştır"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "İşlevi Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable"
-msgstr "Değişkeni Düzenle:"
+msgstr "Değişkeni Düzenle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
 msgstr "Değişkeni Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal"
-msgstr "İşaret Düzenleniyor:"
+msgstr "Sinyal Düzenle"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr "İşareti Kaldır"
+msgstr "Sinyal Kaldır"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
@@ -7584,7 +7321,7 @@ msgstr "Değişken Düzenleniyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
-msgstr "İşaret Düzenleniyor:"
+msgstr "Sinyal Düzenleniyor:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -7592,15 +7329,15 @@ msgstr "Taban Türü:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr "Kullanışlı Düğümler:"
+msgstr "Kullanılabilir Düğümler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr "Çizgeyi düzenlemek için bir işlev seçin ya da oluşturun"
+msgstr "Çizgeyi düzenlemek için bir fonksiyon seçin ya da oluşturun"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr "İşaret Değiştirgenlerini Düzenle:"
+msgstr "Sinyal Değiştirgenlerini Düzenle:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
@@ -7616,7 +7353,7 @@ msgstr "Düğüm Türü Bul"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr "Düğümleri Tıpkıla"
+msgstr "Düğümleri Kopyala"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
@@ -7683,38 +7420,32 @@ msgstr ""
 "(sorunu) olmalı."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Run in Browser"
-msgstr "Gözat"
+msgstr "Tarayıcıda Çalıştır"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr ""
+msgstr "Dışa aktarılmış HTML'yi sistemin varsayılan tarayıcısında çalıştır."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:\n"
-msgstr "Karo Bulunamadı:"
+msgstr "Dosya yazılamadı:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:\n"
-msgstr "Dizin oluşturulamadı."
+msgstr "Dışa aktarma için şablon açılamadı:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:\n"
-msgstr "Dışa Aktarım Kalıplarını Yükle"
+msgstr "Geçersiz Dışa Aktarım Şablonu:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read custom HTML shell:\n"
-msgstr "Karo Bulunamadı:"
+msgstr "Özel HTML çekirdeği okunamadı:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read boot splash image file:\n"
-msgstr "Karo Bulunamadı:"
+msgstr "Açılış ekranı resim dosyası okunamadı:\n"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -7813,6 +7544,8 @@ msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
 msgstr ""
+"Parçacıkları işlemek için bir materyal atanmış değil, bu yüzden etki eden "
+"davranış yok."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -7825,6 +7558,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"Fizik motoru çalışıtığında RigidBody2D (karakter veya rigid kipinde) boyut "
+"değişikliği geçersiz kılınacak\n"
+"Değişikliği bunun yerine çocuk çarpışma şekillerinin içinden yapın."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -7836,36 +7572,39 @@ msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ata olarak "
+"VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ebeveyn olarak "
 "kullanıldığında çalışır."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRCamera ebeveyni olarak ARVROrigin düğümüne sahip olmalı"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRController ebeveyni olarak ARVROrigin düğümüne sahip olmalı"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The controller id must not be 0 or this controller will not be bound to an "
 "actual controller"
 msgstr ""
+"Deneytleyici kimliği 0 olmamalı aksi taktirde bu denetleyici gerçek bir "
+"denetleyiciye bağlı olmayacak"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent"
-msgstr ""
+msgstr "ARVRAnchor ebeveyni olarak ARVROrigin düğümüne sahip olmalı"
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The anchor id must not be 0 or this anchor will not be bound to an actual "
 "anchor"
 msgstr ""
+"Çapa kimliği 0 olmamalı aksi halde bu çapa gerçek bir çapaya bağlı olmayacak"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node"
-msgstr ""
+msgstr "ARVROrigin bir ARVRCamera çocuk düğümü gerektirir"
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -7901,13 +7640,12 @@ msgstr ""
 "bir şekil kaynağı oluşturun!"
 
 #: scene/3d/gi_probe.cpp
-#, fuzzy
 msgid "Plotting Meshes"
-msgstr "Bedizleri Blitle"
+msgstr "Örüntüler Haritalanıyor"
 
 #: scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
-msgstr ""
+msgstr "Haritalama Bitiriliyor"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -7927,6 +7665,7 @@ msgstr ""
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
+"Hiçbirşey görünebilir değil çünkü örüntüler çizim geçişlerine atanmış değil."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -7934,6 +7673,9 @@ msgid ""
 "the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"RigidBody boyut değişikliği(karakter yada rigid kipleri) fizik motoru "
+"çalıştığında geçersiz kılınacak.\n"
+"Boyu değişikliğini bunun yerine çocuk çarpışma şekilleri içinden yapın."
 
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
@@ -7960,15 +7702,16 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+"VehicleWheel VehicleBody'ye bir tekerlek sistemi sağlaması için hizmet eder. "
+"Lütfen bunu VehicleBody'nin çocuğu olarak kullanın."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw Mode"
-msgstr "Kaydırma Biçimi"
+msgstr "Ham Kip"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
-msgstr ""
+msgstr "Şuanki rengi bir önayar olarak kaydet"
 
 #: scene/gui/dialogs.cpp
 msgid "Cancel"
@@ -7998,16 +7741,21 @@ msgid ""
 "Use a container as child (VBox,HBox,etc), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
+"ScrollContainer tek bir çocuk denetimi ile çalışmak için tasarlanmıştır.\n"
+"Bir kapsayıcı (VBox,HBox, vb) veya bir Control'ü çocuk olarak kullanın ve "
+"özel minimum boyutu elle ayarlayın."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Diğer)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
 "Default Environment as specified in Project Setings (Rendering -> Viewport -"
 "> Default Environment) could not be loaded."
 msgstr ""
+"Proje Ayarlarında tanımlanmış Varsayılan Ortam (İşleme -> Görüş Alanı -> "
+"Varsayılan Ortam) Yüklenemedi."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -8016,10 +7764,10 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"Bu görüntü alanı, işleyici amacı olarak ayarlanmadı. İçeriğini doğrudan "
-"görüntlükte göstermek istiyorsanız, bir Denetimcinin çocuğu olun ve böylece "
-"bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
-"görüntülemesi için bir düğüme atayın."
+"Bu görüntükapısı bir işleyici hedefi olarak ayarlanmamış. Eğer bunu doğrudan "
+"ekran içeriğini görüntülemek için düşünüyorsanız, bir Control'ün çocuğu "
+"yapın böylece bir boyut elde edebilir. Aksi takdirde, Görüntüleme için bunu "
+"bir RenderTarget yap ve dahili dokusunu herhangi bir düğüme ata."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
@@ -8027,15 +7775,15 @@ msgstr "FreeType başlatılırken sorun oluştu."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr "Bilinmeyen yazı türü."
+msgstr "Bilinmeyen yazıtipi formatı."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr "Yazı türü yüklerken sorun oluştu."
+msgstr "Yazıtipi yükleme hatası."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr "Geçersiz yazı türü boyutu."
+msgstr "Geçersiz yazıtipi boyutu."
 
 #, fuzzy
 #~ msgid ""

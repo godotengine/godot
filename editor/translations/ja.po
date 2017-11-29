@@ -4,6 +4,8 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # akirakido <achts.y@gmail.com>, 2016-2017.
+# D_first <dntk.daisei@gmail.com>, 2017.
+# Daisuke Saito <d.saito@coriginate.com>, 2017.
 # hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016-2017.
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # Tetsuji Ochiai <ochiaixp@gmail.com>, 2017.
@@ -12,15 +14,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-08-28 04:47+0000\n"
-"Last-Translator: hopping tappy <hopping.tappy@gmail.com>\n"
+"PO-Revision-Date: 2017-11-26 10:47+0000\n"
+"Last-Translator: D_first <dntk.daisei@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -847,41 +849,44 @@ msgid "Authors"
 msgstr "作者:"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Platinum Sponsors"
-msgstr ""
-
-#: editor/editor_about.cpp
-msgid "Gold Sponsors"
-msgstr ""
-
-#: editor/editor_about.cpp
-msgid "Mini Sponsors"
-msgstr ""
-
-#: editor/editor_about.cpp
-msgid "Gold Donors"
-msgstr ""
-
-#: editor/editor_about.cpp
-msgid "Silver Donors"
-msgstr ""
+msgstr "プラチナスポンサー"
 
 #: editor/editor_about.cpp
 #, fuzzy
+msgid "Gold Sponsors"
+msgstr "ゴールドスポンサー"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Mini Sponsors"
+msgstr "ミニスポンサー"
+
+#: editor/editor_about.cpp
+msgid "Gold Donors"
+msgstr "ゴールドドナー"
+
+#: editor/editor_about.cpp
+msgid "Silver Donors"
+msgstr "シルバードナー"
+
+#: editor/editor_about.cpp
 msgid "Bronze Donors"
-msgstr "複製してダウンロード"
+msgstr "ブロンズドナー"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr ""
+msgstr "寄付・協賛者"
 
 #: editor/editor_about.cpp
 msgid "License"
 msgstr "ライセンス"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Thirdparty License"
-msgstr ""
+msgstr "サードパーティライセンス"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -902,12 +907,14 @@ msgid "Components"
 msgstr "コンテンツ:"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid "Licenses"
-msgstr ""
+msgstr "ライセンス"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
+#, fuzzy
 msgid "Error opening package file, not in zip format."
-msgstr ""
+msgstr "zip形式でないためパッケージをファイルを開く際にエラーが発生しました。"
 
 #: editor/editor_asset_installer.cpp
 #, fuzzy
@@ -968,12 +975,14 @@ msgid "Select Audio Bus Send"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Add Audio Bus Effect"
-msgstr ""
+msgstr "オーディオバスエフェクトの追加"
 
 #: editor/editor_audio_buses.cpp
+#, fuzzy
 msgid "Move Bus Effect"
-msgstr ""
+msgstr "バスエフェクトの移動"
 
 #: editor/editor_audio_buses.cpp
 #, fuzzy
@@ -1229,8 +1238,9 @@ msgid "Updating scene.."
 msgstr "シーンを更新しています.."
 
 #: editor/editor_dir_dialog.cpp
+#, fuzzy
 msgid "Please select a base directory first"
-msgstr ""
+msgstr "はじめに、ベースディレクトリを選択してください。"
 
 #: editor/editor_dir_dialog.cpp
 #, fuzzy
@@ -8711,8 +8721,9 @@ msgstr ""
 "ください."
 
 #: scene/gui/tree.cpp
+#, fuzzy
 msgid "(Other)"
-msgstr ""
+msgstr "(その他)"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy

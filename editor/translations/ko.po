@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2017-11-14 12:48+0000\n"
+"PO-Revision-Date: 2017-11-27 12:48+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -718,14 +718,12 @@ msgid "Delete"
 msgstr "삭제"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Key"
-msgstr "애니메이션 이름 변경:"
+msgstr "Dictionary 키 변경"
 
 #: editor/dictionary_property_edit.cpp
-#, fuzzy
 msgid "Change Dictionary Value"
-msgstr "배열 값 변경"
+msgstr "Dictionary 값 변경"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -1515,15 +1513,14 @@ msgstr ""
 "를 확인해주십시오."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This is a remote object so changes to it will not be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"이 리소스는 가져왔던 씬에 속한 것이므로 수정할 수 없습니다.\n"
-"관련 작업 절차를 더 잘 이해하려면 씬 가져오기(scene importing)과 관련된 문서"
-"를 확인해주십시오."
+"이것은 원격 오브젝트에 대한 변경이며 변경사항이 저장되지 않습니다.\n"
+"이 워크플로에 대해 더 자세히 이해하기 위해서 디버깅 관련 문서를 읽어보시기 바"
+"랍니다."
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -1641,9 +1638,8 @@ msgid "Export Mesh Library"
 msgstr "메쉬 라이브러리 내보내기"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a root node."
-msgstr "이 작업은 선택된 노드가 없을때는 불가합니다."
+msgstr "이 작업은 루트 노드가 없이는 불가능합니다."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
@@ -1725,10 +1721,14 @@ msgstr "확장기능 스크립트를 로드할 수 없습니다: '%s'."
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"해당 경로에서 애드온 스크립트를 로드할 수 없습니다: '%s' 기본 타입이 "
+"EditorPlugin이 아닙니다."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
+"해당 경로에서 애드온 스크립트를 로드할 수 없습니다: '%s' 스크립트가 tool 모드"
+"가 아닙니다."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1777,23 +1777,20 @@ msgid "Switch Scene Tab"
 msgstr "씬 탭 전환"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files or folders"
 msgstr "%d개 추가 파일 또는 폴더"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "%d개 추가파일"
+msgstr "%d개 추가 폴더"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files"
-msgstr "%d개 추가파일"
+msgstr "%d개 추가 파일"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "Dock 위치"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -1804,9 +1801,8 @@ msgid "Toggle distraction-free mode."
 msgstr "집중 모드 토글."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Add a new scene."
-msgstr "새 트랙 추가."
+msgstr "새 씬 추가."
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -2313,6 +2309,8 @@ msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the export menu."
 msgstr ""
+"이 플랫폼에 대한 실행가능한 내보내기 프리셋을 찾을 수 없습니다.\n"
+"내보내기 메뉴에서 실행가능한 프리셋을 추가하세요."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -2372,7 +2370,7 @@ msgstr "다운로드"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(누락)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
@@ -2380,11 +2378,11 @@ msgstr "(현재)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait.."
-msgstr ""
+msgstr "미러를 가져오는 중입니다, 잠시만 기다리세요.."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "'%s' 템플릿 버전을 제거하시겠습니까?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2392,17 +2390,19 @@ msgstr "내보내기 템플릿 zip 파일을 열 수 없습니다."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates."
-msgstr ""
+msgstr "템플릿 안에 version.txt가 유효하지 않은 형식입니다."
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Invalid version.txt format inside templates. Revision is not a valid "
 "identifier."
 msgstr ""
+"템플릿에 version.txt 형식이 유효하지 않습니다. 리비전은 유효한 식별자가 아닙"
+"니다."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "템플릿에 version.txt를 찾을 수 없습니다."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:\n"
@@ -2421,11 +2421,13 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
+"이 버전에 대한 다운로드 링크가 없습니다. 공식 릴리즈만 바로 다운로드가 가능합"
+"니다."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr ""
+msgstr "해결할 수 없음."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2435,56 +2437,50 @@ msgstr "연결할 수 없음."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "응답 없음."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Req. Failed."
-msgstr ""
+msgstr "요청 실패."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
-msgstr ""
+msgstr "리다이렉트 루프."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "실패:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't write file."
-msgstr "타일을 찾을 수 없음:"
+msgstr "파일에 쓸 수 없습니다."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Complete."
-msgstr "다운로드 에러"
+msgstr "다운로드 완료."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Error requesting url: "
-msgstr "아틀라스 저장 중 에러:"
+msgstr "url 요청 에러: "
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connecting to Mirror.."
-msgstr "연결중.."
+msgstr "미러에 연결중.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Disconnected"
-msgstr "연결해제"
+msgstr "연결 해제됨"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Resolving"
-msgstr "해결 중.."
+msgstr "해결 중"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr ""
+msgstr "해결할 수 없음"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2492,14 +2488,12 @@ msgid "Connecting.."
 msgstr "연결중.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Can't Conect"
-msgstr "연결할 수 없음."
+msgstr "연결할 수 없음"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connected"
-msgstr "연결"
+msgstr "연결됨"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2507,19 +2501,16 @@ msgid "Requesting.."
 msgstr "요청중.."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Downloading"
-msgstr "다운로드"
+msgstr "다운로드 중"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Connection Error"
-msgstr "연결중.."
+msgstr "연결 에러"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "SSL Handshake Error"
-msgstr "로드 에러"
+msgstr "SSL 핸드쉐이크 에러"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -2546,14 +2537,12 @@ msgid "Export Template Manager"
 msgstr "내보내기 템플릿 매니저"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Templates"
-msgstr "템플릿"
+msgstr "템플릿 다운로드"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select mirror from list: "
-msgstr "목록에서 기기를 선택하세요"
+msgstr "목록에서 미러를 선택하세요: "
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2561,21 +2550,23 @@ msgstr "file_type_cache.cch를 열수 없어서, 파일 타입 캐쉬를 저장�
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
+msgstr "파일 시스템에서 '%s'를 찾을 수 없습니다!"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails"
-msgstr ""
+msgstr "썸네일 그리드로 보기"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a list"
-msgstr ""
+msgstr "리스트로 보기"
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "\n"
 "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
+"\n"
+"상태: 파일 가져오기 실패. 파일을 수정하고 \"다시 가져오기\"를 수행하세요."
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -2595,11 +2586,11 @@ msgstr "종속항목을 업데이트 할 수 없습니다:\n"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided"
-msgstr ""
+msgstr "이름이 지정되지 않음"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
+msgstr "이름에 유효하지 않은 문자가 포함됨"
 
 #: editor/filesystem_dock.cpp
 msgid "No name provided."
@@ -2627,7 +2618,7 @@ msgstr "모두 확장"
 
 #: editor/filesystem_dock.cpp
 msgid "Collapse all"
-msgstr ""
+msgstr "모두 접기"
 
 #: editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -2686,6 +2677,8 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait.."
 msgstr ""
+"파일 스캔중,\n"
+"잠시만 기다려주세요.."
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -2714,27 +2707,27 @@ msgstr "애니메이션을 분리시켜 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "머터리얼을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "오브젝트를 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "오브젝트와 머터리얼을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "오브젝트와 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "머터리얼과 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "오브젝트, 머터리얼, 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -2742,7 +2735,7 @@ msgstr "여러개의 씬으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "여러 개의 씬과 머터리얼로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
@@ -2776,11 +2769,11 @@ msgstr "저장 중.."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "'%s'를 기본으로 지정"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "'%s'에 대해 기본값으로 지정 해제"
 
 #: editor/import_dock.cpp
 msgid " Files"
@@ -2836,9 +2829,8 @@ msgid "Remove Poly And Point"
 msgstr "폴리곤과 포인트 삭제"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Create a new polygon from scratch"
-msgstr "처음부터 새로운 폴리곤 만들기."
+msgstr "처음부터 새로운 폴리곤 만들기"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
@@ -2847,9 +2839,12 @@ msgid ""
 "Ctrl+LMB: Split Segment.\n"
 "RMB: Erase Point."
 msgstr ""
+"기존 폴리곤 편집:\n"
+"좌클릭: 포인트 이동.\n"
+"컨트롤+좌클릭: 세그먼트 나누기.\n"
+"우클릭: 포인트 지우기."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Delete points"
 msgstr "포인트 삭제"
 
@@ -3172,7 +3167,7 @@ msgstr "필터.."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "무료"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3184,11 +3179,11 @@ msgstr "파일 보기"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "호스트명을 찾을 수 없음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "연결 에러, 다시 시도해 주세요."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
@@ -3196,7 +3191,7 @@ msgstr "호스트에 연결할 수 없음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "호스트로부터 응답 없음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
@@ -3204,31 +3199,31 @@ msgstr "요청 실패, 리턴 코드:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "너무 많은 리다이렉트로, 요청 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "잘못된 다운로드 해시, 파일이 변경된 것으로 보입니다."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "예상:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "받음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "sha256 해시 체크 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "어셋 다운로드 에러:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Fetching:"
-msgstr ""
+msgstr "가져오는 중:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving.."
@@ -3240,11 +3235,11 @@ msgstr "요청 에러"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "대기"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "다시 시도"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
@@ -3252,23 +3247,23 @@ msgstr "다운로드 에러"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "이 어셋의 다운로드가 이미 진행중입니다!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "first"
-msgstr ""
+msgstr "처음"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "prev"
-msgstr ""
+msgstr "이전"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "next"
-msgstr ""
+msgstr "다음"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "last"
-msgstr ""
+msgstr "마지막"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
@@ -3348,36 +3343,31 @@ msgstr "이동 액션"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
-msgstr ""
+msgstr "세로 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new vertical guide"
-msgstr "새 스크립트 파일 만들기"
+msgstr "새로운 세로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove vertical guide"
-msgstr "변수 제거"
+msgstr "세로 가이드 제거"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move horizontal guide"
-msgstr "커브의 포인트 이동"
+msgstr "가로 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create new horizontal guide"
-msgstr "새 스크립트 파일 만들기"
+msgstr "새로운 가로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove horizontal guide"
-msgstr "유효하지 않은 키 삭제"
+msgstr "가로 가이드 제거"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
-msgstr ""
+msgstr "새 가로 세로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
@@ -3483,7 +3473,7 @@ msgstr "픽셀 스냅 사용"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart snapping"
-msgstr ""
+msgstr "스마트 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to parent"
@@ -3491,20 +3481,19 @@ msgstr "부모에 맞춤"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr ""
+msgstr "노드 앵커에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr ""
+msgstr "노드 옆에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr ""
+msgstr "다른 노드에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to guides"
-msgstr "그리드에 맞춤"
+msgstr "가이드에 맞춤"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3563,9 +3552,8 @@ msgid "Show rulers"
 msgstr "자 보기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show guides"
-msgstr "자 보기"
+msgstr "가이드 보기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -3609,11 +3597,11 @@ msgstr "마우스 위치에 피벗 설정"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "그리드 단계를 2배 증가"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "그리드 단계를 반으로 감소"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -3752,7 +3740,7 @@ msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Hold Shift to edit tangents individually"
-msgstr ""
+msgstr "쉬프트키를 누르고 있으면 탄젠트를 개별적으로 편집 가능"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -3784,6 +3772,8 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
+"이 노드에 OccluderPolygon2D 리소스가 없습니다.\n"
+"새로 만들어서 지정하시겠습니까?"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -3999,11 +3989,11 @@ msgstr "네비게이션 메쉬 지우기."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "구성 설정 중..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "그리드 사이즈 계산 중..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
@@ -4019,7 +4009,7 @@ msgstr ""
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
-msgstr ""
+msgstr "걷기 가능한 영역 계산 중..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
@@ -4039,7 +4029,7 @@ msgstr "네이티브 네비게이션 메쉬로 변환 중..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Navigation Mesh Generator Setup:"
-msgstr ""
+msgstr "네비게이션 메시 생성기 설정:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
@@ -4047,7 +4037,7 @@ msgstr "지오미트리 분석 중..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "완료!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
@@ -4122,7 +4112,7 @@ msgstr "노드가 지오미트리를 포함하고 있지 않습니다 (페이스
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "'ParticlesMaterial' 타입의 프로세서 머터리얼이 필요합니다."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -4425,12 +4415,11 @@ msgstr "테마 다른 이름으로 저장.."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
-msgstr ""
+msgstr " 클래스 레퍼런스"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Sort"
-msgstr "정렬:"
+msgstr "정렬"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
@@ -4496,7 +4485,7 @@ msgstr "모두 닫기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "다른 탭 닫기"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -4596,7 +4585,7 @@ msgstr "내장 스크립트는 종속된 씬이 열린 상태에서만 편집이
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
-msgstr ""
+msgstr "파일 시스템에서 가져온 리소스만 드랍할 수 있습니다."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
@@ -4608,15 +4597,15 @@ msgstr "대소문자 변환"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Uppercase"
-msgstr ""
+msgstr "대문자로 변경"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Lowercase"
-msgstr ""
+msgstr "소문자로 변경"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Capitalize"
-msgstr ""
+msgstr "대문자로 시작"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -4655,21 +4644,20 @@ msgid "Clone Down"
 msgstr "아래로 복제"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold Line"
-msgstr "라인으로 이동"
+msgstr "라인 접음"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold Line"
-msgstr ""
+msgstr "라인 펼치기"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
-msgstr ""
+msgstr "모든 라인 접기"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr ""
+msgstr "모든 라인 펼치기"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
@@ -4681,11 +4669,11 @@ msgstr "후행 공백 문자 제거"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Spaces"
-msgstr ""
+msgstr "들여쓰기를 스페이스로 변환"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent To Tabs"
-msgstr ""
+msgstr "들여쓰기를 탭으로 변환"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -4738,7 +4726,7 @@ msgstr "도움말 보기"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr ""
+msgstr "셰이더"
 
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
@@ -4893,14 +4881,12 @@ msgid "View Plane Transform."
 msgstr "뷰 평면 변형."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scaling: "
-msgstr "크기:"
+msgstr "크기: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Translating: "
-msgstr "번역:"
+msgstr "위치 이동: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -4960,7 +4946,7 @@ msgstr "애니메이션 키가 삽입되었습니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
-msgstr ""
+msgstr "그려진 오브젝트"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
@@ -4976,7 +4962,7 @@ msgstr "서피스 변경"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Draw Calls"
-msgstr ""
+msgstr "드로우 콜"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Vertices"
@@ -4984,7 +4970,7 @@ msgstr "버틱스"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "FPS"
-msgstr ""
+msgstr "초당 프레임"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align with view"
@@ -5016,17 +5002,15 @@ msgstr "기즈모 보기"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
-msgstr ""
+msgstr "정보 보기"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View FPS"
-msgstr "파일 보기"
+msgstr "FPS 보기"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Half Resolution"
-msgstr "선택키 스케일 조절"
+msgstr "절반 해상도"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Audio Listener"
@@ -5038,11 +5022,11 @@ msgstr "도플러 활성화"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
-msgstr ""
+msgstr "자유시점 왼쪽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Right"
-msgstr ""
+msgstr "자유시점 오른쪽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
@@ -5054,7 +5038,7 @@ msgstr "자유시점 뒤로 이동"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr ""
+msgstr "자유시점 위로"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
@@ -5062,7 +5046,7 @@ msgstr "자유시점 아래로 이동"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr ""
+msgstr "자유시점 속도 변화"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "preview"
@@ -5159,9 +5143,8 @@ msgid "Tool Scale"
 msgstr "크기조절 툴"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Freelook"
-msgstr "전체화면 토글"
+msgstr "자유시점 토글"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5415,11 +5398,11 @@ msgstr "모두 삭제"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme.."
-msgstr ""
+msgstr "테마 편집.."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
-msgstr ""
+msgstr "테마 편집 메뉴."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -5438,9 +5421,8 @@ msgid "Create Empty Editor Template"
 msgstr "빈 에디터 템플릿 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Create From Current Editor Theme"
-msgstr "빈 에디터 템플릿 만들기"
+msgstr "현재 에디터 테마로부터 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "CheckBox Radio1"
@@ -5529,7 +5511,7 @@ msgstr "직선 그리기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
-msgstr ""
+msgstr "사각영역 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
@@ -5616,9 +5598,8 @@ msgid "Runnable"
 msgstr "실행가능"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Delete patch '%s' from list?"
-msgstr "입력 삭제"
+msgstr "'%s'를 패치 목록에서 삭제하시겠습니까?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -5626,7 +5607,7 @@ msgstr "'%s' 프리셋을 삭제하시겠습니까?"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted: "
-msgstr ""
+msgstr "이 플랫폼에 대한 내보내기 템플릿이 없거나 손상됨: "
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -5707,7 +5688,6 @@ msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path does not exist."
 msgstr "경로가 존재하지 않습니다."
 
@@ -6036,9 +6016,8 @@ msgid "Select a setting item first!"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "No property '%s' exists."
-msgstr "속성:"
+msgstr "'%s' 속성이 존재하지 않습니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
@@ -6510,14 +6489,12 @@ msgid "Clear a script for the selected node."
 msgstr "선택된 노드의 스크립트를 제거합니다."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "삭제"
+msgstr "원격"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Local"
-msgstr "지역"
+msgstr "로컬"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
@@ -6702,9 +6679,8 @@ msgid "Attach Node Script"
 msgstr "노드 스크립트 붙이기"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "삭제"
+msgstr "원격 "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6944,42 +6920,36 @@ msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "선택 항목 삭제"
+msgstr "그리드맵 선택 삭제"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Duplicate Selection"
-msgstr "선택키 복제"
+msgstr "그리드맵 선택 복제"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Floor:"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Map"
-msgstr "그리드 스냅"
+msgstr "그리드맵"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Snap View"
-msgstr "상단 뷰"
+msgstr "스냅 뷰"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Floor"
-msgstr "이전 탭"
+msgstr "이전 층"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Floor"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clip Disabled"
-msgstr "사용 안함"
+msgstr "클립 사용 안함"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Above"
@@ -7002,19 +6972,16 @@ msgid "Edit Z Axis"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate X"
-msgstr "컨트롤: 회전"
+msgstr "커서 X 회전"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Y"
-msgstr "컨트롤: 회전"
+msgstr "커서 Y 회전"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cursor Rotate Z"
-msgstr "컨트롤: 회전"
+msgstr "커서 Z 회전"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
@@ -7033,34 +7000,28 @@ msgid "Cursor Clear Rotation"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Area"
-msgstr "새로 만들기"
+msgstr "Area 만들기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Create Exterior Connector"
-msgstr "새 프로젝트 만들기"
+msgstr "외부 커넥터 만들기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Erase Area"
-msgstr "타일맵 지우기"
+msgstr "Area 지우기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Selection"
-msgstr "선택항목 화면 중앙에 표시"
+msgstr "선택 없애기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Settings"
-msgstr "스냅 설정"
+msgstr "그리드맵 설정"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Pick Distance:"
-msgstr "인스턴스:"
+msgstr "거리 선택:"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
@@ -7097,29 +7058,24 @@ msgid "Stack overflow with stack depth: "
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Signal Arguments"
-msgstr "시그널 인자 편집:"
+msgstr "시그널 인자 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument Type"
-msgstr "배열 값 타입 변경"
+msgstr "인수 타입 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Argument name"
-msgstr "입력 이름 변경"
+msgstr "인수 이름 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Default Value"
-msgstr "기본값 변경"
+msgstr "변수 기본값 설정"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Type"
-msgstr "변수 편집:"
+msgstr "변수 타입 설정"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
@@ -7170,14 +7126,12 @@ msgid "Add Node"
 msgstr "노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Nodes"
-msgstr "유효하지 않은 키 삭제"
+msgstr "비주얼 스크립트 노드 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Duplicate VisualScript Nodes"
-msgstr "그래프 노드 복제"
+msgstr "비주얼 스크립트 노드 복제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
@@ -7220,24 +7174,20 @@ msgid "Add Setter Property"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type"
-msgstr "타입 변경"
+msgstr "기본 타입 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Move Node(s)"
-msgstr "노드 삭제"
+msgstr "노드 이동"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Node"
-msgstr "셰이더 그래프 노드 삭제"
+msgstr "비주얼 스크립트 노드 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Connect Nodes"
-msgstr "연결할 노드:"
+msgstr "노드 연결"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
@@ -7276,42 +7226,36 @@ msgid "Script already has function '%s'"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Input Value"
-msgstr "입력 이름 변경"
+msgstr "입력 값 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Can't copy the function node."
-msgstr "'..'에 수행할 수 없음"
+msgstr "함수 노드를 복사할 수 없습니다."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty!"
-msgstr "리소스 클립보드가 비었습니다!"
+msgstr "클립보드가 비었습니다!"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste VisualScript Nodes"
-msgstr "노드 붙여넣기"
+msgstr "비주얼 스크립트 노드 붙여넣기"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
 msgstr "함수 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable"
-msgstr "변수 편집:"
+msgstr "변수 편집"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
 msgstr "변수 제거"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal"
-msgstr "시그널 편집:"
+msgstr "시그널 편집"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
@@ -7420,28 +7364,24 @@ msgid ""
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Run in Browser"
-msgstr "찾아보기"
+msgstr "브라우저에서 실행"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:\n"
-msgstr "타일을 찾을 수 없음:"
+msgstr "파일에 쓸 수 없음:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export:\n"
-msgstr "폴더를 만들 수 없습니다."
+msgstr "내보내기 템플릿을 열 수 없습니다:\n"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:\n"
-msgstr "내보내기 템플릿 설치"
+msgstr "유효하지 않은 내보내기 템플릿:\n"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy

@@ -6,14 +6,15 @@
 # Allen H <w84miracle@gmail.com>, 2017.
 # Chao Yu <casd82@gmail.com>, 2017.
 # Cliffs Dover <bottle@dancingbottle.com>, 2017.
+# Matt <chchwy@gmail.com>, 2017.
 # popcade <popcade@gmail.com>, 2016.
 # Sam Pan <sampan66@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-13 02:50+0000\n"
-"Last-Translator: Cliffs Dover <bottle@dancingbottle.com>\n"
+"PO-Revision-Date: 2017-11-24 10:45+0000\n"
+"Last-Translator: Matt <chchwy@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -52,39 +53,39 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Track"
-msgstr ""
+msgstr "添加動畫軌"
 
 #: editor/animation_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "複製動畫關鍵畫格"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "上移動畫軌"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "動畫軌下移"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "刪除動畫軌"
 
 #: editor/animation_editor.cpp
 msgid "Set Transitions to:"
-msgstr ""
+msgstr "設定轉場效果為："
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "重新命名動畫軌"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
-msgstr ""
+msgstr "改變動畫軌內插"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Value Mode"
-msgstr ""
+msgstr "動畫軌改變模式"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Wrap Mode"
@@ -100,7 +101,7 @@ msgstr "編輯所選曲線"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "刪除動畫關鍵畫格"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -117,11 +118,11 @@ msgstr "移除所選"
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "連續"
 
 #: editor/animation_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "不連續"
 
 #: editor/animation_editor.cpp
 msgid "Trigger"
@@ -129,19 +130,19 @@ msgstr "觸發器"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Key"
-msgstr ""
+msgstr "添加動畫關鍵畫格"
 
 #: editor/animation_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "移動動畫畫格"
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "縮放所選"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "由游標位置縮放"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
@@ -158,19 +159,19 @@ msgstr "線性"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "固定"
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr ""
+msgstr "進"
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr ""
+msgstr "出"
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
-msgstr ""
+msgstr "進出"
 
 #: editor/animation_editor.cpp
 msgid "Out-In"
@@ -178,7 +179,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "轉場動畫"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
@@ -186,15 +187,15 @@ msgstr "最佳化動畫"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr ""
+msgstr "清除動畫"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "%s 新增新軌並插入畫格?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "創建 %d 個新軌並插入畫格?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -207,7 +208,7 @@ msgstr "新增"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "動畫建立與插入"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
@@ -7655,19 +7656,19 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "初始化 FreeType 錯誤。"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "未知的字體格式。"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "讀取字體錯誤。"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
+msgstr "無效的字體大小。"
 
 #, fuzzy
 #~ msgid "Selection -> Duplicate"

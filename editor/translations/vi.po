@@ -1,32 +1,33 @@
-# Slovenian translation of the Godot Engine editor
+# Vietnamese translation of the Godot Engine editor
 # Copyright (C) 2007-2017 Juan Linietsky, Ariel Manzur
 # Copyright (C) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 #
-# matevž lapajne <sivar.lapajne@gmail.com>, 2016-2017.
-# Simon Šander <simon.sand3r@gmail.com>, 2017.
+# Hai Le <dark.hades.1102@gmail.com>, 2017.
+# Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
+# Tung Le <tungkradle@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-29 08:12+0000\n"
-"Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
-"Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/sl/>\n"
-"Language: sl\n"
+"PO-Revision-Date: 2017-11-25 13:51+0000\n"
+"Last-Translator: Hai Le <dark.hades.1102@gmail.com>\n"
+"Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
+"godot/vi/>\n"
+"Language: vi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 2.18-dev\n"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Disabled"
-msgstr "Onemogočen"
+msgstr "Tắt"
 
 #: editor/animation_editor.cpp
 msgid "All Selection"
-msgstr "Vsa izbira"
+msgstr "Chọn tất cả"
 
 #: editor/animation_editor.cpp
 msgid "Move Add Key"
@@ -42,7 +43,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Value"
-msgstr ""
+msgstr "Đổi giá trị"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -58,24 +59,23 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Up"
-msgstr ""
+msgstr "Di chuyển Anim Track lên trên"
 
 #: editor/animation_editor.cpp
 msgid "Move Anim Track Down"
-msgstr ""
+msgstr "Di chuyển Anim Track xuống dưới"
 
 #: editor/animation_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Xóa Anim Track"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Set Transitions to:"
-msgstr "Izberi Prevod:"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Rename"
-msgstr ""
+msgstr "Đổi tên Anim Track"
 
 #: editor/animation_editor.cpp
 msgid "Anim Track Change Interpolation"
@@ -91,20 +91,20 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Edit Node Curve"
-msgstr ""
+msgstr "Sửa Node Curve"
 
 #: editor/animation_editor.cpp
 msgid "Edit Selection Curve"
-msgstr ""
+msgstr "Sửa Curve đã chọn"
 
 #: editor/animation_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Xóa phím Anim"
 
 #: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
-msgstr "Podvoji Izbrano"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Duplicate Transposed"
@@ -112,7 +112,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr "Odstrani Izbiro"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Continuous"
@@ -136,7 +136,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale Selection"
-msgstr "Povečaj Izbiro"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
@@ -144,16 +144,16 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr "Pojdite na Naslednji Korak"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr "Pojdite na Predhodni Korak"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr "Linearno"
+msgstr ""
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
@@ -161,11 +161,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In"
-msgstr "V"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Out"
-msgstr "Ven"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "In-Out"
@@ -185,7 +185,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Počisti Animacijo"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -202,7 +202,7 @@ msgstr ""
 #: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Create"
-msgstr "Naredi"
+msgstr "Tạo"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create & Insert"
@@ -242,11 +242,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Animation zoom."
-msgstr "Približaj Animacijo"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
-msgstr "Dolžina (s):"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Animation length (in seconds)."
@@ -254,7 +254,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Step (s):"
-msgstr "Korak (s):"
+msgstr "Bước (s):"
 
 #: editor/animation_editor.cpp
 msgid "Cursor step snap (in seconds)."
@@ -314,7 +314,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Key"
-msgstr "Črka"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Transition"
@@ -330,7 +330,7 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Odstrani nedovoljene Črke"
+msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -346,11 +346,11 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr "Pobriši"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Povečaj Niz"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
@@ -366,7 +366,7 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "Številka vrste:"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "No Matches"
@@ -378,7 +378,7 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr "Zamenjaj"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace All"
@@ -402,7 +402,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Search"
-msgstr "Iskanje"
+msgstr ""
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "Find"
@@ -414,11 +414,11 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Not found!"
-msgstr "Ni Zadetka!"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Replace By"
-msgstr "Zamenjaj Z"
+msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Case Sensitive"
@@ -519,7 +519,7 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Zapri"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
@@ -840,9 +840,8 @@ msgid "Add Effect"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Rename Audio Bus"
-msgstr "Preimenuj Funkcijo"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -869,9 +868,8 @@ msgid "Move Bus Effect"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Bus Effect"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio Bus, Drag and Drop to rearrange."
@@ -903,9 +901,8 @@ msgid "Reset Volume"
 msgstr ""
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Delete Effect"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1264,13 +1261,12 @@ msgid "Brief Description:"
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Members"
-msgstr "Člani:"
+msgstr ""
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
-msgstr "Člani:"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Public Methods"
@@ -1290,17 +1286,15 @@ msgstr ""
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr "Signali:"
+msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Funkcije:"
+msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations:"
-msgstr "Funkcije:"
+msgstr ""
 
 #: editor/editor_help.cpp
 msgid "enum  "
@@ -1941,9 +1935,8 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor"
-msgstr "Uredi"
+msgstr ""
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
@@ -2458,9 +2451,8 @@ msgid "Install From File"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Remove Template"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Select template file"
@@ -2471,9 +2463,8 @@ msgid "Export Template Manager"
 msgstr ""
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Download Templates"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: "
@@ -2538,9 +2529,8 @@ msgid "A file or folder with this name already exists."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Renaming file:"
-msgstr "Preimenuj Spremenljivko"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
@@ -2772,9 +2762,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Delete points"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -2956,9 +2945,8 @@ msgid "New name:"
 msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filters"
-msgstr "Uredi Spremenljivko:"
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
@@ -3279,9 +3267,8 @@ msgid "Create new vertical guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove vertical guide"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move horizontal guide"
@@ -3292,9 +3279,8 @@ msgid "Create new horizontal guide"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove horizontal guide"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
@@ -3368,9 +3354,8 @@ msgid "Pan Mode"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggles snapping"
-msgstr "Preklopi na Zaustavitev"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3522,9 +3507,8 @@ msgid "Drag pivot from mouse position"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Set pivot at mouse position"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -3640,14 +3624,12 @@ msgid "Load Curve Preset"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add point"
-msgstr "Dodaj Signal"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove point"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left linear"
@@ -3662,9 +3644,8 @@ msgid "Load preset"
 msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Curve Point"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Toggle Curve Linear Tangent"
@@ -4174,19 +4155,16 @@ msgid "Curve Point #"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Point Position"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve In Position"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Set Curve Out Position"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
@@ -4197,9 +4175,8 @@ msgid "Remove Path Point"
 msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Out-Control Point"
-msgstr "Odstrani Funkcijo"
+msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove In-Control Point"
@@ -4251,7 +4228,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Uredi"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
@@ -4412,9 +4389,8 @@ msgid "Close Docs"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close All"
-msgstr "Zapri"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
@@ -4555,9 +4531,8 @@ msgid "Select All"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Delete Line"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Indent Left"
@@ -4576,9 +4551,8 @@ msgid "Clone Down"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold Line"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold Line"
@@ -4615,7 +4589,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr "Preklopi na Zaustavitev"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
@@ -4886,9 +4860,8 @@ msgid "Material Changes"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Shader Changes"
-msgstr "Spremeni"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Surface Changes"
@@ -5058,9 +5031,8 @@ msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Select"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Move"
@@ -5075,9 +5047,8 @@ msgid "Tool Scale"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Freelook"
-msgstr "Preklopi na Zaustavitev"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform"
@@ -5322,14 +5293,12 @@ msgid "Remove Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All Items"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Remove All"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Edit theme.."
@@ -5673,9 +5642,8 @@ msgid "The following files failed extraction from package:"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Rename Project"
-msgstr "Preimenuj Funkcijo"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't get project.godot in the project path."
@@ -5779,9 +5747,8 @@ msgid "New Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Templates"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Exit"
@@ -5886,7 +5853,7 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr "Spremeni"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
@@ -5941,9 +5908,8 @@ msgid "Wheel Down."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Add Global Property"
-msgstr "Dodaj Getter Lastnost"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Select a setting item first!"
@@ -5958,9 +5924,8 @@ msgid "Setting '%s' is internal, and it can't be deleted."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Delete Item"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Can't contain '/' or ':'"
@@ -6139,9 +6104,8 @@ msgid "Assign"
 msgstr ""
 
 #: editor/property_editor.cpp
-#, fuzzy
 msgid "Select Node"
-msgstr "Dodaj Setter Lastnost"
+msgstr ""
 
 #: editor/property_editor.cpp
 msgid "New Script"
@@ -6192,9 +6156,8 @@ msgid "Sections:"
 msgstr ""
 
 #: editor/property_selector.cpp
-#, fuzzy
 msgid "Select Property"
-msgstr "Dodaj Setter Lastnost"
+msgstr ""
 
 #: editor/property_selector.cpp
 msgid "Select Virtual Method"
@@ -6424,9 +6387,8 @@ msgid "Clear a script for the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Local"
@@ -6559,18 +6521,16 @@ msgid "Wrong extension chosen"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid Path"
-msgstr ": Neveljavni argumenti: "
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid inherited parent name or path"
-msgstr "Neveljaven indeks lastnosti imena."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Script valid"
@@ -6605,9 +6565,8 @@ msgid "Class Name"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in Script"
@@ -6618,9 +6577,8 @@ msgid "Attach Node Script"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6813,54 +6771,52 @@ msgstr ""
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Neveljavena vrsta argumenta za convert(), uporabite TYPE_* konstanto."
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Ni dovolj pomnilnika za dekodiranje bajtov, ali neveljaven format."
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "step argument is zero!"
-msgstr "stopnja argumenta je nič!"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
-msgstr "To ni skripta z instanco"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a script"
-msgstr "Ne temelji na skripti"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Ne temelji na datoteki virov"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Neveljaven primer formata slovarja (manjka @path)"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Neveljaven primer formata slovarja (ni mogoče naložiti skripte iz @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Neveljaven primer formata slovarja (neveljavna skripta v @path)"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Neveljaven primer slovarja (neveljavni podrazredi)"
+msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Delete Selection"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -6951,9 +6907,8 @@ msgid "Erase Area"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Selection"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
@@ -6972,41 +6927,34 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
-"Node je bil sprejet brez potrebnega pomnilnika, pravilen postopek je opisan "
-"v dokumentaciji!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"Node pridobljen, vendar se ne vrne v funkcijalno stanje v prvem delavnem "
-"spominu."
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
 msgstr ""
-"Vrnjena vrednost mora biti dodeljena prvemu elementu v node-delavnemu "
-"spominu! Prosim, da popraviš node."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr "Node je vrnil napačno zaporedje na izhodu: "
+msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
-msgstr "Zaporedni bit najden, vendar ne node v skladu, prijavi napako!"
+msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Stack overflow with stack depth: "
-msgstr "Sklad prepoln z stack depth: "
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Signal Arguments"
-msgstr "Uredi Argumente Signala:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Argument Type"
@@ -7021,49 +6969,48 @@ msgid "Set Variable Default Value"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Set Variable Type"
-msgstr "Uredi Spremenljivko:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Funkcije:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
-msgstr "Spremenljivke:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr "Ime ni pravilen identifikator:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr "Ime že uporablja druga funkcija/sprem/signal:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
-msgstr "Preimenuj Funkcijo"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Variable"
-msgstr "Preimenuj Spremenljivko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
-msgstr "Preimenuj Signal"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Function"
-msgstr "Dodaj Funkcijo"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Variable"
-msgstr "Dodaj Spremenljivko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Signal"
-msgstr "Dodaj Signal"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Expression"
@@ -7071,12 +7018,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr "Dodaj Node"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Nodes"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Duplicate VisualScript Nodes"
@@ -7107,35 +7053,32 @@ msgid "Hold Ctrl to drop a Variable Setter."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "Dodaj Node"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Dodaj Node(e) iz Drevesa"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr "Dodaj Getter Lastnost"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr "Dodaj Setter Lastnost"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Base Type"
-msgstr "Osnovni Tip:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Move Node(s)"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove VisualScript Node"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
@@ -7195,62 +7138,59 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
-msgstr "Odstrani Funkcijo"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable"
-msgstr "Uredi Spremenljivko:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
-msgstr "Odstrani Spremenljivko"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal"
-msgstr "Urejanje Signala:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr "Odstrani Signal"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
-msgstr "Urejanje Spremenljivke:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"
-msgstr "Urejanje Signala:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
-msgstr "Osnovni Tip:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr "Na voljo Nodes:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr "Izberi ali ustvari funkcijo za urejanje grafa"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr "Uredi Argumente Signala:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
-msgstr "Uredi Spremenljivko:"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr "Izbriši Izbrano"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Type"
-msgstr "Najdi Node Type"
+msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
@@ -7266,59 +7206,57 @@ msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr "Vhodni tip ni spremenljiv: "
+msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr "Iterator je bil neveljaven"
+msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr "Iterator je neveljaven: "
+msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr "Neveljaven indeks lastnosti imena."
+msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr "Osnovni objekt ni Node!"
+msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr "Pot ne vodi do Node!"
+msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "Neveljaven indeks lastnosti imena '%s' v node %s."
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ": Neveljaven argument od tipa: "
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": Neveljavni argumenti: "
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr "VariableGet ni najden v skripti: "
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr "VariableSet ni najden v skripti: "
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr "Custom node nima _step() metode, grafa ni mogoče obdelati."
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
-"Neveljavna vrnitev vrednosti od _step(), mora biti število (seq out), ali "
-"string (error)."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -7337,9 +7275,8 @@ msgid "Could not open template for export:\n"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template:\n"
-msgstr "Neveljaven indeks lastnosti imena."
+msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read custom HTML shell:\n"
@@ -7354,16 +7291,12 @@ msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Vir SpriteFrame mora biti ustvarjen ali nastavljen v 'Frames' lastnosti z "
-"namenom, da AnimatedSprite prikaže sličice."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
-"Le en viden CanvasModulate je dovoljen na sceno (ali niz instanciranih "
-"scen). Prvi ustvarjen se bo uporabil, medtem ko bodo drugi prezrti."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -7371,14 +7304,10 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon2D služi le, da zagotavlja collision obliko nodu "
-"CollisionObject2D, ki izhaja iz njega. Naprošamo vas, da ga uporabite le kot "
-"otroka od Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. da jim "
-"date obliko."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Prazen CollisionPolygon2D nima vpliva na collision."
+msgstr ""
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -7386,10 +7315,6 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D služi le, da zagotavlja collision obliko nodu "
-"CollisionObject2D, ki izhaja iz njega. Naprošamo vas, da ga uporabite le kot "
-"otroka od Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. da jim "
-"date obliko."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -7573,11 +7498,11 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "Cảnh báo!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr ""
+msgstr "Xin hãy xác nhận..."
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -7595,7 +7520,7 @@ msgstr ""
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
-msgstr ""
+msgstr "(Khác)"
 
 #: scene/main/scene_tree.cpp
 msgid ""
@@ -7613,27 +7538,16 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "Lỗi khởi tạo FreeType."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "Định dạng font không hợp lệ."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "Lỗi tải font."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr ""
-
-#, fuzzy
-#~ msgid "Invalid unique name."
-#~ msgstr "Neveljaven indeks lastnosti imena."
-
-#~ msgid ""
-#~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
-#~ "unsequenced ports were specified."
-#~ msgstr ""
-#~ "Custom node nima _get_output_port_unsequenced(idx,wmem), vendar "
-#~ "nezaporedni porti so bili določeni."
+msgstr "Kích thước font không hợp lệ."
