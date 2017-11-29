@@ -37,7 +37,7 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
-#include "platform/osx/logo.gen.h"
+#include "platform/iphone/logo.gen.h"
 #include "project_settings.h"
 #include "string.h"
 #include "version.h"
@@ -977,9 +977,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 
-	///@TODO need to create the correct logo
-	//  Ref<Image> img = memnew(Image(_iphone_logo));
-	Ref<Image> img = memnew(Image(_osx_logo));
+	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
 }
