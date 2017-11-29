@@ -1044,12 +1044,6 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
-	if (!is_no_window_mode_enabled()) {
-		ShowWindow(hWnd, SW_SHOW); // Show The Window
-		SetForegroundWindow(hWnd); // Slightly Higher Priority
-		SetFocus(hWnd); // Sets Keyboard Focus To
-	}
-
 	/*
 		DEVMODE dmScreenSettings;					// Device Mode
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));		// Makes Sure Memory's Cleared
@@ -1087,6 +1081,12 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	DragAcceptFiles(hWnd, true);
 
 	move_timer_id = 1;
+
+	if (!is_no_window_mode_enabled()) {
+		ShowWindow(hWnd, SW_SHOW); // Show The Window
+		SetForegroundWindow(hWnd); // Slightly Higher Priority
+		SetFocus(hWnd); // Sets Keyboard Focus To
+	}
 }
 
 void OS_Windows::set_clipboard(const String &p_text) {
