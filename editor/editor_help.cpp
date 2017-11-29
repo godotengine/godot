@@ -433,12 +433,11 @@ void EditorHelpIndex::_update_class_list() {
 			while (type != "") {
 				if (filter.is_subsequence_ofi(type)) {
 
-					if (to_select.empty()) {
+					if (to_select.empty() || type.length() < to_select.length()) {
 						to_select = type;
 					}
 
 					found = true;
-					break;
 				}
 
 				type = EditorHelp::get_doc_data()->class_list[type].inherits;
