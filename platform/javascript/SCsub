@@ -22,7 +22,7 @@ for x in javascript_files:
 env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_main_after_fs_sync','_send_notification']\""])
 
 target_dir = env.Dir("#bin")
-build = env.Program(['#bin/godot', target_dir.File('godot' + env['PROGSUFFIX'] + '.wasm')], javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js');
+build = env.add_program(['#bin/godot', target_dir.File('godot' + env['PROGSUFFIX'] + '.wasm')], javascript_objects, PROGSUFFIX=env['PROGSUFFIX'] + '.js');
 
 js_libraries = []
 js_libraries.append(env.File('http_request.js'))

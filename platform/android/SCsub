@@ -144,8 +144,7 @@ manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$", env.android_appattrib
 pp_baseout.write(manifest)
 
 
-lib = env_android.SharedLibrary("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
-env_android.NoCache(lib)
+lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
 lib_arch_dir = ''
 if env['android_arch'] == 'armv6':

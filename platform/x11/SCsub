@@ -17,8 +17,7 @@ common_x11 = [
     "power_x11.cpp",
 ]
 
-prog = env.Program('#bin/godot', ['godot_x11.cpp'] + common_x11)
-env.NoCache(prog)
+prog = env.add_program('#bin/godot', ['godot_x11.cpp'] + common_x11)
 
 if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
     env.AddPostAction(prog, make_debug)

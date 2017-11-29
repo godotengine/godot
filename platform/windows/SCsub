@@ -28,8 +28,7 @@ obj = env.RES(restarget, 'godot_res.rc')
 
 common_win.append(obj)
 
-prog = env.Program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
-env.NoCache(prog)
+prog = env.add_program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
 if env['vsproj']:

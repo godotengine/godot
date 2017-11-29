@@ -45,6 +45,5 @@ if env.split_drivers:
     env.split_lib("drivers")
 else:
     env.add_source_files(env.drivers_sources, "*.cpp")
-    lib = env.Library("drivers", env.drivers_sources)
-    env.NoCache(lib)
+    lib = env.add_library("drivers", env.drivers_sources)
     env.Prepend(LIBS=[lib])

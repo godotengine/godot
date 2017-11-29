@@ -12,8 +12,7 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 # env.add_source_files(env.modules_sources, thirdparty_sources)
 
-lib = env.Library("svg_builtin", thirdparty_sources)
-env.NoCache(lib)
+lib = env.add_library("svg_builtin", thirdparty_sources)
 
 # Needs to be appended to arrive after libscene in the linker call,
 # but we don't want it to arrive *after* system libs, so manual hack
