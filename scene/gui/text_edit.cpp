@@ -255,12 +255,8 @@ int TextEdit::Text::get_max_width(bool p_exclude_hidden) const {
 	//quite some work.. but should be fast enough.
 
 	int max = 0;
-	if (p_exclude_hidden) {
-		for (int i = 0; i < text.size(); i++)
-			if (!is_hidden(i))
-				max = MAX(max, get_line_width(i));
-	} else {
-		for (int i = 0; i < text.size(); i++)
+	for (int i = 0; i < text.size(); i++) {
+		if (!p_exclude_hidden || !is_hidden(i))
 			max = MAX(max, get_line_width(i));
 	}
 	return max;
@@ -4494,12 +4490,11 @@ int TextEdit::num_lines_from(int p_line_from, int unhidden_amount) const {
 	return num_total;
 }
 
-int TextEdit::get_whitespace_level(int p_line) const {
+int TextEdit::get_indent_level(int p_line, bool p_ignore_comments) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	// counts number of tabs and spaces before line starts
-	// ignore comments on first line
 	int whitespace_count = 0;
 	int line_length = text[p_line].size();
 	for (int i = 0; i < line_length - 1; i++) {
@@ -4507,12 +4502,12 @@ int TextEdit::get_whitespace_level(int p_line) const {
 			whitespace_count += indent_size;
 		} else if (text[p_line][i] == ' ') {
 			whitespace_count++;
-		} else if (text[p_line][i] == '#') {
+		} else if (p_ignore_comments && text[p_line][i] == '#') {
 			if (whitespace_count > 0) {
 				break;
 			}
 			whitespace_count++;
-		} else if (text[p_line][i] == '/') {
+		} else if (p_ignore_comments && text[p_line][i] == '/') {
 			if (i < line_length - 2 && text[p_line][i + 1] == '/') {
 				if (whitespace_count > 0) {
 					break;
@@ -4544,14 +4539,14 @@ bool TextEdit::can_fold(int p_line) const {
 	if (is_line_hidden(p_line))
 		return false;
 
-	int start_indent = get_whitespace_level(p_line);
+	int start_indent = get_indent_level(p_line);
 
 	// fold by comment
-	if (text[p_line].begins_with("#") || text[p_line].begins_with("//")) {
+	if (text[p_line].strip_edges().begins_with("#") || text[p_line].strip_edges().begins_with("//")) {
 		// first line is a comment
-		if (p_line == 0 || text[p_line - 1].size() == 0 || !(text[p_line - 1].begins_with("#") && !text[p_line - 1].begins_with("//"))) {
+		if (p_line == 0 || text[p_line - 1].size() == 0 || !(text[p_line - 1].strip_edges().begins_with("#") && !text[p_line - 1].strip_edges().begins_with("//"))) {
 			// previous line is not a comment
-			if (text[p_line + 1].begins_with("#") || text[p_line + 1].begins_with("//")) {
+			if (text[p_line + 1].strip_edges().begins_with("#") || text[p_line + 1].strip_edges().begins_with("//")) {
 				// the next line is a comment
 				return true;
 			} else {
@@ -4565,7 +4560,7 @@ bool TextEdit::can_fold(int p_line) const {
 		for (int i = p_line + 1; i < text.size(); i++) {
 			if (text[i].size() == 0)
 				continue;
-			int next_indent = get_whitespace_level(i);
+			int next_indent = get_indent_level(i);
 			if (next_indent > start_indent) {
 				return true;
 			} else {
@@ -4595,10 +4590,10 @@ void TextEdit::fold_line(int p_line) {
 		return;
 
 	// hide lines below this one
-	if (text[p_line].begins_with("#") || text[p_line].begins_with("//")) {
+	if (text[p_line].strip_edges().begins_with("#") || text[p_line].strip_edges().begins_with("//")) {
 		// fold by comment
 		for (int i = p_line + 1; i < text.size(); i++) {
-			if (text[i].begins_with("#") || text[i].begins_with("//")) {
+			if (text[i].strip_edges().begins_with("#") || text[i].strip_edges().begins_with("//")) {
 				set_line_as_hidden(i, true);
 			} else {
 				break;
@@ -4606,21 +4601,22 @@ void TextEdit::fold_line(int p_line) {
 		}
 	} else {
 		// fold by indentation
-		int start_indent = get_whitespace_level(p_line);
-		for (int i = p_line + 1; i < text.size(); i++) {
-			int cur_indent = get_whitespace_level(i);
+		int start_indent = get_indent_level(p_line);
+		int i = 0;
+		for (i = p_line + 1; i < text.size(); i++) {
+			int cur_indent = get_indent_level(i);
 			if (text[i].size() == 0 || cur_indent > start_indent) {
 				set_line_as_hidden(i, true);
 			} else {
-				// exclude trailing empty lines
-				for (int trail_i = i - 1; trail_i > p_line; trail_i--) {
-					if (text[trail_i].size() == 0)
-						set_line_as_hidden(trail_i, false);
-					else
-						break;
-				}
 				break;
 			}
+		}
+		// exclude trailing empty lines
+		for (int trail_i = i - 1; trail_i > p_line; trail_i--) {
+			if (text[trail_i].size() == 0)
+				set_line_as_hidden(trail_i, false);
+			else
+				break;
 		}
 	}
 
