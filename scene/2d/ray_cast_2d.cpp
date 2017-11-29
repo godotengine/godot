@@ -120,11 +120,11 @@ void RayCast2D::set_exclude_parent_body(bool p_exclude_parent_body) {
 	if (!is_inside_tree())
 		return;
 
-	if (Object::cast_to<PhysicsBody2D>(get_parent())) {
+	if (Object::cast_to<CollisionObject2D>(get_parent())) {
 		if (exclude_parent_body)
-			exclude.insert(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
+			exclude.insert(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 		else
-			exclude.erase(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
+			exclude.erase(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 	}
 }
 
@@ -144,11 +144,11 @@ void RayCast2D::_notification(int p_what) {
 			else
 				set_physics_process(false);
 
-			if (Object::cast_to<PhysicsBody2D>(get_parent())) {
+			if (Object::cast_to<CollisionObject2D>(get_parent())) {
 				if (exclude_parent_body)
-					exclude.insert(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
+					exclude.insert(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 				else
-					exclude.erase(Object::cast_to<PhysicsBody2D>(get_parent())->get_rid());
+					exclude.erase(Object::cast_to<CollisionObject2D>(get_parent())->get_rid());
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
