@@ -55,6 +55,7 @@ def get_opts():
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
+        BoolVariable('touch', 'Enable touch events', True),
     ]
 
 
@@ -140,6 +141,14 @@ def configure(env):
     env.ParseConfig('pkg-config xcursor --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')
     env.ParseConfig('pkg-config xrandr --cflags --libs')
+
+    if (env['touch']):
+        x11_error = os.system("pkg-config xi --modversion > /dev/null ")
+        if (x11_error):
+            print("xi not found.. cannot build with touch. Aborting.")
+            sys.exit(255)
+        env.ParseConfig('pkg-config xi --cflags --libs')
+        env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
