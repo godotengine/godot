@@ -781,6 +781,20 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
+		// update scene if it is open
+		for (int i = 0; i < changed_paths.size(); ++i) {
+			String new_item_path = p_item.is_file ? new_path : changed_paths[i].replace_first(old_path, new_path);
+			if (ResourceLoader::get_resource_type(new_item_path) == "PackedScene" && editor->is_scene_open(changed_paths[i])) {
+				EditorData *ed = &editor->get_editor_data();
+				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
+					if (ed->get_scene_path(j) == changed_paths[i]) {
+						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+						break;
+					}
+				}
+			}
+		}
+
 		//Only treat as a changed dependency if it was successfully moved
 		for (int i = 0; i < changed_paths.size(); ++i) {
 			p_renames[changed_paths[i]] = changed_paths[i].replace_first(old_path, new_path);
@@ -803,7 +817,10 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
 		print_line("Remapping dependencies for: " + file);
 		Error err = ResourceLoader::rename_dependencies(file, p_renames);
-		if (err != OK) {
+		if (err == OK) {
+			if (ResourceLoader::get_resource_type(file) == "PackedScene")
+				editor->reload_scene(file);
+		} else {
 			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:\n") + remaps[i] + "\n");
 		}
 	}
