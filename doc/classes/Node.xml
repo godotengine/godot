@@ -856,7 +856,7 @@
 			Duplicate the node's scripts.
 		</constant>
 		<constant name="DUPLICATE_USE_INSTANCING" value="8" enum="DuplicateFlags">
-		</constant>
 			Duplicate using instancing.
+		</constant>
 	</constants>
 </class>
