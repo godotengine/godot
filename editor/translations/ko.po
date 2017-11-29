@@ -1138,6 +1138,11 @@ msgid "File Exists, Overwrite?"
 msgstr "파일이 존재합니다. 덮어쓰시겠습니까?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select Current Folder"
+msgstr "폴더 생성"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "인식 가능한 모든 파일"
 
@@ -1211,7 +1216,7 @@ msgstr "즐겨찾기 위로 이동"
 msgid "Move Favorite Down"
 msgstr "즐겨찾기 아래로 이동"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "부모 폴더로 이동"
 
@@ -1521,6 +1526,16 @@ msgstr ""
 "이것은 원격 오브젝트에 대한 변경이며 변경사항이 저장되지 않습니다.\n"
 "이 워크플로에 대해 더 자세히 이해하기 위해서 디버깅 관련 문서를 읽어보시기 바"
 "랍니다."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "모두 확장"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "모두 접기"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2152,12 +2167,12 @@ msgid "Import"
 msgstr "가져오기"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "파일 시스템"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "노드"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "파일 시스템"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2215,7 +2230,7 @@ msgstr "3D 에디터 열기"
 msgid "Open Script Editor"
 msgstr "스크립트 에디터 열기"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "어셋 라이브러리 열기"
 
@@ -2990,6 +3005,57 @@ msgstr "애니메이션 도구"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "애니메이션 복사"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "부문:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "붙여넣기"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "기능"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5862,6 +5928,12 @@ msgstr "지금 재시작"
 msgid "Can't run project"
 msgstr "프로젝트를 실행할 수 없음"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "키 "
@@ -7646,6 +7718,11 @@ msgstr "경고!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "메소드 선택"
 
 #: scene/gui/popup.cpp
 msgid ""

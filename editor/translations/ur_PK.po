@@ -1127,6 +1127,10 @@ msgid "File Exists, Overwrite?"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Select Current Folder"
+msgstr ""
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr ".سب کچھ تسلیم ہوچکا ہے"
 
@@ -1202,7 +1206,7 @@ msgstr "پسندیدہ اوپر منتقل کریں"
 msgid "Move Favorite Down"
 msgstr "پسندیدہ نیچے منتقل کریں"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr ""
 
@@ -1494,6 +1498,14 @@ msgid ""
 "This is a remote object so changes to it will not be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Expand all properties"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Collapse all properties"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2091,11 +2103,11 @@ msgid "Import"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
+msgid "Node"
 msgstr ""
 
-#: editor/editor_node.cpp editor/node_dock.cpp
-msgid "Node"
+#: editor/editor_node.cpp
+msgid "FileSystem"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2155,7 +2167,7 @@ msgstr ""
 msgid "Open Script Editor"
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr ""
 
@@ -2918,6 +2930,55 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "سب سکریپشن بنائیں"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Past"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Future"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -5797,6 +5858,12 @@ msgstr ""
 msgid "Can't run project"
 msgstr ""
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -7555,6 +7622,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "Select this Folder"
 msgstr ""
 
 #: scene/gui/popup.cpp

@@ -1138,6 +1138,11 @@ msgid "File Exists, Overwrite?"
 msgstr "Fitxer Existent, Sobreescriure?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select Current Folder"
+msgstr "Crea una Carpeta"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "Tots Reconeguts"
 
@@ -1211,7 +1216,7 @@ msgstr "Moure Favorit Amunt"
 msgid "Move Favorite Down"
 msgstr "Moure Favorit Avall"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Aneu a la carpeta principal"
 
@@ -1520,6 +1525,16 @@ msgid ""
 msgstr ""
 "En ser un object remot, els canvis no es desaran.\n"
 "Referiu-vos a la documentació rellevant sobre la Depuració de codi."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "Expandir tot"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "Col·lapsar tot"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2163,12 +2178,12 @@ msgid "Import"
 msgstr "Importa"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "Sistema de Fitxers"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "Node"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "Sistema de Fitxers"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2226,7 +2241,7 @@ msgstr "Obre l'Editor 3D"
 msgid "Open Script Editor"
 msgstr "Editor d'Scripts"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "Exportar Biblioteca de Recursos"
 
@@ -3001,6 +3016,57 @@ msgstr "Eines d'Animació"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "Copiar l'Animació"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "Seccions:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "Enganxa"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "Característiques"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5892,6 +5958,12 @@ msgstr "Reinicia"
 msgid "Can't run project"
 msgstr "No es pot executar el projecte"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Tecla "
@@ -7727,6 +7799,11 @@ msgstr "Ep!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Confirmeu..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "Selecciona un Mètode"
 
 #: scene/gui/popup.cpp
 msgid ""

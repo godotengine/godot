@@ -1132,6 +1132,11 @@ msgid "File Exists, Overwrite?"
 msgstr "มีไฟล์นี้อยู่แล้ว จะเขียนทับหรือไม่?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select Current Folder"
+msgstr "สร้างโฟลเดอร์"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "ทุกนามสุกลที่รู้จัก"
 
@@ -1205,7 +1210,7 @@ msgstr "เลื่อนโฟลเดอร์ที่ชอบขึ้น
 msgid "Move Favorite Down"
 msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "ไปยังโฟลเดอร์หลัก"
 
@@ -1505,6 +1510,16 @@ msgid ""
 msgstr ""
 "วัตถุนี้เป็นวัตถุรีโมท การแก้ไขจะไม่ถูกบันทึก\n"
 "อ่านรายละเอียดเพิ่มเติมได้จากคู่มือในส่วนของการแก้ไขจุดบกพร่อง"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "ขยายโฟลเดอร์"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "ยุบโฟลเดอร์"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2118,12 +2133,12 @@ msgid "Import"
 msgstr "นำเข้า"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "ระบบไฟล์"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "โหนด"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "ระบบไฟล์"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2181,7 +2196,7 @@ msgstr "เปิดตัวแก้ไข 3 มิติ"
 msgid "Open Script Editor"
 msgstr "เปิดตัวแก้ไขสคริปต์"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "เปิดแหล่งรวมทรัพยากร"
 
@@ -2951,6 +2966,57 @@ msgstr "เครื่องมือแอนิเมชัน"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "คัดลอกแอนิเมชัน"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "หัวข้อ:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "วาง"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "ฟีเจอร์"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5825,6 +5891,12 @@ msgstr "เริ่มใหม่ทันที"
 msgid "Can't run project"
 msgstr "ไม่สามารถรันโปรเจกต์"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "ปุ่ม "
@@ -7598,6 +7670,11 @@ msgstr "แจ้งเตือน!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "เลือกเมท็อด"
 
 #: scene/gui/popup.cpp
 msgid ""

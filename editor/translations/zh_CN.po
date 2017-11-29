@@ -1140,6 +1140,11 @@ msgid "File Exists, Overwrite?"
 msgstr "文件已存在，确定要覆盖它吗？"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select Current Folder"
+msgstr "新建目录"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "所有可用类型"
 
@@ -1213,7 +1218,7 @@ msgstr "向上移动收藏"
 msgid "Move Favorite Down"
 msgstr "向下移动收藏"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "转到上层文件夹"
 
@@ -1519,6 +1524,16 @@ msgid ""
 msgstr ""
 "这是一个远程对象，因此对它的更改将不会被保留。\n"
 "请阅读与调试相关的文档，以便更好地理解这个工作流。"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "展开所有"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "收起所有"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2135,12 +2150,12 @@ msgid "Import"
 msgstr "导入"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "文件系统"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "节点"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "文件系统"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2198,7 +2213,7 @@ msgstr "打开3D编辑器"
 msgid "Open Script Editor"
 msgstr "打开脚本编辑器"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "打开资源商店"
 
@@ -2972,6 +2987,57 @@ msgstr "动画工具"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "拷贝动画"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "选项:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "粘贴"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "功能"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -5872,6 +5938,12 @@ msgstr "立即重新启动"
 msgid "Can't run project"
 msgstr "无法运行项目"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "键 "
@@ -7671,6 +7743,11 @@ msgstr "提示！"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "请确认..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "选择方式"
 
 #: scene/gui/popup.cpp
 msgid ""

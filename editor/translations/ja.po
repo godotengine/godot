@@ -1290,6 +1290,11 @@ msgstr "ファイルが既に存在します。上書きしますか？"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
+msgid "Select Current Folder"
+msgstr "フォルダを作成する"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
 msgid "All Recognized"
 msgstr "知られているすべての"
 
@@ -1373,7 +1378,7 @@ msgstr "お気に入りを上げる"
 msgid "Move Favorite Down"
 msgstr "お気に入りを下げる"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder"
 msgstr "フォルダを作成できませんでした。"
@@ -1716,6 +1721,16 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "すべて展開する"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "すべて折りたたむ"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2449,13 +2464,13 @@ msgstr "インポート（取り込み）"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "FileSystem"
-msgstr "ファイルシステム"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
-#, fuzzy
 msgid "Node"
 msgstr "ノード"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "FileSystem"
+msgstr "ファイルシステム"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2521,7 +2536,7 @@ msgstr "ディレクトリを開く"
 msgid "Open Script Editor"
 msgstr "スクリプトエディタを開く"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 #, fuzzy
 msgid "Open Asset Library"
 msgstr "アセット　ライブラリを開く"
@@ -3426,6 +3441,57 @@ msgstr "アニメーションツール"
 #, fuzzy
 msgid "Copy Animation"
 msgstr "アニメーションを複製する"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "セクション:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "貼り付け"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "テクスチャ"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -6669,6 +6735,12 @@ msgstr "アニメーションを最初から再生する :"
 msgid "Can't run project"
 msgstr "接続失敗."
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 #, fuzzy
 msgid "Key "
@@ -8698,6 +8770,11 @@ msgstr "警告!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "確認してください。"
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "すべて選択"
 
 #: scene/gui/popup.cpp
 msgid ""

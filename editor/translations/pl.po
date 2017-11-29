@@ -1156,6 +1156,11 @@ msgid "File Exists, Overwrite?"
 msgstr "Plik istnieje, nadpisać?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select Current Folder"
+msgstr "Utwórz katalog"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
 msgstr "Wszystkie rozpoznane"
 
@@ -1229,7 +1234,7 @@ msgstr "Przesuń Ulubiony w górę"
 msgid "Move Favorite Down"
 msgstr "Przesuń Ulubiony w dół"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Przejdź folder wyżej"
 
@@ -1542,6 +1547,16 @@ msgstr ""
 "To jest zdalny obiekt więc zmiany nie zostaną zachowane.\n"
 "Przeczytaj dokumentację dotyczącą debugowania by lepiej zrozumieć ten sposób "
 "pracy."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand all properties"
+msgstr "Rozwiń foldery"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Collapse all properties"
+msgstr "Zwiń foldery"
 
 #: editor/editor_node.cpp
 msgid "Copy Params"
@@ -2179,12 +2194,12 @@ msgid "Import"
 msgstr "Importuj"
 
 #: editor/editor_node.cpp
-msgid "FileSystem"
-msgstr "System plików"
-
-#: editor/editor_node.cpp editor/node_dock.cpp
 msgid "Node"
 msgstr "Węzeł"
+
+#: editor/editor_node.cpp
+msgid "FileSystem"
+msgstr "System plików"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -2242,7 +2257,7 @@ msgstr "Otwórz edytor 3D"
 msgid "Open Script Editor"
 msgstr "Otwórz edytor skryptów"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
 msgstr "Otwórz bibliotekę zasobów"
 
@@ -3026,6 +3041,57 @@ msgstr "Narzędzia do animacji"
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Copy Animation"
 msgstr "Skopiuj animacje"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Enable Onion Skinning"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Directions"
+msgstr "Kategorie:"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Past"
+msgstr "Wklej"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Future"
+msgstr "Funkcje"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Depth"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "1 step"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "2 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "3 steps"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Differences Only"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Force White Modulate"
+msgstr ""
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Include Gizmos (3D)"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -6000,6 +6066,12 @@ msgstr "Uruchom ponownie"
 msgid "Can't run project"
 msgstr "Nie można uruchomić projektu"
 
+#: editor/project_manager.cpp
+msgid ""
+"You don't currently have any projects.\n"
+"Would you like to explore the official example projects in the Asset Library?"
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Klawisz "
@@ -7829,6 +7901,11 @@ msgstr "Alarm!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Proszę potwierdzić..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Select this Folder"
+msgstr "Wybierz metodę"
 
 #: scene/gui/popup.cpp
 msgid ""
