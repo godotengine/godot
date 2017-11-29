@@ -203,6 +203,7 @@ class PropertyEditor : public Control {
 	bool hide_script;
 	bool use_folding;
 	bool property_selectable;
+	bool is_expandall_enabled;
 
 	bool updating_folding;
 
