@@ -303,8 +303,6 @@ void TextEdit::_update_scrollbars() {
 	int total_rows = (is_hiding_enabled() ? get_total_unhidden_rows() : text.size());
 	if (scroll_past_end_of_file_enabled) {
 		total_rows += visible_rows - 1;
-	} else {
-		total_rows -= 1;
 	}
 
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
@@ -3081,7 +3079,7 @@ void TextEdit::_scroll_down(real_t p_delta) {
 	if (smooth_scroll_enabled) {
 		int max_v_scroll = get_total_unhidden_rows();
 		if (!scroll_past_end_of_file_enabled) {
-			max_v_scroll -= get_visible_rows() + 1;
+			max_v_scroll -= get_visible_rows();
 			max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 		}
 
@@ -3139,7 +3137,7 @@ void TextEdit::_scroll_lines_down() {
 	// calculate the maximum vertical scroll position
 	int max_v_scroll = get_total_unhidden_rows();
 	if (!scroll_past_end_of_file_enabled) {
-		max_v_scroll -= get_visible_rows() + 1;
+		max_v_scroll -= get_visible_rows();
 		max_v_scroll = CLAMP(max_v_scroll, 0, get_total_unhidden_rows());
 	}
 
