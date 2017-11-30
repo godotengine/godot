@@ -78,6 +78,7 @@ class TextEdit : public Control {
 		Ref<Texture> folded_eol_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
+		Ref<StyleBox> style_readonly;
 		Ref<Font> font;
 		Color completion_background_color;
 		Color completion_selected_color;
