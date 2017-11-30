@@ -176,6 +176,8 @@ def get_opts():
     return [
         ('mingw_prefix', 'Mingw Prefix', mingw32),
         ('mingw_prefix_64', 'Mingw Prefix 64 bits', mingw64),
+        # Targeted Windows version: Vista (and later)
+        ('target_win_version', 'Targeted Windows version, >= 0x0600 (Vista)', '0x0600'),
     ]
 
 
@@ -210,16 +212,13 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
 
-    # Targeted Windows version: Vista (and later)
-    winver = "0x0600" # Windows Vista is the minimum target for windows builds
-
     env['is_mingw'] = False
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
         # build using visual studio
         env['ENV']['TMP'] = os.environ['TMP']
         env.Append(CPPPATH=['#platform/windows/include'])
         env.Append(LIBPATH=['#platform/windows/lib'])
-        env.Append(CCFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
+        env.Append(CCFLAGS=['/DWINVER=%s' % env['target_win_version'], '/D_WIN32_WINNT=%s' % env['target_win_version']])
 
         if (env["target"] == "release"):
 
