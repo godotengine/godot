@@ -119,6 +119,29 @@ bool RayCast::is_enabled() const {
 	return enabled;
 }
 
+void RayCast::set_exclude_parent_body(bool p_exclude_parent_body) {
+
+	if (exclude_parent_body == p_exclude_parent_body)
+		return;
+
+	exclude_parent_body = p_exclude_parent_body;
+
+	if (!is_inside_tree())
+		return;
+
+	if (Object::cast_to<CollisionObject>(get_parent())) {
+		if (exclude_parent_body)
+			exclude.insert(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+		else
+			exclude.erase(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+	}
+}
+
+bool RayCast::get_exclude_parent_body() const {
+
+	return exclude_parent_body;
+}
+
 void RayCast::_notification(int p_what) {
 
 	switch (p_what) {
@@ -132,6 +155,13 @@ void RayCast::_notification(int p_what) {
 					_update_debug_shape();
 			} else
 				set_physics_process(false);
+
+			if (Object::cast_to<CollisionObject>(get_parent())) {
+				if (exclude_parent_body)
+					exclude.insert(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+				else
+					exclude.erase(Object::cast_to<CollisionObject>(get_parent())->get_rid());
+			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -256,7 +286,11 @@ void RayCast::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &RayCast::set_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &RayCast::get_collision_mask_bit);
 
+	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast::set_exclude_parent_body);
+	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast::get_exclude_parent_body);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cast_to"), "set_cast_to", "get_cast_to");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
@@ -332,4 +366,5 @@ RayCast::RayCast() {
 	collision_mask = 1;
 	cast_to = Vector3(0, -1, 0);
 	debug_shape = NULL;
+	exclude_parent_body = true;
 }
