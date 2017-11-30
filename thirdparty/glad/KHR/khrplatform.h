@@ -102,8 +102,7 @@
 #elif defined (__SYMBIAN32__)
 #   define KHRONOS_APICALL IMPORT_C
 #elif defined(__ANDROID__)
-#   include <sys/cdefs.h>
-#   define KHRONOS_APICALL __attribute__((visibility("default"))) __NDK_FPABI__
+#   define KHRONOS_APICALL __attribute__((visibility("default")))
 #else
 #   define KHRONOS_APICALL
 #endif
