@@ -116,7 +116,7 @@ void main() {
 #endif
 		}
 
-	} else {
+	} else if(delta > 0.0) {
 		if (restart_phase >= prev_system_phase) {
 			restart=true;
 #ifdef USE_FRACTIONAL_DELTA
