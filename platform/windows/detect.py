@@ -98,17 +98,7 @@ def is_active():
 
 def get_name():
     return "Windows"
-    if (os.getenv("MINGW32_PREFIX")):
-        mingw32=os.getenv("MINGW32_PREFIX")
-        mingw = mingw32
-    if (os.getenv("MINGW64_PREFIX")):
-        mingw64=os.getenv("MINGW64_PREFIX")
 
-
-    return [
-        ('mingw_prefix','Mingw Prefix',mingw32),
-        ('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
-    ]
 
 def can_build():
 
