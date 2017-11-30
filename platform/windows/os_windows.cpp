@@ -1588,8 +1588,21 @@ void OS_Windows::_update_window_style(bool repaint) {
 	}
 }
 
-Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle) {
-	p_library_handle = (void *)LoadLibrary(p_path.utf8().get_data());
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
+
+
+	DLL_DIRECTORY_COOKIE cookie;
+
+	if (p_also_set_library_path) {
+		cookie = AddDllDirectory(p_path.get_base_dir().c_str());
+	}
+
+	p_library_handle = (void *)LoadLibraryExW(p_path.c_str(),NULL,p_also_set_library_path ? LOAD_LIBRARY_SEARCH_USER_DIRS : 0);
+
+	if (p_also_set_library_path) {
+		RemoveDllDirectory(cookie);
+	}
+
 	if (!p_library_handle) {
 		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + String::num(GetLastError()));
 		ERR_FAIL_V(ERR_CANT_OPEN);
@@ -1954,7 +1967,7 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 
 bool OS_Windows::has_environment(const String &p_var) const {
 
-	return getenv(p_var.utf8().get_data()) != NULL;
+	return _wgetenv(p_var.c_str()) != NULL;
 };
 
 String OS_Windows::get_environment(const String &p_var) const {
