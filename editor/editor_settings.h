@@ -70,6 +70,8 @@ private:
 		bool hide_from_editor;
 		bool save;
 		VariantContainer() {
+			variant = Variant();
+			initial = Variant();
 			order = 0;
 			hide_from_editor = false;
 			has_default_value = false;
@@ -77,8 +79,11 @@ private:
 		}
 		VariantContainer(const Variant &p_variant, int p_order) {
 			variant = p_variant;
+			initial = Variant();
 			order = p_order;
 			hide_from_editor = false;
+			has_default_value = false;
+			save = false;
 		}
 	};
 
