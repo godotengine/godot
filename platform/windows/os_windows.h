@@ -117,6 +117,9 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	JoypadWindows *joypad;
+#if WINVER >= 0x0601 // for windows 7
+	Map<int, Vector2> touch_state;
+#endif
 
 	PowerWindows *power_manager;
 
@@ -132,8 +135,8 @@ class OS_Windows : public OS {
 
 	CrashHandler crash_handler;
 
-	void _drag_event(int p_x, int p_y, int idx);
-	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
+	void _drag_event(float p_x, float p_y, int idx);
+	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(bool repaint = true);
 
