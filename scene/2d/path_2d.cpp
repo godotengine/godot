@@ -117,29 +117,27 @@ void PathFollow2D::_update_transform() {
 
 	Vector2 pos = c->interpolate_baked(o, cubic);
 
-	Vector2 offset = Vector2(h_offset, v_offset);
-
-	Transform2D t = get_transform();
-	t.set_origin(pos);
+	Vector2 displacement_offset = Vector2(h_offset, v_offset);
 
 	if (rotate) {
 
 		Vector2 t_prev = (pos - c->interpolate_baked(o - delta_offset, cubic)).normalized();
-		Vector2 t_cur = (c->interpolate_baked(o + delta_offset, cubic) - pos).normalized();
+		Vector2 t_next = (c->interpolate_baked(o + delta_offset, cubic) - pos).normalized();
 
-		float dot = t_prev.dot(t_cur);
-		float angle = Math::acos(CLAMP(dot, -1, 1));
+		float angle = t_prev.angle_to(t_next);
 
-		t.rotate(angle);
+		set_rotation(get_rotation() + angle);
 
-		t.translate(offset);
+		Vector2 n = t_next;
+		Vector2 t = -n.tangent();
+		pos += n * h_offset + t * v_offset;
 
 	} else {
 
-		t.set_origin(t.get_origin() + offset);
+		pos += displacement_offset;
 	}
 
-	set_transform(t);
+	set_position(pos);
 }
 
 void PathFollow2D::_notification(int p_what) {
