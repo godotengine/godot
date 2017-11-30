@@ -75,10 +75,9 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value, bool
 		return true;
 	}
 
-	if (p_value.get_type() == Variant::NIL)
+	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-	else {
-
+	} else {
 		if (props.has(p_name))
 			props[p_name].variant = p_value;
 		else
@@ -967,6 +966,8 @@ void EditorSettings::raise_order(const String &p_setting) {
 
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value) {
 
+	_THREAD_SAFE_METHOD_
+
 	if (!props.has(p_setting))
 		return;
 	props[p_setting].initial = p_value;
@@ -979,7 +980,8 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
 	if (EditorSettings::get_singleton()->has_setting(p_setting))
 		ret = EditorSettings::get_singleton()->get(p_setting);
 	else
-		EditorSettings::get_singleton()->set(p_setting, p_default);
+		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
+
 	if (!EditorSettings::get_singleton()->has_default_value(p_setting))
 		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
 
@@ -997,12 +999,15 @@ bool EditorSettings::property_can_revert(const String &p_setting) {
 	if (!props.has(p_setting))
 		return false;
 
+	if (!props[p_setting].has_default_value)
+		return false;
+
 	return props[p_setting].initial != props[p_setting].variant;
 }
 
 Variant EditorSettings::property_get_revert(const String &p_setting) {
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting) || !props[p_setting].has_default_value)
 		return Variant();
 
 	return props[p_setting].initial;
