@@ -556,8 +556,6 @@ class VisualServerRaster : public VisualServer {
 
 	Rect2 canvas_clip;
 	Color clear_color;
-	Cursor cursors[MAX_CURSORS];
-	RID default_cursor_texture;
 
 	static void *instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int);
 	static void instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *);
@@ -1212,12 +1210,6 @@ public:
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName &p_param, const Variant &p_value);
 	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName &p_param) const;
 	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode);
-
-	/* CURSOR */
-	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0); // radians
-	virtual void cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor = 0, const Rect2 &p_region = Rect2());
-	virtual void cursor_set_visible(bool p_visible, int p_cursor = 0);
-	virtual void cursor_set_pos(const Point2 &p_pos, int p_cursor = 0);
 
 	/* BLACK BARS */
 

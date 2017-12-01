@@ -930,17 +930,6 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			boot_splash = splash;
 		}
 	}
-	StringName custom_cursor;
-	{
-		String splash = Globals::get_singleton()->get("display/custom_mouse_cursor"); //avoid splash from being converted
-		splash = splash.strip_edges();
-		if (splash != String()) {
-			if (!splash.begins_with("res://"))
-				splash = "res://" + splash;
-			splash = splash.simplify_path();
-			custom_cursor = splash;
-		}
-	}
 
 	for (int i = 0; i < files.size(); i++) {
 
@@ -949,7 +938,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		String src = files[i];
 		Vector<uint8_t> buf;
 
-		if (src == boot_splash || src == custom_cursor)
+		if (src == boot_splash)
 			buf = get_exported_file_default(src); //bootsplash must be kept if used
 		else
 			buf = get_exported_file(src);

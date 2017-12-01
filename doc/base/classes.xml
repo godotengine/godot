@@ -16587,9 +16587,12 @@
 		<method name="set_custom_mouse_cursor">
 			<argument index="0" name="image" type="Texture">
 			</argument>
-			<argument index="1" name="hotspot" type="Vector2" default="Vector2(0, 0)">
+			<argument index="1" name="hotspot" type="int" default="CURSOR_ARROW">
+			</argument>
+			<argument index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
+				See enum CURSOR_* for the list of shapes.
 				Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified.
 			</description>
 		</method>
@@ -46793,42 +46796,6 @@
 		</method>
 		<method name="canvas_item_set_z">
 			<argument index="0" name="arg0" type="RID">
-			</argument>
-			<argument index="1" name="arg1" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="cursor_set_pos">
-			<argument index="0" name="arg0" type="Vector2">
-			</argument>
-			<argument index="1" name="arg1" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="cursor_set_rotation">
-			<argument index="0" name="arg0" type="float">
-			</argument>
-			<argument index="1" name="arg1" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="cursor_set_texture">
-			<argument index="0" name="arg0" type="RID">
-			</argument>
-			<argument index="1" name="arg1" type="Vector2">
-			</argument>
-			<argument index="2" name="arg2" type="int">
-			</argument>
-			<argument index="3" name="arg3" type="Rect2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="cursor_set_visible">
-			<argument index="0" name="arg0" type="bool">
 			</argument>
 			<argument index="1" name="arg1" type="int">
 			</argument>

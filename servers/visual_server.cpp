@@ -522,11 +522,6 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("canvas_item_clear"), &VisualServer::canvas_item_clear);
 	ObjectTypeDB::bind_method(_MD("canvas_item_raise"), &VisualServer::canvas_item_raise);
 
-	ObjectTypeDB::bind_method(_MD("cursor_set_rotation"), &VisualServer::cursor_set_rotation);
-	ObjectTypeDB::bind_method(_MD("cursor_set_texture"), &VisualServer::cursor_set_texture);
-	ObjectTypeDB::bind_method(_MD("cursor_set_visible"), &VisualServer::cursor_set_visible);
-	ObjectTypeDB::bind_method(_MD("cursor_set_pos"), &VisualServer::cursor_set_pos);
-
 	ObjectTypeDB::bind_method(_MD("black_bars_set_margins", "left", "top", "right", "bottom"), &VisualServer::black_bars_set_margins);
 	ObjectTypeDB::bind_method(_MD("black_bars_set_images", "left", "top", "right", "bottom"), &VisualServer::black_bars_set_images);
 

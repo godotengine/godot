@@ -38,6 +38,7 @@
 #include "servers/physics/physics_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+#include "scene/resources/texture.h"
 
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -490,9 +491,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 
-	if (OS_OSX::singleton->input)
-		OS_OSX::singleton->input->set_mouse_in_window(false);
-
 	//_glfwInputCursorEnter(window, GL_FALSE);
 }
 
@@ -505,7 +503,8 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 
 	if (OS_OSX::singleton->input)
-		OS_OSX::singleton->input->set_mouse_in_window(true);
+		OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
+		OS_OSX::singleton->set_cursor_shape(OS::CURSOR_ARROW);
 }
 
 - (void)viewDidChangeBackingProperties {
@@ -1026,7 +1025,6 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	}
 
 	visual_server->init();
-	visual_server->cursor_set_visible(false, 0);
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -1167,28 +1165,81 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 	if (cursor_shape == p_shape)
 		return;
 
-	switch (p_shape) {
-		case CURSOR_ARROW: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_IBEAM: [[NSCursor IBeamCursor] set]; break;
-		case CURSOR_POINTING_HAND: [[NSCursor pointingHandCursor] set]; break;
-		case CURSOR_CROSS: [[NSCursor crosshairCursor] set]; break;
-		case CURSOR_WAIT: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
-		case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
-		case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
-		case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
-		case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
-		case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
-		case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
-		case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
-		default: {};
+	if (cursors[p_shape] != NULL) {
+		[cursors[p_shape] set];
+	} else {
+		switch (p_shape) {
+			case CURSOR_ARROW: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_IBEAM: [[NSCursor IBeamCursor] set]; break;
+			case CURSOR_POINTING_HAND: [[NSCursor pointingHandCursor] set]; break;
+			case CURSOR_CROSS: [[NSCursor crosshairCursor] set]; break;
+			case CURSOR_WAIT: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_BUSY: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_DRAG: [[NSCursor closedHandCursor] set]; break;
+			case CURSOR_CAN_DROP: [[NSCursor openHandCursor] set]; break;
+			case CURSOR_FORBIDDEN: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_VSIZE: [[NSCursor resizeUpDownCursor] set]; break;
+			case CURSOR_HSIZE: [[NSCursor resizeLeftRightCursor] set]; break;
+			case CURSOR_BDIAGSIZE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_FDIAGSIZE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_MOVE: [[NSCursor arrowCursor] set]; break;
+			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
+			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
+			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
+			default: {};
+		}
 	}
 
 	cursor_shape = p_shape;
+}
+
+void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){
+	if (p_cursor.is_valid()) {
+		Ref<ImageTexture> texture = p_cursor;
+		Image image = texture->get_data();
+
+		int image_size = 32 * 32;
+
+		ERR_FAIL_COND(texture->get_width() != 32 || texture->get_height() != 32);
+
+		NSBitmapImageRep *imgrep = [[[NSBitmapImageRep alloc]
+						initWithBitmapDataPlanes:NULL
+						pixelsWide:image.get_width()
+						pixelsHigh:image.get_height()
+						bitsPerSample:8
+						samplesPerPixel:4
+						hasAlpha:YES
+						isPlanar:NO
+						colorSpaceName:NSDeviceRGBColorSpace
+						bytesPerRow:image.get_width() * 4
+						bitsPerPixel:32] autorelease];
+		ERR_FAIL_COND(imgrep == nil);
+		uint8_t *pixels = [imgrep bitmapData];
+
+		int len = image.get_width() * image.get_height();
+		DVector<uint8_t> data = image.get_data();
+		DVector<uint8_t>::Read r = data.read();
+
+		/* Premultiply the alpha channel */
+		for (int i = 0; i < len; i++) {
+			uint8_t alpha = r[i * 4 + 3];
+			pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+			pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+			pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+			pixels[i * 4 + 3] = alpha;
+		}
+
+		NSImage * nsimage = [[[NSImage alloc] initWithSize: NSMakeSize(image.get_width(), image.get_height())] autorelease];
+		[nsimage addRepresentation: imgrep];
+		
+		NSCursor *cursor = [[NSCursor alloc] initWithImage: nsimage hotSpot: NSMakePoint(p_hotspot.x, p_hotspot.y)];
+
+		cursors[p_shape] = cursor;
+
+		if (p_shape == CURSOR_ARROW) {
+			[cursor set];
+		}
+	}
 }
 
 void OS_OSX::set_mouse_show(bool p_show) {
