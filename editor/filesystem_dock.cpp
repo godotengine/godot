@@ -909,10 +909,11 @@ void FileSystemDock::_file_option(int p_option) {
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 		case FILE_OPEN: {
-			int idx = files->get_current();
-			if (idx < 0 || idx >= files->get_item_count())
-				break;
-			_select_file(idx);
+			for (int i = 0; i < files->get_item_count(); i++) {
+				if (files->is_selected(i)) {
+					_select_file(i);
+				}
+			}
 		} break;
 		case FILE_INSTANCE: {
 
@@ -1429,14 +1430,17 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	file_options->clear();
 	file_options->set_size(Size2(1, 1));
-	if (all_files && filenames.size() > 0) {
-		file_options->add_item(TTR("Open"), FILE_OPEN);
-		if (all_files_scenes) {
-			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
-		}
-		file_options->add_separator();
+	if (all_files) {
 
-		if (filenames.size() == 1) {
+		if (all_files_scenes && filenames.size() >= 1) {
+			file_options->add_item(TTR("Open Scene(s)"), FILE_OPEN);
+			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
+			file_options->add_separator();
+		}
+
+		if (!all_files_scenes && filenames.size() == 1) {
+			file_options->add_item(TTR("Open"), FILE_OPEN);
+			file_options->add_separator();
 			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
 			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
 			file_options->add_separator();
