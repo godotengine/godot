@@ -225,7 +225,6 @@ bool OS_Windows::can_draw() const {
 
 void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 
-#if WINVER >= 0x0601 // for windows 7
 	// Defensive
 	if (touch_state.has(idx) == p_pressed)
 		return;
@@ -235,7 +234,6 @@ void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 	} else {
 		touch_state.erase(idx);
 	}
-#endif
 
 	Ref<InputEventScreenTouch> event;
 	event.instance();
@@ -250,7 +248,6 @@ void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 
 void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 
-#if WINVER >= 0x0601 // for windows 7
 	Map<int, Vector2>::Element *curr = touch_state.find(idx);
 	// Defensive
 	if (!curr)
@@ -260,7 +257,6 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 		return;
 
 	curr->get() = Vector2(p_x, p_y);
-#endif
 
 	Ref<InputEventScreenDrag> event;
 	event.instance();
@@ -290,13 +286,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
 				ReleaseCapture();
 			}
-#if WINVER >= 0x0601 // for windows 7
+
 			// Release every touch to avoid sticky points
 			for (Map<int, Vector2>::Element *E = touch_state.front(); E; E = E->next()) {
 				_touch_event(false, E->get().x, E->get().y, E->key());
 			}
 			touch_state.clear();
-#endif
+
 			break;
 		}
 		case WM_ACTIVATE: // Watch For Window Activate Message
@@ -700,7 +696,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			print_line("input lang change");
 		} break;
 
-#if WINVER >= 0x0601 // for windows 7
 		case WM_TOUCH: {
 
 			BOOL bHandled = FALSE;
@@ -734,7 +729,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		} break;
 
-#endif
 		case WM_DEVICECHANGE: {
 
 			joypad->probe_joypads();
@@ -1118,9 +1112,7 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	tme.dwHoverTime = HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
 
-#if WINVER >= 0x0601 // for windows 7
-	RegisterTouchWindow(hWnd, 0); // Windows 7
-#endif
+	RegisterTouchWindow(hWnd, 0);
 
 	_ensure_user_data_dir();
 
@@ -1234,9 +1226,7 @@ void OS_Windows::finalize() {
 
 	memdelete(joypad);
 	memdelete(input);
-#if WINVER >= 0x0601 // for windows 7
 	touch_state.clear();
-#endif
 
 	visual_server->finish();
 	memdelete(visual_server);

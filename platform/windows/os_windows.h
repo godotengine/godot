@@ -117,9 +117,7 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	JoypadWindows *joypad;
-#if WINVER >= 0x0601 // for windows 7
 	Map<int, Vector2> touch_state;
-#endif
 
 	PowerWindows *power_manager;
 
@@ -215,7 +213,7 @@ public:
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle,bool p_also_set_library_path=false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
 
