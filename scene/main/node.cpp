@@ -2121,7 +2121,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
-				if (get_child(i)->data.owner != this)
+				if (N->get()->get_child(i)->data.owner != this)
 					continue;
 
 				node_tree.push_back(N->get()->get_child(i));
