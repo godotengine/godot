@@ -197,6 +197,8 @@ static ResourceFormatLoaderText *resource_loader_text = NULL;
 
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font = NULL;
 
+static ResourceFormatLoaderBitmapFont *resource_loader_bitmap_font = NULL;
+
 static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
 
 void register_scene_types() {
@@ -209,6 +211,9 @@ void register_scene_types() {
 
 	resource_loader_dynamic_font = memnew(ResourceFormatLoaderDynamicFont);
 	ResourceLoader::add_resource_format_loader(resource_loader_dynamic_font);
+
+	resource_loader_bitmap_font = memnew(ResourceFormatLoaderBitmapFont);
+	ResourceLoader::add_resource_format_loader(resource_loader_bitmap_font);
 
 	resource_loader_stream_texture = memnew(ResourceFormatLoaderStreamTexture);
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -532,6 +537,7 @@ void register_scene_types() {
 	ClassDB::register_class<CubeMap>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
+	ClassDB::register_class<BitmapFontData>();
 	ClassDB::register_class<BitmapFont>();
 	ClassDB::register_class<Curve>();
 
@@ -614,6 +620,7 @@ void unregister_scene_types() {
 	clear_default_theme();
 
 	memdelete(resource_loader_dynamic_font);
+	memdelete(resource_loader_bitmap_font);
 	memdelete(resource_loader_stream_texture);
 	memdelete(resource_loader_theme);
 

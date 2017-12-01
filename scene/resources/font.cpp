@@ -78,6 +78,23 @@ void Font::update_changes() {
 	emit_changed();
 }
 
+Size2 Font::get_string_size(const String &p_string) const {
+
+	float w = 0;
+
+	int l = p_string.length();
+	if (l == 0)
+		return Size2(0, get_height());
+	const CharType *sptr = &p_string[0];
+
+	for (int i = 0; i < l; i++) {
+
+		w += get_char_size(sptr[i], sptr[i + 1]).width;
+	}
+
+	return Size2(w, get_height());
+}
+
 void Font::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "string", "modulate", "clip_w"), &Font::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
@@ -94,6 +111,63 @@ Font::Font() {
 }
 
 /////////////////////////////////////////////////////////////////
+
+void BitmapFontData::set_font_path(const String &p_path) {
+
+	font_path = p_path;
+}
+
+String BitmapFontData::get_font_path() const {
+
+	return font_path;
+}
+
+void BitmapFontData::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_font_path", "path"), &BitmapFontData::set_font_path);
+	ClassDB::bind_method(D_METHOD("get_font_path"), &BitmapFontData::get_font_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.fnt"), "set_font_path", "get_font_path");
+}
+
+BitmapFontData::BitmapFontData() {
+}
+
+BitmapFontData::~BitmapFontData() {
+}
+
+RES ResourceFormatLoaderBitmapFont::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	if (r_error)
+		*r_error = ERR_FILE_CANT_OPEN;
+
+	Ref<BitmapFontData> bmfont;
+	bmfont.instance();
+	bmfont->set_font_path(p_path);
+
+	if (r_error)
+		*r_error = OK;
+
+	return bmfont;
+}
+
+void ResourceFormatLoaderBitmapFont::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("fnt");
+}
+
+bool ResourceFormatLoaderBitmapFont::handles_type(const String &p_type) const {
+
+	return (p_type == "BitmapFontData");
+}
+
+String ResourceFormatLoaderBitmapFont::get_resource_type(const String &p_path) const {
+
+	String el = p_path.get_extension().to_lower();
+	if (el == "fnt")
+		return "BitmapFontData";
+	return "";
+}
 
 void BitmapFont::_set_chars(const PoolVector<int> &p_chars) {
 
@@ -467,22 +541,24 @@ void BitmapFont::clear() {
 	distance_field_hint = false;
 }
 
-Size2 Font::get_string_size(const String &p_string) const {
+Ref<BitmapFontData> BitmapFont::get_font_data() const {
 
-	float w = 0;
+	return font_data;
+}
 
-	int l = p_string.length();
-	if (l == 0)
-		return Size2(0, get_height());
-	const CharType *sptr = &p_string[0];
+void BitmapFont::set_font_data(const Ref<BitmapFontData> &p_data) {
 
-	for (int i = 0; i < l; i++) {
+	font_data = p_data;
 
-		w += get_char_size(sptr[i], sptr[i + 1]).width;
+	if (p_data.is_valid()) {
+		create_from_fnt(p_data->get_path());
+	} else {
+		clear();
 	}
 
-	return Size2(w, get_height());
+	emit_changed();
 }
+
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
 	fallback = p_fallback;
@@ -576,10 +652,14 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fallback", "fallback"), &BitmapFont::set_fallback);
 	ClassDB::bind_method(D_METHOD("get_fallback"), &BitmapFont::get_fallback);
 
+	ClassDB::bind_method(D_METHOD("set_font_data", "font_data"), &BitmapFont::set_font_data);
+	ClassDB::bind_method(D_METHOD("get_font_data"), &BitmapFont::get_font_data);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_textures", "_get_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_chars", "_get_chars");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_kernings", "_get_kernings");
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font_data", PROPERTY_HINT_RESOURCE_TYPE, "BitmapFontData"), "set_font_data", "get_font_data");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ascent", PROPERTY_HINT_RANGE, "-1024,1024,1"), "set_ascent", "get_ascent");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_field"), "set_distance_field_hint", "is_distance_field_hint");
