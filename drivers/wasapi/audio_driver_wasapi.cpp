@@ -74,21 +74,22 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	// Since we're using WASAPI Shared Mode we can't control any of these, we just tag along
-	channels = pwfex->nChannels;
+	wasapi_channels = pwfex->nChannels;
 	mix_rate = pwfex->nSamplesPerSec;
 	format_tag = pwfex->wFormatTag;
 	bits_per_sample = pwfex->wBitsPerSample;
 
-	switch (channels) {
+	switch (wasapi_channels) {
 		case 2: // Stereo
 		case 4: // Surround 3.1
 		case 6: // Surround 5.1
 		case 8: // Surround 7.1
+			channels = wasapi_channels;
 			break;
 
 		default:
-			ERR_PRINTS("WASAPI: Unsupported number of channels: " + itos(channels));
-			ERR_FAIL_V(ERR_CANT_OPEN);
+			WARN_PRINTS("WASAPI: Unsupported number of channels: " + itos(wasapi_channels));
+			channels = 2;
 			break;
 	}
 
@@ -206,6 +207,35 @@ AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 }
 
+void AudioDriverWASAPI::write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample) {
+	if (ad->format_tag == WAVE_FORMAT_PCM) {
+		switch (ad->bits_per_sample) {
+			case 8:
+				((int8_t *)buffer)[i] = sample >> 24;
+				break;
+
+			case 16:
+				((int16_t *)buffer)[i] = sample >> 16;
+				break;
+
+			case 24:
+				((int8_t *)buffer)[i * 3 + 2] = sample >> 24;
+				((int8_t *)buffer)[i * 3 + 1] = sample >> 16;
+				((int8_t *)buffer)[i * 3 + 0] = sample >> 8;
+				break;
+
+			case 32:
+				((int32_t *)buffer)[i] = sample;
+				break;
+		}
+	} else if (ad->format_tag == WAVE_FORMAT_IEEE_FLOAT) {
+		((float *)buffer)[i] = (sample >> 16) / 32768.f;
+	} else {
+		ERR_PRINT("WASAPI: Unknown format tag");
+		ad->exit_thread = true;
+	}
+}
+
 void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 	AudioDriverWASAPI *ad = (AudioDriverWASAPI *)p_udata;
@@ -240,42 +270,21 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 				if (hr == S_OK) {
 					// We're using WASAPI Shared Mode so we must convert the buffer
 
-					if (ad->format_tag == WAVE_FORMAT_PCM) {
-						switch (ad->bits_per_sample) {
-							case 8:
-								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-									((int8_t *)buffer)[i] = ad->samples_in[buffer_idx++] >> 24;
-								}
-								break;
-
-							case 16:
-								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-									((int16_t *)buffer)[i] = ad->samples_in[buffer_idx++] >> 16;
-								}
-								break;
-
-							case 24:
-								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-									int32_t sample = ad->samples_in[buffer_idx++];
-									((int8_t *)buffer)[i * 3 + 2] = sample >> 24;
-									((int8_t *)buffer)[i * 3 + 1] = sample >> 16;
-									((int8_t *)buffer)[i * 3 + 0] = sample >> 8;
-								}
-								break;
-
-							case 32:
-								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-									((int32_t *)buffer)[i] = ad->samples_in[buffer_idx++];
-								}
-								break;
-						}
-					} else if (ad->format_tag == WAVE_FORMAT_IEEE_FLOAT) {
+					if (ad->channels == ad->wasapi_channels) {
 						for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-							((float *)buffer)[i] = (ad->samples_in[buffer_idx++] >> 16) / 32768.f;
+							ad->write_sample(ad, buffer, i, ad->samples_in[buffer_idx++]);
 						}
 					} else {
-						ERR_PRINT("WASAPI: Unknown format tag");
-						ad->exit_thread = true;
+						for (unsigned int i = 0; i < write_frames; i++) {
+							for (unsigned int j = 0; j < MIN(ad->channels, ad->wasapi_channels); j++) {
+								ad->write_sample(ad, buffer, i * ad->wasapi_channels + j, ad->samples_in[buffer_idx++]);
+							}
+							if (ad->wasapi_channels > ad->channels) {
+								for (unsigned int j = ad->channels; j < ad->wasapi_channels; j++) {
+									ad->write_sample(ad, buffer, i * ad->wasapi_channels + j, 0);
+								}
+							}
+						}
 					}
 
 					hr = ad->render_client->ReleaseBuffer(write_frames, 0);
@@ -380,6 +389,7 @@ AudioDriverWASAPI::AudioDriverWASAPI() {
 
 	buffer_size = 0;
 	channels = 0;
+	wasapi_channels = 0;
 	mix_rate = 0;
 	buffer_frames = 0;
 

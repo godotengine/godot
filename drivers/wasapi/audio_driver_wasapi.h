@@ -55,6 +55,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	unsigned int buffer_size;
 	unsigned int channels;
+	unsigned int wasapi_channels;
 	int mix_rate;
 	int buffer_frames;
 
@@ -62,6 +63,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	mutable bool exit_thread;
 	bool active;
 
+	_FORCE_INLINE_ void write_sample(AudioDriverWASAPI *ad, BYTE *buffer, int i, int32_t sample);
 	static void thread_func(void *p_udata);
 
 	Error init_device(bool reinit = false);
