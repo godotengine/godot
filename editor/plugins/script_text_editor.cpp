@@ -1039,6 +1039,13 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (scr.is_null())
 				return;
 
+			String delimiter = "#";
+			List<String> comment_delimiters;
+			scr->get_language()->get_comment_delimiters(&comment_delimiters);
+			if (!comment_delimiters.empty()) {
+				delimiter = comment_delimiters.front()->get();
+			}
+
 			tx->begin_complex_operation();
 			if (tx->is_selection_active()) {
 				int begin = tx->get_selection_from_line();
@@ -1051,7 +1058,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				// Check if all lines in the selected block are commented
 				bool is_commented = true;
 				for (int i = begin; i <= end; i++) {
-					if (!tx->get_line(i).begins_with("#")) {
+					if (!tx->get_line(i).begins_with(delimiter)) {
 						is_commented = false;
 						break;
 					}
@@ -1060,12 +1067,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					String line_text = tx->get_line(i);
 
 					if (line_text.strip_edges().empty()) {
-						line_text = "#";
+						line_text = delimiter;
 					} else {
 						if (is_commented) {
-							line_text = line_text.substr(1, line_text.length());
+							line_text = line_text.substr(delimiter.length(), line_text.length());
 						} else {
-							line_text = "#" + line_text;
+							line_text = delimiter + line_text;
 						}
 					}
 					tx->set_line(i, line_text);
@@ -1074,10 +1081,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				int begin = tx->cursor_get_line();
 				String line_text = tx->get_line(begin);
 
-				if (line_text.begins_with("#"))
-					line_text = line_text.substr(1, line_text.length());
+				if (line_text.begins_with(delimiter))
+					line_text = line_text.substr(delimiter.length(), line_text.length());
 				else
-					line_text = "#" + line_text;
+					line_text = delimiter + line_text;
 				tx->set_line(begin, line_text);
 			}
 			tx->end_complex_operation();
