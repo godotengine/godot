@@ -806,6 +806,39 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	memdelete(da);
 }
 
+void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const {
+	//Ensure folder paths end with "/"
+	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
+	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+
+	if (new_path == old_path) {
+		return;
+	} else if (old_path == "res://") {
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
+		return;
+	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
+		//This check doesn't erroneously catch renaming to a longer name as folder paths always end with "/"
+		EditorNode::get_singleton()->add_io_error(TTR("Cannot move a folder into itself.\n") + old_path + "\n");
+		return;
+	}
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	print_line("Duplicating " + old_path + " -> " + new_path);
+	Error err = da->copy(old_path, new_path);
+	if (err == OK) {
+		//Move/Rename any corresponding import settings too
+		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
+			err = da->copy(old_path + ".import", new_path + ".import");
+			if (err != OK) {
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + ".import\n");
+			}
+		}
+	} else {
+		EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:\n") + old_path + "\n");
+	}
+	memdelete(da);
+}
+
 void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &p_renames) const {
 	//The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
@@ -882,6 +915,39 @@ void FileSystemDock::_rename_operation_confirm() {
 	Map<String, String> renames;
 	_try_move_item(to_rename, new_path, renames);
 	_update_dependencies_after_move(renames);
+
+	//Rescan everything
+	print_line("call rescan!");
+	_rescan();
+}
+
+void FileSystemDock::_duplicate_operation_confirm() {
+
+	String new_name = duplicate_dialog_text->get_text().strip_edges();
+	if (new_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
+		return;
+	} else if (new_name.find("/") != -1 || new_name.find("\\") != -1 || new_name.find(":") != -1) {
+		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
+		return;
+	}
+
+	String old_path = to_duplicate.path.ends_with("/") ? to_duplicate.path.substr(0, to_duplicate.path.length() - 1) : to_rename.path;
+	String new_path = old_path.get_base_dir().plus_file(new_name);
+	if (old_path == new_path) {
+		return;
+	}
+
+	//Present a more user friendly warning for name conflict
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->file_exists(new_path) || da->dir_exists(new_path)) {
+		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
+		memdelete(da);
+		return;
+	}
+	memdelete(da);
+
+	_try_duplicate_item(to_duplicate, new_name);
 
 	//Rescan everything
 	print_line("call rescan!");
@@ -1001,6 +1067,27 @@ void FileSystemDock::_file_option(int p_option) {
 				//1) find if used
 				//2) warn
 			}
+		} break;
+		case FILE_DUPLICATE: {
+			int idx = files->get_current();
+			if (idx < 0 || idx >= files->get_item_count())
+				break;
+
+			to_duplicate.path = files->get_item_metadata(idx);
+			to_duplicate.is_file = !to_duplicate.path.ends_with("/");
+			if (to_duplicate.is_file) {
+				String name = to_duplicate.path.get_file();
+				duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
+				duplicate_dialog_text->set_text(name);
+				duplicate_dialog_text->select(0, name.find_last("."));
+			} else {
+				String name = to_duplicate.path.substr(0, to_duplicate.path.length() - 1).get_file();
+				duplicate_dialog->set_title(TTR("Duplicating folder:") + " " + name);
+				duplicate_dialog_text->set_text(name);
+				duplicate_dialog_text->select(0, name.length());
+			}
+			duplicate_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			duplicate_dialog_text->grab_focus();
 		} break;
 		case FILE_INFO: {
 
@@ -1451,6 +1538,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		if (num_items == 1) {
 			file_options->add_item(TTR("Copy Path"), FILE_COPY_PATH);
 			file_options->add_item(TTR("Rename.."), FILE_RENAME);
+			file_options->add_item(TTR("Duplicate.."), FILE_DUPLICATE);
 		}
 		file_options->add_item(TTR("Move To.."), FILE_MOVE);
 		file_options->add_item(TTR("Delete"), FILE_REMOVE);
@@ -1562,6 +1650,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm"), &FileSystemDock::_move_operation_confirm);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
+	ClassDB::bind_method(D_METHOD("_duplicate_operation_confirm"), &FileSystemDock::_duplicate_operation_confirm);
 
 	ClassDB::bind_method(D_METHOD("_search_changed"), &FileSystemDock::_search_changed);
 
@@ -1734,6 +1823,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(rename_dialog);
 	rename_dialog->register_text_enter(rename_dialog_text);
 	rename_dialog->connect("confirmed", this, "_rename_operation_confirm");
+
+	duplicate_dialog = memnew(ConfirmationDialog);
+	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
+	duplicate_dialog->add_child(duplicate_dialog_vb);
+
+	duplicate_dialog_text = memnew(LineEdit);
+	duplicate_dialog_vb->add_margin_child(TTR("Name:"), duplicate_dialog_text);
+	duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
+	add_child(duplicate_dialog);
+	duplicate_dialog->register_text_enter(duplicate_dialog_text);
+	duplicate_dialog->connect("confirmed", this, "_duplicate_operation_confirm");
 
 	make_dir_dialog = memnew(ConfirmationDialog);
 	make_dir_dialog->set_title(TTR("Create Folder"));
