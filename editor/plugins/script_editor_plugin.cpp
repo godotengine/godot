@@ -806,6 +806,12 @@ void ScriptEditor::_close_all_tab(int except) {
 	}
 }
 
+void ScriptEditor::_copy_script_path() {
+	ScriptTextEditor *ste = tab_container->get_child(tab_container->get_current_tab())->cast_to<ScriptTextEditor>();
+	Ref<Script> script = ste->get_edited_script();
+	OS::get_singleton()->set_clipboard(script->get_path());
+}
+
 void ScriptEditor::_close_docs_tab() {
 
 	int child_count = tab_container->get_child_count();
@@ -1560,6 +1566,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			case FILE_CLOSE_ALL: {
 				_close_all_tab(-1);
 			} break;
+			case FILE_COPY_SCRIPT_PATH: {
+				_copy_script_path();
+			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
@@ -1610,6 +1619,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 				case FILE_CLOSE_ALL: {
 					_close_all_tab(-1);
+				} break;
+				case FILE_COPY_SCRIPT_PATH: {
+					_copy_script_path();
 				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
@@ -1908,6 +1920,8 @@ void ScriptEditor::_script_rmb_selected(int p_idx, const Vector2 &p_pos) {
 		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
 		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), FILE_CLOSE_OTHERS);
 		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), FILE_CLOSE_ALL);
+		script_list_menu->add_separator();
+		script_list_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_script_path"), FILE_COPY_SCRIPT_PATH);
 	}
 
 	script_list_menu->set_pos(script_list->get_global_pos() + p_pos);
@@ -2651,6 +2665,7 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_file_dialog_action", &ScriptEditor::_file_dialog_action);
 	ObjectTypeDB::bind_method("_tab_changed", &ScriptEditor::_tab_changed);
 	ObjectTypeDB::bind_method("_menu_option", &ScriptEditor::_menu_option);
+	ObjectTypeDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 	ObjectTypeDB::bind_method("_close_current_tab", &ScriptEditor::_close_current_tab);
 	ObjectTypeDB::bind_method("_close_other_tabs", &ScriptEditor::_close_other_tabs);
 	ObjectTypeDB::bind_method("_close_all_tab", &ScriptEditor::_close_all_tab);
@@ -2750,6 +2765,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), FILE_RELOAD_THEME);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), FILE_SAVE_THEME);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), FILE_SAVE_THEME_AS);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_script_path", TTR("Copy Script Path")), FILE_COPY_SCRIPT_PATH);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
