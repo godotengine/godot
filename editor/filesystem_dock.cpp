@@ -914,6 +914,16 @@ void FileSystemDock::_file_option(int p_option) {
 				break;
 			_select_file(idx);
 		} break;
+		case FILE_OPEN_SELECTION: {
+			for (int i = 0; i < files->get_item_count(); i++) {
+				if (files->is_selected(i)) {
+					String path = files->get_item_metadata(i);
+					if (ResourceLoader::get_resource_type(path) == "PackedScene") {
+						editor->open_request(path);
+					}
+				}
+			}
+		} break;
 		case FILE_INSTANCE: {
 
 			Vector<String> paths;
@@ -1432,6 +1442,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	if (all_files && filenames.size() > 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 		if (all_files_scenes) {
+			file_options->add_item(TTR("Open Selection"), FILE_OPEN_SELECTION);
 			file_options->add_item(TTR("Instance"), FILE_INSTANCE);
 		}
 		file_options->add_separator();

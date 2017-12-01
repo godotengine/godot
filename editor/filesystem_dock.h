@@ -64,6 +64,7 @@ public:
 private:
 	enum FileMenu {
 		FILE_OPEN,
+		FILE_OPEN_SELECTION,
 		FILE_INSTANCE,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
