@@ -215,6 +215,9 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 
 	if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT)
 		offset.y += cell_size.y;
+	else if (tile_origin == TILE_ORIGIN_CENTER) {
+		offset += cell_size / 2;
+	}
 
 	if (s.y > s.x) {
 		if ((p_cell.flip_h && (p_cell.flip_v || p_cell.transpose)) || (p_cell.flip_v && !p_cell.transpose))
@@ -235,6 +238,8 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 		xform.elements[1].x = -xform.elements[1].x;
 		if (tile_origin == TILE_ORIGIN_TOP_LEFT || tile_origin == TILE_ORIGIN_BOTTOM_LEFT)
 			offset.x = s.x - offset.x;
+		else if (tile_origin == TILE_ORIGIN_CENTER)
+			offset.x = s.x - offset.x / 2;
 	}
 	if (p_cell.flip_v) {
 		xform.elements[0].y = -xform.elements[0].y;
@@ -242,10 +247,9 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 		if (tile_origin == TILE_ORIGIN_TOP_LEFT)
 			offset.y = s.y - offset.y;
 		else if (tile_origin == TILE_ORIGIN_BOTTOM_LEFT) {
-			if (p_cell.transpose)
-				offset.y += s.y;
-			else
-				offset.y -= s.y;
+			offset.y += s.y;
+		} else if (tile_origin == TILE_ORIGIN_CENTER) {
+			offset.y += s.y;
 		}
 	}
 	xform.elements[2].x += offset.x;
@@ -429,20 +433,18 @@ void TileMap::_update_dirty_quadrants() {
 				}
 
 			} else if (tile_origin == TILE_ORIGIN_CENTER) {
-				rect.position += tcenter;
 
-				Vector2 center = (s / 2) - tile_ofs;
-				center_ofs = tcenter - (s / 2);
+				rect.position += tile_ofs;
 
 				if (c.flip_h)
-					rect.position.x -= s.x - center.x;
+					rect.position.x -= cell_size.x / 2;
 				else
-					rect.position.x -= center.x;
+					rect.position.x += cell_size.x / 2;
 
 				if (c.flip_v)
-					rect.position.y -= s.y - center.y;
+					rect.position.y -= cell_size.y / 2;
 				else
-					rect.position.y -= center.y;
+					rect.position.y += cell_size.y / 2;
 			}
 
 			Ref<Texture> normal_map = tile_set->tile_get_normal_map(c.id);
