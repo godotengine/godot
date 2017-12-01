@@ -263,6 +263,8 @@ uniform highp sampler2D skeleton_texture; //texunit:-1
 
 out highp vec4 position_interp;
 
+invariant gl_Position;
+
 void main() {
 
 	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);

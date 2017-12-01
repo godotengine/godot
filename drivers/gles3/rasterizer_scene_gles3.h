@@ -78,6 +78,11 @@ public:
 	RID default_shader;
 	RID default_shader_twosided;
 
+	RID default_worldcoord_material;
+	RID default_worldcoord_material_twosided;
+	RID default_worldcoord_shader;
+	RID default_worldcoord_shader_twosided;
+
 	RID default_overdraw_material;
 	RID default_overdraw_shader;
 
