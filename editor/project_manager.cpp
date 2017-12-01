@@ -213,7 +213,7 @@ private:
 		}
 		String sp = p.simplify_path();
 		project_path->set_text(sp);
-		set_message(TTR(" ")); // just so it does not disappear
+		set_message(" "); // just so it does not disappear
 		get_ok()->call_deferred("grab_focus");
 	}
 
