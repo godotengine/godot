@@ -3389,6 +3389,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	preview_camera->set_toggle_mode(true);
 	preview_camera->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	preview_camera->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	preview_camera->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	preview_camera->set_text(TTR("preview"));
 	surface->add_child(preview_camera);
 	preview_camera->hide();
