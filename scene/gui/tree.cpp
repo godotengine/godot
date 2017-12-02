@@ -2957,26 +2957,38 @@ TreeItem *Tree::create_item(TreeItem *p_parent) {
 		TreeItem *c = p_parent->childs;
 
 		while (c) {
-
 			last = c;
 			c = c->next;
 		}
 
 		if (last) {
-
 			last->next = ti;
 		} else {
-
 			p_parent->childs = ti;
 		}
+
 		ti->parent = p_parent;
 
 	} else {
+		// p_parent wasn't passed, add as last child of root
+		if (root){
+			TreeItem *last = 0;
+			TreeItem *c = root->childs;
 
-		if (root)
-			ti->childs = root;
+			while (c) {
 
-		root = ti;
+				last = c;
+				c = c->next;
+			}
+
+			if (last) {
+				last->next = ti;
+			} else {
+				root->childs = ti;
+			}
+		} else { // there's no root yet
+			root = ti;
+		}
 	}
 
 	return ti;
