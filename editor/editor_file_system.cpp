@@ -1244,8 +1244,10 @@ void EditorFileSystem::update_file(const String &p_file) {
 	if (!FileAccess::exists(p_file)) {
 		//was removed
 		_delete_internal_files(p_file);
-		memdelete(fs->files[cpos]);
-		fs->files.remove(cpos);
+		if (cpos != -1) { // Might've never been part of the editor file system (*.* files deleted in Open dialog).
+			memdelete(fs->files[cpos]);
+			fs->files.remove(cpos);
+		}
 		call_deferred("emit_signal", "filesystem_changed"); //update later
 		return;
 	}

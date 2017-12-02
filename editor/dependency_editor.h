@@ -35,6 +35,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
+class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorNode;
 
