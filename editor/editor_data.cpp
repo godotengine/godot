@@ -690,9 +690,9 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 String EditorData::get_scene_title(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 	if (!edited_scene[p_idx].root)
-		return "[empty]";
+		return TTR("[empty]");
 	if (edited_scene[p_idx].root->get_filename() == "")
-		return "[unsaved]";
+		return TTR("[unsaved]");
 	bool show_ext = EDITOR_DEF("interface/scene_tabs/show_extension", false);
 	String name = edited_scene[p_idx].root->get_filename().get_file();
 	if (!show_ext) {
