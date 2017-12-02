@@ -3081,7 +3081,7 @@ void PropertyEditor::update_tree() {
 						item->set_text(1, type + " ID: " + itos(id));
 						item->add_button(1, get_icon("EditResource", "EditorIcons"));
 					} else {
-						item->set_text(1, "[Empty]");
+						item->set_text(1, TTR("[Empty]"));
 					}
 
 					if (has_icon(p.hint_string, "EditorIcons")) {
