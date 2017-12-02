@@ -670,13 +670,13 @@ EditorProfiler::EditorProfiler() {
 	variables->set_hide_root(true);
 	variables->set_columns(3);
 	variables->set_column_titles_visible(true);
-	variables->set_column_title(0, "Name");
+	variables->set_column_title(0, TTR("Name"));
 	variables->set_column_expand(0, true);
 	variables->set_column_min_width(0, 60);
-	variables->set_column_title(1, "Time");
+	variables->set_column_title(1, TTR("Time"));
 	variables->set_column_expand(1, false);
 	variables->set_column_min_width(1, 60 * EDSCALE);
-	variables->set_column_title(2, "Calls");
+	variables->set_column_title(2, TTR("Calls"));
 	variables->set_column_expand(2, false);
 	variables->set_column_min_width(2, 60 * EDSCALE);
 	variables->connect("item_edited", this, "_item_edited");

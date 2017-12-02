@@ -406,13 +406,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_clear_button->connect("pressed", this, "_clear_shortcut_search_box");
 
 	shortcuts = memnew(Tree);
-	vbc->add_margin_child("Shortcut List:", shortcuts, true);
+	vbc->add_margin_child(TTR("Shortcut List:"), shortcuts, true);
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	//shortcuts->set_hide_folding(true);
 	shortcuts->set_column_titles_visible(true);
-	shortcuts->set_column_title(0, "Name");
-	shortcuts->set_column_title(1, "Binding");
+	shortcuts->set_column_title(0, TTR("Name"));
+	shortcuts->set_column_title(1, TTR("Binding"));
 	shortcuts->connect("button_pressed", this, "_shortcut_button_pressed");
 
 	press_a_key = memnew(ConfirmationDialog);
