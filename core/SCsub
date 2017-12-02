@@ -1,110 +1,20 @@
-#!/usr/bin/env python
+(Since Noshyaar keeps closing this, I am going to continue to post it until one thread remains visible for discussion, no need to censor)
 
-Import('env')
+![](https://i.gyazo.com/364f1b11bc57924374d0a8c81df1eeab.png)
 
-env.core_sources = []
+Lead developer sent this message after a user was giving his honest feedback via this [reddit thread](https://www.reddit.com/r/gamedev/comments/7gmtxl/godot_30_beta_1_is_there_right_in_time_for_ludum/dqk9nel/).
 
+They also said (I kid you not) -- giving feedback is "**bullying**",  a "**professional whiner**", and "**ranting**". Reduz's passive aggressive tone and insulting behavior is rampant there.  I already terminated my patreon account because of this, and not saying you should either (FLOSS projects) are great, however, for the lead developer to act like this towards people giving feedback.. is not okay!
 
-# Generate global defaults
-gd_call = ""
-gd_inc = ""
+Let me re-iterate, not saying that you should stop giving feedback, but I just want this message to be seen across github and reach as far as possible. Because this kind of communication and how the lead developer treats a regular Godot developer is not right at all. I've never seen this behavior from a FLOSS project lead developer.  It's a shame, because the guy giving feedback is just a random person anyway, and the way the project managers and lead developers took it so personally like it was an attack (when it wasn't), means the lead developers/contributors are possibly not viewing your issues with the right mindset.  
 
-for x in env.global_defaults:
-    env.core_sources.append("#platform/" + x + "/globals/global_defaults.cpp")
-    gd_inc += '#include "platform/' + x + '/globals/global_defaults.h"\n'
-    gd_call += "\tregister_" + x + "_global_defaults();\n"
+Also, after reading the last paragraph from [this post by akien](https://www.reddit.com/r/gamedev/comments/7gmtxl/godot_30_beta_1_is_there_right_in_time_for_ludum/dqlqj2v/)
+> From here on, we will avoid responding to xxx's threads on the various Godot communities, and focus instead on the huge amount of constructive feedback and bug reports that we get from other users. This will likely overlap with some of the issues mentioned above, which will thus be fixed eventually, but we won't accept being bullied into working on them now when we have different priorities. Users are free to disagree with our priorities, but in the end the contributors are the ones making the call.
 
-gd_cpp = '#include "project_settings.h"\n'
-gd_cpp += gd_inc
-gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
-
-f = open("global_defaults.gen.cpp", "w")
-f.write(gd_cpp)
-f.close()
+He's saying they will now favor/prioritize issues based on the user reporting it, and not the issue itself. (Extreme prejudice), which will not be good for the project because the issue should be irrelevant to the user reporting it. Just because if a user who has a snotty attitude that is reporting a huge client crash error, doesn't mean that client crash error should not be taken lightly.
 
 
-# Generate AES256 script encryption key
-import os
-txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
-if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
-    e = os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
-    txt = ""
-    ec_valid = True
-    if (len(e) != 64):
-        ec_valid = False
-    else:
 
-        for i in range(len(e) >> 1):
-            if (i > 0):
-                txt += ","
-            txts = "0x" + e[i * 2:i * 2 + 2]
-            try:
-                int(txts, 16)
-            except:
-                ec_valid = False
-            txt += txts
-    if (not ec_valid):
-        txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
-        print("Invalid AES256 encryption key, not 64 bits hex: " + e)
+He's also stating that anyone giving hard feedback is now "bullying" them. Which is not true whatsoever.
 
-f = open("script_encryption_key.gen.cpp", "w")
-f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
-f.close()
-
-
-# Add required thirdparty code. Header paths are hardcoded, we don't need to append
-# to the include path (saves a few chars on the compiler invocation for touchy MSVC...)
-thirdparty_dir = "#thirdparty/misc/"
-thirdparty_sources = [
-	# C sources
-	"base64.c",
-	"fastlz.c",
-	"sha256.c",
-	"smaz.c",
-
-	# C++ sources
-	"aes256.cpp",
-	"hq2x.cpp",
-	"md5.cpp",
-	"pcg.cpp",
-	"triangulator.cpp",
-]
-thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-env.add_source_files(env.core_sources, thirdparty_sources)
-
-# Minizip library, can be unbundled in theory
-# However, our version has some custom modifications, so it won't compile with the system one
-thirdparty_minizip_dir = "#thirdparty/minizip/"
-thirdparty_minizip_sources = [
-	"ioapi.c",
-	"unzip.c",
-	"zip.c",
-]
-thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
-env.add_source_files(env.core_sources, thirdparty_minizip_sources)
-
-if 'builtin_zstd' in env and env['builtin_zstd']:
-    SConscript("#thirdparty/zstd/SCsub")
-
-
-# Godot's own sources
-env.add_source_files(env.core_sources, "*.cpp")
-
-
-# Make binders
-import make_binders
-env.Command(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', make_binders.run)
-
-
-# Chain load SCsubs
-SConscript('os/SCsub')
-SConscript('math/SCsub')
-SConscript('io/SCsub')
-SConscript('bind/SCsub')
-SConscript('helper/SCsub')
-
-
-# Build it all as a library
-lib = env.add_library("core", env.core_sources)
-env.Prepend(LIBS=[lib])
-Export('env')
+Just wanting to post this to get the word out there, hopefully some things change. @reduz @akien-mga  This is just unbelievable :( 
