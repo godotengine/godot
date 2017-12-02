@@ -909,10 +909,21 @@ void FileSystemDock::_file_option(int p_option) {
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 		case FILE_OPEN: {
-			int idx = files->get_current();
-			if (idx < 0 || idx >= files->get_item_count())
-				break;
-			_select_file(idx);
+			if (files->get_selected_items().size() > 1) {
+				for (int i = 0; i < files->get_item_count(); i++) {
+					if (files->is_selected(i)) {
+						String path = files->get_item_metadata(i);
+						if (ResourceLoader::get_resource_type(path) == "PackedScene") {
+							editor->open_request(path);
+						}
+					}
+				}
+			} else {
+				int idx = files->get_current();
+				if (idx < 0 || idx >= files->get_item_count())
+					break;
+				_select_file(idx);
+			}
 		} break;
 		case FILE_INSTANCE: {
 
