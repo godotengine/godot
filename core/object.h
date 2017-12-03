@@ -637,6 +637,7 @@ public:
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = NULL);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = NULL) const;
 
+	void get_property_list_script_categories(List<PropertyInfo> *p_list) const;
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 
 	bool has_method(const StringName &p_method) const;

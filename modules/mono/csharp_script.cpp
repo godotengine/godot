@@ -2179,8 +2179,7 @@ void CSharpScript::update_signals() {
 
 Ref<Script> CSharpScript::get_base_script() const {
 
-	// TODO search in metadata file once we have it, not important any way?
-	return Ref<Script>();
+	return base_cache;
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *p_list) const {

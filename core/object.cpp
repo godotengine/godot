@@ -518,6 +518,184 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 }
 
+void Object::get_property_list_script_categories(List<PropertyInfo> *p_list) const {
+
+	Ref<Script> obj_script = script_instance->get_script();
+	if (p_list->empty() || obj_script.is_null()) {
+		return;
+	}
+
+	List<PropertyInfo>::Element *script_vars_start = p_list->front(); //the starting position of script variables in p_list.
+	uint32_t script_var_count = p_list->size();
+	while (script_vars_start && !(script_vars_start->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
+		script_vars_start = script_vars_start->next();
+		script_var_count--;
+	}
+	if (!script_vars_start) {
+		return;
+	}
+
+	List<Script *> scripts; //each script, base -> derived ordering
+	List<PropertyInfo> categories; //category names for each script
+	Vector<List<PropertyInfo> *> all_props; //the script property lists for each script
+	List<PropertyInfo> *props; //use pointers to avoid excessive copying (no move semantics, can be simplified in C++11)
+
+	while (obj_script.is_valid()) {
+		scripts.push_front(obj_script.ptr());
+
+		String filename = obj_script->get_path().get_file();
+		String title = filename.get_basename().capitalize();
+		if (filename.get_extension().find("scn") != -1) {
+			title += ":" + String(this->get_class());
+		}
+
+		categories.push_front(PropertyInfo(Variant::NIL, title, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
+
+		obj_script = obj_script->get_base_script();
+	}
+
+	props = new List<PropertyInfo>[scripts.size()];
+	{
+		int i = 0;
+		for (List<Script *>::Element *script = scripts.front(); script; script = script->next()) {
+			script->get()->get_script_property_list(&props[i]);
+
+			for (List<PropertyInfo>::Element *P = props[i].front(); P; P = P->next()) {
+				if (!(P->get().usage & PROPERTY_USAGE_STORAGE)) {
+					props[i].erase(P);
+				}
+			}
+			all_props.push_back(&props[i]);
+
+			i++;
+		}
+	}
+
+	List<PropertyInfo>::Element *pl_prop = p_list->front(); //Currently examined p_list property.
+	List<PropertyInfo> *end_props = all_props[all_props.size() - 1]; //Properties of final script, a superset of preceding script properties.
+	List<PropertyInfo>::Element *ins_cat_pos = NULL; //Where in categories to insert from, if at all.
+	List<PropertyInfo>::Element *ins_cat = NULL; //What category to insert (dummy or from categories).
+	List<PropertyInfo>::Element *ins_pos = script_vars_start; //Where in p_list to insert
+	uint32_t dft_ndx = 0; //Default class name index.
+	uint32_t dft_count = 0; //The number of default class names added to p_list.
+	int32_t prev_scr_ndx = -1; //The script index of the previous p_list property. -1 means unknown.
+	bool own_scr_found = false; //True if the owning script for a property has been located.
+
+	for (; pl_prop; pl_prop = pl_prop->next()) {
+
+		String pl_name = pl_prop->get().name;
+
+		//Check whether this export property exists. If not, the script it belongs to hasn't been saved.
+		List<PropertyInfo>::Element *exists = end_props->size() ? end_props->front() : NULL;
+		int exists_ndx = 0;
+		while (exists && exists->get().name != pl_name) {
+			exists = exists->next();
+			exists_ndx++;
+		}
+
+		//Note that this test will be inaccurate if the names of two related scripts' export
+		//properties are swapped and one of those names is pl_name. Gives a false positive for the found script.
+		//This "bug" gets fixed once one of the two files is saved/reloaded.
+		//To prevent it, you would need to load a Script of buffered code in the script editor for each
+		//unsaved buffer and check the buffer script's properties to isolate which one is the owning Script.
+		//It's unnecessarily complicated and expensive since its rare and goes away once the file is saved.
+		if (exists) {
+			if (ins_cat) {
+				if (prev_scr_ndx >= 0) {
+					if (!own_scr_found) {
+						delete ins_cat;
+						dft_count--;
+					}
+				} else {
+					p_list->insert_before(ins_pos, ins_cat->get());
+					ins_pos = pl_prop;
+					ins_cat = NULL;
+				}
+			}
+
+			//determine which script index the property is from and identify its category name
+			int scr_ndx = 0;
+			for (ins_cat_pos = categories.front(); ins_cat_pos && ins_cat_pos->next() && exists_ndx >= all_props[scr_ndx++]->size(); ins_cat_pos = ins_cat_pos->next()) {
+			}
+			own_scr_found = true;
+			prev_scr_ndx = scr_ndx;
+			if (ins_cat && ins_cat->get().name != ins_cat_pos->get().name) {
+				p_list->insert_before(ins_pos, ins_cat->get());
+				ins_pos = pl_prop;
+			}
+			ins_cat = ins_cat_pos;
+		} else {
+			if (!own_scr_found && !ins_cat) {
+				ins_cat = new List<PropertyInfo>::Element();
+				String title("Class ");
+				title += itos(dft_ndx);
+				dft_ndx++;
+				ins_cat->set(PropertyInfo(Variant::NIL, title, PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
+				dft_count++;
+				prev_scr_ndx = -1;
+			}
+		}
+	}
+	if (ins_cat) {
+		p_list->insert_before(ins_pos, ins_cat->get());
+	}
+
+	//We'll have inserted at least one header category at the top. Move back to account for it.
+	script_vars_start = script_vars_start->prev();
+
+	//Rearrange them in derived-first order.
+	List<PropertyInfo>::Element *prev_category = script_vars_start;
+	uint32_t moves_needed = script_var_count + scripts.size() + dft_count;
+	//get to the 2nd category if it exists
+	if (script_vars_start->next()) {
+		prev_category = script_vars_start->next();
+	}
+	while (prev_category && !(prev_category->get().usage & PROPERTY_USAGE_CATEGORY)) {
+		moves_needed--;
+		prev_category = prev_category->next();
+	}
+	//There is no second category. Stop now.
+	if (!prev_category) {
+		return;
+	}
+
+	//move properties around
+	List<PropertyInfo>::Element *copy_next = NULL;
+	bool done = false;
+	for (List<PropertyInfo>::Element *E = prev_category; E && !done;) {
+		if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
+			List<PropertyInfo>::Element *new_start = script_vars_start;
+			bool first = true;
+			for (List<PropertyInfo>::Element *P = E; P;) {
+				copy_next = P->next();
+				p_list->move_before(P, script_vars_start);
+				P = copy_next;
+				if (!moves_needed-- || !copy_next) {
+					done = true;
+					break;
+				}
+				if (first) {
+					new_start = script_vars_start->prev();
+					first = false;
+				}
+				if (P && P->get().usage & PROPERTY_USAGE_CATEGORY) {
+					E = P;
+					script_vars_start = new_start;
+					break;
+				}
+			}
+			continue;
+		}
+		E = E->next();
+	}
+
+	//cleanup
+	scripts.clear();
+	categories.clear();
+	all_props.clear();
+	delete[] props;
+}
+
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
 	if (p_names.empty()) {
 		if (r_valid)
@@ -595,8 +773,8 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
 
 	if (script_instance && p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
+		get_property_list_script_categories(p_list);
 	}
 
 	_get_property_listv(p_list, p_reversed);
@@ -611,8 +789,8 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	if (!metadata.empty())
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORE_IF_NONZERO));
 	if (script_instance && !p_reversed) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
+		get_property_list_script_categories(p_list);
 	}
 }
 
