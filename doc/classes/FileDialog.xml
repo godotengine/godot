@@ -103,6 +103,9 @@
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode">
 		</member>
+		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title">
+			If [code]true[/code], changing the [code]mode[/code] property will set the window title accordingly (e. g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
+		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
 		</member>
 	</members>

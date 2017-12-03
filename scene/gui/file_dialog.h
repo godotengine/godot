@@ -92,6 +92,8 @@ private:
 
 	Vector<String> filters;
 
+	bool mode_overrides_title;
+
 	static bool default_show_hidden_files;
 	bool show_hidden_files;
 
@@ -142,6 +144,9 @@ public:
 	void set_current_dir(const String &p_dir);
 	void set_current_file(const String &p_file);
 	void set_current_path(const String &p_path);
+
+	void set_mode_overrides_title(bool p_override);
+	bool is_mode_overriding_title() const;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
