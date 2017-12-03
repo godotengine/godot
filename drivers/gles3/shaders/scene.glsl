@@ -263,7 +263,9 @@ uniform highp sampler2D skeleton_texture; //texunit:-1
 
 out highp vec4 position_interp;
 
-invariant gl_Position;
+// FIXME: This triggers a Mesa bug that breaks rendering, so disabled for now.
+// See GH-13450 and https://bugs.freedesktop.org/show_bug.cgi?id=100316
+//invariant gl_Position;
 
 void main() {
 
