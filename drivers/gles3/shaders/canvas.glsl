@@ -285,7 +285,7 @@ MATERIAL_UNIFORMS
 
 FRAGMENT_SHADER_GLOBALS
 
-void light_compute(inout vec3 light,vec3 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
+void light_compute(inout vec4 light,vec2 light_vec,float light_height,vec4 light_color,vec2 light_uv,vec4 shadow,vec3 normal,vec2 uv,vec2 screen_uv,vec4 color) {
 
 #if defined(USE_LIGHT_SHADER_CODE)
 
