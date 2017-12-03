@@ -1102,6 +1102,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled) {
 					//being pressed
 					cache.button_pressed->draw(get_canvas_item(), Rect2(o, s));
+				} else if (p_item->cells[i].custom_bg_color) {
+					Rect2 r = Rect2(Point2i(ofs + w - s.width, p_pos.y) - cache.offset + p_draw_ofs, Size2i(s.width + cache.button_margin, label_h));
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, r, p_item->cells[i].bg_color);
 				}
 
 				o.y += (label_h - s.height) / 2;
