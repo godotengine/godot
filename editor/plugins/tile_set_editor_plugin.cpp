@@ -1015,21 +1015,47 @@ void AutotileEditor::_on_tool_clicked(int p_tool) {
 		tile_set->autotile_clear_bitmask_map(get_current_tile());
 		workspace->update();
 	} else if (p_tool == SHAPE_DELETE) {
-		if (!edited_collision_shape.is_null()) {
-			Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
-			int index;
-			for (int i = 0; i < sd.size(); i++) {
-				if (sd[i].shape == edited_collision_shape) {
-					index = i;
-					break;
-				}
-			}
-			if (index >= 0) {
-				sd.remove(index);
-				tile_set->tile_set_shapes(get_current_tile(), sd);
-				edited_collision_shape.unref();
-				current_shape.resize(0);
-				workspace->update();
+		if (creating_shape) {
+			creating_shape = false;
+			current_shape.resize(0);
+			workspace->update();
+		} else {
+			switch (edit_mode) {
+				case EDITMODE_COLLISION: {
+					if (!edited_collision_shape.is_null()) {
+						Vector<TileSet::ShapeData> sd = tile_set->tile_get_shapes(get_current_tile());
+						int index;
+						for (int i = 0; i < sd.size(); i++) {
+							if (sd[i].shape == edited_collision_shape) {
+								index = i;
+								break;
+							}
+						}
+						if (index >= 0) {
+							sd.remove(index);
+							tile_set->tile_set_shapes(get_current_tile(), sd);
+							edited_collision_shape = Ref<ConcavePolygonShape2D>();
+							current_shape.resize(0);
+							workspace->update();
+						}
+					}
+				} break;
+				case EDITMODE_NAVIGATION: {
+					if (!edited_navigation_shape.is_null()) {
+						tile_set->autotile_set_navigation_polygon(get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
+						edited_navigation_shape = Ref<NavigationPolygon>();
+						current_shape.resize(0);
+						workspace->update();
+					}
+				} break;
+				case EDITMODE_OCCLUSION: {
+					if (!edited_occlusion_shape.is_null()) {
+						tile_set->autotile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+						edited_occlusion_shape = Ref<OccluderPolygon2D>();
+						current_shape.resize(0);
+						workspace->update();
+					}
+				} break;
 			}
 		}
 	} else if (p_tool == ZOOM_OUT) {
