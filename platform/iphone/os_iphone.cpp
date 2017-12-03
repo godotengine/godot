@@ -394,12 +394,12 @@ void OSIPhone::alert(const String &p_alert, const String &p_title) {
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
 
-Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle) {
+Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	if (p_path.length() == 0) {
 		p_library_handle = RTLD_SELF;
 		return OK;
 	}
-	return OS_Unix::open_dynamic_library(p_path, p_library_handle);
+	return OS_Unix::open_dynamic_library(p_path, p_library_handle, p_also_set_library_path);
 }
 
 Error OSIPhone::close_dynamic_library(void *p_library_handle) {
