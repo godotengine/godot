@@ -352,6 +352,7 @@ void EditorNode::_notification(int p_what) {
 		resource_new_button->set_icon(gui_base->get_icon("New", "EditorIcons"));
 		resource_load_button->set_icon(gui_base->get_icon("Load", "EditorIcons"));
 		resource_save_button->set_icon(gui_base->get_icon("Save", "EditorIcons"));
+		resource_help_button->set_icon(gui_base->get_icon("Help", "EditorIcons"));
 
 		property_back->set_icon(gui_base->get_icon("Back", "EditorIcons"));
 		property_forward->set_icon(gui_base->get_icon("Forward", "EditorIcons"));
@@ -1460,6 +1461,8 @@ void EditorNode::_edit_current() {
 	String editable_warning; //none by default
 	property_editable_warning->hide(); //hide by default
 
+	resource_help_button->set_disabled(!current_obj);
+
 	if (!current_obj) {
 
 		scene_tree_dock->set_selected(NULL);
@@ -1620,8 +1623,6 @@ void EditorNode::_edit_current() {
 	if (is_resource || is_node) {
 		p->add_separator();
 		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTR("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
-		p->add_separator();
-		p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("property_editor/open_help", TTR("Open in Help")), OBJECT_REQUEST_HELP);
 	}
 
 	List<MethodInfo> methods;
@@ -5362,6 +5363,14 @@ EditorNode::EditorNode() {
 	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
 	resource_save_button->set_disabled(true);
+
+	resource_help_button = memnew(ToolButton);
+	resource_help_button->set_icon(gui_base->get_icon("Help", "EditorIcons"));
+	resource_help_button->set_tooltip(TTR("Open in Help"));
+	prop_editor_hb->add_child(resource_help_button);
+	resource_help_button->connect("pressed", this, "_menu_option", varray(OBJECT_REQUEST_HELP));
+	resource_help_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_help_button->set_disabled(true);
 
 	prop_editor_hb->add_spacer();
 
