@@ -713,6 +713,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+		case TOOL_GOTO_DOCUMENTATION: {
+
+			List<Node *> selection = editor_selection->get_selected_node_list();
+
+			if (selection.size() == 1) {
+				ScriptEditor::get_singleton()->goto_help(selection.front()->get()->get_class_name());
+			}
+		} break;
 		default: {
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -1778,6 +1786,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
+
+	if (selection.size() == 1) {
+		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("GodotDocs", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/goto_documentation"), TOOL_GOTO_DOCUMENTATION);
+	}
+
 	menu->set_size(Size2(1, 1));
 	menu->set_position(p_menu_pos);
 	menu->popup();
@@ -1930,6 +1944,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
+	ED_SHORTCUT("scene_tree/goto_documentation", TTR("Help"));
 
 	tb = memnew(ToolButton);
 	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
