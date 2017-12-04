@@ -167,7 +167,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case MODE_EDIT: {
 
-			wip_active = false;
+			_wip_close();
 			mode = MODE_EDIT;
 			button_create->set_pressed(false);
 			button_edit->set_pressed(true);
@@ -175,7 +175,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case MODE_DELETE: {
 
-			wip_active = false;
+			_wip_close();
 			mode = MODE_DELETE;
 			button_create->set_pressed(false);
 			button_edit->set_pressed(false);
@@ -224,6 +224,9 @@ void AbstractPolygon2DEditor::_wip_changed() {
 }
 
 void AbstractPolygon2DEditor::_wip_close() {
+	if (!wip_active)
+		return;
+
 	if (_is_line()) {
 
 		_set_polygon(0, wip);
