@@ -2101,6 +2101,23 @@ bool PropertyEditor::_is_property_different(const Variant &p_current, const Vari
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
 }
 
+bool PropertyEditor::_is_instanced_node_with_original_property_different(const String &p_name, TreeItem *item) {
+	bool mbi = _might_be_in_instance();
+	if (mbi) {
+		Variant vorig;
+		Dictionary d = item->get_metadata(0);
+		int usage = d.has("usage") ? int(int(d["usage"]) & (PROPERTY_USAGE_STORE_IF_NONONE | PROPERTY_USAGE_STORE_IF_NONZERO)) : 0;
+		if (_get_instanced_node_original_property(p_name, vorig) || usage) {
+			Variant v = obj->get(p_name);
+
+			if (_is_property_different(v, vorig, usage)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 TreeItem *PropertyEditor::find_item(TreeItem *p_item, const String &p_name) {
 
 	if (!p_item)
@@ -2358,6 +2375,10 @@ void PropertyEditor::_check_reload_status(const String &p_name, TreeItem *item) 
 			is_disabled = item->is_button_disabled(1, i);
 			break;
 		}
+	}
+
+	if (_is_instanced_node_with_original_property_different(p_name, item)) {
+		has_reload = true;
 	}
 
 	if (obj->call("property_can_revert", p_name).operator bool()) {
@@ -3512,20 +3533,9 @@ void PropertyEditor::update_tree() {
 
 		bool has_reload = false;
 
-		bool mbi = _might_be_in_instance();
-		if (mbi) {
-
-			Variant vorig;
-			Dictionary d = item->get_metadata(0);
-			int usage = d.has("usage") ? int(int(d["usage"]) & (PROPERTY_USAGE_STORE_IF_NONONE | PROPERTY_USAGE_STORE_IF_NONZERO)) : 0;
-			if (_get_instanced_node_original_property(p.name, vorig) || usage) {
-				Variant v = obj->get(p.name);
-
-				if (_is_property_different(v, vorig, usage)) {
-					item->add_button(1, get_icon("ReloadSmall", "EditorIcons"), 3);
-					has_reload = true;
-				}
-			}
+		if (_is_instanced_node_with_original_property_different(p.name, item)) {
+			item->add_button(1, get_icon("ReloadSmall", "EditorIcons"), 3);
+			has_reload = true;
 		}
 
 		if (obj->call("property_can_revert", p.name).operator bool()) {
@@ -3545,7 +3555,7 @@ void PropertyEditor::update_tree() {
 			}
 		}
 
-		if (mbi && !has_reload && item->get_cell_mode(1) == TreeItem::CELL_MODE_RANGE && item->get_text(1) == String()) {
+		if (_might_be_in_instance() && !has_reload && item->get_cell_mode(1) == TreeItem::CELL_MODE_RANGE && item->get_text(1) == String()) {
 			item->add_button(1, get_icon("ReloadEmpty", "EditorIcons"), 3, true);
 		}
 	}
