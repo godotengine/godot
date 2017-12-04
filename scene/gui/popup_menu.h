@@ -70,6 +70,30 @@ class PopupMenu : public Popup {
 		}
 	};
 
+	struct MeasureInfo {
+		float width; // Total width of menu items
+		float height; // Total height of menu items
+		int left_col_count; // Number of image columns on the left
+		float width_offset; // Widest offset of a menu item
+		float width_check; // Width of checkbox column in menu items (ignore if only 1 column)
+		float width_icon; // Width of icon column in menu items
+		float width_text; // Width of widest text in menu items
+		float width_accel; // Width of widest accelerator or submenu arrow in menu items
+		Vector<int> item_heights; // Height of each menu item (without vseparation)
+
+		MeasureInfo() {
+			width = 0;
+			height = 0;
+			left_col_count = 0;
+			width_offset = 0;
+			width_check = 0;
+			width_icon = 0;
+			width_text = 0;
+			width_accel = 0;
+			item_heights = Vector<int>();
+		}
+	};
+
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
@@ -90,6 +114,8 @@ class PopupMenu : public Popup {
 
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
+
+	MeasureInfo _measure() const;
 
 	Map<Ref<ShortCut>, int> shortcut_refcount;
 

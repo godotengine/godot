@@ -64,60 +64,13 @@ String PopupMenu::_get_accel_text(int p_item) const {
 
 Size2 PopupMenu::get_minimum_size() const {
 
-	int vseparation = get_constant("vseparation");
-	int hseparation = get_constant("hseparation");
-
+	// Add space for background.
 	Size2 minsize = get_stylebox("panel")->get_minimum_size();
-	Ref<Font> font = get_font("font");
 
-	float max_w = 0;
-	int font_h = font->get_height();
-	int check_w = get_icon("checked")->get_width();
-	int accel_max_w = 0;
-
-	for (int i = 0; i < items.size(); i++) {
-
-		Size2 size;
-		if (!items[i].icon.is_null()) {
-
-			Size2 icon_size = items[i].icon->get_size();
-			size.height = MAX(icon_size.height, font_h);
-			size.width += icon_size.width;
-			size.width += hseparation;
-		} else {
-
-			size.height = font_h;
-		}
-
-		size.width += items[i].h_ofs;
-
-		if (items[i].checkable) {
-
-			size.width += check_w + hseparation;
-		}
-
-		String text = items[i].shortcut.is_valid() ? String(tr(items[i].shortcut->get_name())) : items[i].xl_text;
-		size.width += font->get_string_size(text).width;
-		if (i > 0)
-			size.height += vseparation;
-
-		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
-
-			int accel_w = hseparation * 2;
-			accel_w += font->get_string_size(_get_accel_text(i)).width;
-			accel_max_w = MAX(accel_w, accel_max_w);
-		}
-
-		if (items[i].submenu != "") {
-
-			size.width += get_icon("submenu")->get_width();
-		}
-
-		minsize.height += size.height;
-		max_w = MAX(max_w, size.width);
-	}
-
-	minsize.width += max_w + accel_max_w;
+	// Add space for items.
+	MeasureInfo measure_info = _measure();
+	minsize.width += measure_info.width;
+	minsize.height += measure_info.height;
 
 	return minsize;
 }
@@ -128,36 +81,20 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 		return -1;
 
 	Ref<StyleBox> style = get_stylebox("panel");
-
 	Point2 ofs = style->get_offset();
-
-	if (ofs.y > p_over.y)
+	if (p_over.y < ofs.y)
 		return -1;
 
-	Ref<Font> font = get_font("font");
+	MeasureInfo measure_info = _measure();
 	int vseparation = get_constant("vseparation");
-	//int hseparation = get_constant("hseparation");
-	float font_h = font->get_height();
-
 	for (int i = 0; i < items.size(); i++) {
 
-		if (i > 0)
-			ofs.y += vseparation;
-		float h;
-
-		if (!items[i].icon.is_null()) {
-
-			Size2 icon_size = items[i].icon->get_size();
-			h = MAX(icon_size.height, font_h);
-		} else {
-
-			h = font_h;
-		}
-
-		ofs.y += h;
+		ofs.y += measure_info.item_heights[i];
 		if (p_over.y < ofs.y) {
 			return i;
 		}
+
+		ofs.y += vseparation;
 	}
 
 	return -1;
@@ -415,8 +352,6 @@ void PopupMenu::_notification(int p_what) {
 			Ref<Texture> submenu = get_icon("submenu");
 			Ref<StyleBox> separator = get_stylebox("separator");
 
-			style->draw(ci, Rect2(Point2(), get_size()));
-			Point2 ofs = style->get_offset();
 			int vseparation = get_constant("vseparation");
 			int hseparation = get_constant("hseparation");
 			Color font_color = get_color("font_color");
@@ -425,72 +360,69 @@ void PopupMenu::_notification(int p_what) {
 			Color font_color_hover = get_color("font_color_hover");
 			float font_h = font->get_height();
 
+			MeasureInfo measure_info = _measure();
+
+			// Draw background.
+			style->draw(ci, Rect2(Point2(), get_size()));
+
+			// Draw items.
+			Point2 ofs = style->get_offset();
 			for (int i = 0; i < items.size(); i++) {
+				Item *item = &items[i];
+				item->_ofs_cache = ofs.y; // To open submenues at the correct Y offset.
 
-				if (i > 0)
-					ofs.y += vseparation;
-				Point2 item_ofs = ofs;
-				float h;
-				Size2 icon_size;
+				float h = measure_info.item_heights[i];
 
-				item_ofs.x += items[i].h_ofs;
-				if (!items[i].icon.is_null()) {
-
-					icon_size = items[i].icon->get_size();
-					h = MAX(icon_size.height, font_h);
-				} else {
-
-					h = font_h;
-				}
-
+				// Draw hovered item background.
 				if (i == mouse_over) {
-
-					hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation * 2)));
+					hover->draw(ci, Rect2(ofs - Point2(hseparation, vseparation), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation * 2)));
 				}
 
-				if (items[i].separator) {
+				Point2 content_ofs = ofs;
+				content_ofs.x += item->h_ofs;
 
+				// Draw separator line.
+				if (item->separator) {
 					int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
-					separator->draw(ci, Rect2(item_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(get_size().width - style->get_minimum_size().width, sep_h)));
+					separator->draw(ci, Rect2(content_ofs + Point2(0, Math::floor((h - sep_h) / 2.0)), Size2(get_size().width - style->get_minimum_size().width, sep_h)));
 				}
 
-				if (items[i].checkable) {
+				// Draw checkbox.
+				if (item->checkable) {
+					Ref<Texture> checkbox = item->checked ? check : uncheck;
+					checkbox->draw(ci, content_ofs + Point2(0, Math::floor((h - checkbox->get_height()) / 2.0)));
+				}
+				if (measure_info.width_check > 0)
+					content_ofs.x += measure_info.width_check + hseparation;
 
-					if (items[i].checked)
-						check->draw(ci, item_ofs + Point2(0, Math::floor((h - check->get_height()) / 2.0)));
-					else
-						uncheck->draw(ci, item_ofs + Point2(0, Math::floor((h - check->get_height()) / 2.0)));
+				// Draw icon.
+				if (!item->icon.is_null()) {
+					Size2 icon_size = item->icon->get_size();
+					item->icon->draw(ci, content_ofs + Point2(0, Math::floor((h - icon_size.height) / 2.0)));
+				}
+				if (measure_info.width_icon > 0)
+					content_ofs.x += measure_info.width_icon + hseparation;
 
-					item_ofs.x += check->get_width() + hseparation;
+				// Draw submenu arrow.
+				if (item->submenu != "") {
+					submenu->draw(ci, Point2(size.width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), content_ofs.y + Math::floor(h - submenu->get_height()) / 2));
 				}
 
-				if (!items[i].icon.is_null()) {
-					items[i].icon->draw(ci, item_ofs + Point2(0, Math::floor((h - icon_size.height) / 2.0)));
-					item_ofs.x += items[i].icon->get_width();
-					item_ofs.x += hseparation;
+				// Draw text.
+				content_ofs.y += font->get_ascent();
+				String text = item->shortcut.is_valid() ? String(tr(item->shortcut->get_name())) : item->xl_text;
+				if (!item->separator) {
+					font->draw(ci, content_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, item->disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
+				}
+				content_ofs.x += measure_info.width_text + hseparation * 2;
+
+				// Draw accelerator.
+				if (item->accel || (item->shortcut.is_valid() && item->shortcut->is_valid())) {
+					font->draw(ci, content_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), _get_accel_text(i), i == mouse_over ? font_color_hover : font_color_accel);
 				}
 
-				if (items[i].submenu != "") {
-					submenu->draw(ci, Point2(size.width - style->get_margin(MARGIN_RIGHT) - submenu->get_width(), item_ofs.y + Math::floor(h - submenu->get_height()) / 2));
-				}
-
-				item_ofs.y += font->get_ascent();
-				String text = items[i].shortcut.is_valid() ? String(tr(items[i].shortcut->get_name())) : items[i].xl_text;
-				if (!items[i].separator) {
-
-					font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, items[i].disabled ? font_color_disabled : (i == mouse_over ? font_color_hover : font_color));
-				}
-
-				if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
-					//accelerator
-					String text = _get_accel_text(i);
-					item_ofs.x = size.width - style->get_margin(MARGIN_RIGHT) - font->get_string_size(text).width;
-					font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text, i == mouse_over ? font_color_hover : font_color_accel);
-				}
-
-				items[i]._ofs_cache = ofs.y;
-
-				ofs.y += h;
+				// Draw the next item below.
+				ofs.y += h + vseparation;
 			}
 
 		} break;
@@ -1017,6 +949,74 @@ void PopupMenu::_set_items(const Array &p_items) {
 		set_item_accelerator(idx, accel);
 		set_item_submenu(idx, subm);
 	}
+}
+
+PopupMenu::MeasureInfo PopupMenu::_measure() const {
+
+	// This method calculates and returns layout metrics reusable for control sizing, drawing, and input handling.
+
+	// An item is spaced and aligned like this (- = hsep) with MeasureInfo::left_col_count meaning
+	// [Text] [-Accel/-Arrow]                   0, if no item has a checkbox or icon
+	// [Check-/Icon-] [Text] [--Accel/-Arrow]   1, if every item has only either a checkbox or an icon
+	// [Check-] [Icon-] [Text] [--Accel/-Arrow] 2, if at least one item has a checkbox and an icon at the same time
+
+	// Retrieve resources required for measurements.
+	Ref<Texture> checked = get_icon("checked");
+	Ref<Texture> unchecked = get_icon("unchecked");
+	Ref<Texture> submenu = get_icon("submenu");
+	Ref<Font> font = get_font("font");
+	int hsep = get_constant("hseparation");
+	int vsep = get_constant("vseparation");
+	Size2 check_size = Size2(MAX(checked->get_width(), unchecked->get_width()), MAX(checked->get_height(), unchecked->get_height()));
+	MeasureInfo m = MeasureInfo();
+
+	for (int i = 0; i < items.size(); i++) {
+		const Item *item = &items[i];
+
+		// Items are at least as tall as the font.
+		float height_item = font->get_height();
+
+		if (!item->separator) {
+			// Add space for (positive) horizontal offsets.
+			m.width_offset = MAX(m.width_offset, item->h_ofs);
+
+			// Add space for checkboxes and icons.
+			if (item->checkable && !item->icon.is_null()) {
+				m.left_col_count = 2;
+			}
+			if (item->checkable) {
+				m.left_col_count = MAX(m.left_col_count, 1);
+				m.width_check = check_size.width;
+				height_item = MAX(height_item, check_size.height);
+			}
+			if (!item->icon.is_null()) {
+				m.left_col_count = MAX(m.left_col_count, 1);
+				m.width_icon = MAX(m.width_icon, item->icon->get_width());
+				height_item = MAX(height_item, item->icon->get_height());
+			}
+
+			// Add space for text.
+			String item_text = item->shortcut.is_valid() ? String(tr(item->shortcut->get_name())) : item->xl_text;
+			m.width_text = MAX(m.width_text, font->get_string_size(item_text).width);
+
+			// Add space for accelerator or submenu arrow.
+			if (item->accel || (item->shortcut.is_valid() && item->shortcut->is_valid())) {
+				m.width_accel = MAX(m.width_accel, hsep * 2 + font->get_string_size(_get_accel_text(i)).width);
+			} else if (item->submenu != "") {
+				m.width_accel = MAX(m.width_accel, hsep + submenu->get_width());
+				height_item = MAX(height_item, submenu->get_height());
+			}
+		}
+		// Add the height required for this item, and the space between them.
+		m.item_heights.push_back(height_item);
+		if (i > 0)
+			height_item += vsep;
+		m.height += height_item;
+	}
+
+	// Add total required width.
+	m.width = m.width_offset + m.width_check + m.width_icon + m.left_col_count * hsep + m.width_text + m.width_accel;
+	return m;
 }
 
 // Hide on item selection determines whether or not the popup will close after item selection
