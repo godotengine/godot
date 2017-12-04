@@ -14,6 +14,7 @@
 	</methods>
 	<members>
 		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left">
+			If [code]true[/code] centers children relative to the [code]CenterContainer[/code]'s top left corner. Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>
