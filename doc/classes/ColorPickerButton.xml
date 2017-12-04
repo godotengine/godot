@@ -15,13 +15,16 @@
 			<return type="ColorPicker">
 			</return>
 			<description>
+				Returns the [code]ColorPicker[/code] that this [code]ColorPickerButton[/code] toggles.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
+			The currently selected color.
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
+			If [code]true[/code] the alpha channel in the displayed [ColorPicker] will be visible. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>
@@ -29,7 +32,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Emitted when the color is changed.
+				Emitted when the color changes.
 			</description>
 		</signal>
 	</signals>
