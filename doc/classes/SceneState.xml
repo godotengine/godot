@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SceneState" inherits="Reference" category="Core" version="3.0-beta">
 	<brief_description>
+		A script interface to a scene file's data.
 	</brief_description>
 	<description>
+		Maintains a list of resources, nodes, exported and overridden properties, and built-in scripts associated with a scene.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,12 +17,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the list of bound parameters for the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of signal connections in the scene.
 			</description>
 		</method>
 		<method name="get_connection_flags" qualifiers="const">
@@ -29,6 +33,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the flags for the signal at [code]idx[/code]. See [Object]'s [code]CONNECT_*[/code] flags.
 			</description>
 		</method>
 		<method name="get_connection_method" qualifiers="const">
@@ -37,6 +42,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the method connected to the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_signal" qualifiers="const">
@@ -45,6 +51,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the signal at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_connection_source" qualifiers="const">
@@ -53,6 +60,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the path to the node that owns the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_connection_target" qualifiers="const">
@@ -61,12 +69,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the path to the node that owns the method connected to the signal at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of nodes in the scene.
 			</description>
 		</method>
 		<method name="get_node_groups" qualifiers="const">
@@ -75,6 +85,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the list of group names associated with the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_instance" qualifiers="const">
@@ -83,6 +94,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the scene for the node at [code]idx[/code] or [code]null[/code] if the node is not an instance.
 			</description>
 		</method>
 		<method name="get_node_instance_placeholder" qualifiers="const">
@@ -91,6 +103,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the path to the represented scene file if the node at [code]idx[/code] is an [InstancePlaceholder].
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
@@ -99,6 +112,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_owner_path" qualifiers="const">
@@ -107,6 +121,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the path to the owner of the node at [code]idx[/code], relative to the root node.
 			</description>
 		</method>
 		<method name="get_node_path" qualifiers="const">
@@ -117,6 +132,7 @@
 			<argument index="1" name="for_parent" type="bool" default="false">
 			</argument>
 			<description>
+				Returns the path to the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_property_count" qualifiers="const">
@@ -125,6 +141,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the number of exported or overridden properties for the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_property_name" qualifiers="const">
@@ -135,6 +152,7 @@
 			<argument index="1" name="prop_idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the property at [code]prop_idx[/code] for the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_property_value" qualifiers="const">
@@ -145,6 +163,7 @@
 			<argument index="1" name="prop_idx" type="int">
 			</argument>
 			<description>
+				Returns the value of the property at [code]prop_idx[/code] for the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_node_type" qualifiers="const">
@@ -153,6 +172,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the type of the node at [code]idx[/code].
 			</description>
 		</method>
 		<method name="is_node_instance_placeholder" qualifiers="const">
@@ -161,15 +181,19 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the node at [code]idx[/code] is an [InstancePlaceholder].
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
+			If passed to [method PackedScene.instance], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
+			If passed to [method PackedScene.instance], provides inherited scene resources to the local scene. Requires tools compiled.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
+			If passed to [method PackedScene.instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state. Requires tools compiled.
 		</constant>
 	</constants>
 </class>
