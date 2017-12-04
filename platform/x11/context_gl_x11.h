@@ -46,6 +46,14 @@ struct ContextGL_X11_Private;
 
 class ContextGL_X11 : public ContextGL {
 
+public:
+	enum ContextType {
+		OLDSTYLE,
+		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE
+	};
+
+private:
 	ContextGL_X11_Private *p;
 	OS::VideoMode default_video_mode;
 	//::Colormap x11_colormap;
@@ -54,8 +62,8 @@ class ContextGL_X11 : public ContextGL {
 	bool double_buffer;
 	bool direct_render;
 	int glx_minor, glx_major;
-	bool opengl_3_context;
 	bool use_vsync;
+	ContextType context_type;
 
 public:
 	virtual void release_current();
@@ -69,7 +77,7 @@ public:
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context);
+	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
 	~ContextGL_X11();
 };
 

@@ -24,6 +24,7 @@ if env['xaudio2']:
 # Graphics drivers
 if (env["platform"] != "server"):
     SConscript('gles3/SCsub')
+    SConscript('gles2/SCsub')
     SConscript('gl_context/SCsub')
 else:
     SConscript('dummy/SCsub')
