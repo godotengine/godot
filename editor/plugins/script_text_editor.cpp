@@ -1042,8 +1042,13 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			String delimiter = "#";
 			List<String> comment_delimiters;
 			scr->get_language()->get_comment_delimiters(&comment_delimiters);
-			if (!comment_delimiters.empty()) {
-				delimiter = comment_delimiters.front()->get();
+
+			for (List<String>::Element *E = comment_delimiters.front(); E; E = E->next()) {
+				String script_delimiter = E->get();
+				if (script_delimiter.find(" ") == -1) {
+					delimiter = script_delimiter;
+					break;
+				}
 			}
 
 			tx->begin_complex_operation();
