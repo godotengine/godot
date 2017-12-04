@@ -16,5 +16,8 @@ Link if you missed it: https://hosted.weblate.org/projects/godot-engine/godot
 ## Adding new languages
 
 If you want to translate for a language which is not featured yet on Weblate,
-open an issue on this repo to ask that the language is added, or contact
-Akien/@akien-mga directly on IRC (#godotengine channel on Freenode).
+you can add it (when logged in) by clicking the "Start new translation"
+button at the bottom of the page.
+
+Alternatively, you can use this
+[direct link](https://hosted.weblate.org/new-lang/godot-engine/godot/).
