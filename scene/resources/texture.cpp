@@ -1601,3 +1601,72 @@ int GradientTexture::get_width() const {
 Ref<Image> GradientTexture::get_data() const {
 	return VisualServer::get_singleton()->texture_get_data(texture);
 }
+
+//////////////////////////////////////
+
+void ProxyTexture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
+	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_base", "get_base");
+}
+
+void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
+
+	base = p_texture;
+	if (base.is_valid()) {
+		VS::get_singleton()->texture_set_proxy(proxy, base->get_rid());
+	} else {
+		VS::get_singleton()->texture_set_proxy(proxy, RID());
+	}
+}
+
+Ref<Texture> ProxyTexture::get_base() const {
+
+	return base;
+}
+
+int ProxyTexture::get_width() const {
+
+	if (base.is_valid())
+		return base->get_width();
+	return 1;
+}
+int ProxyTexture::get_height() const {
+
+	if (base.is_valid())
+		return base->get_height();
+	return 1;
+}
+RID ProxyTexture::get_rid() const {
+
+	return proxy;
+}
+
+bool ProxyTexture::has_alpha() const {
+
+	if (base.is_valid())
+		return base->has_alpha();
+	return false;
+}
+
+void ProxyTexture::set_flags(uint32_t p_flags) {
+}
+
+uint32_t ProxyTexture::get_flags() const {
+
+	if (base.is_valid())
+		return base->get_flags();
+	return 0;
+}
+
+ProxyTexture::ProxyTexture() {
+
+	proxy = VS::get_singleton()->texture_create();
+}
+
+ProxyTexture::~ProxyTexture() {
+
+	VS::get_singleton()->free(proxy);
+}
