@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,8 +148,8 @@ void RasterizerGLES2::initialize() {
 	}
 
 // GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
-#ifdef OPENGL_ENABLED // OpenGL 2.1 Profile required
-	if (GLVersion.major < 2) {
+#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
+	if (GLVersion.major < 3) {
 #else // OpenGL ES 3.0
 	if (GLVersion.major < 2) {
 #endif
@@ -160,65 +160,32 @@ void RasterizerGLES2::initialize() {
 				"Fatal error: Insufficient OpenGL / GLES driver support");
 	}
 
-#ifdef GLES_OVER_GL
-	//Test GL_ARB_framebuffer_object extension
-	if (!GLAD_GL_ARB_framebuffer_object) {
-		//Try older GL_EXT_framebuffer_object extension
-		if (GLAD_GL_EXT_framebuffer_object) {
-			glIsRenderbuffer = glIsRenderbufferEXT;
-			glBindRenderbuffer = glBindRenderbufferEXT;
-			glDeleteRenderbuffers = glDeleteRenderbuffersEXT;
-			glGenRenderbuffers = glGenRenderbuffersEXT;
-			glRenderbufferStorage = glRenderbufferStorageEXT;
-			glGetRenderbufferParameteriv = glGetRenderbufferParameterivEXT;
-			glIsFramebuffer = glIsFramebufferEXT;
-			glBindFramebuffer = glBindFramebufferEXT;
-			glDeleteFramebuffers = glDeleteFramebuffersEXT;
-			glGenFramebuffers = glGenFramebuffersEXT;
-			glCheckFramebufferStatus = glCheckFramebufferStatusEXT;
-			glFramebufferTexture1D = glFramebufferTexture1DEXT;
-			glFramebufferTexture2D = glFramebufferTexture2DEXT;
-			glFramebufferTexture3D = glFramebufferTexture3DEXT;
-			glFramebufferRenderbuffer = glFramebufferRenderbufferEXT;
-			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
-			glGenerateMipmap = glGenerateMipmapEXT;
-		} else {
-			ERR_PRINT("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-					  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-			OS::get_singleton()->alert("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-									   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-					"Fatal error: Insufficient OpenGL / GLES driver support");
-		}
+#ifdef __APPLE__
+// FIXME glDebugMessageCallbackARB does not seem to work on Mac OS X and opengl 3, this may be an issue with our opengl canvas..
+#else
+	if (true || OS::get_singleton()->is_stdout_verbose()) {
+		glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		glDebugMessageCallbackARB(_gl_debug_print, NULL);
+		glEnable(_EXT_DEBUG_OUTPUT);
 	}
 #endif
-	if (true || OS::get_singleton()->is_stdout_verbose()) {
-		if (GLAD_GL_ARB_debug_output) {
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
-			glEnable(_EXT_DEBUG_OUTPUT);
-		} else {
-			print_line("OpenGL debugging not supported!");
-		}
-	}
 
 #endif // GLAD_ENABLED
 
-	// For debugging
+		// For debugging
 #ifdef GLES_OVER_GL
-	if (GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		/* glDebugMessageInsertARB(
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+	glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+#endif
+	/* glDebugMessageInsertARB(
 			GL_DEBUG_SOURCE_API_ARB,
 			GL_DEBUG_TYPE_OTHER_ARB, 1,
 			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
-		*/
-	}
-#endif
+	*/
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
@@ -227,13 +194,20 @@ void RasterizerGLES2::initialize() {
 	scene->initialize();
 }
 
-void RasterizerGLES2::begin_frame(double frame_step) {
-	time_total += frame_step;
+void RasterizerGLES2::begin_frame() {
+	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 
-	if (frame_step == 0) {
+	double delta = double(tick - prev_ticks) / 1000000.0;
+	delta *= Engine::get_singleton()->get_time_scale();
+
+	time_total += delta;
+
+	if (delta == 0) {
 		//to avoid hiccups
-		frame_step = 0.001;
+		delta = 0.001;
 	}
+
+	prev_ticks = tick;
 
 	// double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	// if (time_total > time_roll_over)
@@ -244,7 +218,9 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
-	storage->frame.delta = frame_step;
+	storage->frame.delta = delta;
+
+	storage->frame.prev_tick = tick;
 
 	storage->update_dirty_resources();
 
@@ -307,11 +283,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glViewport(0, 0, window_w, window_h);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
-	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-		glClearColor(0.0, 0.0, 0.0, 0.0);
-	} else {
-		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
-	}
+	glClearColor(p_color.r, p_color.g, p_color.b, p_color.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	canvas->canvas_begin();
@@ -335,7 +307,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	storage->free(texture);
 
-	end_frame(true);
+	OS::get_singleton()->swap_buffers();
 }
 
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
@@ -348,10 +320,10 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
-	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();
 
 	canvas->canvas_begin();
+	canvas->state.canvas_shader.set_uniform(CanvasShaderGLES2::BLIT_PASS, true);
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	glActiveTexture(GL_TEXTURE0);
@@ -361,33 +333,13 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 
+	canvas->state.canvas_shader.set_uniform(CanvasShaderGLES2::BLIT_PASS, false);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();
 }
 
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
-
-	if (OS::get_singleton()->is_layered_allowed()) {
-		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
-			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
-			if (data) {
-				glReadPixels(0, 0, wndsize.x, wndsize.y, GL_BGRA, GL_UNSIGNED_BYTE, data);
-				OS::get_singleton()->swap_layered_buffer();
-
-				return;
-			}
-#endif
-		} else {
-			//clear alpha
-			glColorMask(false, false, false, true);
-			glClearColor(0, 0, 0, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glColorMask(true, true, true, true);
-		}
-	}
-
 	if (p_swap_buffers)
 		OS::get_singleton()->swap_buffers();
 	else
@@ -420,6 +372,7 @@ RasterizerGLES2::RasterizerGLES2() {
 	scene->storage = storage;
 	storage->scene = scene;
 
+	prev_ticks = 0;
 	time_total = 0;
 }
 

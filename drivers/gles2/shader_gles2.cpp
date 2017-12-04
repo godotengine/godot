@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,10 +33,7 @@
 #include "print_string.h"
 #include "string_builder.h"
 
-#include "rasterizer_gles2.h"
-#include "rasterizer_storage_gles2.h"
-
-// #define DEBUG_OPENGL
+//#define DEBUG_OPENGL
 
 // #include "shaders/copy.glsl.gen.h"
 
@@ -57,7 +54,7 @@
 
 ShaderGLES2 *ShaderGLES2::active = NULL;
 
-// #define DEBUG_SHADER
+//#define DEBUG_SHADER
 
 #ifdef DEBUG_SHADER
 
@@ -86,10 +83,7 @@ void ShaderGLES2::bind_uniforms() {
 			continue;
 		}
 
-		Variant v;
-
-		v = E->value();
-
+		const Variant &v = E->value();
 		_set_uniform_variant(location, v);
 		E = E->next();
 	}
@@ -133,28 +127,6 @@ bool ShaderGLES2::bind() {
 	ERR_FAIL_COND_V(!version, false);
 
 	glUseProgram(version->id);
-
-	// find out uniform names and locations
-
-	int count;
-	glGetProgramiv(version->id, GL_ACTIVE_UNIFORMS, &count);
-	version->uniform_names.resize(count);
-
-	for (int i = 0; i < count; i++) {
-		GLchar uniform_name[1024];
-		int len = 0;
-		GLint size = 0;
-		GLenum type;
-
-		glGetActiveUniform(version->id, i, 1024, &len, &size, &type, uniform_name);
-
-		uniform_name[len] = '\0';
-		String name = String((const char *)uniform_name);
-
-		version->uniform_names.write[i] = name;
-	}
-
-	bind_uniforms();
 
 	DEBUG_TEST_ERROR("use program");
 
@@ -256,7 +228,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	}
 
 	if (!_v)
-		version_map[conditional_version] = Version();
+		version_map[conditional_version];
 
 	Version &v = version_map[conditional_version];
 
@@ -316,7 +288,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
-			strings.push_back(cc->custom_defines.write[i]);
+			strings.push_back(cc->custom_defines[i]);
 			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i]));
 		}
 	}
@@ -417,10 +389,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	strings.push_back(fragment_code3.get_data());
 
 #ifdef DEBUG_SHADER
-
-	if (cc) {
-		DEBUG_PRINT("\nFragment Code:\n\n" + String(cc->fragment_globals));
-	}
 	DEBUG_PRINT("\nFragment Code:\n\n" + String(code_string.get_data()));
 #endif
 
@@ -532,18 +500,9 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	}
 
 	if (cc) {
-		// uniforms
+		v.custom_uniform_locations.resize(cc->custom_uniforms.size());
 		for (int i = 0; i < cc->custom_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->custom_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
-			v.custom_uniform_locations[cc->custom_uniforms[i]] = location;
-		}
-
-		// textures
-		for (int i = 0; i < cc->texture_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->texture_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
-			v.custom_uniform_locations[cc->texture_uniforms[i]] = location;
+			v.custom_uniform_locations[i] = glGetUniformLocation(v.id, String(cc->custom_uniforms[i]).ascii().get_data());
 		}
 	}
 
@@ -701,7 +660,6 @@ void ShaderGLES2::set_custom_shader_code(uint32_t p_code_id,
 	cc->light = p_light;
 	cc->custom_uniforms = p_uniforms;
 	cc->custom_defines = p_custom_defines;
-	cc->texture_uniforms = p_texture_uniforms;
 	cc->version++;
 }
 
@@ -715,341 +673,6 @@ void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 		conditional_version.code_version = 0;
 
 	custom_code_map.erase(p_code_id);
-}
-
-void ShaderGLES2::use_material(void *p_material, int p_num_predef_textures) {
-	RasterizerStorageGLES2::Material *material = (RasterizerStorageGLES2::Material *)p_material;
-
-	if (!material) {
-		return;
-	}
-
-	if (!material->shader) {
-		return;
-	}
-
-	Version *v = version_map.getptr(conditional_version);
-
-	CustomCode *cc = NULL;
-	if (v) {
-		cc = custom_code_map.getptr(v->code_version);
-	}
-
-	// bind uniforms
-	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
-
-		if (E->get().texture_order >= 0)
-			continue; // this is a texture, doesn't go here
-
-		Map<StringName, Variant>::Element *V = material->params.find(E->key());
-
-		Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > value;
-
-		value.first = E->get().type;
-		value.second = E->get().default_value;
-
-		if (V) {
-			value.second = Vector<ShaderLanguage::ConstantNode::Value>();
-			value.second.resize(E->get().default_value.size());
-			switch (E->get().type) {
-				case ShaderLanguage::TYPE_BOOL: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					value.second.write[0].boolean = V->get();
-				} break;
-
-				case ShaderLanguage::TYPE_BVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
-				} break;
-
-				case ShaderLanguage::TYPE_BVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
-					value.second.write[2].boolean = flags & 4;
-
-				} break;
-
-				case ShaderLanguage::TYPE_BVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
-					value.second.write[2].boolean = flags & 4;
-					value.second.write[3].boolean = flags & 8;
-
-				} break;
-
-				case ShaderLanguage::TYPE_INT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					int val = V->get();
-					value.second.write[0].sint = val;
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_UINT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					uint32_t val = V->get();
-					value.second.write[0].uint = val;
-				} break;
-
-				case ShaderLanguage::TYPE_UVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_UVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_UVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_FLOAT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					value.second.write[0].real = V->get();
-
-				} break;
-
-				case ShaderLanguage::TYPE_VEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					Vector2 val = V->get();
-					value.second.write[0].real = val.x;
-					value.second.write[1].real = val.y;
-				} break;
-
-				case ShaderLanguage::TYPE_VEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					Vector3 val = V->get();
-					value.second.write[0].real = val.x;
-					value.second.write[1].real = val.y;
-					value.second.write[2].real = val.z;
-				} break;
-
-				case ShaderLanguage::TYPE_VEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					if (V->get().get_type() == Variant::PLANE) {
-						Plane val = V->get();
-						value.second.write[0].real = val.normal.x;
-						value.second.write[1].real = val.normal.y;
-						value.second.write[2].real = val.normal.z;
-						value.second.write[3].real = val.d;
-					} else {
-						Color val = V->get();
-						value.second.write[0].real = val.r;
-						value.second.write[1].real = val.g;
-						value.second.write[2].real = val.b;
-						value.second.write[3].real = val.a;
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_MAT2: {
-					Transform2D val = V->get();
-
-					// TODO
-
-				} break;
-
-				case ShaderLanguage::TYPE_MAT3: {
-					Basis val = V->get();
-
-					// TODO
-				} break;
-
-				case ShaderLanguage::TYPE_MAT4: {
-					Transform val = V->get();
-
-					// TODO
-				} break;
-
-				case ShaderLanguage::TYPE_SAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_ISAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_USAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_SAMPLERCUBE: {
-
-				} break;
-			}
-		} else {
-			if (value.second.size() == 0) {
-				// No default value set... weird, let's just use zero for everything
-				size_t default_arg_size = 1;
-				bool is_float = false;
-				switch (E->get().type) {
-					case ShaderLanguage::TYPE_BOOL:
-					case ShaderLanguage::TYPE_INT:
-					case ShaderLanguage::TYPE_UINT: {
-						default_arg_size = 1;
-					} break;
-
-					case ShaderLanguage::TYPE_FLOAT: {
-						default_arg_size = 1;
-						is_float = true;
-					} break;
-
-					case ShaderLanguage::TYPE_BVEC2:
-					case ShaderLanguage::TYPE_IVEC2:
-					case ShaderLanguage::TYPE_UVEC2: {
-						default_arg_size = 2;
-					} break;
-
-					case ShaderLanguage::TYPE_VEC2: {
-						default_arg_size = 2;
-						is_float = true;
-					} break;
-
-					case ShaderLanguage::TYPE_BVEC3:
-					case ShaderLanguage::TYPE_IVEC3:
-					case ShaderLanguage::TYPE_UVEC3: {
-						default_arg_size = 3;
-					} break;
-
-					case ShaderLanguage::TYPE_VEC3: {
-						default_arg_size = 3;
-						is_float = true;
-					} break;
-
-					case ShaderLanguage::TYPE_BVEC4:
-					case ShaderLanguage::TYPE_IVEC4:
-					case ShaderLanguage::TYPE_UVEC4: {
-						default_arg_size = 4;
-					} break;
-
-					case ShaderLanguage::TYPE_VEC4: {
-						default_arg_size = 4;
-						is_float = true;
-					} break;
-
-					default: {
-						// TODO matricies and all that stuff
-						default_arg_size = 1;
-					} break;
-				}
-
-				value.second.resize(default_arg_size);
-
-				for (int i = 0; i < default_arg_size; i++) {
-					if (is_float) {
-						value.second.write[i].real = 0.0;
-					} else {
-						value.second.write[i].uint = 0;
-					}
-				}
-			}
-		}
-
-		// GLint location = get_uniform_location(E->key());
-
-		GLint location;
-		if (v->custom_uniform_locations.has(E->key())) {
-			location = v->custom_uniform_locations[E->key()];
-		} else {
-			int idx = v->uniform_names.find(E->key()); // TODO maybe put those in a Map?
-			if (idx < 0) {
-				location = -1;
-			} else {
-				location = v->uniform_location[idx];
-			}
-		}
-
-		_set_uniform_value(location, value);
-	}
-
-	// bind textures
-	int tc = material->textures.size();
-	Pair<StringName, RID> *textures = material->textures.ptrw();
-
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
-
-	for (int i = 0; i < tc; i++) {
-
-		Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > value;
-		value.first = ShaderLanguage::TYPE_INT;
-		value.second.resize(1);
-		value.second.write[0].sint = p_num_predef_textures + i;
-
-		// GLint location = get_uniform_location(textures[i].first);
-
-		// if (location < 0) {
-		//	location = material->shader->uniform_locations[textures[i].first];
-		// }
-		GLint location = -1;
-		if (v->custom_uniform_locations.has(textures[i].first)) {
-			location = v->custom_uniform_locations[textures[i].first];
-		} else {
-			location = get_uniform_location(textures[i].first);
-		}
-
-		_set_uniform_value(location, value);
-	}
 }
 
 void ShaderGLES2::set_base_material_tex_index(int p_idx) {
