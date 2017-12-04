@@ -4314,7 +4314,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	show_grid = false;
 	show_helpers = false;
-	show_rulers = false;
+	show_rulers = true;
 	show_guides = true;
 	zoom = 1;
 	grid_offset = Point2();
