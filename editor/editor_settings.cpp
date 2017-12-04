@@ -543,6 +543,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
+	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
@@ -577,6 +578,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "line_length_guideline_color", ((Color)get("text_editor/highlighting/line_length_guideline_color")).to_html());
 	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/highlighting/mark_color")).to_html());
 	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/highlighting/breakpoint_color")).to_html());
+	cf->set_value(theme_section, "code_folding_color", ((Color)get("text_editor/highlighting/code_folding_color")).to_html());
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());
 	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/highlighting/search_result_color")).to_html());
 	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/highlighting/search_result_border_color")).to_html());

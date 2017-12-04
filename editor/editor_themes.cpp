@@ -1039,6 +1039,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color member_variable_color = mono_color;
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color breakpoint_color = error_color;
+	const Color code_folding_color = alpha4;
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = alpha4;
 
@@ -1069,6 +1070,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("text_editor/theme/member_variable_color", "Editor", member_variable_color);
 	theme->set_color("text_editor/theme/mark_color", "Editor", mark_color);
 	theme->set_color("text_editor/theme/breakpoint_color", "Editor", breakpoint_color);
+	theme->set_color("text_editor/theme/code_folding_color", "Editor", code_folding_color);
 	theme->set_color("text_editor/theme/search_result_color", "Editor", search_result_color);
 	theme->set_color("text_editor/theme/search_result_border_color", "Editor", search_result_border_color);
 

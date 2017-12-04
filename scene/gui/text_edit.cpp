@@ -886,6 +886,11 @@ void TextEdit::_notification(int p_what) {
 						int char_w = cache.font->get_char_size(' ').width;
 						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
 					}
+				} else {
+					// if it has text, then draw current line marker in the margin, as line number ect will draw over it, draw the rest of line marker later.
+					if (line == cursor.line && highlight_current_line) {
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg, get_row_height()), cache.current_line_color);
+					}
 				}
 
 				if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
@@ -915,11 +920,11 @@ void TextEdit::_notification(int p_what) {
 					if (is_folded(line)) {
 						int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 						int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
-						cache.folded_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
+						cache.folded_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), cache.code_folding_color);
 					} else if (can_fold(line)) {
 						int xofs = -cache.can_fold_icon->get_width() / 2 - horizontal_gap + 3;
 						int yofs = (get_row_height() - cache.can_fold_icon->get_height()) / 2;
-						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
+						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), cache.code_folding_color);
 					}
 				}
 
@@ -1126,10 +1131,6 @@ void TextEdit::_notification(int p_what) {
 					bool in_selection = (selection.active && line >= selection.from_line && line <= selection.to_line && (line > selection.from_line || j >= selection.from_column) && (line < selection.to_line || j < selection.to_column));
 
 					if (line == cursor.line && highlight_current_line) {
-						// if its the first char draw behind line numbers
-						if (j == 0) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, (char_ofs + char_margin + ofs_x), get_row_height()), cache.current_line_color);
-						}
 						// if its the last char draw to end of the line
 						if (j == str.length() - 1) {
 							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin + char_w, ofs_y, xmargin_end - (char_ofs + char_margin + char_w), get_row_height()), cache.current_line_color);
@@ -1268,7 +1269,9 @@ void TextEdit::_notification(int p_what) {
 					if (j == str.length() - 1 && is_folded(line)) {
 						int yofs = (get_row_height() - cache.folded_eol_icon->get_height()) / 2;
 						int xofs = cache.folded_eol_icon->get_width() / 2;
-						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), Color(1, 1, 1, 1));
+						Color eol_color = cache.code_folding_color;
+						eol_color.a = 1;
+						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), eol_color);
 					}
 				}
 
@@ -3993,6 +3996,7 @@ void TextEdit::_update_caches() {
 	cache.current_line_color = get_color("current_line_color");
 	cache.line_length_guideline_color = get_color("line_length_guideline_color");
 	cache.breakpoint_color = get_color("breakpoint_color");
+	cache.code_folding_color = get_color("code_folding_color");
 	cache.brace_mismatch_color = get_color("brace_mismatch_color");
 	cache.word_highlighted_color = get_color("word_highlighted_color");
 	cache.search_result_color = get_color("search_result_color");
