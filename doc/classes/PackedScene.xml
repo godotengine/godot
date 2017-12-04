@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PackedScene" inherits="Resource" category="Core" version="3.0-beta">
 	<brief_description>
+		An abstraction of a serialized scene.
 	</brief_description>
 	<description>
+		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
 		TODO: explain ownership, and that node does not need to own itself
 	</description>
 	<tutorials>
@@ -14,12 +16,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the scene file has nodes.
 			</description>
 		</method>
 		<method name="get_state">
 			<return type="SceneState">
 			</return>
 			<description>
+				Returns the [code]SceneState[/code] representing the scene file contents.
 			</description>
 		</method>
 		<method name="instance" qualifiers="const">
@@ -28,6 +32,7 @@
 			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
 			</argument>
 			<description>
+				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers the [enum Object.NOTIFICATION_INSTANCED] notification on the root node.
 			</description>
 		</method>
 		<method name="pack">
@@ -42,14 +47,19 @@
 	</methods>
 	<members>
 		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene">
+			A dictionary representation of the scene contents.
+			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>
 	</members>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
+			If passed to [method instance], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
+			If passed to [method instance], provides local scene resources to the local scene. Requires tools compiled.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
+			If passed to [method instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state. Requires tools compiled.
 		</constant>
 	</constants>
 </class>
