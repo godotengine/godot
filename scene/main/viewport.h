@@ -59,6 +59,8 @@ class ViewportTexture : public Texture {
 	friend class Viewport;
 	Viewport *vp;
 
+	RID proxy;
+
 protected:
 	static void _bind_methods();
 

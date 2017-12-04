@@ -141,6 +141,8 @@ public:
 
 	virtual void textures_keep_original(bool p_enable) = 0;
 
+	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
+
 	/* SKY API */
 
 	virtual RID sky_create() = 0;

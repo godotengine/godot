@@ -184,6 +184,35 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return Ref<Resource>(r);
 }
 
+void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+
+	print_line("configure for local: " + get_class());
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+	local_scene = p_for_scene;
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+			continue;
+		Variant p = get(E->get().name);
+		if (p.get_type() == Variant::OBJECT) {
+
+			RES sr = p;
+			if (sr.is_valid()) {
+
+				if (sr->is_local_to_scene()) {
+					if (!remap_cache.has(sr)) {
+						sr->configure_for_local_scene(p_for_scene, remap_cache);
+						remap_cache[sr] = sr;
+					}
+				}
+			}
+		}
+	}
+}
+
 Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 	List<PropertyInfo> plist;

@@ -100,6 +100,8 @@ public:
 
 	FUNC1(textures_keep_original, bool)
 
+	FUNC2(texture_set_proxy, RID, RID)
+
 	/* SKY API */
 
 	FUNCRID(sky)

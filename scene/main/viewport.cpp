@@ -69,6 +69,8 @@ void ViewportTexture::setup_local_to_scene() {
 	ERR_FAIL_COND(!vp);
 
 	vp->viewport_textures.insert(this);
+
+	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -105,8 +107,8 @@ Size2 ViewportTexture::get_size() const {
 }
 RID ViewportTexture::get_rid() const {
 
-	ERR_FAIL_COND_V(!vp, RID());
-	return vp->texture_rid;
+	//ERR_FAIL_COND_V(!vp, RID());
+	return proxy;
 }
 
 bool ViewportTexture::has_alpha() const {
@@ -147,6 +149,7 @@ ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
 	set_local_to_scene(true);
+	proxy = VS::get_singleton()->texture_create();
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -154,6 +157,8 @@ ViewportTexture::~ViewportTexture() {
 	if (vp) {
 		vp->viewport_textures.erase(this);
 	}
+
+	VS::get_singleton()->free(proxy);
 }
 
 /////////////////////////////////////
@@ -2813,6 +2818,7 @@ Viewport::Viewport() {
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
 	viewport_textures.insert(default_texture.ptr());
+	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
 
 	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;

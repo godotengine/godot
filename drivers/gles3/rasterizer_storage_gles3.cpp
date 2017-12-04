@@ -1232,6 +1232,25 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 	return texture_owner.make_rid(ctex);
 }
 
+void RasterizerStorageGLES3::texture_set_proxy(RID p_texture, RID p_proxy) {
+
+	Texture *texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	if (texture->proxy) {
+		texture->proxy->proxy_owners.erase(texture);
+		texture->proxy = NULL;
+	}
+
+	if (p_proxy.is_valid()) {
+		Texture *proxy = texture_owner.get(p_proxy);
+		ERR_FAIL_COND(!proxy);
+		ERR_FAIL_COND(proxy == texture);
+		proxy->proxy_owners.insert(texture);
+		texture->proxy = proxy;
+	}
+}
+
 RID RasterizerStorageGLES3::sky_create() {
 
 	Sky *sky = memnew(Sky);
@@ -1616,7 +1635,6 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.render_mode_values["cull_front"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_FRONT);
 			shaders.actions_scene.render_mode_values["cull_back"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_BACK);
 			shaders.actions_scene.render_mode_values["cull_disabled"] = Pair<int *, int>(&p_shader->spatial.cull_mode, Shader::Spatial::CULL_MODE_DISABLED);
-
 
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;

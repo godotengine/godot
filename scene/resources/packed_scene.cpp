@@ -232,11 +232,11 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 										Node *base = i == 0 ? node : ret_nodes[0];
 
 										if (p_edit_state == GEN_EDIT_STATE_MAIN) {
-
-											res->local_scene = base;
-											resources_local_to_scene[res] = res;
+											//for the main scene, use the resource as is
+											res->configure_for_local_scene(base, resources_local_to_scene);
 
 										} else {
+											//for instances, a copy must be made
 											Node *base = i == 0 ? node : ret_nodes[0];
 											Ref<Resource> local_dupe = res->duplicate_for_local_scene(base, resources_local_to_scene);
 											resources_local_to_scene[res] = local_dupe;

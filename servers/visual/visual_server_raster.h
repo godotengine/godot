@@ -168,6 +168,8 @@ public:
 
 	BIND1(textures_keep_original, bool)
 
+	BIND2(texture_set_proxy, RID, RID)
+
 	/* SKY API */
 
 	BIND0R(RID, sky_create)

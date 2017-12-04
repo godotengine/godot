@@ -208,6 +208,8 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 
 		} else {
 
+			texture = texture->get_ptr();
+
 			if (texture->render_target)
 				texture->render_target->used_in_frame = true;
 
@@ -243,6 +245,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 
 		} else {
 
+			normal_map = normal_map->get_ptr();
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 			state.current_normal = p_normal_map;
@@ -1114,6 +1117,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 						continue;
 					}
+
+					t = t->get_ptr();
 
 					if (storage->config.srgb_decode_supported && t->using_srgb) {
 						//no srgb in 2D
