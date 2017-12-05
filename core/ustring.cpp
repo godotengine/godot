@@ -3380,8 +3380,6 @@ bool String::is_valid_float() const {
 		from++;
 	}
 
-	//this was pulled out of my ass, i wonder if it's correct...
-
 	bool exponent_found = false;
 	bool period_found = false;
 	bool sign_found = false;

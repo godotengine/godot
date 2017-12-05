@@ -343,7 +343,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteProgram(v.id);
 			v.id = 0;
 
-			ERR_PRINT("NO LOG, WTF");
+			ERR_PRINT("Vertex shader compilation failed with empty log");
 		} else {
 
 			if (iloglen == 0) {
@@ -451,7 +451,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
-			ERR_PRINT("NO LOG, WTF");
+			ERR_PRINT("Fragment shader compilation failed with empty log");
 		} else {
 
 			if (iloglen == 0) {
@@ -624,7 +624,7 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 	feedbacks = p_feedback;
 	feedback_count = p_feedback_count;
 
-	//split vertex and shader code (thank you, retarded shader compiler programmers from you know what company).
+	//split vertex and shader code (thank you, shader compiler programmers from you know what company).
 	{
 		String globals_tag = "\nVERTEX_SHADER_GLOBALS";
 		String material_tag = "\nMATERIAL_UNIFORMS";

@@ -491,7 +491,6 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(ERR_BUSY);
 	BIND_GLOBAL_ENUM_CONSTANT(ERR_HELP); ///< user requested help!!
 	BIND_GLOBAL_ENUM_CONSTANT(ERR_BUG); ///< a bug in the software certainly happened ), due to a double check failing or unexpected behavior.
-	BIND_GLOBAL_ENUM_CONSTANT(ERR_WTF);
 
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_NONE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_HINT_RANGE);

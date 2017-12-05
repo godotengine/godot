@@ -64,7 +64,7 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f, ogg_int64_t offs, int 
 		fa->seek_end(offs);
 	} else {
 
-		ERR_PRINT("BUG, wtf was whence set to?\n");
+		ERR_PRINT("Vorbis seek function failure: Unexpected value in _whence\n");
 	}
 	int ret = fa->eof_reached() ? -1 : 0;
 	//printf("returning %i\n",ret);

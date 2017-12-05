@@ -38,7 +38,6 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
-//bitch
 #undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

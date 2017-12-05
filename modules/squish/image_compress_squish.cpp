@@ -64,7 +64,7 @@ void image_decompress_squish(Image *p_image) {
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
-		print_line("wtf askd to decompress.. " + itos(p_image->get_format()));
+		print_line("Can't decompress unknown format: " + itos(p_image->get_format()));
 		ERR_FAIL_COND(true);
 		return;
 	}

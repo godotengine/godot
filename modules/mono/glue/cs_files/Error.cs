@@ -42,7 +42,6 @@ namespace Godot
         ERR_CYCLIC_LINK = 40,
         ERR_BUSY = 44,
         ERR_HELP = 46,
-        ERR_BUG = 47,
-        ERR_WTF = 49
+        ERR_BUG = 47
     }
 }
