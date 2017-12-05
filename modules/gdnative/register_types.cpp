@@ -103,16 +103,34 @@ static void actual_discoverer_handler() {
 
 	Set<String> file_paths = get_gdnative_singletons(dir);
 
+	bool changed = false;
+	Array current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	Array files;
 	files.resize(file_paths.size());
 	int i = 0;
 	for (Set<String>::Element *E = file_paths.front(); E; i++, E = E->next()) {
+		if (!current_files.has(E->get())) {
+			changed = true;
+		}
 		files.set(i, E->get());
 	}
 
-	ProjectSettings::get_singleton()->set("gdnative/singletons", files);
+	// Check for removed files
+	if (!changed) {
+		for (int i = 0; i < current_files.size(); i++) {
+			if (!file_paths.has(current_files[i])) {
+				changed = true;
+				break;
+			}
+		}
+	}
 
-	ProjectSettings::get_singleton()->save();
+	if (changed) {
+
+		ProjectSettings::get_singleton()->set("gdnative/singletons", files);
+
+		ProjectSettings::get_singleton()->save();
+	}
 }
 
 static GDNativeSingletonDiscover *discoverer = NULL;
