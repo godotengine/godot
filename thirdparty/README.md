@@ -397,10 +397,6 @@ Files extracted from upstream source:
 
 - `tinyexr.{cc,h}`
 
-Important: Some changes were made to get TinyEXR to build on the ancient
-MinGW-w64 toolchain of Travis CI.
-https://github.com/godotengine/godot/commit/37f5e1dcd94611dd5b670f013abf0323e8b47def
-
 
 ## zlib
 

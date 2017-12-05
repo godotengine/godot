@@ -85,11 +85,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>  // for size_t
 #include <stdint.h>  // guess stdint.h is available(C99)
 
-// -- GODOT change for old MinGW on Travis CI --
-#if defined(__MINGW32__)
-#include <_mingw.h>  // for __MINGW64_VERSION_MAJOR
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -4519,10 +4514,7 @@ void *tdefl_write_image_to_png_file_in_memory(const void *pImage, int w, int h,
 #include <stdio.h>
 #include <sys/stat.h>
 
-// -- GODOT change for old MinGW on Travis CI --
-//#if defined(_MSC_VER) || defined(__MINGW64__)
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#if defined(_MSC_VER) || defined(__MINGW64__)
 static FILE *mz_fopen(const char *pFilename, const char *pMode) {
   FILE *pFile = NULL;
   fopen_s(&pFile, pFilename, pMode);
@@ -10830,10 +10822,7 @@ int LoadEXRImageFromFile(EXRImage *exr_image, const EXRHeader *exr_header,
     return TINYEXR_ERROR_INVALID_ARGUMENT;
   }
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "rb");
 #else
@@ -11422,10 +11411,7 @@ int SaveEXRImageToFile(const EXRImage *exr_image, const EXRHeader *exr_header,
   }
 #endif
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "wb");
 #else
@@ -11906,10 +11892,7 @@ int ParseEXRHeaderFromFile(EXRHeader *exr_header, const EXRVersion *exr_version,
     return TINYEXR_ERROR_INVALID_ARGUMENT;
   }
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "rb");
 #else
@@ -12033,10 +12016,7 @@ int ParseEXRMultipartHeaderFromFile(EXRHeader ***exr_headers, int *num_headers,
     return TINYEXR_ERROR_INVALID_ARGUMENT;
   }
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "rb");
 #else
@@ -12136,10 +12116,7 @@ int ParseEXRVersionFromFile(EXRVersion *version, const char *filename) {
     return TINYEXR_ERROR_INVALID_ARGUMENT;
   }
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "rb");
 #else
@@ -12277,10 +12254,7 @@ int LoadEXRMultipartImageFromFile(EXRImage *exr_images,
     return TINYEXR_ERROR_INVALID_ARGUMENT;
   }
 
-// -- GODOT change for old MinGW on Travis CI --
-//#ifdef _WIN32
-#if defined(_MSC_VER) || (defined(__MINGW32__) && __MINGW64_VERSION_MAJOR >= 3)
-// -- GODOT end --
+#ifdef _WIN32
   FILE *fp = NULL;
   fopen_s(&fp, filename, "rb");
 #else
