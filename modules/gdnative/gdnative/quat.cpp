@@ -181,7 +181,7 @@ godot_quat GDAPI godot_quat_operator_add(const godot_quat *p_self, const godot_q
 	return raw_dest;
 }
 
-godot_quat GDAPI godot_quat_operator_substract(const godot_quat *p_self, const godot_quat *p_b) {
+godot_quat GDAPI godot_quat_operator_subtract(const godot_quat *p_self, const godot_quat *p_b) {
 	godot_quat raw_dest;
 	Quat *dest = (Quat *)&raw_dest;
 	const Quat *self = (const Quat *)p_self;

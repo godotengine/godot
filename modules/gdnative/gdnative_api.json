@@ -387,7 +387,7 @@
         ]
       },
       {
-        "name": "godot_vector2_operator_substract",
+        "name": "godot_vector2_operator_subtract",
         "return_type": "godot_vector2",
         "arguments": [
           ["const godot_vector2 *", "p_self"],
@@ -663,7 +663,7 @@
         ]
       },
       {
-        "name": "godot_quat_operator_substract",
+        "name": "godot_quat_operator_subtract",
         "return_type": "godot_quat",
         "arguments": [
           ["const godot_quat *", "p_self"],
@@ -907,7 +907,7 @@
         ]
       },
       {
-        "name": "godot_basis_operator_substract",
+        "name": "godot_basis_operator_subtract",
         "return_type": "godot_basis",
         "arguments": [
           ["const godot_basis *", "p_self"],
@@ -1142,7 +1142,7 @@
         ]
       },
       {
-        "name": "godot_vector3_operator_substract",
+        "name": "godot_vector3_operator_subtract",
         "return_type": "godot_vector3",
         "arguments": [
           ["const godot_vector3 *", "p_self"],

@@ -221,7 +221,7 @@ godot_basis GDAPI godot_basis_operator_add(const godot_basis *p_self, const godo
 	return raw_dest;
 }
 
-godot_basis GDAPI godot_basis_operator_substract(const godot_basis *p_self, const godot_basis *p_b) {
+godot_basis GDAPI godot_basis_operator_subtract(const godot_basis *p_self, const godot_basis *p_b) {
 	godot_basis raw_dest;
 	Basis *dest = (Basis *)&raw_dest;
 	const Basis *self = (const Basis *)p_self;
