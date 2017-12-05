@@ -2294,7 +2294,7 @@ void CanvasItemEditor::_draw_focus() {
 
 void CanvasItemEditor::_draw_guides() {
 
-	Color guide_color = EDITOR_DEF("editors/2d/rulers_color", Color(0.6, 0.0, 0.8));
+	Color guide_color = EDITOR_DEF("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	Transform2D xform = viewport_scrollable->get_transform() * transform;
 
 	// Guides already there
