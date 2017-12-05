@@ -62,6 +62,7 @@ private:
 
 		bool disabled;
 		int pressing_button;
+		Vector2 pressing_pos;
 
 	} status;
 
