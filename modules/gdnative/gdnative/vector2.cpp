@@ -207,7 +207,7 @@ godot_vector2 GDAPI godot_vector2_operator_add(const godot_vector2 *p_self, cons
 	return raw_dest;
 }
 
-godot_vector2 GDAPI godot_vector2_operator_substract(const godot_vector2 *p_self, const godot_vector2 *p_b) {
+godot_vector2 GDAPI godot_vector2_operator_subtract(const godot_vector2 *p_self, const godot_vector2 *p_b) {
 	godot_vector2 raw_dest;
 	Vector2 *dest = (Vector2 *)&raw_dest;
 	const Vector2 *self = (const Vector2 *)p_self;

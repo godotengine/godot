@@ -98,7 +98,7 @@ godot_quat GDAPI godot_quat_operator_multiply(const godot_quat *p_self, const go
 
 godot_quat GDAPI godot_quat_operator_add(const godot_quat *p_self, const godot_quat *p_b);
 
-godot_quat GDAPI godot_quat_operator_substract(const godot_quat *p_self, const godot_quat *p_b);
+godot_quat GDAPI godot_quat_operator_subtract(const godot_quat *p_self, const godot_quat *p_b);
 
 godot_quat GDAPI godot_quat_operator_divide(const godot_quat *p_self, const godot_real p_b);
 

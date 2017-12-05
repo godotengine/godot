@@ -224,7 +224,7 @@ godot_vector3 GDAPI godot_vector3_operator_add(const godot_vector3 *p_self, cons
 	return raw_dest;
 }
 
-godot_vector3 GDAPI godot_vector3_operator_substract(const godot_vector3 *p_self, const godot_vector3 *p_b) {
+godot_vector3 GDAPI godot_vector3_operator_subtract(const godot_vector3 *p_self, const godot_vector3 *p_b) {
 	godot_vector3 raw_dest;
 	Vector3 *dest = (Vector3 *)&raw_dest;
 	Vector3 *self = (Vector3 *)p_self;

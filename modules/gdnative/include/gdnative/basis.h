@@ -111,7 +111,7 @@ godot_bool GDAPI godot_basis_operator_equal(const godot_basis *p_self, const god
 
 godot_basis GDAPI godot_basis_operator_add(const godot_basis *p_self, const godot_basis *p_b);
 
-godot_basis GDAPI godot_basis_operator_substract(const godot_basis *p_self, const godot_basis *p_b);
+godot_basis GDAPI godot_basis_operator_subtract(const godot_basis *p_self, const godot_basis *p_b);
 
 godot_basis GDAPI godot_basis_operator_multiply_vector(const godot_basis *p_self, const godot_basis *p_b);
 
