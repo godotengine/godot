@@ -416,6 +416,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/freelook/freelook_modifier_speed_factor"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_modifier_speed_factor", PROPERTY_HINT_RANGE, "0.0, 10.0, 0.1");
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
+	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	_initial_set("editors/2d/bone_width", 5);
 	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
 	_initial_set("editors/2d/bone_color2", Color(0.75, 0.75, 0.75, 0.9));
