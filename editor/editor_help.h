@@ -53,6 +53,9 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Tree *search_options;
 	String base_type;
 
+	class IncrementalSearch;
+	Ref<IncrementalSearch> search;
+
 	void _update_search();
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);

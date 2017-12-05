@@ -78,50 +78,40 @@ void EditorHelpSearch::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void EditorHelpSearch::_update_search() {
+class EditorHelpSearch::IncrementalSearch : public Reference {
+	String term;
+	TreeItem *root;
 
-	search_options->clear();
-	search_options->set_hide_root(true);
+	EditorHelpSearch *search;
+	Tree *search_options;
 
-	/*
-	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
-*/
+	DocData *doc;
+	Ref<Texture> def_icon;
 
-	List<StringName> type_list;
-	ClassDB::get_class_list(&type_list);
+	int phase;
+	Map<String, DocData::ClassDoc>::Element *iterator;
 
-	DocData *doc = EditorHelp::get_doc_data();
-	String term = search_box->get_text();
-	if (term.length() < 2)
-		return;
-
-	TreeItem *root = search_options->create_item();
-
-	Ref<Texture> def_icon = get_icon("Node", "EditorIcons");
-	//classes first
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	void phase1(Map<String, DocData::ClassDoc>::Element *E) {
 
 		if (E->key().findn(term) != -1) {
 
 			TreeItem *item = search_options->create_item(root);
 			item->set_metadata(0, "class_name:" + E->key());
 			item->set_text(0, E->key() + " (Class)");
-			if (has_icon(E->key(), "EditorIcons"))
-				item->set_icon(0, get_icon(E->key(), "EditorIcons"));
+			if (search->has_icon(E->key(), "EditorIcons"))
+				item->set_icon(0, search->get_icon(E->key(), "EditorIcons"));
 			else
 				item->set_icon(0, def_icon);
 		}
 	}
 
-	//class methods, etc second
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+	void phase2(Map<String, DocData::ClassDoc>::Element *E) {
 
 		DocData::ClassDoc &c = E->get();
 
 		Ref<Texture> cicon;
-		if (has_icon(E->key(), "EditorIcons"))
-			cicon = get_icon(E->key(), "EditorIcons");
+		if (search->has_icon(E->key(), "EditorIcons"))
+			cicon = search->get_icon(E->key(), "EditorIcons");
 		else
 			cicon = def_icon;
 
@@ -180,72 +170,80 @@ void EditorHelpSearch::_update_search() {
 		}
 	}
 
-	//same but descriptions
+	bool slice() {
 
-	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
+		if (phase > 2)
+			return true;
 
-		DocData::ClassDoc &c = E->get();
+		if (iterator) {
 
-		Ref<Texture> cicon;
-		if (has_icon(E->key(), "EditorIcons"))
-			cicon = get_icon(E->key(), "EditorIcons");
-		else
-			cicon = def_icon;
+			switch (phase) {
 
-		if (c.description.findn(term) != -1) {
-
-			TreeItem *item = search_options->create_item(root);
-			item->set_metadata(0, "class_desc:" + E->key());
-			item->set_text(0, E->key() + " (Class Description)");
-			item->set_icon(0, cicon);
-		}
-
-		for (int i = 0; i < c.methods.size(); i++) {
-
-			if (c.methods[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_method_desc:" + E->key() + ":" + c.methods[i].name);
-				item->set_text(0, E->key() + "." + c.methods[i].name + " (Method Description)");
-				item->set_icon(0, cicon);
+				case 1: {
+					phase1(iterator);
+				} break;
+				case 2: {
+					phase2(iterator);
+				} break;
+				default: {
+					WARN_PRINT("illegal phase in IncrementalSearch");
+					return true;
+				}
 			}
+
+			iterator = iterator->next();
+		} else {
+
+			phase += 1;
+			iterator = doc->class_list.front();
 		}
 
-		for (int i = 0; i < c.signals.size(); i++) {
-
-			if (c.signals[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_signal:" + E->key() + ":" + c.signals[i].name);
-				item->set_text(0, E->key() + "." + c.signals[i].name + " (Signal Description)");
-				item->set_icon(0, cicon);
-			}
-		}
-
-		for (int i = 0; i < c.constants.size(); i++) {
-
-			if (c.constants[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_constant:" + E->key() + ":" + c.constants[i].name);
-				item->set_text(0, E->key() + "." + c.constants[i].name + " (Constant Description)");
-				item->set_icon(0, cicon);
-			}
-		}
-
-		for (int i = 0; i < c.properties.size(); i++) {
-
-			if (c.properties[i].description.findn(term) != -1) {
-
-				TreeItem *item = search_options->create_item(root);
-				item->set_metadata(0, "class_property_desc:" + E->key() + ":" + c.properties[i].name);
-				item->set_text(0, E->key() + "." + c.properties[i].name + " (Property Description)");
-				item->set_icon(0, cicon);
-			}
-		}
+		return false;
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+public:
+	IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term)
+		: search(p_search), search_options(p_search_options) {
+
+		def_icon = search->get_icon("Node", "EditorIcons");
+		doc = EditorHelp::get_doc_data();
+
+		term = p_term;
+
+		root = search_options->create_item();
+		phase = 0;
+		iterator = 0;
+	}
+
+	bool empty() const {
+
+		return root->get_children() == NULL;
+	}
+
+	bool work(uint64_t slot = 1000000 / 10) {
+
+		const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+
+		while (!slice()) {
+
+			if (OS::get_singleton()->get_ticks_usec() > until)
+				return false;
+		}
+
+		return true;
+	}
+};
+
+void EditorHelpSearch::_update_search() {
+	search_options->clear();
+	search_options->set_hide_root(true);
+
+	String term = search_box->get_text();
+	if (term.length() < 2)
+		return;
+
+	search = Ref<IncrementalSearch>(memnew(IncrementalSearch(this, search_options, term)));
+	set_process(true);
 }
 
 void EditorHelpSearch::_confirmed() {
@@ -281,6 +279,20 @@ void EditorHelpSearch::_notification(int p_what) {
 
 		//_update_icons
 		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	} else if (p_what == NOTIFICATION_PROCESS) {
+
+		if (search.is_valid()) {
+
+			if (search->work()) {
+
+				get_ok()->set_disabled(search->empty());
+				search = Ref<IncrementalSearch>();
+				set_process(false);
+			}
+		} else {
+
+			set_process(false);
+		}
 	}
 }
 
