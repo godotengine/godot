@@ -207,6 +207,10 @@ class PropertyEditor : public Control {
 
 	bool updating_folding;
 
+	// Hacks to make collpse/expand works as expected.
+	bool tree_initialization;
+	bool tree_update_due_node_select;
+
 	enum FOLDING_BEHAVIOUR {
 		FB_UNDEFINED,
 		FB_COLLAPSEALL,
@@ -313,8 +317,6 @@ public:
 	void set_property_selectable(bool p_selectable);
 
 	void set_use_folding(bool p_enable);
-
-	bool is_expand_all_properties_enabled() const;
 
 	void collapse_all_parent_nodes();
 	void expand_all_parent_nodes();

@@ -2631,7 +2631,9 @@ void PropertyEditor::_notification(int p_what) {
 	}
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+		tree_initialization = true;
 		update_tree();
+		tree_initialization = false;
 	}
 }
 
@@ -2665,17 +2667,44 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		item->set_editable(1, false);
 		item->set_selectable(1, subsection_selectable);
 
-		if (use_folding || folding_behaviour != FB_UNDEFINED) { // Even if you disabled folding (expand all by default), you still can collapse all manually.
-			if (!obj->editor_is_section_unfolded(p_path)) {
-				updating_folding = true;
-				if (folding_behaviour == FB_COLLAPSEALL)
-					item->set_collapsed(true);
-				else if (folding_behaviour == FB_EXPANDALL || is_expandall_enabled)
-					item->set_collapsed(false);
-				else
-					item->set_collapsed(true);
-				updating_folding = false;
-			}
+		// On tree initialization, expand or collapse them all just once.
+		if ((use_folding || is_expandall_enabled) && (tree_initialization || tree_update_due_node_select)) {
+			updating_folding = true;
+
+			if (is_expandall_enabled) {
+				item->set_collapsed(false);
+				obj->editor_set_section_unfold(p_path, true);
+			} else
+				item->set_collapsed(true);
+
+			updating_folding = false;
+
+			item->set_metadata(0, p_path);
+		} else if ((use_folding || is_expandall_enabled) && folding_behaviour != FB_UNDEFINED) { // Even if you disabled folding (expand all by default), you still can collapse all manually.
+			updating_folding = true;
+
+			if (folding_behaviour == FB_COLLAPSEALL)
+				item->set_collapsed(true);
+			else if (folding_behaviour == FB_EXPANDALL) {
+				item->set_collapsed(false);
+				obj->editor_set_section_unfold(p_path, true);
+			} else if (!obj->editor_is_section_unfolded(p_path))
+				item->set_collapsed(true); // leave it as collapsed then
+
+			updating_folding = false;
+
+			item->set_metadata(0, p_path);
+		} else if (!use_folding && is_expandall_enabled) { // In case if is expand all enabled, but we have some "manually configured" (some items collapsed manually) folding.
+			updating_folding = true;
+
+			if (!obj->editor_is_section_unfolded(p_path))
+				item->set_collapsed(true);
+			else
+				item->set_collapsed(false);
+
+			obj->editor_set_section_unfold(p_path, true);
+
+			updating_folding = false;
 			item->set_metadata(0, p_path);
 		}
 
@@ -3571,8 +3600,8 @@ void PropertyEditor::_draw_transparency(Object *t, const Rect2 &p_rect) {
 
 void PropertyEditor::_item_folded(Object *item_obj) {
 
-	if (updating_folding)
-		return;
+	//if (updating_folding)
+	//return;
 
 	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
 
@@ -3869,7 +3898,10 @@ void PropertyEditor::edit(Object *p_object) {
 
 	evaluator->edit(p_object);
 
+	// Node was selected in SceneTreeDock::_node_selected()
+	tree_update_due_node_select = true;
 	update_tree();
+	tree_update_due_node_select = false;
 
 	if (obj) {
 
@@ -4212,11 +4244,6 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 	update_tree();
 }
 
-bool PropertyEditor::is_expand_all_properties_enabled() const {
-
-	return (use_folding == false);
-}
-
 void PropertyEditor::set_use_folding(bool p_enable) {
 
 	use_folding = p_enable;
@@ -4311,6 +4338,8 @@ PropertyEditor::PropertyEditor() {
 	show_type_icons = false; // maybe one day will return.
 	folding_behaviour = FB_UNDEFINED;
 	is_expandall_enabled = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
+	tree_initialization = true;
+	tree_update_due_node_select = false;
 }
 
 PropertyEditor::~PropertyEditor() {
