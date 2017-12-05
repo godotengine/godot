@@ -390,7 +390,7 @@ Files extracted from upstream source:
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 0.9.5+ (git a145d69)
+- Version: 0.9.5+ (git 9f784ca - 24 October 2017)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
