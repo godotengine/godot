@@ -1190,9 +1190,6 @@
 		<constant name="ERR_BUG" value="47" enum="Error">
 			Bug error
 		</constant>
-		<constant name="ERR_WTF" value="49" enum="Error">
-			WTF error (something probably went really wrong)
-		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
 			No hint for edited property.
 		</constant>

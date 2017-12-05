@@ -39,7 +39,7 @@ void RWLockPosix::read_lock() {
 
 	int err = pthread_rwlock_rdlock(&rwlock);
 	if (err != 0) {
-		perror("wtf: ");
+		perror("Acquiring lock failed");
 	}
 	ERR_FAIL_COND(err != 0);
 }

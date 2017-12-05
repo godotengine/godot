@@ -141,7 +141,7 @@ Error StreamPeerWinsock::write(const uint8_t *p_data, int p_bytes, int &r_sent, 
 
 			if (WSAGetLastError() != WSAEWOULDBLOCK) {
 
-				perror("shit?");
+				perror("Nothing sent");
 				disconnect_from_host();
 				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
@@ -197,7 +197,7 @@ Error StreamPeerWinsock::read(uint8_t *p_buffer, int p_bytes, int &r_received, b
 
 			if (WSAGetLastError() != WSAEWOULDBLOCK) {
 
-				perror("shit?");
+				perror("Nothing read");
 				disconnect_from_host();
 				ERR_PRINT("Server disconnected!\n");
 				return FAILED;

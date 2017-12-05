@@ -970,7 +970,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
         boolean indeterminate;
         switch (newState) {
             case IDownloaderClient.STATE_IDLE:
-            	Log.d("GODOT", "STATE IDLE");
+            	Log.d("GODOT", "DOWNLOAD STATE IDLE");
                 // STATE_IDLE means the service is listening, so it's
                 // safe to start making calls via mRemoteService.
                 paused = false;
@@ -978,13 +978,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
                 break;
             case IDownloaderClient.STATE_CONNECTING:
             case IDownloaderClient.STATE_FETCHING_URL:
-            	Log.d("GODOT", "STATE CONNECTION / FETCHING URL");
+            	Log.d("GODOT", "DOWNLOAD STATE CONNECTION / FETCHING URL");
                 showDashboard = true;
                 paused = false;
                 indeterminate = true;
                 break;
             case IDownloaderClient.STATE_DOWNLOADING:
-            	Log.d("GODOT", "STATE DOWNLOADING");
+            	Log.d("GODOT", "DOWNLOAD STATE DOWNLOADING");
                 paused = false;
                 showDashboard = true;
                 indeterminate = false;
@@ -994,14 +994,14 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
             case IDownloaderClient.STATE_FAILED:
             case IDownloaderClient.STATE_FAILED_FETCHING_URL:
             case IDownloaderClient.STATE_FAILED_UNLICENSED:
-            	Log.d("GODOT", "MANY TYPES OF FAILING");
+            	Log.d("GODOT", "DOWNLOAD STATE: FAILED, CANCELLED, UNLICENSED OR FAILED TO FETCH URL");
                 paused = true;
                 showDashboard = false;
                 indeterminate = false;
                 break;
             case IDownloaderClient.STATE_PAUSED_NEED_CELLULAR_PERMISSION:
             case IDownloaderClient.STATE_PAUSED_WIFI_DISABLED_NEED_CELLULAR_PERMISSION:
-            	Log.d("GODOT", "PAUSED FOR SOME STUPID REASON");
+            	Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY MISSING CELLULAR PERMISSION");
                 showDashboard = false;
                 paused = true;
                 indeterminate = false;
@@ -1009,18 +1009,18 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
                 break;
 
             case IDownloaderClient.STATE_PAUSED_BY_REQUEST:
-            	Log.d("GODOT", "PAUSED BY STUPID USER");
+            	Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY USER");
                 paused = true;
                 indeterminate = false;
                 break;
             case IDownloaderClient.STATE_PAUSED_ROAMING:
             case IDownloaderClient.STATE_PAUSED_SDCARD_UNAVAILABLE:
-            	Log.d("GODOT", "PAUSED BY ROAMING      WTF!?");
+            	Log.d("GODOT", "DOWNLOAD STATE: PAUSED BY ROAMING OR SDCARD UNAVAILABLE");
                 paused = true;
                 indeterminate = false;
                 break;
             case IDownloaderClient.STATE_COMPLETED:
-            	Log.d("GODOT", "COMPLETED");
+            	Log.d("GODOT", "DOWNLOAD STATE: COMPLETED");
                 showDashboard = false;
                 paused = false;
                 indeterminate = false;
@@ -1028,7 +1028,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
                 initializeGodot();
                 return;
             default:
-            	Log.d("GODOT", "DEFAULT ????");
+            	Log.d("GODOT", "DOWNLOAD STATE: DEFAULT");
                 paused = true;
                 indeterminate = true;
                 showDashboard = true;

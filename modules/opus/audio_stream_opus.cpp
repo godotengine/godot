@@ -62,7 +62,7 @@ int AudioStreamPlaybackOpus::_op_seek_func(void *_stream, opus_int64 _offset, in
 			fa->seek_end(_offset);
 		} break;
 		default: {
-			ERR_PRINT("BUG, wtf was whence set to?\n");
+			ERR_PRINT("Opus seek function failure: Unexpected value in _whence\n");
 		}
 	}
 	int ret = fa->eof_reached() ? -1 : 0;
