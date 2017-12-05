@@ -204,7 +204,9 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 
 	if (p_key == NULL) {
 		// caller wants to get the first element
-		return &_p->variant_map.front().key();
+		if (_p->variant_map.front())
+			return &_p->variant_map.front().key();
+		return NULL;
 	}
 	OrderedHashMap<Variant, Variant, _DictionaryVariantHash>::Element E = _p->variant_map.find(*p_key);
 
