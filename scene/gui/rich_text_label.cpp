@@ -793,6 +793,17 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 							selection.click = item;
 							selection.click_char = line;
+
+							// Erase previous selection.
+							if (selection.active) {
+								selection.from = NULL;
+								selection.from_char = NULL;
+								selection.to = NULL;
+								selection.to_char = NULL;
+								selection.active = false;
+
+								update();
+							}
 						}
 					}
 
