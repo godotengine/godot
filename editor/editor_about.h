@@ -33,11 +33,11 @@
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -55,8 +55,8 @@ private:
 	ScrollContainer *_populate_list(const String &p_name, const List<String> &p_sections, const char **p_src[], const int p_flag_single_column = 0);
 
 	Tree *_tpl_tree;
-	TextEdit *_license_text;
-	TextEdit *_tpl_text;
+	RichTextLabel *_license_text;
+	RichTextLabel *_tpl_text;
 	TextureRect *_logo;
 
 protected:
