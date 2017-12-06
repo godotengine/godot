@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  object.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -109,10 +109,11 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 17,
 	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 18,
 	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 19,
+	PROPERTY_USAGE_INTERNAL = 1 << 20,
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
-	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
+	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNAL,
 };
 
 #define ADD_SIGNAL(m_signal) ClassDB::add_signal(get_class_static(), m_signal)
