@@ -17,7 +17,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the layer mask.
+				Returns an individual bit on the layer mask.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -26,7 +26,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the collision mask.
+				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
@@ -69,7 +69,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the layer mask. This makes getting an area in/out of only one layer easier.
+				Set/clear individual bits on the layer mask. This simplifies editing this [code]Area[code]'s layers.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -80,7 +80,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
+				Set/clear individual bits on the collision mask. This simplifies editing which [code]Area[/code] layers this [code]Area[/code] scans.
 			</description>
 		</method>
 	</methods>
@@ -125,12 +125,16 @@
 			The area's priority. Higher priority areas are processed first. Default value: 0.
 		</member>
 		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount">
+			The degree to which this area applies reverb to its associated audio. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
 		</member>
 		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus">
+			If [code]true[/code] the area applies reverb to its associated audio.
 		</member>
 		<member name="reverb_bus_name" type="String" setter="set_reverb_bus" getter="get_reverb_bus">
+			The reverb bus name to use for this area's associated audio.
 		</member>
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity">
+			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area.SpaceOverride">
 			Override mode for gravity and damping calculations within this area. See the SPACE_OVERRIDE_* constants for values.
