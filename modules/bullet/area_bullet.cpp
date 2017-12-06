@@ -37,19 +37,19 @@
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
 
-AreaBullet::AreaBullet()
-	: RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
-	  monitorable(true),
-	  isScratched(false),
-	  spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
-	  spOv_gravityPoint(false),
-	  spOv_gravityPointDistanceScale(0),
-	  spOv_gravityPointAttenuation(1),
-	  spOv_gravityVec(0, -1, 0),
-	  spOv_gravityMag(10),
-	  spOv_linearDump(0.1),
-	  spOv_angularDump(1),
-	  spOv_priority(0) {
+AreaBullet::AreaBullet() :
+		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
+		monitorable(true),
+		isScratched(false),
+		spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
+		spOv_gravityPoint(false),
+		spOv_gravityPointDistanceScale(0),
+		spOv_gravityPointAttenuation(1),
+		spOv_gravityVec(0, -1, 0),
+		spOv_gravityMag(10),
+		spOv_linearDump(0.1),
+		spOv_angularDump(1),
+		spOv_priority(0) {
 
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(compoundShape);

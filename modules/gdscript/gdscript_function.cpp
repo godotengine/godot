@@ -250,7 +250,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 
-//GDScriptLanguage::get_singleton()->calls++;
+	//GDScriptLanguage::get_singleton()->calls++;
 
 #endif
 
@@ -1432,8 +1432,8 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	}
 }
 
-GDScriptFunction::GDScriptFunction()
-	: function_list(this) {
+GDScriptFunction::GDScriptFunction() :
+		function_list(this) {
 
 	_stack_size = 0;
 	_call_size = 0;

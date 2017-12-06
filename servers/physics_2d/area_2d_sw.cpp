@@ -238,8 +238,10 @@ void Area2DSW::call_queries() {
 	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
 }
 
-Area2DSW::Area2DSW()
-	: CollisionObject2DSW(TYPE_AREA), monitor_query_list(this), moved_list(this) {
+Area2DSW::Area2DSW() :
+		CollisionObject2DSW(TYPE_AREA),
+		monitor_query_list(this),
+		moved_list(this) {
 
 	_set_static(true); //areas are not active by default
 	space_override_mode = Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED;

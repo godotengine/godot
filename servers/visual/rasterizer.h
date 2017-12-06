@@ -116,8 +116,8 @@ public:
 		virtual void base_changed() = 0;
 		virtual void base_material_changed() = 0;
 
-		InstanceBase()
-			: dependency_item(this) {
+		InstanceBase() :
+				dependency_item(this) {
 
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;

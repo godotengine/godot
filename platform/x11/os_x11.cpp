@@ -132,10 +132,9 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		// Try to support IME if detectable auto-repeat is supported
 		if (xkb_dar == True) {
 
-// Xutf8LookupString will be used later instead of XmbLookupString before
-// the multibyte sequences can be converted to unicode string.
-
 #ifdef X_HAVE_UTF8_STRING
+			// Xutf8LookupString will be used later instead of XmbLookupString before
+			// the multibyte sequences can be converted to unicode string.
 			modifiers = XSetLocaleModifiers("");
 #endif
 		}
@@ -548,7 +547,7 @@ void OS_X11::finalize() {
 		memdelete(main_loop);
 	main_loop = NULL;
 
-/*
+	/*
 	if (debugger_connection_console) {
 		memdelete(debugger_connection_console);
 	}

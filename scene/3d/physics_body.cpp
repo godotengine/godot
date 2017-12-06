@@ -166,8 +166,8 @@ void PhysicsBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
 
-PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode)
-	: CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
+PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
+		CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
 
 	collision_layer = 1;
 	collision_mask = 1;
@@ -241,8 +241,8 @@ void StaticBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant_angular_velocity"), "set_constant_angular_velocity", "get_constant_angular_velocity");
 }
 
-StaticBody::StaticBody()
-	: PhysicsBody(PhysicsServer::BODY_MODE_STATIC) {
+StaticBody::StaticBody() :
+		PhysicsBody(PhysicsServer::BODY_MODE_STATIC) {
 
 	bounce = 0;
 	friction = 1;
@@ -881,8 +881,8 @@ void RigidBody::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_LOCK_Z);
 }
 
-RigidBody::RigidBody()
-	: PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
+RigidBody::RigidBody() :
+		PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
 
 	mode = MODE_RIGID;
 
@@ -1104,8 +1104,8 @@ void KinematicBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
 
-KinematicBody::KinematicBody()
-	: PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
+KinematicBody::KinematicBody() :
+		PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
 
 	margin = 0.001;
 

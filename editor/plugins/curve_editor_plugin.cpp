@@ -586,8 +586,10 @@ struct CanvasItemPlotCurve {
 	Color color1;
 	Color color2;
 
-	CanvasItemPlotCurve(CanvasItem &p_ci, Color p_color1, Color p_color2)
-		: ci(p_ci), color1(p_color1), color2(p_color2) {}
+	CanvasItemPlotCurve(CanvasItem &p_ci, Color p_color1, Color p_color2) :
+			ci(p_ci),
+			color1(p_color1),
+			color2(p_color2) {}
 
 	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
 		ci.draw_line(pos0, pos1, in_definition ? color1 : color2);

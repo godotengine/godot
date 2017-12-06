@@ -73,8 +73,8 @@ void BoxShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents"), "set_extents", "get_extents");
 }
 
-BoxShape::BoxShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
+BoxShape::BoxShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_BOX)) {
 
 	set_extents(Vector3(1, 1, 1));
 }

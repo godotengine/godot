@@ -53,6 +53,6 @@ String get_custom_project_settings_dir();
 
 String get_project_sln_path();
 String get_project_csproj_path();
-}
+} // namespace GodotSharpDirs
 
 #endif // GODOTSHARP_DIRS_H

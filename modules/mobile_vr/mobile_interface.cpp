@@ -461,6 +461,7 @@ MobileVRInterface::MobileVRInterface() {
 		glGenBuffers(1, &half_screen_quad);
 		glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
 		{
+			/* clang-format off */
 			const float qv[16] = {
 				0, -1,
 				-1, -1,
@@ -471,6 +472,7 @@ MobileVRInterface::MobileVRInterface() {
 				1, -1,
 				1, -1,
 			};
+			/* clang-format on */
 
 			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
 		}

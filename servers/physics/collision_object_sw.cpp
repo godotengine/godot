@@ -217,8 +217,8 @@ void CollisionObjectSW::_shape_changed() {
 	_shapes_changed();
 }
 
-CollisionObjectSW::CollisionObjectSW(Type p_type)
-	: pending_shape_update_list(this) {
+CollisionObjectSW::CollisionObjectSW(Type p_type) :
+		pending_shape_update_list(this) {
 
 	_static = true;
 	type = p_type;

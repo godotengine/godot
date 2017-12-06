@@ -146,8 +146,8 @@ real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const {
 	return 0;
 }
 
-PinJointSW::PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b)
-	: JointSW(_arr, 2) {
+PinJointSW::PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b) :
+		JointSW(_arr, 2) {
 
 	A = p_body_a;
 	B = p_body_b;

@@ -410,7 +410,7 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
 	if (min > rad || max < -rad) return false;
 
-/*======================== Z-tests ========================*/
+	/*======================== Z-tests ========================*/
 
 #define AXISTEST_Z12(a, b, fa, fb)                 \
 	p1 = a * v1.x - b * v1.y;                      \

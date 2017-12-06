@@ -589,14 +589,17 @@ class Physics2DServerManager {
 		String name;
 		CreatePhysics2DServerCallback create_callback;
 
-		ClassInfo()
-			: name(""), create_callback(NULL) {}
+		ClassInfo() :
+				name(""),
+				create_callback(NULL) {}
 
-		ClassInfo(String p_name, CreatePhysics2DServerCallback p_create_callback)
-			: name(p_name), create_callback(p_create_callback) {}
+		ClassInfo(String p_name, CreatePhysics2DServerCallback p_create_callback) :
+				name(p_name),
+				create_callback(p_create_callback) {}
 
-		ClassInfo(const ClassInfo &p_ci)
-			: name(p_ci.name), create_callback(p_ci.create_callback) {}
+		ClassInfo(const ClassInfo &p_ci) :
+				name(p_ci.name),
+				create_callback(p_ci.create_callback) {}
 	};
 
 	static Vector<ClassInfo> physics_2d_servers;

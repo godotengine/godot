@@ -67,7 +67,6 @@ String Variant::get_type_name(Variant::Type p_type) {
 		} break;
 
 		// math types
-
 		case VECTOR2: {
 
 			return "Vector2";
@@ -725,7 +724,6 @@ bool Variant::is_zero() const {
 		} break;
 
 		// math types
-
 		case VECTOR2: {
 
 			return *reinterpret_cast<const Vector2 *>(_data._mem) == Vector2();
@@ -934,7 +932,6 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 
 		// math types
-
 		case VECTOR2: {
 
 			memnew_placement(_data._mem, Vector2(*reinterpret_cast<const Vector2 *>(p_variant._data._mem)));
@@ -2506,7 +2503,6 @@ void Variant::operator=(const Variant &p_variant) {
 		} break;
 
 		// math types
-
 		case VECTOR2: {
 
 			*reinterpret_cast<Vector2 *>(_data._mem) = *reinterpret_cast<const Vector2 *>(p_variant._data._mem);
@@ -2645,8 +2641,8 @@ uint32_t Variant::hash() const {
 
 			return reinterpret_cast<const String *>(_data._mem)->hash();
 		} break;
-		// math types
 
+		// math types
 		case VECTOR2: {
 
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Vector2 *>(_data._mem)->x);

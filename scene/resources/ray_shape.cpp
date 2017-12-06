@@ -66,8 +66,8 @@ void RayShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_length", "get_length");
 }
 
-RayShape::RayShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
+RayShape::RayShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
 
 	set_length(1.0);
 }

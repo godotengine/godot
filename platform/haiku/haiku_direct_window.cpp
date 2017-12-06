@@ -34,8 +34,8 @@
 #include "main/main.h"
 #include "os/keyboard.h"
 
-HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
-	: BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) {
+HaikuDirectWindow::HaikuDirectWindow(BRect p_frame) :
+		BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) {
 	last_mouse_pos_valid = false;
 	last_buttons_state = 0;
 	last_button_mask = 0;

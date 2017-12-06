@@ -255,7 +255,8 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 				_generate_contacts_face_face,
 		},
 		{
-				0, 0,
+				0,
+				0,
 				_generate_contacts_face_face,
 		}
 	};

@@ -756,8 +756,8 @@ void Spatial::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }
 
-Spatial::Spatial()
-	: xform_change(this) {
+Spatial::Spatial() :
+		xform_change(this) {
 
 	data.dirty = DIRTY_NONE;
 	data.children_lock = 0;

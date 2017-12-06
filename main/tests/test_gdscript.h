@@ -42,6 +42,6 @@ enum TestType {
 };
 
 MainLoop *test(TestType p_type);
-}
+} // namespace TestGDScript
 
 #endif // TEST_GDSCRIPT_H

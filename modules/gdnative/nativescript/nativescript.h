@@ -76,12 +76,12 @@ struct NativeScriptDesc {
 
 	bool is_tool;
 
-	inline NativeScriptDesc()
-		: methods(),
-		  properties(),
-		  signals_(),
-		  base(),
-		  base_native_type() {
+	inline NativeScriptDesc() :
+			methods(),
+			properties(),
+			signals_(),
+			base(),
+			base_native_type() {
 		zeromem(&create_func, sizeof(godot_instance_create_func));
 		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
 	}

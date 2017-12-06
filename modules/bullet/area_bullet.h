@@ -47,8 +47,8 @@ public:
 		ObjectID event_callback_id;
 		StringName event_callback_method;
 
-		InOutEventCallback()
-			: event_callback_id(0) {}
+		InOutEventCallback() :
+				event_callback_id(0) {}
 	};
 
 	enum OverlapState {
@@ -62,10 +62,12 @@ public:
 		CollisionObjectBullet *object;
 		OverlapState state;
 
-		OverlappingObjectData()
-			: object(NULL), state(OVERLAP_STATE_ENTER) {}
-		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state)
-			: object(p_object), state(p_state) {}
+		OverlappingObjectData() :
+				object(NULL),
+				state(OVERLAP_STATE_ENTER) {}
+		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
+				object(p_object),
+				state(p_state) {}
 		OverlappingObjectData(const OverlappingObjectData &other) {
 			operator=(other);
 		}

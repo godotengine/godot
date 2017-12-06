@@ -50,8 +50,8 @@ public:
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
 	virtual Physics2DServer::JointType get_type() const = 0;
-	Joint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0)
-		: Constraint2DSW(p_body_ptr, p_body_count) {
+	Joint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) :
+			Constraint2DSW(p_body_ptr, p_body_count) {
 		bias = 0;
 		max_force = max_bias = 3.40282e+38;
 	};

@@ -63,4 +63,4 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	return;
 }
-}
+} // namespace GDMonoInternals

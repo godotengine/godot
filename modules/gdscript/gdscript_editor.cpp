@@ -1795,8 +1795,8 @@ static void _find_type_arguments(GDScriptCompletionContext &context, const GDScr
 			}
 
 		} else {
-//regular method
 
+		//regular method
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 			if (p_argidx < m->get_argument_count()) {
 				PropertyInfo pi = m->get_argument_info(p_argidx);

@@ -208,8 +208,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	SpotLight()
-		: Light(VisualServer::LIGHT_SPOT) {}
+	SpotLight() :
+			Light(VisualServer::LIGHT_SPOT) {}
 };
 
 #endif

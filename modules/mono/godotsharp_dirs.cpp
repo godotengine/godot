@@ -192,4 +192,4 @@ String get_project_csproj_path() {
 	return _GodotSharpDirs::get_singleton().csproj_filepath;
 }
 #endif
-}
+} // namespace GodotSharpDirs

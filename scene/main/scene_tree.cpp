@@ -794,6 +794,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 		Vector3(0, 0, 1)
 	};
 
+	/* clang-format off */
 	int diamond_faces[8 * 3] = {
 		0, 2, 4,
 		0, 3, 4,
@@ -804,6 +805,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 		1, 2, 5,
 		1, 3, 5,
 	};
+	/* clang-format on */
 
 	PoolVector<int> indices;
 	for (int i = 0; i < 8 * 3; i++)

@@ -52,8 +52,10 @@ struct GodotClosestRayResultCallback : public btCollisionWorld::ClosestRayResult
 	bool m_pickRay;
 
 public:
-	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const Set<RID> *p_exclude)
-		: btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld), m_exclude(p_exclude), m_pickRay(false) {}
+	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const Set<RID> *p_exclude) :
+			btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld),
+			m_exclude(p_exclude),
+			m_pickRay(false) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 };
@@ -66,8 +68,11 @@ public:
 	int count;
 	const Set<RID> *m_exclude;
 
-	GodotAllConvexResultCallback(PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude)
-		: m_results(p_results), m_exclude(p_exclude), m_resultMax(p_resultMax), count(0) {}
+	GodotAllConvexResultCallback(PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+			m_results(p_results),
+			m_exclude(p_exclude),
+			m_resultMax(p_resultMax),
+			count(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -79,8 +84,10 @@ public:
 	const RigidBodyBullet *m_self_object;
 	const bool m_ignore_areas;
 
-	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_ignore_areas)
-		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_self_object(p_self_object), m_ignore_areas(p_ignore_areas) {}
+	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_ignore_areas) :
+			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
+			m_self_object(p_self_object),
+			m_ignore_areas(p_ignore_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 };
@@ -90,8 +97,9 @@ public:
 	const Set<RID> *m_exclude;
 	int m_shapeId;
 
-	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude)
-		: btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld), m_exclude(p_exclude) {}
+	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude) :
+			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
+			m_exclude(p_exclude) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -106,8 +114,12 @@ public:
 	int m_count;
 	const Set<RID> *m_exclude;
 
-	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude)
-		: m_self_object(p_self_object), m_results(p_results), m_exclude(p_exclude), m_resultMax(p_resultMax), m_count(0) {}
+	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+			m_self_object(p_self_object),
+			m_results(p_results),
+			m_exclude(p_exclude),
+			m_resultMax(p_resultMax),
+			m_count(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -123,8 +135,12 @@ public:
 	int m_count;
 	const Set<RID> *m_exclude;
 
-	GodotContactPairContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude)
-		: m_self_object(p_self_object), m_results(p_results), m_exclude(p_exclude), m_resultMax(p_resultMax), m_count(0) {}
+	GodotContactPairContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+			m_self_object(p_self_object),
+			m_results(p_results),
+			m_exclude(p_exclude),
+			m_resultMax(p_resultMax),
+			m_count(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -141,8 +157,12 @@ public:
 	btVector3 m_rest_info_bt_point;
 	const Set<RID> *m_exclude;
 
-	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude)
-		: m_self_object(p_self_object), m_result(p_result), m_exclude(p_exclude), m_collided(false), m_min_distance(0) {}
+	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude) :
+			m_self_object(p_self_object),
+			m_result(p_result),
+			m_exclude(p_exclude),
+			m_collided(false),
+			m_min_distance(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -158,12 +178,12 @@ struct GodotDeepPenetrationContactResultCallback : public btManifoldResult {
 
 	btScalar m_most_penetrated_distance;
 
-	GodotDeepPenetrationContactResultCallback(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap)
-		: btManifoldResult(body0Wrap, body1Wrap),
-		  m_pointCollisionObject(NULL),
-		  m_penetration_distance(0),
-		  m_other_compound_shape_index(0),
-		  m_most_penetrated_distance(1e20) {}
+	GodotDeepPenetrationContactResultCallback(const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap) :
+			btManifoldResult(body0Wrap, body1Wrap),
+			m_pointCollisionObject(NULL),
+			m_penetration_distance(0),
+			m_other_compound_shape_index(0),
+			m_most_penetrated_distance(1e20) {}
 
 	void reset() {
 		m_pointCollisionObject = NULL;

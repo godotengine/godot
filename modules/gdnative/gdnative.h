@@ -106,8 +106,8 @@ struct GDNativeCallRegistry {
 		return singleton;
 	}
 
-	inline GDNativeCallRegistry()
-		: native_calls() {}
+	inline GDNativeCallRegistry() :
+			native_calls() {}
 
 	Map<StringName, native_call_cb> native_calls;
 

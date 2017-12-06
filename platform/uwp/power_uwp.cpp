@@ -30,8 +30,10 @@
 
 #include "power_uwp.h"
 
-PowerUWP::PowerUWP()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+PowerUWP::PowerUWP() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerUWP::~PowerUWP() {

@@ -86,8 +86,8 @@ void PlaneShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PLANE, "plane"), "set_plane", "get_plane");
 }
 
-PlaneShape::PlaneShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
+PlaneShape::PlaneShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_PLANE)) {
 
 	set_plane(Plane(0, 1, 0, 0));
 }

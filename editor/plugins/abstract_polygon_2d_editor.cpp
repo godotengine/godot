@@ -32,18 +32,21 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 
-AbstractPolygon2DEditor::Vertex::Vertex()
-	: polygon(-1), vertex(-1) {
+AbstractPolygon2DEditor::Vertex::Vertex() :
+		polygon(-1),
+		vertex(-1) {
 	// invalid vertex
 }
 
-AbstractPolygon2DEditor::Vertex::Vertex(int p_vertex)
-	: polygon(-1), vertex(p_vertex) {
+AbstractPolygon2DEditor::Vertex::Vertex(int p_vertex) :
+		polygon(-1),
+		vertex(p_vertex) {
 	// vertex p_vertex of current wip polygon
 }
 
-AbstractPolygon2DEditor::Vertex::Vertex(int p_polygon, int p_vertex)
-	: polygon(p_polygon), vertex(p_vertex) {
+AbstractPolygon2DEditor::Vertex::Vertex(int p_polygon, int p_vertex) :
+		polygon(p_polygon),
+		vertex(p_vertex) {
 	// vertex p_vertex of polygon p_polygon
 }
 
@@ -66,12 +69,14 @@ AbstractPolygon2DEditor::PosVertex::PosVertex() {
 	// invalid vertex
 }
 
-AbstractPolygon2DEditor::PosVertex::PosVertex(const Vertex &p_vertex, const Vector2 &p_pos)
-	: Vertex(p_vertex.polygon, p_vertex.vertex), pos(p_pos) {
+AbstractPolygon2DEditor::PosVertex::PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
+		Vertex(p_vertex.polygon, p_vertex.vertex),
+		pos(p_pos) {
 }
 
-AbstractPolygon2DEditor::PosVertex::PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos)
-	: Vertex(p_polygon, p_vertex), pos(p_pos) {
+AbstractPolygon2DEditor::PosVertex::PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
+		Vertex(p_polygon, p_vertex),
+		pos(p_pos) {
 }
 
 bool AbstractPolygon2DEditor::_is_empty() const {

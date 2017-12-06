@@ -101,9 +101,9 @@ public:
 	operator String() const;
 
 	_FORCE_INLINE_ AABB() {}
-	inline AABB(const Vector3 &p_pos, const Vector3 &p_size)
-		: position(p_pos),
-		  size(p_size) {
+	inline AABB(const Vector3 &p_pos, const Vector3 &p_size) :
+			position(p_pos),
+			size(p_size) {
 	}
 };
 

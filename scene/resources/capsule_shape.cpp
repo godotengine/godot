@@ -113,8 +113,8 @@ void CapsuleShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_height", "get_height");
 }
 
-CapsuleShape::CapsuleShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE)) {
+CapsuleShape::CapsuleShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CAPSULE)) {
 
 	radius = 1.0;
 	height = 1.0;

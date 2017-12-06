@@ -66,8 +66,8 @@ void RectangleShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "extents"), "set_extents", "get_extents");
 }
 
-RectangleShape2D::RectangleShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->rectangle_shape_create()) {
+RectangleShape2D::RectangleShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->rectangle_shape_create()) {
 
 	extents = Vector2(10, 10);
 	_update_shape();

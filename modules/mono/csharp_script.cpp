@@ -1885,8 +1885,8 @@ StringName CSharpScript::get_script_name() const {
 	return name;
 }
 
-CSharpScript::CSharpScript()
-	: script_list(this) {
+CSharpScript::CSharpScript() :
+		script_list(this) {
 
 	_clear();
 

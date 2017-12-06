@@ -410,8 +410,8 @@ void PluginScriptLanguage::unlock() {
 #endif
 }
 
-PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_desc *desc)
-	: _desc(*desc) {
+PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_desc *desc) :
+		_desc(*desc) {
 	_resource_loader = memnew(ResourceFormatLoaderPluginScript(this));
 	_resource_saver = memnew(ResourceFormatSaverPluginScript(this));
 

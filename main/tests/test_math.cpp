@@ -684,4 +684,4 @@ MainLoop *test() {
 
 	return NULL;
 }
-}
+} // namespace TestMath

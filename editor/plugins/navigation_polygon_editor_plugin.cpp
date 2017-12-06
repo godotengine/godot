@@ -120,10 +120,10 @@ void NavigationPolygonEditor::_create_resource() {
 	_menu_option(MODE_CREATE);
 }
 
-NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor)
-	: AbstractPolygon2DEditor(p_editor) {
+NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) :
+		AbstractPolygon2DEditor(p_editor) {
 }
 
-NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node)
-	: AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
+NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
+		AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
 }

@@ -242,8 +242,10 @@ int power_osx::get_power_percent_left() {
 	}
 }
 
-power_osx::power_osx()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+power_osx::power_osx() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 power_osx::~power_osx() {

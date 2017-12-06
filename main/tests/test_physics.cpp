@@ -435,4 +435,4 @@ MainLoop *test() {
 
 	return memnew(TestPhysicsMainLoop);
 }
-}
+} // namespace TestPhysics

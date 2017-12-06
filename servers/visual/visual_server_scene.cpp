@@ -1333,9 +1333,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					p_viewport_size.width / (float)p_viewport_size.height,
 					camera->znear,
 					camera->zfar,
-					camera->vaspect
-
-					);
+					camera->vaspect);
 			ortho = true;
 		} break;
 		case Camera::PERSPECTIVE: {
@@ -1345,9 +1343,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 					p_viewport_size.width / (float)p_viewport_size.height,
 					camera->znear,
 					camera->zfar,
-					camera->vaspect
-
-					);
+					camera->vaspect);
 			ortho = false;
 
 		} break;
@@ -2742,8 +2738,7 @@ void VisualServerScene::render_probes() {
 			switch (probe->dynamic.updating_stage) {
 				case GI_UPDATE_STAGE_CHECK: {
 
-					if (_check_gi_probe(instance_probe) || force_lighting) {
-//send to lighting thread
+					if (_check_gi_probe(instance_probe) || force_lighting) { //send to lighting thread
 
 #ifndef NO_THREADS
 						probe_bake_mutex->lock();

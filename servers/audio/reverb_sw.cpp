@@ -252,15 +252,13 @@ static ReverbParamsSW *reverb_param_modes[] = {
 
 bool ReverbSW::process(int *p_input, int *p_output, int p_frames, int p_stereo_stride) {
 
+	// p_input must point to a non-looping buffer.
+	// BOTH p_input and p_output must be touched (use ClearModuleBuffer).
+
 	if (!reverb_buffer)
 		return false;
 
-//
-// p_input must point to a non-looping buffer.
-// BOTH p_input and p_output must be touched (use ClearModuleBuffer).
-
 // LOCAL MACROS
-
 #undef LM_SETSRCOFFSET
 #define LM_SETSRCOFFSET(x)            \
 	(x) = current_params->x + Offset; \

@@ -86,8 +86,8 @@ Rect2 ConvexPolygonShape2D::get_rect() const {
 	return rect;
 }
 
-ConvexPolygonShape2D::ConvexPolygonShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->convex_polygon_shape_create()) {
+ConvexPolygonShape2D::ConvexPolygonShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->convex_polygon_shape_create()) {
 
 	int pcount = 3;
 	for (int i = 0; i < pcount; i++)

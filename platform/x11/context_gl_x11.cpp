@@ -228,8 +228,8 @@ bool ContextGL_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
-ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context)
-	: x11_window(p_x11_window) {
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context) :
+		x11_window(p_x11_window) {
 
 	default_video_mode = p_default_video_mode;
 	x11_display = p_x11_display;

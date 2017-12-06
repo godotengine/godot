@@ -121,8 +121,10 @@ int PowerWindows::get_power_percent_left() {
 	}
 }
 
-PowerWindows::PowerWindows()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+PowerWindows::PowerWindows() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerWindows::~PowerWindows() {

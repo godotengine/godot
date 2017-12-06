@@ -740,8 +740,11 @@ void BodySW::set_kinematic_margin(real_t p_margin) {
 	kinematic_safe_margin = p_margin;
 }
 
-BodySW::BodySW()
-	: CollisionObjectSW(TYPE_BODY), active_list(this), inertia_update_list(this), direct_state_query_list(this) {
+BodySW::BodySW() :
+		CollisionObjectSW(TYPE_BODY),
+		active_list(this),
+		inertia_update_list(this),
+		direct_state_query_list(this) {
 
 	mode = PhysicsServer::BODY_MODE_RIGID;
 	active = true;

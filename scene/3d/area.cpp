@@ -737,8 +737,8 @@ void Area::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
 }
 
-Area::Area()
-	: CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
+Area::Area() :
+		CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
 
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);

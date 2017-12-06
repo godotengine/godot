@@ -245,8 +245,10 @@ int power_android::get_power_percent_left() {
 	}
 }
 
-power_android::power_android()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+power_android::power_android() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 power_android::~power_android() {

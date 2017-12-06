@@ -117,7 +117,7 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	*/
 
 	visual_server->init();
-	//	visual_server->cursor_set_visible(false, 0);
+	//visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
@@ -126,14 +126,6 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-
-/*
-#ifdef IOS_SCORELOOP_ENABLED
-	scoreloop = memnew(ScoreloopIOS);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Scoreloop", scoreloop));
-	scoreloop->connect();
-#endif
-	*/
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -149,7 +141,7 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 #ifdef ICLOUD_ENABLED
 	icloud = memnew(ICloud);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-//icloud->connect();
+	//icloud->connect();
 #endif
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
 };

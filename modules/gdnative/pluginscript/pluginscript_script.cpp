@@ -423,8 +423,11 @@ ScriptInstance::RPCMode PluginScript::get_rset_mode(const StringName &p_variable
 	}
 }
 
-PluginScript::PluginScript()
-	: _data(NULL), _tool(false), _valid(false), _script_list(this) {
+PluginScript::PluginScript() :
+		_data(NULL),
+		_tool(false),
+		_valid(false),
+		_script_list(this) {
 }
 
 void PluginScript::init(PluginScriptLanguage *language) {

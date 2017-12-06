@@ -77,8 +77,8 @@ class VisualServerRaster : public VisualServer {
 	static void _changes_changed() {}
 
 public:
-//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
-//#define DEBUG_CHANGES
+	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
+	//#define DEBUG_CHANGES
 
 #ifdef DEBUG_CHANGES
 	_FORCE_INLINE_ static void redraw_request() {
@@ -96,7 +96,6 @@ public:
 #define DISPLAY_CHANGED \
 	changes++;
 #endif
-//	print_line(String("CHANGED: ") + __FUNCTION__);
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
@@ -451,7 +450,7 @@ public:
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
-/* ENVIRONMENT API */
+	/* ENVIRONMENT API */
 
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
@@ -481,7 +480,7 @@ public:
 	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
-/* SCENARIO API */
+	/* SCENARIO API */
 
 #undef BINDBASE
 #define BINDBASE VSG::scene

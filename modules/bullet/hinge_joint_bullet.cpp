@@ -35,8 +35,8 @@
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
 
-HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB)
-	: JointBullet() {
+HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB) :
+		JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(frameA, btFrameA);
 
@@ -53,8 +53,8 @@ HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, c
 	setup(hingeConstraint);
 }
 
-HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB)
-	: JointBullet() {
+HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB) :
+		JointBullet() {
 
 	btVector3 btPivotA;
 	btVector3 btAxisA;

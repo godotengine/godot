@@ -185,8 +185,8 @@ private:
 		const btCollisionObject *other_collision_object;
 		int local_shape_most_recovered;
 
-		RecoverResult()
-			: hasPenetration(false) {}
+		RecoverResult() :
+				hasPenetration(false) {}
 	};
 
 	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_from, btVector3 &r_recover_position, RecoverResult *r_recover_result = NULL);

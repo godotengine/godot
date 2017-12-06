@@ -39,10 +39,10 @@ void CollisionPolygon2DEditor::_set_node(Node *p_polygon) {
 	node = Object::cast_to<CollisionPolygon2D>(p_polygon);
 }
 
-CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor)
-	: AbstractPolygon2DEditor(p_editor) {
+CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) :
+		AbstractPolygon2DEditor(p_editor) {
 }
 
-CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node)
-	: AbstractPolygon2DEditorPlugin(p_node, memnew(CollisionPolygon2DEditor(p_node)), "CollisionPolygon2D") {
+CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) :
+		AbstractPolygon2DEditorPlugin(p_node, memnew(CollisionPolygon2DEditor(p_node)), "CollisionPolygon2D") {
 }

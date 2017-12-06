@@ -35,8 +35,8 @@
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
 
-Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA)
-	: JointBullet() {
+Generic6DOFJointBullet::Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA) :
+		JointBullet() {
 
 	btTransform btFrameA;
 	G_TO_B(frameInA, btFrameA);

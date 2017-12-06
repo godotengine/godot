@@ -688,8 +688,8 @@ void Area2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
 }
 
-Area2D::Area2D()
-	: CollisionObject2D(Physics2DServer::get_singleton()->area_create(), true) {
+Area2D::Area2D() :
+		CollisionObject2D(Physics2DServer::get_singleton()->area_create(), true) {
 
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(98);
