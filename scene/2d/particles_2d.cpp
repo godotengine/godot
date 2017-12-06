@@ -291,7 +291,7 @@ void Particles2D::_notification(int p_what) {
 			texture_rid = texture->get_rid();
 		RID normal_rid;
 		if (normal_map.is_valid())
-			normal_rid = texture->get_rid();
+			normal_rid = normal_map->get_rid();
 
 		VS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid, h_frames, v_frames);
 
