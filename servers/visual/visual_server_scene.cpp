@@ -308,6 +308,12 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			//from octree
 			InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
 
+			//make sure probes are done baking
+			while (!probe_bake_list.empty()) {
+				OS::get_singleton()->delay_usec(1);
+			}
+			//make sure this one is done baking
+
 			while (gi_probe->dynamic.updating_stage == GI_UPDATE_STAGE_LIGHTING) {
 				//wait until bake is done if it's baking
 				OS::get_singleton()->delay_usec(1);
@@ -2596,7 +2602,15 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 	}
 
 	//send back to main thread to update un little chunks
+	if (probe_bake_mutex) {
+		probe_bake_mutex->lock();
+	}
+
 	probe_data->dynamic.updating_stage = GI_UPDATE_STAGE_UPLOADING;
+
+	if (probe_bake_mutex) {
+		probe_bake_mutex->unlock();
+	}
 }
 
 bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
@@ -2729,11 +2743,11 @@ void VisualServerScene::render_probes() {
 				case GI_UPDATE_STAGE_CHECK: {
 
 					if (_check_gi_probe(instance_probe) || force_lighting) {
-						//send to lighting thread
-						probe->dynamic.updating_stage = GI_UPDATE_STAGE_LIGHTING;
+//send to lighting thread
 
 #ifndef NO_THREADS
 						probe_bake_mutex->lock();
+						probe->dynamic.updating_stage = GI_UPDATE_STAGE_LIGHTING;
 						probe_bake_list.push_back(instance_probe);
 						probe_bake_mutex->unlock();
 						probe_bake_sem->post();

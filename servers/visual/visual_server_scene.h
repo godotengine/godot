@@ -438,6 +438,7 @@ public:
 			: update_element(this) {
 			invalid = true;
 			base_version = 0;
+			dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 		}
 	};
 
