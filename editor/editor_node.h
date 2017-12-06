@@ -460,6 +460,7 @@ private:
 	void _instance_request(const Vector<String> &p_files);
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+	void _request_help(const String &p_class);
 	void _transform_keyed(Object *sp, const String &p_sub, const Transform &p_key);
 
 	void _hide_top_editors();

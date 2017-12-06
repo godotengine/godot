@@ -1620,8 +1620,6 @@ void EditorNode::_edit_current() {
 	if (is_resource || is_node) {
 		p->add_separator();
 		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTR("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
-		p->add_separator();
-		p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("property_editor/open_help", TTR("Open in Help")), OBJECT_REQUEST_HELP);
 	}
 
 	List<MethodInfo> methods;
@@ -3177,6 +3175,12 @@ void EditorNode::_property_keyed(const String &p_keyed, const Variant &p_value, 
 	AnimationPlayerEditor::singleton->get_key_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
+void EditorNode::_request_help(const String &p_class) {
+
+	_editor_select(EDITOR_SCRIPT);
+	emit_signal("request_help", p_class);
+}
+
 void EditorNode::_transform_keyed(Object *sp, const String &p_sub, const Transform &p_key) {
 
 	Spatial *s = Object::cast_to<Spatial>(sp);
@@ -4598,6 +4602,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_instance_request", &EditorNode::_instance_request);
 	ClassDB::bind_method("update_keying", &EditorNode::update_keying);
 	ClassDB::bind_method("_property_keyed", &EditorNode::_property_keyed);
+	ClassDB::bind_method("_request_help", &EditorNode::_request_help);
 	ClassDB::bind_method("_transform_keyed", &EditorNode::_transform_keyed);
 	ClassDB::bind_method("_close_messages", &EditorNode::_close_messages);
 	ClassDB::bind_method("_show_messages", &EditorNode::_show_messages);
@@ -5588,6 +5593,7 @@ EditorNode::EditorNode() {
 	file_templates->connect("file_selected", this, "_dialog_action");
 	property_editor->connect("resource_selected", this, "_resource_selected");
 	property_editor->connect("property_keyed", this, "_property_keyed");
+	property_editor->connect("request_help", this, "_request_help");
 
 	//plugin stuff
 

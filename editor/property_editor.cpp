@@ -2809,6 +2809,12 @@ void PropertyEditor::update_tree() {
 			sep->set_text_align(0, TreeItem::ALIGN_CENTER);
 			sep->set_disable_folding(true);
 
+			Dictionary d;
+			d["docs"] = type;
+			sep->set_metadata(0, d);
+			sep->add_button(0, get_icon("Help", "EditorIcons"), 0);
+			sep->set_button_color(0, 0, Color(1, 1, 1, 0.3));
+
 			if (use_doc_hints) {
 				StringName type = p.name;
 				if (!class_descr_cache.has(type)) {
@@ -3733,7 +3739,7 @@ void PropertyEditor::_item_edited() {
 				_edit_set(name, item->get_text(1), refresh_all);
 			}
 		} break;
-			// math types
+		// math types
 
 		case Variant::VECTOR3: {
 
@@ -3893,7 +3899,12 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 	Dictionary d = ti->get_metadata(0);
 
-	if (p_button == 2) {
+	if (p_button == 0 && d.has("docs")) {
+
+		String type = d["docs"];
+		printf("goto docs A %s\n", type.utf8().ptr());
+		emit_signal("request_help", type);
+	} else if (p_button == 2) {
 
 		if (!d.has("name"))
 			return;
@@ -4126,6 +4137,7 @@ void PropertyEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "type")));
 }
 
 Tree *PropertyEditor::get_scene_tree() {
