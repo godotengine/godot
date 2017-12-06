@@ -202,10 +202,10 @@ void PopupMenu::_activate_submenu(int over) {
 
 void PopupMenu::_submenu_timeout() {
 
-	if (mouse_over == submenu_over) {
+	if (mouse_over == submenu_over)
 		_activate_submenu(mouse_over);
-		submenu_over = -1;
-	}
+
+	submenu_over = -1;
 }
 
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
