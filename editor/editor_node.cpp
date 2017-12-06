@@ -1393,6 +1393,12 @@ void EditorNode::_property_editor_back() {
 		_edit_current();
 }
 
+void EditorNode::_help_callback(const String &p_desc) {
+
+	_editor_select(EDITOR_SCRIPT);
+	emit_signal("help_callback", p_desc);
+}
+
 void EditorNode::_menu_collapseall() {
 	property_editor->collapse_all_parent_nodes();
 }
@@ -1471,6 +1477,8 @@ void EditorNode::_edit_current() {
 
 		return;
 	}
+
+	help_dock->go_to_help(current_obj->get_class());
 
 	object_menu->set_disabled(true);
 
@@ -4587,6 +4595,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_resource_selected", &EditorNode::_resource_selected, DEFVAL(""));
 	ClassDB::bind_method("_property_editor_forward", &EditorNode::_property_editor_forward);
 	ClassDB::bind_method("_property_editor_back", &EditorNode::_property_editor_back);
+	ClassDB::bind_method("_help_callback", &EditorNode::_help_callback);
 	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
@@ -4661,6 +4670,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
 	ADD_SIGNAL(MethodInfo("request_help"));
+	ADD_SIGNAL(MethodInfo("help_callback"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::POOL_STRING_ARRAY, "args")));
@@ -5468,6 +5478,11 @@ EditorNode::EditorNode() {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(node_dock->get_index(), TTR("Node"));
 	}
 
+	help_dock = memnew(EditorHelp);
+	help_dock->set_name("Help");
+	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(help_dock);
+	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(help_dock->get_index(), TTR("Help"));
+
 	filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->set_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
@@ -5490,7 +5505,7 @@ EditorNode::EditorNode() {
 	default_layout.instance();
 	default_layout->set_value(docks_section, "dock_3", "FileSystem");
 	default_layout->set_value(docks_section, "dock_5", "Scene,Import");
-	default_layout->set_value(docks_section, "dock_6", "Inspector,Node");
+	default_layout->set_value(docks_section, "dock_6", "Inspector,Node,Help");
 
 	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++)
 		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), 0);
@@ -5578,6 +5593,8 @@ EditorNode::EditorNode() {
 
 	property_forward->connect("pressed", this, "_property_editor_forward");
 	property_back->connect("pressed", this, "_property_editor_back");
+
+	help_dock->connect("go_to_help", this, "_help_callback");
 
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 	object_menu->get_popup()->connect("id_pressed", this, "_menu_option");
