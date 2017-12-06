@@ -1030,7 +1030,7 @@ LIGHT_SHADER_CODE
 
 
 #if defined(LIGHT_USE_RIM)
-		float rim_light = pow(1.0-cNdotV, (1.0-roughness)*16.0);
+		float rim_light = pow(max(0.0,1.0-cNdotV), max(0.0,(1.0-roughness)*16.0));
 		diffuse_light += rim_light * rim * mix(vec3(1.0),diffuse_color,rim_tint) * light_color;
 #endif
 	}
