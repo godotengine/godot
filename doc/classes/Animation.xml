@@ -157,6 +157,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the track at [code]idx[/code] wraps the interpolation loop. Default value: [code]true[/code].
 			</description>
 		</method>
 		<method name="track_get_interpolation_type" qualifiers="const">
@@ -311,6 +312,7 @@
 			<argument index="1" name="interpolation" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the track at [code]idx[/code] wraps the interpolation loop.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
