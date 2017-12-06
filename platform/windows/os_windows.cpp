@@ -1629,16 +1629,23 @@ void OS_Windows::_update_window_style(bool repaint) {
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 
+	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
+	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
+
+	PAddDllDirectory add_dll_directory = (PAddDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
+	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
+
+	bool has_dll_directory_api = ((add_dll_directory != NULL) && (remove_dll_directory != NULL));
 	DLL_DIRECTORY_COOKIE cookie;
 
-	if (p_also_set_library_path) {
-		cookie = AddDllDirectory(p_path.get_base_dir().c_str());
+	if (p_also_set_library_path && has_dll_directory_api) {
+		cookie = add_dll_directory(p_path.get_base_dir().c_str());
 	}
 
-	p_library_handle = (void *)LoadLibraryExW(p_path.c_str(), NULL, p_also_set_library_path ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW(p_path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 
-	if (p_also_set_library_path) {
-		RemoveDllDirectory(cookie);
+	if (p_also_set_library_path && has_dll_directory_api) {
+		remove_dll_directory(cookie);
 	}
 
 	if (!p_library_handle) {
