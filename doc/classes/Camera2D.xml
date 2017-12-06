@@ -23,6 +23,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Removes any [code]Camera2D[/code] from the ancestor [Viewport]'s internal currently-assigned camera.
 			</description>
 		</method>
 		<method name="force_update_scroll">
@@ -43,24 +44,28 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the location of the [code]Camera2D[/code]'s screen-center, relative to the origin.
 			</description>
 		</method>
 		<method name="get_custom_viewport" qualifiers="const">
 			<return type="Node">
 			</return>
 			<description>
+				Returns the [Viewport] used by the camera if it is not using the default viewport.
 			</description>
 		</method>
 		<method name="get_h_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the horizontal offset of the camera.
 			</description>
 		</method>
 		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Returns the vertical offset of the camera.
 			</description>
 		</method>
 		<method name="make_current">
@@ -84,6 +89,7 @@
 			<argument index="0" name="viewport" type="Node">
 			</argument>
 			<description>
+				Assigns a custom [Viewport] node to the [code]Camera2D[/code]. If [code]viewport[/code] is not a [Viewport], it re-assigns the default viewport instead.
 			</description>
 		</method>
 		<method name="set_h_offset">
@@ -92,6 +98,7 @@
 			<argument index="0" name="ofs" type="float">
 			</argument>
 			<description>
+				The camera's horizontal offset is set to [code]ofs[/code].
 			</description>
 		</method>
 		<method name="set_v_offset">
@@ -100,6 +107,7 @@
 			<argument index="0" name="ofs" type="float">
 			</argument>
 			<description>
+				The camera's vertical offset is set to [code]ofs[/code].
 			</description>
 		</method>
 	</methods>
@@ -170,8 +178,10 @@
 	</members>
 	<constants>
 		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0" enum="AnchorMode">
+			The camera's position is fixed so that the top-left corner is always at the origin.
 		</constant>
 		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1" enum="AnchorMode">
+			The camera's position takes into account vertical/horizontal offsets and the screen size.
 		</constant>
 	</constants>
 </class>
