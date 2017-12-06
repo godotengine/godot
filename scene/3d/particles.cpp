@@ -869,6 +869,7 @@ void ParticlesMaterial::_update_shader() {
 	}
 	//scale by scale
 	code += "	float base_scale = mix(scale*tex_scale,1.0,scale_random*scale_rand);\n";
+	code += "	if (base_scale==0.0) base_scale=0.000001;\n";
 	if (trail_size_modifier.is_valid()) {
 		code += "	if (trail_divisor > 1) { base_scale *= textureLod(trail_size_modifier,vec2(float(int(NUMBER)%trail_divisor)/float(trail_divisor-1),0.0),0.0).r; } \n";
 	}
@@ -1358,6 +1359,11 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 	if (property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 		property.usage = 0;
 	}
+}
+
+Shader::Mode ParticlesMaterial::get_shader_mode() const {
+
+	return Shader::MODE_PARTICLES;
 }
 
 void ParticlesMaterial::_bind_methods() {

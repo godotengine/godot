@@ -69,6 +69,8 @@ public:
 	int get_render_priority() const;
 
 	virtual RID get_rid() const;
+
+	virtual Shader::Mode get_shader_mode() const = 0;
 	Material();
 	virtual ~Material();
 };
@@ -95,6 +97,8 @@ public:
 
 	void set_shader_param(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_param(const StringName &p_param) const;
+
+	virtual Shader::Mode get_shader_mode() const;
 
 	ShaderMaterial();
 	~ShaderMaterial();
@@ -599,6 +603,8 @@ public:
 	static RID get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass);
 
 	RID get_shader_rid() const;
+
+	virtual Shader::Mode get_shader_mode() const;
 
 	SpatialMaterial();
 	virtual ~SpatialMaterial();

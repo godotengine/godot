@@ -215,6 +215,13 @@ bool ShaderMaterial::_can_do_next_pass() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;
 }
 
+Shader::Mode ShaderMaterial::get_shader_mode() const {
+	if (shader.is_valid())
+		return shader->get_mode();
+	else
+		return Shader::MODE_SPATIAL;
+}
+
 ShaderMaterial::ShaderMaterial() {
 }
 
@@ -1660,6 +1667,11 @@ RID SpatialMaterial::get_shader_rid() const {
 
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
+}
+
+Shader::Mode SpatialMaterial::get_shader_mode() const {
+
+	return Shader::MODE_SPATIAL;
 }
 
 void SpatialMaterial::_bind_methods() {

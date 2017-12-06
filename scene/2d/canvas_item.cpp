@@ -184,6 +184,11 @@ RID CanvasItemMaterial::get_shader_rid() const {
 	return shader_map[current_key].shader;
 }
 
+Shader::Mode CanvasItemMaterial::get_shader_mode() const {
+
+	return Shader::MODE_CANVAS_ITEM;
+}
+
 void CanvasItemMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_blend_mode", "blend_mode"), &CanvasItemMaterial::set_blend_mode);

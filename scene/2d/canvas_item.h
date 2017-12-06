@@ -123,6 +123,8 @@ public:
 
 	RID get_shader_rid() const;
 
+	virtual Shader::Mode get_shader_mode() const;
+
 	CanvasItemMaterial();
 	virtual ~CanvasItemMaterial();
 };

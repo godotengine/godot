@@ -235,29 +235,34 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from) {
 	Ref<Material> material = p_from;
 	ERR_FAIL_COND_V(material.is_null(), Ref<Texture>());
 
-	VS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
+	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
+		VS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-	preview_done = false;
-	VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
-	while (!preview_done) {
-		OS::get_singleton()->delay_usec(10);
+		preview_done = false;
+		VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+
+		while (!preview_done) {
+			OS::get_singleton()->delay_usec(10);
+		}
+
+		Ref<Image> img = VS::get_singleton()->VS::get_singleton()->texture_get_data(viewport_texture);
+		VS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
+
+		ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
+
+		int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+		thumbnail_size *= EDSCALE;
+		img->convert(Image::FORMAT_RGBA8);
+		img->resize(thumbnail_size, thumbnail_size);
+		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+		ptex->create_from_image(img, 0);
+		return ptex;
 	}
 
-	Ref<Image> img = VS::get_singleton()->VS::get_singleton()->texture_get_data(viewport_texture);
-	VS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
-
-	ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
-
-	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
-	thumbnail_size *= EDSCALE;
-	img->convert(Image::FORMAT_RGBA8);
-	img->resize(thumbnail_size, thumbnail_size);
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
-	ptex->create_from_image(img, 0);
-	return ptex;
+	return Ref<Texture>();
 }
 
 EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
