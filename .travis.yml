@@ -39,7 +39,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-3.9
+      - llvm-toolchain-trusty-5.0
     packages:
       - build-essential
       - scons
@@ -56,7 +56,7 @@ addons:
       - libxi-dev
 
       # For style checks.
-      - clang-format-3.9
+      - clang-format-5.0
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
