@@ -466,6 +466,14 @@ String EditorPlugin::get_name() const {
 
 	return String();
 }
+const Ref<Texture> EditorPlugin::get_icon() const {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
+		return get_script_instance()->call("get_plugin_icon");
+	}
+
+	return Ref<Texture>();
+}
 bool EditorPlugin::has_main_screen() const {
 
 	if (get_script_instance() && get_script_instance()->has_method("has_main_screen")) {
@@ -644,6 +652,7 @@ void EditorPlugin::_bind_methods() {
 	gizmo.return_val.hint_string = "EditorSpatialGizmo";
 	ClassDB::add_virtual_method(get_class_static(), gizmo);
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("make_visible", PropertyInfo(Variant::BOOL, "visible")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("edit", PropertyInfo(Variant::OBJECT, "object")));
