@@ -117,6 +117,7 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	JoypadWindows *joypad;
+	Map<int, Vector2> touch_state;
 
 	PowerWindows *power_manager;
 
@@ -132,8 +133,8 @@ class OS_Windows : public OS {
 
 	CrashHandler crash_handler;
 
-	void _drag_event(int p_x, int p_y, int idx);
-	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
+	void _drag_event(float p_x, float p_y, int idx);
+	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(bool repaint = true);
 
@@ -212,7 +213,7 @@ public:
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
 
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle,bool p_also_set_library_path=false);
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
 

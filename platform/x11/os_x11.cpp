@@ -178,6 +178,50 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		}
 	}
 
+#ifdef TOUCH_ENABLED
+	if (!XQueryExtension(x11_display, "XInputExtension", &touch.opcode, &event_base, &error_base)) {
+		fprintf(stderr, "XInput extension not available");
+	} else {
+		// 2.2 is the first release with multitouch
+		int xi_major = 2;
+		int xi_minor = 2;
+		if (XIQueryVersion(x11_display, &xi_major, &xi_minor) != Success) {
+			fprintf(stderr, "XInput 2.2 not available (server supports %d.%d)\n", xi_major, xi_minor);
+			touch.opcode = 0;
+		} else {
+			int dev_count;
+			XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
+
+			for (int i = 0; i < dev_count; i++) {
+				XIDeviceInfo *dev = &info[i];
+				if (!dev->enabled)
+					continue;
+				/*if (dev->use != XIMasterPointer)
+					continue;*/
+
+				bool direct_touch = false;
+				for (int j = 0; j < dev->num_classes; j++) {
+					if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
+						direct_touch = true;
+						printf("%d) %d %s\n", i, dev->attachment, dev->name);
+						break;
+					}
+				}
+				if (direct_touch) {
+					touch.devices.push_back(dev->deviceid);
+					fprintf(stderr, "Using touch device: %s\n", dev->name);
+				}
+			}
+
+			XIFreeDeviceInfo(info);
+
+			if (!touch.devices.size()) {
+				fprintf(stderr, "No suitable touch device found\n");
+			}
+		}
+	}
+#endif
+
 	xim = XOpenIM(x11_display, NULL, NULL, NULL);
 
 	if (xim == NULL) {
@@ -307,6 +351,32 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 						  im_event_mask;
 
 	XChangeWindowAttributes(x11_display, x11_window, CWEventMask, &new_attr);
+
+#ifdef TOUCH_ENABLED
+	if (touch.devices.size()) {
+
+		// Must be alive after this block
+		static unsigned char mask_data[XIMaskLen(XI_LASTEVENT)] = {};
+
+		touch.event_mask.deviceid = XIAllMasterDevices;
+		touch.event_mask.mask_len = sizeof(mask_data);
+		touch.event_mask.mask = mask_data;
+
+		XISetMask(touch.event_mask.mask, XI_TouchBegin);
+		XISetMask(touch.event_mask.mask, XI_TouchUpdate);
+		XISetMask(touch.event_mask.mask, XI_TouchEnd);
+		XISetMask(touch.event_mask.mask, XI_TouchOwnership);
+
+		XISelectEvents(x11_display, x11_window, &touch.event_mask, 1);
+
+		XIClearMask(touch.event_mask.mask, XI_TouchOwnership);
+
+		// Grab touch devices to avoid OS gesture interference
+		for (int i = 0; i < touch.devices.size(); ++i) {
+			XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
+		}
+	}
+#endif
 
 	/* set the titlebar name */
 	XStoreName(x11_display, x11_window, "Godot");
@@ -486,6 +556,10 @@ void OS_X11::finalize() {
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
+#endif
+#ifdef TOUCH_ENABLED
+	touch.devices.clear();
+	touch.state.clear();
 #endif
 	memdelete(input);
 
@@ -1435,6 +1509,69 @@ void OS_X11::process_xevents() {
 			continue;
 		}
 
+#ifdef TOUCH_ENABLED
+		if (XGetEventData(x11_display, &event.xcookie)) {
+
+			if (event.xcookie.extension == touch.opcode) {
+
+				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
+				int index = event_data->detail;
+				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
+
+				switch (event_data->evtype) {
+
+					case XI_TouchBegin: // Fall-through
+						XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
+
+					case XI_TouchEnd: {
+
+						bool is_begin = event_data->evtype == XI_TouchBegin;
+
+						Ref<InputEventScreenTouch> st;
+						st.instance();
+						st->set_index(index);
+						st->set_position(pos);
+						st->set_pressed(is_begin);
+
+						if (is_begin) {
+							if (touch.state.has(index)) // Defensive
+								break;
+							touch.state[index] = pos;
+							input->parse_input_event(st);
+						} else {
+							if (!touch.state.has(index)) // Defensive
+								break;
+							touch.state.erase(index);
+							input->parse_input_event(st);
+						}
+					} break;
+
+					case XI_TouchUpdate: {
+
+						Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
+						if (!curr_pos_elem) { // Defensive
+							break;
+						}
+
+						if (curr_pos_elem->value() != pos) {
+
+							Ref<InputEventScreenDrag> sd;
+							sd.instance();
+							sd->set_index(index);
+							sd->set_position(pos);
+							sd->set_relative(pos - curr_pos_elem->value());
+							input->parse_input_event(sd);
+
+							curr_pos_elem->value() = pos;
+						}
+					} break;
+				}
+			}
+
+			XFreeEventData(x11_display, &event.xcookie);
+		}
+#endif
+
 		switch (event.type) {
 			case Expose:
 				Main::force_redraw();
@@ -1477,6 +1614,12 @@ void OS_X11::process_xevents() {
 							ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
+#ifdef TOUCH_ENABLED
+				// Grab touch devices to avoid OS gesture interference
+				for (int i = 0; i < touch.devices.size(); ++i) {
+					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
+				}
+#endif
 				if (xic) {
 					XSetICFocus(xic);
 				}
@@ -1493,6 +1636,23 @@ void OS_X11::process_xevents() {
 					}
 					XUngrabPointer(x11_display, CurrentTime);
 				}
+#ifdef TOUCH_ENABLED
+				// Ungrab touch devices so input works as usual while we are unfocused
+				for (int i = 0; i < touch.devices.size(); ++i) {
+					XIUngrabDevice(x11_display, touch.devices[i], CurrentTime);
+				}
+
+				// Release every pointer to avoid sticky points
+				for (Map<int, Vector2>::Element *E = touch.state.front(); E; E = E->next()) {
+
+					Ref<InputEventScreenTouch> st;
+					st.instance();
+					st->set_index(E->key());
+					st->set_position(E->get());
+					input->parse_input_event(st);
+				}
+				touch.state.clear();
+#endif
 				if (xic) {
 					XUnsetICFocus(xic);
 				}

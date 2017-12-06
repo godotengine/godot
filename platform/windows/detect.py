@@ -64,6 +64,10 @@ def get_opts():
     return [
         ('mingw_prefix_32', 'MinGW prefix (Win32)', mingw32),
         ('mingw_prefix_64', 'MinGW prefix (Win64)', mingw64),
+        # Targeted Windows version: 7 (and later), minimum supported version
+        # XP support dropped after EOL due to missing API for IPv6 and other issues
+        # Vista support dropped after EOL due to GH-10243
+        ('target_win_version', 'Targeted Windows version, >= 0x0601 (Windows 7)', '0x0601'),
         EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
     ]
 
@@ -96,11 +100,6 @@ def build_res_file(target, source, env):
 def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
-
-    # Targeted Windows version: 7 (and later), minimum supported version
-    # XP support dropped after EOL due to missing API for IPv6 and other issues
-    # Vista support dropped after EOL due to GH-10243
-    winver = "0x0601"
 
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")): # MSVC
 
@@ -175,7 +174,7 @@ def configure(env):
         env.Append(CCFLAGS=['/DWASAPI_ENABLED'])
         env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
         env.Append(CCFLAGS=['/DWIN32'])
-        env.Append(CCFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
+        env.Append(CCFLAGS=['/DWINVER=%s' % env['target_win_version'], '/D_WIN32_WINNT=%s' % env['target_win_version']])
         if env["bits"] == "64":
             env.Append(CCFLAGS=['/D_WIN64'])
 
