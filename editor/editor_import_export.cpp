@@ -1350,6 +1350,9 @@ Error EditorExportPlatformPC::export_project(const String &p_path, bool p_debug,
 		int flags = get_chmod_flags();
 		if (flags) {
 			err = dst->_chmod(p_path, flags);
+			// If exporting from a platform with no chmod support (i.e., Windows), don't fail
+			if (err == ERR_UNAVAILABLE)
+				err = OK;
 		}
 	}
 
