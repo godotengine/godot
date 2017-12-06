@@ -719,7 +719,7 @@ protected:
 public:
 	static _JSON *get_singleton() { return singleton; }
 
-	String print(const Variant &p_value);
+	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
 	_JSON();
