@@ -31,7 +31,7 @@ android {
 		disable 'MissingTranslation'
 	}
 
-	compileSdkVersion 24
+	compileSdkVersion 26
 	buildToolsVersion "26.0.1"
 	useLibrary 'org.apache.http.legacy'
 
