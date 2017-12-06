@@ -257,6 +257,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// LinkButton
 
+	theme->set_stylebox("focus", "LinkButton", focus);
+
 	theme->set_font("font", "LinkButton", default_font);
 
 	theme->set_color("font_color", "LinkButton", control_font_color);
