@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CurveTexture" inherits="Texture" category="Core" version="3.0-beta">
 	<brief_description>
+		A texture that shows a curve.
 	</brief_description>
 	<description>
+		Renders a given [Curve] provided to it. Simplifies the task of drawing curves and/or saving them as image files.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,8 +14,10 @@
 	</methods>
 	<members>
 		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+			The [code]curve[/code] rendered onto the texture.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width">
+			The width of the texture.
 		</member>
 	</members>
 	<constants>
