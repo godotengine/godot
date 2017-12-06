@@ -244,6 +244,7 @@ class PropertyEditor : public Control {
 	bool _might_be_in_instance();
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage = 0);
+	bool _is_instanced_node_with_original_property_different(const String &p_name, TreeItem *item);
 
 	void _refresh_item(TreeItem *p_item);
 	void _set_range_def(Object *p_item, String prop, float p_frame);
