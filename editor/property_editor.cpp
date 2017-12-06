@@ -2665,18 +2665,14 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		item->set_editable(1, false);
 		item->set_selectable(1, subsection_selectable);
 
-		if (use_folding || folding_behaviour != FB_UNDEFINED) { // Even if you disabled folding (expand all by default), you still can collapse all manually.
+		if (use_folding) { //
 			if (!obj->editor_is_section_unfolded(p_path)) {
 				updating_folding = true;
-				if (folding_behaviour == FB_COLLAPSEALL)
-					item->set_collapsed(true);
-				else if (folding_behaviour == FB_EXPANDALL || is_expandall_enabled)
-					item->set_collapsed(false);
-				else
-					item->set_collapsed(true);
+				item->set_collapsed(true);
 				updating_folding = false;
 			}
 			item->set_metadata(0, p_path);
+			foldable_property_cache.push_back(p_path);
 		}
 
 		if (item->get_parent() == root) {
@@ -2725,6 +2721,7 @@ void PropertyEditor::refresh() {
 void PropertyEditor::update_tree() {
 
 	tree->clear();
+	foldable_property_cache.clear();
 
 	if (!obj)
 		return;
@@ -3733,7 +3730,7 @@ void PropertyEditor::_item_edited() {
 				_edit_set(name, item->get_text(1), refresh_all);
 			}
 		} break;
-			// math types
+		// math types
 
 		case Variant::VECTOR3: {
 
@@ -4212,29 +4209,29 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 	update_tree();
 }
 
-bool PropertyEditor::is_expand_all_properties_enabled() const {
-
-	return (use_folding == false);
-}
-
 void PropertyEditor::set_use_folding(bool p_enable) {
 
 	use_folding = p_enable;
 	tree->set_hide_folding(false);
 }
 
-void PropertyEditor::collapse_all_parent_nodes() {
-
-	folding_behaviour = FB_COLLAPSEALL;
+void PropertyEditor::collapse_all_folding() {
+	if (!obj)
+		return;
+	for (List<String>::Element *E = foldable_property_cache.front(); E; E = E->next()) {
+		obj->editor_set_section_unfold(E->get(), false);
+	}
 	update_tree();
-	folding_behaviour = FB_UNDEFINED;
 }
 
-void PropertyEditor::expand_all_parent_nodes() {
+void PropertyEditor::expand_all_folding() {
 
-	folding_behaviour = FB_EXPANDALL;
+	if (!obj)
+		return;
+	for (List<String>::Element *E = foldable_property_cache.front(); E; E = E->next()) {
+		obj->editor_set_section_unfold(E->get(), true);
+	}
 	update_tree();
-	folding_behaviour = FB_UNDEFINED;
 }
 
 PropertyEditor::PropertyEditor() {
@@ -4309,8 +4306,6 @@ PropertyEditor::PropertyEditor() {
 	subsection_selectable = false;
 	property_selectable = false;
 	show_type_icons = false; // maybe one day will return.
-	folding_behaviour = FB_UNDEFINED;
-	is_expandall_enabled = bool(EDITOR_DEF("interface/editor/expand_all_properties", true));
 }
 
 PropertyEditor::~PropertyEditor() {

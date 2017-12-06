@@ -203,18 +203,9 @@ class PropertyEditor : public Control {
 	bool hide_script;
 	bool use_folding;
 	bool property_selectable;
-	bool is_expandall_enabled;
-
 	bool updating_folding;
 
-	enum FOLDING_BEHAVIOUR {
-		FB_UNDEFINED,
-		FB_COLLAPSEALL,
-		FB_EXPANDALL,
-		FB_EXPANDALL_FORCE
-	};
-	FOLDING_BEHAVIOUR folding_behaviour;
-
+	List<String> foldable_property_cache;
 	HashMap<String, String> pending;
 	String selected_property;
 
@@ -314,10 +305,8 @@ public:
 
 	void set_use_folding(bool p_enable);
 
-	bool is_expand_all_properties_enabled() const;
-
-	void collapse_all_parent_nodes();
-	void expand_all_parent_nodes();
+	void collapse_all_folding();
+	void expand_all_folding();
 	PropertyEditor();
 	~PropertyEditor();
 };

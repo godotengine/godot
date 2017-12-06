@@ -1394,11 +1394,13 @@ void EditorNode::_property_editor_back() {
 }
 
 void EditorNode::_menu_collapseall() {
-	property_editor->collapse_all_parent_nodes();
+
+	property_editor->collapse_all_folding();
 }
 
 void EditorNode::_menu_expandall() {
-	property_editor->expand_all_parent_nodes();
+
+	property_editor->expand_all_folding();
 }
 
 void EditorNode::_save_default_environment() {
@@ -5444,7 +5446,7 @@ EditorNode::EditorNode() {
 	property_editor->set_use_doc_hints(true);
 	property_editor->set_hide_script(false);
 	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
-	property_editor->set_use_folding(bool(EDITOR_DEF("interface/editor/expand_all_properties", false)) == false);
+	property_editor->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
 
 	property_editor->hide_top_label();
 	property_editor->register_text_enter(search_box);
