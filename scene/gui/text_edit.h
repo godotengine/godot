@@ -159,7 +159,7 @@ class TextEdit : public Control {
 		void set_font(const Ref<Font> &p_font);
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
-		int get_max_width() const;
+		int get_max_width(bool p_exclude_hidden = false) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line);
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
