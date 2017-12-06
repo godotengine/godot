@@ -333,6 +333,9 @@ Error DirAccess::copy(String p_from, String p_to, int chmod_flags) {
 	if (err == OK && chmod_flags != -1) {
 		fdst->close();
 		err = fdst->_chmod(p_to, chmod_flags);
+		// If running on a platform with no chmod support (i.e., Windows), don't fail
+		if (err == ERR_UNAVAILABLE)
+			err = OK;
 	}
 
 	memdelete(fsrc);

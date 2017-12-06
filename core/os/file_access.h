@@ -141,7 +141,7 @@ public:
 
 	virtual Error reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
 
-	virtual Error _chmod(const String &p_path, int p_mod) { return FAILED; }
+	virtual Error _chmod(const String &p_path, int p_mod) { return ERR_UNAVAILABLE; }
 
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
