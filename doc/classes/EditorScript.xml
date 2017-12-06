@@ -9,7 +9,7 @@
 		[codeblock]
 		tool
 		extends EditorScript
-		
+
 		func _run():
 		    print("Hello from the Godot Editor!")
 		[/codeblock]
@@ -33,6 +33,8 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
+				Adds [code]node[/code] as a child of the root node in the editor context.
+				WARNING: The implementation of this method is currently disabled.
 			</description>
 		</method>
 		<method name="get_editor_interface">
