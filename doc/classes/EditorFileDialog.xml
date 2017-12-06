@@ -15,12 +15,15 @@
 			<argument index="0" name="filter" type="String">
 			</argument>
 			<description>
+				Adds a comma-delimited file extension filter option to the [code]EditorFileDialog[/code] with an optional semi-colon-delimited label.
+				Example: "*.tscn, *.scn; Scenes", results in filter text "Scenes (*.tscn, *.scn)".
 			</description>
 		</method>
 		<method name="clear_filters">
 			<return type="void">
 			</return>
 			<description>
+				Removes all filters except for "All Files (*)".
 			</description>
 		</method>
 		<method name="get_access" qualifiers="const">
@@ -63,12 +66,14 @@
 			<return type="VBoxContainer">
 			</return>
 			<description>
+				Returns the [code]VBoxContainer[/code] used to display the file system.
 			</description>
 		</method>
 		<method name="invalidate">
 			<return type="void">
 			</return>
 			<description>
+				Notify the [code]EditorFileDialog[/code] that its view of the data is no longer accurate. Updates the view contents on next view update.
 			</description>
 		</method>
 		<method name="is_overwrite_warning_disabled" qualifiers="const">
@@ -148,46 +153,85 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="access" type="int" enum="EditorFileDialog.Access" setter="set_access" getter="get_access">
+			The location from which the user may select a file, including [code]res://[/code], [code]user://[/code], and the local file system.
+		</member>
+		<member name="display_mode" type="int" enum="EditorFileDialog.DisplayMode" setter="set_display_mode" getter="get_display_mode">
+			The view format in which the [code]EditorFileDialog[/code] displays resources to the user.
+		</member>
+		<member name="mode" type="int" enum="EditorFileDialog.Mode" setter="set_mode" getter="get_mode">
+			The purpose of the [code]EditorFileDialog[/code]. Changes allowed behaviors.
+		</member>
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
+			The currently occupied directory.
+		</member>
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
+			The currently selected file.
+		</member>
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
+			The file system path in the address bar.
+		</member>
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
+			If [code]true[/code] hidden files and directories will be visible in the [code]EditorFileDialog[/code].
+		</member>
+		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled">
+			If [code]true[/code] the [code]EditorFileDialog[/code] will not warn the user before overwriting files.
+		</member>
+	</members>
 	<signals>
 		<signal name="dir_selected">
 			<argument index="0" name="dir" type="String">
 			</argument>
 			<description>
+				Emitted when a directory is selected.
 			</description>
 		</signal>
 		<signal name="file_selected">
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Emitted when a file is selected.
 			</description>
 		</signal>
 		<signal name="files_selected">
 			<argument index="0" name="paths" type="PoolStringArray">
 			</argument>
 			<description>
+				Emitted when multiple files are selected.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="MODE_OPEN_FILE" value="0" enum="Mode">
+			The [code]EditorFileDialog[/code] can select only one file. Accepting the window will open the file.
 		</constant>
 		<constant name="MODE_OPEN_FILES" value="1" enum="Mode">
+			The [code]EditorFileDialog[/code] can select multiple files. Accepting the window will open all files.
 		</constant>
 		<constant name="MODE_OPEN_DIR" value="2" enum="Mode">
+			The [code]EditorFileDialog[/code] can select only one directory. Accepting the window will open the directory.
 		</constant>
 		<constant name="MODE_OPEN_ANY" value="3" enum="Mode">
+			The [code]EditorFileDialog[/code] can select a file or directory. Accepting the window will open it.
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="4" enum="Mode">
+			The [code]EditorFileDialog[/code] can select only one file. Accepting the window will save the file.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
+			The [code]EditorFileDialog[/code] can only view [code]res://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1" enum="Access">
+			The [code]EditorFileDialog[/code] can only view [code]user://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
+			The [code]EditorFileDialog[/code] can view the entire local file system.
 		</constant>
 		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
+			The [code]EditorFileDialog[/code] displays resources as thumbnails.
 		</constant>
 		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
+			The [code]EditorFileDialog[/code] displays resources as a list of filenames.
 		</constant>
 	</constants>
 </class>
