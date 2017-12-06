@@ -4,6 +4,7 @@
 		A diretory for the resource filesystem.
 	</brief_description>
 	<description>
+		A more generalized, low-level variation of the directory concept.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +17,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the index of the directory with name [code]name[/code] or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="find_file_index" qualifiers="const">
@@ -24,6 +26,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the index of the file with name [code]name[/code] or [code]-1[/code] if not found.
 			</description>
 		</method>
 		<method name="get_file" qualifiers="const">
@@ -32,12 +35,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the name of the file at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_file_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of files in this directory.
 			</description>
 		</method>
 		<method name="get_file_import_is_valid" qualifiers="const">
@@ -46,6 +51,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the file at index [code]idx[/code] imported properly.
 			</description>
 		</method>
 		<method name="get_file_path" qualifiers="const">
@@ -54,6 +60,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the path to the file at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_file_type" qualifiers="const">
@@ -62,24 +69,28 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the file extension of the file at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_name">
 			<return type="String">
 			</return>
 			<description>
+				Returns the name of this directory.
 			</description>
 		</method>
 		<method name="get_parent">
 			<return type="EditorFileSystemDirectory">
 			</return>
 			<description>
+				Returns the parent directory for this directory or null if called on a directory at [code]res://[/code] or [code]user://[/code].
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the path to this directory.
 			</description>
 		</method>
 		<method name="get_subdir">
@@ -88,12 +99,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns the subdirectory at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="get_subdir_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of subdirectories in this directory.
 			</description>
 		</method>
 	</methods>
