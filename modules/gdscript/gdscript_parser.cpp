@@ -2976,10 +2976,9 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
 			case GDScriptTokenizer::TK_IDENTIFIER: {
 
-					StringName identifier = tokenizer->get_token_identifier();
-					p_class->extends_class.push_back(identifier);
-				}
-				break;
+				StringName identifier = tokenizer->get_token_identifier();
+				p_class->extends_class.push_back(identifier);
+			} break;
 
 			case GDScriptTokenizer::TK_PERIOD:
 				break;

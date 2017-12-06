@@ -46,8 +46,8 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 	switch (p_source.get_type()) {
 
-			/* clang-format makes a mess of this macro usage */
-			/* clang-format off */
+		/* clang-format makes a mess of this macro usage */
+		/* clang-format off */
 
 		case Variant::VECTOR2: {
 

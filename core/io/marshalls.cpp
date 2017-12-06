@@ -159,7 +159,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = str;
 
 		} break;
-			// math types
+		// math types
 
 		case Variant::VECTOR2: {
 
@@ -959,7 +959,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			_encode_string(p_variant, buf, r_len);
 
 		} break;
-			// math types
+		// math types
 
 		case Variant::VECTOR2: {
 
