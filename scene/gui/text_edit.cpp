@@ -594,6 +594,12 @@ void TextEdit::_notification(int p_what) {
 			int xmargin_end = cache.size.width - cache.style_normal->get_margin(MARGIN_RIGHT);
 			//let's do it easy for now:
 			cache.style_normal->draw(ci, Rect2(Point2(), cache.size));
+			float readonly_alpha = 1.0; // used to set the input text color when in read-only mode
+			if (readonly) {
+				cache.style_readonly->draw(ci, Rect2(Point2(), cache.size));
+				readonly_alpha = .5;
+				draw_caret = false;
+			}
 			if (has_focus())
 				cache.style_focus->draw(ci, Rect2(Point2(), cache.size));
 
@@ -604,6 +610,8 @@ void TextEdit::_notification(int p_what) {
 			int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
 			Color color = cache.font_color;
+			color.a *= readonly_alpha;
+
 			int in_region = -1;
 
 			if (syntax_coloring) {
@@ -823,10 +831,16 @@ void TextEdit::_notification(int p_what) {
 
 				int char_margin = xmargin_beg - cursor.x_ofs;
 				int char_ofs = 0;
-				int ofs_y = (i * get_row_height() + cache.line_spacing / 2);
-				if (smooth_scroll_enabled) {
-					ofs_y -= (v_scroll->get_value() - get_line_scroll_pos()) * get_row_height();
+
+				int ofs_readonly = 0;
+				int ofs_x = 0;
+				if (readonly) {
+					ofs_readonly = cache.style_readonly->get_offset().y / 2;
+					ofs_x = cache.style_readonly->get_offset().x / 2;
 				}
+				int ofs_y = (i * get_row_height() + cache.line_spacing / 2) + ofs_readonly;
+				if (smooth_scroll_enabled)
+					ofs_y -= ((v_scroll->get_value() - get_line_scroll_pos()) * get_row_height());
 
 				bool prev_is_char = false;
 				bool prev_is_number = false;
@@ -852,27 +866,27 @@ void TextEdit::_notification(int p_what) {
 
 				if (text.is_marked(line)) {
 
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.mark_color);
 				}
 
 				if (str.length() == 0) {
 					// draw line background if empty as we won't loop at at all
 					if (line == cursor.line && highlight_current_line) {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(ofs_x, ofs_y, xmargin_end, get_row_height()), cache.current_line_color);
 					}
 
 					// give visual indication of empty selected line
 					if (selection.active && line >= selection.from_line && line <= selection.to_line) {
 						int char_w = cache.font->get_char_size(' ').width;
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, char_w, get_row_height()), cache.selection_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
 					}
 				}
 
 				if (text.is_breakpoint(line) && !draw_breakpoint_gutter) {
 #ifdef TOOLS_ENABLED
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.breakpoint_color);
 #else
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.breakpoint_color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.breakpoint_color);
 #endif
 				}
 
@@ -895,11 +909,11 @@ void TextEdit::_notification(int p_what) {
 					if (is_folded(line)) {
 						int xofs = horizontal_gap - (cache.can_fold_icon->get_width()) / 2;
 						int yofs = (get_row_height() - cache.folded_icon->get_height()) / 2;
-						cache.folded_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
+						cache.folded_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
 					} else if (can_fold(line)) {
 						int xofs = -cache.can_fold_icon->get_width() / 2 - horizontal_gap + 3;
 						int yofs = (get_row_height() - cache.can_fold_icon->get_height()) / 2;
-						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
+						cache.can_fold_icon->draw(ci, Point2(gutter_left + xofs + ofs_x, ofs_y + yofs), Color(0.8f, 0.8f, 0.8f, 0.8f));
 					}
 				}
 
@@ -909,7 +923,7 @@ void TextEdit::_notification(int p_what) {
 						fc = line_num_padding + fc;
 					}
 
-					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
+					cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, ofs_y + cache.font->get_ascent()), fc, cache.line_number_color);
 				}
 				//loop through charcters in one line
 				for (int j = 0; j < str.length(); j++) {
@@ -924,6 +938,7 @@ void TextEdit::_notification(int p_what) {
 					if (syntax_coloring && deregion == 0) {
 
 						color = cache.font_color; //reset
+						color.a *= readonly_alpha;
 						//find keyword
 						bool is_char = _is_text_char(str[j]);
 						bool is_symbol = _is_symbol(str[j]);
@@ -1107,7 +1122,7 @@ void TextEdit::_notification(int p_what) {
 					if (line == cursor.line && highlight_current_line) {
 						// if its the first char draw behind line numbers
 						if (j == 0) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, (char_ofs + char_margin), get_row_height()), cache.current_line_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, (char_ofs + char_margin + ofs_x), get_row_height()), cache.current_line_color);
 						}
 						// if its the last char draw to end of the line
 						if (j == str.length() - 1) {
@@ -1115,24 +1130,24 @@ void TextEdit::_notification(int p_what) {
 						}
 						// actual text
 						if (!in_selection) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.current_line_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.current_line_color);
 						}
 					}
 
 					if (in_selection) {
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.selection_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.selection_color);
 					}
 
 					if (in_search_result) {
 						Color border_color = (line == search_result_line && j >= search_result_col && j < search_result_col + search_text.length()) ? cache.font_color : cache.search_result_border_color;
 
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, 1)), border_color);
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y + get_row_height() - 1), Size2i(char_w, 1)), border_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, 1)), border_color);
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y + get_row_height() - 1), Size2i(char_w, 1)), border_color);
 
 						if (j == search_text_col)
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(1, get_row_height())), border_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(1, get_row_height())), border_color);
 						if (j == search_text_col + search_text.length() - 1)
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + char_w - 1, ofs_y), Size2i(1, get_row_height())), border_color);
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + char_w + ofs_x - 1, ofs_y), Size2i(1, get_row_height())), border_color);
 					}
 
 					if (highlight_all_occurrences) {
@@ -1151,7 +1166,7 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							if (in_highlighted_word) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin, ofs_y), Size2i(char_w, get_row_height())), cache.word_highlighted_color);
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.word_highlighted_color);
 							}
 						}
 					}
@@ -1162,7 +1177,7 @@ void TextEdit::_notification(int p_what) {
 
 							if (brace_open_mismatch)
 								color = cache.brace_mismatch_color;
-							cache.font->draw_char(ci, Point2i(char_ofs + char_margin, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 
 						if (
@@ -1171,13 +1186,13 @@ void TextEdit::_notification(int p_what) {
 
 							if (brace_close_mismatch)
 								color = cache.brace_mismatch_color;
-							cache.font->draw_char(ci, Point2i(char_ofs + char_margin, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 					}
 
 					if (cursor.column == j && cursor.line == line) {
 
-						cursor_pos = Point2i(char_ofs + char_margin, ofs_y);
+						cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
 
 						if (insert_mode) {
 							cursor_pos.y += (get_row_height() - 3);
@@ -1204,7 +1219,7 @@ void TextEdit::_notification(int p_what) {
 									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 1)), color);
 								}
 
-								cache.font->draw_char(ci, Point2(char_ofs + char_margin, ofs_y + ascent), cchar, next, color);
+								cache.font->draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, color);
 
 								char_ofs += im_char_width;
 								ofs++;
@@ -1227,18 +1242,19 @@ void TextEdit::_notification(int p_what) {
 						color = cache.caret_background_color;
 					} else if (!syntax_coloring && block_caret) {
 						color = cache.font_color;
+						color.a *= readonly_alpha;
 					}
 
 					if (str[j] >= 32) {
-						int w = cache.font->draw_char(ci, Point2i(char_ofs + char_margin, ofs_y + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
+						int w = cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, ofs_y + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						if (underlined) {
-							draw_rect(Rect2(char_ofs + char_margin, ofs_y + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							draw_rect(Rect2(char_ofs + char_margin + ofs_x, ofs_y + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 					}
 
 					else if (draw_tabs && str[j] == '\t') {
 						int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
-						cache.tab_icon->draw(ci, Point2(char_ofs + char_margin, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+						cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 					}
 
 					char_ofs += char_w;
@@ -1246,13 +1262,13 @@ void TextEdit::_notification(int p_what) {
 					if (j == str.length() - 1 && is_folded(line)) {
 						int yofs = (get_row_height() - cache.folded_eol_icon->get_height()) / 2;
 						int xofs = cache.folded_eol_icon->get_width() / 2;
-						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs, ofs_y + yofs), Color(1, 1, 1, 1));
+						cache.folded_eol_icon->draw(ci, Point2(char_ofs + char_margin + xofs + ofs_x, ofs_y + yofs), Color(1, 1, 1, 1));
 					}
 				}
 
 				if (cursor.column == str.length() && cursor.line == line && (char_ofs + char_margin) >= xmargin_beg) {
 
-					cursor_pos = Point2i(char_ofs + char_margin, ofs_y);
+					cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
 
 					if (insert_mode) {
 						cursor_pos.y += (get_row_height() - 3);
@@ -1277,7 +1293,7 @@ void TextEdit::_notification(int p_what) {
 								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 1)), color);
 							}
 
-							cache.font->draw_char(ci, Point2(char_ofs + char_margin, ofs_y + ascent), cchar, next, color);
+							cache.font->draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, color);
 
 							char_ofs += im_char_width;
 							ofs++;
@@ -3913,6 +3929,7 @@ void TextEdit::clear() {
 void TextEdit::set_readonly(bool p_readonly) {
 
 	readonly = p_readonly;
+	update();
 }
 
 bool TextEdit::is_readonly() const {
@@ -3950,6 +3967,7 @@ void TextEdit::_update_caches() {
 
 	cache.style_normal = get_stylebox("normal");
 	cache.style_focus = get_stylebox("focus");
+	cache.style_readonly = get_stylebox("read_only");
 	cache.completion_background_color = get_color("completion_background_color");
 	cache.completion_selected_color = get_color("completion_selected_color");
 	cache.completion_existing_color = get_color("completion_existing_color");
