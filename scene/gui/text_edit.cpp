@@ -4559,20 +4559,21 @@ void TextEdit::fold_line(int p_line) {
 
 	// hide lines below this one
 	int start_indent = get_whitespace_level(p_line);
+	int fold_until = p_line;
 	for (int i = p_line + 1; i < text.size(); i++) {
 		int cur_indent = get_whitespace_level(i);
-		if (text[i].size() == 0 || cur_indent > start_indent) {
-			set_line_as_hidden(i, true);
-		} else {
-			// exclude trailing empty lines
-			for (int trail_i = i - 1; trail_i > p_line; trail_i--) {
-				if (text[trail_i].size() == 0)
-					set_line_as_hidden(trail_i, false);
-				else
-					break;
+		// if the line isn't blank
+		if (text[i].size() != 0) {
+			if (cur_indent > start_indent) {
+				fold_until = i + 1;
+			} else {
+				// end of indent block
+				break;
 			}
-			break;
 		}
+	}
+	for (int i = p_line + 1; i < fold_until; i++) {
+		set_line_as_hidden(i, true);
 	}
 
 	// fix selection
