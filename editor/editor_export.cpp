@@ -1261,6 +1261,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	if (custom_debug_binary == "" && custom_release_binary == "") {
 		if (!err.empty())
 			r_error = err;
+		r_missing_templates = !valid;
 		return valid;
 	}
 

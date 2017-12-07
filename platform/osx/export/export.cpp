@@ -605,6 +605,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 	if (!err.empty())
 		r_error = err;
 
+	r_missing_templates = !valid;
 	return valid;
 }
 
