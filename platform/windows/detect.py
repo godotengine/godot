@@ -270,7 +270,7 @@ def configure(env):
         env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
         env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
         env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
-        env.Append(CCFLAGS=['-DWINVER=%s' % winver, '-D_WIN32_WINNT=%s' % winver])
+        env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
         env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser'])
 
         env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
