@@ -300,7 +300,7 @@ def configure(env):
         env.use_windows_spawn_fix()
 
         # build using mingw
-        env.Append(CCFLAGS=['-DWINVER=%s' % winver, '-D_WIN32_WINNT=%s' % winver])
+        env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
         if (os.name == "nt"):
             env['ENV']['TMP'] = os.environ['TMP']  # way to go scons, you can be so stupid sometimes
         else:
