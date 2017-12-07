@@ -25,88 +25,6 @@
 				Get the camera transform. Subclassed cameras (such as CharacterCamera) may provide different transforms than the [Node] transform.
 			</description>
 		</method>
-		<method name="get_cull_mask" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the culling mask, describing which 3D render layers are rendered by this Camera.
-			</description>
-		</method>
-		<method name="get_doppler_tracking" qualifiers="const">
-			<return type="int" enum="Camera.DopplerTracking">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_environment" qualifiers="const">
-			<return type="Environment">
-			</return>
-			<description>
-				Returns the [Environment] used by this Camera.
-			</description>
-		</method>
-		<method name="get_fov" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the [i]FOV[/i] Y angle in degrees (FOV means Field of View).
-			</description>
-		</method>
-		<method name="get_h_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the horizontal (X) offset of the Camera viewport.
-			</description>
-		</method>
-		<method name="get_keep_aspect_mode" qualifiers="const">
-			<return type="int" enum="Camera.KeepAspect">
-			</return>
-			<description>
-				Returns the current mode for keeping the aspect ratio. See [code]KEEP_*[/code] constants.
-			</description>
-		</method>
-		<method name="get_projection" qualifiers="const">
-			<return type="int" enum="Camera.Projection">
-			</return>
-			<description>
-				Returns the Camera's projection. See PROJECTION_* constants.
-			</description>
-		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_v_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the vertical (Y) offset of the Camera viewport.
-			</description>
-		</method>
-		<method name="get_zfar" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the far clip plane in world space units.
-			</description>
-		</method>
-		<method name="get_znear" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the near clip plane in world space units.
-			</description>
-		</method>
-		<method name="is_current" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the Camera is the current one in the [Viewport], or plans to become current (if outside the scene tree).
-			</description>
-		</method>
 		<method name="is_position_behind" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -129,6 +47,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
+				Returns a normal vector from the screen point location directed along the camera. Orthogonal cameras are normalized. Perspective cameras account for perspective, screen width/height, etc.
 			</description>
 		</method>
 		<method name="project_position" qualifiers="const">
@@ -158,51 +77,6 @@
 				Returns a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin, normal) for object intersection or picking.
 			</description>
 		</method>
-		<method name="set_cull_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="mask" type="int">
-			</argument>
-			<description>
-				Sets the cull mask, describing which 3D render layers are rendered by this Camera.
-			</description>
-		</method>
-		<method name="set_doppler_tracking">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Camera.DopplerTracking">
-			</argument>
-			<description>
-				Changes Doppler effect tracking. See [code]DOPPLER_*[/code] constants.
-			</description>
-		</method>
-		<method name="set_environment">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="Environment">
-			</argument>
-			<description>
-				Sets the [Environment] to use for this Camera.
-			</description>
-		</method>
-		<method name="set_h_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="ofs" type="float">
-			</argument>
-			<description>
-				Sets the horizontal (X) offset of the Camera viewport.
-			</description>
-		</method>
-		<method name="set_keep_aspect_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="Camera.KeepAspect">
-			</argument>
-			<description>
-				Sets the mode for keeping the aspect ratio. See [code]KEEP_*[/code] constants.
-			</description>
-		</method>
 		<method name="set_orthogonal">
 			<return type="void">
 			</return>
@@ -229,15 +103,6 @@
 				Set the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
 			</description>
 		</method>
-		<method name="set_v_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="ofs" type="float">
-			</argument>
-			<description>
-				Sets the vertical (Y) offset of the Camera viewport.
-			</description>
-		</method>
 		<method name="unproject_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -248,6 +113,47 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
+			The culling mask that describes which 3D render layers are rendered by this camera.
+		</member>
+		<member name="current" type="bool" setter="set_current" getter="is_current">
+			If [code]true[/code] the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
+		</member>
+		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking">
+			If not [code]DOPPLER_TRACKING_DISABLED[/code] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [code]DOPPLER_TRACKING_DISABLED[/code].
+		</member>
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
+			Set the [Environment] to use for this Camera.
+		</member>
+		<member name="far" type="float" setter="set_zfar" getter="get_zfar">
+			The distance to the far culling boundary for this Camera relative to its local z-axis.
+		</member>
+		<member name="fov" type="float" setter="set_fov" getter="get_fov">
+			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
+		</member>
+		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
+			The horizontal (X) offset of the Camear viewport.
+		</member>
+		<member name="keep_aspect" type="int" setter="set_keep_aspect_mode" getter="get_keep_aspect_mode" enum="Camera.KeepAspect">
+			The axis to lock during [member fov]/[member size] adjustments.
+		</member>
+		<member name="near" type="float" setter="set_znear" getter="get_znear">
+			The distance to the near culling boundary for this Camera relative to its local z-axis.
+		</member>
+		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera.Projection">
+			The camera's projection mode. In [code]PROJECTION_PERSPECTIVE[/code] mode, objects' z-distance from the camera's local space scales their perceived size.
+		</member>
+		<member name="size" type="float" setter="set_size" getter="get_size">
+			The camera's size measured as 1/2 the width or height. Only applicable in orthogonal mode. Since [member keep_aspect] locks on axis, [code]size[/code] sets the other axis' size length.
+		</member>
+		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset">
+			The horizontal (Y) offset of the Camear viewport.
+		</member>
+		<member name="vaspect" type="bool" setter="set_vaspect" getter="get_vaspect">
+			A boolean representation of [member keep_aspect] in which [code]true[/code] is equivalent to [code]KEEP_WIDTH[/code].
+		</member>
+	</members>
 	<constants>
 		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="Projection">
 			Perspective Projection (object's size on the screen becomes smaller when far away).
@@ -256,10 +162,10 @@
 			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
-			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's width by changing the height. Height is [code]sizey[/code] for orthographic projection, [code]fovy[/code] for perspective projection.
+			Preserves the horizontal aspect ratio.
 		</constant>
 		<constant name="KEEP_HEIGHT" value="1" enum="KeepAspect">
-			Try to keep the aspect ratio when scaling the Camera's viewport to the screen. If not possible, preserve the viewport's height by changing the width. Width is [code]sizex[/code] for orthographic projection, [code]fovx[/code] for perspective projection.
+			Preserves the vertical aspect ratio.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disable Doppler effect simulation (default).
