@@ -1046,6 +1046,10 @@ void LineEdit::set_cursor_position(int p_pos) {
 	} else if (cursor_pos > window_pos) {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
+		if (has_icon("right_icon")) {
+			Ref<Texture> r_icon = Control::get_icon("right_icon");
+			window_width -= r_icon->get_width();
+		}
 
 		if (window_width < 0)
 			return;
