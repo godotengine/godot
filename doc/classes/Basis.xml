@@ -171,10 +171,13 @@
 	</methods>
 	<members>
 		<member name="x" type="Vector3" setter="" getter="">
+			The basis matrix's x vector.
 		</member>
 		<member name="y" type="Vector3" setter="" getter="">
+			The basis matrix's y vector.
 		</member>
 		<member name="z" type="Vector3" setter="" getter="">
+			The basis matrix's z vector.
 		</member>
 	</members>
 	<constants>

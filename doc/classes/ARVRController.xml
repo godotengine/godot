@@ -31,7 +31,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the controller bound to this node is currently active and being tracked.
+				Returns [code]true[/code] if the bound controller is active. ARVR systems attempt to track active controllers.
 			</description>
 		</method>
 		<method name="get_joystick_axis" qualifiers="const">
@@ -56,7 +56,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Is the given button currently pressed?
+				Returns [code]true[/code] if the button at index [code]button[/code] is pressed.
 			</description>
 		</method>
 	</methods>
@@ -65,21 +65,22 @@
 			The controller's id. The first controller that the [ARVRServer] detects will have id 1, the second id 2, the third id 3, etc. When a controller is turned off, it's slot is freed. This ensures controllers will keep the same id even when controllers with lower ids are turned off.
 		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble">
-		</member>
+			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
+			</member>
 	</members>
 	<signals>
 		<signal name="button_pressed">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				When a button on this controller is pressed, this signal is given.
+				Emitted when a button on this controller is pressed.
 			</description>
 		</signal>
 		<signal name="button_release">
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				When a button on this controller is released, this signal is given.
+				Emitted when a button on this controller is released.
 			</description>
 		</signal>
 	</signals>
