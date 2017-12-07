@@ -1595,6 +1595,21 @@ float Animation::get_step() const {
 	return step;
 }
 
+void Animation::copy_track(int src_track, Ref<Animation> p_to_animation) {
+	ERR_FAIL_COND(p_to_animation.is_null());
+	ERR_FAIL_INDEX(src_track, get_track_count());
+	int dst_track = p_to_animation->get_track_count();
+	p_to_animation->add_track(track_get_type(src_track));
+
+	p_to_animation->track_set_path(dst_track, track_get_path(src_track));
+	p_to_animation->track_set_imported(dst_track, track_is_imported(src_track));
+	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(src_track));
+	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(src_track));
+	for (int i = 0; i < track_get_key_count(src_track); i++) {
+		p_to_animation->track_insert_key(dst_track, track_get_key_time(src_track, i), track_get_key_value(src_track, i), track_get_key_transition(src_track, i));
+	}
+}
+
 void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_track", "type", "at_position"), &Animation::add_track, DEFVAL(-1));
@@ -1650,6 +1665,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_step"), &Animation::get_step);
 
 	ClassDB::bind_method(D_METHOD("clear"), &Animation::clear);
+	ClassDB::bind_method(D_METHOD("copy_track", "track", "to_animation"), &Animation::copy_track);
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_TRANSFORM);
