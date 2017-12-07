@@ -53,6 +53,7 @@ addons:
       - libssl-dev
       - libxinerama-dev
       - libxrandr-dev
+      - libxi-dev
 
       # For style checks.
       - clang-format-3.9
