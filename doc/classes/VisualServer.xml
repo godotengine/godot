@@ -1381,6 +1381,8 @@
 			</argument>
 			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
 			</argument>
+			<argument index="2" name="format" type="int" enum="Image.Format" default="-1">
+			</argument>
 			<description>
 			</description>
 		</method>

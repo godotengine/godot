@@ -115,10 +115,10 @@ bool ViewportTexture::has_alpha() const {
 
 	return false;
 }
-Ref<Image> ViewportTexture::get_data() const {
+Ref<Image> ViewportTexture::get_data(Image::Format p_format) const {
 
 	ERR_FAIL_COND_V(!vp, Ref<Image>());
-	return VS::get_singleton()->texture_get_data(vp->texture_rid);
+	return VS::get_singleton()->texture_get_data(vp->texture_rid, VS::CUBEMAP_LEFT, p_format);
 }
 void ViewportTexture::set_flags(uint32_t p_flags) {
 

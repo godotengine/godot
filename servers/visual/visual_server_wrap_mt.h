@@ -80,7 +80,7 @@ public:
 	FUNCRID(texture)
 	FUNC5(texture_allocate, RID, int, int, Image::Format, uint32_t)
 	FUNC3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
-	FUNC2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
+	FUNC3RC(Ref<Image>, texture_get_data, RID, CubeMapSide, Image::Format)
 	FUNC2(texture_set_flags, RID, uint32_t)
 	FUNC1RC(uint32_t, texture_get_flags, RID)
 	FUNC1RC(Image::Format, texture_get_format, RID)

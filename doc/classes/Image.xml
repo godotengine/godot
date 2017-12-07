@@ -490,6 +490,8 @@
 		</constant>
 		<constant name="FORMAT_MAX" value="37" enum="Format">
 		</constant>
+		<constant name="FORMAT_ANY" value="-1" enum="Format">
+		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
 		</constant>
 		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">

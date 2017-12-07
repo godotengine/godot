@@ -826,7 +826,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	//texture_set_flags(p_texture,texture->flags);
 }
 
-Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side) const {
+Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side, Image::Format p_format) const {
 
 	Texture *texture = texture_owner.get(p_texture);
 
@@ -834,15 +834,52 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
 	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
+	Image::Format format;
+	GLuint gl_format;
+	GLuint gl_type;
+	bool is_optimized_target;
+
+	switch (p_format) {
+		case Image::FORMAT_RGBA8: {
+			format = p_format;
+			gl_format = GL_RGBA;
+			gl_type = GL_UNSIGNED_BYTE;
+			is_optimized_target = true;
+		} break;
+		case Image::FORMAT_RGB8: {
+			format = p_format;
+			gl_format = GL_RGB;
+			gl_type = GL_UNSIGNED_BYTE;
+			is_optimized_target = true;
+		} break;
+		default: {
+			format = texture->format;
+			gl_format = texture->gl_format_cache;
+			gl_type = texture->gl_type_cache;
+			is_optimized_target = false;
+		} break;
+	}
+
 	if (!texture->images[p_cube_side].is_null()) {
-		return texture->images[p_cube_side];
+		Ref<Image> img = texture->images[p_cube_side];
+
+		if (p_format != Image::FORMAT_ANY && p_format != img->get_format()) {
+			if (!is_optimized_target) {
+				img->convert(p_format);
+				return img;
+			}
+			// re-get texture using glGetTexImage since the driver will handle
+			// image conversions faster than Image::convert().
+		} else {
+			return img;
+		}
 	}
 
 #ifdef GLES_OVER_GL
 
 	PoolVector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->format, texture->mipmaps > 1 ? -1 : 0);
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, format, texture->mipmaps > 1 ? -1 : 0);
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
@@ -859,10 +896,10 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 
 		int ofs = 0;
 		if (i > 0) {
-			ofs = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->format, i - 1);
+			ofs = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, format, i - 1);
 		}
 
-		if (texture->compressed) {
+		if (texture->compressed && !is_optimized_target) {
 
 			glPixelStorei(GL_PACK_ALIGNMENT, 4);
 			glGetCompressedTexImage(texture->target, i, &wb[ofs]);
@@ -870,8 +907,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 		} else {
 
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &wb[ofs]);
+			glGetTexImage(texture->target, i, gl_format, gl_type, &wb[ofs]);
 		}
 	}
 
@@ -879,7 +915,12 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 
 	data.resize(data_size);
 
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, texture->format, data));
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, format, data));
+
+	if (!is_optimized_target && p_format != Image::FORMAT_ANY && p_format != format) {
+
+		img->convert(p_format);
+	}
 
 	return Ref<Image>(img);
 #else

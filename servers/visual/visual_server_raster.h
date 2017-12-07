@@ -147,7 +147,7 @@ public:
 	BIND0R(RID, texture_create)
 	BIND5(texture_allocate, RID, int, int, Image::Format, uint32_t)
 	BIND3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
-	BIND2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
+	BIND3RC(Ref<Image>, texture_get_data, RID, CubeMapSide, Image::Format)
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
 	BIND1RC(Image::Format, texture_get_format, RID)
