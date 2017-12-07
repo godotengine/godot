@@ -35,6 +35,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "editor/import/resource_importer_scene.h"
 #include "undo_redo.h"
 
 /**
@@ -199,6 +200,9 @@ public:
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
+
+	void add_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
+	void remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer);
 
 	EditorPlugin();
 	virtual ~EditorPlugin();

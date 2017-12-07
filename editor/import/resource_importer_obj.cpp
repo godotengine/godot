@@ -426,7 +426,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	return scene;
 }
-Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags) {
+Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
 	return Ref<Animation>();
 }
