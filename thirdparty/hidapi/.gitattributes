@@ -1,0 +1,7 @@
+* text=auto
+
+*.sln text eol=crlf
+*.vcproj text eol=crlf
+
+bootstrap text eol=lf
+configure.ac text eol=lf

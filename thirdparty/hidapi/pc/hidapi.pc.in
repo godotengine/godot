@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: hidapi
+Description: C Library for USB/Bluetooth HID device access from Linux, Mac OS X, FreeBSD, and Windows.
+Version: @VERSION@
+Libs: -L${libdir} -lhidapi
+Cflags: -I${includedir}/hidapi

@@ -1,0 +1,174 @@
+LIBRARY "libusb-1.0.dll"
+EXPORTS
+  libusb_alloc_streams
+  libusb_alloc_streams@16 = libusb_alloc_streams
+  libusb_alloc_transfer
+  libusb_alloc_transfer@4 = libusb_alloc_transfer
+  libusb_attach_kernel_driver
+  libusb_attach_kernel_driver@8 = libusb_attach_kernel_driver
+  libusb_bulk_transfer
+  libusb_bulk_transfer@24 = libusb_bulk_transfer
+  libusb_cancel_transfer
+  libusb_cancel_transfer@4 = libusb_cancel_transfer
+  libusb_claim_interface
+  libusb_claim_interface@8 = libusb_claim_interface
+  libusb_clear_halt
+  libusb_clear_halt@8 = libusb_clear_halt
+  libusb_close
+  libusb_close@4 = libusb_close
+  libusb_control_transfer
+  libusb_control_transfer@32 = libusb_control_transfer
+  libusb_detach_kernel_driver
+  libusb_detach_kernel_driver@8 = libusb_detach_kernel_driver
+  libusb_dev_mem_alloc
+  libusb_dev_mem_alloc@8 = libusb_dev_mem_alloc
+  libusb_dev_mem_free
+  libusb_dev_mem_free@12 = libusb_dev_mem_free
+  libusb_error_name
+  libusb_error_name@4 = libusb_error_name
+  libusb_event_handler_active
+  libusb_event_handler_active@4 = libusb_event_handler_active
+  libusb_event_handling_ok
+  libusb_event_handling_ok@4 = libusb_event_handling_ok
+  libusb_exit
+  libusb_exit@4 = libusb_exit
+  libusb_free_bos_descriptor
+  libusb_free_bos_descriptor@4 = libusb_free_bos_descriptor
+  libusb_free_config_descriptor
+  libusb_free_config_descriptor@4 = libusb_free_config_descriptor
+  libusb_free_container_id_descriptor
+  libusb_free_container_id_descriptor@4 = libusb_free_container_id_descriptor
+  libusb_free_device_list
+  libusb_free_device_list@8 = libusb_free_device_list
+  libusb_free_pollfds
+  libusb_free_pollfds@4 = libusb_free_pollfds
+  libusb_free_ss_endpoint_companion_descriptor
+  libusb_free_ss_endpoint_companion_descriptor@4 = libusb_free_ss_endpoint_companion_descriptor
+  libusb_free_ss_usb_device_capability_descriptor
+  libusb_free_ss_usb_device_capability_descriptor@4 = libusb_free_ss_usb_device_capability_descriptor
+  libusb_free_streams
+  libusb_free_streams@12 = libusb_free_streams
+  libusb_free_transfer
+  libusb_free_transfer@4 = libusb_free_transfer
+  libusb_free_usb_2_0_extension_descriptor
+  libusb_free_usb_2_0_extension_descriptor@4 = libusb_free_usb_2_0_extension_descriptor
+  libusb_get_active_config_descriptor
+  libusb_get_active_config_descriptor@8 = libusb_get_active_config_descriptor
+  libusb_get_bos_descriptor
+  libusb_get_bos_descriptor@8 = libusb_get_bos_descriptor
+  libusb_get_bus_number
+  libusb_get_bus_number@4 = libusb_get_bus_number
+  libusb_get_config_descriptor
+  libusb_get_config_descriptor@12 = libusb_get_config_descriptor
+  libusb_get_config_descriptor_by_value
+  libusb_get_config_descriptor_by_value@12 = libusb_get_config_descriptor_by_value
+  libusb_get_configuration
+  libusb_get_configuration@8 = libusb_get_configuration
+  libusb_get_container_id_descriptor
+  libusb_get_container_id_descriptor@12 = libusb_get_container_id_descriptor
+  libusb_get_device
+  libusb_get_device@4 = libusb_get_device
+  libusb_get_device_address
+  libusb_get_device_address@4 = libusb_get_device_address
+  libusb_get_device_descriptor
+  libusb_get_device_descriptor@8 = libusb_get_device_descriptor
+  libusb_get_device_list
+  libusb_get_device_list@8 = libusb_get_device_list
+  libusb_get_device_speed
+  libusb_get_device_speed@4 = libusb_get_device_speed
+  libusb_get_max_iso_packet_size
+  libusb_get_max_iso_packet_size@8 = libusb_get_max_iso_packet_size
+  libusb_get_max_packet_size
+  libusb_get_max_packet_size@8 = libusb_get_max_packet_size
+  libusb_get_next_timeout
+  libusb_get_next_timeout@8 = libusb_get_next_timeout
+  libusb_get_parent
+  libusb_get_parent@4 = libusb_get_parent
+  libusb_get_pollfds
+  libusb_get_pollfds@4 = libusb_get_pollfds
+  libusb_get_port_number
+  libusb_get_port_number@4 = libusb_get_port_number
+  libusb_get_port_numbers
+  libusb_get_port_numbers@12 = libusb_get_port_numbers
+  libusb_get_port_path
+  libusb_get_port_path@16 = libusb_get_port_path
+  libusb_get_ss_endpoint_companion_descriptor
+  libusb_get_ss_endpoint_companion_descriptor@12 = libusb_get_ss_endpoint_companion_descriptor
+  libusb_get_ss_usb_device_capability_descriptor
+  libusb_get_ss_usb_device_capability_descriptor@12 = libusb_get_ss_usb_device_capability_descriptor
+  libusb_get_string_descriptor_ascii
+  libusb_get_string_descriptor_ascii@16 = libusb_get_string_descriptor_ascii
+  libusb_get_usb_2_0_extension_descriptor
+  libusb_get_usb_2_0_extension_descriptor@12 = libusb_get_usb_2_0_extension_descriptor
+  libusb_get_version
+  libusb_get_version@0 = libusb_get_version
+  libusb_handle_events
+  libusb_handle_events@4 = libusb_handle_events
+  libusb_handle_events_completed
+  libusb_handle_events_completed@8 = libusb_handle_events_completed
+  libusb_handle_events_locked
+  libusb_handle_events_locked@8 = libusb_handle_events_locked
+  libusb_handle_events_timeout
+  libusb_handle_events_timeout@8 = libusb_handle_events_timeout
+  libusb_handle_events_timeout_completed
+  libusb_handle_events_timeout_completed@12 = libusb_handle_events_timeout_completed
+  libusb_has_capability
+  libusb_has_capability@4 = libusb_has_capability
+  libusb_hotplug_deregister_callback
+  libusb_hotplug_deregister_callback@8 = libusb_hotplug_deregister_callback
+  libusb_hotplug_register_callback
+  libusb_hotplug_register_callback@36 = libusb_hotplug_register_callback
+  libusb_init
+  libusb_init@4 = libusb_init
+  libusb_interrupt_event_handler
+  libusb_interrupt_event_handler@4 = libusb_interrupt_event_handler
+  libusb_interrupt_transfer
+  libusb_interrupt_transfer@24 = libusb_interrupt_transfer
+  libusb_kernel_driver_active
+  libusb_kernel_driver_active@8 = libusb_kernel_driver_active
+  libusb_lock_events
+  libusb_lock_events@4 = libusb_lock_events
+  libusb_lock_event_waiters
+  libusb_lock_event_waiters@4 = libusb_lock_event_waiters
+  libusb_open
+  libusb_open@8 = libusb_open
+  libusb_open_device_with_vid_pid
+  libusb_open_device_with_vid_pid@12 = libusb_open_device_with_vid_pid
+  libusb_pollfds_handle_timeouts
+  libusb_pollfds_handle_timeouts@4 = libusb_pollfds_handle_timeouts
+  libusb_ref_device
+  libusb_ref_device@4 = libusb_ref_device
+  libusb_release_interface
+  libusb_release_interface@8 = libusb_release_interface
+  libusb_reset_device
+  libusb_reset_device@4 = libusb_reset_device
+  libusb_set_auto_detach_kernel_driver
+  libusb_set_auto_detach_kernel_driver@8 = libusb_set_auto_detach_kernel_driver
+  libusb_set_configuration
+  libusb_set_configuration@8 = libusb_set_configuration
+  libusb_set_debug
+  libusb_set_debug@8 = libusb_set_debug
+  libusb_set_interface_alt_setting
+  libusb_set_interface_alt_setting@12 = libusb_set_interface_alt_setting
+  libusb_setlocale
+  libusb_setlocale@4 = libusb_setlocale
+  libusb_set_pollfd_notifiers
+  libusb_set_pollfd_notifiers@16 = libusb_set_pollfd_notifiers
+  libusb_strerror
+  libusb_strerror@4 = libusb_strerror
+  libusb_submit_transfer
+  libusb_submit_transfer@4 = libusb_submit_transfer
+  libusb_transfer_get_stream_id
+  libusb_transfer_get_stream_id@4 = libusb_transfer_get_stream_id
+  libusb_transfer_set_stream_id
+  libusb_transfer_set_stream_id@8 = libusb_transfer_set_stream_id
+  libusb_try_lock_events
+  libusb_try_lock_events@4 = libusb_try_lock_events
+  libusb_unlock_events
+  libusb_unlock_events@4 = libusb_unlock_events
+  libusb_unlock_event_waiters
+  libusb_unlock_event_waiters@4 = libusb_unlock_event_waiters
+  libusb_unref_device
+  libusb_unref_device@4 = libusb_unref_device
+  libusb_wait_for_event
+  libusb_wait_for_event@8 = libusb_wait_for_event

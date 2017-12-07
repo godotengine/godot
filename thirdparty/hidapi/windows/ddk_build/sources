@@ -1,0 +1,23 @@
+TARGETNAME=hidapi
+TARGETTYPE=DYNLINK
+UMTYPE=console
+UMENTRY=main
+
+MSC_WARNING_LEVEL=/W3 /WX
+
+TARGETLIBS=$(SDK_LIB_PATH)\hid.lib \
+           $(SDK_LIB_PATH)\setupapi.lib \
+           $(SDK_LIB_PATH)\kernel32.lib \
+           $(SDK_LIB_PATH)\comdlg32.lib
+
+USE_MSVCRT=1
+
+INCLUDES= ..\..\hidapi
+SOURCES= ..\hid.c \
+
+
+TARGET_DESTINATION=retail
+
+MUI=0
+MUI_COMMENT="HID Interface DLL"
+

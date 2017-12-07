@@ -178,7 +178,7 @@ def configure(env):
         if env["bits"] == "64":
             env.Append(CCFLAGS=['/D_WIN64'])
 
-        LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid']
+        LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid', 'Setupapi']
         env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
         env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
@@ -271,7 +271,7 @@ def configure(env):
         env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
         env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
         env.Append(CCFLAGS=['-DWINVER=%s' % winver, '-D_WIN32_WINNT=%s' % winver])
-        env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser'])
+        env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'setupapi'])
 
         env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
 

@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+
+import os
+import methods
+
+Import('env')
+Import('env_modules')
+
+env_openhmd = env_modules.Clone()
+
+# upstream uses c99
+env_openhmd.Append(CFLAGS="-std=c99")
+
+if ("platform" in env):
+    p = env['platform']
+else:
+    p = "unknown"
+
+# Link in libusb, but for now just for linux
+if p == 'x11':
+    env_openhmd.Append(CPPPATH=["#thirdparty/libusb/libusb"])
+    env_openhmd.Append(CPPPATH=["#thirdparty/libusb/libusb/os"])
+
+    libusb_sources = [
+        "core.c",
+        "descriptor.c",
+        "hotplug.c",
+        "io.c",
+        "strerror.c",
+        "sync.c"
+    ]
+
+    libusb_sources = ["#thirdparty/libusb/libusb/" + file for file in libusb_sources]
+    env_openhmd.add_source_files(env.modules_sources, libusb_sources)
+
+    if p == 'x11':
+        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/linux_netlink.c" ])
+        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/linux_usbfs.c" ])
+        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/poll_posix.c" ])
+        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/threads_posix.c" ])
+        env_openhmd.Append(CPPDEFINES=["OS_LINUX"])
+#    elif p == 'windows':
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/windows_nt_common.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/windows_usbdk.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/windows_winusb.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/poll_windows.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/threads_windows.c" ])
+#        env_openhmd.Append(CPPDEFINES=["OS_WINDOWS"])
+#    elif p == 'osx':
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/darwin_usb.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/poll_posix.c" ])
+#        env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/libusb/libusb/os/threads_posix.c" ])
+#        env_openhmd.Append(CPPDEFINES=["OS_DARWIN"])
+
+# Link in hidapi
+hidapi_headers = "#thirdparty/hidapi/hidapi/"
+env_openhmd.Append(CPPPATH=[hidapi_headers])
+
+if p == 'windows':
+    env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/hidapi/windows/hid.c" ])
+elif p == 'x11':
+    # If we can use the libusb version it should allow us to undo our detect.py changes
+    # See thirdparty/hidapi/linux/README.txt and thirdparty/hidapi/udev/99-hid-rules for more info
+    # env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/hidapi/linux/hid.c" ])
+    env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/hidapi/libusb/hid.c" ])
+elif p == 'osx':
+    env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/hidapi/mac/hid.c" ])
+
+# Link in openhmd, we're linking in static.
+env_openhmd.Append(CFLAGS=["-DOHMD_STATIC"])
+env_openhmd.Append(CPPFLAGS=["-DOHMD_STATIC"])
+
+# We don't include android because we're not compiling this for android at this time.
+# Our native mobile VR class already handles android.
+# We do include the Vive so we have basic native support even though we have an OpenVR implementation
+env_openhmd.Append(CFLAGS=["-DDRIVER_OCULUS_RIFT"])
+env_openhmd.Append(CFLAGS=["-DDRIVER_DEEPOON"])
+env_openhmd.Append(CFLAGS=["-DDRIVER_HTC_VIVE"])
+env_openhmd.Append(CFLAGS=["-DDRIVER_PSVR"])
+env_openhmd.Append(CFLAGS=["-DDRIVER_NOLO"])
+#env_openhmd.Append(CFLAGS=["-DDRIVER_EXTERNAL"])
+#env_openhmd.Append(CFLAGS=["-DDRIVER_ANDROID"])
+
+# miniz is already compiled within Godot so just want the headers here...
+env_openhmd.Append(CFLAGS=["-DMINIZ_HEADER_FILE_ONLY"])
+
+openhmd_headers = "#thirdparty/openhmd/include/"
+env_openhmd.Append(CPPPATH=[openhmd_headers])
+
+openhmd_dir = "#thirdparty/openhmd/src/"
+
+openhmd_sources = [
+    "fusion.c",
+    "omath.c",
+    "openhmd.c",
+    "shaders.c",
+#    "drv_android/android.c",
+    "drv_deepoon/deepoon.c",
+    "drv_deepoon/packet.c",
+    "drv_dummy/dummy.c",
+#   "drv_external/external.c",
+    "drv_htc_vive/packet.c",
+    "drv_htc_vive/vive.c",
+    "drv_nolo/nolo.c",
+    "drv_nolo/packet.c",
+    "drv_oculus_rift/packet.c",
+    "drv_oculus_rift/rift.c",
+    "drv_psvr/packet.c",
+    "drv_psvr/psvr.c",
+#    "ext_deps/miniz.c", # don't need to include, already included in Godot
+    "ext_deps/mjson.c"
+]
+
+openhmd_sources = [openhmd_dir + file for file in openhmd_sources]
+env_openhmd.add_source_files(env.modules_sources, openhmd_sources)
+
+if p == 'windows':
+    env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/openhmd/src/platform-win32.c" ])
+else:
+    env_openhmd.add_source_files(env.modules_sources, [ "#thirdparty/openhmd/src/platform-posix.c" ])
+
+# Godot source files
+env_openhmd.add_source_files(env.modules_sources, "*.cpp")
