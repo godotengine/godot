@@ -55,6 +55,7 @@ addons:
       - libssl-dev
       - libxinerama-dev
       - libxrandr-dev
+      - libxi-dev
 
       # For cross-compiling to Windows.
       #- binutils-mingw-w64-i686
