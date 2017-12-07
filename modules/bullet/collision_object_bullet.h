@@ -70,16 +70,22 @@ public:
 		btTransform transform;
 		bool active;
 
-		ShapeWrapper()
-			: shape(NULL), bt_shape(NULL), active(true) {}
+		ShapeWrapper() :
+				shape(NULL),
+				bt_shape(NULL),
+				active(true) {}
 
-		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active)
-			: shape(p_shape), bt_shape(NULL), active(p_active) {
+		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active) :
+				shape(p_shape),
+				bt_shape(NULL),
+				active(p_active) {
 			set_transform(p_transform);
 		}
 
-		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active)
-			: shape(p_shape), bt_shape(NULL), active(p_active) {
+		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active) :
+				shape(p_shape),
+				bt_shape(NULL),
+				active(p_active) {
 			set_transform(p_transform);
 		}
 		~ShapeWrapper();

@@ -31,22 +31,22 @@
 
 CoreStringNames *CoreStringNames::singleton = NULL;
 
-CoreStringNames::CoreStringNames()
-	: _free(StaticCString::create("free")),
-	  changed(StaticCString::create("changed")),
-	  _meta(StaticCString::create("__meta__")),
-	  _script(StaticCString::create("script")),
-	  script_changed(StaticCString::create("script_changed")),
-	  ___pdcdata(StaticCString::create("___pdcdata")),
-	  __getvar(StaticCString::create("__getvar")),
-	  _iter_init(StaticCString::create("_iter_init")),
-	  _iter_next(StaticCString::create("_iter_next")),
-	  _iter_get(StaticCString::create("_iter_get")),
-	  get_rid(StaticCString::create("get_rid")),
+CoreStringNames::CoreStringNames() :
+		_free(StaticCString::create("free")),
+		changed(StaticCString::create("changed")),
+		_meta(StaticCString::create("__meta__")),
+		_script(StaticCString::create("script")),
+		script_changed(StaticCString::create("script_changed")),
+		___pdcdata(StaticCString::create("___pdcdata")),
+		__getvar(StaticCString::create("__getvar")),
+		_iter_init(StaticCString::create("_iter_init")),
+		_iter_next(StaticCString::create("_iter_next")),
+		_iter_get(StaticCString::create("_iter_get")),
+		get_rid(StaticCString::create("get_rid")),
 #ifdef TOOLS_ENABLED
-	  _sections_unfolded(StaticCString::create("_sections_unfolded")),
+		_sections_unfolded(StaticCString::create("_sections_unfolded")),
 #endif
-	  _custom_features(StaticCString::create("_custom_features")) {
+		_custom_features(StaticCString::create("_custom_features")) {
 
 	x = StaticCString::create("x");
 	y = StaticCString::create("y");

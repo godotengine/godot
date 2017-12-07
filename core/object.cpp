@@ -126,9 +126,9 @@ MethodInfo::operator Dictionary() const {
 	return d;
 }
 
-MethodInfo::MethodInfo()
-	: flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo() :
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 }
 
 MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
@@ -164,109 +164,48 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	return mi;
 }
 
-MethodInfo::MethodInfo(const String &p_name)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(const String &p_name) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 }
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 }
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-}
-
-MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	arguments.push_back(p_param1);
-	arguments.push_back(p_param2);
-	arguments.push_back(p_param3);
-	arguments.push_back(p_param4);
-	arguments.push_back(p_param5);
-}
-
-MethodInfo::MethodInfo(Variant::Type ret)
-	: flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
-}
-
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
-}
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
-	arguments.push_back(p_param1);
-}
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 }
 
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
 }
 
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
 	arguments.push_back(p_param4);
 }
 
-MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
-	return_val.type = ret;
+MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -274,56 +213,117 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 	arguments.push_back(p_param5);
 }
 
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name)
-	: name(p_name),
-	  flags(METHOD_FLAG_NORMAL),
-	  return_val(p_ret),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret) :
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
 }
 
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1)
-	: name(p_name),
-	  return_val(p_ret),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
+}
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
 	arguments.push_back(p_param1);
 }
-
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2)
-	: name(p_name),
-	  return_val(p_ret),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 }
 
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3)
-	: name(p_name),
-	  return_val(p_ret),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
 }
 
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4)
-	: name(p_name),
-	  return_val(p_ret),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
 	arguments.push_back(p_param4);
 }
 
-MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5)
-	: name(p_name),
-	  return_val(p_ret),
-	  flags(METHOD_FLAG_NORMAL),
-	  id(0) {
+MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	return_val.type = ret;
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+	arguments.push_back(p_param5);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name) :
+		name(p_name),
+		flags(METHOD_FLAG_NORMAL),
+		return_val(p_ret),
+		id(0) {
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	arguments.push_back(p_param1);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
+	arguments.push_back(p_param1);
+	arguments.push_back(p_param2);
+	arguments.push_back(p_param3);
+	arguments.push_back(p_param4);
+}
+
+MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
+		name(p_name),
+		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
+		id(0) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);

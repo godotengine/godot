@@ -1028,7 +1028,7 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	// OS X needs non-zero color size, so set resonable values
 	int colorBits = 32;
 
-// Fail if a robustness strategy was requested
+	// Fail if a robustness strategy was requested
 
 #define ADD_ATTR(x) \
 	{ attributes[attributeCount++] = x; }

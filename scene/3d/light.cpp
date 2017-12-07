@@ -367,8 +367,8 @@ void DirectionalLight::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_DEPTH_RANGE_OPTIMIZED);
 }
 
-DirectionalLight::DirectionalLight()
-	: Light(VisualServer::LIGHT_DIRECTIONAL) {
+DirectionalLight::DirectionalLight() :
+		Light(VisualServer::LIGHT_DIRECTIONAL) {
 
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
 	set_param(PARAM_SHADOW_BIAS, 0.1);
@@ -422,8 +422,8 @@ void OmniLight::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_DETAIL_HORIZONTAL);
 }
 
-OmniLight::OmniLight()
-	: Light(VisualServer::LIGHT_OMNI) {
+OmniLight::OmniLight() :
+		Light(VisualServer::LIGHT_OMNI) {
 
 	set_shadow_mode(SHADOW_CUBE);
 	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);

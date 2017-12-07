@@ -149,7 +149,7 @@ class PoolVector {
 		}
 
 		if (old_alloc->refcount.unref() == true) {
-//this should never happen but..
+		//this should never happen but..
 
 #ifdef DEBUG_ENABLED
 			MemoryPool::alloc_mutex->lock();

@@ -153,7 +153,7 @@ static Vector<Vector<Vector2> > _b2d_decompose(const Vector<Vector2> &p_polygon)
 	delete p;
 	return res; // pdarray; //needs to be deleted after body is created
 }
-}
+} // namespace b2ConvexDecomp
 
 Vector<Vector<Vector2> > b2d_decompose(const Vector<Vector2> &p_polygon) {
 

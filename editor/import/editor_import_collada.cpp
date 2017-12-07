@@ -1913,8 +1913,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 /*************************************** SCENE ***********************************/
 /*********************************************************************************/
 
-#define DEBUG_ANIMATION
-
 uint32_t EditorSceneImporterCollada::get_import_flags() const {
 
 	return IMPORT_SCENE | IMPORT_ANIMATION;

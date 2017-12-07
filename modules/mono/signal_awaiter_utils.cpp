@@ -62,7 +62,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 
 	return err;
 }
-}
+} // namespace SignalAwaiterUtils
 
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
@@ -116,8 +116,8 @@ void SignalAwaiterHandle::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
 }
 
-SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_managed_handle)
-	: MonoGCHandle(p_managed_handle) {
+SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_managed_handle) :
+		MonoGCHandle(p_managed_handle) {
 
 #ifdef DEBUG_ENABLED
 	conn_target_id = 0;

@@ -76,8 +76,8 @@ void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 }
 
-CircleShape2D::CircleShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->circle_shape_create()) {
+CircleShape2D::CircleShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->circle_shape_create()) {
 
 	radius = 10;
 	_update_shape();

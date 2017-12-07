@@ -37,8 +37,8 @@ VARIANT_ENUM_CAST(Line2D::LineJointMode)
 VARIANT_ENUM_CAST(Line2D::LineCapMode)
 VARIANT_ENUM_CAST(Line2D::LineTextureMode)
 
-Line2D::Line2D()
-	: Node2D() {
+Line2D::Line2D() :
+		Node2D() {
 	_joint_mode = LINE_JOINT_SHARP;
 	_begin_cap_mode = LINE_CAP_NONE;
 	_end_cap_mode = LINE_CAP_NONE;

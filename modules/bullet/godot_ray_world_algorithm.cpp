@@ -34,18 +34,18 @@
 #include "btRayShape.h"
 #include "collision_object_bullet.h"
 
-GodotRayWorldAlgorithm::CreateFunc::CreateFunc(const btDiscreteDynamicsWorld *world)
-	: m_world(world) {}
+GodotRayWorldAlgorithm::CreateFunc::CreateFunc(const btDiscreteDynamicsWorld *world) :
+		m_world(world) {}
 
-GodotRayWorldAlgorithm::SwappedCreateFunc::SwappedCreateFunc(const btDiscreteDynamicsWorld *world)
-	: m_world(world) {}
+GodotRayWorldAlgorithm::SwappedCreateFunc::SwappedCreateFunc(const btDiscreteDynamicsWorld *world) :
+		m_world(world) {}
 
-GodotRayWorldAlgorithm::GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped)
-	: btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap),
-	  m_manifoldPtr(mf),
-	  m_ownManifold(false),
-	  m_world(world),
-	  m_isSwapped(isSwapped) {}
+GodotRayWorldAlgorithm::GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped) :
+		btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap),
+		m_manifoldPtr(mf),
+		m_ownManifold(false),
+		m_world(world),
+		m_isSwapped(isSwapped) {}
 
 GodotRayWorldAlgorithm::~GodotRayWorldAlgorithm() {
 	if (m_ownManifold && m_manifoldPtr) {

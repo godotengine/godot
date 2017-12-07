@@ -36,8 +36,18 @@
 
 #include "scene/3d/immediate_geometry.h"
 
-SoftBodyBullet::SoftBodyBullet()
-	: CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY), mass(1), simulation_precision(5), stiffness(0.5f), pressure_coefficient(50), damping_coefficient(0.005), drag_coefficient(0.005), bt_soft_body(NULL), soft_shape_type(SOFT_SHAPETYPE_NONE), isScratched(false), soft_body_shape_data(NULL) {
+SoftBodyBullet::SoftBodyBullet() :
+		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
+		mass(1),
+		simulation_precision(5),
+		stiffness(0.5f),
+		pressure_coefficient(50),
+		damping_coefficient(0.005),
+		drag_coefficient(0.005),
+		bt_soft_body(NULL),
+		soft_shape_type(SOFT_SHAPETYPE_NONE),
+		isScratched(false),
+		soft_body_shape_data(NULL) {
 
 	test_geometry = memnew(ImmediateGeometry);
 

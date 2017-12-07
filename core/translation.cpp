@@ -876,8 +876,8 @@ void Translation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
-Translation::Translation()
-	: locale("en") {
+Translation::Translation() :
+		locale("en") {
 }
 
 ///////////////////////////////////////////////
@@ -1163,9 +1163,9 @@ void TranslationServer::load_translations() {
 	}
 }
 
-TranslationServer::TranslationServer()
-	: locale("en"),
-	  enabled(true) {
+TranslationServer::TranslationServer() :
+		locale("en"),
+		enabled(true) {
 	singleton = this;
 
 	for (int i = 0; locale_list[i]; ++i) {

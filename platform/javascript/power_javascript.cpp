@@ -63,8 +63,10 @@ int PowerJavascript::get_power_percent_left() {
 	}
 }
 
-PowerJavascript::PowerJavascript()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+PowerJavascript::PowerJavascript() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerJavascript::~PowerJavascript() {

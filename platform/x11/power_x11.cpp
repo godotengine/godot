@@ -542,8 +542,10 @@ bool PowerX11::UpdatePowerInfo() {
 	return false;
 }
 
-PowerX11::PowerX11()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+PowerX11::PowerX11() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerX11::~PowerX11() {

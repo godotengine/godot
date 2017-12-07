@@ -61,8 +61,8 @@ class symbol {
 	static const int max_name_len = 1024;
 
 public:
-	symbol(HANDLE process, DWORD64 address)
-		: sym((sym_type *)::operator new(sizeof(*sym) + max_name_len)) {
+	symbol(HANDLE process, DWORD64 address) :
+			sym((sym_type *)::operator new(sizeof(*sym) + max_name_len)) {
 		memset(sym, '\0', sizeof(*sym) + max_name_len);
 		sym->SizeOfStruct = sizeof(*sym);
 		sym->MaxNameLength = max_name_len;
@@ -85,8 +85,8 @@ class get_mod_info {
 	HANDLE process;
 
 public:
-	get_mod_info(HANDLE h)
-		: process(h) {}
+	get_mod_info(HANDLE h) :
+			process(h) {}
 
 	module_data operator()(HMODULE module) {
 		module_data ret;

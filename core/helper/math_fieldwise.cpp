@@ -44,10 +44,10 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 	ERR_FAIL_COND_V(p_target.get_type() != p_source.get_type(), p_target);
 
-	switch (p_source.get_type()) {
+	/* clang-format makes a mess of this macro usage */
+	/* clang-format off */
 
-			/* clang-format makes a mess of this macro usage */
-			/* clang-format off */
+	switch (p_source.get_type()) {
 
 		case Variant::VECTOR2: {
 
@@ -174,9 +174,8 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		default: {
 			ERR_FAIL_V(p_target);
 		}
-
-			/* clang-format on */
 	}
+	/* clang-format on */
 }
 
 #endif // TOOLS_ENABLED

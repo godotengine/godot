@@ -151,8 +151,8 @@ void Physics2DServerWrapMT::finish() {
 		memdelete(step_sem);
 }
 
-Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool p_create_thread)
-	: command_queue(p_create_thread) {
+Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool p_create_thread) :
+		command_queue(p_create_thread) {
 
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;

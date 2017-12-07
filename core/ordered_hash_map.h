@@ -68,8 +68,10 @@ public:
 		}
 
 	public:
-		_FORCE_INLINE_ Element()
-			: list_element(NULL), prev_element(NULL), next_element(NULL) {
+		_FORCE_INLINE_ Element() :
+				list_element(NULL),
+				prev_element(NULL),
+				next_element(NULL) {
 		}
 
 		Element next() const {
@@ -80,10 +82,10 @@ public:
 			return Element(prev_element);
 		}
 
-		Element(const Element &other)
-			: list_element(other.list_element),
-			  prev_element(other.prev_element),
-			  next_element(other.next_element) {
+		Element(const Element &other) :
+				list_element(other.list_element),
+				prev_element(other.prev_element),
+				next_element(other.next_element) {
 		}
 
 		Element &operator=(const Element &other) {
@@ -135,17 +137,17 @@ public:
 
 		const typename InternalList::Element *list_element;
 
-		ConstElement(const typename InternalList::Element *p_element)
-			: list_element(p_element) {
+		ConstElement(const typename InternalList::Element *p_element) :
+				list_element(p_element) {
 		}
 
 	public:
-		_FORCE_INLINE_ ConstElement()
-			: list_element(NULL) {
+		_FORCE_INLINE_ ConstElement() :
+				list_element(NULL) {
 		}
 
-		ConstElement(const ConstElement &other)
-			: list_element(other.list_element) {
+		ConstElement(const ConstElement &other) :
+				list_element(other.list_element) {
 		}
 
 		ConstElement &operator=(const ConstElement &other) {

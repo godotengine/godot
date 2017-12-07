@@ -97,8 +97,8 @@ void CapsuleShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height"), "set_height", "get_height");
 }
 
-CapsuleShape2D::CapsuleShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->capsule_shape_create()) {
+CapsuleShape2D::CapsuleShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->capsule_shape_create()) {
 
 	radius = 10;
 	height = 20;

@@ -468,8 +468,6 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 	return source;
 }
 
-//
-
 #endif
 
 /*

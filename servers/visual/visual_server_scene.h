@@ -229,8 +229,9 @@ public:
 			singleton->_instance_queue_update(this, false, true);
 		}
 
-		Instance()
-			: scenario_item(this), update_item(this) {
+		Instance() :
+				scenario_item(this),
+				update_item(this) {
 
 			octree_id = 0;
 			scenario = NULL;
@@ -305,8 +306,8 @@ public:
 
 		int render_step;
 
-		InstanceReflectionProbeData()
-			: update_list(this) {
+		InstanceReflectionProbeData() :
+				update_list(this) {
 
 			reflection_dirty = true;
 			render_step = -1;
@@ -434,8 +435,8 @@ public:
 
 		SelfList<InstanceGIProbeData> update_element;
 
-		InstanceGIProbeData()
-			: update_element(this) {
+		InstanceGIProbeData() :
+				update_element(this) {
 			invalid = true;
 			base_version = 0;
 			dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;

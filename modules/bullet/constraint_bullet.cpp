@@ -33,8 +33,9 @@
 #include "collision_object_bullet.h"
 #include "space_bullet.h"
 
-ConstraintBullet::ConstraintBullet()
-	: space(NULL), constraint(NULL) {}
+ConstraintBullet::ConstraintBullet() :
+		space(NULL),
+		constraint(NULL) {}
 
 void ConstraintBullet::setup(btTypedConstraint *p_constraint) {
 	constraint = p_constraint;

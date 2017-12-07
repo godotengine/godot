@@ -68,8 +68,8 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 	}
 }
 
-HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, const Transform &frameB)
-	: JointSW(_arr, 2) {
+HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, const Transform &frameB) :
+		JointSW(_arr, 2) {
 
 	A = rbA;
 	B = rbB;
@@ -101,8 +101,8 @@ HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameA, co
 }
 
 HingeJointSW::HingeJointSW(BodySW *rbA, BodySW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
-		const Vector3 &axisInA, const Vector3 &axisInB)
-	: JointSW(_arr, 2) {
+		const Vector3 &axisInA, const Vector3 &axisInB) :
+		JointSW(_arr, 2) {
 
 	A = rbA;
 	B = rbB;

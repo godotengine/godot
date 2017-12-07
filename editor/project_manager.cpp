@@ -508,7 +508,7 @@ public:
 			} else if (current->has_setting("application/config/name")) {
 				project_name->set_text(current->get("application/config/name"));
 			}
-			
+
 			project_name->call_deferred("grab_focus");
 
 			create_dir->hide();

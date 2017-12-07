@@ -95,8 +95,8 @@ void LineShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "d"), "set_d", "get_d");
 }
 
-LineShape2D::LineShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->line_shape_create()) {
+LineShape2D::LineShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->line_shape_create()) {
 
 	normal = Vector2(0, -1);
 	d = 0;

@@ -130,8 +130,8 @@ btRayShape *ShapeBullet::create_shape_ray(real_t p_length) {
 
 /* PLANE */
 
-PlaneShapeBullet::PlaneShapeBullet()
-	: ShapeBullet() {}
+PlaneShapeBullet::PlaneShapeBullet() :
+		ShapeBullet() {}
 
 void PlaneShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
@@ -158,8 +158,8 @@ btCollisionShape *PlaneShapeBullet::create_bt_shape() {
 
 /* Sphere */
 
-SphereShapeBullet::SphereShapeBullet()
-	: ShapeBullet() {}
+SphereShapeBullet::SphereShapeBullet() :
+		ShapeBullet() {}
 
 void SphereShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
@@ -183,8 +183,8 @@ btCollisionShape *SphereShapeBullet::create_bt_shape() {
 }
 
 /* Box */
-BoxShapeBullet::BoxShapeBullet()
-	: ShapeBullet() {}
+BoxShapeBullet::BoxShapeBullet() :
+		ShapeBullet() {}
 
 void BoxShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
@@ -211,8 +211,8 @@ btCollisionShape *BoxShapeBullet::create_bt_shape() {
 
 /* Capsule */
 
-CapsuleShapeBullet::CapsuleShapeBullet()
-	: ShapeBullet() {}
+CapsuleShapeBullet::CapsuleShapeBullet() :
+		ShapeBullet() {}
 
 void CapsuleShapeBullet::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
@@ -244,8 +244,8 @@ btCollisionShape *CapsuleShapeBullet::create_bt_shape() {
 
 /* Convex polygon */
 
-ConvexPolygonShapeBullet::ConvexPolygonShapeBullet()
-	: ShapeBullet() {}
+ConvexPolygonShapeBullet::ConvexPolygonShapeBullet() :
+		ShapeBullet() {}
 
 void ConvexPolygonShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
@@ -286,8 +286,9 @@ btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape() {
 
 /* Concave polygon */
 
-ConcavePolygonShapeBullet::ConcavePolygonShapeBullet()
-	: ShapeBullet(), meshShape(NULL) {}
+ConcavePolygonShapeBullet::ConcavePolygonShapeBullet() :
+		ShapeBullet(),
+		meshShape(NULL) {}
 
 ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 	if (meshShape) {
@@ -359,8 +360,8 @@ btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape() {
 
 /* Height map shape */
 
-HeightMapShapeBullet::HeightMapShapeBullet()
-	: ShapeBullet() {}
+HeightMapShapeBullet::HeightMapShapeBullet() :
+		ShapeBullet() {}
 
 void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
@@ -411,8 +412,9 @@ btCollisionShape *HeightMapShapeBullet::create_bt_shape() {
 }
 
 /* Ray shape */
-RayShapeBullet::RayShapeBullet()
-	: ShapeBullet(), length(1) {}
+RayShapeBullet::RayShapeBullet() :
+		ShapeBullet(),
+		length(1) {}
 
 void RayShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);

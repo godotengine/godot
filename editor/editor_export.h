@@ -122,8 +122,9 @@ struct SharedObject {
 	String path;
 	Vector<String> tags;
 
-	SharedObject(const String &p_path, const Vector<String> &p_tags)
-		: path(p_path), tags(p_tags) {
+	SharedObject(const String &p_path, const Vector<String> &p_tags) :
+			path(p_path),
+			tags(p_tags) {
 	}
 
 	SharedObject() {}

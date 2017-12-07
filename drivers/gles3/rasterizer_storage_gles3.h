@@ -486,8 +486,8 @@ public:
 		bool uses_vertex_time;
 		bool uses_fragment_time;
 
-		Shader()
-			: dirty_list(this) {
+		Shader() :
+				dirty_list(this) {
 
 			shader = NULL;
 			ubo_size = 0;
@@ -540,8 +540,9 @@ public:
 		bool can_cast_shadow_cache;
 		bool is_animated_cache;
 
-		Material()
-			: list(this), dirty_list(this) {
+		Material() :
+				list(this),
+				dirty_list(this) {
 			can_cast_shadow_cache = false;
 			is_animated_cache = false;
 			shader = NULL;
@@ -764,8 +765,9 @@ public:
 		bool dirty_aabb;
 		bool dirty_data;
 
-		MultiMesh()
-			: update_list(this), mesh_list(this) {
+		MultiMesh() :
+				update_list(this),
+				mesh_list(this) {
 			dirty_aabb = true;
 			dirty_data = true;
 			xform_floats = 0;
@@ -865,8 +867,8 @@ public:
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances; //instances using skeleton
 
-		Skeleton()
-			: update_list(this) {
+		Skeleton() :
+				update_list(this) {
 			size = 0;
 
 			use_2d = false;
@@ -1116,8 +1118,8 @@ public:
 
 		Transform emission_transform;
 
-		Particles()
-			: particle_element(this) {
+		Particles() :
+				particle_element(this) {
 			cycle_number = 0;
 			emitting = false;
 			one_shot = false;

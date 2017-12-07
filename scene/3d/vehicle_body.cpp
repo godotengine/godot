@@ -54,8 +54,8 @@ public:
 			const Vector3 &inertiaInvA,
 			const real_t massInvA,
 			const Vector3 &inertiaInvB,
-			const real_t massInvB)
-		: m_linearJointAxis(jointAxis) {
+			const real_t massInvB) :
+			m_linearJointAxis(jointAxis) {
 		m_aJ = world2A.xform(rel_pos1.cross(m_linearJointAxis));
 		m_bJ = world2B.xform(rel_pos2.cross(-m_linearJointAxis));
 		m_0MinvJt = inertiaInvA * m_aJ;
@@ -593,12 +593,12 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 #endif
 }
 
-VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse)
-	: m_s(s),
-	  m_body1(body1),
-	  m_frictionPositionWorld(frictionPosWorld),
-	  m_frictionDirectionWorld(frictionDirectionWorld),
-	  m_maxImpulse(maxImpulse) {
+VehicleBody::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse) :
+		m_s(s),
+		m_body1(body1),
+		m_frictionPositionWorld(frictionPosWorld),
+		m_frictionDirectionWorld(frictionDirectionWorld),
+		m_maxImpulse(maxImpulse) {
 	float denom0 = 0;
 	float denom1 = 0;
 
@@ -969,8 +969,8 @@ void VehicleBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0.01,1,0.01"), "set_friction", "get_friction");
 }
 
-VehicleBody::VehicleBody()
-	: PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
+VehicleBody::VehicleBody() :
+		PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
 
 	m_pitchControl = 0;
 	m_currentVehicleSpeedKmHour = real_t(0.);

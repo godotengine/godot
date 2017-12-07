@@ -78,10 +78,10 @@ void BulletPhysicsServer::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("DoTest"), &BulletPhysicsServer::DoTest);
 }
 
-BulletPhysicsServer::BulletPhysicsServer()
-	: PhysicsServer(),
-	  active(true),
-	  active_spaces_count(0) {}
+BulletPhysicsServer::BulletPhysicsServer() :
+		PhysicsServer(),
+		active(true),
+		active_spaces_count(0) {}
 
 BulletPhysicsServer::~BulletPhysicsServer() {}
 

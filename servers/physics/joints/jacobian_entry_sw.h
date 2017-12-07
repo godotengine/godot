@@ -64,8 +64,8 @@ public:
 			const Vector3 &inertiaInvA,
 			const real_t massInvA,
 			const Vector3 &inertiaInvB,
-			const real_t massInvB)
-		: m_linearJointAxis(jointAxis) {
+			const real_t massInvB) :
+			m_linearJointAxis(jointAxis) {
 		m_aJ = world2A.xform(rel_pos1.cross(m_linearJointAxis));
 		m_bJ = world2B.xform(rel_pos2.cross(-m_linearJointAxis));
 		m_0MinvJt = inertiaInvA * m_aJ;
@@ -80,8 +80,8 @@ public:
 			const Basis &world2A,
 			const Basis &world2B,
 			const Vector3 &inertiaInvA,
-			const Vector3 &inertiaInvB)
-		: m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))) {
+			const Vector3 &inertiaInvB) :
+			m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))) {
 		m_aJ = world2A.xform(jointAxis);
 		m_bJ = world2B.xform(-jointAxis);
 		m_0MinvJt = inertiaInvA * m_aJ;
@@ -95,8 +95,10 @@ public:
 	JacobianEntrySW(const Vector3 &axisInA,
 			const Vector3 &axisInB,
 			const Vector3 &inertiaInvA,
-			const Vector3 &inertiaInvB)
-		: m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))), m_aJ(axisInA), m_bJ(-axisInB) {
+			const Vector3 &inertiaInvB) :
+			m_linearJointAxis(Vector3(real_t(0.), real_t(0.), real_t(0.))),
+			m_aJ(axisInA),
+			m_bJ(-axisInB) {
 		m_0MinvJt = inertiaInvA * m_aJ;
 		m_1MinvJt = inertiaInvB * m_bJ;
 		m_Adiag = m_0MinvJt.dot(m_aJ) + m_1MinvJt.dot(m_bJ);
@@ -110,8 +112,8 @@ public:
 			const Vector3 &rel_pos1, const Vector3 &rel_pos2,
 			const Vector3 &jointAxis,
 			const Vector3 &inertiaInvA,
-			const real_t massInvA)
-		: m_linearJointAxis(jointAxis) {
+			const real_t massInvA) :
+			m_linearJointAxis(jointAxis) {
 		m_aJ = world2A.xform(rel_pos1.cross(jointAxis));
 		m_bJ = world2A.xform(rel_pos2.cross(-jointAxis));
 		m_0MinvJt = inertiaInvA * m_aJ;

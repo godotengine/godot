@@ -35,8 +35,8 @@
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
 
-SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB)
-	: JointBullet() {
+SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
+		JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(frameInA, btFrameA);
 	if (rbB) {

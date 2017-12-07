@@ -48,8 +48,8 @@ class AudioDriverXAudio2 : public AudioDriver {
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
 
 		HANDLE buffer_end_event;
-		XAudio2DriverVoiceCallback()
-			: buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
+		XAudio2DriverVoiceCallback() :
+				buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
 		void STDMETHODCALLTYPE OnBufferEnd(void *pBufferContext) { /*print_line("buffer ended");*/
 			SetEvent(buffer_end_event);
 		}

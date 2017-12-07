@@ -90,9 +90,9 @@ public:
 		PropertyInfo option;
 		Variant default_value;
 
-		ImportOption(const PropertyInfo &p_info, const Variant &p_default)
-			: option(p_info),
-			  default_value(p_default) {
+		ImportOption(const PropertyInfo &p_info, const Variant &p_default) :
+				option(p_info),
+				default_value(p_default) {
 		}
 		ImportOption() {}
 	};

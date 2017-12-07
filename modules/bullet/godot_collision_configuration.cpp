@@ -34,8 +34,8 @@
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
 #include "godot_ray_world_algorithm.h"
 
-GodotCollisionConfiguration::GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo)
-	: btDefaultCollisionConfiguration(constructionInfo) {
+GodotCollisionConfiguration::GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
+		btDefaultCollisionConfiguration(constructionInfo) {
 
 	void *mem = NULL;
 

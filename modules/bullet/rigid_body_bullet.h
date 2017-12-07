@@ -156,8 +156,8 @@ public:
 		class btConvexShape *shape;
 		btTransform transform;
 
-		KinematicShape()
-			: shape(NULL) {}
+		KinematicShape() :
+				shape(NULL) {}
 		const bool is_active() const { return shape; }
 	};
 

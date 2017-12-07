@@ -81,8 +81,9 @@ public:
 		Map<Vector2, int> priority_map;
 
 		// Default size to prevent invalid value
-		explicit AutotileData()
-			: size(64, 64), icon_coord(0, 0) {
+		explicit AutotileData() :
+				size(64, 64),
+				icon_coord(0, 0) {
 			bitmask_mode = BITMASK_2X2;
 		}
 	};
@@ -106,8 +107,9 @@ private:
 		AutotileData autotile_data;
 
 		// Default modulate for back-compat
-		explicit TileData()
-			: modulate(1, 1, 1), is_autotile(false) {}
+		explicit TileData() :
+				modulate(1, 1, 1),
+				is_autotile(false) {}
 	};
 
 	Map<int, TileData> tile_map;

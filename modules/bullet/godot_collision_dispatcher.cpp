@@ -34,8 +34,8 @@
 
 const int GodotCollisionDispatcher::CASTED_TYPE_AREA = static_cast<int>(CollisionObjectBullet::TYPE_AREA);
 
-GodotCollisionDispatcher::GodotCollisionDispatcher(btCollisionConfiguration *collisionConfiguration)
-	: btCollisionDispatcher(collisionConfiguration) {}
+GodotCollisionDispatcher::GodotCollisionDispatcher(btCollisionConfiguration *collisionConfiguration) :
+		btCollisionDispatcher(collisionConfiguration) {}
 
 bool GodotCollisionDispatcher::needsCollision(const btCollisionObject *body0, const btCollisionObject *body1) {
 	if (body0->getUserIndex() == CASTED_TYPE_AREA || body1->getUserIndex() == CASTED_TYPE_AREA) {

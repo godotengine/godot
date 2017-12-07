@@ -30,8 +30,8 @@
 #include "haiku_gl_view.h"
 #include "main/main.h"
 
-HaikuGLView::HaikuGLView(BRect frame, uint32 type)
-	: BGLView(frame, "GodotGLView", B_FOLLOW_ALL_SIDES, 0, type) {
+HaikuGLView::HaikuGLView(BRect frame, uint32 type) :
+		BGLView(frame, "GodotGLView", B_FOLLOW_ALL_SIDES, 0, type) {
 }
 
 void HaikuGLView::AttachedToWindow(void) {

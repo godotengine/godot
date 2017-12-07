@@ -74,9 +74,9 @@ public:
 	operator String() const;
 
 	_FORCE_INLINE_ Plane() { d = 0; }
-	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d)
-		: normal(p_a, p_b, p_c),
-		  d(p_d){};
+	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
+			normal(p_a, p_b, p_c),
+			d(p_d){};
 
 	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);
@@ -100,14 +100,14 @@ bool Plane::has_point(const Vector3 &p_point, real_t _epsilon) const {
 	return (dist <= _epsilon);
 }
 
-Plane::Plane(const Vector3 &p_normal, real_t p_d)
-	: normal(p_normal),
-	  d(p_d) {
+Plane::Plane(const Vector3 &p_normal, real_t p_d) :
+		normal(p_normal),
+		d(p_d) {
 }
 
-Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal)
-	: normal(p_normal),
-	  d(p_normal.dot(p_point)) {
+Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
+		normal(p_normal),
+		d(p_normal.dot(p_point)) {
 }
 
 Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir) {

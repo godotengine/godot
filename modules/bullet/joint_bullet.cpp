@@ -32,7 +32,7 @@
 #include "joint_bullet.h"
 #include "space_bullet.h"
 
-JointBullet::JointBullet()
-	: ConstraintBullet() {}
+JointBullet::JointBullet() :
+		ConstraintBullet() {}
 
 JointBullet::~JointBullet() {}

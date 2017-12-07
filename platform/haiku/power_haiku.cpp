@@ -64,8 +64,10 @@ int PowerX11::get_power_percent_left() {
 	}
 }
 
-PowerHaiku::PowerHaiku()
-	: nsecs_left(-1), percent_left(-1), power_state(OS::POWERSTATE_UNKNOWN) {
+PowerHaiku::PowerHaiku() :
+		nsecs_left(-1),
+		percent_left(-1),
+		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
 PowerHaiku::~PowerHaiku() {

@@ -56,8 +56,8 @@ bool CheckBox::is_radio() {
 	return get_button_group().is_valid();
 }
 
-CheckBox::CheckBox(const String &p_text)
-	: Button(p_text) {
+CheckBox::CheckBox(const String &p_text) :
+		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 }

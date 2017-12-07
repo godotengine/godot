@@ -313,9 +313,9 @@ bool FileAccessPack::file_exists(const String &p_name) {
 	return false;
 }
 
-FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file)
-	: pf(p_file),
-	  f(FileAccess::open(pf.pack, FileAccess::READ)) {
+FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
+		pf(p_file),
+		f(FileAccess::open(pf.pack, FileAccess::READ)) {
 	if (!f) {
 		ERR_EXPLAIN("Can't open pack-referenced file: " + String(pf.pack));
 		ERR_FAIL_COND(!f);

@@ -47,7 +47,7 @@ namespace MonoRegUtils {
 
 MonoRegInfo find_mono();
 String find_msbuild_tools_path();
-} // MonoRegUtils
+} // namespace MonoRegUtils
 
 #endif // WINDOWS_ENABLED
 

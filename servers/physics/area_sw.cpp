@@ -237,8 +237,10 @@ void AreaSW::call_queries() {
 	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
 }
 
-AreaSW::AreaSW()
-	: CollisionObjectSW(TYPE_AREA), monitor_query_list(this), moved_list(this) {
+AreaSW::AreaSW() :
+		CollisionObjectSW(TYPE_AREA),
+		monitor_query_list(this),
+		moved_list(this) {
 
 	_set_static(true); //areas are never active
 	space_override_mode = PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED;

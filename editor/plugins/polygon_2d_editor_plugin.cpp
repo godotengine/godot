@@ -459,8 +459,8 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 	return p_target;
 }
 
-Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor)
-	: AbstractPolygon2DEditor(p_editor) {
+Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
+		AbstractPolygon2DEditor(p_editor) {
 
 	snap_step = Vector2(10, 10);
 	use_snap = false;
@@ -609,6 +609,6 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor)
 	uv_edit_draw->set_clip_contents(true);
 }
 
-Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node)
-	: AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2D") {
+Polygon2DEditorPlugin::Polygon2DEditorPlugin(EditorNode *p_node) :
+		AbstractPolygon2DEditorPlugin(p_node, memnew(Polygon2DEditor(p_node)), "Polygon2D") {
 }

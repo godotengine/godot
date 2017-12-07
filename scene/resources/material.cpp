@@ -2066,8 +2066,8 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_OP_MULTIPLY);
 }
 
-SpatialMaterial::SpatialMaterial()
-	: element(this) {
+SpatialMaterial::SpatialMaterial() :
+		element(this) {
 
 	//initialize to right values
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));

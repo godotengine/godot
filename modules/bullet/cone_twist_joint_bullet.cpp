@@ -35,8 +35,8 @@
 #include "bullet_utilities.h"
 #include "rigid_body_bullet.h"
 
-ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame)
-	: JointBullet() {
+ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
+		JointBullet() {
 	btTransform btFrameA;
 	G_TO_B(rbAFrame, btFrameA);
 	if (rbB) {

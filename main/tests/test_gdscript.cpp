@@ -1057,7 +1057,7 @@ MainLoop *test(TestType p_type) {
 
 	return NULL;
 }
-}
+} // namespace TestGDScript
 
 #else
 
@@ -1067,6 +1067,6 @@ MainLoop *test(TestType p_type) {
 
 	return NULL;
 }
-}
+} // namespace TestGDScript
 
 #endif

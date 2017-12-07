@@ -1523,8 +1523,8 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
 }
 
-ParticlesMaterial::ParticlesMaterial()
-	: element(this) {
+ParticlesMaterial::ParticlesMaterial() :
+		element(this) {
 
 	set_spread(45);
 	set_flatness(0);

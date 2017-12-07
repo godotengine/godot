@@ -208,7 +208,7 @@ Transform::operator String() const {
 	return basis.operator String() + " - " + origin.operator String();
 }
 
-Transform::Transform(const Basis &p_basis, const Vector3 &p_origin)
-	: basis(p_basis),
-	  origin(p_origin) {
+Transform::Transform(const Basis &p_basis, const Vector3 &p_origin) :
+		basis(p_basis),
+		origin(p_origin) {
 }

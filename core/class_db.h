@@ -49,10 +49,10 @@ struct MethodDefinition {
 	StringName name;
 	Vector<StringName> args;
 	MethodDefinition() {}
-	MethodDefinition(const char *p_name)
-		: name(p_name) {}
-	MethodDefinition(const StringName &p_name)
-		: name(p_name) {}
+	MethodDefinition(const char *p_name) :
+			name(p_name) {}
+	MethodDefinition(const StringName &p_name) :
+			name(p_name) {}
 };
 
 MethodDefinition D_METHOD(const char *p_name);

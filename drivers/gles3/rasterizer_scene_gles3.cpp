@@ -1134,18 +1134,6 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_draw = p_material->shader->spatial.depth_draw_mode;
 	}
 
-//glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-
-/*
-	if (p_material->flags[VS::MATERIAL_FLAG_WIREFRAME])
-		glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-
-	if (p_material->line_width)
-		glLineWidth(p_material->line_width);
-	*/
-
 #if 0
 	//blend mode
 	if (state.current_blend_mode!=p_material->shader->spatial.blend_mode) {

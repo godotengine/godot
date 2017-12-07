@@ -117,4 +117,4 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 		ERR_FAIL();
 	}
 }
-} // CSharpProject
+} // namespace CSharpProject

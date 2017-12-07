@@ -100,7 +100,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 #endif
 	instance->owner->set_script_instance(instance);
 
-/* STEP 2, INITIALIZE AND CONSRTUCT */
+	/* STEP 2, INITIALIZE AND CONSRTUCT */
 
 #ifndef NO_THREADS
 	GDScriptLanguage::singleton->lock->lock();
@@ -876,8 +876,8 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 #endif
 }
 
-GDScript::GDScript()
-	: script_list(this) {
+GDScript::GDScript() :
+		script_list(this) {
 
 	_static_ref = this;
 	valid = false;

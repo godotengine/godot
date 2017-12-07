@@ -144,7 +144,7 @@ bool GDNative::initialize() {
 		}
 	}
 
-	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle,true);
+	Error err = OS::get_singleton()->open_dynamic_library(path, native_handle, true);
 	if (err != OK) {
 		return false;
 	}

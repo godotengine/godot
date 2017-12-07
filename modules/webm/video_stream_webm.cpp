@@ -92,21 +92,27 @@ private:
 
 /**/
 
-VideoStreamPlaybackWebm::VideoStreamPlaybackWebm()
-	: audio_track(0),
-	  webm(NULL),
-	  video(NULL),
-	  audio(NULL),
-	  video_frames(NULL), audio_frame(NULL),
-	  video_frames_pos(0), video_frames_capacity(0),
-	  num_decoded_samples(0), samples_offset(-1),
-	  mix_callback(NULL),
-	  mix_udata(NULL),
-	  playing(false), paused(false),
-	  delay_compensation(0.0),
-	  time(0.0), video_frame_delay(0.0), video_pos(0.0),
-	  texture(memnew(ImageTexture)),
-	  pcm(NULL) {}
+VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
+		audio_track(0),
+		webm(NULL),
+		video(NULL),
+		audio(NULL),
+		video_frames(NULL),
+		audio_frame(NULL),
+		video_frames_pos(0),
+		video_frames_capacity(0),
+		num_decoded_samples(0),
+		samples_offset(-1),
+		mix_callback(NULL),
+		mix_udata(NULL),
+		playing(false),
+		paused(false),
+		delay_compensation(0.0),
+		time(0.0),
+		video_frame_delay(0.0),
+		video_pos(0.0),
+		texture(memnew(ImageTexture)),
+		pcm(NULL) {}
 VideoStreamPlaybackWebm::~VideoStreamPlaybackWebm() {
 
 	delete_pointers();
@@ -403,8 +409,8 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 
 /**/
 
-VideoStreamWebm::VideoStreamWebm()
-	: audio_track(0) {}
+VideoStreamWebm::VideoStreamWebm() :
+		audio_track(0) {}
 
 Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 
