@@ -927,17 +927,20 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 			B_TO_G(recovered_motion + recover_initial_position, r_result->motion);
 
 			if (hasPenetration) {
-				const btRigidBody *btRigid = static_cast<const btRigidBody *>(r_recover_result.other_collision_object);
-				CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
+				for (int i = 0; i < r_recover_result.recovered_collisions.size(); ++i) {
+					RecoveredCollision recoveredCollision = r_recover_result.recovered_collisions[i];
+					const btRigidBody *btRigid = static_cast<const btRigidBody *>(recoveredCollision.other_collision_object);
+					CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(btRigid->getUserPointer());
 
-				r_result->remainder = p_motion - r_result->motion; // is the remaining movements
-				B_TO_G(r_recover_result.pointWorld, r_result->collision_point);
-				B_TO_G(r_recover_result.pointNormalWorld, r_result->collision_normal);
-				B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
-				r_result->collider = collisionObject->get_self();
-				r_result->collider_id = collisionObject->get_instance_id();
-				r_result->collider_shape = r_recover_result.other_compound_shape_index;
-				r_result->collision_local_shape = r_recover_result.local_shape_most_recovered;
+					r_result->collisions.push_back(PhysicsServer::Collision());
+					r_result->remainder = p_motion - r_result->motion; // is the remaining movements
+					B_TO_G(recoveredCollision.pointWorld, r_result->collisions[i].collision_point);
+					B_TO_G(recoveredCollision.pointNormalWorld, r_result->collisions[i].collision_normal);
+					B_TO_G(btRigid->getVelocityInLocalPoint(recoveredCollision.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collisions[i].collider_velocity); // It calculates velocity at point and assign it using special function Bullet_to_Godot
+					r_result->collisions[i].collider = collisionObject->get_self();
+					r_result->collisions[i].collider_id = collisionObject->get_instance_id();
+					r_result->collisions[i].collider_shape = recoveredCollision.other_compound_shape_index;
+					r_result->collisions[i].collision_local_shape = r_recover_result.local_shape_most_recovered;
 
 //{ /// Add manifold point to manage collisions
 //    btPersistentManifold* manifold = dynamicsWorld->getDispatcher()->getNewManifold(p_body->getBtBody(), btRigid);
@@ -949,17 +952,17 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 //}
 
 #if debug_test_motion
-				Vector3 sup_line2;
-				B_TO_G(recovered_motion, sup_line2);
-				//Vector3 sup_pos;
-				//B_TO_G( pt.getPositionWorldOnB(), sup_pos);
-				normalLine->clear();
-				normalLine->begin(Mesh::PRIMITIVE_LINES, NULL);
-				normalLine->add_vertex(r_result->collision_point);
-				normalLine->add_vertex(r_result->collision_point + r_result->collision_normal * 10);
-				normalLine->end();
+					Vector3 sup_line2;
+					B_TO_G(recovered_motion, sup_line2);
+					//Vector3 sup_pos;
+					//B_TO_G( pt.getPositionWorldOnB(), sup_pos);
+					normalLine->clear();
+					normalLine->begin(Mesh::PRIMITIVE_LINES, NULL);
+					normalLine->add_vertex(r_result->collisions[i].collision_point);
+					normalLine->add_vertex(r_result->collisions[i].collision_point + r_result->collisions[i].collision_normal * 10);
+					normalLine->end();
 #endif
-
+				}
 			} else {
 				r_result->remainder = Vector3();
 			}
@@ -1089,13 +1092,15 @@ bool SpaceBullet::RFP_convex_convex_test(const btConvexShape *p_shapeA, const bt
 		r_recover_position += result.m_normalOnBInWorld * (result.m_distance * -1);
 
 		if (r_recover_result) {
+			RecoveredCollision rec_col;
 
 			r_recover_result->hasPenetration = true;
-			r_recover_result->other_collision_object = p_objectB;
-			r_recover_result->other_compound_shape_index = p_shapeId_B;
-			r_recover_result->penetration_distance = result.m_distance;
-			r_recover_result->pointNormalWorld = result.m_normalOnBInWorld;
-			r_recover_result->pointWorld = result.m_pointInWorld;
+			rec_col.other_collision_object = p_objectB;
+			rec_col.other_compound_shape_index = p_shapeId_B;
+			rec_col.penetration_distance = result.m_distance;
+			rec_col.pointNormalWorld = result.m_normalOnBInWorld;
+			rec_col.pointWorld = result.m_pointInWorld;
+			r_recover_result->recovered_collisions.push_back(rec_col);
 		}
 		return true;
 	}
@@ -1125,13 +1130,15 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 			r_recover_position += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1);
 
 			if (r_recover_result) {
+				RecoveredCollision rec_col;
 
 				r_recover_result->hasPenetration = true;
-				r_recover_result->other_collision_object = p_objectB;
-				r_recover_result->other_compound_shape_index = p_shapeId_B;
-				r_recover_result->penetration_distance = contactPointResult.m_penetration_distance;
-				r_recover_result->pointNormalWorld = contactPointResult.m_pointNormalWorld;
-				r_recover_result->pointWorld = contactPointResult.m_pointWorld;
+				rec_col.other_collision_object = p_objectB;
+				rec_col.other_compound_shape_index = p_shapeId_B;
+				rec_col.penetration_distance = contactPointResult.m_penetration_distance;
+				rec_col.pointNormalWorld = contactPointResult.m_pointNormalWorld;
+				rec_col.pointWorld = contactPointResult.m_pointWorld;
+				r_recover_result->recovered_collisions.push_back(rec_col);
 			}
 			return true;
 		}

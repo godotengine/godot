@@ -176,15 +176,18 @@ private:
 	void check_ghost_overlaps();
 	void check_body_collision();
 
-	struct RecoverResult {
-		bool hasPenetration;
+	struct RecoveredCollision {
 		btVector3 pointNormalWorld;
 		btVector3 pointWorld;
 		btScalar penetration_distance; // Negative is penetration
 		int other_compound_shape_index;
 		const btCollisionObject *other_collision_object;
-		int local_shape_most_recovered;
+	};
 
+	struct RecoverResult {
+		bool hasPenetration;
+		int local_shape_most_recovered;
+		Vector<RecoveredCollision> recovered_collisions;
 		RecoverResult()
 			: hasPenetration(false) {}
 	};

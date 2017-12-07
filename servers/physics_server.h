@@ -454,11 +454,7 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body) = 0;
 
-	struct MotionResult {
-
-		Vector3 motion;
-		Vector3 remainder;
-
+	struct Collision {
 		Vector3 collision_point;
 		Vector3 collision_normal;
 		Vector3 collider_velocity;
@@ -467,6 +463,14 @@ public:
 		RID collider;
 		int collider_shape;
 		Variant collider_metadata;
+	};
+
+	struct MotionResult {
+
+		Vector3 motion;
+		Vector3 remainder;
+
+		Vector<Collision> collisions;
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, MotionResult *r_result = NULL) = 0;
