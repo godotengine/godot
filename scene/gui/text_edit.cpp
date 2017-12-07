@@ -4507,16 +4507,17 @@ int TextEdit::num_lines_from(int p_line_from, int unhidden_amount) const {
 	return num_total;
 }
 
-int TextEdit::get_whitespace_level(int p_line) const {
+int TextEdit::get_indent_level(int p_line) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	// counts number of tabs and spaces before line starts
+	int tab_count = 0;
 	int whitespace_count = 0;
 	int line_length = text[p_line].size();
 	for (int i = 0; i < line_length - 1; i++) {
 		if (text[p_line][i] == '\t') {
-			whitespace_count++;
+			tab_count++;
 		} else if (text[p_line][i] == ' ') {
 			whitespace_count++;
 		} else if (text[p_line][i] == '#') {
@@ -4525,7 +4526,7 @@ int TextEdit::get_whitespace_level(int p_line) const {
 			break;
 		}
 	}
-	return whitespace_count;
+	return tab_count + whitespace_count / indent_size;
 }
 
 bool TextEdit::can_fold(int p_line) const {
@@ -4542,12 +4543,12 @@ bool TextEdit::can_fold(int p_line) const {
 	if (is_line_hidden(p_line))
 		return false;
 
-	int start_indent = get_whitespace_level(p_line);
+	int start_indent = get_indent_level(p_line);
 
 	for (int i = p_line + 1; i < text.size(); i++) {
 		if (text[i].size() == 0)
 			continue;
-		int next_indent = get_whitespace_level(i);
+		int next_indent = get_indent_level(i);
 		if (next_indent > start_indent)
 			return true;
 		else
@@ -4576,21 +4577,19 @@ void TextEdit::fold_line(int p_line) {
 		return;
 
 	// hide lines below this one
-	int start_indent = get_whitespace_level(p_line);
+	int start_indent = get_indent_level(p_line);
+	int last_line = start_indent;
 	for (int i = p_line + 1; i < text.size(); i++) {
-		int cur_indent = get_whitespace_level(i);
-		if (text[i].size() == 0 || cur_indent > start_indent) {
-			set_line_as_hidden(i, true);
-		} else {
-			// exclude trailing empty lines
-			for (int trail_i = i - 1; trail_i > p_line; trail_i--) {
-				if (text[trail_i].size() == 0)
-					set_line_as_hidden(trail_i, false);
-				else
-					break;
+		if (text[i].strip_edges().size() != 0) {
+			if (get_indent_level(i) > start_indent) {
+				last_line = i;
+			} else {
+				break;
 			}
-			break;
 		}
+	}
+	for (int i = p_line + 1; i <= last_line; i++) {
+		set_line_as_hidden(i, true);
 	}
 
 	// fix selection
