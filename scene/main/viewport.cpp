@@ -936,6 +936,9 @@ void Viewport::_camera_remove(Camera *p_camera) {
 
 	cameras.erase(p_camera);
 	if (camera == p_camera) {
+		if (camera && find_world().is_valid()) {
+			camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		}
 		camera = NULL;
 	}
 }
