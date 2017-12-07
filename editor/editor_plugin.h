@@ -165,6 +165,7 @@ public:
 	virtual void forward_force_draw_over_viewport(Control *p_overlay);
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 	virtual String get_name() const;
+	virtual const Ref<Texture> get_icon() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
