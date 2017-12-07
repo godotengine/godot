@@ -162,8 +162,8 @@ void PhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody::_get_layers);
 
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS, "3D Physics Layers"), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS, "3D Physics Mask"), "set_collision_mask", "get_collision_mask");
 }
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
