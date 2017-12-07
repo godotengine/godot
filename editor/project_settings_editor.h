@@ -37,6 +37,7 @@
 #include "editor/property_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/tool_button.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
 
@@ -52,6 +53,12 @@ class ProjectSettingsEditor : public AcceptDialog {
 	enum LocaleFilter {
 		SHOW_ALL_LOCALES,
 		SHOW_ONLY_SELECTED_LOCALES,
+	};
+
+	enum LocalizationButtons {
+		LOCALIZATION_TRANSLATIONS,
+		LOCALIZATION_REMAPS,
+		LOCALIZATION_LOCALES
 	};
 
 	TabContainer *tab_container;
@@ -107,6 +114,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 	Vector<TreeItem *> translation_filter_treeitems;
 	Vector<int> translation_locales_idxs_remap;
 
+	VBoxContainer *translations_vb;
+	VBoxContainer *remaps_vb;
+	VBoxContainer *locales_vb;
+
 	EditorAutoloadSettings *autoload_settings;
 
 	EditorPluginSettings *plugin_settings;
@@ -160,6 +171,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _clear_search_box();
 
 	void _copy_to_platform_about_to_show();
+
+	void _localization_button_selected(int button);
 
 	ProjectSettingsEditor();
 

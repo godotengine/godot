@@ -1506,6 +1506,27 @@ void ProjectSettingsEditor::_clear_search_box() {
 	globals_editor->get_property_editor()->update_tree();
 }
 
+void ProjectSettingsEditor::_localization_button_selected(int button) {
+
+	switch (button) {
+		case LOCALIZATION_TRANSLATIONS: {
+			translations_vb->show();
+			remaps_vb->hide();
+			locales_vb->hide();
+		} break;
+		case LOCALIZATION_REMAPS: {
+			translations_vb->hide();
+			remaps_vb->show();
+			locales_vb->hide();
+		} break;
+		case LOCALIZATION_LOCALES: {
+			translations_vb->hide();
+			remaps_vb->hide();
+			locales_vb->show();
+		} break;
+	}
+}
+
 void ProjectSettingsEditor::set_plugins_page() {
 
 	tab_container->set_current_tab(plugin_settings->get_index());
@@ -1560,6 +1581,8 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
 
 	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
+
+	ClassDB::bind_method(D_METHOD("_localization_button_selected"), &ProjectSettingsEditor::_localization_button_selected);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 }
@@ -1775,29 +1798,59 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	setting = false;
 
 	//translations
-	TabContainer *translations = memnew(TabContainer);
-	translations->add_style_override("panel", memnew(StyleBoxEmpty));
-	translations->set_tab_align(TabContainer::ALIGN_LEFT);
-	translations->set_name(TTR("Localization"));
-	tab_container->add_child(translations);
+	VBoxContainer *localization = memnew(VBoxContainer);
+	localization->add_style_override("panel", memnew(StyleBoxEmpty));
+	localization->set_name(TTR("Localization"));
+	tab_container->add_child(localization);
 	//remap for properly select language in popup
 	translation_locales_idxs_remap = Vector<int>();
 	translation_locales_list_created = false;
 
-	{
+	Ref<ButtonGroup> tool_group(memnew(ButtonGroup));
+	HBoxContainer *tool_hb = memnew(HBoxContainer);
+	localization->add_child(tool_hb);
 
-		VBoxContainer *tvb = memnew(VBoxContainer);
-		translations->add_child(tvb);
-		tvb->set_name(TTR("Translations"));
+	{
+		ToolButton *translations = memnew(ToolButton);
+		translations->connect("pressed", this, "_localization_button_selected", varray(LOCALIZATION_TRANSLATIONS));
+		translations->set_text(TTR("Translations"));
+		translations->set_toggle_mode(true);
+		translations->set_pressed(true);
+		translations->set_button_group(tool_group);
+		tool_hb->add_child(translations);
+
+		ToolButton *remaps = memnew(ToolButton);
+		remaps->connect("pressed", this, "_localization_button_selected", varray(LOCALIZATION_REMAPS));
+		remaps->set_text(TTR("Remaps"));
+		remaps->set_toggle_mode(true);
+		remaps->set_button_group(tool_group);
+		tool_hb->add_child(remaps);
+
+		ToolButton *locales = memnew(ToolButton);
+		locales->connect("pressed", this, "_localization_button_selected", varray(LOCALIZATION_LOCALES));
+		locales->set_text(TTR("Locales Filter"));
+		locales->set_toggle_mode(true);
+		locales->set_button_group(tool_group);
+		tool_hb->add_child(locales);
+	}
+
+	HSeparator *hs = memnew(HSeparator);
+	hs->set_h_size_flags(SIZE_EXPAND_FILL);
+	localization->add_child(hs);
+
+	{
+		translations_vb = memnew(VBoxContainer);
+		localization->add_child(translations_vb);
+		translations_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 		HBoxContainer *thb = memnew(HBoxContainer);
-		tvb->add_child(thb);
+		translations_vb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Translations:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add..")));
 		addtr->connect("pressed", this, "_translation_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
-		tvb->add_child(tmc);
+		translations_vb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_list = memnew(Tree);
 		translation_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1810,18 +1863,19 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	}
 
 	{
-		VBoxContainer *tvb = memnew(VBoxContainer);
-		translations->add_child(tvb);
-		tvb->set_name(TTR("Remaps"));
+		remaps_vb = memnew(VBoxContainer);
+		localization->add_child(remaps_vb);
+		remaps_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+		remaps_vb->hide();
 		HBoxContainer *thb = memnew(HBoxContainer);
-		tvb->add_child(thb);
+		remaps_vb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Resources:"))));
 		thb->add_spacer();
 		Button *addtr = memnew(Button(TTR("Add..")));
 		addtr->connect("pressed", this, "_translation_res_file_open");
 		thb->add_child(addtr);
 		VBoxContainer *tmc = memnew(VBoxContainer);
-		tvb->add_child(tmc);
+		remaps_vb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap = memnew(Tree);
 		translation_remap->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1835,7 +1889,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_res_file_open->connect("file_selected", this, "_translation_res_add");
 
 		thb = memnew(HBoxContainer);
-		tvb->add_child(thb);
+		remaps_vb->add_child(thb);
 		thb->add_child(memnew(Label(TTR("Remaps by Locale:"))));
 		thb->add_spacer();
 		addtr = memnew(Button(TTR("Add..")));
@@ -1843,7 +1897,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 		tmc = memnew(VBoxContainer);
-		tvb->add_child(tmc);
+		remaps_vb->add_child(tmc);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1866,12 +1920,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	}
 
 	{
-		VBoxContainer *tvb = memnew(VBoxContainer);
-		translations->add_child(tvb);
-		tvb->set_name(TTR("Locales Filter"));
+		locales_vb = memnew(VBoxContainer);
+		localization->add_child(locales_vb);
+		locales_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+		locales_vb->hide();
 		VBoxContainer *tmc = memnew(VBoxContainer);
 		tmc->set_v_size_flags(SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
+		locales_vb->add_child(tmc);
 
 		translation_locale_filter_mode = memnew(OptionButton);
 		translation_locale_filter_mode->add_item(TTR("Show all locales"), SHOW_ALL_LOCALES);
@@ -1888,19 +1943,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		translation_filter->connect("item_edited", this, "_translation_filter_option_changed");
 	}
 
-	{
-		autoload_settings = memnew(EditorAutoloadSettings);
-		autoload_settings->set_name(TTR("AutoLoad"));
-		tab_container->add_child(autoload_settings);
-		autoload_settings->connect("autoload_changed", this, "_settings_changed");
-	}
+	autoload_settings = memnew(EditorAutoloadSettings);
+	autoload_settings->set_name(TTR("AutoLoad"));
+	tab_container->add_child(autoload_settings);
+	autoload_settings->connect("autoload_changed", this, "_settings_changed");
 
-	{
-
-		plugin_settings = memnew(EditorPluginSettings);
-		plugin_settings->set_name(TTR("Plugins"));
-		tab_container->add_child(plugin_settings);
-	}
+	plugin_settings = memnew(EditorPluginSettings);
+	plugin_settings->set_name(TTR("Plugins"));
+	tab_container->add_child(plugin_settings);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
