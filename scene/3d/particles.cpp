@@ -703,10 +703,13 @@ void ParticlesMaterial::_update_shader() {
 	else
 		code += "		float tex_linear_velocity = 0.0;\n";
 
-	if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
-		code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture,vec2(CUSTOM.y,0.0),0.0).r;\n";
-	else
-		code += "		float tex_orbit_velocity = 0.0;\n";
+	if (flags[FLAG_DISABLE_Z]) {
+
+		if (tex_parameters[PARAM_ORBIT_VELOCITY].is_valid())
+			code += "		float tex_orbit_velocity = textureLod(orbit_velocity_texture,vec2(CUSTOM.y,0.0),0.0).r;\n";
+		else
+			code += "		float tex_orbit_velocity = 0.0;\n";
+	}
 
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid())
 		code += "		float tex_angular_velocity = textureLod(angular_velocity_texture,vec2(CUSTOM.y,0.0),0.0).r;\n";
@@ -756,7 +759,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "		//apply linear acceleration\n";
 	code += "		force += length(VELOCITY) > 0.0 ? normalize(VELOCITY) * (linear_accel+tex_linear_accel)*mix(1.0,rand_from_seed(alt_seed),linear_accel_random) : vec3(0.0);\n";
 	code += "		//apply radial acceleration\n";
-	code += "		vec3 org = vec3(0.0);\n";
+	code += "		vec3 org = EMISSION_TRANSFORM[3].xyz;\n";
 	code += "		vec3 diff = pos-org;\n";
 	code += "		force += length(diff) > 0.0 ? normalize(diff) * (radial_accel+tex_radial_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random) : vec3(0.0);\n";
 	code += "		//apply tangential acceleration;\n";
@@ -769,6 +772,18 @@ void ParticlesMaterial::_update_shader() {
 	}
 	code += "		//apply attractor forces\n";
 	code += "		VELOCITY += force * DELTA;\n";
+	code += "		//orbit velocity\n";
+	if (flags[FLAG_DISABLE_Z]) {
+
+		code += "		float orbit_amount = (orbit_velocity+tex_orbit_velocity)*mix(1.0,rand_from_seed(alt_seed),orbit_velocity_random);\n";
+		code += "		if (orbit_amount!=0.0) {\n";
+		code += "		     float ang = orbit_amount * DELTA * 3.1416 * 2.0;\n";
+		code += "		     mat2 rot = mat2(vec2(cos(ang),-sin(ang)),vec2(sin(ang),cos(ang)));\n";
+		code += "		     TRANSFORM[3].xy-=diff.xy;\n";
+		code += "		     TRANSFORM[3].xy+=rot * diff.xy;\n";
+		code += "		}\n";
+	}
+
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 		code += "		VELOCITY = normalize(VELOCITY)*tex_linear_velocity;\n";
 	}
@@ -1174,6 +1189,9 @@ void ParticlesMaterial::set_flag(Flags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enable;
 	_queue_shader_change();
+	if (p_flag==FLAG_DISABLE_Z) {
+		_change_notify();
+	}
 }
 
 bool ParticlesMaterial::get_flag(Flags p_flag) const {
@@ -1358,6 +1376,10 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "emission_point_count" && (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 		property.usage = 0;
+	}
+
+	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
+		property.usage=0;
 	}
 }
 
