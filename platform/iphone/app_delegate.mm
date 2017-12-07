@@ -568,7 +568,7 @@ static int frame_count = 0;
 			MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 };
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application {
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 	printf("**************** app delegate init\n");
 	CGRect rect = [[UIScreen mainScreen] bounds];
@@ -665,6 +665,7 @@ static int frame_count = 0;
 												  isAdvertisingTrackingEnabled]];
 
 #endif
+	return TRUE;
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
