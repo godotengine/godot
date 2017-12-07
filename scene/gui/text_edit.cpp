@@ -251,13 +251,14 @@ void TextEdit::Text::clear() {
 	insert(0, "");
 }
 
-int TextEdit::Text::get_max_width() const {
+int TextEdit::Text::get_max_width(bool p_exclude_hidden) const {
 	//quite some work.. but should be fast enough.
 
 	int max = 0;
-
-	for (int i = 0; i < text.size(); i++)
-		max = MAX(max, get_line_width(i));
+	for (int i = 0; i < text.size(); i++) {
+		if (!p_exclude_hidden || !is_hidden(i))
+			max = MAX(max, get_line_width(i));
+	}
 	return max;
 }
 
@@ -307,7 +308,7 @@ void TextEdit::_update_scrollbars() {
 
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;
-	int total_width = text.get_max_width() + vmin.x;
+	int total_width = text.get_max_width(true) + vmin.x;
 
 	if (line_numbers)
 		total_width += cache.line_number_w;
@@ -360,6 +361,7 @@ void TextEdit::_update_scrollbars() {
 		}
 
 	} else {
+
 		cursor.line_ofs = 0;
 		line_scroll_pos = 0;
 		v_scroll->set_value(0);
@@ -371,12 +373,16 @@ void TextEdit::_update_scrollbars() {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
+		if (cursor.x_ofs > (total_width - visible_width))
+			cursor.x_ofs = (total_width - visible_width);
 		if (fabs(h_scroll->get_value() - (double)cursor.x_ofs) >= 1) {
 			h_scroll->set_value(cursor.x_ofs);
 		}
 
 	} else {
 
+		cursor.x_ofs = 0;
+		h_scroll->set_value(0);
 		h_scroll->hide();
 	}
 
