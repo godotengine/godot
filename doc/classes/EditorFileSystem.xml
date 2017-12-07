@@ -33,6 +33,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Returns a view into the filesystem at [code]path[/code].
 			</description>
 		</method>
 		<method name="get_scanning_progress" qualifiers="const">
@@ -83,6 +84,7 @@
 			<argument index="0" name="resources" type="PoolStringArray">
 			</argument>
 			<description>
+				Remitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="sources_changed">
