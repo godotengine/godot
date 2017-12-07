@@ -568,7 +568,7 @@ void AnimatedSprite::stop() {
 
 bool AnimatedSprite::is_playing() const {
 
-	return is_processing();
+	return playing;
 }
 
 void AnimatedSprite::_reset_timeout() {
