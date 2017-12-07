@@ -66,7 +66,7 @@
 		</member>
 		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble">
 			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code]. If changed, updates [member ARVRPositionalTracker.rumble] accordingly.
-			</member>
+		</member>
 	</members>
 	<signals>
 		<signal name="button_pressed">

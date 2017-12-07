@@ -160,6 +160,8 @@
 		</theme_item>
 		<theme_item name="folder" type="Texture">
 		</theme_item>
+		<theme_item name="parent_folder" type="Texture">
+		</theme_item>
 		<theme_item name="reload" type="Texture">
 		</theme_item>
 	</theme_items>

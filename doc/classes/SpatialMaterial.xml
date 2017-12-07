@@ -79,6 +79,8 @@
 		</member>
 		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
+		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag">
+		</member>
 		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flags_no_depth_test" type="bool" setter="set_flag" getter="get_flag">
@@ -307,7 +309,9 @@
 		</constant>
 		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="12" enum="Flags">
+		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="13" enum="Flags">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>

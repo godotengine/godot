@@ -26,42 +26,6 @@
 				Removes all filters except for "All Files (*)".
 			</description>
 		</method>
-		<method name="get_access" qualifiers="const">
-			<return type="int" enum="EditorFileDialog.Access">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_current_dir" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_current_file" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_current_path" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_display_mode" qualifiers="const">
-			<return type="int" enum="EditorFileDialog.DisplayMode">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_mode" qualifiers="const">
-			<return type="int" enum="EditorFileDialog.Mode">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_vbox">
 			<return type="VBoxContainer">
 			</return>
@@ -76,92 +40,10 @@
 				Notify the [code]EditorFileDialog[/code] that its view of the data is no longer accurate. Updates the view contents on next view update.
 			</description>
 		</method>
-		<method name="is_overwrite_warning_disabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="is_showing_hidden_files" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_access">
-			<return type="void">
-			</return>
-			<argument index="0" name="access" type="int" enum="EditorFileDialog.Access">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_current_dir">
-			<return type="void">
-			</return>
-			<argument index="0" name="dir" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_current_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_current_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_disable_overwrite_warning">
-			<return type="void">
-			</return>
-			<argument index="0" name="disable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_display_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="EditorFileDialog.DisplayMode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="EditorFileDialog.Mode">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_show_hidden_files">
-			<return type="void">
-			</return>
-			<argument index="0" name="show" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="access" type="int" enum="EditorFileDialog.Access" setter="set_access" getter="get_access">
+		<member name="access" type="int" setter="set_access" getter="get_access" enum="EditorFileDialog.Access">
 			The location from which the user may select a file, including [code]res://[/code], [code]user://[/code], and the local file system.
-		</member>
-		<member name="display_mode" type="int" enum="EditorFileDialog.DisplayMode" setter="set_display_mode" getter="get_display_mode">
-			The view format in which the [code]EditorFileDialog[/code] displays resources to the user.
-		</member>
-		<member name="mode" type="int" enum="EditorFileDialog.Mode" setter="set_mode" getter="get_mode">
-			The purpose of the [code]EditorFileDialog[/code]. Changes allowed behaviors.
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The currently occupied directory.
@@ -172,11 +54,17 @@
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The file system path in the address bar.
 		</member>
-		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
-			If [code]true[/code] hidden files and directories will be visible in the [code]EditorFileDialog[/code].
-		</member>
 		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled">
 			If [code]true[/code] the [code]EditorFileDialog[/code] will not warn the user before overwriting files.
+		</member>
+		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode">
+			The view format in which the [code]EditorFileDialog[/code] displays resources to the user.
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode">
+			The purpose of the [code]EditorFileDialog[/code]. Changes allowed behaviors.
+		</member>
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
+			If [code]true[/code] hidden files and directories will be visible in the [code]EditorFileDialog[/code].
 		</member>
 	</members>
 	<signals>

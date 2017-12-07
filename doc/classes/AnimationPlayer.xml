@@ -74,6 +74,20 @@
 				Returns the name of [code]animation[/code] or empty string if not found.
 			</description>
 		</method>
+		<method name="get_anim_length" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the length (in seconds) of the currently playing animation.
+			</description>
+		</method>
+		<method name="get_anim_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the position (in seconds) of the currently playing animation.
+			</description>
+		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation">
 			</return>
@@ -88,13 +102,6 @@
 			</return>
 			<description>
 				Returns the list of stored animation names.
-			</description>
-		</method>
-		<method name="get_autoplay" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns the name of the animation played when the scene loads.
 			</description>
 		</method>
 		<method name="get_blend_time" qualifiers="const">
@@ -115,27 +122,6 @@
 				Returns the name of the currently playing animation.
 			</description>
 		</method>
-		<method name="get_anim_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the length (in seconds) of the currently playing animation.
-			</description>
-		</method>
-		<method name="get_anim_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the position (in seconds) of the currently playing animation.
-			</description>
-		</method>
-		<method name="get_speed_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the speed scaling ratio in a given animation channel (or channel 0 if none is provided). Default ratio is [i]1[/i] (no scaling).
-			</description>
-		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -143,13 +129,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [code]AnimationPlayer[/code] stores an [Animation] with key [code]name[/code].
-			</description>
-		</method>
-		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns true if the player is active.
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -225,24 +204,6 @@
 				Seek the animation to the [code]seconds[/code] point in time (in seconds). If 'update' is true, the animation updates too, otherwise it updates at process time.
 			</description>
 		</method>
-		<method name="set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="active" type="bool">
-			</argument>
-			<description>
-				Set the player as active (playing). If false, it will do nothing.
-			</description>
-		</method>
-		<method name="set_autoplay">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-				Set the name of the animation that will be automatically played when the scene is loaded.
-			</description>
-		</method>
 		<method name="set_blend_time">
 			<return type="void">
 			</return>
@@ -265,15 +226,6 @@
 				Set the current animation (even if no playback occurs). Using set_current_animation() and set_active() are similar to calling play().
 			</description>
 		</method>
-		<method name="set_speed_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="speed" type="float">
-			</argument>
-			<description>
-				Set a speed scaling ratio in a given animation channel (or channel 0 if none is provided). Default ratio is [i]1[/i] (no scaling).
-			</description>
-		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
@@ -292,6 +244,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code] updates animations in response to process-related notifications. Default value: [code]true[/code].
+		</member>
+		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay">
+			The name of the animation to play when the scene loads. Default value: [code]""[/code].
+		</member>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time">
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision. Default value: [code]0[/code].
 		</member>
@@ -301,17 +259,8 @@
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root">
 			The node from which node path references will travel. Default value: [code]".."[/code].
 		</member>
-		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay">
-			The name of the animation to play when the scene loads. Default value: [code]""[/code].
-		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
 			The speed scaling ratio in a given animation channel (or channel 0 if none is provided). Default value: [code]1[/code].
-		</member>
-		<member name="active" type="bool" setter="set_active" getter="is_active">
-			If [code]true[/code] updates animations in response to process-related notifications. Default value: [code]true[/code].
-		</member>
-		<member name="current_anim" type="String" setter="set_current_anim" getter="get_current_anim">
-			The name of the current animation. If already playing, restarts the animation. Ensure [member active] is [code]true[/code] to simulate [method play]. Default value: [code]""[/code].
 		</member>
 	</members>
 	<signals>

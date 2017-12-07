@@ -470,6 +470,8 @@
 		</theme_item>
 		<theme_item name="number_color" type="Color">
 		</theme_item>
+		<theme_item name="read_only" type="StyleBox">
+		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color">

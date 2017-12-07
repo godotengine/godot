@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ProxyTexture" inherits="Texture" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="base" type="Texture" setter="set_base" getter="get_base">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

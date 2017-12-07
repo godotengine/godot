@@ -139,6 +139,8 @@
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
 			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
 		</member>
+		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
+		</member>
 	</members>
 	<constants>
 	</constants>

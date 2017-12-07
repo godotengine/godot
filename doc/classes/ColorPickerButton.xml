@@ -22,7 +22,7 @@
 			<return type="PopupPanel">
 			</return>
 			<description>
-			Returns the control's [PopupPanel] which allows you to connect to Popup Signals. This allows you to handle events when the ColorPicker is shown or hidden.
+				Returns the control's [PopupPanel] which allows you to connect to Popup Signals. This allows you to handle events when the ColorPicker is shown or hidden.
 			</description>
 		</method>
 	</methods>

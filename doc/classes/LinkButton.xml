@@ -30,6 +30,8 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="focus" type="StyleBox">
+		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
 		<theme_item name="font_color" type="Color">
