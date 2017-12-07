@@ -586,6 +586,12 @@ void ScriptEditor::_close_docs_tab() {
 	}
 }
 
+void ScriptEditor::_copy_script_path() {
+	ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_current_tab()));
+	Ref<Script> script = se->get_edited_script();
+	OS::get_singleton()->set_clipboard(script->get_path());
+}
+
 void ScriptEditor::_close_other_tabs() {
 
 	int child_count = tab_container->get_child_count();
@@ -1025,6 +1031,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				} else {
 					_close_current_tab();
 				}
+			} break;
+			case FILE_COPY_PATH: {
+				_copy_script_path();
 			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
@@ -2175,6 +2184,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), CLOSE_ALL);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), CLOSE_OTHER_TABS);
 		context_menu->add_separator();
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
 
 		Ref<Script> scr = se->get_edited_script();
@@ -2507,6 +2517,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
 	ClassDB::bind_method("_help_index", &ScriptEditor::_help_index);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
+	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
 	ClassDB::bind_method("_breaked", &ScriptEditor::_breaked);
 	ClassDB::bind_method("_show_debugger", &ScriptEditor::_show_debugger);
@@ -2626,6 +2637,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Prev"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
