@@ -13,8 +13,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="elem_cache" type="Array" setter="_set_elem_cache" getter="_get_elem_cache">
-		</member>
 		<member name="type" type="int" setter="set_deconstruct_type" getter="get_deconstruct_type" enum="Variant.Type">
 			The type to deconstruct.
 		</member>

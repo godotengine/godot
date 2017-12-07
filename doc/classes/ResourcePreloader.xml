@@ -67,10 +67,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="resources" type="Array" setter="_set_resources" getter="_get_resources">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

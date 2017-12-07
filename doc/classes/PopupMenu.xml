@@ -423,8 +423,6 @@
 		</member>
 		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection">
 		</member>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items">
-		</member>
 	</members>
 	<signals>
 		<signal name="id_pressed">

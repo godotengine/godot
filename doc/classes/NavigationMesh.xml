@@ -45,6 +45,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PoolVector3Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_vertices">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertices" type="PoolVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="agent/height" type="float" setter="set_agent_height" getter="get_agent_height">
@@ -75,15 +89,11 @@
 		</member>
 		<member name="polygon/verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly">
 		</member>
-		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
-		</member>
 		<member name="region/merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size">
 		</member>
 		<member name="region/min_size" type="float" setter="set_region_min_size" getter="get_region_min_size">
 		</member>
 		<member name="sample_partition_type/sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type">
-		</member>
-		<member name="vertices" type="PoolVector3Array" setter="set_vertices" getter="get_vertices">
 		</member>
 	</members>
 	<constants>

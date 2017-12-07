@@ -175,9 +175,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data">
-			The points describing the curve. Value is a [Dictionary] with the keys [code]in[/code], [code]out[/code], and [code]pos[/code]. The key pos is the position of a vertex of the curve, the key in is the vector from that position to the control point before this vertex, the key out is the vector from that position to the controlpoint after this vertex.
-		</member>
 		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval">
 			The distance in pixels between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>

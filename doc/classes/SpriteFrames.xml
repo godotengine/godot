@@ -164,9 +164,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="animations" type="Array" setter="_set_animations" getter="_get_animations">
-			An [Array] containing the [code]name[/code], [code]speed[/code], [code]loop[/code], and [code]frames[/code] of each animation.
-		</member>
 		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
 		</member>
 	</members>

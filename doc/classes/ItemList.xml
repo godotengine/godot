@@ -332,8 +332,6 @@
 		</member>
 		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale">
 		</member>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items">
-		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns">
 		</member>
 		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines">

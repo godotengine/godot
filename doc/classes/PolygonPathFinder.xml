@@ -80,10 +80,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

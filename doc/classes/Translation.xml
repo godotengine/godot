@@ -57,8 +57,6 @@
 	<members>
 		<member name="locale" type="String" setter="set_locale" getter="get_locale">
 		</member>
-		<member name="messages" type="PoolStringArray" setter="_set_messages" getter="_get_messages">
-		</member>
 	</members>
 	<constants>
 	</constants>

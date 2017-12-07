@@ -109,9 +109,6 @@
 		<member name="ascent" type="float" setter="set_ascent" getter="get_ascent">
 			Ascent (number of pixels above the baseline).
 		</member>
-		<member name="chars" type="PoolIntArray" setter="_set_chars" getter="_get_chars">
-			The characters in the BitmapFont.
-		</member>
 		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint">
 			If [code]true[/code] distance field hint is enabled.
 		</member>
@@ -120,12 +117,6 @@
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height">
 			Total font height (ascent plus descent) in pixels.
-		</member>
-		<member name="kernings" type="PoolIntArray" setter="_set_kernings" getter="_get_kernings">
-			The font's kernings as [PoolIntArray].
-		</member>
-		<member name="textures" type="Array" setter="_set_textures" getter="_get_textures">
-			The font's [Texture]s.
 		</member>
 	</members>
 	<constants>

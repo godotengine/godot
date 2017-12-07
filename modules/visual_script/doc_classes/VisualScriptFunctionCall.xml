@@ -11,8 +11,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="argument_cache" type="Dictionary" setter="_set_argument_cache" getter="_get_argument_cache">
-		</member>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
 		</member>
 		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type">

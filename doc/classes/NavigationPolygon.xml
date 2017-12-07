@@ -75,6 +75,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="make_polygons_from_outlines">
 			<return type="void">
 			</return>
@@ -99,15 +105,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_vertices">
+			<return type="void">
+			</return>
+			<argument index="0" name="vertices" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
-	<members>
-		<member name="outlines" type="Array" setter="_set_outlines" getter="_get_outlines">
-		</member>
-		<member name="polygons" type="Array" setter="_set_polygons" getter="_get_polygons">
-		</member>
-		<member name="vertices" type="PoolVector2Array" setter="set_vertices" getter="get_vertices">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

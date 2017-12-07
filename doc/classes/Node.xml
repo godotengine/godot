@@ -350,6 +350,12 @@
 				Returns [code]true[/code] if the "node" argument is a direct or indirect child of the current node, otherwise return [code]false[code].
 			</description>
 		</method>
+		<method name="is_displayed_folded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_greater_than" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -641,6 +647,14 @@
 				Remotely changes property's value on a specific peer identified by [i]peer_id[/i] using an unreliable protocol.
 			</description>
 		</method>
+		<method name="set_display_folded">
+			<return type="void">
+			</return>
+			<argument index="0" name="fold" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_filename">
 			<return type="void">
 			</return>
@@ -750,10 +764,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_import_path" type="NodePath" setter="_set_import_path" getter="_get_import_path">
-		</member>
-		<member name="editor/display_folded" type="bool" setter="set_display_folded" getter="is_displayed_folded">
-		</member>
 		<member name="pause_mode" type="int" setter="set_pause_mode" getter="get_pause_mode" enum="Node.PauseMode">
 		</member>
 	</members>

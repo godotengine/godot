@@ -9,11 +9,21 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_file">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_file">
+			<return type="void">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
-	<members>
-		<member name="file" type="String" setter="set_file" getter="get_file">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

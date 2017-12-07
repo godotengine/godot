@@ -25,8 +25,6 @@
 		</member>
 		<member name="set_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptPropertyGet.CallMode">
 		</member>
-		<member name="type_cache" type="int" setter="_set_type_cache" getter="_get_type_cache" enum="Variant.Type">
-		</member>
 	</members>
 	<constants>
 		<constant name="CALL_MODE_SELF" value="0" enum="CallMode">

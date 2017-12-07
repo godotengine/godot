@@ -183,8 +183,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="items" type="Array" setter="_set_items" getter="_get_items">
-		</member>
 		<member name="selected" type="int" setter="_select_int" getter="get_selected">
 		</member>
 	</members>

@@ -9,10 +9,22 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_yield_mode">
+			<return type="int" enum="VisualScriptYield.YieldMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_yield_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="VisualScriptYield.YieldMode">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="mode" type="int" setter="set_yield_mode" getter="get_yield_mode" enum="VisualScriptYield.YieldMode">
-		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 		</member>
 	</members>

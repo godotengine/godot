@@ -38,6 +38,12 @@
 				Returns the [Transform2D] relative to this node's parent.
 			</description>
 		</method>
+		<method name="get_rotation" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="global_translate">
 			<return type="void">
 			</return>
@@ -87,6 +93,14 @@
 				Applies a rotation to the node, in radians, starting from its current rotation.
 			</description>
 		</method>
+		<method name="set_rotation">
+			<return type="void">
+			</return>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="to_global" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -133,9 +147,6 @@
 		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position">
 			Position, relative to the node's parent.
-		</member>
-		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation">
-			Rotation in radians, relative to the node's parent.
 		</member>
 		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
 			Rotation in degrees, relative to the node's parent.

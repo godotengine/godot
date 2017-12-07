@@ -63,15 +63,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="color_array" type="PoolColorArray" setter="_set_color_array" getter="_get_color_array">
-		</member>
 		<member name="color_format" type="int" setter="set_color_format" getter="get_color_format" enum="MultiMesh.ColorFormat">
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
-		</member>
-		<member name="transform_array" type="PoolVector3Array" setter="_set_transform_array" getter="_get_transform_array">
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
 		</member>

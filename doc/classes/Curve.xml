@@ -169,8 +169,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_data" type="Array" setter="_set_data" getter="_get_data">
-		</member>
 		<member name="bake_resolution" type="int" setter="set_bake_resolution" getter="get_bake_resolution">
 		</member>
 		<member name="max_value" type="float" setter="set_max_value" getter="get_max_value">
