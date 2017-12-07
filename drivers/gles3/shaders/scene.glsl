@@ -827,7 +827,7 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 		pixel_size = abs((pos.y-endpoint.y)/(screen_rel.y/screen_pixel_size.y));
 
 	}*/
-	vec4 bias = projection_matrix * vec4(pos+vec3(0.0,0.0,0.04), 1.0); //todo un-harcode the 0.04
+	vec4 bias = projection_matrix * vec4(pos+vec3(0.0,0.0,max_distance*0.5), 1.0); //todo un-harcode the 0.04
 
 
 
