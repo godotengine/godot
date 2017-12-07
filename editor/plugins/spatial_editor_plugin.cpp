@@ -74,6 +74,30 @@
 
 void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
+	if (!scene_camera_path.empty()) {
+		Node *p_camera_node = EditorNode::get_singleton()->get_edited_scene()->get_node(scene_camera_path);
+		if (p_camera_node && Object::cast_to<Camera>(p_camera_node)) {
+			const Camera *p_camera = static_cast<const Camera *>(p_camera_node);
+			if (p_camera->get_projection() == Camera::PROJECTION_ORTHOGONAL) {
+				camera->set_orthogonal(p_camera->get_size(), p_camera->get_znear(), p_camera->get_zfar());
+			} else {
+				camera->set_perspective(p_camera->get_fov(), p_camera->get_znear(), p_camera->get_zfar());
+			}
+
+			Transform camera_transform = p_camera->get_global_transform();
+
+			if (camera->get_global_transform() != camera_transform) {
+				camera->set_global_transform(camera_transform);
+				update_transform_gizmo_view();
+			}
+
+			return;
+		} else {
+			scene_camera_path = "";
+			_update_name();
+		}
+	}
+
 	bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
 
 	Cursor old_camera_cursor = camera_cursor;
@@ -555,12 +579,16 @@ void SpatialEditorViewport::_select_region() {
 
 void SpatialEditorViewport::_update_name() {
 
-	String ortho = orthogonal ? TTR("Orthogonal") : TTR("Perspective");
+	if (scene_camera_path.empty()) {
+		String ortho = orthogonal ? TTR("Orthogonal") : TTR("Perspective");
 
-	if (name != "")
-		view_menu->set_text("[ " + name + " " + ortho + " ]");
-	else
-		view_menu->set_text("[ " + ortho + " ]");
+		if (name != "")
+			view_menu->set_text("[ " + name + " " + ortho + " ]");
+		else
+			view_menu->set_text("[ " + ortho + " ]");
+	} else {
+		view_menu->set_text("[ " + TTR("Camera") + " : " + scene_camera_path + " ]");
+	}
 }
 
 void SpatialEditorViewport::_compute_edit(const Point2 &p_point) {
@@ -2444,6 +2472,8 @@ void SpatialEditorViewport::_draw() {
 
 void SpatialEditorViewport::_menu_option(int p_option) {
 
+	scene_camera_path = "";
+
 	switch (p_option) {
 
 		case VIEW_TOP: {
@@ -2767,6 +2797,35 @@ void SpatialEditorViewport::_selection_menu_hide() {
 	selection_menu->set_size(Vector2(0, 0));
 }
 
+void iterate_cameras(Node *p_node, PopupMenu *p_menu) {
+
+	if (!p_node || !p_menu) {
+		return;
+	}
+	if (Object::cast_to<Camera>(p_node)) {
+		p_menu->add_item(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_node).get_sname());
+	}
+	for (int childIndex = 0; childIndex < p_node->get_child_count(); ++childIndex) {
+		iterate_cameras(p_node->get_child(childIndex), p_menu);
+	}
+}
+
+void SpatialEditorViewport::_prepare_cameras() {
+
+	scene_cameras_menu->clear();
+	iterate_cameras(EditorNode::get_singleton()->get_edited_scene(), scene_cameras_menu);
+}
+
+void SpatialEditorViewport::_select_scene_camera(int p_cameraIndex) {
+
+	if (scene_cameras_menu->get_item_count() < p_cameraIndex) {
+		return;
+	}
+
+	scene_camera_path = scene_cameras_menu->get_item_text(p_cameraIndex);
+	_update_name();
+}
+
 void SpatialEditorViewport::set_can_preview(Camera *p_preview) {
 
 	preview = p_preview;
@@ -2919,6 +2978,8 @@ void SpatialEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &SpatialEditorViewport::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SpatialEditorViewport::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SpatialEditorViewport::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_prepare_cameras"), &SpatialEditorViewport::_prepare_cameras);
+	ClassDB::bind_method(D_METHOD("_select_scene_camera"), &SpatialEditorViewport::_select_scene_camera);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 }
@@ -3342,6 +3403,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface->add_child(view_menu);
 	view_menu->set_position(Point2(4, 4) * EDSCALE);
 	view_menu->set_self_modulate(Color(1, 1, 1, 0.5));
+	view_menu->get_popup()->add_submenu_item(TTR("Camera"), "SceneCameras", VIEW_CAMERAS);
+	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
@@ -3425,6 +3488,12 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	selection_menu->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
+
+	scene_cameras_menu = memnew(PopupMenu);
+	scene_cameras_menu->set_name("SceneCameras");
+	scene_cameras_menu->connect("about_to_show", this, "_prepare_cameras");
+	scene_cameras_menu->connect("id_pressed", this, "_select_scene_camera");
+	view_menu->get_popup()->add_child(scene_cameras_menu);
 
 	if (p_index == 0) {
 		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER), true);
