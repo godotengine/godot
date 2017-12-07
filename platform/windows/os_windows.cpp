@@ -231,6 +231,18 @@ bool OS_Windows::can_draw() const {
 
 void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
+#if WINVER >= 0x0601 // for windows 7
+	// Defensive
+	if (touch_state.has(idx) == p_pressed)
+		return;
+
+	if (p_pressed) {
+		touch_state.insert(idx, Point2i(p_x, p_y));
+	} else {
+		touch_state.erase(idx);
+	}
+#endif
+
 	InputEvent event;
 	event.type = InputEvent::SCREEN_TOUCH;
 	event.ID = ++last_id;
@@ -247,6 +259,18 @@ void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 };
 
 void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
+
+#if WINVER >= 0x0601 // for windows 7
+	Map<int, Point2i>::Element *curr = touch_state.find(idx);
+	// Defensive
+	if (!curr)
+		return;
+
+	if (curr->get() == Point2i(p_x, p_y))
+		return;
+
+	curr->get() = Point2i(p_x, p_y);
+#endif
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_DRAG;
@@ -291,6 +315,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			return 0; // Return To The Message Loop
 		}
+
+		case WM_KILLFOCUS: {
+
+#if WINVER >= 0x0601 // for windows 7
+			// Release every touch to avoid sticky points
+			for (Map<int, Point2i>::Element *E = touch_state.front(); E; E = E->next()) {
+				_touch_event(false, E->get().x, E->get().y, E->key());
+			}
+			touch_state.clear();
+#endif
+		} break;
 
 		case WM_PAINT:
 
@@ -682,7 +717,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 							_drag_event(ti.x / 100, ti.y / 100, ti.dwID);
 						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
 
-							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN != 0, ti.x / 100, ti.y / 100, ti.dwID);
+							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN, ti.x / 100, ti.y / 100, ti.dwID);
 						};
 					}
 					bHandled = TRUE;
@@ -1080,7 +1115,9 @@ void OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	tme.dwHoverTime = HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
 
-	//RegisterTouchWindow(hWnd, 0); // Windows 7
+#if WINVER >= 0x0601 // for windows 7
+	RegisterTouchWindow(hWnd, 0); // Windows 7
+#endif
 
 	_ensure_data_dir();
 
@@ -1188,6 +1225,9 @@ void OS_Windows::finalize() {
 
 	memdelete(joystick);
 	memdelete(input);
+#if WINVER >= 0x0601 // for windows 7
+	touch_state.clear();
+#endif
 
 	visual_server->finish();
 	memdelete(visual_server);

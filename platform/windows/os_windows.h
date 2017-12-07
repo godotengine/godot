@@ -130,6 +130,9 @@ class OS_Windows : public OS {
 
 	InputDefault *input;
 	joystick_windows *joystick;
+#if WINVER >= 0x0601 // for windows 7
+	Map<int, Point2i> touch_state;
+#endif
 
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;

@@ -55,6 +55,9 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
+#ifdef TOUCH_ENABLED
+#include <X11/extensions/XInput2.h>
+#endif
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -122,6 +125,14 @@ class OS_X11 : public OS_Unix {
 	uint64_t last_click_ms;
 	unsigned int event_id;
 	uint32_t last_button_state;
+#ifdef TOUCH_ENABLED
+	struct {
+		int opcode;
+		Vector<int> devices;
+		XIEventMask event_mask;
+		Map<int, Point2i> state;
+	} touch;
+#endif
 
 	PhysicsServer *physics_server;
 	unsigned int get_mouse_button_state(unsigned int p_x11_state);
