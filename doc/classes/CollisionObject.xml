@@ -25,6 +25,7 @@
 			<argument index="4" name="shape_idx" type="int">
 			</argument>
 			<description>
+				Accepts unhandled [InputEvent]s. [code]click_position[/code] is the clicked location in world space and [code]click_normal[/code] is the normal vector extending from the clicked surface of the [Shape] at [code]shape_idx[/code]. Connect to the [code]input_event[/code] signal to easily pick up these events.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -134,6 +135,7 @@
 			<argument index="1" name="shape_id" type="int">
 			</argument>
 			<description>
+				Returns the child index of the [Shape] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
@@ -181,8 +183,10 @@
 	</methods>
 	<members>
 		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag">
+			If [code]true[/code] the [code]CollisionObject[/code] will continue to receive input events as the mouse is dragged across its shapes. Default value: [code]false[/code].
 		</member>
 		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable">
+			If [code]true[/code] the [CollisionObject]'s shapes will respond to [RayCast]s. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>
@@ -198,6 +202,7 @@
 			<argument index="4" name="shape_idx" type="int">
 			</argument>
 			<description>
+				Emitted when [method _input_event] receives an event. See its description for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

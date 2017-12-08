@@ -119,6 +119,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Draw a polyline with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing.
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -133,6 +134,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Draw a polyline with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -177,7 +179,7 @@
 			<argument index="2" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Set a custom transform for drawing. Anything drawn afterwards will be transformed by this.
+				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_set_transform_matrix">
@@ -186,6 +188,7 @@
 			<argument index="0" name="xform" type="Transform2D">
 			</argument>
 			<description>
+				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_string">
@@ -359,6 +362,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if local transform notifications are communicated to children.
 			</description>
 		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
@@ -372,12 +376,14 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if global transform notifications are communicated to children.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if the node is in the [SceneTree] and is visible on-screen.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -386,6 +392,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
+				Assigns [code]screen_point[/code] as this node's new local transform.
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
@@ -394,6 +401,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Transformations issued by [code]event[/code]'s inputs are applied in local space instead of global space.
 			</description>
 		</method>
 		<method name="set_as_toplevel">
@@ -402,7 +410,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set as top level. This means that it will not inherit transform from parent canvas items.
+				Sets as top level. This means that it will not inherit transform from parent canvas items.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
@@ -411,6 +419,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]enable[/code] is [code]true[/code], children will be updated with local transform data.
 			</description>
 		</method>
 		<method name="set_notify_transform">
@@ -419,6 +428,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]enable[/code] is [code]true[/code], children will be updated with global transform data.
 			</description>
 		</method>
 		<method name="show">
@@ -438,20 +448,28 @@
 	</methods>
 	<members>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask">
+			The rendering layers in which this [code]CanvasItem[/code] responds to [Light2D] nodes. Default value: [code]1[/code].
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material applied to textures on this [code]CanvasItem[/code]. Default value: [code]null[/code].
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
+			The color applied to textures on this [code]CanvasItem[/code]. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white").
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate">
+			The color applied to textures on this [code]CanvasItem[/code]. This is not inherited by children [code]CanvasItem[/code]s. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white")..
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
+			If [code]true[/code] the object draws behind its parent. Default value: [code]false[/code].
 		</member>
 		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
+			If [code]true[/code] the object draws on top of its parent. Default value: [code]true[/code].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
+			If [code]true[/code] the parent [code]CanvasItem[/code]'s [member material] property is used as this one's material. Default value: [code]false[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
+			If [code]true[/code] this [code]CanvasItem[/code] is drawn. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>

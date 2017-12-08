@@ -15,6 +15,7 @@
 			<return type="Node">
 			</return>
 			<description>
+				Returns the [Viewport] used by the camera if it is not using the default viewport.
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
@@ -44,6 +45,7 @@
 			<argument index="0" name="viewport" type="Node">
 			</argument>
 			<description>
+				Assigns a custom [Viewport] node to the [code]CanvasLayer[/code]. If [code]viewport[/code] is not a [Viewport], it re-assigns the default viewport instead.
 			</description>
 		</method>
 		<method name="set_rotation">

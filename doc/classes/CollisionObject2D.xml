@@ -21,6 +21,7 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
+				Accepts unhandled [InputEvent]s. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -61,6 +62,7 @@
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if collisions for the shape owner originating from this [code]CollisionObject2D[/code] will not be reported to collided with [code]CollisionObject2D[/code]s.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
@@ -138,6 +140,7 @@
 			<argument index="1" name="shape_id" type="int">
 			</argument>
 			<description>
+				Returns the child index of the [Shape2D] with the given id from the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
@@ -179,6 +182,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [code]CollisionObject2D[/code] will not be reported to collided with [code]CollisionObject2D[/code]s.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
@@ -207,7 +211,7 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when an input event occurs and [code]input_pickable[/code] is [code]true[/code].
+				Emitted when an input event occurs and [code]input_pickable[/code] is [code]true[/code]. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

@@ -35,6 +35,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
+				Returns a category associated with the class for use in documentation and the Asset Library. Debug mode required.
 			</description>
 		</method>
 		<method name="class_get_integer_constant" qualifiers="const">
