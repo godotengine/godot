@@ -436,6 +436,7 @@ public:
 	bool is_folded(int p_line) const;
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
+	void toggle_fold_line(int p_line);
 
 	String get_text();
 	String get_line(int line) const;

@@ -4646,6 +4646,16 @@ void TextEdit::unfold_line(int p_line) {
 	update();
 }
 
+void TextEdit::toggle_fold_line(int p_line) {
+
+	ERR_FAIL_INDEX(p_line, text.size());
+
+	if (!is_folded(p_line))
+		fold_line(p_line);
+	else
+		unfold_line(p_line);
+}
+
 int TextEdit::get_line_count() const {
 
 	return text.size();
@@ -5461,6 +5471,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unhide_all_lines"), &TextEdit::unhide_all_lines);
 	ClassDB::bind_method(D_METHOD("fold_line", "line"), &TextEdit::fold_line);
 	ClassDB::bind_method(D_METHOD("unfold_line", "line"), &TextEdit::unfold_line);
+	ClassDB::bind_method(D_METHOD("toggle_fold_line", "line"), &TextEdit::toggle_fold_line);
 	ClassDB::bind_method(D_METHOD("can_fold", "line"), &TextEdit::can_fold);
 	ClassDB::bind_method(D_METHOD("is_folded", "line"), &TextEdit::is_folded);
 
