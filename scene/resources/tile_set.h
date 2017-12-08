@@ -76,7 +76,7 @@ public:
 		Size2 size;
 		Vector2 icon_coord;
 		Map<Vector2, uint16_t> flags;
-		Map<Vector2, Ref<OccluderPolygon2D> > ocludder_map;
+		Map<Vector2, Ref<OccluderPolygon2D> > occluder_map;
 		Map<Vector2, Ref<NavigationPolygon> > navpoly_map;
 		Map<Vector2, int> priority_map;
 

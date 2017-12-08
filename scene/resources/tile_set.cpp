@@ -83,7 +83,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 		} else if (what == "occluder_map") {
-			tile_map[id].autotile_data.ocludder_map.clear();
+			tile_map[id].autotile_data.occluder_map.clear();
 			Array p = p_value;
 			Vector2 last_coord;
 			while (p.size() > 0) {
@@ -194,7 +194,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = p;
 		} else if (what == "occluder_map") {
 			Array p;
-			for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = tile_map[id].autotile_data.ocludder_map.front(); E; E = E->next()) {
+			for (Map<Vector2, Ref<OccluderPolygon2D> >::Element *E = tile_map[id].autotile_data.occluder_map.front(); E; E = E->next()) {
 				p.push_back(E->key());
 				p.push_back(E->value());
 			}
@@ -643,20 +643,20 @@ Ref<OccluderPolygon2D> TileSet::tile_get_light_occluder(int p_id) const {
 void TileSet::autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (p_light_occluder.is_null()) {
-		if (tile_map[p_id].autotile_data.ocludder_map.has(p_coord)) {
-			tile_map[p_id].autotile_data.ocludder_map.erase(p_coord);
+		if (tile_map[p_id].autotile_data.occluder_map.has(p_coord)) {
+			tile_map[p_id].autotile_data.occluder_map.erase(p_coord);
 		}
 	} else {
-		tile_map[p_id].autotile_data.ocludder_map[p_coord] = p_light_occluder;
+		tile_map[p_id].autotile_data.occluder_map[p_coord] = p_light_occluder;
 	}
 }
 
 Ref<OccluderPolygon2D> TileSet::autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<OccluderPolygon2D>());
-	if (!tile_map[p_id].autotile_data.ocludder_map.has(p_coord)) {
+	if (!tile_map[p_id].autotile_data.occluder_map.has(p_coord)) {
 		return Ref<OccluderPolygon2D>();
 	} else {
-		return tile_map[p_id].autotile_data.ocludder_map[p_coord];
+		return tile_map[p_id].autotile_data.occluder_map[p_coord];
 	}
 }
 
@@ -688,7 +688,7 @@ const Map<Vector2, Ref<OccluderPolygon2D> > &TileSet::autotile_get_light_oclusio
 
 	static Map<Vector2, Ref<OccluderPolygon2D> > dummy;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
-	return tile_map[p_id].autotile_data.ocludder_map;
+	return tile_map[p_id].autotile_data.occluder_map;
 }
 
 void TileSet::autotile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_coord) {
