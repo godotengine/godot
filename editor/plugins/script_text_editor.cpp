@@ -96,10 +96,10 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color member_variable_color = EDITOR_DEF("text_editor/highlighting/member_variable_color", Color(0.9, 0.3, 0.3));
 	Color mark_color = EDITOR_DEF("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
 	Color breakpoint_color = EDITOR_DEF("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
+	Color code_folding_color = EDITOR_DEF("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	Color search_result_color = EDITOR_DEF("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	Color search_result_border_color = EDITOR_DEF("text_editor/highlighting/search_result_border_color", Color(0.1, 0.45, 0.1, 1));
 	Color symbol_color = EDITOR_DEF("text_editor/highlighting/symbol_color", Color::hex(0x005291ff));
-
 	Color keyword_color = EDITOR_DEF("text_editor/highlighting/keyword_color", Color(0.5, 0.0, 0.2));
 	Color basetype_color = EDITOR_DEF("text_editor/highlighting/base_type_color", Color(0.3, 0.3, 0.0));
 	Color type_color = EDITOR_DEF("text_editor/highlighting/engine_type_color", Color(0.0, 0.2, 0.4));
@@ -137,6 +137,7 @@ void ScriptTextEditor::_load_theme_settings() {
 		member_variable_color = tm->get_color("text_editor/theme/member_variable_color", "Editor");
 		mark_color = tm->get_color("text_editor/theme/mark_color", "Editor");
 		breakpoint_color = tm->get_color("text_editor/theme/breakpoint_color", "Editor");
+		code_folding_color = tm->get_color("text_editor/theme/code_folding_color", "Editor");
 		search_result_color = tm->get_color("text_editor/theme/search_result_color", "Editor");
 		search_result_border_color = tm->get_color("text_editor/theme/search_result_border_color", "Editor");
 	}
@@ -160,8 +161,9 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("number_color", number_color);
 	text_edit->add_color_override("function_color", function_color);
 	text_edit->add_color_override("member_variable_color", member_variable_color);
-	text_edit->add_color_override("mark_color", mark_color);
 	text_edit->add_color_override("breakpoint_color", breakpoint_color);
+	text_edit->add_color_override("mark_color", mark_color);
+	text_edit->add_color_override("code_folding_color", code_folding_color);
 	text_edit->add_color_override("search_result_color", search_result_color);
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
 	text_edit->add_color_override("symbol_color", symbol_color);
