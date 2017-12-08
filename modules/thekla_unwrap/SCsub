@@ -55,7 +55,7 @@ if env['builtin_thekla_atlas']:
     env_thekla_unwrap.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/poshlib", thirdparty_dir + "/nvcore", thirdparty_dir + "/nvmesh"])
 
     # upstream uses c++11
-    env_thekla_unwrap.Append(CCFLAGS="-std=gnu++11")
+    env_thekla_unwrap.Append(CXXFLAGS="-std=gnu++11")
 
     if env["platform"] == 'x11':
         env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX"])

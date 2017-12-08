@@ -3,5 +3,5 @@ def can_build(platform):
 
 def configure(env):
     if not env['tools']:
-        env['module_thekla_unwrap_enabled'] = False
+        env['builtin_thekla_atlas'] = False
         env.disabled_modules.append("thekla_unwrap")
