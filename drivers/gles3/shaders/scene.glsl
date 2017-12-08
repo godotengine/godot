@@ -1207,7 +1207,8 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 	vec3 light_rel_vec = omni_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
 	float normalized_distance = light_length*omni_lights[idx].light_pos_inv_radius.w;
-	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w ));
+	float omni_attenuation = pow( max(1.0 - normalized_distance, 0.0), omni_lights[idx].light_direction_attenuation.w );
+	vec3 light_attenuation = vec3(omni_attenuation);
 
 	if (omni_lights[idx].light_params.w>0.5) {
 		//there is a shadowmap
@@ -1256,7 +1257,7 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 		light_attenuation*=mix(omni_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,omni_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,omni_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,omni_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim * omni_attenuation,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
@@ -1265,12 +1266,13 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 	vec3 light_rel_vec = spot_lights[idx].light_pos_inv_radius.xyz-vertex;
 	float light_length = length( light_rel_vec );
 	float normalized_distance = light_length*spot_lights[idx].light_pos_inv_radius.w;
-	vec3 light_attenuation = vec3(pow( max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w ));
+	float spot_attenuation = pow( max(1.0 - normalized_distance, 0.001), spot_lights[idx].light_direction_attenuation.w );
 	vec3 spot_dir = spot_lights[idx].light_direction_attenuation.xyz;
 	float spot_cutoff=spot_lights[idx].light_params.y;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir),spot_cutoff);
-	float spot_rim = (1.0 - scos) / (1.0 - spot_cutoff);
-	light_attenuation *= 1.0 - pow( max(spot_rim,0.001), spot_lights[idx].light_params.x);
+	float spot_rim = max(0.0001,(1.0 - scos) / (1.0 - spot_cutoff));
+	spot_attenuation*= 1.0 - pow( spot_rim, spot_lights[idx].light_params.x);
+	vec3 light_attenuation = vec3(spot_attenuation);
 
 	if (spot_lights[idx].light_params.w>0.5) {
 		//there is a shadowmap
@@ -1290,7 +1292,7 @@ void light_process_spot(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 bi
 		light_attenuation*=mix(spot_lights[idx].shadow_color_contact.rgb,vec3(1.0),shadow);
 	}
 
-	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,spot_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
+	light_compute(normal,normalize(light_rel_vec),eye_vec,binormal,tangent,spot_lights[idx].light_color_energy.rgb,light_attenuation,albedo,transmission,spot_lights[idx].light_params.z*p_blob_intensity,roughness,metallic,rim * spot_attenuation,rim_tint,clearcoat,clearcoat_gloss,anisotropy,diffuse_light,specular_light);
 
 }
 
