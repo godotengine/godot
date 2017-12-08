@@ -513,16 +513,13 @@ void TileMap::_update_dirty_quadrants() {
 			}
 
 			Ref<OccluderPolygon2D> occluder;
-			Vector2 occluder_ofs;
 			if (tile_set->tile_get_is_autotile(c.id)) {
 				occluder = tile_set->autotile_get_light_occluder(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
-				occluder_ofs = tile_set->tile_get_occluder_offset(c.id);
 			} else {
 				occluder = tile_set->tile_get_light_occluder(c.id);
-				occluder_ofs = Vector2();
 			}
 			if (occluder.is_valid()) {
-
+				Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.id);
 				Transform2D xform;
 				xform.set_origin(offset.floor() + q.pos);
 				_fix_cell_transform(xform, c, occluder_ofs + center_ofs, s);
