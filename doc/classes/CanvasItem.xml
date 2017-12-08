@@ -50,6 +50,14 @@
 			</argument>
 			<argument index="2" name="color" type="Color">
 			</argument>
+			<argument index="3" name="filled" type="bool" default="false">
+			</argument>
+			<argument index="4" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="5" name="maxerror" type="float" default="1.0">
+			</argument>
+			<argument index="6" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws a colored circle.
 			</description>
@@ -220,6 +228,10 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<argument index="2" name="filled" type="bool" default="true">
+			</argument>
+			<argument index="3" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draws a colored rectangle.

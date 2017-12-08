@@ -791,6 +791,10 @@ public:
 			Point2 pos;
 			float radius;
 			Color color;
+			bool filled;
+			float width;
+			bool antialiased;
+			float maxerror;
 			CommandCircle() { type = TYPE_CIRCLE; }
 		};
 
@@ -963,8 +967,9 @@ public:
 					case Item::Command::TYPE_CIRCLE: {
 
 						const Item::CommandCircle *circle = static_cast<const Item::CommandCircle *>(c);
-						r.position = Point2(-circle->radius, -circle->radius) + circle->pos;
-						r.size = Point2(circle->radius * 2.0, circle->radius * 2.0);
+						float radius = circle->radius + circle->width * 0.5;
+						r.position = Point2(-radius, -radius) + circle->pos;
+						r.size = Point2(radius * 2.0, radius * 2.0);
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {
 

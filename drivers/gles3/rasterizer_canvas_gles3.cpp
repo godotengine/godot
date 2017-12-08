@@ -966,25 +966,137 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				_set_texture_rect_mode(false);
 
+				static const int maxpoints = 1024;
+
 				Item::CommandCircle *circle = static_cast<Item::CommandCircle *>(c);
-				static const int numpoints = 32;
-				Vector2 points[numpoints + 1];
-				points[numpoints] = circle->pos;
-				int indices[numpoints * 3];
+
+				float err = circle->maxerror / 4.0;
+				int numpoints = (int)Math::ceil(Math_PI / Math::acos(1.0f - err / circle->radius));
+				numpoints = MAX(numpoints, 3);
+				numpoints = MIN(numpoints, maxpoints);
+
+				if (state.circle_points.resize(2 * (numpoints + 1)) != OK) {
+
+					break;
+				}
+
+				PoolVector2Array::Write points = state.circle_points.write();
+				const int inner0 = numpoints + 1;
+
+				const bool is_thick_circle = !circle->filled && circle->width > 1.0;
+				const float outer_radius = circle->radius + (circle->width > 1.0 ? circle->width * 0.5 : 0);
+				const float inner_radius = circle->radius - (is_thick_circle ? circle->width * 0.5 : 0);
 
 				for (int i = 0; i < numpoints; i++) {
 
-					points[i] = circle->pos + Vector2(Math::sin(i * Math_PI * 2.0 / numpoints), Math::cos(i * Math_PI * 2.0 / numpoints)) * circle->radius;
-					indices[i * 3 + 0] = i;
-					indices[i * 3 + 1] = (i + 1) % numpoints;
-					indices[i * 3 + 2] = numpoints;
+					const float phi = i * Math_PI * 2.0 / numpoints;
+					const Vector2 v(Math::sin(phi), Math::cos(phi));
+					points[i] = circle->pos + v * outer_radius; // outer point
+					if (is_thick_circle) {
+						points[i + inner0] = circle->pos + v * inner_radius; // inner point
+					}
 				}
 
-				_bind_canvas_texture(RID(), RID());
-				_draw_polygon(indices, numpoints * 3, numpoints + 1, points, NULL, &circle->color, true, NULL, NULL);
+				enum {
+					FILLED = 0,
+					THICK = 1
+				};
 
-				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
-				//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
+				if (circle->filled) {
+
+					points[numpoints] = circle->pos;
+
+					PoolIntArray &indices_array = state.circle_indices[FILLED];
+
+					if (indices_array.size() != numpoints * 3) {
+
+						if (indices_array.resize(numpoints * 3) != OK) {
+
+							break;
+						}
+
+						PoolIntArray::Write indices = indices_array.write();
+
+						for (int i = 0; i < numpoints; i++) {
+
+							indices[i * 3 + 0] = i;
+							indices[i * 3 + 1] = (i + 1) % numpoints;
+							indices[i * 3 + 2] = numpoints;
+						}
+					}
+
+					_bind_canvas_texture(RID(), RID());
+					PoolIntArray::Read indices = indices_array.read();
+					_draw_polygon(&indices[0], numpoints * 3, numpoints + 1, &points[0], NULL, &circle->color, true, NULL, NULL);
+
+#ifdef GLES_OVER_GL
+					if (circle->antialiased) {
+						points[numpoints] = points[0];
+
+						glEnable(GL_LINE_SMOOTH);
+						_draw_generic(GL_LINE_STRIP, numpoints + 1, &points[0], NULL, &circle->color, true);
+						glDisable(GL_LINE_SMOOTH);
+					}
+#endif
+				} else {
+
+					points[numpoints] = points[0];
+
+					if (circle->width <= 1.0) {
+
+#ifdef GLES_OVER_GL
+						if (circle->antialiased) {
+							glEnable(GL_LINE_SMOOTH);
+						}
+#endif
+						_draw_generic(GL_LINE_STRIP, numpoints + 1, &points[0], NULL, &circle->color, true);
+
+#ifdef GLES_OVER_GL
+						if (circle->antialiased) {
+							glDisable(GL_LINE_SMOOTH);
+						}
+#endif
+					} else {
+
+						points[numpoints + inner0] = points[inner0];
+
+						PoolIntArray &indices_array = state.circle_indices[THICK];
+
+						if (indices_array.size() != numpoints * 6) {
+
+							if (indices_array.resize(numpoints * 6) != OK) {
+
+								break;
+							}
+
+							PoolIntArray::Write indices = indices_array.write();
+
+							for (int i = 0; i < numpoints; i++) {
+
+								indices[i * 6 + 0] = i;
+								indices[i * 6 + 1] = (i + 1) % numpoints;
+								indices[i * 6 + 2] = i + inner0;
+
+								indices[i * 6 + 3] = i + inner0;
+								indices[i * 6 + 4] = (i + 1) % numpoints;
+								indices[i * 6 + 5] = (i + 1) % numpoints + inner0;
+							}
+						}
+
+						_bind_canvas_texture(RID(), RID());
+						PoolIntArray::Read indices = indices_array.read();
+						_draw_polygon(&indices[0], numpoints * 6, 2 * (numpoints + 1), &points[0], NULL, &circle->color, true, NULL, NULL);
+
+#ifdef GLES_OVER_GL
+						if (circle->antialiased) {
+							glEnable(GL_LINE_SMOOTH);
+							_draw_generic(GL_LINE_STRIP, numpoints + 1, &points[inner0], NULL, &circle->color, true);
+							_draw_generic(GL_LINE_STRIP, numpoints + 1, &points[0], NULL, &circle->color, true);
+							glDisable(GL_LINE_SMOOTH);
+						}
+#endif
+					}
+				}
 			} break;
 			case Item::Command::TYPE_TRANSFORM: {
 

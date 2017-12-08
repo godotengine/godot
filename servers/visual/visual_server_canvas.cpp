@@ -530,7 +530,7 @@ void VisualServerCanvas::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
+void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_filled, float p_width, float p_maxerror, bool p_antialiased) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -540,6 +540,10 @@ void VisualServerCanvas::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	circle->color = p_color;
 	circle->pos = p_pos;
 	circle->radius = p_radius;
+	circle->filled = p_filled;
+	circle->width = p_width;
+	circle->antialiased = p_antialiased;
+	circle->maxerror = p_maxerror;
 
 	canvas_item->commands.push_back(circle);
 }

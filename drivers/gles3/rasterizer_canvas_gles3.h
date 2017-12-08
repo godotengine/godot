@@ -88,6 +88,9 @@ public:
 		Transform2D skeleton_transform;
 		Transform2D skeleton_transform_inverse;
 
+		PoolVector2Array circle_points;
+		PoolIntArray circle_indices[2];
+
 	} state;
 
 	RasterizerStorageGLES3 *storage;

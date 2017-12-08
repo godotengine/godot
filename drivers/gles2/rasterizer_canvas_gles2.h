@@ -80,6 +80,9 @@ public:
 
 		Transform vp;
 
+		PoolVector2Array circle_points;
+		PoolIntArray circle_indices[2];
+
 	} state;
 
 	typedef void Texture;

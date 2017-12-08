@@ -654,32 +654,46 @@ void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vec
 	VisualServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled) {
+void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, float p_width, bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
+	}
+
+	float half_width;
+
+	if (p_width > 1.0) {
+
+		half_width = p_width / 2;
+	} else {
+
+		half_width = 0.0;
 	}
 
 	if (p_filled) {
 
-		VisualServer::get_singleton()->canvas_item_add_rect(canvas_item, p_rect, p_color);
+		VisualServer::get_singleton()->canvas_item_add_rect(canvas_item, Rect2(p_rect.position - Vector2(half_width, half_width), p_rect.size + 2 * Vector2(half_width, half_width)), p_color);
 	} else {
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position, p_rect.position + Size2(p_rect.size.width, 0), p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position, p_rect.position + Size2(0, p_rect.size.height), p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Point2(0, p_rect.size.height), p_rect.position + p_rect.size, p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Point2(p_rect.size.width, 0), p_rect.position + p_rect.size, p_color);
+
+		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Vector2(-half_width, 0), p_rect.position + Size2(p_rect.size.width + half_width, 0), p_color, p_width, p_antialiased);
+
+		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Point2(p_rect.size.width, half_width), p_rect.position + p_rect.size + Vector2(0, -half_width), p_color, p_width, p_antialiased);
+
+		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + p_rect.size + Vector2(half_width, 0), p_rect.position + Vector2(-half_width, p_rect.size.height), p_color, p_width, p_antialiased);
+
+		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Vector2(0, p_rect.size.height - half_width), p_rect.position + Vector2(0, half_width), p_color, p_width, p_antialiased);
 	}
 }
 
-void CanvasItem::draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color) {
+void CanvasItem::draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color, bool p_filled, float p_width, float p_maxerror, bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 
-	VisualServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color);
+	VisualServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color, p_filled, p_width, p_maxerror, p_antialiased);
 }
 
 void CanvasItem::draw_texture(const Ref<Texture> &p_texture, const Point2 &p_pos, const Color &p_modulate, const Ref<Texture> &p_normal_map) {
@@ -1032,8 +1046,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled"), &CanvasItem::draw_rect, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color"), &CanvasItem::draw_circle);
+	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color", "filled", "width", "maxerror", "antialiased"), &CanvasItem::draw_circle, DEFVAL(true), DEFVAL(1.0), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose", "normal_map"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "normal_map", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()), DEFVAL(true));

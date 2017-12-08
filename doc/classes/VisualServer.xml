@@ -134,6 +134,14 @@
 			</argument>
 			<argument index="3" name="color" type="Color">
 			</argument>
+			<argument index="4" name="filled" type="bool" default="true">
+			</argument>
+			<argument index="5" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="6" name="maxerror" type="float" default="1.0">
+			</argument>
+			<argument index="7" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Adds a circle command to the [CanvasItem]'s draw commands.
 			</description>
