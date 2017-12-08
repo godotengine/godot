@@ -354,6 +354,7 @@ void ScrollContainer::update_scrollbars() {
 	if (!scroll_v || min.height <= size.height - hmin.height) {
 
 		v_scroll->hide();
+		v_scroll->set_max(0);
 		scroll.y = 0;
 	} else {
 
@@ -366,6 +367,7 @@ void ScrollContainer::update_scrollbars() {
 	if (!scroll_h || min.width <= size.width - vmin.width) {
 
 		h_scroll->hide();
+		h_scroll->set_max(0);
 		scroll.x = 0;
 	} else {
 
