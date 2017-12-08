@@ -286,6 +286,8 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	RasterizerGLES3::make_current();
 
+	context_gl->set_use_vsync(current_videomode.use_vsync);
+
 #endif
 	visual_server = memnew(VisualServerRaster);
 

@@ -105,6 +105,7 @@ void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 	context_gl = memnew(ContextGL_Haiku(window));
 	context_gl->initialize();
 	context_gl->make_current();
+	context_gl->set_use_vsync(current_video_mode.use_vsync);
 
 	/* Port to GLES 3 rasterizer */
 	//rasterizer = memnew(RasterizerGLES2);
