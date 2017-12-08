@@ -266,6 +266,19 @@ Collection of single-file libraries used in Godot components.
   * Version: ?
   * License: BSD
 
+### poshlib
+
+- Upstream: http://poshlib.hookatooka.com/poshlib/trac.cgi (username guest, password guest123)
+- Version: 1.3.002 
+- License: MIT
+
+Files extracted from the upstream source:
+
+- posh.c
+- posh.h
+
+(no license file was included with the upstream distribution)
+
 ### scene
 
 - `mikktspace.{c,h}`
@@ -281,6 +294,16 @@ Collection of single-file libraries used in Godot components.
   * Version: 1.11
   * License: Public Domain (Unlicense) or MIT
 
+## thekla_atlas
+
+- Upstream: https://github.com/Thekla/thekla_atlas
+- Version: 80a1430 (git)
+- License: zlib
+
+Files extracted from the upstream source:
+
+- Relevant sources from src/
+- License.txt
 
 ## nanosvg
 
