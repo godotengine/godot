@@ -565,12 +565,12 @@ void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer);
-	EditorFileSystem::get_singleton()->scan();
+	EditorFileSystem::get_singleton()->call_deferred("scan");
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	EditorFileSystem::get_singleton()->scan();
+	EditorFileSystem::get_singleton()->call_deferred("scan");
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
@@ -587,7 +587,6 @@ void EditorPlugin::add_scene_import_plugin(const Ref<EditorSceneImporter> &p_imp
 
 void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
-
 }
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
