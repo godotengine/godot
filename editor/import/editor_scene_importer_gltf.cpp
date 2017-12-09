@@ -1597,8 +1597,11 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	if (n->mesh >= 0) {
 		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
 		MeshInstance *mi = memnew(MeshInstance);
-		const GLTFMesh &mesh = state.meshes[n->mesh];
+		GLTFMesh &mesh = state.meshes[n->mesh];
 		mi->set_mesh(mesh.mesh);
+		if (mesh.mesh->get_name() == "") {
+			mesh.mesh->set_name(n->name);
+		}
 		for (int i = 0; i < mesh.blend_weights.size(); i++) {
 			mi->set("blend_shapes/" + mesh.mesh->get_blend_shape_name(i), mesh.blend_weights[i]);
 		}
