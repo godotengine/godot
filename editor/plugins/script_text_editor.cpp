@@ -1015,14 +1015,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			tx->end_complex_operation();
 			tx->update();
 		} break;
-		case EDIT_FOLD_LINE: {
+		case EDIT_TOGGLE_FOLD_LINE: {
 
-			tx->fold_line(tx->cursor_get_line());
-			tx->update();
-		} break;
-		case EDIT_UNFOLD_LINE: {
-
-			tx->unfold_line(tx->cursor_get_line());
+			tx->toggle_fold_line(tx->cursor_get_line());
 			tx->update();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
@@ -1517,13 +1512,9 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	}
-	if (p_can_fold) {
-		// can fold
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_line"), EDIT_FOLD_LINE);
-	} else if (p_is_folded) {
-		// can unfold
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_line"), EDIT_UNFOLD_LINE);
-	}
+	if (p_can_fold || p_is_folded)
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
+
 	if (p_color) {
 		context_menu->add_separator();
 		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
@@ -1587,9 +1578,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/delete_line"), EDIT_DELETE_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_line"), EDIT_FOLD_LINE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/fold_all_lines"), EDIT_FOLD_ALL_LINES);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_line"), EDIT_UNFOLD_LINE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 #ifdef OSX_ENABLED
@@ -1668,8 +1658,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/indent_right", TTR("Indent Right"), 0);
 	ED_SHORTCUT("script_text_editor/toggle_comment", TTR("Toggle Comment"), KEY_MASK_CMD | KEY_K);
 	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_B);
-	ED_SHORTCUT("script_text_editor/fold_line", TTR("Fold Line"), KEY_MASK_ALT | KEY_LEFT);
-	ED_SHORTCUT("script_text_editor/unfold_line", TTR("Unfold Line"), KEY_MASK_ALT | KEY_RIGHT);
+	ED_SHORTCUT("script_text_editor/toggle_fold_line", TTR("Fold/Unfold Line"), KEY_MASK_ALT | KEY_F);
 	ED_SHORTCUT("script_text_editor/fold_all_lines", TTR("Fold All Lines"), 0);
 	ED_SHORTCUT("script_text_editor/unfold_all_lines", TTR("Unfold All Lines"), 0);
 #ifdef OSX_ENABLED
