@@ -603,6 +603,14 @@ void FileDialog::set_current_path(const String &p_path) {
 	}
 }
 
+void FileDialog::set_mode_overrides_title(bool p_override) {
+	mode_overrides_title = p_override;
+}
+
+bool FileDialog::is_mode_overriding_title() const {
+	return mode_overrides_title;
+}
+
 void FileDialog::set_mode(Mode p_mode) {
 
 	mode = p_mode;
@@ -610,27 +618,32 @@ void FileDialog::set_mode(Mode p_mode) {
 
 		case MODE_OPEN_FILE:
 			get_ok()->set_text(RTR("Open"));
-			set_title(RTR("Open a File"));
+			if (mode_overrides_title)
+				set_title(RTR("Open a File"));
 			makedir->hide();
 			break;
 		case MODE_OPEN_FILES:
 			get_ok()->set_text(RTR("Open"));
-			set_title(RTR("Open File(s)"));
+			if (mode_overrides_title)
+				set_title(RTR("Open File(s)"));
 			makedir->hide();
 			break;
 		case MODE_OPEN_DIR:
 			get_ok()->set_text(RTR("Select Current Folder"));
-			set_title(RTR("Open a Directory"));
+			if (mode_overrides_title)
+				set_title(RTR("Open a Directory"));
 			makedir->show();
 			break;
 		case MODE_OPEN_ANY:
 			get_ok()->set_text(RTR("Open"));
-			set_title(RTR("Open a File or Directory"));
+			if (mode_overrides_title)
+				set_title(RTR("Open a File or Directory"));
 			makedir->show();
 			break;
 		case MODE_SAVE_FILE:
 			get_ok()->set_text(RTR("Save"));
-			set_title(RTR("Save a File"));
+			if (mode_overrides_title)
+				set_title(RTR("Save a File"));
 			makedir->show();
 			break;
 	}
@@ -760,6 +773,8 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_dir", "dir"), &FileDialog::set_current_dir);
 	ClassDB::bind_method(D_METHOD("set_current_file", "file"), &FileDialog::set_current_file);
 	ClassDB::bind_method(D_METHOD("set_current_path", "path"), &FileDialog::set_current_path);
+	ClassDB::bind_method(D_METHOD("set_mode_overrides_title", "override"), &FileDialog::set_mode_overrides_title);
+	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &FileDialog::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &FileDialog::get_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &FileDialog::get_vbox);
@@ -791,6 +806,7 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"), "set_filters", "get_filters");
@@ -813,6 +829,8 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 FileDialog::FileDialog() {
 
 	show_hidden_files = default_show_hidden_files;
+
+	mode_overrides_title = true;
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
