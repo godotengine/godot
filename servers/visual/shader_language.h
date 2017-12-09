@@ -72,6 +72,9 @@ public:
 		TK_TYPE_ISAMPLER2D,
 		TK_TYPE_USAMPLER2D,
 		TK_TYPE_SAMPLERCUBE,
+		TK_INTERPOLATION_FLAT,
+		TK_INTERPOLATION_NO_PERSPECTIVE,
+		TK_INTERPOLATION_SMOOTH,
 		TK_PRECISION_LOW,
 		TK_PRECISION_MID,
 		TK_PRECISION_HIGH,
@@ -190,6 +193,12 @@ public:
 		PRECISION_MEDIUMP,
 		PRECISION_HIGHP,
 		PRECISION_DEFAULT,
+	};
+
+	enum DataInterpolation {
+		INTERPOLATION_FLAT,
+		INTERPOLATION_NO_PERSPECTIVE,
+		INTERPOLATION_SMOOTH,
 	};
 
 	enum Operator {
@@ -431,6 +440,7 @@ public:
 
 		struct Varying {
 			DataType type;
+			DataInterpolation interpolation;
 			DataPrecision precission;
 		};
 
@@ -511,6 +521,8 @@ public:
 
 	static bool is_token_datatype(TokenType p_type);
 	static DataType get_token_datatype(TokenType p_type);
+	static bool is_token_interpolation(TokenType p_type);
+	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_datatype_name(DataType p_type);
