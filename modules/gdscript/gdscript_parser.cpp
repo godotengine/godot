@@ -3389,6 +3389,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							_set_error("Can't export null type.");
 							return;
 						}
+						if (type == Variant::OBJECT) {
+							_set_error("Can't export raw object type.");
+							return;
+						}
 						current_export.type = type;
 						current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 						tokenizer->advance();
