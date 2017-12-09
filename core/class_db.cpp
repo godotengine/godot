@@ -1036,7 +1036,6 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			r_value = *c;
 			return true;
 		}
-		//if (check->constant_map.fin)
 
 		check = check->inherits_ptr;
 	}
@@ -1157,24 +1156,6 @@ bool ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inhe
 			return true;
 		if (p_no_inheritance)
 			return false;
-		check = check->inherits_ptr;
-	}
-
-	return false;
-}
-
-bool ClassDB::get_setter_and_type_for_property(const StringName &p_class, const StringName &p_prop, StringName &r_class, StringName &r_setter) {
-
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-
-		if (check->property_setget.has(p_prop)) {
-			r_class = check->name;
-			r_setter = check->property_setget[p_prop].setter;
-			return true;
-		}
-
 		check = check->inherits_ptr;
 	}
 

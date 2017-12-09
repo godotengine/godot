@@ -647,7 +647,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					}
 				}
 
-				if (type)
+				if (type != Variant::NIL)
 					property_select->select_property_from_basic_type(type, v);
 
 				updating = false;
@@ -2802,13 +2802,12 @@ void PropertyEditor::update_tree() {
 			TreeItem *sep = tree->create_item(root);
 			current_category = sep;
 			String type = p.name;
-			//*
+
 			if (has_icon(type, "EditorIcons"))
 				sep->set_icon(0, get_icon(type, "EditorIcons"));
 			else
 				sep->set_icon(0, get_icon("Object", "EditorIcons"));
 
-			//*/
 			sep->set_text(0, type);
 			sep->set_expand_right(0, true);
 			sep->set_selectable(0, false);
@@ -2934,38 +2933,36 @@ void PropertyEditor::update_tree() {
 		}
 
 		if (use_doc_hints) {
-			StringName setter;
-			StringName type;
-			if (ClassDB::get_setter_and_type_for_property(obj->get_class_name(), p.name, type, setter)) {
 
-				String descr;
-				bool found = false;
-				Map<StringName, Map<StringName, String> >::Element *E = descr_cache.find(type);
-				if (E) {
+			StringName classname = obj->get_class_name();
+			StringName propname = p.name;
+			String descr;
+			bool found = false;
 
-					Map<StringName, String>::Element *F = E->get().find(setter);
-					if (F) {
-						found = true;
-						descr = F->get();
-					}
+			Map<StringName, Map<StringName, String> >::Element *E = descr_cache.find(classname);
+			if (E) {
+				Map<StringName, String>::Element *F = E->get().find(propname);
+				if (F) {
+					found = true;
+					descr = F->get();
 				}
-				if (!found) {
+			}
 
-					DocData *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type);
-					if (E) {
-						for (int i = 0; i < E->get().methods.size(); i++) {
-							if (E->get().methods[i].name == setter.operator String()) {
-								descr = E->get().methods[i].description.strip_edges().word_wrap(80);
-							}
+			if (!found) {
+				DocData *dd = EditorHelp::get_doc_data();
+				Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(classname);
+				if (E) {
+					for (int i = 0; i < E->get().properties.size(); i++) {
+						if (E->get().properties[i].name == propname.operator String()) {
+							descr = E->get().properties[i].description.strip_edges().word_wrap(80);
 						}
 					}
-
-					descr_cache[type][setter] = descr;
 				}
 
-				item->set_tooltip(0, TTR("Property:") + " " + p.name + "\n\n" + descr);
+				descr_cache[classname][propname] = descr;
 			}
+
+			item->set_tooltip(0, TTR("Property:") + " " + p.name + "\n\n" + descr);
 		}
 
 		Dictionary d;
