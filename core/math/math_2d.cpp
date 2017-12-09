@@ -222,35 +222,6 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
 						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
-
-	/*
-	real_t mu = p_t;
-	real_t mu2 = mu*mu;
-
-	Vector2 a0 = p_post_b - p_b - p_pre_a + *this;
-	Vector2 a1 = p_pre_a - *this - a0;
-	Vector2 a2 = p_b - p_pre_a;
-	Vector2 a3 = *this;
-
-	return ( a0*mu*mu2 + a1*mu2 + a2*mu + a3 );
-*/
-	/*
-	real_t t = p_t;
-	real_t t2 = t*t;
-	real_t t3 = t2*t;
-
-	real_t a =  2.0*t3- 3.0*t2 + 1;
-	real_t b = -2.0*t3+ 3.0*t2;
-	real_t c =    t3- 2.0*t2 + t;
-	real_t d =    t3- t2;
-
-	Vector2 p_a=*this;
-
-	return Vector2(
-		(a * p_a.x) + (b *p_b.x) + (c * p_pre_a.x) + (d * p_post_b.x),
-		(a * p_a.y) + (b *p_b.y) + (c * p_pre_a.y) + (d * p_post_b.y)
-	);
-*/
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.

@@ -360,6 +360,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Rect2, grow_margin);
 	VCALL_LOCALMEM4R(Rect2, grow_individual);
 	VCALL_LOCALMEM1R(Rect2, expand);
+	VCALL_LOCALMEM0R(Rect2, abs);
 
 	VCALL_LOCALMEM0R(Vector3, min_axis);
 	VCALL_LOCALMEM0R(Vector3, max_axis);
@@ -1526,6 +1527,7 @@ void register_variant_methods() {
 	ADDFUNC2R(RECT2, RECT2, Rect2, grow_margin, INT, "margin", REAL, "by", varray());
 	ADDFUNC4R(RECT2, RECT2, Rect2, grow_individual, REAL, "left", REAL, "top", REAL, "right", REAL, " bottom", varray());
 	ADDFUNC1R(RECT2, RECT2, Rect2, expand, VECTOR2, "to", varray());
+	ADDFUNC0R(RECT2, RECT2, Rect2, abs, varray());
 
 	ADDFUNC0R(VECTOR3, INT, Vector3, min_axis, varray());
 	ADDFUNC0R(VECTOR3, INT, Vector3, max_axis, varray());
