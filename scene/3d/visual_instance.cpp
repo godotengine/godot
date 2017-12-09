@@ -113,7 +113,7 @@ void VisualInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER, "3D Render Layers"), "set_layer_mask", "get_layer_mask");
 }
 
 void VisualInstance::set_base(const RID &p_base) {
