@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tree.h"
-#include <limits.h>
 
 #include "os/input.h"
 #include "os/keyboard.h"
+#include "os/main_loop.h"
 #include "os/os.h"
 #include "print_string.h"
 #include "project_settings.h"
 #include "scene/main/viewport.h"
+
+#include <limits.h>
 
 void TreeItem::move_to_top() {
 
@@ -2447,6 +2449,14 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
+  if (drag_exited) {
+
+		drag_exited = false;
+		pressing_for_editor = false;
+		range_drag_enabled = false;
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+  }
+
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
@@ -2932,6 +2942,14 @@ void Tree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 		update_cache();
+	}
+
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+		drag_exited = false;
+	}
+
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+		drag_exited = true;;
 	}
 }
 
