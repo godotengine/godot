@@ -48,6 +48,30 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	}
 
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
+
+	if (rcedit_path == String()) {
+		return OK;
+	}
+
+	if (!FileAccess::exists(rcedit_path)) {
+		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ", aborting.");
+		return ERR_FILE_NOT_FOUND;
+	}
+
+#ifndef WINDOWS_ENABLED
+	// On non-Windows we need WINE to run rcedit
+	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
+
+	if (wine_path != String() && !FileAccess::exists(wine_path)) {
+		ERR_PRINTS("Could not find wine executable at " + wine_path + ", aborting.");
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	if (wine_path == String()) {
+		wine_path = "wine"; // try to run wine from PATH
+	}
+#endif
+
 	String icon_path = p_preset->get("application/icon");
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
@@ -57,14 +81,6 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	String copyright = p_preset->get("application/copyright");
 	String trademarks = p_preset->get("application/trademarks");
 	String comments = p_preset->get("application/comments");
-
-	if (rcedit_path == String()) {
-		return OK;
-	}
-
-	if (!FileAccess::exists(rcedit_path)) {
-		return ERR_FILE_NOT_FOUND;
-	}
 
 	List<String> args;
 	args.push_back(p_path);
@@ -106,7 +122,14 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		args.push_back(trademarks);
 	}
 
+#ifdef WINDOWS_ENABLED
 	OS::get_singleton()->execute(rcedit_path, args, true);
+#else
+	// On non-Windows we need WINE to run rcedit
+	args.push_front(rcedit_path);
+	OS::get_singleton()->execute(wine_path, args, true);
+#endif
+
 	return OK;
 }
 
@@ -127,6 +150,11 @@ void register_windows_exporter() {
 
 	EDITOR_DEF("export/windows/rcedit", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+#ifndef WINDOWS_ENABLED
+	// On non-Windows we need WINE to run rcedit
+	EDITOR_DEF("export/windows/wine", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/wine", PROPERTY_HINT_GLOBAL_FILE));
+#endif
 
 	Ref<EditorExportPlatformWindows> platform;
 	platform.instance();
