@@ -24,6 +24,7 @@
 			<argument index="3" name="bottom" type="RID">
 			</argument>
 			<description>
+				Sets images to be rendered in the window margin.
 			</description>
 		</method>
 		<method name="black_bars_set_margins">
@@ -38,12 +39,14 @@
 			<argument index="3" name="bottom" type="int">
 			</argument>
 			<description>
+				Sets margin size, where black bars (or images, if [method black_bars_set_images] was used) are rendered.
 			</description>
 		</method>
 		<method name="canvas_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates a canvas and returns the assigned [RID].
 			</description>
 		</method>
 		<method name="canvas_item_add_circle">
@@ -58,6 +61,7 @@
 			<argument index="3" name="color" type="Color">
 			</argument>
 			<description>
+				Adds a circle command to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_clip_ignore">
@@ -68,6 +72,7 @@
 			<argument index="1" name="ignore" type="bool">
 			</argument>
 			<description>
+				If ignore is [code]true[/code], the VisualServer does not perform clipping.
 			</description>
 		</method>
 		<method name="canvas_item_add_line">
@@ -86,6 +91,7 @@
 			<argument index="5" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Adds a line command to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_mesh">
@@ -98,6 +104,7 @@
 			<argument index="2" name="skeleton" type="RID">
 			</argument>
 			<description>
+				Adds a [Mesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -110,6 +117,7 @@
 			<argument index="2" name="skeleton" type="RID">
 			</argument>
 			<description>
+				Adds a [MultiMesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
 			</description>
 		</method>
 		<method name="canvas_item_add_nine_patch">
@@ -138,6 +146,8 @@
 			<argument index="10" name="normal_map" type="RID">
 			</argument>
 			<description>
+				Adds a nine patch image to the [CanvasItem]'s draw commands.
+				See [NinePatchRect] for more explanation.
 			</description>
 		</method>
 		<method name="canvas_item_add_particles">
@@ -156,6 +166,7 @@
 			<argument index="5" name="v_frames" type="int">
 			</argument>
 			<description>
+				Adds a particles system to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_polygon">
@@ -176,6 +187,7 @@
 			<argument index="6" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Adds a polygon to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -192,6 +204,7 @@
 			<argument index="4" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Adds a polyline, which is a line from mutliple points with a width, to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -212,6 +225,7 @@
 			<argument index="6" name="normal_map" type="RID">
 			</argument>
 			<description>
+				Adds a primitive to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_rect">
@@ -224,6 +238,7 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
+				Adds a rectangle to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_set_transform">
@@ -234,6 +249,8 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Adds a [Transform2D] command to the [CanvasItem]'s draw commands.
+				This sets the extra_matrix uniform when executed. This affects the later command's of the canvas item.
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect">
@@ -254,6 +271,7 @@
 			<argument index="6" name="normal_map" type="RID">
 			</argument>
 			<description>
+				Adds a textured rect to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect_region">
@@ -276,6 +294,7 @@
 			<argument index="7" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
+				Adds a texture rect with region setting to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_triangle_array">
@@ -298,6 +317,7 @@
 			<argument index="7" name="normal_map" type="RID">
 			</argument>
 			<description>
+				Adds a triangle array to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -306,12 +326,14 @@
 			<argument index="0" name="item" type="RID">
 			</argument>
 			<description>
+				Clears the [CanvasItem] and removes all commands in it.
 			</description>
 		</method>
 		<method name="canvas_item_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates a new [CanvasItem] and returns its [RID].
 			</description>
 		</method>
 		<method name="canvas_item_set_clip">
@@ -322,6 +344,7 @@
 			<argument index="1" name="clip" type="bool">
 			</argument>
 			<description>
+				Sets clipping for the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_copy_to_backbuffer">
@@ -334,6 +357,7 @@
 			<argument index="2" name="rect" type="Rect2">
 			</argument>
 			<description>
+				Sets the [CanvasItem] to copy a rect to the backbuffer.
 			</description>
 		</method>
 		<method name="canvas_item_set_custom_rect">
@@ -346,6 +370,7 @@
 			<argument index="2" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
 			</argument>
 			<description>
+				Defines a custom drawing rectangle for the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_distance_field_mode">
@@ -366,6 +391,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets [CanvasItem] to be drawn behind its parent.
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_index">
@@ -376,6 +402,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
+				Sets the index for the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_light_mask">
@@ -386,6 +413,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
+				The light mask. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_item_set_material">
@@ -396,6 +424,7 @@
 			<argument index="1" name="material" type="RID">
 			</argument>
 			<description>
+				Sets a new material to the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_modulate">
@@ -406,6 +435,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color that modulates the [CanvasItem] and its children.
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">
@@ -416,6 +446,7 @@
 			<argument index="1" name="parent" type="RID">
 			</argument>
 			<description>
+				Sets the parent for the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">
@@ -426,6 +457,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color that modulates the [CanvasItem] without children.
 			</description>
 		</method>
 		<method name="canvas_item_set_sort_children_by_y">
@@ -436,6 +468,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets if [CanvasItem]'s children should be sorted by y-position.
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">
@@ -446,6 +479,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Sets the [CanvasItem]'s [Transform2D].
 			</description>
 		</method>
 		<method name="canvas_item_set_use_parent_material">
@@ -456,6 +490,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Sets if the [CanvasItem] uses its parent's material.
 			</description>
 		</method>
 		<method name="canvas_item_set_visible">
@@ -466,6 +501,7 @@
 			<argument index="1" name="visible" type="bool">
 			</argument>
 			<description>
+				Sets if the canvas item (including its children) is visible.
 			</description>
 		</method>
 		<method name="canvas_item_set_z">
@@ -476,6 +512,7 @@
 			<argument index="1" name="z" type="int">
 			</argument>
 			<description>
+				Sets the [CanvasItem]'s z order position.
 			</description>
 		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
@@ -486,6 +523,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If this is enabled, the z-position of the parent will be added to the childrens z-position.
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">
@@ -496,12 +534,14 @@
 			<argument index="1" name="canvas" type="RID">
 			</argument>
 			<description>
+				Attaches the canvas light to the canvas. Removes it from its previous canvas.
 			</description>
 		</method>
 		<method name="canvas_light_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates a canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_attach_to_canvas">
@@ -512,12 +552,14 @@
 			<argument index="1" name="canvas" type="RID">
 			</argument>
 			<description>
+				Attaches a light occluder to the canvas. Removes it from its previous canvas.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates a light occluder.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_enabled">
@@ -528,6 +570,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables or disables light occluder.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_light_mask">
@@ -538,6 +581,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
+				The light mask. See [LightOccluder2D] for more information on light masks
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_polygon">
@@ -548,6 +592,7 @@
 			<argument index="1" name="polygon" type="RID">
 			</argument>
 			<description>
+				Sets a light occluder's polygon.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_transform">
@@ -558,6 +603,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Sets a light occluder's [Transform2D].
 			</description>
 		</method>
 		<method name="canvas_light_set_color">
@@ -568,6 +614,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color for a light.
 			</description>
 		</method>
 		<method name="canvas_light_set_enabled">
@@ -578,6 +625,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables or disables a canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_set_energy">
@@ -588,6 +636,7 @@
 			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
+				Sets a canvas light's energy.
 			</description>
 		</method>
 		<method name="canvas_light_set_height">
@@ -598,6 +647,7 @@
 			<argument index="1" name="height" type="float">
 			</argument>
 			<description>
+				Sets a canvas light's height. 
 			</description>
 		</method>
 		<method name="canvas_light_set_item_cull_mask">
@@ -608,6 +658,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
+				The light mask. See [LightOccluder2D] for more information on light masks
 			</description>
 		</method>
 		<method name="canvas_light_set_item_shadow_cull_mask">
@@ -618,6 +669,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
+				The shadow mask. binary about wich layers this canvas light affects wich canvas item's shadows. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_light_set_layer_range">
@@ -630,6 +682,7 @@
 			<argument index="2" name="max_layer" type="int">
 			</argument>
 			<description>
+				The layer range that gets rendered with this light.
 			</description>
 		</method>
 		<method name="canvas_light_set_mode">
@@ -640,6 +693,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasLightMode">
 			</argument>
 			<description>
+				The mode of the light, see CANVAS_LIGHT_MODE_* constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_scale">
@@ -660,6 +714,7 @@
 			<argument index="1" name="size" type="int">
 			</argument>
 			<description>
+				Sets the width of the shadow buffer, size gets scaled to the next power of two for this.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_color">
@@ -670,6 +725,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the color of the canvas light's shadow.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_enabled">
@@ -680,6 +736,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables or disables the canvas light's shadow.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_filter">
@@ -690,6 +747,7 @@
 			<argument index="1" name="filter" type="int" enum="VisualServer.CanvasLightShadowFilter">
 			</argument>
 			<description>
+				Sets the canvas light's shadow's filter, see CANVAS_LIGHT_SHADOW_FILTER_* constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_gradient_length">
@@ -700,6 +758,7 @@
 			<argument index="1" name="length" type="float">
 			</argument>
 			<description>
+				Sets the length of the shadow's gradient.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_smooth">
@@ -710,6 +769,7 @@
 			<argument index="1" name="smooth" type="float">
 			</argument>
 			<description>
+				Smoothens the shadow. The lower, the more smooth.
 			</description>
 		</method>
 		<method name="canvas_light_set_texture">
@@ -740,6 +800,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Sets the canvas light's [Transform2D].
 			</description>
 		</method>
 		<method name="canvas_light_set_z_range">
@@ -758,6 +819,7 @@
 			<return type="RID">
 			</return>
 			<description>
+				Creates a new light occluder polygon.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_cull_mode">
@@ -768,6 +830,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasOccluderPolygonCullMode">
 			</argument>
 			<description>
+				Sets an occluder polygons cull mode. See CANVAS_OCCLUDER_POLYGON_CULL_MODE_* constants.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape">
@@ -780,6 +843,7 @@
 			<argument index="2" name="closed" type="bool">
 			</argument>
 			<description>
+				Sets the shape of the occluder polygon.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape_as_lines">
@@ -790,6 +854,7 @@
 			<argument index="1" name="shape" type="PoolVector2Array">
 			</argument>
 			<description>
+				Sets the shape of the occluder polygon as lines.
 			</description>
 		</method>
 		<method name="canvas_set_item_mirroring">
@@ -802,6 +867,7 @@
 			<argument index="2" name="mirroring" type="Vector2">
 			</argument>
 			<description>
+				A copy of the canvas item will be drawn with a local offset of the mirroring [Vector2].
 			</description>
 		</method>
 		<method name="canvas_set_modulate">
@@ -812,6 +878,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Modulates all colors in the given canvas.
 			</description>
 		</method>
 		<method name="draw">
@@ -820,12 +887,14 @@
 			<argument index="0" name="swap_buffers" type="bool" default="true">
 			</argument>
 			<description>
+				Draws a frame.
 			</description>
 		</method>
 		<method name="finish">
 			<return type="void">
 			</return>
 			<description>
+				Removes buffers and clears testcubes.
 			</description>
 		</method>
 		<method name="force_draw">
@@ -834,12 +903,14 @@
 			<argument index="0" name="swap_buffers" type="bool" default="true">
 			</argument>
 			<description>
+				Draws a frame. Same as [method draw].
 			</description>
 		</method>
 		<method name="force_sync">
 			<return type="void">
 			</return>
 			<description>
+				Syncronizes threads.
 			</description>
 		</method>
 		<method name="free">
@@ -848,6 +919,7 @@
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
+				Tries to free an object in the VisualServer.
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -856,30 +928,35 @@
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo">
 			</argument>
 			<description>
+				Returns a certain information, see RENDER_INFO_* for options.
 			</description>
 		</method>
 		<method name="get_test_cube">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the id of the test cube. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_test_texture">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the id of the test texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="get_white_texture">
 			<return type="RID">
 			</return>
 			<description>
+				Returns the id of a white texture. Creates one if none exists.
 			</description>
 		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if changes have been made to the VisualServer's data. [method draw] is usually called if this happens.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -896,12 +973,14 @@
 			<argument index="0" name="feature" type="String">
 			</argument>
 			<description>
+				Returns true, if the OS supports a certain feature. Features might be s3tc, etc, etc2 and pvrtc,
 			</description>
 		</method>
 		<method name="init">
 			<return type="void">
 			</return>
 			<description>
+				Initializes the visual server.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -914,12 +993,14 @@
 			<argument index="2" name="radius" type="float">
 			</argument>
 			<description>
+				Returns a mesh of a sphere with the given amount of horizontal and vertical subdivisions.
 			</description>
 		</method>
 		<method name="material_create">
 			<return type="RID">
 			</return>
 			<description>
+				Returns an empty material.
 			</description>
 		</method>
 		<method name="material_get_param" qualifiers="const">
@@ -930,6 +1011,7 @@
 			<argument index="1" name="parameter" type="String">
 			</argument>
 			<description>
+				Returns the value of a certain material's parameter.
 			</description>
 		</method>
 		<method name="material_get_shader" qualifiers="const">
@@ -938,6 +1020,7 @@
 			<argument index="0" name="shader_material" type="RID">
 			</argument>
 			<description>
+				Returns the shader of a certain material's shader. Returns an empty RID if the material doesn't have a shader.
 			</description>
 		</method>
 		<method name="material_set_line_width">
@@ -948,6 +1031,7 @@
 			<argument index="1" name="width" type="float">
 			</argument>
 			<description>
+				Sets a materials line width.
 			</description>
 		</method>
 		<method name="material_set_next_pass">
@@ -958,6 +1042,7 @@
 			<argument index="1" name="next_material" type="RID">
 			</argument>
 			<description>
+				Sets an objects next material.
 			</description>
 		</method>
 		<method name="material_set_param">
@@ -970,6 +1055,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
+				Sets a materials parameter.
 			</description>
 		</method>
 		<method name="material_set_render_priority">
@@ -980,6 +1066,7 @@
 			<argument index="1" name="priority" type="int">
 			</argument>
 			<description>
+				Sets a material's render priority.
 			</description>
 		</method>
 		<method name="material_set_shader">
@@ -990,6 +1077,7 @@
 			<argument index="1" name="shader" type="RID">
 			</argument>
 			<description>
+				Sets a shader material's shader.
 			</description>
 		</method>
 		<method name="mesh_add_surface_from_arrays">
@@ -1006,6 +1094,7 @@
 			<argument index="4" name="compress_format" type="int" default="97792">
 			</argument>
 			<description>
+				Adds a surface generated from the Arrays to a mesh. See PRIMITIVE_TYPE_* constants for types.
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -1014,12 +1103,14 @@
 			<argument index="0" name="mesh" type="RID">
 			</argument>
 			<description>
+				Removes all surfaces from a mesh.
 			</description>
 		</method>
 		<method name="mesh_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates a new mesh.
 			</description>
 		</method>
 		<method name="mesh_get_blend_shape_count" qualifiers="const">
@@ -1028,6 +1119,7 @@
 			<argument index="0" name="mesh" type="RID">
 			</argument>
 			<description>
+				Returns a mesh's blend shape count.
 			</description>
 		</method>
 		<method name="mesh_get_blend_shape_mode" qualifiers="const">
@@ -1036,6 +1128,7 @@
 			<argument index="0" name="mesh" type="RID">
 			</argument>
 			<description>
+				Returns a mesh's blend shape mode.
 			</description>
 		</method>
 		<method name="mesh_get_custom_aabb" qualifiers="const">
@@ -1044,6 +1137,7 @@
 			<argument index="0" name="mesh" type="RID">
 			</argument>
 			<description>
+				Returns a mesh's custom aabb.
 			</description>
 		</method>
 		<method name="mesh_get_surface_count" qualifiers="const">
@@ -1052,6 +1146,7 @@
 			<argument index="0" name="mesh" type="RID">
 			</argument>
 			<description>
+				Returns a mesh's number of surfaces.
 			</description>
 		</method>
 		<method name="mesh_remove_surface">
@@ -1062,6 +1157,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
+				Removes a mesh's surface.
 			</description>
 		</method>
 		<method name="mesh_set_blend_shape_count">
@@ -1072,6 +1168,7 @@
 			<argument index="1" name="amount" type="int">
 			</argument>
 			<description>
+				Sets a mesh's blend shape count.
 			</description>
 		</method>
 		<method name="mesh_set_blend_shape_mode">
@@ -1082,6 +1179,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.BlendShapeMode">
 			</argument>
 			<description>
+				Sets a mesh's blend shape mode.
 			</description>
 		</method>
 		<method name="mesh_set_custom_aabb">
@@ -1092,6 +1190,7 @@
 			<argument index="1" name="aabb" type="AABB">
 			</argument>
 			<description>
+				Sets a mesh's custom aabb.
 			</description>
 		</method>
 		<method name="mesh_surface_get_aabb" qualifiers="const">
@@ -1102,6 +1201,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's aabb.
 			</description>
 		</method>
 		<method name="mesh_surface_get_array" qualifiers="const">
@@ -1112,6 +1212,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's vertex buffer.
 			</description>
 		</method>
 		<method name="mesh_surface_get_array_index_len" qualifiers="const">
@@ -1122,6 +1223,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's amount of indices.
 			</description>
 		</method>
 		<method name="mesh_surface_get_array_len" qualifiers="const">
@@ -1132,6 +1234,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's amount of vertices.
 			</description>
 		</method>
 		<method name="mesh_surface_get_arrays" qualifiers="const">
@@ -1142,6 +1245,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's buffer arrays.
 			</description>
 		</method>
 		<method name="mesh_surface_get_blend_shape_arrays" qualifiers="const">
@@ -1152,6 +1256,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's arrays for blend shapes
 			</description>
 		</method>
 		<method name="mesh_surface_get_format" qualifiers="const">
@@ -1162,6 +1267,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns the format of a mesh's surface.
 			</description>
 		</method>
 		<method name="mesh_surface_get_index_array" qualifiers="const">
@@ -1172,6 +1278,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's index buffer.
 			</description>
 		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
@@ -1182,6 +1289,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns a mesh's surface's material.
 			</description>
 		</method>
 		<method name="mesh_surface_get_primitive_type" qualifiers="const">
@@ -1192,6 +1300,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns the primitive type of a mesh's surface.
 			</description>
 		</method>
 		<method name="mesh_surface_get_skeleton_aabb" qualifiers="const">
@@ -1202,6 +1311,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
+				Returns the aabb of a mesh's surface's skeleton.
 			</description>
 		</method>
 		<method name="mesh_surface_set_material">
@@ -1214,6 +1324,7 @@
 			<argument index="2" name="material" type="RID">
 			</argument>
 			<description>
+				Sets a mesh's surface's material.
 			</description>
 		</method>
 		<method name="request_frame_drawn_callback">
@@ -1240,6 +1351,7 @@
 			<argument index="2" name="scale" type="bool">
 			</argument>
 			<description>
+				Sets a boot image. The color defines the background color and if scale is [code]true[/code], the image will be scaled to fit the screen size.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -1262,6 +1374,7 @@
 			<return type="RID">
 			</return>
 			<description>
+				Creates an empty shader.
 			</description>
 		</method>
 		<method name="shader_get_code" qualifiers="const">
@@ -1270,6 +1383,7 @@
 			<argument index="0" name="shader" type="RID">
 			</argument>
 			<description>
+				Returns a shader's code.
 			</description>
 		</method>
 		<method name="shader_get_default_texture_param" qualifiers="const">
@@ -1280,6 +1394,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Returns a default texture from a shader searched by name.
 			</description>
 		</method>
 		<method name="shader_get_param_list" qualifiers="const">
@@ -1288,6 +1403,7 @@
 			<argument index="0" name="shader" type="RID">
 			</argument>
 			<description>
+				Returns the parameters of a shader.
 			</description>
 		</method>
 		<method name="shader_set_code">
@@ -1298,6 +1414,7 @@
 			<argument index="1" name="code" type="String">
 			</argument>
 			<description>
+				Sets a shader's code.
 			</description>
 		</method>
 		<method name="shader_set_default_texture_param">
@@ -1310,12 +1427,14 @@
 			<argument index="2" name="texture" type="RID">
 			</argument>
 			<description>
+				Sets a shader's default texture. Overwrites the texture given by name.
 			</description>
 		</method>
 		<method name="sky_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates an empty sky.
 			</description>
 		</method>
 		<method name="sky_set_texture">
@@ -1328,6 +1447,7 @@
 			<argument index="2" name="radiance_size" type="int">
 			</argument>
 			<description>
+				Sets a sky's texture.
 			</description>
 		</method>
 		<method name="sync">
@@ -1350,12 +1470,14 @@
 			<argument index="4" name="flags" type="int" default="7">
 			</argument>
 			<description>
+				Allocates space for a texture's image or video.
 			</description>
 		</method>
 		<method name="texture_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates an empty texture.
 			</description>
 		</method>
 		<method name="texture_create_from_image">
@@ -1366,12 +1488,14 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
+				Creates a texture, allocates the space for an image, and fills in the image.
 			</description>
 		</method>
 		<method name="texture_debug_usage">
 			<return type="Array">
 			</return>
 			<description>
+				Returns a list of all the textures and their information. 
 			</description>
 		</method>
 		<method name="texture_get_data" qualifiers="const">
@@ -1382,6 +1506,7 @@
 			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
 			</argument>
 			<description>
+				Returns a copy of a texture's image unless it's a CubeMap, in wich case it returns the [RID] of the image at one of the cubes sides.
 			</description>
 		</method>
 		<method name="texture_get_flags" qualifiers="const">
@@ -1390,6 +1515,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the flags of a texture.
 			</description>
 		</method>
 		<method name="texture_get_format" qualifiers="const">
@@ -1398,6 +1524,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the format of the texture's image.
 			</description>
 		</method>
 		<method name="texture_get_height" qualifiers="const">
@@ -1406,6 +1533,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the texture's height.
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
@@ -1414,6 +1542,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the texture's path.
 			</description>
 		</method>
 		<method name="texture_get_texid" qualifiers="const">
@@ -1422,6 +1551,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the opengl id of the texture's image.
 			</description>
 		</method>
 		<method name="texture_get_width" qualifiers="const">
@@ -1430,6 +1560,7 @@
 			<argument index="0" name="texture" type="RID">
 			</argument>
 			<description>
+				Returns the texture's width.
 			</description>
 		</method>
 		<method name="texture_set_data">
@@ -1442,6 +1573,7 @@
 			<argument index="2" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
 			</argument>
 			<description>
+				Sets the texture's image data. If it's a CubeMap, it sets the image data at a cube side.
 			</description>
 		</method>
 		<method name="texture_set_flags">
@@ -1452,6 +1584,7 @@
 			<argument index="1" name="flags" type="int">
 			</argument>
 			<description>
+				Sets the texture's flags. See [enum TextureFlags] for options
 			</description>
 		</method>
 		<method name="texture_set_path">
@@ -1462,6 +1595,7 @@
 			<argument index="1" name="path" type="String">
 			</argument>
 			<description>
+				Sets the texture's path.
 			</description>
 		</method>
 		<method name="texture_set_shrink_all_x2_on_set_data">
@@ -1470,6 +1604,7 @@
 			<argument index="0" name="shrink" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], sets internal processes to shrink all image data to half the size.
 			</description>
 		</method>
 		<method name="texture_set_size_override">
@@ -1482,6 +1617,7 @@
 			<argument index="2" name="height" type="int">
 			</argument>
 			<description>
+				Overwrites the texture's width and height.
 			</description>
 		</method>
 		<method name="textures_keep_original">
@@ -1490,6 +1626,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], the image will be stored in the texture's images array if overwritten.
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -1500,6 +1637,7 @@
 			<argument index="1" name="camera" type="RID">
 			</argument>
 			<description>
+				Sets a viewport's camera.
 			</description>
 		</method>
 		<method name="viewport_attach_canvas">
@@ -1510,6 +1648,7 @@
 			<argument index="1" name="canvas" type="RID">
 			</argument>
 			<description>
+				Sets a viewport's canvas.
 			</description>
 		</method>
 		<method name="viewport_attach_to_screen">
@@ -1522,12 +1661,14 @@
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
 			<description>
+				Attaches a viewport to a screen.
 			</description>
 		</method>
 		<method name="viewport_create">
 			<return type="RID">
 			</return>
 			<description>
+				Creates an empty viewport.
 			</description>
 		</method>
 		<method name="viewport_detach">
@@ -1536,6 +1677,7 @@
 			<argument index="0" name="viewport" type="RID">
 			</argument>
 			<description>
+				Detaches the viewport from the screen.
 			</description>
 		</method>
 		<method name="viewport_get_render_info">
@@ -1546,6 +1688,7 @@
 			<argument index="1" name="info" type="int" enum="VisualServer.ViewportRenderInfo">
 			</argument>
 			<description>
+				Returns a viewport's render info. for options see VIEWPORT_RENDER_INFO* constants.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
@@ -1554,6 +1697,7 @@
 			<argument index="0" name="viewport" type="RID">
 			</argument>
 			<description>
+				Returns the viewport's last rendered frame.
 			</description>
 		</method>
 		<method name="viewport_remove_canvas">
@@ -1564,6 +1708,7 @@
 			<argument index="1" name="canvas" type="RID">
 			</argument>
 			<description>
+				Detaches a viewport from a canvas and vice versa.
 			</description>
 		</method>
 		<method name="viewport_set_active">
@@ -1574,6 +1719,7 @@
 			<argument index="1" name="active" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], sets the viewport active, else sets it inactive.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_layer">
@@ -1586,6 +1732,7 @@
 			<argument index="2" name="layer" type="int">
 			</argument>
 			<description>
+				Sets the renderlayer for a viewport's canvas.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_transform">
@@ -1598,6 +1745,7 @@
 			<argument index="2" name="offset" type="Transform2D">
 			</argument>
 			<description>
+				Sets the transformation of a viewport's canvas.
 			</description>
 		</method>
 		<method name="viewport_set_clear_mode">
@@ -1608,6 +1756,7 @@
 			<argument index="1" name="clear_mode" type="int" enum="VisualServer.ViewportClearMode">
 			</argument>
 			<description>
+				Sets the clear mode of a viewport. See VIEWPORT_CLEAR_MODE_* constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_debug_draw">
@@ -1618,6 +1767,7 @@
 			<argument index="1" name="draw" type="int" enum="VisualServer.ViewportDebugDraw">
 			</argument>
 			<description>
+				Sets the debug draw mode of a viewport. See VIEWPORT_DEBUG_DRAW_* constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_disable_3d">
@@ -1628,6 +1778,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] a viewport's 3D rendering should be disabled.
 			</description>
 		</method>
 		<method name="viewport_set_disable_environment">
@@ -1638,6 +1789,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] rendering of a viewport's environment should be disabled.
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
@@ -1648,6 +1800,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Sets the viewport's global transformation matrix.
 			</description>
 		</method>
 		<method name="viewport_set_hdr">
@@ -1658,6 +1811,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the viewport should render to hdr.
 			</description>
 		</method>
 		<method name="viewport_set_hide_canvas">
@@ -1668,6 +1822,7 @@
 			<argument index="1" name="hidden" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the viewport's canvas should not be rendered.
 			</description>
 		</method>
 		<method name="viewport_set_hide_scenario">
@@ -1688,6 +1843,7 @@
 			<argument index="1" name="msaa" type="int" enum="VisualServer.ViewportMSAA">
 			</argument>
 			<description>
+				Sets the anti-aliasing mode. see [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_parent_viewport">
@@ -1698,6 +1854,7 @@
 			<argument index="1" name="parent_viewport" type="RID">
 			</argument>
 			<description>
+				Sets the viewport's parent to another viewport.
 			</description>
 		</method>
 		<method name="viewport_set_scenario">
@@ -1708,6 +1865,8 @@
 			<argument index="1" name="scenario" type="RID">
 			</argument>
 			<description>
+				Sets a viewport's scenario.
+				The scenario contains information about the [enum ScenarioDebugMode], environment information, reflection atlas etc.
 			</description>
 		</method>
 		<method name="viewport_set_shadow_atlas_quadrant_subdivision">
@@ -1720,6 +1879,7 @@
 			<argument index="2" name="subdivision" type="int">
 			</argument>
 			<description>
+				Sets the shadow atlas quadrant's subdivision.
 			</description>
 		</method>
 		<method name="viewport_set_shadow_atlas_size">
@@ -1730,6 +1890,7 @@
 			<argument index="1" name="size" type="int">
 			</argument>
 			<description>
+				Sets the size of the shadow atlas's images.
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -1742,6 +1903,7 @@
 			<argument index="2" name="height" type="int">
 			</argument>
 			<description>
+				Sets the viewport's width and height.
 			</description>
 		</method>
 		<method name="viewport_set_transparent_background">
@@ -1752,6 +1914,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the viewport should render its background as transparent.
 			</description>
 		</method>
 		<method name="viewport_set_update_mode">
@@ -1762,6 +1925,7 @@
 			<argument index="1" name="update_mode" type="int" enum="VisualServer.ViewportUpdateMode">
 			</argument>
 			<description>
+				Sets when the viewport should be updated. See VIEWPORT_UPDATE_MODE_* constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_usage">
@@ -1772,6 +1936,7 @@
 			<argument index="1" name="usage" type="int" enum="VisualServer.ViewportUsage">
 			</argument>
 			<description>
+				Sets what should be rendered in the viewport. See VIEWPORT_USAGE_* constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_use_arvr">
@@ -1782,6 +1947,7 @@
 			<argument index="1" name="use_arvr" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the viewport should use augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
 		<method name="viewport_set_vflip">
@@ -1792,6 +1958,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code] the viewport's rendering should be flipped vertically.
 			</description>
 		</method>
 	</methods>
@@ -1803,160 +1970,232 @@
 	</signals>
 	<constants>
 		<constant name="NO_INDEX_ARRAY" value="-1">
+			Marks an error that shows that the index array is empty.
 		</constant>
 		<constant name="ARRAY_WEIGHTS_SIZE" value="4">
 		</constant>
 		<constant name="CANVAS_ITEM_Z_MIN" value="-4096">
+			The minimum Z-layer for canvas items.
 		</constant>
 		<constant name="CANVAS_ITEM_Z_MAX" value="4096">
+			The maximum Z-layer for canvas items.
 		</constant>
 		<constant name="MAX_GLOW_LEVELS" value="7">
 		</constant>
 		<constant name="MAX_CURSORS" value="8">
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
+			The minimum renderpriority of all materials.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
+			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="CUBEMAP_LEFT" value="0" enum="CubeMapSide">
+			Marks the left side of a cubemap.
 		</constant>
 		<constant name="CUBEMAP_RIGHT" value="1" enum="CubeMapSide">
+			Marks the right side of a cubemap.
 		</constant>
 		<constant name="CUBEMAP_BOTTOM" value="2" enum="CubeMapSide">
+			Marks the bottom side of a cubemap.
 		</constant>
 		<constant name="CUBEMAP_TOP" value="3" enum="CubeMapSide">
+			Marks the top side of a cubemap.
 		</constant>
 		<constant name="CUBEMAP_FRONT" value="4" enum="CubeMapSide">
+			Marks the front side of a cubemap.
 		</constant>
 		<constant name="CUBEMAP_BACK" value="5" enum="CubeMapSide">
+			Marks the back side of a cubemap.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
+			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
 		<constant name="TEXTURE_FLAG_REPEAT" value="2" enum="TextureFlags">
+			Repeat (instead of clamp to edge).
 		</constant>
 		<constant name="TEXTURE_FLAG_FILTER" value="4" enum="TextureFlags">
+			Turn on magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
 		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8" enum="TextureFlags">
+			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
+			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
 		</constant>
 		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16" enum="TextureFlags">
+			Converts texture to SRGB color space. 
 		</constant>
 		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
+			Repeat texture with alternate sections mirrored.
 		</constant>
 		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048" enum="TextureFlags">
+			Texture is a cubemap.
 		</constant>
 		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="4096" enum="TextureFlags">
+			Texture is a video surface.
 		</constant>
 		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
+			Default flags. Generate mipmaps, repeat, and filter are enabled.
 		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
+			Shader is a 3D shader.
 		</constant>
 		<constant name="SHADER_CANVAS_ITEM" value="1" enum="ShaderMode">
+			Shader is a 2D shader.
 		</constant>
 		<constant name="SHADER_PARTICLES" value="2" enum="ShaderMode">
+			Shader is a particle shader.
 		</constant>
 		<constant name="SHADER_MAX" value="3" enum="ShaderMode">
+			Marks maximum of the shader types array. used internally.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
+			Array is a vertex array.
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
+			Array is a normal array.
 		</constant>
 		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
+			Array is a tangent array.
 		</constant>
 		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
+			Array is a color array.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
+			Array is a uv coordinates array.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
+			Array is a uv coordinates array for the second uv coordinates.
 		</constant>
 		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
+			Array contains bone information.
 		</constant>
 		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
+			Array is weight information.
 		</constant>
 		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
+			Array is index array.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Marks the maximum of the array types. Used internally.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+			Flag used to mark a vertex array.
 		</constant>
 		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+			Flag used to mark a normal array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+			Flag used to mark a tangent array.
 		</constant>
 		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+			Flag used to mark a color array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+			Flag used to mark a uv coordinates array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+			Flag used to mark a uv coordinates array for the second uv coordinates.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
+			Flag used to mark a bone information array.
 		</constant>
 		<constant name="ARRAY_FORMAT_WEIGHTS" value="128" enum="ArrayFormat">
+			Flag used to mark a weights array.
 		</constant>
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
+			Flag used to mark a index array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) vertex array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_NORMAL" value="1024" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) normal array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TANGENT" value="2048" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) tangent array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_COLOR" value="4096" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) color array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) uv coordinates array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) uv coordinates array for the second uv coordinates.
 		</constant>
 		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_COMPRESS_WEIGHTS" value="65536" enum="ArrayFormat">
+			Flag used to mark a compressed (half float) weight array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
+			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
+			Flag used to mark that the array uses 16 bit bones instead of 8 bit.
 		</constant>
 		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
+			Used to set flags ARRAY_COMPRESS_VERTEX, ARRAY_COMPRESS_NORMAL, ARRAY_COMPRESS_TANGENT, ARRAY_COMPRESS_COLOR, ARRAY_COMPRESS_TEX_UV, ARRAY_COMPRESS_TEX_UV2 and ARRAY_COMPRESS_WEIGHTS quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
+			Primitive to draw consists of points.
 		</constant>
 		<constant name="PRIMITIVE_LINES" value="1" enum="PrimitiveType">
+			Primitive to draw consists of lines.
 		</constant>
 		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
+			Primitive to draw consists of a line strip from start to end.
 		</constant>
 		<constant name="PRIMITIVE_LINE_LOOP" value="3" enum="PrimitiveType">
+			Primitive to draw consists of a line loop (a line strip with a line between the last and the first vertex).
 		</constant>
 		<constant name="PRIMITIVE_TRIANGLES" value="4" enum="PrimitiveType">
+			Primitive to draw consists of triangles.
 		</constant>
 		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="5" enum="PrimitiveType">
+			Primitive to draw consists of a triangle strip (the last 3 verticies are always combined to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_TRIANGLE_FAN" value="6" enum="PrimitiveType">
+			Primitive to draw consists of a triangle strip (the last 2 verticies are always combined with the first to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
+			Marks the primitive types endpoint. used internally.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
+			Is a directional (sun) light.
 		</constant>
 		<constant name="LIGHT_OMNI" value="1" enum="LightType">
+			is an omni light.
 		</constant>
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
+			is an spot light.
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
+			The light's energy.
 		</constant>
 		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
+			The light's influence on specularity.
 		</constant>
 		<constant name="LIGHT_PARAM_RANGE" value="3" enum="LightParam">
+			The light's range.
 		</constant>
 		<constant name="LIGHT_PARAM_ATTENUATION" value="4" enum="LightParam">
+			The light's attenuation.
 		</constant>
 		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="5" enum="LightParam">
+			The spotlight's angle.
 		</constant>
 		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="6" enum="LightParam">
+			The spotlight's attenuation.
 		</constant>
 		<constant name="LIGHT_PARAM_CONTACT_SHADOW_SIZE" value="7" enum="LightParam">
+			Scales the shadow color.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
 		</constant>
@@ -1973,6 +2212,7 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
+			The light parameters endpoint. Used internally.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
 		</constant>
@@ -1983,28 +2223,40 @@
 		<constant name="VIEWPORT_UPDATE_ALWAYS" value="3" enum="ViewportUpdateMode">
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0" enum="ViewportClearMode">
+			The viewport is always cleared before drawing.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_NEVER" value="1" enum="ViewportClearMode">
+			The viewport is never cleared before drawing.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
+			The viewport is cleared once, then the clear mode is set to [VIEWPORT_CLEAR_NEVER].
 		</constant>
 		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
+			Multisample antialiasing is disabled.
 		</constant>
 		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
+			Multisample antialiasing is set to 2X.
 		</constant>
 		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
+			Multisample antialiasing is set to 4X.
 		</constant>
 		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
+			Multisample antialiasing is set to 8X.
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
+			Multisample antialiasing is set to 16X.
 		</constant>
 		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
+			The Viewport does not render 3D but samples.
 		</constant>
 		<constant name="VIEWPORT_USAGE_2D_NO_SAMPLING" value="1" enum="ViewportUsage">
+			The Viewport does not render 3D and does not sample.
 		</constant>
 		<constant name="VIEWPORT_USAGE_3D" value="2" enum="ViewportUsage">
+			The Viewport renders 3D with effects.
 		</constant>
 		<constant name="VIEWPORT_USAGE_3D_NO_EFFECTS" value="3" enum="ViewportUsage">
+			The Viewport renders 3D but without effects.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 		</constant>
@@ -2019,14 +2271,19 @@
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
+			Marks end of VIEWPORT_RENDER_INFO* constants. Used internally.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
+			Debug draw is disabled. Default setting.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1" enum="ViewportDebugDraw">
+			Debug draw sets objects to unshaded.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="2" enum="ViewportDebugDraw">
+			Overwrites clear color to [code](0,0,0,0)[/code].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3" enum="ViewportDebugDraw">
+			Debug draw draws objects in wireframe.
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 		</constant>
@@ -2037,38 +2294,53 @@
 		<constant name="SCENARIO_DEBUG_SHADELESS" value="3" enum="ScenarioDebugMode">
 		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
+			The instance does not have a type.
 		</constant>
 		<constant name="INSTANCE_MESH" value="1" enum="InstanceType">
+			The instance is a mesh.
 		</constant>
 		<constant name="INSTANCE_MULTIMESH" value="2" enum="InstanceType">
+			The instance is a multimesh.
 		</constant>
 		<constant name="INSTANCE_IMMEDIATE" value="3" enum="InstanceType">
+			The instance is an immediate geometry.
 		</constant>
 		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
+			The instance is a particle emitter.
 		</constant>
 		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
+			The instance is a light.
 		</constant>
 		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 		</constant>
 		<constant name="INSTANCE_GI_PROBE" value="7" enum="InstanceType">
 		</constant>
 		<constant name="INSTANCE_MAX" value="8" enum="InstanceType">
+			The max value for INSTANCE_* constants, used internally.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
+			A combination of the flags of geometry instances (mesh, multimesh, immediate and particles).
 		</constant>
 		<constant name="NINE_PATCH_STRETCH" value="0" enum="NinePatchAxisMode">
+			The nine patch gets stretched where needed.
 		</constant>
 		<constant name="NINE_PATCH_TILE" value="1" enum="NinePatchAxisMode">
+			The nine patch gets filled with tiles where needed.
 		</constant>
 		<constant name="NINE_PATCH_TILE_FIT" value="2" enum="NinePatchAxisMode">
+			The nine patch gets filled with tiles where needed and stretches them a bit if needed.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
+			Adds light color additive to the canvas.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_SUB" value="1" enum="CanvasLightMode">
+			Adds light color subtractive to the canvas.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_MIX" value="2" enum="CanvasLightMode">
+			The light adds color depending on transparency.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_MASK" value="3" enum="CanvasLightMode">
+			The light adds color depending on mask.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 		</constant>
@@ -2083,30 +2355,42 @@
 		<constant name="CANVAS_LIGHT_FILTER_PCF13" value="5" enum="CanvasLightShadowFilter">
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
+			Culling of the canvas occluder is disabled.
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE" value="1" enum="CanvasOccluderPolygonCullMode">
+			Culling of the canvas occluder is clockwise.
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
+			Culling of the canvas occluder is counterclockwise.
 		</constant>
 		<constant name="INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
+			The amount of objects in the frame.
 		</constant>
 		<constant name="INFO_VERTICES_IN_FRAME" value="1" enum="RenderInfo">
+			The amount of vertices in the frame.
 		</constant>
 		<constant name="INFO_MATERIAL_CHANGES_IN_FRAME" value="2" enum="RenderInfo">
+			The amount of modified materials in the frame.
 		</constant>
 		<constant name="INFO_SHADER_CHANGES_IN_FRAME" value="3" enum="RenderInfo">
+			The amount of shader rebinds in the frame.
 		</constant>
 		<constant name="INFO_SURFACE_CHANGES_IN_FRAME" value="4" enum="RenderInfo">
+			The amount of surface changes in the frame.
 		</constant>
 		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
+			The amount of draw calls in frame.
 		</constant>
 		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
 		</constant>
 		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
+			The amount of vertex memory and texture memory used.
 		</constant>
 		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
+			The amount of texture memory used.
 		</constant>
 		<constant name="INFO_VERTEX_MEM_USED" value="9" enum="RenderInfo">
+			The amount of vertex memory used.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 		</constant>
