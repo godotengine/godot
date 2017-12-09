@@ -965,14 +965,14 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 	int c = p_data.size();
 	PoolVector<int>::Read r = p_data.read();
 
-	int offset = (format == FORMAT_2_1_5) ? 3 : 2;
+	int offset = (format == FORMAT_2) ? 3 : 2;
 
 	clear();
 	for (int i = 0; i < c; i += offset) {
 
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		for (int j = 0; j < ((format == FORMAT_2_1_5) ? 12 : 8); j++)
+		for (int j = 0; j < ((format == FORMAT_2) ? 12 : 8); j++)
 			local[j] = ptr[j];
 
 #ifdef BIG_ENDIAN_ENABLED
@@ -982,7 +982,7 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		SWAP(local[4], local[7]);
 		SWAP(local[5], local[6]);
 		//TODO: ask someone to check this...
-		if (FORMAT == FORMAT_2_1_5) {
+		if (FORMAT == FORMAT_2) {
 			SWAP(local[8], local[11]);
 			SWAP(local[9], local[10]);
 		}
@@ -997,7 +997,7 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		v &= (1 << 29) - 1;
 		int16_t coord_x;
 		int16_t coord_y;
-		if (format == FORMAT_2_1_5) {
+		if (format == FORMAT_2) {
 			coord_x = decode_uint16(&local[8]);
 			coord_y = decode_uint16(&local[10]);
 		}
@@ -1014,6 +1014,8 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	PoolVector<int> data;
 	data.resize(tile_map.size() * 3);
 	PoolVector<int>::Write w = data.write();
+
+	format = FORMAT_2;
 
 	int idx = 0;
 	for (const Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
@@ -1295,7 +1297,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "format") {
-		r_ret = FORMAT_2_1_5;
+		r_ret = FORMAT_2;
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
@@ -1591,7 +1593,7 @@ TileMap::TileMap() {
 	y_sort_mode = false;
 	occluder_light_mask = 1;
 	clip_uv = false;
-	format = FORMAT_2_1_4; //Always initialize with the lowest format
+	format = FORMAT_1; //Always initialize with the lowest format
 
 	fp_adjust = 0.00001;
 	tile_origin = TILE_ORIGIN_TOP_LEFT;

@@ -61,8 +61,8 @@ public:
 
 private:
 	enum DataFormat {
-		FORMAT_2_1_4 = 0,
-		FORMAT_2_1_5
+		FORMAT_1 = 0,
+		FORMAT_2
 	};
 
 	Ref<TileSet> tile_set;
@@ -178,7 +178,7 @@ private:
 	float bounce;
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-	DataFormat format;
+	mutable DataFormat format;
 
 	TileOrigin tile_origin;
 
