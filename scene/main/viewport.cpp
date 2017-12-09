@@ -1269,12 +1269,9 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 Vector2 Viewport::_get_window_offset() const {
 
-	/*
-	if (parent_control) {
-		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
+	if (get_parent() && get_parent()->has_method("get_global_position")) {
+		return get_parent()->call("get_global_position");
 	}
-	*/
-
 	return Vector2();
 }
 
