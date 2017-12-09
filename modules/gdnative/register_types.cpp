@@ -106,7 +106,7 @@ static void actual_discoverer_handler() {
 
 	bool changed = false;
 	Array current_files;
-	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons") {
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
 		current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	}
 	Array files;
