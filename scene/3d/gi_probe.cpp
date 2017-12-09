@@ -1284,8 +1284,11 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		_create_debug_mesh(&baker);
 	} else {
 
-		Ref<GIProbeData> probe_data;
-		probe_data.instance();
+		Ref<GIProbeData> probe_data = get_probe_data();
+
+		if(probe_data.is_null())
+			probe_data.instance();
+
 		probe_data->set_bounds(AABB(-extents, extents * 2.0));
 		probe_data->set_cell_size(baker.po2_bounds.size[longest_axis] / baker.axis_cell_size[longest_axis]);
 		probe_data->set_dynamic_data(data);
