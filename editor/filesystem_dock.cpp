@@ -1441,10 +1441,14 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		if (!all_files_scenes && filenames.size() == 1) {
 			file_options->add_item(TTR("Open"), FILE_OPEN);
 			file_options->add_separator();
+		}
+
+		if (filenames.size() == 1) {
 			file_options->add_item(TTR("Edit Dependencies.."), FILE_DEPENDENCIES);
 			file_options->add_item(TTR("View Owners.."), FILE_OWNERS);
 			file_options->add_separator();
 		}
+
 	} else if (all_folders && foldernames.size() > 0) {
 		file_options->add_item(TTR("Open"), FILE_OPEN);
 		file_options->add_separator();
