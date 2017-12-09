@@ -512,15 +512,14 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	power_manager = memnew(PowerX11);
 
 	XEvent xevent;
-	while (XCheckIfEvent(x11_display, &xevent, _check_window_events, NULL)) {
-		_window_changed(&xevent);
+	while (XPending(x11_display) > 0) {
+		XNextEvent(x11_display, &xevent);
+		if (xevent.type == ConfigureNotify) {
+			_window_changed(&xevent);
+		}
 	}
 }
 
-int OS_X11::_check_window_events(Display *display, XEvent *event, char *arg) {
-	if (event->type == ConfigureNotify) return 1;
-	return 0;
-}
 void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
 
