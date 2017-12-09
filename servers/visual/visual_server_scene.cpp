@@ -2283,7 +2283,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					if (angle > light_cache.spot_angle)
 						continue;
 
-					float d = CLAMP(angle / light_cache.spot_angle, 1, 0);
+					float d = CLAMP(angle / light_cache.spot_angle, 0, 1);
 					att *= powf(1.0 - d, light_cache.spot_attenuation);
 				}
 
