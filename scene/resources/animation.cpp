@@ -77,6 +77,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			track_set_interpolation_loop_wrap(track, p_value);
 		else if (what == "imported")
 			track_set_imported(track, p_value);
+		else if (what == "enabled")
+			track_set_enabled(track, p_value);
 		else if (what == "keys" || what == "key_values") {
 
 			if (track_get_type(track) == TYPE_TRANSFORM) {
@@ -247,6 +249,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = track_get_interpolation_loop_wrap(track);
 		else if (what == "imported")
 			r_ret = track_is_imported(track);
+		else if (what == "enabled")
+			r_ret = track_is_enabled(track);
 		else if (what == "keys") {
 
 			if (track_get_type(track) == TYPE_TRANSFORM) {
@@ -391,6 +395,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/imported", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
 }
@@ -1575,6 +1580,19 @@ bool Animation::track_is_imported(int p_track) const {
 	return tracks[p_track]->imported;
 }
 
+void Animation::track_set_enabled(int p_track, bool p_enabled) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	tracks[p_track]->enabled = p_enabled;
+	emit_changed();
+}
+
+bool Animation::track_is_enabled(int p_track) const {
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	return tracks[p_track]->enabled;
+}
+
 void Animation::track_move_down(int p_track) {
 
 	if (p_track > 0 && p_track < tracks.size()) {
@@ -1603,6 +1621,7 @@ void Animation::copy_track(int src_track, Ref<Animation> p_to_animation) {
 
 	p_to_animation->track_set_path(dst_track, track_get_path(src_track));
 	p_to_animation->track_set_imported(dst_track, track_is_imported(src_track));
+	p_to_animation->track_set_enabled(dst_track, track_is_enabled(src_track));
 	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(src_track));
 	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(src_track));
 	for (int i = 0; i < track_get_key_count(src_track); i++) {
@@ -1625,6 +1644,9 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("track_set_imported", "idx", "imported"), &Animation::track_set_imported);
 	ClassDB::bind_method(D_METHOD("track_is_imported", "idx"), &Animation::track_is_imported);
+
+	ClassDB::bind_method(D_METHOD("track_set_enabled", "idx", "enabled"), &Animation::track_set_enabled);
+	ClassDB::bind_method(D_METHOD("track_is_enabled", "idx"), &Animation::track_is_enabled);
 
 	ClassDB::bind_method(D_METHOD("transform_track_insert_key", "idx", "time", "location", "rotation", "scale"), &Animation::transform_track_insert_key);
 	ClassDB::bind_method(D_METHOD("track_insert_key", "idx", "time", "key", "transition"), &Animation::track_insert_key, DEFVAL(1));
