@@ -4342,6 +4342,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	drag = DRAG_NONE;
 	bone_last_frame = 0;
 	additive_selection = false;
+
+	// Update the menus checkboxes
+	set_state(get_state());
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = NULL;
