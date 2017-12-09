@@ -266,6 +266,7 @@ private:
 	Button *property_forward;
 	SceneTreeDock *scene_tree_dock;
 	PropertyEditor *property_editor;
+	EditorHelp *help_dock;
 	Button *property_editable_warning;
 	AcceptDialog *property_editable_warning_dialog;
 	void _property_editable_warning_pressed();
@@ -429,6 +430,8 @@ private:
 
 	void _property_editor_forward();
 	void _property_editor_back();
+
+	void _help_callback(const String &p_desc);
 
 	void _menu_collapseall();
 	void _menu_expandall();
