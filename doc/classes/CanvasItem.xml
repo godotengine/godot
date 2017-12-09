@@ -88,6 +88,34 @@
 				Draw a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
 			</description>
 		</method>
+		<method name="draw_multiline">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="draw_multiline_colors">
+			<return type="void">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<argument index="1" name="colors" type="PoolColorArray">
+			</argument>
+			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="draw_polygon">
 			<return type="void">
 			</return>

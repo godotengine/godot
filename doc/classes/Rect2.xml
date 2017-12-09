@@ -37,6 +37,12 @@
 				Constructs a [code]Rect2[/code] by x, y, width, and height.
 			</description>
 		</method>
+		<method name="abs">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clip">
 			<return type="Rect2">
 			</return>

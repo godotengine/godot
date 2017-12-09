@@ -305,6 +305,15 @@
 				Enable text wrapping when it goes beyond he edge of what is visible.
 			</description>
 		</method>
+		<method name="toggle_fold_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Toggle the folding of the code block at the given line.
+			</description>
+		</method>
 		<method name="undo">
 			<return type="void">
 			</return>
@@ -427,6 +436,8 @@
 		<theme_item name="caret_background_color" type="Color">
 		</theme_item>
 		<theme_item name="caret_color" type="Color">
+		</theme_item>
+		<theme_item name="code_folding_color" type="Color">
 		</theme_item>
 		<theme_item name="completion" type="StyleBox">
 		</theme_item>

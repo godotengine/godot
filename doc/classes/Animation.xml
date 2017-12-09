@@ -30,6 +30,16 @@
 				Clear the animation (clear all tracks and reset all).
 			</description>
 		</method>
+		<method name="copy_track">
+			<return type="void">
+			</return>
+			<argument index="0" name="track" type="int">
+			</argument>
+			<argument index="1" name="to_animation" type="Animation">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="find_track" qualifiers="const">
 			<return type="int">
 			</return>
@@ -244,6 +254,14 @@
 				Insert a generic key in a given track.
 			</description>
 		</method>
+		<method name="track_is_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="track_is_imported" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -291,6 +309,16 @@
 			</argument>
 			<description>
 				Remove a key by position (seconds) in a given track.
+			</description>
+		</method>
+		<method name="track_set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="track_set_imported">

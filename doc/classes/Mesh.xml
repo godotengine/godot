@@ -49,6 +49,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint">
+		</member>
+	</members>
 	<constants>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Render array as points (one vertex equals one point).

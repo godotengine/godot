@@ -22,7 +22,7 @@
 			<return type="void">
 			</return>
 			<description>
-		                This helper creates a [MeshInstance] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
+				This helper creates a [MeshInstance] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">

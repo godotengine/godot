@@ -647,7 +647,7 @@
 			<argument index="1" name="height" type="float">
 			</argument>
 			<description>
-				Sets a canvas light's height. 
+				Sets a canvas light's height.
 			</description>
 		</method>
 		<method name="canvas_light_set_item_cull_mask">
@@ -1495,7 +1495,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of all the textures and their information. 
+				Returns a list of all the textures and their information.
 			</description>
 		</method>
 		<method name="texture_get_data" qualifiers="const">
@@ -2022,7 +2022,7 @@
 			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
 		</constant>
 		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16" enum="TextureFlags">
-			Converts texture to SRGB color space. 
+			Converts texture to SRGB color space.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
 			Repeat texture with alternate sections mirrored.

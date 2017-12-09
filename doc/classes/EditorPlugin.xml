@@ -82,6 +82,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_scene_import_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="scene_importer" type="EditorSceneImporter">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_tool_submenu_item">
 			<return type="void">
 			</return>
@@ -172,6 +180,12 @@
 		</method>
 		<method name="get_editor_interface">
 			<return type="EditorInterface">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_plugin_icon" qualifiers="virtual">
+			<return type="Object">
 			</return>
 			<description>
 			</description>
@@ -291,6 +305,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="importer" type="EditorImportPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_scene_import_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="scene_importer" type="EditorSceneImporter">
 			</argument>
 			<description>
 			</description>

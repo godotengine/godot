@@ -194,31 +194,11 @@
 				Disconnects nodes connected to [code]id[/code] at the specified input slot.
 			</description>
 		</method>
-		<method name="get_base_path" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_master_player" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<description>
-				Returns the path to the [AnimationPlayer] from which this [code]AnimationTreePlayer[/code] binds animations to animation nodes.
-			</description>
-		</method>
 		<method name="get_node_list">
 			<return type="PoolStringArray">
 			</return>
 			<description>
 				Returns a PoolStringArray containing the name of all nodes.
-			</description>
-		</method>
-		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this AnimationTreePlayer is active.
 			</description>
 		</method>
 		<method name="mix_node_get_amount" qualifiers="const">
@@ -473,32 +453,6 @@
 				Resets this AnimationTreePlayer.
 			</description>
 		</method>
-		<method name="set_active">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Sets whether this AnimationTreePlayer is active. AnimationTreePlayer will start processing if set to active.
-			</description>
-		</method>
-		<method name="set_base_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<description>
-				Sets base path of this AnimationTreePlayer.
-			</description>
-		</method>
-		<method name="set_master_player">
-			<return type="void">
-			</return>
-			<argument index="0" name="nodepath" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="timescale_node_get_scale" qualifiers="const">
 			<return type="float">
 			</return>
@@ -627,17 +581,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
-			The thread in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
-		</member>
-		<member name="master_player" type="NodePath" setter="set_master_player" getter="get_master_player">
-			The path to the [AnimationPlayer] from which this [code]AnimationTreePlayer[/code] binds animations to animation nodes.
+		<member name="active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code] the [code]AnimationTreePlayer[/code] is able to play animations. Default value: [code]false[/code].
 		</member>
 		<member name="base_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 			The node from which to relatively access other nodes. Default value: [code]".."[/code].
 		</member>
-		<member name="active" type="bool" setter="set_active" getter="is_active">
-			If [code]true[/code] the [code]AnimationTreePlayer[/code] is able to play animations. Default value: [code]false[/code].
+		<member name="master_player" type="NodePath" setter="set_master_player" getter="get_master_player">
+			The path to the [AnimationPlayer] from which this [code]AnimationTreePlayer[/code] binds animations to animation nodes.
+		</member>
+		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
+			The thread in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
 		</member>
 	</members>
 	<constants>

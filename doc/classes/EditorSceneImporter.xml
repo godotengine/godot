@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneImporter" inherits="Reference" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="_get_extensions" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_get_import_flags" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="_import_animation" qualifiers="virtual">
+			<return type="Animation">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<argument index="2" name="bake_fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_import_scene" qualifiers="virtual">
+			<return type="Node">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<argument index="2" name="bake_fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="import_animation_from_other_importer">
+			<return type="Animation">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<argument index="2" name="bake_fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="import_scene_from_other_importer">
+			<return type="Node">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="flags" type="int">
+			</argument>
+			<argument index="2" name="bake_fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="IMPORT_SCENE" value="1">
+		</constant>
+		<constant name="IMPORT_ANIMATION" value="2">
+		</constant>
+		<constant name="IMPORT_ANIMATION_DETECT_LOOP" value="4">
+		</constant>
+		<constant name="IMPORT_ANIMATION_OPTIMIZE" value="8">
+		</constant>
+		<constant name="IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS" value="16">
+		</constant>
+		<constant name="IMPORT_ANIMATION_KEEP_VALUE_TRACKS" value="32">
+		</constant>
+		<constant name="IMPORT_GENERATE_TANGENT_ARRAYS" value="256">
+		</constant>
+		<constant name="IMPORT_FAIL_ON_MISSING_DEPENDENCIES" value="512">
+		</constant>
+		<constant name="IMPORT_MATERIALS_IN_INSTANCES" value="1024">
+		</constant>
+		<constant name="IMPORT_USE_COMPRESSION" value="2048">
+		</constant>
+	</constants>
+</class>

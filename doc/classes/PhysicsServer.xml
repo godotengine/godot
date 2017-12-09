@@ -352,7 +352,7 @@
 			</description>
 		</method>
 		<method name="body_get_axis_lock" qualifiers="const">
-			<return type="int" enum="PhysicsServer.BodyAxisLock">
+			<return type="bool">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -540,10 +540,11 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxisLock">
+			<argument index="1" name="axis" type="int">
+			</argument>
+			<argument index="2" name="lock" type="bool">
 			</argument>
 			<description>
-				Locks velocity along one axis to 0 and only allows rotation along this axis, can also be set to disabled which disables this functionality.
 			</description>
 		</method>
 		<method name="body_set_axis_velocity">
@@ -1518,18 +1519,6 @@
 		</constant>
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
-		</constant>
-		<constant name="BODY_AXIS_LOCK_DISABLED" value="0" enum="BodyAxisLock">
-			The [Body] can rotate and move freely.
-		</constant>
-		<constant name="BODY_AXIS_LOCK_X" value="1" enum="BodyAxisLock">
-			The [Body] cannot move across x axis can only rotate across x axis.
-		</constant>
-		<constant name="BODY_AXIS_LOCK_Y" value="2" enum="BodyAxisLock">
-			The [Body] cannot move across y axis can only rotate across y axis.
-		</constant>
-		<constant name="BODY_AXIS_LOCK_Z" value="3" enum="BodyAxisLock">
-			The [Body] cannot move across z axis can only rotate across z axis.
 		</constant>
 	</constants>
 </class>

@@ -102,6 +102,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="axis_lock_x" type="bool" setter="set_axis_lock_x" getter="get_axis_lock_x">
+		</member>
+		<member name="axis_lock_y" type="bool" setter="set_axis_lock_y" getter="get_axis_lock_y">
+		</member>
+		<member name="axis_lock_z" type="bool" setter="set_axis_lock_z" getter="get_axis_lock_z">
+		</member>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>

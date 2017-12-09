@@ -59,8 +59,11 @@
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
 			RigidBody's rotational velocity.
 		</member>
-		<member name="axis_lock" type="int" setter="set_axis_lock" getter="get_axis_lock" enum="RigidBody.AxisLock">
-			Locks the rotational forces to a particular axis, preventing rotations on other axes.
+		<member name="axis_lock_x" type="bool" setter="set_axis_lock_x" getter="get_axis_lock_x">
+		</member>
+		<member name="axis_lock_y" type="bool" setter="set_axis_lock_y" getter="get_axis_lock_y">
+		</member>
+		<member name="axis_lock_z" type="bool" setter="set_axis_lock_z" getter="get_axis_lock_z">
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
@@ -167,14 +170,6 @@
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
 			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
-		</constant>
-		<constant name="AXIS_LOCK_DISABLED" value="0" enum="AxisLock">
-		</constant>
-		<constant name="AXIS_LOCK_X" value="1" enum="AxisLock">
-		</constant>
-		<constant name="AXIS_LOCK_Y" value="2" enum="AxisLock">
-		</constant>
-		<constant name="AXIS_LOCK_Z" value="3" enum="AxisLock">
 		</constant>
 	</constants>
 </class>

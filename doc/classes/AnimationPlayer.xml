@@ -74,20 +74,6 @@
 				Returns the name of [code]animation[/code] or empty string if not found.
 			</description>
 		</method>
-		<method name="get_anim_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the length (in seconds) of the currently playing animation.
-			</description>
-		</method>
-		<method name="get_anim_position" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Get the position (in seconds) of the currently playing animation.
-			</description>
-		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation">
 			</return>
@@ -115,11 +101,18 @@
 				Get the blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
-		<method name="get_current_animation" qualifiers="const">
-			<return type="String">
+		<method name="get_current_animation_length" qualifiers="const">
+			<return type="float">
 			</return>
 			<description>
-				Returns the name of the currently playing animation.
+				Get the length (in seconds) of the currently playing animation.
+			</description>
+		</method>
+		<method name="get_current_animation_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Get the position (in seconds) of the currently playing animation.
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
@@ -217,15 +210,6 @@
 				Specify a blend time (in seconds) between two animations, referenced by their names.
 			</description>
 		</method>
-		<method name="set_current_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="anim" type="String">
-			</argument>
-			<description>
-				Set the current animation (even if no playback occurs). Using set_current_animation() and set_active() are similar to calling play().
-			</description>
-		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
@@ -252,6 +236,8 @@
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation">
 			The name of the current animation. Default value: [code]""[/code].
+		</member>
+		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time">
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
 			The process notification in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
