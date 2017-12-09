@@ -2943,10 +2943,10 @@ void SliderJointSpatialGizmo::redraw() {
 
 	float ll = p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_LOWER);
 	float ul = p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_UPPER);
-	float lll = -p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_LOWER);
-	float lul = -p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_UPPER);
+	float lll = p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_LOWER);
+	float lul = p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_UPPER);
 
-	if (lll > lul) {
+	if (lll <= lul) {
 
 		cursor_points.push_back(Vector3(lul, 0, 0));
 		cursor_points.push_back(Vector3(lll, 0, 0));
