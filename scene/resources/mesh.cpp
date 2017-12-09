@@ -28,10 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "mesh.h"
+
 #include "pair.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "surface_tool.h"
+
+#include <stdlib.h>
+
 void Mesh::_clear_triangle_mesh() const {
 
 	triangle_mesh.unref();
