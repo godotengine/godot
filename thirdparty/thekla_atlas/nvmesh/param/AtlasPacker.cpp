@@ -152,7 +152,7 @@ AtlasPacker::~AtlasPacker()
 }
 
 // This should compute convex hull and use rotating calipers to find the best box. Currently it uses a brute force method.
-static void computeBoundingBox(Chart * chart, Vector2 * majorAxis, Vector2 * minorAxis, Vector2 * minCorner, Vector2 * maxCorner)
+static bool computeBoundingBox(Chart * chart, Vector2 * majorAxis, Vector2 * minorAxis, Vector2 * minCorner, Vector2 * maxCorner)
 {
     // Compute list of boundary points.
     Array<Vector2> points(16);
@@ -184,6 +184,9 @@ static void computeBoundingBox(Chart * chart, Vector2 * majorAxis, Vector2 * min
 
 #if 1
     Array<Vector2> hull;
+    if (points.size()==0) {
+        return false;    
+    }
     
     convexHull(points, hull, 0.00001f);
 
@@ -373,6 +376,8 @@ static void computeBoundingBox(Chart * chart, Vector2 * majorAxis, Vector2 * min
         }
     }*/
 #endif
+
+    return true;
 }
 
 
@@ -431,7 +436,10 @@ void AtlasPacker::packCharts(int quality, float texelsPerUnit, bool blockAligned
 
             // Compute bounding box of chart.
             Vector2 majorAxis, minorAxis, origin, end;
-            computeBoundingBox(chart, &majorAxis, &minorAxis, &origin, &end);
+            if (!computeBoundingBox(chart, &majorAxis, &minorAxis, &origin, &end)) {
+                m_atlas->setFailed();
+                return;
+            }
 
             nvCheck(isFinite(majorAxis) && isFinite(minorAxis) && isFinite(origin));
             

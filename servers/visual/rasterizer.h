@@ -636,6 +636,7 @@ public:
 		struct CommandPolyLine : public Command {
 
 			bool antialiased;
+			bool multiline;
 			Vector<Point2> triangles;
 			Vector<Color> triangle_colors;
 			Vector<Point2> lines;
@@ -643,6 +644,7 @@ public:
 			CommandPolyLine() {
 				type = TYPE_POLYLINE;
 				antialiased = false;
+				multiline = false;
 			}
 		};
 

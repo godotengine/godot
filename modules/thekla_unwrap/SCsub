@@ -47,7 +47,8 @@ if env['builtin_thekla_atlas']:
         "nvmesh/param/SingleFaceMap.cpp",
         "nvmesh/param/Util.cpp",
         "nvmesh/weld/VertexWeld.cpp",
-        "nvmesh/weld/Snap.cpp"
+        "nvmesh/weld/Snap.cpp",
+        "thekla/thekla_atlas.cpp"
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

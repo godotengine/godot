@@ -623,6 +623,29 @@ void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vect
 
 	VisualServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
+
+void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, float p_width, bool p_antialiased) {
+
+	if (!drawing) {
+		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+		ERR_FAIL();
+	}
+
+	Vector<Color> colors;
+	colors.push_back(p_color);
+	VisualServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, colors, p_width, p_antialiased);
+}
+
+void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
+
+	if (!drawing) {
+		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
+		ERR_FAIL();
+	}
+
+	VisualServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width, p_antialiased);
+}
+
 void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled) {
 
 	if (!drawing) {
@@ -979,6 +1002,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width", "antialiased"), &CanvasItem::draw_line, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled"), &CanvasItem::draw_rect, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color"), &CanvasItem::draw_circle);
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));

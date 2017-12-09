@@ -40,13 +40,13 @@ class Material;
 class EditorSceneImporter : public Reference {
 
 	GDCLASS(EditorSceneImporter, Reference);
-protected:
 
+protected:
 	static void _bind_methods();
 
-
-	Node* import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Node *import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps);
+
 public:
 	enum ImportFlags {
 		IMPORT_SCENE = 1,
@@ -62,11 +62,10 @@ public:
 
 	};
 
-
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags,int p_bake_fps);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	EditorSceneImporter() {}
 };
@@ -136,6 +135,8 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual int get_import_order() const { return 100; } //after everything
 
+	void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
+
 	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes);
 
 	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode);
@@ -147,8 +148,8 @@ public:
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
 
-	Node* import_scene_from_other_importer(EditorSceneImporter *p_exception,const String &p_path, uint32_t p_flags, int p_bake_fps);
-	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception,const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
+	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	ResourceImporterScene();
 };

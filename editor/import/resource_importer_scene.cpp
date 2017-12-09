@@ -47,8 +47,6 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 
-
-
 uint32_t EditorSceneImporter::get_import_flags() const {
 
 	if (get_script_instance()) {
@@ -60,79 +58,72 @@ uint32_t EditorSceneImporter::get_import_flags() const {
 void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 
 	if (get_script_instance()) {
-		Array arr= get_script_instance()->call("_get_extensions");
-		for(int i=0;i<arr.size();i++) {
+		Array arr = get_script_instance()->call("_get_extensions");
+		for (int i = 0; i < arr.size(); i++) {
 			r_extensions->push_back(arr[i]);
 		}
 		return;
 	}
 
 	ERR_FAIL();
-
 }
 Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 
 	if (get_script_instance()) {
-		return get_script_instance()->call("_import_scene",p_path,p_flags,p_bake_fps);
+		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
 	}
 
 	ERR_FAIL_V(NULL);
-
 }
 
-Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags,int p_bake_fps) {
+Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
 	if (get_script_instance()) {
-		return get_script_instance()->call("_import_animation",p_path,p_flags);
+		return get_script_instance()->call("_import_animation", p_path, p_flags);
 	}
 
 	ERR_FAIL_V(NULL);
-
 }
 
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
 //and you want to load the resulting file
 
-Node* EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
-	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this,p_path,p_flags,p_bake_fps);
-
+	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps);
 }
 
 Ref<Animation> EditorSceneImporter::import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
-	return ResourceImporterScene::get_singleton()->import_animation_from_other_importer(this,p_path,p_flags,p_bake_fps);
-
+	return ResourceImporterScene::get_singleton()->import_animation_from_other_importer(this, p_path, p_flags, p_bake_fps);
 }
 
 void EditorSceneImporter::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer","path","flags","bake_fps"),&EditorSceneImporter::import_scene_from_other_importer);
-	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer","path","flags","bake_fps"),&EditorSceneImporter::import_animation_from_other_importer);
+	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_scene_from_other_importer);
+	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_animation_from_other_importer);
 
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_import_flags"));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_extensions"));
 
-	MethodInfo mi = MethodInfo(Variant::OBJECT, "_import_scene",PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
-	mi.return_val.class_name="Node";
+	MethodInfo mi = MethodInfo(Variant::OBJECT, "_import_scene", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
+	mi.return_val.class_name = "Node";
 	BIND_VMETHOD(mi);
-	mi = MethodInfo(Variant::OBJECT, "_import_animation",PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
-	mi.return_val.class_name="Animation";
+	mi = MethodInfo(Variant::OBJECT, "_import_animation", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "flags"), PropertyInfo(Variant::INT, "bake_fps"));
+	mi.return_val.class_name = "Animation";
 	BIND_VMETHOD(mi);
 
-	BIND_CONSTANT( IMPORT_SCENE );
-	BIND_CONSTANT( IMPORT_ANIMATION );
-	BIND_CONSTANT( IMPORT_ANIMATION_DETECT_LOOP );
-	BIND_CONSTANT( IMPORT_ANIMATION_OPTIMIZE );
-	BIND_CONSTANT( IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS );
-	BIND_CONSTANT( IMPORT_ANIMATION_KEEP_VALUE_TRACKS );
-	BIND_CONSTANT( IMPORT_GENERATE_TANGENT_ARRAYS );
-	BIND_CONSTANT( IMPORT_FAIL_ON_MISSING_DEPENDENCIES );
-	BIND_CONSTANT( IMPORT_MATERIALS_IN_INSTANCES );
-	BIND_CONSTANT( IMPORT_USE_COMPRESSION );
-
+	BIND_CONSTANT(IMPORT_SCENE);
+	BIND_CONSTANT(IMPORT_ANIMATION);
+	BIND_CONSTANT(IMPORT_ANIMATION_DETECT_LOOP);
+	BIND_CONSTANT(IMPORT_ANIMATION_OPTIMIZE);
+	BIND_CONSTANT(IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
+	BIND_CONSTANT(IMPORT_ANIMATION_KEEP_VALUE_TRACKS);
+	BIND_CONSTANT(IMPORT_GENERATE_TANGENT_ARRAYS);
+	BIND_CONSTANT(IMPORT_FAIL_ON_MISSING_DEPENDENCIES);
+	BIND_CONSTANT(IMPORT_MATERIALS_IN_INSTANCES);
+	BIND_CONSTANT(IMPORT_USE_COMPRESSION);
 }
-
 
 /////////////////////////////////
 void EditorScenePostImport::_bind_methods() {
@@ -198,6 +189,10 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 	}
 
 	if (p_option == "materials/keep_on_reimport" && int(p_options["materials/storage"]) == 0) {
+		return false;
+	}
+
+	if (p_option == "meshes/lightmap_texel_size" && int(p_options["meshes/light_baking"]) < 2) {
 		return false;
 	}
 
@@ -961,6 +956,36 @@ static String _make_extname(const String &p_str) {
 	return ext_name;
 }
 
+void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes) {
+
+	List<PropertyInfo> pi;
+	p_node->get_property_list(&pi);
+
+	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+
+	if (mi) {
+
+		Ref<ArrayMesh> mesh = mi->get_mesh();
+
+		if (mesh.is_valid() && !meshes.has(mesh)) {
+			Spatial *s = mi;
+			while (s->get_parent_spatial()) {
+				s = s->get_parent_spatial();
+			}
+
+			if (s == mi) {
+				meshes[mesh] = s->get_transform();
+			} else {
+				meshes[mesh] = s->get_transform() * mi->get_relative_transform(s);
+			}
+		}
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+
+		_find_meshes(p_node->get_child(i), meshes);
+	}
+}
+
 void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
@@ -1140,7 +1165,8 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable,Gen Lightmaps"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.05));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
@@ -1171,17 +1197,16 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 		Node *n = p_node->get_child(i);
 		_replace_owner(n, p_scene, p_new_owner);
 	}
-
 }
 
-Node* ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception,const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
 	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
 
-		if (E->get().ptr()==p_exception)
+		if (E->get().ptr() == p_exception)
 			continue;
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
@@ -1199,42 +1224,41 @@ Node* ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 			break;
 	}
 
-	ERR_FAIL_COND_V(!importer.is_valid(),NULL);
+	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
 
 	List<String> missing;
 	Error err;
-	return importer->import_scene(p_path,p_flags,p_bake_fps,&missing,&err);
+	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err);
 }
 
-Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneImporter *p_exception,const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
+	Ref<EditorSceneImporter> importer;
+	String ext = p_path.get_extension().to_lower();
 
-	     Ref<EditorSceneImporter> importer;
-	     String ext = p_path.get_extension().to_lower();
+	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
 
-	     for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+		if (E->get().ptr() == p_exception)
+			continue;
+		List<String> extensions;
+		E->get()->get_extensions(&extensions);
 
-			if (E->get().ptr()==p_exception)
-	     continue;
-		     List<String> extensions;
-		     E->get()->get_extensions(&extensions);
+		for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
 
-		     for (List<String>::Element *F = extensions.front(); F; F = F->next()) {
+			if (F->get().to_lower() == ext) {
 
-			     if (F->get().to_lower() == ext) {
+				importer = E->get();
+				break;
+			}
+		}
 
-				     importer = E->get();
-				     break;
-			     }
-		     }
+		if (importer.is_valid())
+			break;
+	}
 
-		     if (importer.is_valid())
-			     break;
-	     }
+	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
 
-	     ERR_FAIL_COND_V(!importer.is_valid(),NULL);
-
-	     return importer->import_animation(p_path,p_flags,p_bake_fps);
+	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
 
 Error ResourceImporterScene::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
@@ -1368,6 +1392,37 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			memdelete(da);
 			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
 			base_path = base_path.plus_file(subdir_name);
+		}
+	}
+
+	if (light_bake_mode == 2 /* || generate LOD */) {
+
+		Map<Ref<ArrayMesh>, Transform> meshes;
+		_find_meshes(scene, meshes);
+
+		if (light_bake_mode == 2) {
+
+			float texel_size = p_options["meshes/lightmap_texel_size"];
+			texel_size = MAX(0.001, texel_size);
+
+			EditorProgress progress("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
+			int step = 0;
+			for (Map<Ref<ArrayMesh>, Transform>::Element *E = meshes.front(); E; E = E->next()) {
+
+				Ref<ArrayMesh> mesh = E->key();
+				String name = mesh->get_name();
+				if (name == "") { //should not happen but..
+					name = "Mesh " + itos(step);
+				}
+
+				progress.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
+
+				Error err = mesh->lightmap_unwrap(E->get(), texel_size);
+				if (err != OK) {
+					EditorNode::add_io_error("Mesh '" + name + "' failed lightmap generation. Please fix geometry.");
+				}
+				step++;
+			}
 		}
 	}
 

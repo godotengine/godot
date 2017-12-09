@@ -195,7 +195,139 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
+		case MENU_OPTION_CREATE_UV2: {
+
+			Ref<ArrayMesh> mesh = node->get_mesh();
+			if (!mesh.is_valid()) {
+				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+
+			Error err = mesh->lightmap_unwrap(node->get_global_transform());
+			if (err != OK) {
+				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+
+		} break;
+		case MENU_OPTION_DEBUG_UV1: {
+			Ref<Mesh> mesh = node->get_mesh();
+			if (!mesh.is_valid()) {
+				err_dialog->set_text(TTR("No mesh to debug."));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+			_create_uv_lines(0);
+		} break;
+		case MENU_OPTION_DEBUG_UV2: {
+			Ref<Mesh> mesh = node->get_mesh();
+			if (!mesh.is_valid()) {
+				err_dialog->set_text(TTR("No mesh to debug."));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+			_create_uv_lines(1);
+		} break;
 	}
+}
+
+struct MeshInstanceEditorEdgeSort {
+
+	Vector2 a;
+	Vector2 b;
+
+	bool operator<(const MeshInstanceEditorEdgeSort &p_b) const {
+		if (a == p_b.a)
+			return b < p_b.b;
+		else
+			return a < p_b.a;
+	}
+
+	MeshInstanceEditorEdgeSort() {}
+	MeshInstanceEditorEdgeSort(const Vector2 &p_a, const Vector2 &p_b) {
+		if (p_a < p_b) {
+			a = p_a;
+			b = p_b;
+		} else {
+			b = p_a;
+			a = p_b;
+		}
+	}
+};
+
+void MeshInstanceEditor::_create_uv_lines(int p_layer) {
+
+	Ref<Mesh> mesh = node->get_mesh();
+	ERR_FAIL_COND(!mesh.is_valid());
+
+	Set<MeshInstanceEditorEdgeSort> edges;
+	uv_lines.clear();
+	for (int i = 0; i < mesh->get_surface_count(); i++) {
+		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+			continue;
+		Array a = mesh->surface_get_arrays(i);
+
+		PoolVector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
+		if (uv.size() == 0) {
+			err_dialog->set_text(TTR("Model has no UV in this layer"));
+			err_dialog->popup_centered_minsize();
+			return;
+		}
+
+		PoolVector<Vector2>::Read r = uv.read();
+
+		PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
+		PoolVector<int>::Read ri;
+
+		int ic;
+		bool use_indices;
+
+		if (indices.size()) {
+			ic = indices.size();
+			ri = indices.read();
+			use_indices = true;
+		} else {
+			ic = uv.size();
+			use_indices = false;
+		}
+
+		for (int j = 0; j < ic; j += 3) {
+
+			for (int k = 0; k < 3; k++) {
+
+				MeshInstanceEditorEdgeSort edge;
+				if (use_indices) {
+					edge.a = r[ri[j + k]];
+					edge.b = r[ri[j + ((k + 1) % 3)]];
+				} else {
+					edge.a = r[j + k];
+					edge.b = r[j + ((k + 1) % 3)];
+				}
+
+				if (edges.has(edge))
+					continue;
+
+				uv_lines.push_back(edge.a);
+				uv_lines.push_back(edge.b);
+				edges.insert(edge);
+			}
+		}
+	}
+
+	debug_uv_dialog->popup_centered_minsize();
+}
+
+void MeshInstanceEditor::_debug_uv_draw() {
+
+	if (uv_lines.size() == 0)
+		return;
+
+	debug_uv->set_clip_contents(true);
+	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));
+	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
+	debug_uv->draw_multiline(uv_lines, Color(1.0, 0.8, 0.7));
 }
 
 void MeshInstanceEditor::_create_outline_mesh() {
@@ -244,6 +376,7 @@ void MeshInstanceEditor::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &MeshInstanceEditor::_menu_option);
 	ClassDB::bind_method("_create_outline_mesh", &MeshInstanceEditor::_create_outline_mesh);
+	ClassDB::bind_method("_debug_uv_draw", &MeshInstanceEditor::_debug_uv_draw);
 }
 
 MeshInstanceEditor::MeshInstanceEditor() {
@@ -263,6 +396,10 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh.."), MENU_OPTION_CREATE_OUTLINE_MESH);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
+	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
+	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 
@@ -286,6 +423,14 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
+
+	debug_uv_dialog = memnew(AcceptDialog);
+	debug_uv_dialog->set_title("UV Channel Debug");
+	add_child(debug_uv_dialog);
+	debug_uv = memnew(Control);
+	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
+	debug_uv->connect("draw", this, "_debug_uv_draw");
+	debug_uv_dialog->add_child(debug_uv);
 }
 
 void MeshInstanceEditorPlugin::edit(Object *p_object) {

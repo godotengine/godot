@@ -47,6 +47,9 @@ class MeshInstanceEditor : public Node {
 		MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_NAVMESH,
 		MENU_OPTION_CREATE_OUTLINE_MESH,
+		MENU_OPTION_CREATE_UV2,
+		MENU_OPTION_DEBUG_UV1,
+		MENU_OPTION_DEBUG_UV2,
 	};
 
 	MeshInstance *node;
@@ -58,10 +61,17 @@ class MeshInstanceEditor : public Node {
 
 	AcceptDialog *err_dialog;
 
+	AcceptDialog *debug_uv_dialog;
+	Control *debug_uv;
+	Vector<Vector2> uv_lines;
+
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 
+	void _create_uv_lines(int p_layer);
 	friend class MeshInstanceEditorPlugin;
+
+	void _debug_uv_draw();
 
 protected:
 	void _node_removed(Node *p_node);

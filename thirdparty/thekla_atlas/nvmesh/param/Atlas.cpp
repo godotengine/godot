@@ -38,6 +38,7 @@ using namespace nv;
 /// Ctor.
 Atlas::Atlas()
 {
+    failed=false;
 }
 
 // Dtor.
@@ -100,6 +101,7 @@ void Atlas::extractCharts(const HalfEdge::Mesh * mesh)
 
 void Atlas::computeCharts(const HalfEdge::Mesh * mesh, const SegmentationSettings & settings, const Array<uint> & unchartedMaterialArray)
 {
+    failed=false;
     MeshCharts * meshCharts = new MeshCharts(mesh);
     meshCharts->computeCharts(settings, unchartedMaterialArray);
     addMeshCharts(meshCharts);
@@ -235,6 +237,8 @@ float Atlas::packCharts(int quality, float texelsPerUnit, bool blockAlign, bool 
 {
     AtlasPacker packer(this);
     packer.packCharts(quality, texelsPerUnit, blockAlign, conservative);
+    if (hasFailed())
+        return 0;
     return packer.computeAtlasUtilization();
 }
 

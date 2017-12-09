@@ -64,9 +64,12 @@ namespace nv
 
         // Pack charts in the smallest possible rectangle.
         float packCharts(int quality, float texelArea, bool blockAlign, bool conservative);
+        bool setFailed() { failed = true; }
+        bool hasFailed() const { return failed; }
 
     private:
 
+        bool failed;
         Array<MeshCharts *> m_meshChartsArray;
 
     };

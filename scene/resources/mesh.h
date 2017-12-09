@@ -43,6 +43,8 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	Size2 lightmap_size_hint;
+
 protected:
 	void _clear_triangle_mesh() const;
 
@@ -138,6 +140,9 @@ public:
 
 	virtual AABB get_aabb() const = 0;
 
+	void set_lightmap_size_hint(const Vector2 &p_size);
+	Size2 get_lightmap_size_hint() const;
+
 	Mesh();
 };
 
@@ -215,6 +220,8 @@ public:
 
 	void center_geometry();
 	void regen_normalmaps();
+
+	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file();
 
