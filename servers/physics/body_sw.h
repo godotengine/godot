@@ -53,7 +53,7 @@ class BodySW : public CollisionObjectSW {
 	real_t angular_damp;
 	real_t gravity_scale;
 
-	PhysicsServer::BodyAxisLock axis_lock;
+	bool locked_axis[3] = { false, false, false };
 
 	real_t kinematic_safe_margin;
 	real_t _inv_mass;
@@ -288,8 +288,8 @@ public:
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
-	_FORCE_INLINE_ void set_axis_lock(PhysicsServer::BodyAxisLock p_lock) { axis_lock = p_lock; }
-	_FORCE_INLINE_ PhysicsServer::BodyAxisLock get_axis_lock() const { return axis_lock; }
+	_FORCE_INLINE_ void set_axis_lock(int axis, bool lock) { locked_axis[axis] = lock; }
+	_FORCE_INLINE_ bool get_axis_lock() const { return locked_axis; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

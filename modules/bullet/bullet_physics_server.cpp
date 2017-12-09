@@ -723,15 +723,15 @@ void BulletPhysicsServer::body_set_axis_velocity(RID p_body, const Vector3 &p_ax
 	body->set_linear_velocity(v);
 }
 
-void BulletPhysicsServer::body_set_axis_lock(RID p_body, PhysicsServer::BodyAxisLock p_lock) {
+void BulletPhysicsServer::body_set_axis_lock(RID p_body, int axis, bool p_lock) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_axis_lock(p_lock);
+	body->set_axis_lock(axis, p_lock);
 }
 
-PhysicsServer::BodyAxisLock BulletPhysicsServer::body_get_axis_lock(RID p_body) const {
+bool BulletPhysicsServer::body_get_axis_lock(RID p_body) const {
 	const RigidBodyBullet *body = rigid_body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, BODY_AXIS_LOCK_DISABLED);
+	ERR_FAIL_COND_V(!body, 0);
 	return body->get_axis_lock();
 }
 
