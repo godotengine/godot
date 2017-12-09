@@ -2449,13 +2449,13 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
-  if (drag_exited) {
+	if (drag_exited) {
 
 		drag_exited = false;
 		pressing_for_editor = false;
 		range_drag_enabled = false;
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-  }
+	}
 
 	Ref<InputEventMouseButton> b = p_event;
 
@@ -2949,7 +2949,7 @@ void Tree::_notification(int p_what) {
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
-		drag_exited = true;;
+		drag_exited = true;
 	}
 }
 
