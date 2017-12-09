@@ -2047,6 +2047,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			function.argument_count = func_node->get_argument_count();
 			function.max_stack += function.argument_count;
 			function.flow_stack_size = func_node->is_stack_less() ? 0 : func_node->get_stack_size();
+			max_input_args = MAX(max_input_args, function.argument_count);
 		}
 
 		//multiple passes are required to set up this complex thing..
