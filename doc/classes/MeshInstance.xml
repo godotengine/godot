@@ -4,7 +4,7 @@
 		Node that instances meshes into a scenario.
 	</brief_description>
 	<description>
-		MeshInstance is a [Node] that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
+		MeshInstance is a node that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used to get 3D geometry rendered and can be used to instance a single [Mesh] in many places. This allows to reuse geometry and save on resources. When a [Mesh] has to be instanced more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,20 +15,21 @@
 			<return type="void">
 			</return>
 			<description>
-				This helper creates a [StaticBody] child [Node] with a [ConvexPolygonShape] [CollisionShape] calculated from the mesh geometry. It's mainly used for testing.
+				This helper creates a [StaticBody] child node with a [ConvexPolygonShape] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_debug_tangents">
 			<return type="void">
 			</return>
 			<description>
+		                This helper creates a [MeshInstance] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="create_trimesh_collision">
 			<return type="void">
 			</return>
 			<description>
-				This helper creates a [StaticBody] child [Node] with a [ConcavePolygonShape] [CollisionShape] calculated from the mesh geometry. It's mainly used for testing.
+				This helper creates a [StaticBody] child node with a [ConcavePolygonShape] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
 		<method name="get_surface_material" qualifiers="const">
