@@ -343,7 +343,7 @@ AutotileEditor::AutotileEditor(EditorNode *p_editor) {
 	split->add_child(property_editor);
 
 	helper = memnew(AutotileEditorHelper(this));
-	property_editor->edit(helper);
+	property_editor->call_deferred("edit", helper);
 
 	// Editor
 
