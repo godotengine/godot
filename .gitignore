@@ -91,6 +91,9 @@ bld/
 # Hints for improving IntelliSense, created together with VS project
 cpp.hint
 
+# Visualizers for the VS debugger
+*.natvis
+
 #NUNIT
 *.VisualState.xml
 TestResult.xml
