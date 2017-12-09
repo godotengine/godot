@@ -1663,6 +1663,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
+						return; // exiting modal mode should be the only effect
 					} else {
 						break;
 					}
