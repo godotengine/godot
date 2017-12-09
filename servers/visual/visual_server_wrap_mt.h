@@ -565,6 +565,11 @@ public:
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
 	virtual bool has_os_feature(const String &p_feature) const { return visual_server->has_os_feature(p_feature); }
 
+	/* VSYNC */
+
+	FUNC1(set_use_vsync, bool);
+	FUNC0RC(bool, is_vsync_enabled);
+
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);
 	~VisualServerWrapMT();
 

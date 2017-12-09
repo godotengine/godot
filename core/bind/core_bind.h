@@ -311,9 +311,6 @@ public:
 
 	Error set_thread_name(const String &p_name);
 
-	void set_use_vsync(bool p_enable);
-	bool is_vsync_enabled() const;
-
 	PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();

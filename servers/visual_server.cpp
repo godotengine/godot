@@ -30,6 +30,7 @@
 #include "visual_server.h"
 
 #include "method_bind_ext.gen.inc"
+#include "os/os.h"
 #include "project_settings.h"
 
 VisualServer *VisualServer::singleton = NULL;
@@ -1678,6 +1679,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &VisualServer::has_os_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &VisualServer::set_debug_generate_wireframes);
 
+	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &VisualServer::set_use_vsync);
+	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &VisualServer::is_vsync_enabled);
+
 	BIND_CONSTANT(NO_INDEX_ARRAY);
 	BIND_CONSTANT(ARRAY_WEIGHTS_SIZE);
 	BIND_CONSTANT(CANVAS_ITEM_Z_MIN);
@@ -1915,6 +1919,15 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 	instance_set_base(instance, p_base);
 	instance_set_scenario(instance, p_scenario);
 	return instance;
+}
+
+void VisualServer::set_use_vsync(bool p_enable) {
+	OS::get_singleton()->set_use_vsync(p_enable);
+}
+
+bool VisualServer::is_vsync_enabled() const {
+
+	return OS::get_singleton()->is_vsync_enabled();
 }
 
 VisualServer::VisualServer() {
