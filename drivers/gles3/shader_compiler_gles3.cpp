@@ -230,7 +230,6 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 
 	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
 
-		print_line(String(p_node->functions[fidx].name) + " uses function: " + String(E->get()));
 		if (added.has(E->get())) {
 			continue; //was added already
 		}
