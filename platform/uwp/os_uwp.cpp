@@ -241,6 +241,7 @@ void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_aud
 
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
+	gl_context->set_use_vsync(vm.use_vsync);
 
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering? Or remove?

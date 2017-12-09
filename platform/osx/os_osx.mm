@@ -1089,6 +1089,8 @@ void OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	[context makeCurrentContext];
 
+	set_use_vsync(p_desired.use_vsync);
+
 	[NSApp activateIgnoringOtherApps:YES];
 
 	_update_window();

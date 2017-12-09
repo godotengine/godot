@@ -819,7 +819,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
 
-	use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
+	video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
 
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation", 2);
 	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_allocation.mobile", 3);
@@ -992,8 +992,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	// also init our arvr_server from here
 	arvr_server = memnew(ARVRServer);
-
-	OS::get_singleton()->set_use_vsync(use_vsync);
 
 	register_core_singletons();
 
