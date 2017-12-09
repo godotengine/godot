@@ -107,34 +107,56 @@ void PathFollow2D::_update_transform() {
 	if (!c.is_valid())
 		return;
 
-	if (delta_offset == 0) {
-		return;
-	}
-
-	float o = offset;
+	float path_length = c->get_baked_length();
+	float bounded_offset = offset;
 	if (loop)
-		o = Math::fposmod(o, c->get_baked_length());
+		bounded_offset = Math::fposmod(bounded_offset, path_length);
+	else
+		bounded_offset = CLAMP(bounded_offset, 0, path_length);
 
-	Vector2 pos = c->interpolate_baked(o, cubic);
-
-	Vector2 displacement_offset = Vector2(h_offset, v_offset);
+	Vector2 pos = c->interpolate_baked(bounded_offset, cubic);
 
 	if (rotate) {
+		float ahead = bounded_offset + lookahead;
 
-		Vector2 t_prev = (pos - c->interpolate_baked(o - delta_offset, cubic)).normalized();
-		Vector2 t_next = (c->interpolate_baked(o + delta_offset, cubic) - pos).normalized();
+		if (loop && ahead >= path_length) {
+			// If our lookahead will loop, we need to check if the path is closed.
+			int point_count = c->get_point_count();
+			if (point_count > 0) {
+				Vector2 start_point = c->get_point_position(0);
+				Vector2 end_point = c->get_point_position(point_count - 1);
+				if (start_point == end_point) {
+					// Since the path is closed we want to 'smooth off'
+					// the corner at the start/end.
+					// So we wrap the lookahead back round.
+					ahead = Math::fmod(ahead, path_length);
+				}
+			}
+		}
 
-		float angle = t_prev.angle_to(t_next);
+		Vector2 ahead_pos = c->interpolate_baked(ahead, cubic);
 
-		set_rotation(get_rotation() + angle);
+		Vector2 tangent_to_curve;
+		if (ahead_pos == pos) {
+			// This will happen at the end of non-looping or non-closed paths.
+			// We'll try a look behind instead, in order to get a meaningful angle.
+			tangent_to_curve =
+					(pos - c->interpolate_baked(bounded_offset - lookahead, cubic)).normalized();
+		} else {
+			tangent_to_curve = (ahead_pos - pos).normalized();
+		}
 
-		Vector2 n = t_next;
-		Vector2 t = -n.tangent();
-		pos += n * h_offset + t * v_offset;
+		Vector2 normal_of_curve = -tangent_to_curve.tangent();
+
+		pos += tangent_to_curve * h_offset;
+		pos += normal_of_curve * v_offset;
+
+		set_rotation(tangent_to_curve.angle());
 
 	} else {
 
-		pos += displacement_offset;
+		pos.x += h_offset;
+		pos.y += v_offset;
 	}
 
 	set_position(pos);
@@ -185,6 +207,8 @@ bool PathFollow2D::_set(const StringName &p_name, const Variant &p_value) {
 		set_cubic_interpolation(p_value);
 	} else if (String(p_name) == "loop") {
 		set_loop(p_value);
+	} else if (String(p_name) == "lookahead") {
+		set_lookahead(p_value);
 	} else
 		return false;
 
@@ -207,6 +231,8 @@ bool PathFollow2D::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = cubic;
 	} else if (String(p_name) == "loop") {
 		r_ret = loop;
+	} else if (String(p_name) == "lookahead") {
+		r_ret = lookahead;
 	} else
 		return false;
 
@@ -224,6 +250,7 @@ void PathFollow2D::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "rotate"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "cubic_interp"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "loop"));
+	p_list->push_back(PropertyInfo(Variant::REAL, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"));
 }
 
 String PathFollow2D::get_configuration_warning() const {
@@ -263,7 +290,7 @@ void PathFollow2D::_bind_methods() {
 }
 
 void PathFollow2D::set_offset(float p_offset) {
-	delta_offset = p_offset - offset;
+
 	offset = p_offset;
 	if (path)
 		_update_transform();
@@ -314,6 +341,16 @@ float PathFollow2D::get_unit_offset() const {
 		return 0;
 }
 
+void PathFollow2D::set_lookahead(float p_lookahead) {
+
+	lookahead = p_lookahead;
+}
+
+float PathFollow2D::get_lookahead() const {
+
+	return lookahead;
+}
+
 void PathFollow2D::set_rotate(bool p_rotate) {
 
 	rotate = p_rotate;
@@ -338,11 +375,11 @@ bool PathFollow2D::has_loop() const {
 PathFollow2D::PathFollow2D() {
 
 	offset = 0;
-	delta_offset = 0;
 	h_offset = 0;
 	v_offset = 0;
 	path = NULL;
 	rotate = true;
 	cubic = true;
 	loop = true;
+	lookahead = 4;
 }
