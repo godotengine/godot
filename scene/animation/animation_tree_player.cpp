@@ -1796,6 +1796,10 @@ void AnimationTreePlayer::_bind_methods() {
 	ADD_GROUP("Playback", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "master_player"), "set_master_player", "get_master_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "base_path"), "set_base_path", "get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
+
 	BIND_ENUM_CONSTANT(NODE_OUTPUT);
 	BIND_ENUM_CONSTANT(NODE_ANIMATION);
 	BIND_ENUM_CONSTANT(NODE_ONESHOT);
