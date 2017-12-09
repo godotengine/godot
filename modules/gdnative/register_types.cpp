@@ -99,12 +99,16 @@ static Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
 }
 
 static void actual_discoverer_handler() {
+
 	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
 
 	Set<String> file_paths = get_gdnative_singletons(dir);
 
 	bool changed = false;
-	Array current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	Array current_files;
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons") {
+		current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
+	}
 	Array files;
 	files.resize(file_paths.size());
 	int i = 0;
@@ -128,7 +132,6 @@ static void actual_discoverer_handler() {
 	if (changed) {
 
 		ProjectSettings::get_singleton()->set("gdnative/singletons", files);
-
 		ProjectSettings::get_singleton()->save();
 	}
 }
