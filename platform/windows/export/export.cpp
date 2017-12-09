@@ -28,11 +28,107 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor/editor_export.h"
+#include "editor/editor_settings.h"
+#include "os/file_access.h"
+#include "os/os.h"
 #include "platform/windows/logo.gen.h"
+
+class EditorExportPlatformWindows : public EditorExportPlatformPC {
+
+public:
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual void get_export_options(List<ExportOption> *r_options);
+};
+
+Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, p_path, p_flags);
+
+	if (err != OK) {
+		return err;
+	}
+
+	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
+	String icon_path = p_preset->get("application/icon");
+	String file_verion = p_preset->get("application/file_version");
+	String product_version = p_preset->get("application/product_version");
+	String company_name = p_preset->get("application/company_name");
+	String product_name = p_preset->get("application/product_name");
+	String file_description = p_preset->get("application/file_description");
+	String copyright = p_preset->get("application/copyright");
+	String trademarks = p_preset->get("application/trademarks");
+	String comments = p_preset->get("application/comments");
+
+	if (rcedit_path == String()) {
+		return OK;
+	}
+
+	if (!FileAccess::exists(rcedit_path)) {
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	List<String> args;
+	args.push_back(p_path);
+	if (icon_path != String()) {
+		args.push_back("--set-icon");
+		args.push_back(icon_path);
+	}
+	if (file_verion != String()) {
+		args.push_back("--set-file-version");
+		args.push_back(file_verion);
+	}
+	if (product_version != String()) {
+		args.push_back("--set-product-version");
+		args.push_back(product_version);
+	}
+	if (company_name != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("CompanyName");
+		args.push_back(company_name);
+	}
+	if (product_name != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("ProductName");
+		args.push_back(product_name);
+	}
+	if (file_description != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("FileDescription");
+		args.push_back(file_description);
+	}
+	if (copyright != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("LegalCopyright");
+		args.push_back(copyright);
+	}
+	if (trademarks != String()) {
+		args.push_back("--set-version-string");
+		args.push_back("LegalTrademarks");
+		args.push_back(trademarks);
+	}
+
+	OS::get_singleton()->execute(rcedit_path, args, true);
+	return OK;
+}
+
+void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
+	EditorExportPlatformPC::get_export_options(r_options);
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_GLOBAL_FILE, "*.ico"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), String()));
+}
 
 void register_windows_exporter() {
 
-	Ref<EditorExportPlatformPC> platform;
+	EDITOR_DEF("export/windows/rcedit", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/windows/rcedit", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+
+	Ref<EditorExportPlatformWindows> platform;
 	platform.instance();
 
 	Ref<Image> img = memnew(Image(_windows_logo));
