@@ -2470,6 +2470,16 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
+void Control::set_pass_on_modal_close_click(bool p_pass_on) {
+
+	data.pass_on_modal_close_click = p_pass_on;
+}
+
+bool Control::pass_on_modal_close_click() const {
+
+	return data.pass_on_modal_close_click;
+}
+
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
@@ -2934,6 +2944,7 @@ Control::Control() {
 	data.parent = NULL;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;
+	data.pass_on_modal_close_click = true;
 
 	data.SI = NULL;
 	data.MI = NULL;

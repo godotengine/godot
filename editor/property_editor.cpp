@@ -1939,6 +1939,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	type_button->get_popup()->connect("id_pressed", this, "_type_create_selected");
 
 	menu = memnew(PopupMenu);
+	menu->set_pass_on_modal_close_click(false);
 	add_child(menu);
 	menu->connect("id_pressed", this, "_menu_option");
 
@@ -4276,6 +4277,7 @@ PropertyEditor::PropertyEditor() {
 	set_physics_process(true);
 
 	custom_editor = memnew(CustomPropertyEditor);
+	custom_editor->set_pass_on_modal_close_click(false);
 	add_child(custom_editor);
 
 	tree->connect("custom_popup_edited", this, "_custom_editor_request");

@@ -165,6 +165,8 @@ private:
 		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
+		bool pass_on_modal_close_click;
+
 		MouseFilter mouse_filter;
 
 		bool clip_contents;
@@ -400,6 +402,9 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+
+	void set_pass_on_modal_close_click(bool p_pass_on);
+	bool pass_on_modal_close_click() const;
 
 	/* SKINNING */
 

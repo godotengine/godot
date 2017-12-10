@@ -111,6 +111,7 @@ MenuButton::MenuButton() {
 	popup->hide();
 	add_child(popup);
 	popup->set_as_toplevel(true);
+	popup->set_pass_on_modal_close_click(false);
 	connect("button_up", popup, "call_deferred", make_binds("grab_click_focus"));
 	set_process_unhandled_key_input(true);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);

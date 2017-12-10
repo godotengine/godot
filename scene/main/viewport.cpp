@@ -1646,6 +1646,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			} else {
 
+				bool is_handled = false;
+
 				_gui_sort_modal_stack();
 				while (!gui.modal_stack.empty()) {
 
@@ -1663,9 +1665,18 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
+
+						if (!top->pass_on_modal_close_click()) {
+							is_handled = true;
+						}
 					} else {
 						break;
 					}
+				}
+
+				if (is_handled) {
+					get_tree()->set_input_as_handled();
+					return;
 				}
 
 				//Matrix32 parent_xform;
