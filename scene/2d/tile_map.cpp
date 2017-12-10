@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tile_map.h"
+
 #include "io/marshalls.h"
 #include "method_bind_ext.gen.inc"
 #include "os/os.h"
@@ -169,10 +170,12 @@ void TileMap::set_cell_size(Size2 p_size) {
 	_recreate_quadrants();
 	emit_signal("settings_changed");
 }
+
 Size2 TileMap::get_cell_size() const {
 
 	return cell_size;
 }
+
 void TileMap::set_quadrant_size(int p_size) {
 
 	ERR_FAIL_COND(p_size < 1);
@@ -182,30 +185,10 @@ void TileMap::set_quadrant_size(int p_size) {
 	_recreate_quadrants();
 	emit_signal("settings_changed");
 }
+
 int TileMap::get_quadrant_size() const {
 
 	return quadrant_size;
-}
-
-void TileMap::set_center_x(bool p_enable) {
-
-	center_x = p_enable;
-	_recreate_quadrants();
-	emit_signal("settings_changed");
-}
-bool TileMap::get_center_x() const {
-
-	return center_x;
-}
-void TileMap::set_center_y(bool p_enable) {
-
-	center_y = p_enable;
-	_recreate_quadrants();
-	emit_signal("settings_changed");
-}
-bool TileMap::get_center_y() const {
-
-	return center_y;
 }
 
 void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const Vector2 &p_offset, const Size2 &p_sc) {
@@ -1473,12 +1456,6 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tile_origin", "origin"), &TileMap::set_tile_origin);
 	ClassDB::bind_method(D_METHOD("get_tile_origin"), &TileMap::get_tile_origin);
 
-	ClassDB::bind_method(D_METHOD("set_center_x", "enable"), &TileMap::set_center_x);
-	ClassDB::bind_method(D_METHOD("get_center_x"), &TileMap::get_center_x);
-
-	ClassDB::bind_method(D_METHOD("set_center_y", "enable"), &TileMap::set_center_y);
-	ClassDB::bind_method(D_METHOD("get_center_y"), &TileMap::get_center_y);
-
 	ClassDB::bind_method(D_METHOD("set_clip_uv", "enable"), &TileMap::set_clip_uv);
 	ClassDB::bind_method(D_METHOD("get_clip_uv"), &TileMap::get_clip_uv);
 
@@ -1580,8 +1557,6 @@ TileMap::TileMap() {
 	quadrant_order_dirty = false;
 	quadrant_size = 16;
 	cell_size = Size2(64, 64);
-	center_x = false;
-	center_y = false;
 	collision_layer = 1;
 	collision_mask = 1;
 	friction = 1;
