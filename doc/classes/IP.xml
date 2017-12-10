@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="IP" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
-		IP Protocol support functions.
+		IP Protocol support functions like DNS resolution.
 	</brief_description>
 	<description>
-		IP contains support functions for the IPv4 protocol. TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
+		IP contains support functions for the Internet Protocl (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides DNS hostname resolution support, both blocking and threaded.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -79,24 +79,34 @@
 	</methods>
 	<constants>
 		<constant name="RESOLVER_STATUS_NONE" value="0" enum="ResolverStatus">
+			DNS hostname resolver status: No status.
 		</constant>
 		<constant name="RESOLVER_STATUS_WAITING" value="1" enum="ResolverStatus">
+			DNS hostname resolver status: Waiting.
 		</constant>
 		<constant name="RESOLVER_STATUS_DONE" value="2" enum="ResolverStatus">
+			DNS hostname resolver status: Done.
 		</constant>
 		<constant name="RESOLVER_STATUS_ERROR" value="3" enum="ResolverStatus">
+			DNS hostname resolver status: Error.
 		</constant>
 		<constant name="RESOLVER_MAX_QUERIES" value="32">
+			Maximum number of concurrent DNS resolver queries allowed, [code]RESOLVER_INVALID_ID[/code] is returned if exceeded.
 		</constant>
 		<constant name="RESOLVER_INVALID_ID" value="-1">
+			Invalid ID constant. Returned if [code]RESOLVER_MAX_QUERIES[/code] is exceeded.
 		</constant>
 		<constant name="TYPE_NONE" value="0" enum="Type">
+			Address type: None.
 		</constant>
 		<constant name="TYPE_IPV4" value="1" enum="Type">
+			Address type: Internet protocol version 4 (IPv4).
 		</constant>
 		<constant name="TYPE_IPV6" value="2" enum="Type">
+			Address type: Internet protocol version 6 (IPv6).
 		</constant>
 		<constant name="TYPE_ANY" value="3" enum="Type">
+			Address type: Any.
 		</constant>
 	</constants>
 </class>
