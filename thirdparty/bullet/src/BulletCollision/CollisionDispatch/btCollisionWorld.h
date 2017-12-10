@@ -253,8 +253,6 @@ public:
 		btVector3	m_hitNormalWorld;
 		btVector3	m_hitPointWorld;
 			
-		int m_shape_index;
-
 		virtual	btScalar	addSingleResult(LocalRayResult& rayResult,bool normalInWorldSpace)
 		{
 			//caller already does the filter on the m_closestHitFraction
@@ -271,7 +269,6 @@ public:
 				m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis()*rayResult.m_hitNormalLocal;
 			}
 			m_hitPointWorld.setInterpolate3(m_rayFromWorld,m_rayToWorld,rayResult.m_hitFraction);
-			m_shape_index = rayResult.m_localShapeInfo->m_triangleIndex;
 			return rayResult.m_hitFraction;
 		}
 	};
