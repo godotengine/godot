@@ -42,6 +42,11 @@ def can_build():
         print("xrandr not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
+    if (x11_error):
+        print("xrender not found.. x11 disabled.")
+        return False
+
     return True
 
 def get_opts():
@@ -141,6 +146,7 @@ def configure(env):
     env.ParseConfig('pkg-config xcursor --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')
     env.ParseConfig('pkg-config xrandr --cflags --libs')
+    env.ParseConfig('pkg-config xrender --cflags --libs')
 
     if (env['touch']):
         x11_error = os.system("pkg-config xi --modversion > /dev/null ")

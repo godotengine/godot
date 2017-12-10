@@ -672,6 +672,7 @@ OS::OS() {
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
 	_allow_hidpi = false;
+	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;

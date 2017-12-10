@@ -517,6 +517,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	power_manager = memnew(PowerX11);
 
+	if (p_desired.layered_splash) {
+		set_window_per_pixel_transparency_enabled(true);
+	}
+
 	XEvent xevent;
 	while (XPending(x11_display) > 0) {
 		XNextEvent(x11_display, &xevent);
@@ -705,6 +709,25 @@ int OS_X11::get_mouse_button_state() const {
 
 Point2 OS_X11::get_mouse_position() const {
 	return last_mouse_pos;
+}
+
+bool OS_X11::get_window_per_pixel_transparency_enabled() const {
+
+	if (!is_layered_allowed()) return false;
+	return layered_window;
+}
+
+void OS_X11::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+
+	if (!is_layered_allowed()) return;
+	if (layered_window != p_enabled) {
+		if (p_enabled) {
+			set_borderless_window(true);
+			layered_window = true;
+		} else {
+			layered_window = false;
+		}
+	}
 }
 
 void OS_X11::set_window_title(const String &p_title) {
@@ -1006,8 +1029,12 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
+
 	if (current_videomode.fullscreen == p_enabled)
 		return;
+
+	if (layered_window)
+		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled && current_videomode.always_on_top) {
 		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
@@ -1253,6 +1280,9 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 
 	if (current_videomode.borderless_window == p_borderless)
 		return;
+
+	if (!p_borderless && layered_window)
+		set_window_per_pixel_transparency_enabled(false);
 
 	current_videomode.borderless_window = p_borderless;
 
@@ -2698,6 +2728,7 @@ OS_X11::OS_X11() {
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
+	layered_window = false;
 	minimized = false;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
