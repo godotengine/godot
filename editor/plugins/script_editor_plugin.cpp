@@ -50,8 +50,7 @@ void ScriptEditorBase::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("name_changed"));
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
-	ADD_SIGNAL(MethodInfo("request_help_search", PropertyInfo(Variant::STRING, "topic")));
-	ADD_SIGNAL(MethodInfo("request_help_index"));
+	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
@@ -975,10 +974,6 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			help_search_dialog->popup_dialog();
 		} break;
-		case SEARCH_CLASSES: {
-
-			help_index->popup_dialog();
-		} break;
 		case SEARCH_WEBSITE: {
 
 			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
@@ -1206,12 +1201,6 @@ void ScriptEditor::_menu_option(int p_option) {
 		if (help) {
 
 			switch (p_option) {
-
-				case SEARCH_CLASSES: {
-
-					help_index->popup_dialog();
-					help_index->call_deferred("select_class", help->get_class());
-				} break;
 				case HELP_SEARCH_FIND: {
 					help->popup_search();
 				} break;
@@ -1318,7 +1307,6 @@ void ScriptEditor::_notification(int p_what) {
 			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
-			class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
@@ -1330,7 +1318,6 @@ void ScriptEditor::_notification(int p_what) {
 			get_tree()->connect("tree_changed", this, "_tree_changed");
 			editor->get_inspector_dock()->connect("request_help", this, "_request_help");
 			editor->connect("request_help_search", this, "_help_search");
-			editor->connect("request_help_index", this, "_help_index");
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1350,7 +1337,6 @@ void ScriptEditor::_notification(int p_what) {
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
-			class_search->set_icon(get_icon("ClassList", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
@@ -2006,7 +1992,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	_save_layout();
 	se->connect("name_changed", this, "_update_script_names");
 	se->connect("edited_script_changed", this, "_script_changed");
-	se->connect("request_help_search", this, "_help_search");
+	se->connect("request_help", this, "_help_search");
 	se->connect("request_open_script_at_line", this, "_goto_script_line");
 	se->connect("go_to_help", this, "_help_class_goto");
 	se->connect("request_save_history", this, "_save_history");
@@ -2733,10 +2719,6 @@ void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 	auto_reload_running_scripts = p_enabled;
 }
 
-void ScriptEditor::_help_index(String p_text) {
-	help_index->popup_dialog();
-}
-
 void ScriptEditor::_help_search(String p_text) {
 	help_search_dialog->popup_dialog(p_text);
 }
@@ -2842,7 +2824,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
-	ClassDB::bind_method("_help_index", &ScriptEditor::_help_index);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
@@ -3077,12 +3058,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation"));
 
-	class_search = memnew(ToolButton);
-	class_search->set_text(TTR("Classes"));
-	class_search->connect("pressed", this, "_menu_option", varray(SEARCH_CLASSES));
-	menu_hb->add_child(class_search);
-	class_search->set_tooltip(TTR("Search the class hierarchy."));
-
 	help_search = memnew(ToolButton);
 	help_search->set_text(TTR("Search Help"));
 	help_search->connect("pressed", this, "_menu_option", varray(SEARCH_HELP));
@@ -3167,10 +3142,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_search_dialog = memnew(EditorHelpSearch);
 	add_child(help_search_dialog);
 	help_search_dialog->connect("go_to_help", this, "_help_class_goto");
-
-	help_index = memnew(EditorHelpIndex);
-	add_child(help_index);
-	help_index->connect("open_class", this, "_help_class_open");
 
 	find_in_files_dialog = memnew(FindInFilesDialog);
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_FIND_REQUESTED, this, "_start_find_in_files", varray(false));
