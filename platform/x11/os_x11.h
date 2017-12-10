@@ -172,6 +172,8 @@ class OS_X11 : public OS_Unix {
 
 	PowerX11 *power_manager;
 
+	bool layered_window;
+
 	CrashHandler crash_handler;
 
 	int audio_driver_index;
@@ -263,6 +265,10 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;

@@ -116,32 +116,76 @@ Error ContextGL_X11::initialize() {
 		None
 	};
 
+	static int visual_attribs_layered[] = {
+		GLX_RENDER_TYPE, GLX_RGBA_BIT,
+		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+		GLX_DOUBLEBUFFER, true,
+		GLX_RED_SIZE, 8,
+		GLX_GREEN_SIZE, 8,
+		GLX_BLUE_SIZE, 8,
+		GLX_ALPHA_SIZE, 8,
+		GLX_DEPTH_SIZE, 24,
+		None
+	};
+
 	int fbcount;
-	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-	ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+	GLXFBConfig fbconfig;
+	XVisualInfo *vi = NULL;
 
-	XVisualInfo *vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
+	if (OS::get_singleton()->is_layered_allowed()) {
+		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
+		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
 
-	XSetWindowAttributes swa;
+		for (int i = 0; i < fbcount; i++) {
+			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
+			if (!vi)
+				continue;
 
-	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-	swa.border_pixel = 0;
-	swa.event_mask = StructureNotifyMask;
+			XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi->visual);
+			if (!pict_format) {
+				XFree(vi);
+				vi = NULL;
+				continue;
+			}
 
-	/*
-	char* windowid = getenv("GODOT_WINDOWID");
-	if (windowid) {
+			fbconfig = fbc[i];
+			if (pict_format->direct.alphaMask > 0) {
+				break;
+			}
+		}
+		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
 
-		//freopen("/home/punto/stdout", "w", stdout);
-		//reopen("/home/punto/stderr", "w", stderr);
-		x11_window = atol(windowid);
+		XSetWindowAttributes swa;
+
+		swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
+		swa.border_pixel = 0;
+		swa.background_pixmap = None;
+		swa.background_pixel = 0;
+		swa.border_pixmap = None;
+		swa.event_mask = StructureNotifyMask;
+
+		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask | CWBackPixel, &swa);
+
 	} else {
-	*/
-	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
+		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
+		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
+
+		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
+
+		fbconfig = fbc[0];
+
+		XSetWindowAttributes swa;
+
+		swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
+		swa.border_pixel = 0;
+		swa.event_mask = StructureNotifyMask;
+
+		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
+	}
+
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
 	set_class_hint(x11_display, x11_window);
 	XMapWindow(x11_display, x11_window);
-	//};
 
 	int (*oldHandler)(Display *, XErrorEvent *) =
 			XSetErrorHandler(&ctxErrorHandler);
@@ -160,7 +204,7 @@ Error ContextGL_X11::initialize() {
 				None
 			};
 
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
+			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
 			ERR_EXPLAIN("Could not obtain an OpenGL 3.0 context!");
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
@@ -175,7 +219,7 @@ Error ContextGL_X11::initialize() {
 				None
 			};
 
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
+			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
 			ERR_EXPLAIN("Could not obtain an OpenGL 3.3 context!");
 			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
 		} break;
@@ -195,7 +239,6 @@ Error ContextGL_X11::initialize() {
 	//glXMakeCurrent(x11_display, None, NULL);
 
 	XFree(vi);
-	XFree(fbc);
 
 	return OK;
 }
