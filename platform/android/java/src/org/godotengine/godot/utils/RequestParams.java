@@ -43,33 +43,33 @@ import org.apache.http.message.BasicNameValuePair;
  */
 public class RequestParams {
 
-	private HashMap<String,String> params;
+	private HashMap<String, String> params;
 	private String url;
-	
-	public RequestParams(){
-		params = new HashMap<String,String>();
+
+	public RequestParams() {
+		params = new HashMap<String, String>();
 	}
-	
-	public void put(String key, String value){
+
+	public void put(String key, String value) {
 		params.put(key, value);
 	}
-	
-	public String get(String key){
+
+	public String get(String key) {
 		return params.get(key);
 	}
-	
-	public void remove(Object key){
+
+	public void remove(Object key) {
 		params.remove(key);
 	}
-	
-	public boolean has(String key){
+
+	public boolean has(String key) {
 		return params.containsKey(key);
 	}
-	
-	public List<NameValuePair> toPairsList(){
-		List<NameValuePair>  fields = new ArrayList<NameValuePair>();
 
-		for(String key : params.keySet()){
+	public List<NameValuePair> toPairsList() {
+		List<NameValuePair> fields = new ArrayList<NameValuePair>();
+
+		for (String key : params.keySet()) {
 			fields.add(new BasicNameValuePair(key, this.get(key)));
 		}
 		return fields;
@@ -82,6 +82,4 @@ public class RequestParams {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-
-	
 }

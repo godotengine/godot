@@ -67,7 +67,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	private boolean isFullScreenEdit() {
 		final TextView textField = this.mEdit;
-		final InputMethodManager imm = (InputMethodManager) textField.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+		final InputMethodManager imm = (InputMethodManager)textField.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 		return imm.isFullscreenMode();
 	}
 
@@ -81,7 +81,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void afterTextChanged(final Editable s) {
-
 	}
 
 	@Override

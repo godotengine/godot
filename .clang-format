@@ -44,7 +44,6 @@ AllowShortIfStatementsOnASingleLine: true
 BreakBeforeTernaryOperators: false
 # BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
-# BreakAfterJavaFieldAnnotations: false
 # BreakStringLiterals: true
 ColumnLimit:     0
 # CommentPragmas:  '^ IWYU pragma:'
@@ -113,4 +112,8 @@ Language:        ObjC
 ObjCBlockIndentWidth: 4
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true
+---
+### Java specific config ###
+Language:        Java
+# BreakAfterJavaFieldAnnotations: false
 ...

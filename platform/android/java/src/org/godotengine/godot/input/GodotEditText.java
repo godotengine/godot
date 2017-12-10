@@ -70,42 +70,37 @@ public class GodotEditText extends EditText {
 		super(context, attrs, defStyle);
 		this.initView();
 	}
-	
+
 	protected void initView() {
-		this.setPadding(0,  0, 0, 0);
+		this.setPadding(0, 0, 0, 0);
 		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-		
+
 		sHandler = new Handler() {
 			@Override
 			public void handleMessage(final Message msg) {
 				switch (msg.what) {
-					case HANDLER_OPEN_IME_KEYBOARD:
-						{
-							GodotEditText edit = (GodotEditText) msg.obj;
-							String text = edit.mOriginText;
-							if (edit.requestFocus())
-							{
-								edit.removeTextChangedListener(edit.mInputWrapper);
-								edit.setText("");
-								edit.append(text);
-								edit.mInputWrapper.setOriginText(text);
-								edit.addTextChangedListener(edit.mInputWrapper);
-								final InputMethodManager imm = (InputMethodManager) mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-								imm.showSoftInput(edit, 0);
-							}
+					case HANDLER_OPEN_IME_KEYBOARD: {
+						GodotEditText edit = (GodotEditText)msg.obj;
+						String text = edit.mOriginText;
+						if (edit.requestFocus()) {
+							edit.removeTextChangedListener(edit.mInputWrapper);
+							edit.setText("");
+							edit.append(text);
+							edit.mInputWrapper.setOriginText(text);
+							edit.addTextChangedListener(edit.mInputWrapper);
+							final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+							imm.showSoftInput(edit, 0);
 						}
-						break;
+					} break;
 
-					case HANDLER_CLOSE_IME_KEYBOARD:
-						{
-							GodotEditText edit = (GodotEditText) msg.obj;
-							
-							edit.removeTextChangedListener(mInputWrapper);
-							final InputMethodManager imm = (InputMethodManager) mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-							imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-							edit.mView.requestFocus();
-						}
-						break;
+					case HANDLER_CLOSE_IME_KEYBOARD: {
+						GodotEditText edit = (GodotEditText)msg.obj;
+
+						edit.removeTextChangedListener(mInputWrapper);
+						final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
+						edit.mView.requestFocus();
+					} break;
 				}
 			}
 		};
@@ -116,7 +111,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	public void setView(final GodotView view) {
 		this.mView = view;
-		if(mInputWrapper == null)
+		if (mInputWrapper == null)
 			mInputWrapper = new GodotTextInputWrapper(mView, this);
 		this.setOnEditorActionListener(mInputWrapper);
 		view.requestFocus();
@@ -125,7 +120,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
 	// ===========================================================
-    @Override
+	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 		super.onKeyDown(keyCode, keyEvent);
 
@@ -142,7 +137,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	public void showKeyboard(String p_existing_text) {
 		this.mOriginText = p_existing_text;
-		
+
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
 		msg.obj = this;
@@ -155,7 +150,7 @@ public class GodotEditText extends EditText {
 		msg.obj = this;
 		sHandler.sendMessage(msg);
 	}
-	
+
 	// ===========================================================
 	// Inner and Anonymous Classes
 	// ===========================================================
