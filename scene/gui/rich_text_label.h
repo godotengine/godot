@@ -256,8 +256,8 @@ private:
 		Item *to;
 		int to_char;
 
-		bool active;
-		bool enabled;
+		bool active; // anything selected? i.e. from, to, etc. valid?
+		bool enabled; // allow selections?
 	};
 
 	Selection selection;

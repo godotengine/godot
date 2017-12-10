@@ -1822,7 +1822,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection) {
 
 void RichTextLabel::selection_copy() {
 
-	if (!selection.enabled)
+	if (!selection.active || !selection.enabled)
 		return;
 
 	String text;
