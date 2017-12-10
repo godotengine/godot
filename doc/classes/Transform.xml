@@ -137,18 +137,18 @@
 			</description>
 		</method>
 		<method name="xform">
-			<return type="var">
+			<return type="Vector3">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
 				Transforms the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="var">
+			<return type="Vector3">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
 				Inverse-transforms the given vector "v" by this transform.

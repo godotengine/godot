@@ -498,7 +498,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Removes a node and set all its children as children of the parent node (if exists). All even subscriptions that pass by the removed node will be unsubscribed.
+				Removes a node and set all its children as children of the parent node (if exists). All event subscriptions that pass by the removed node will be unsubscribed.
 			</description>
 		</method>
 		<method name="remove_child">
