@@ -932,8 +932,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_tile_by_name", "name"), &TileSet::find_tile_by_name);
 	ClassDB::bind_method(D_METHOD("get_tiles_ids"), &TileSet::_get_tiles_ids);
 
-	BIND_VMETHOD(MethodInfo("_is_tile_bound", PropertyInfo(Variant::INT, "drawn_id"), PropertyInfo(Variant::INT, "neighbor_id")));
-	BIND_VMETHOD(MethodInfo("_forward_subtile_selection", PropertyInfo(Variant::INT, "autotile_id"), PropertyInfo(Variant::INT, "bitmask"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_is_tile_bound", PropertyInfo(Variant::INT, "drawn_id"), PropertyInfo(Variant::INT, "neighbor_id")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_forward_subtile_selection", PropertyInfo(Variant::INT, "autotile_id"), PropertyInfo(Variant::INT, "bitmask"), PropertyInfo(Variant::OBJECT, "tilemap", PROPERTY_HINT_NONE, "TileMap"), PropertyInfo(Variant::VECTOR2, "tile_location")));
 
 	BIND_ENUM_CONSTANT(BITMASK_2X2);
 	BIND_ENUM_CONSTANT(BITMASK_3X3);
