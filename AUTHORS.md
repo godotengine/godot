@@ -32,6 +32,7 @@ name is available.
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
+    Andy Moss (MillionOstrich)
     Anton Yabchinskiy (a12n)
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
@@ -43,6 +44,7 @@ name is available.
     Carl Olsson (not-surt)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
+    Dmitry Koteroff (Krakean)
     Дмитрий Сальников (DmitriySalnikov)
     Emmanuel Leblond (touilleMan)
     Fabio Alessandrelli (Faless)
@@ -53,7 +55,7 @@ name is available.
     George Marques (vnen)
     Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
-    Guilherme Felipe (guilhermefelipecgs)
+    Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hein-Pieter van Braam (hpvb)
     Hiroshi Ogawa (hi-ogawa)
     Hubert Jarosz (Marqin)
@@ -76,6 +78,7 @@ name is available.
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
+    Michael Alexsander Silva Dias (YeldhamDev)
     Nathan Warden (NathanWarden)
     Nuno Donato (nunodonato)
     Ovnuniarchos
@@ -97,13 +100,18 @@ name is available.
     Timo (toger5)
     V. Vamsi Krishna (vkbsb)
     Vinzenz Feenstra (vinzenz)
+    Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
+    Yuri Roubinski (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
     박한얼 (volzhs)
     bruvzg
     est31
+    m4nu3lf
     marynate
     mrezai
+    rraallvv
     romulox-x
+    sersoong
     yg2f (SuperUserNameMan)

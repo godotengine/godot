@@ -12,7 +12,7 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Platinum sponsors
 
-None so far, but your company could be the first! :)
+    Enjin Coin <https://enjincoin.io>
 
 ## Gold sponsors
 
@@ -22,15 +22,16 @@ None so far, but your company could be the first! :)
 ## Mini sponsors
 
     Andreas
-    Andreas Hirschauer
+    Brandon Lamb
     Christian Uldall Pedersen
     Christoph Woinke
     E Hewert
     Hein-Pieter van Braam
+    Jamal Alyafei
+    Jordan M Lucas
     Matthieu Huvé
     Nathan Warden
     Neal Gompa (Conan Kudo)
-    Olimpiu Metiu
     Pascal Julien
     Ruslan Mustakov
     Slobodan Milnovic
@@ -48,15 +49,19 @@ None so far, but your company could be the first! :)
     Officine Pixel S.n.c.
     Rémi Verschelde
     Stephan Lanfermann
+    Zaven Muradyan
 
     Andreas Schüle
     Austen McRae
     Bernhard Liebl
+    Cody Brocious
     Gerald E Butler
     Jahn Johansen
-    Jordan M Lucas
+    Johannes Wuensch
     Kris Michael
+    Libre-Dépanne
     Ranoller
+    Svenne Krap
 
     BanjoNode2D
     Chris Serino
@@ -80,40 +85,49 @@ None so far, but your company could be the first! :)
 
     Amanda Haldy
     Andreas Haas
-    Andres Cuevas
     Arnaud Verstuyf
-    Bryanna M
     Chris Brown
     Cody Parker
     D
+    Daniel Eliasinski
+    Daniel Langegger
+    Eric Monson
     Ezra Theunissen
     flesk
     François Cantin
     Giovanni Solimeno
-    Hendrik Mans
     Jeppe Zapp
     Justin Arnold
     Justo Delgado Baudí
     Leandro Voltolino
     Lucien Boudy
     Noah
+    Patrick Schnorbus
+    Pete Goodwin
     Ryan Estes
+    Ted
+    Travis Womack
     Trent McPheron
 
 ## Silver donors
 
     1D_Inc
+    Abe Pazos
+    Alder Stefano
     Alessandro Senese
     Alex Barsukov
+    Andres Cuevas
     Anthony Bongiovanni
     Avencherus
     Bastian Böhm
     Ben Vercammen
     Blair Allen
     Bryan Stevenson
+    Casey Foote
     Christian Baune
     Christian Winter
     Collin Shooltz
+    Daniel Egger
     Daniel Kaplan
     David Cravens
     David May
@@ -122,11 +136,13 @@ None so far, but your company could be the first! :)
     Eric Martini
     Fabian Becker
     fengjiongmax
+    Francesco Lisi
     Frank C. Simmons
+    Fredy Romero Sam
+    G3Dev sàrl
     Geequlim
     Gerrit Großkopf
     Guldoman
-    Gustav Dahlström
     HardRound
     hatniX
     HeartBeast
@@ -134,6 +150,7 @@ None so far, but your company could be the first! :)
     Hunter Jones
     Jaime Ruiz-Borau Vizárraga
     Jeff Hungerford
+    Jerry Chen
     Jesse Liles
     joe513
     Jonathon
@@ -146,15 +163,15 @@ None so far, but your company could be the first! :)
     Kevin Boyer
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
-    Kobi Malul
     Linus Lind Lundgren
     Lisandro Lorea
     magodev
+    Markus Wiesner
     Martin Novák
     Matthew Fitzpatrick
-    Matthew Valancy
     Matthias Hölzl
     Max R.R. Collada
+    memoryruins
     mhilbrunner
     Michael Gringauz
     Michael Tintiuc
@@ -172,17 +189,18 @@ None so far, but your company could be the first! :)
     Patrick Nafarrete
     Paul Mason
     Paweł Kowal
-    Pete Goodwin
+    Pierre-Igor Berthet
     Pietro Vertechi
     rayos
     Richman Stewart
+    Rodolfo Baeza
+    Roger Burgess
     Roger Smith
     Roman Tinkov
     Sam Van Campenhout
     Sasori Olkof
     Scott D. Yelich
     Sootstone
-    TheHappieCat
     Theo Cranmore
     Thomas Norman
     Tom Larrow
