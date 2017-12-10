@@ -58,6 +58,12 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	}
 }
 
+btScalar GodotClosestRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace) {
+	const btScalar res = btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+	m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex;
+	return res;
+}
+
 bool GodotAllConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0) const {
 	const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
 	if (needs) {
