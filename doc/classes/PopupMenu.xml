@@ -233,6 +233,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_hide_on_state_item_selection" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -276,6 +282,14 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
+			</description>
+		</method>
+		<method name="set_hide_on_state_item_selection">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_item_accelerator">
@@ -377,6 +391,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_item_statable">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="state" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_submenu">
 			<return type="void">
 			</return>
@@ -410,6 +434,14 @@
 			</description>
 		</method>
 		<method name="toggle_item_checked">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="toggle_item_statable">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">

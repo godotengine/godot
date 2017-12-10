@@ -13,7 +13,7 @@
 	</demos>
 	<methods>
 		<method name="_forward_subtile_selection" qualifiers="virtual">
-			<return type="void">
+			<return type="Vector2">
 			</return>
 			<argument index="0" name="autotile_id" type="int">
 			</argument>
@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="_is_tile_bound" qualifiers="virtual">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<argument index="0" name="drawn_id" type="int">
 			</argument>

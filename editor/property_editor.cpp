@@ -70,7 +70,7 @@ void EditorResourceConversionPlugin::_bind_methods() {
 	mi.name = "_handles";
 	mi.return_val = PropertyInfo(Variant::BOOL, "");
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_converts_to"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_converts_to"));
 }
 
 String EditorResourceConversionPlugin::converts_to() const {

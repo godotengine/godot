@@ -13,7 +13,7 @@
 	</demos>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual">
-			<return type="void">
+			<return type="float">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>
@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual">
-			<return type="void">
+			<return type="float">
 			</return>
 			<argument index="0" name="from_id" type="int">
 			</argument>
