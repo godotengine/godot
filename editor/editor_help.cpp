@@ -202,8 +202,9 @@ class EditorHelpSearch::IncrementalSearch : public Reference {
 	}
 
 public:
-	IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term)
-		: search(p_search), search_options(p_search_options) {
+	IncrementalSearch(EditorHelpSearch *p_search, Tree *p_search_options, const String &p_term) :
+			search(p_search),
+			search_options(p_search_options) {
 
 		def_icon = search->get_icon("Node", "EditorIcons");
 		doc = EditorHelp::get_doc_data();

@@ -1979,7 +1979,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 	return state.scene;
 }
 
-Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path, uint32_t p_flags,int p_bake_fps) {
+Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 
 	ColladaImport state;
 

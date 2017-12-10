@@ -43,7 +43,7 @@ const char *JSON::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-static String _make_indent(const String& p_indent, int p_size) {
+static String _make_indent(const String &p_indent, int p_size) {
 
 	String indent_text = "";
 	if (!p_indent.empty()) {
@@ -53,7 +53,7 @@ static String _make_indent(const String& p_indent, int p_size) {
 	return indent_text;
 }
 
-String JSON::_print_var(const Variant &p_var, const String& p_indent, int p_cur_indent, bool p_sort_keys) {
+String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys) {
 
 	String colon = ":";
 	String end_statement = "";
@@ -116,7 +116,7 @@ String JSON::_print_var(const Variant &p_var, const String& p_indent, int p_cur_
 	}
 }
 
-String JSON::print(const Variant &p_var, const String& p_indent, bool p_sort_keys) {
+String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_keys) {
 
 	return _print_var(p_var, p_indent, 0, p_sort_keys);
 }

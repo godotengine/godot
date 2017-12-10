@@ -31,11 +31,11 @@
 #define EDITOR_PLUGIN_H
 
 #include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_scene.h"
 #include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "editor/import/resource_importer_scene.h"
 #include "undo_redo.h"
 
 /**

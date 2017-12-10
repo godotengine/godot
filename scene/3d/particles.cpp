@@ -1189,7 +1189,7 @@ void ParticlesMaterial::set_flag(Flags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enable;
 	_queue_shader_change();
-	if (p_flag==FLAG_DISABLE_Z) {
+	if (p_flag == FLAG_DISABLE_Z) {
 		_change_notify();
 	}
 }
@@ -1379,7 +1379,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
-		property.usage=0;
+		property.usage = 0;
 	}
 }
 

@@ -515,7 +515,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
 					}
-					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '"+_get_var_type(value)+"'";
+					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
 					OPCODE_BREAK;
 				}
 #endif
@@ -574,7 +574,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String err_type;
-					err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "') with value of type '"+_get_var_type(value)+"'.";
+					err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
 					OPCODE_BREAK;
 				}
 #endif

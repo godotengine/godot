@@ -1286,7 +1286,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		Ref<GIProbeData> probe_data = get_probe_data();
 
-		if(probe_data.is_null())
+		if (probe_data.is_null())
 			probe_data.instance();
 
 		probe_data->set_bounds(AABB(-extents, extents * 2.0));
