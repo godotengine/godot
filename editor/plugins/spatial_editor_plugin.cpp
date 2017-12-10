@@ -2624,7 +2624,6 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
-
 		} break;
 		case VIEW_DISPLAY_WIREFRAME: {
 
@@ -3756,6 +3755,10 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 	}
 }
 
+int SpatialEditor::get_skeleton_visibility_state() const {
+	return view_menu->get_popup()->get_item_state(view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON));
+}
+
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -3798,6 +3801,21 @@ void SpatialEditor::update_transform_gizmo() {
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i]->update_transform_gizmo_view();
 	}
+}
+
+void _update_all_gizmos(Node *p_node) {
+	for (int i = p_node->get_child_count() - 1; 0 <= i; --i) {
+		Spatial *spatial_node = Object::cast_to<Spatial>(p_node->get_child(i));
+		if (spatial_node) {
+			spatial_node->update_gizmo();
+		}
+
+		_update_all_gizmos(p_node->get_child(i));
+	}
+}
+
+void SpatialEditor::update_all_gizmos() {
+	_update_all_gizmos(SceneTree::get_singleton()->get_root());
 }
 
 Object *SpatialEditor::_get_editor_data(Object *p_what) {
@@ -4246,6 +4264,28 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			}
 
 			_refresh_menu_icons();
+		} break;
+		case MENU_VISIBILITY_SKELETON: {
+
+			const int idx = view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON);
+			view_menu->get_popup()->toggle_item_statable(idx);
+
+			// Change icon
+			const int state = view_menu->get_popup()->get_item_state(idx);
+			switch (state) {
+				case 0:
+					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_hidden"));
+					break;
+				case 1:
+					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_visible"));
+					break;
+				case 2:
+					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_xray"));
+					break;
+			}
+
+			update_all_gizmos();
+
 		} break;
 	}
 }
@@ -4699,6 +4739,7 @@ void SpatialEditor::_notification(int p_what) {
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), get_icon("Panels3", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_icon("Panels3Alt", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_icon("Panels4", "EditorIcons"));
+		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON), view_menu->get_popup()->get_icon("visibility_visible"));
 
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
@@ -5034,6 +5075,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid")), MENU_VIEW_GRID);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
+
+	p->add_separator();
+	p->add_statable_item(TTR("Skeleton Gizmo visibility"), 3, 1, MENU_VISIBILITY_SKELETON);
+	p->add_separator();
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
