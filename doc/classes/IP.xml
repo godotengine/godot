@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="IP" inherits="Object" category="Core" version="3.0-beta">
 	<brief_description>
-		IP Protocol support functions like DNS resolution.
+		Internet protocol (IP) support functions like DNS resolution.
 	</brief_description>
 	<description>
-		IP contains support functions for the Internet Protocl (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides DNS hostname resolution support, both blocking and threaded.
+		IP contains support functions for the Internet Protocol (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides DNS hostname resolution support, both blocking and threaded.
 	</description>
 	<tutorials>
 	</tutorials>
