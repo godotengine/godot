@@ -1557,12 +1557,15 @@ public:
 			encode_uint32(cl.size(), &clf[0]);
 			for (int i = 0; i < cl.size(); i++) {
 
+				print_line(itos(i) + " param: " + cl[i]);
 				CharString txt = cl[i].utf8();
 				int base = clf.size();
-				clf.resize(base + 4 + txt.length());
-				encode_uint32(txt.length(), &clf[base]);
-				copymem(&clf[base + 4], txt.ptr(), txt.length());
-				print_line(itos(i) + " param: " + cl[i]);
+				int length = txt.length();
+				if (!length)
+					continue;
+				clf.resize(base + 4 + length);
+				encode_uint32(length, &clf[base]);
+				copymem(&clf[base + 4], txt.ptr(), length);
 			}
 
 			zip_fileinfo zipfi = get_zip_fileinfo();
