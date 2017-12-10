@@ -239,7 +239,7 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 
 		if (inherits == p_inherits)
 			return true;
-		inherits = get_parent_class(inherits);
+		inherits = get_parent_class_nocheck(inherits);
 	}
 
 	return false;
