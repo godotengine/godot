@@ -1884,7 +1884,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
 				save_confirmation->popup_centered_minsize();
 				break;
+			} else {
+				tab_closing = editor_data.get_edited_scene();
 			}
+
 		} // fallthrough
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
