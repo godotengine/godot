@@ -50,14 +50,21 @@ struct GodotFilterCallback : public btOverlapFilterCallback {
 struct GodotClosestRayResultCallback : public btCollisionWorld::ClosestRayResultCallback {
 	const Set<RID> *m_exclude;
 	bool m_pickRay;
+	int m_shapeId;
 
 public:
 	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const Set<RID> *p_exclude) :
 			btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld),
 			m_exclude(p_exclude),
-			m_pickRay(false) {}
+			m_pickRay(false),
+			m_shapeId(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
+
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace) {
+		m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+		return btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+	}
 };
 
 // store all colliding object
