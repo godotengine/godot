@@ -42,7 +42,7 @@ layout(location=5) in vec2 uv2_attrib;
 uniform float normal_mult;
 
 #ifdef USE_SKELETON
-layout(location=6) in ivec4 bone_indices; // attrib:6
+layout(location=6) in uvec4 bone_indices; // attrib:6
 layout(location=7) in vec4 bone_weights; // attrib:7
 #endif
 
@@ -302,14 +302,16 @@ void main() {
 #ifdef USE_SKELETON
 	{
 		//skeleton transform
-		ivec2 tex_ofs = ivec2( bone_indices.x%256, (bone_indices.x/256)*3 );
+		ivec4 bone_indicesi = ivec4(bone_indices); // cast to signed int
+
+		ivec2 tex_ofs = ivec2( bone_indicesi.x%256, (bone_indicesi.x/256)*3 );
 		highp mat3x4 m = mat3x4(
 			texelFetch(skeleton_texture,tex_ofs,0),
 			texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
 			texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
 		) * bone_weights.x;
 
-		tex_ofs = ivec2( bone_indices.y%256, (bone_indices.y/256)*3 );
+		tex_ofs = ivec2( bone_indicesi.y%256, (bone_indicesi.y/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
@@ -317,7 +319,7 @@ void main() {
 					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
 				) * bone_weights.y;
 
-		tex_ofs = ivec2( bone_indices.z%256, (bone_indices.z/256)*3 );
+		tex_ofs = ivec2( bone_indicesi.z%256, (bone_indicesi.z/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
@@ -326,7 +328,7 @@ void main() {
 				) * bone_weights.z;
 
 
-		tex_ofs = ivec2( bone_indices.w%256, (bone_indices.w/256)*3 );
+		tex_ofs = ivec2( bone_indicesi.w%256, (bone_indicesi.w/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
