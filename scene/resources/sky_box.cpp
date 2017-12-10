@@ -180,7 +180,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
 
 				normal.normalize();
 
-				float v_angle = Math::acos(normal.y);
+				float v_angle = Math::acos(CLAMP(normal.y, -1.0, 1.0));
 
 				Color color;
 
@@ -193,7 +193,7 @@ Ref<Image> ProceduralSky::_generate_sky() {
 					float c = v_angle / (Math_PI * 0.5);
 					color = sky_horizon_linear.linear_interpolate(sky_top_linear, Math::ease(1.0 - c, sky_curve));
 
-					float sun_angle = Math::rad2deg(Math::acos(sun.dot(normal)));
+					float sun_angle = Math::rad2deg(Math::acos(CLAMP(sun.dot(normal), -1.0, 1.0)));
 
 					if (sun_angle < sun_angle_min) {
 						color = color.blend(sun_color);
