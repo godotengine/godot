@@ -163,7 +163,6 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		int xi_minor = 2;
 		if (XIQueryVersion(x11_display, &xi_major, &xi_minor) != Success) {
 			fprintf(stderr, "XInput 2.2 not available (server supports %d.%d)\n", xi_major, xi_minor);
-			touch.opcode = 0;
 		} else {
 			int dev_count;
 			XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
@@ -172,14 +171,13 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 				XIDeviceInfo *dev = &info[i];
 				if (!dev->enabled)
 					continue;
-				/*if (dev->use != XIMasterPointer)
-					continue;*/
+				if (!(dev->use == XIMasterPointer || dev->use == XIFloatingSlave))
+					continue;
 
 				bool direct_touch = false;
 				for (int j = 0; j < dev->num_classes; j++) {
 					if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
 						direct_touch = true;
-						printf("%d) %d %s\n", i, dev->attachment, dev->name);
 						break;
 					}
 				}
@@ -192,7 +190,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 			XIFreeDeviceInfo(info);
 
 			if (!touch.devices.size()) {
-				fprintf(stderr, "No suitable touch device found\n");
+				fprintf(stderr, "No touch devices found\n");
 			}
 		}
 	}
@@ -370,7 +368,7 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		// Must be alive after this block
 		static unsigned char mask_data[XIMaskLen(XI_LASTEVENT)] = {};
 
-		touch.event_mask.deviceid = XIAllMasterDevices;
+		touch.event_mask.deviceid = XIAllDevices;
 		touch.event_mask.mask_len = sizeof(mask_data);
 		touch.event_mask.mask = mask_data;
 
@@ -381,12 +379,14 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 		XISelectEvents(x11_display, x11_window, &touch.event_mask, 1);
 
-		XIClearMask(touch.event_mask.mask, XI_TouchOwnership);
+		// Disabled by now since grabbing also blocks mouse events
+		// (they are received as extended events instead of standard events)
+		/*XIClearMask(touch.event_mask.mask, XI_TouchOwnership);
 
 		// Grab touch devices to avoid OS gesture interference
 		for (int i = 0; i < touch.devices.size(); ++i) {
 			XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
-		}
+		}*/
 	}
 #endif
 
@@ -537,9 +537,9 @@ void OS_X11::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	//if (debugger_connection_console) {
+	//		memdelete(debugger_connection_console);
+	//}
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joystick);
@@ -1371,7 +1371,7 @@ void OS_X11::process_xevents() {
 #ifdef TOUCH_ENABLED
 		if (XGetEventData(x11_display, &event.xcookie)) {
 
-			if (event.xcookie.extension == touch.opcode) {
+			if (event.xcookie.type == GenericEvent && event.xcookie.extension == touch.opcode) {
 
 				InputEvent input_event;
 				input_event.ID = ++event_id;
@@ -1384,7 +1384,8 @@ void OS_X11::process_xevents() {
 				switch (event_data->evtype) {
 
 					case XI_TouchBegin: // Fall-through
-						XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
+							// Disabled hand-in-hand with the grabbing
+							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
 
 					case XI_TouchEnd: {
 
@@ -1430,9 +1431,8 @@ void OS_X11::process_xevents() {
 					} break;
 				}
 			}
-
-			XFreeEventData(x11_display, &event.xcookie);
 		}
+		XFreeEventData(x11_display, &event.xcookie);
 #endif
 
 		switch (event.type) {
@@ -1473,10 +1473,10 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-				// Grab touch devices to avoid OS gesture interference
-				for (int i = 0; i < touch.devices.size(); ++i) {
+					// Grab touch devices to avoid OS gesture interference
+					/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
-				}
+				}*/
 #endif
 				break;
 
@@ -1488,9 +1488,9 @@ void OS_X11::process_xevents() {
 				}
 #ifdef TOUCH_ENABLED
 				// Ungrab touch devices so input works as usual while we are unfocused
-				for (int i = 0; i < touch.devices.size(); ++i) {
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIUngrabDevice(x11_display, touch.devices[i], CurrentTime);
-				}
+				}*/
 
 				// Release every pointer to avoid sticky points
 				for (Map<int, Point2i>::Element *E = touch.state.front(); E; E = E->next()) {
