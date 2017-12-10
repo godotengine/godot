@@ -141,42 +141,14 @@ void OS_Unix::alert(const String &p_alert, const String &p_title) {
 	fprintf(stderr, "ERROR: %s\n", p_alert.utf8().get_data());
 }
 
-static int has_data(FILE *p_fd, int timeout_usec = 0) {
-
-	fd_set readset;
-	int fd = fileno(p_fd);
-	FD_ZERO(&readset);
-	FD_SET(fd, &readset);
-	timeval time;
-	time.tv_sec = 0;
-	time.tv_usec = timeout_usec;
-	int res = 0; //select(fd + 1, &readset, NULL, NULL, &time);
-	return res > 0;
-};
-
 String OS_Unix::get_stdin_string(bool p_block) {
 
-	String ret;
 	if (p_block) {
 		char buff[1024];
-		ret = stdin_buf + fgets(buff, 1024, stdin);
+		String ret = stdin_buf + fgets(buff, 1024, stdin);
 		stdin_buf = "";
 		return ret;
-	};
-
-	while (has_data(stdin)) {
-
-		char ch;
-		read(fileno(stdin), &ch, 1);
-		if (ch == '\n') {
-			ret = stdin_buf;
-			stdin_buf = "";
-			return ret;
-		} else {
-			char str[2] = { ch, 0 };
-			stdin_buf += str;
-		};
-	};
+	}
 
 	return "";
 }
@@ -194,8 +166,6 @@ uint64_t OS_Unix::get_unix_time() const {
 uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
-	//localtime(&tv_now.tv_usec);
-	//localtime((const long *)&tv_now.tv_usec);
 	return uint64_t(tv_now.tv_sec);
 }
 
