@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HTTPRequest" inherits="Node" category="Core" version="3.0-beta">
 	<brief_description>
-		A Node with the ability to send HTTP requests.
+		A node with the ability to send HTTP requests.
 	</brief_description>
 	<description>
-		A Node with the ability to send HTTP requests. Uses a [HTTPClient] internally, supports HTTPS.
-		Can be used to make HTTP requests or download files via HTTP.
+		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
+		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,35 +16,35 @@
 			<return type="void">
 			</return>
 			<description>
-				Cancel the current request.
+				Cancels the current request.
 			</description>
 		</method>
 		<method name="get_body_size" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the response body length.
+				Returns the response body length.
 			</description>
 		</method>
 		<method name="get_download_file" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the file this request will download into.
+				Returns the file this request will download into.
 			</description>
 		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bytes this HTTPRequest downloaded.
+				Returns the amount of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Return the current status of the underlying [HTTPClient].
+				Returns the current status of the underlying [HTTPClient]. See [code]STATUS_*[/code] enum on [HTTPClient].
 			</description>
 		</method>
 		<method name="request">
@@ -69,16 +69,19 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Set the file to download into. Outputs the response body into the file.
+				Sets the file to download into. Outputs the response body into the file if set.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
+			Maximum allowed size for response bodies.
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
+			Maximum number of allowed redirects.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
+			If [code]true[/code] multithreading is used to improve performance.
 		</member>
 	</members>
 	<signals>
@@ -121,7 +124,7 @@
 			Request exceeded its maximum size limit, see [method set_body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
-			Request failed. (unused)
+			Request failed. (Unused)
 		</constant>
 		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="9" enum="Result">
 			HTTPRequest couldn't open the download file.
