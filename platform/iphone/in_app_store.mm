@@ -30,10 +30,6 @@
 #ifdef STOREKIT_ENABLED
 #include "in_app_store.h"
 
-#ifdef MODULE_FUSEBOXX_ENABLED
-#import "modules/fuseboxx/ios/FuseSDK.h"
-#endif
-
 extern "C" {
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
@@ -220,10 +216,6 @@ Error InAppStore::request_product_info(Variant p_params) {
 					[pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
 				}
 
-#ifdef MODULE_FUSEBOXX_ENABLED
-				printf("Registering transaction on Fuseboxx!\n");
-				[FuseSDK registerInAppPurchase:transaction];
-#endif
 			}; break;
 			case SKPaymentTransactionStateFailed: {
 				printf("status transaction failed!\n");

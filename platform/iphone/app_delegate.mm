@@ -35,21 +35,6 @@
 #include "main/main.h"
 #include "os_iphone.h"
 
-#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
-#include "modules/FacebookScorer_ios/FacebookScorer.h"
-#endif
-
-#ifdef MODULE_GAME_ANALYTICS_ENABLED
-#import "modules/game_analytics/ios/MobileAppTracker.framework/Headers/MobileAppTracker.h"
-//#import "modules/game_analytics/ios/MobileAppTracker.h"
-#import <AdSupport/AdSupport.h>
-#endif
-
-#ifdef MODULE_PARSE_ENABLED
-#import "FBSDKCoreKit/FBSDKCoreKit.h"
-#import <Parse/Parse.h>
-#endif
-
 #import "GameController/GameController.h"
 
 #define kFilteringFactor 0.1
@@ -425,11 +410,7 @@ static int frame_count = 0;
 			OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
 
 		}; break;
-		/*
-	case 1: {
-																	++frame_count;
-	}; break;
-*/
+
 		case 1: {
 
 			Main::setup2();
@@ -460,11 +441,7 @@ static int frame_count = 0;
 			}
 
 		}; break;
-		/*
-	case 3: {
-																	++frame_count;
-	} break;
-*/
+
 		case 2: {
 
 			Main::start();
@@ -562,15 +539,11 @@ static int frame_count = 0;
 };
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-
-	printf("****************** did receive memory warning!\n");
 	OS::get_singleton()->get_main_loop()->notification(
 			MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 };
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-
-	printf("**************** app delegate init\n");
 	CGRect rect = [[UIScreen mainScreen] bounds];
 
 	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
@@ -635,43 +608,10 @@ static int frame_count = 0;
 	// prevent to stop music in another background app
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
 
-#ifdef MODULE_GAME_ANALYTICS_ENABLED
-	printf("********************* didFinishLaunchingWithOptions\n");
-	if (!Globals::get_singleton()->has("mobileapptracker/advertiser_id")) {
-		return;
-	}
-	if (!Globals::get_singleton()->has("mobileapptracker/conversion_key")) {
-		return;
-	}
-
-	String adid = GLOBAL_DEF("mobileapptracker/advertiser_id", "");
-	String convkey = GLOBAL_DEF("mobileapptracker/conversion_key", "");
-
-	NSString *advertiser_id =
-			[NSString stringWithUTF8String:adid.utf8().get_data()];
-	NSString *conversion_key =
-			[NSString stringWithUTF8String:convkey.utf8().get_data()];
-
-	// Account Configuration info - must be set
-	[MobileAppTracker initializeWithMATAdvertiserId:advertiser_id
-								   MATConversionKey:conversion_key];
-
-	// Used to pass us the IFA, enables highly accurate 1-to-1 attribution.
-	// Required for many advertising networks.
-	[MobileAppTracker
-			setAppleAdvertisingIdentifier:[[ASIdentifierManager sharedManager]
-												  advertisingIdentifier]
-			   advertisingTrackingEnabled:[[ASIdentifierManager sharedManager]
-												  isAdvertisingTrackingEnabled]];
-
-#endif
 	return TRUE;
 };
 
 - (void)applicationWillTerminate:(UIApplication *)application {
-
-	printf("********************* will terminate\n");
-
 	[self deinitGameControllers];
 
 	if (motionInitialised) {
@@ -686,7 +626,6 @@ static int frame_count = 0;
 };
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-	printf("********************* did enter background\n");
 	///@TODO maybe add pause motionManager? and where would we unpause it?
 
 	if (OS::get_singleton()->get_main_loop())
@@ -701,24 +640,17 @@ static int frame_count = 0;
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
-	printf("********************* did enter foreground\n");
 	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	[view_controller.view startAnimation];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-	printf("********************* will resign active\n");
 	// OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view
 					stopAnimation]; // FIXME: pause seems to be recommended elsewhere
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-	printf("********************* did become active\n");
-#ifdef MODULE_GAME_ANALYTICS_ENABLED
-	printf("********************* mobile app tracker found\n");
-	[MobileAppTracker measureSession];
-#endif
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(
 				MainLoop::NOTIFICATION_WM_FOCUS_IN);
@@ -733,65 +665,6 @@ static int frame_count = 0;
 	// Fixed audio can not resume if it is interrupted cause by an incoming phone call
 	if (AudioDriverIphone::get_singleton() != NULL)
 		AudioDriverIphone::get_singleton()->start();
-}
-
-- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
-#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
-	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];
-#else
-	return false;
-#endif
-}
-
-// For 4.2+ support
-- (BOOL)application:(UIApplication *)application
-				  openURL:(NSURL *)url
-		sourceApplication:(NSString *)sourceApplication
-			   annotation:(id)annotation {
-#ifdef MODULE_PARSE_ENABLED
-	NSLog(@"Handling application openURL");
-	return
-			[[FBSDKApplicationDelegate sharedInstance] application:application
-														   openURL:url
-												 sourceApplication:sourceApplication
-														annotation:annotation];
-#endif
-
-#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
-	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];
-#else
-	return false;
-#endif
-}
-
-- (void)application:(UIApplication *)application
-		didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-#ifdef MODULE_PARSE_ENABLED
-	// Store the deviceToken in the current installation and save it to Parse.
-	PFInstallation *currentInstallation = [PFInstallation currentInstallation];
-	// NSString* token = [[NSString alloc] initWithData:deviceToken
-	// encoding:NSUTF8StringEncoding];
-	NSLog(@"Device Token : %@ ", deviceToken);
-	[currentInstallation setDeviceTokenFromData:deviceToken];
-	[currentInstallation saveInBackground];
-#endif
-}
-
-- (void)application:(UIApplication *)application
-		didReceiveRemoteNotification:(NSDictionary *)userInfo {
-#ifdef MODULE_PARSE_ENABLED
-	[PFPush handlePush:userInfo];
-	NSDictionary *aps =
-			[userInfo objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-
-	NSLog(@"Push Notification Payload (app active) %@", aps);
-	[defaults setObject:aps forKey:@"notificationInfo"];
-	[defaults synchronize];
-	if (application.applicationState == UIApplicationStateInactive) {
-		[PFAnalytics trackAppOpenedWithRemoteNotificationPayload:userInfo];
-	}
-#endif
 }
 
 - (void)dealloc {
