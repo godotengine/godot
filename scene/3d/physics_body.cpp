@@ -734,31 +734,12 @@ bool RigidBody::is_contact_monitor_enabled() const {
 	return contact_monitor != NULL;
 }
 
-void RigidBody::set_axis_lock_x(bool p_lock) {
-	RigidBody::locked_axis[0] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 0, locked_axis[0]);
+void RigidBody::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock) {
+	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
 }
 
-void RigidBody::set_axis_lock_y(bool p_lock) {
-	RigidBody::locked_axis[1] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 1, locked_axis[1]);
-}
-
-void RigidBody::set_axis_lock_z(bool p_lock) {
-	RigidBody::locked_axis[2] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 2, locked_axis[2]);
-}
-
-bool RigidBody::get_axis_lock_x() const {
-	return RigidBody::locked_axis[0];
-}
-
-bool RigidBody::get_axis_lock_y() const {
-	return RigidBody::locked_axis[1];
-}
-
-bool RigidBody::get_axis_lock_z() const {
-	return RigidBody::locked_axis[2];
+bool RigidBody::get_axis_lock(PhysicsServer::BodyAxis p_axis) const {
+	return PhysicsServer::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
 }
 
 Array RigidBody::get_colliding_bodies() const {
@@ -853,12 +834,8 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_body_enter_tree"), &RigidBody::_body_enter_tree);
 	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &RigidBody::_body_exit_tree);
 
-	ClassDB::bind_method(D_METHOD("set_axis_lock_x", "axis_lock_x"), &RigidBody::set_axis_lock_x);
-	ClassDB::bind_method(D_METHOD("set_axis_lock_y", "axis_lock_y"), &RigidBody::set_axis_lock_y);
-	ClassDB::bind_method(D_METHOD("set_axis_lock_z", "axis_lock_z"), &RigidBody::set_axis_lock_z);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_x"), &RigidBody::get_axis_lock_x);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_y"), &RigidBody::get_axis_lock_y);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_z"), &RigidBody::get_axis_lock_z);
+	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody::set_axis_lock);
+	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody::get_axis_lock);
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody::get_colliding_bodies);
 
@@ -877,9 +854,12 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sleeping"), "set_sleeping", "is_sleeping");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_sleep"), "set_can_sleep", "is_able_to_sleep");
 	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_x"), "set_axis_lock_x", "get_axis_lock_x");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_y"), "set_axis_lock_y", "get_axis_lock_y");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_z"), "set_axis_lock_z", "get_axis_lock_z");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Z);
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "-1,128,0.01"), "set_linear_damp", "get_linear_damp");
@@ -969,7 +949,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, Collision &r_colli
 	}
 
 	for (int i = 0; i < 3; i++) {
-		if (locked_axis[i]) {
+		if (locked_axis & (1 << i)) {
 			result.motion[i] = 0;
 		}
 	}
@@ -985,7 +965,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	Vector3 lv = p_linear_velocity;
 
 	for (int i = 0; i < 3; i++) {
-		if (locked_axis[i]) {
+		if (locked_axis & (1 << i)) {
 			lv[i] = 0;
 		}
 	}
@@ -1038,7 +1018,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 			lv = lv.slide(n);
 
 			for (int i = 0; i < 3; i++) {
-				if (locked_axis[i]) {
+				if (locked_axis & (1 << i)) {
 					lv[i] = 0;
 				}
 			}
@@ -1082,31 +1062,12 @@ bool KinematicBody::test_move(const Transform &p_from, const Vector3 &p_motion) 
 	return PhysicsServer::get_singleton()->body_test_motion(get_rid(), p_from, p_motion);
 }
 
-void KinematicBody::set_axis_lock_x(bool p_lock) {
-	KinematicBody::locked_axis[0] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 0, locked_axis[0]);
+void KinematicBody::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock) {
+	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
 }
 
-void KinematicBody::set_axis_lock_y(bool p_lock) {
-	KinematicBody::locked_axis[1] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 1, locked_axis[1]);
-}
-
-void KinematicBody::set_axis_lock_z(bool p_lock) {
-	KinematicBody::locked_axis[2] = p_lock;
-	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(), 2, locked_axis[2]);
-}
-
-bool KinematicBody::get_axis_lock_x() const {
-	return KinematicBody::locked_axis[0];
-}
-
-bool KinematicBody::get_axis_lock_y() const {
-	return KinematicBody::locked_axis[1];
-}
-
-bool KinematicBody::get_axis_lock_z() const {
-	return KinematicBody::locked_axis[2];
+bool KinematicBody::get_axis_lock(PhysicsServer::BodyAxis p_axis) const {
+	return PhysicsServer::get_singleton()->body_is_axis_locked(get_rid(), p_axis);
 }
 
 void KinematicBody::set_safe_margin(float p_margin) {
@@ -1157,12 +1118,8 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody::is_on_wall);
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_axis_lock_x", "axis_lock_x"), &KinematicBody::set_axis_lock_x);
-	ClassDB::bind_method(D_METHOD("set_axis_lock_y", "axis_lock_y"), &KinematicBody::set_axis_lock_y);
-	ClassDB::bind_method(D_METHOD("set_axis_lock_z", "axis_lock_z"), &KinematicBody::set_axis_lock_z);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_x"), &KinematicBody::get_axis_lock_x);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_y"), &KinematicBody::get_axis_lock_y);
-	ClassDB::bind_method(D_METHOD("get_axis_lock_z"), &KinematicBody::get_axis_lock_z);
+	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody::set_axis_lock);
+	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody::get_axis_lock);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody::get_safe_margin);
@@ -1171,9 +1128,12 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody::_get_slide_collision);
 
 	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_x"), "set_axis_lock_x", "get_axis_lock_x");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_y"), "set_axis_lock_y", "get_axis_lock_y");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_lock_z"), "set_axis_lock_z", "get_axis_lock_z");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Z);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 }
@@ -1182,7 +1142,7 @@ KinematicBody::KinematicBody() :
 		PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC) {
 
 	margin = 0.001;
-
+	locked_axis = 0;
 	on_floor = false;
 	on_ceiling = false;
 	on_wall = false;

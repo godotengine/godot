@@ -421,8 +421,17 @@ public:
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
 
-	virtual void body_set_axis_lock(RID p_body, int axis, bool lock) = 0;
-	virtual bool body_get_axis_lock(RID p_body) const = 0;
+	enum BodyAxis {
+		BODY_AXIS_LINEAR_X = 1 << 0,
+		BODY_AXIS_LINEAR_Y = 1 << 1,
+		BODY_AXIS_LINEAR_Z = 1 << 2,
+		BODY_AXIS_ANGULAR_X = 1 << 3,
+		BODY_AXIS_ANGULAR_Y = 1 << 4,
+		BODY_AXIS_ANGULAR_Z = 1 << 5
+	};
+
+	virtual void body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) = 0;
+	virtual bool body_is_axis_locked(RID p_body, BodyAxis p_axis) const = 0;
 
 	//fix
 	virtual void body_add_collision_exception(RID p_body, RID p_body_b) = 0;
@@ -685,6 +694,7 @@ VARIANT_ENUM_CAST(PhysicsServer::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyParameter);
 VARIANT_ENUM_CAST(PhysicsServer::BodyState);
+VARIANT_ENUM_CAST(PhysicsServer::BodyAxis);
 VARIANT_ENUM_CAST(PhysicsServer::PinJointParam);
 VARIANT_ENUM_CAST(PhysicsServer::JointType);
 VARIANT_ENUM_CAST(PhysicsServer::HingeJointParam);

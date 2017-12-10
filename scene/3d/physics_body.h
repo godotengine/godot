@@ -132,8 +132,6 @@ private:
 	bool sleeping;
 	bool ccd;
 
-	bool locked_axis[3] = { false, false, false };
-
 	int max_contacts_reported;
 
 	bool custom_integrator;
@@ -238,12 +236,8 @@ public:
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;
 
-	void set_axis_lock_x(bool p_lock);
-	void set_axis_lock_y(bool p_lock);
-	void set_axis_lock_z(bool p_lock);
-	bool get_axis_lock_x() const;
-	bool get_axis_lock_y() const;
-	bool get_axis_lock_z() const;
+	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
 
 	Array get_colliding_bodies() const;
 
@@ -277,7 +271,7 @@ public:
 	};
 
 private:
-	bool locked_axis[3] = { false, false, false };
+	uint16_t locked_axis;
 
 	float margin;
 
@@ -301,12 +295,8 @@ public:
 	bool move_and_collide(const Vector3 &p_motion, Collision &r_collision);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion);
 
-	void set_axis_lock_x(bool p_lock);
-	void set_axis_lock_y(bool p_lock);
-	void set_axis_lock_z(bool p_lock);
-	bool get_axis_lock_x() const;
-	bool get_axis_lock_y() const;
-	bool get_axis_lock_z() const;
+	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
+	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
 
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;

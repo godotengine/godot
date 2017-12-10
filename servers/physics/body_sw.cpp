@@ -422,6 +422,18 @@ void BodySW::_compute_area_gravity_and_dampenings(const AreaSW *p_area) {
 	area_angular_damp += p_area->get_angular_damp();
 }
 
+void BodySW::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock) {
+	if (lock) {
+		locked_axis |= p_axis;
+	} else {
+		locked_axis &= ~p_axis;
+	}
+}
+
+bool BodySW::is_axis_locked(PhysicsServer::BodyAxis p_axis) const {
+	return locked_axis & p_axis;
+}
+
 void BodySW::integrate_forces(real_t p_step) {
 
 	if (mode == PhysicsServer::BODY_MODE_STATIC)
@@ -559,17 +571,19 @@ void BodySW::integrate_velocities(real_t p_step) {
 	if (fi_callback)
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 
-	//apply axis lock
-	if (locked_axis[0] || locked_axis[1] || locked_axis[2]) {
-		for (int i = 0; i < 3; i++) {
-			if (locked_axis[i]) {
-				linear_velocity[i] = 0;
-				biased_linear_velocity[i] = 0;
-				new_transform.origin[i] = get_transform().origin[i];
-			} else {
-				angular_velocity[i] = 0;
-				biased_angular_velocity[i] = 0;
-			}
+	//apply axis lock linear
+	for (int i = 0; i < 3; i++) {
+		if (is_axis_locked((PhysicsServer::BodyAxis)(1 << i))) {
+			linear_velocity[i] = 0;
+			biased_linear_velocity[i] = 0;
+			new_transform.origin[i] = get_transform().origin[i];
+		}
+	}
+	//apply axis lock angular
+	for (int i = 0; i < 3; i++) {
+		if (is_axis_locked((PhysicsServer::BodyAxis)(1 << (i + 3)))) {
+			angular_velocity[i] = 0;
+			biased_angular_velocity[i] = 0;
 		}
 	}
 
@@ -742,7 +756,8 @@ BodySW::BodySW() :
 		CollisionObjectSW(TYPE_BODY),
 		active_list(this),
 		inertia_update_list(this),
-		direct_state_query_list(this) {
+		direct_state_query_list(this),
+		locked_axis(0) {
 
 	mode = PhysicsServer::BODY_MODE_RIGID;
 	active = true;
