@@ -15,6 +15,7 @@
 	</methods>
 	<members>
 		<member name="segments" type="PoolVector2Array" setter="set_segments" getter="get_segments">
+			The array of points that make up the [code]ConcavePolygonShape2D[/code]'s line segments.
 		</member>
 	</members>
 	<constants>
