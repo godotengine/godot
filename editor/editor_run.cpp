@@ -101,7 +101,14 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos = screen_rect.position + ((screen_rect.size - desired_size) / 2).floor();
+			int display_scale = 1;
+#ifdef OSX_ENABLED
+			if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000) {
+				display_scale = 2;
+			}
+#endif
+
+			Vector2 pos = screen_rect.position + ((screen_rect.size / display_scale - desired_size) / 2).floor();
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
