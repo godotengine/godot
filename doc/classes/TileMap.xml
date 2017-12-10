@@ -38,20 +38,6 @@
 				Return the tile index of the cell referenced by a Vector2.
 			</description>
 		</method>
-		<method name="get_center_x" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if tiles are to be centered in x coordinate (by default this is false and they are drawn from upper left cell corner).
-			</description>
-		</method>
-		<method name="get_center_y" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Return true if tiles are to be centered in y coordinate (by default this is false and they are drawn from upper left cell corner).
-			</description>
-		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -174,24 +160,6 @@
 				Set the tile index for the cell referenced by a Vector2 of grid-based coordinates.
 				A tile index of -1 clears the cell.
 				Optionally, the tile can also be flipped over the X and Y axes or transposed.
-			</description>
-		</method>
-		<method name="set_center_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set tiles to be centered in x coordinate. (by default this is false and they are drawn from upper left cell corner).
-			</description>
-		</method>
-		<method name="set_center_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Set tiles to be centered in y coordinate. (by default this is false and they are drawn from upper left cell corner).
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
