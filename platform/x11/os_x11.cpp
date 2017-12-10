@@ -1060,8 +1060,12 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
+
 	if (current_videomode.fullscreen == p_enabled)
 		return;
+
+	if (layered_window)
+		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled && current_videomode.always_on_top) {
 		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)

@@ -279,7 +279,6 @@ public:
 	virtual bool get_window_per_pixel_transparency_enabled() const;
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
 
-	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual String get_unique_id() const;
