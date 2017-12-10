@@ -484,7 +484,8 @@ void SceneTreeEditor::_selected_changed() {
 void SceneTreeEditor::_deselect_items() {
 
 	// Clear currently elected items in scene tree dock.
-	editor_selection->clear();
+	if (editor_selection)
+		editor_selection->clear();
 }
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
