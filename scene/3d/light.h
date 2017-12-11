@@ -192,8 +192,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	OmniLight()
-		: Light(VisualServer::LIGHT_OMNI) { set_parameter(PARAM_SHADOW_Z_OFFSET, 0.001); }
+	OmniLight() :
+			Light(VisualServer::LIGHT_OMNI) { set_parameter(PARAM_SHADOW_Z_OFFSET, 0.001); }
 };
 
 class SpotLight : public Light {
@@ -204,8 +204,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	SpotLight()
-		: Light(VisualServer::LIGHT_SPOT) {}
+	SpotLight() :
+			Light(VisualServer::LIGHT_SPOT) {}
 };
 
 #endif

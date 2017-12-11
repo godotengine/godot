@@ -148,7 +148,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 #ifdef DEBUG_ENABLED
 
-//GDScriptLanguage::get_singleton()->calls++;
+	//GDScriptLanguage::get_singleton()->calls++;
 
 #endif
 
@@ -1265,8 +1265,8 @@ void GDFunction::clear() {
 
 }
 #endif
-GDFunction::GDFunction()
-	: function_list(this) {
+GDFunction::GDFunction() :
+		function_list(this) {
 
 	_stack_size = 0;
 	_call_size = 0;

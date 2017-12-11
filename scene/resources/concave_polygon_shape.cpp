@@ -106,8 +106,8 @@ void ConcavePolygonShape::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_faces"), &ConcavePolygonShape::get_faces);
 }
 
-ConcavePolygonShape::ConcavePolygonShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON)) {
+ConcavePolygonShape::ConcavePolygonShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON)) {
 
 	//set_planes(Vector3(1,1,1));
 }

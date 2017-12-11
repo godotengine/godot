@@ -32,7 +32,6 @@
 #include "scene/3d/physics_body.h"
 #include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
-#include "scene/scene_string_names.h"
 
 void VisibilityNotifier::_enter_camera(Camera *p_camera) {
 

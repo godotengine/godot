@@ -81,4 +81,4 @@ MainLoop *test() {
 
 	return memnew(TestMainLoop);
 }
-}
+} // namespace TestSound

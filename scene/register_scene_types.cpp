@@ -74,7 +74,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
@@ -125,7 +124,6 @@
 #include "scene/animation/animation_tree_player.h"
 #include "scene/animation/tween.h"
 #include "scene/main/resource_preloader.h"
-#include "scene/main/scene_main_loop.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/resources/packed_scene.h"
 
@@ -256,7 +254,7 @@ void register_scene_types() {
 
 #ifdef TOOLS_ENABLED
 
-//scene first!
+	//scene first!
 
 #endif
 

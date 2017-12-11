@@ -3496,8 +3496,8 @@ void PropertyEditor::_item_edited() {
 				_edit_set(name, item->get_text(1));
 			}
 		} break;
-		// math types
 
+		// math types
 		case Variant::VECTOR3: {
 
 		} break;

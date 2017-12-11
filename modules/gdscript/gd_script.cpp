@@ -795,8 +795,8 @@ void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 #endif
 }
 
-GDScript::GDScript()
-	: script_list(this) {
+GDScript::GDScript() :
+		script_list(this) {
 
 	_static_ref = this;
 	valid = false;

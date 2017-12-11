@@ -127,7 +127,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 				baker->update_octree_images(octree_texture, light_texture);
 				baker->update_octree_sampler(octree_sampler);
-//	print_line("sampler size: "+itos(octree_sampler.size()*4));
+				//print_line("sampler size: "+itos(octree_sampler.size()*4));
 
 #if 1
 				//debug

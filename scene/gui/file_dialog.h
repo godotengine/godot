@@ -33,7 +33,6 @@
 #include "box_container.h"
 #include "os/dir_access.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tool_button.h"

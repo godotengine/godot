@@ -598,8 +598,8 @@ void DirectionalLight::_bind_methods() {
 	BIND_CONSTANT(SHADOW_PARAM_PSSM_ZOFFSET_SCALE);
 }
 
-DirectionalLight::DirectionalLight()
-	: Light(VisualServer::LIGHT_DIRECTIONAL) {
+DirectionalLight::DirectionalLight() :
+		Light(VisualServer::LIGHT_DIRECTIONAL) {
 
 	shadow_mode = SHADOW_ORTHOGONAL;
 	shadow_param[SHADOW_PARAM_MAX_DISTANCE] = 0;

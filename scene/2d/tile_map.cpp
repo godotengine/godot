@@ -270,7 +270,7 @@ struct _BodyParams {
 		return p_rhs.one_way_direction == one_way_direction && p_rhs.one_way_max_depth == one_way_max_depth;
 	}
 };
-}
+} // namespace
 
 void TileMap::_update_dirty_quadrants() {
 

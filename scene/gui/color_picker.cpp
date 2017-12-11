@@ -435,8 +435,8 @@ void ColorPicker::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 }
 
-ColorPicker::ColorPicker()
-	: BoxContainer(true) {
+ColorPicker::ColorPicker() :
+		BoxContainer(true) {
 
 	updating = true;
 	edit_alpha = true;

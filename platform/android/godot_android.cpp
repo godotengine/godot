@@ -591,7 +591,7 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 			engine_draw_frame(engine);
 			engine->animating = 1;
 
-/*
+			/*
 			    EGLint w,h;
 			    eglQuerySurface(engine->display, engine->surface, EGL_WIDTH, &w);
 			    eglQuerySurface(engine->display, engine->surface, EGL_HEIGHT, &h);

@@ -30,7 +30,6 @@
 #include "sample_player_2d.h"
 
 #include "servers/audio_server.h"
-#include "servers/audio_server.h"
 #include "servers/spatial_sound_server.h"
 
 bool SamplePlayer2D::_set(const StringName &p_name, const Variant &p_value) {

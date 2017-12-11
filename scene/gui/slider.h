@@ -73,8 +73,8 @@ class HSlider : public Slider {
 	OBJ_TYPE(HSlider, Slider);
 
 public:
-	HSlider()
-		: Slider(HORIZONTAL) { set_v_size_flags(0); }
+	HSlider() :
+			Slider(HORIZONTAL) { set_v_size_flags(0); }
 };
 
 class VSlider : public Slider {
@@ -82,8 +82,8 @@ class VSlider : public Slider {
 	OBJ_TYPE(VSlider, Slider);
 
 public:
-	VSlider()
-		: Slider(VERTICAL) { set_h_size_flags(0); }
+	VSlider() :
+			Slider(VERTICAL) { set_h_size_flags(0); }
 };
 
 #endif // SLIDER_H

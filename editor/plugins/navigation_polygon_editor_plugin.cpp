@@ -470,7 +470,7 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 	add_child(create_nav);
 	create_nav->get_ok()->set_text(TTR("Create"));
 
-//add_constant_override("separation",0);
+	//add_constant_override("separation",0);
 
 #if 0
 	options = memnew( MenuButton );

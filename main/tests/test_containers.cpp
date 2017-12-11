@@ -100,4 +100,4 @@ MainLoop *test() {
 
 	return NULL;
 }
-}
+} // namespace TestContainers

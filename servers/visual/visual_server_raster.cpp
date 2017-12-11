@@ -4606,7 +4606,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light, S
 						distances[i + 1],
 						p_camera->vaspect
 
-						);
+				);
 			} break;
 			case Camera::PERSPECTIVE: {
 
@@ -4617,7 +4617,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light, S
 						distances[i + 1],
 						p_camera->vaspect
 
-						);
+				);
 
 			} break;
 		}
@@ -5960,7 +5960,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport, Camera *p_camera, 
 					p_camera->zfar,
 					p_camera->vaspect
 
-					);
+			);
 			ortho = true;
 		} break;
 		case Camera::PERSPECTIVE: {
@@ -5972,7 +5972,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport, Camera *p_camera, 
 					p_camera->zfar,
 					p_camera->vaspect
 
-					);
+			);
 			ortho = false;
 
 		} break;

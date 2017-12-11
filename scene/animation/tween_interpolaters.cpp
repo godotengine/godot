@@ -50,7 +50,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return c * t / d + b;
 }
-};
+}; // namespace linear
 ///////////////////////////////////////////////////////////////////////////
 // sine
 ///////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace sine
 ///////////////////////////////////////////////////////////////////////////
 // quint
 ///////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace quint
 ///////////////////////////////////////////////////////////////////////////
 // quart
 ///////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace quart
 ///////////////////////////////////////////////////////////////////////////
 // quad
 ///////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace quad
 ///////////////////////////////////////////////////////////////////////////
 // expo
 ///////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace expo
 ///////////////////////////////////////////////////////////////////////////
 // elastic
 ///////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace elastic
 ///////////////////////////////////////////////////////////////////////////
 // cubic
 ///////////////////////////////////////////////////////////////////////////
@@ -227,7 +227,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace cubic
 ///////////////////////////////////////////////////////////////////////////
 // circ
 ///////////////////////////////////////////////////////////////////////////
@@ -248,7 +248,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace circ
 ///////////////////////////////////////////////////////////////////////////
 // bounce
 ///////////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace bounce
 ///////////////////////////////////////////////////////////////////////////
 // back
 ///////////////////////////////////////////////////////////////////////////
@@ -307,7 +307,7 @@ static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
 static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
 }
-};
+}; // namespace back
 
 Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] = {
 	{ &linear::in, &linear::out, &linear::in_out, &linear::out_in },

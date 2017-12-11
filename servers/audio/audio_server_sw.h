@@ -61,8 +61,8 @@ class AudioServerSW : public AudioServer {
 		SelfList<Voice> active_item;
 		AudioMixer::ChannelID channel;
 
-		Voice()
-			: active_item(this) {
+		Voice() :
+				active_item(this) {
 			channel = AudioMixer::INVALID_CHANNEL;
 			active = false;
 		}

@@ -166,8 +166,8 @@ void VisualServerWrapMT::finish() {
 		memdelete(draw_mutex);
 }
 
-VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread)
-	: command_queue(p_create_thread) {
+VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread) :
+		command_queue(p_create_thread) {
 
 	visual_server = p_contained;
 	create_thread = p_create_thread;

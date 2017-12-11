@@ -407,8 +407,8 @@ class MaterialShaderGraph : public ShaderGraph {
 	OBJ_TYPE(MaterialShaderGraph, ShaderGraph);
 
 public:
-	MaterialShaderGraph()
-		: ShaderGraph(MODE_MATERIAL) {
+	MaterialShaderGraph() :
+			ShaderGraph(MODE_MATERIAL) {
 	}
 };
 
@@ -417,8 +417,8 @@ class CanvasItemShaderGraph : public ShaderGraph {
 	OBJ_TYPE(CanvasItemShaderGraph, ShaderGraph);
 
 public:
-	CanvasItemShaderGraph()
-		: ShaderGraph(MODE_CANVAS_ITEM) {
+	CanvasItemShaderGraph() :
+			ShaderGraph(MODE_CANVAS_ITEM) {
 	}
 };
 

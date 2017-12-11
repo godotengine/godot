@@ -158,8 +158,8 @@ bool PhysicsBody2D::get_layer_mask_bit(int p_bit) const {
 	return get_layer_mask() & (1 << p_bit);
 }
 
-PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode)
-	: CollisionObject2D(Physics2DServer::get_singleton()->body_create(p_mode), false) {
+PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) :
+		CollisionObject2D(Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
 	mask = 1;
 	collision_mask = 1;
@@ -275,8 +275,8 @@ void StaticBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_bounce"), _SCS("get_bounce"));
 }
 
-StaticBody2D::StaticBody2D()
-	: PhysicsBody2D(Physics2DServer::BODY_MODE_STATIC) {
+StaticBody2D::StaticBody2D() :
+		PhysicsBody2D(Physics2DServer::BODY_MODE_STATIC) {
 
 	constant_angular_velocity = 0;
 	bounce = 0;
@@ -971,8 +971,8 @@ void RigidBody2D::_bind_methods() {
 	BIND_CONSTANT(CCD_MODE_CAST_SHAPE);
 }
 
-RigidBody2D::RigidBody2D()
-	: PhysicsBody2D(Physics2DServer::BODY_MODE_RIGID) {
+RigidBody2D::RigidBody2D() :
+		PhysicsBody2D(Physics2DServer::BODY_MODE_RIGID) {
 
 	mode = MODE_RIGID;
 
@@ -1385,8 +1385,8 @@ void KinematicBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), _SCS("set_collision_margin"), _SCS("get_collision_margin"));
 }
 
-KinematicBody2D::KinematicBody2D()
-	: PhysicsBody2D(Physics2DServer::BODY_MODE_KINEMATIC) {
+KinematicBody2D::KinematicBody2D() :
+		PhysicsBody2D(Physics2DServer::BODY_MODE_KINEMATIC) {
 
 	colliding = false;
 	collider = 0;

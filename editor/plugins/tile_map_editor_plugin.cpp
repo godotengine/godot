@@ -211,7 +211,7 @@ struct _PaletteEntry {
 		return name < p_rhs.name;
 	}
 };
-}
+} // namespace
 
 void TileMapEditor::_update_palette() {
 

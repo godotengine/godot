@@ -195,8 +195,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 	if (!p_aabb.intersects_plane(get_plane()))
 		return false;
 
-/** TEST FACE AXIS */
-
+		/** TEST FACE AXIS */
 #define TEST_AXIS(m_ax)                                      \
 	{                                                        \
 		float aabb_min = p_aabb.pos.m_ax;                    \

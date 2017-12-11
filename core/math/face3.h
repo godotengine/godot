@@ -256,6 +256,6 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	return true;
 }
 
-//this sucks...
+	//this sucks...
 
 #endif // FACE3_H

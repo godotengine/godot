@@ -655,8 +655,7 @@ void LineEdit::_notification(int p_what) {
 				font->draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
 
 				if (char_ofs == cursor_pos && draw_caret) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
-																					Point2(x_ofs, y_ofs), Size2(1, caret_height)),
+					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)),
 							cursor_color);
 				}
 
@@ -665,8 +664,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (char_ofs == cursor_pos && draw_caret) { //may be at the end
-				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(
-																				Point2(x_ofs, y_ofs), Size2(1, caret_height)),
+				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)),
 						cursor_color);
 			}
 		} break;

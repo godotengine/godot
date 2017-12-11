@@ -447,4 +447,4 @@ MainLoop *test() {
 
 	return memnew(TestMainLoop);
 }
-}
+} // namespace TestMisc

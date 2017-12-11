@@ -116,16 +116,16 @@ class HButtonArray : public ButtonArray {
 	OBJ_TYPE(HButtonArray, ButtonArray);
 
 public:
-	HButtonArray()
-		: ButtonArray(HORIZONTAL){};
+	HButtonArray() :
+			ButtonArray(HORIZONTAL){};
 };
 
 class VButtonArray : public ButtonArray {
 	OBJ_TYPE(VButtonArray, ButtonArray);
 
 public:
-	VButtonArray()
-		: ButtonArray(VERTICAL){};
+	VButtonArray() :
+			ButtonArray(VERTICAL){};
 };
 
 #endif // BUTTON_ARRAY_H

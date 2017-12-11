@@ -537,9 +537,9 @@ void OS_X11::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-//if (debugger_connection_console) {
-//	memdelete(debugger_connection_console);
-//}
+	//if (debugger_connection_console) {
+	//	memdelete(debugger_connection_console);
+	//}
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joystick);
@@ -1384,8 +1384,8 @@ void OS_X11::process_xevents() {
 				switch (event_data->evtype) {
 
 					case XI_TouchBegin: // Fall-through
-					// Disabled hand-in-hand with the grabbing
-					//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
+							// Disabled hand-in-hand with the grabbing
+							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
 
 					case XI_TouchEnd: {
 

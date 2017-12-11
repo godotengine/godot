@@ -110,8 +110,8 @@ class HScrollBar : public ScrollBar {
 	OBJ_TYPE(HScrollBar, ScrollBar);
 
 public:
-	HScrollBar()
-		: ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
+	HScrollBar() :
+			ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
 };
 
 class VScrollBar : public ScrollBar {
@@ -119,8 +119,8 @@ class VScrollBar : public ScrollBar {
 	OBJ_TYPE(VScrollBar, ScrollBar);
 
 public:
-	VScrollBar()
-		: ScrollBar(VERTICAL) { set_h_size_flags(0); }
+	VScrollBar() :
+			ScrollBar(VERTICAL) { set_h_size_flags(0); }
 };
 
 #endif

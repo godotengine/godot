@@ -475,15 +475,18 @@ struct EPA {
 	struct sList {
 		sFace *root;
 		U count;
-		sList()
-			: root(0), count(0) {}
+		sList() :
+				root(0),
+				count(0) {}
 	};
 	struct sHorizon {
 		sFace *cf;
 		sFace *ff;
 		U nf;
-		sHorizon()
-			: cf(0), ff(0), nf(0) {}
+		sHorizon() :
+				cf(0),
+				ff(0),
+				nf(0) {}
 	};
 	struct eStatus {
 		enum _ {
@@ -822,7 +825,7 @@ bool Penetration(const ShapeSW *shape0,
 	return (false);
 }
 
-/* Symbols cleanup		*/
+	/* Symbols cleanup		*/
 
 #undef GJK_MAX_ITERATIONS
 #undef GJK_ACCURARY
@@ -840,7 +843,7 @@ bool Penetration(const ShapeSW *shape0,
 #undef EPA_PLANE_EPS
 #undef EPA_INSIDE_EPS
 
-} // end of namespace
+} // namespace GjkEpa2
 
 bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 

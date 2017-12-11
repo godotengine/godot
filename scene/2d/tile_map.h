@@ -136,8 +136,8 @@ private:
 			navpoly_ids = q.navpoly_ids;
 			occluder_instances = q.occluder_instances;
 		}
-		Quadrant(const Quadrant &q)
-			: dirty_list(this) {
+		Quadrant(const Quadrant &q) :
+				dirty_list(this) {
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			bodies = q.bodies;
@@ -145,8 +145,8 @@ private:
 			occluder_instances = q.occluder_instances;
 			navpoly_ids = q.navpoly_ids;
 		}
-		Quadrant()
-			: dirty_list(this) {}
+		Quadrant() :
+				dirty_list(this) {}
 	};
 
 	Map<PosKey, Quadrant> quadrant_map;

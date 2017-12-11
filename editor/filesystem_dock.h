@@ -109,10 +109,12 @@ private:
 		String path;
 		bool is_file;
 
-		FileOrFolder()
-			: path(""), is_file(false) {}
-		FileOrFolder(const String &p_path, bool p_is_file)
-			: path(p_path), is_file(p_is_file) {}
+		FileOrFolder() :
+				path(""),
+				is_file(false) {}
+		FileOrFolder(const String &p_path, bool p_is_file) :
+				path(p_path),
+				is_file(p_is_file) {}
 	};
 	FileOrFolder to_rename;
 	Vector<FileOrFolder> to_move;

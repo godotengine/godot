@@ -930,4 +930,4 @@ MainLoop *test() {
 
 	return NULL;
 }
-}
+} // namespace TestString

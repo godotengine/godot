@@ -512,7 +512,7 @@ CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 	button_edit->connect("pressed", this, "_menu_option", varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
-//add_constant_override("separation",0);
+	//add_constant_override("separation",0);
 
 #if 0
 	options = memnew( MenuButton );

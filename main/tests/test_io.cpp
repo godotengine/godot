@@ -177,7 +177,7 @@ MainLoop *test() {
 
 	return memnew(TestMainLoop);
 }
-}
+} // namespace TestIO
 
 #else
 
@@ -187,5 +187,5 @@ MainLoop *test() {
 
 	return NULL;
 }
-}
+} // namespace TestIO
 #endif

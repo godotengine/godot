@@ -118,8 +118,8 @@ protected:
 			return k;
 		}
 
-		FixedMaterial()
-			: dirty_list(this) {
+		FixedMaterial() :
+				dirty_list(this) {
 
 			use_alpha = false;
 			use_color_array = false;

@@ -117,7 +117,6 @@ static String unescape_cmdline(const String &p_str) {
 }
 
 //#define DEBUG_INIT
-
 #ifdef DEBUG_INIT
 #define MAIN_PRINT(m_txt) print_line(m_txt)
 #else

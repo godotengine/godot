@@ -57,8 +57,8 @@ class AStar : public Reference {
 		Point *prev_point;
 		float distance;
 
-		Point()
-			: list(this) {}
+		Point() :
+				list(this) {}
 	};
 
 	Map<int, Point *> points;

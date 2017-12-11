@@ -146,8 +146,8 @@ class RasterizerIPhone : public Rasterizer {
 		Vector3 scale;
 		Vector3 uv_scale;
 
-		Geometry()
-			: scale(1, 1, 1) {
+		Geometry() :
+				scale(1, 1, 1) {
 			has_alpha = false;
 			material_owned = false;
 		}

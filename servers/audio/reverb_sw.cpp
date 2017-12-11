@@ -255,12 +255,10 @@ bool ReverbSW::process(int *p_input, int *p_output, int p_frames, int p_stereo_s
 	if (!reverb_buffer)
 		return false;
 
-//
-// p_input must point to a non-looping buffer.
-// BOTH p_input and p_output must be touched (use ClearModuleBuffer).
+		// p_input must point to a non-looping buffer.
+		// BOTH p_input and p_output must be touched (use ClearModuleBuffer).
 
-// �������LOCAL MACROS ������۲
-
+// LOCAL MACROS
 #undef LM_SETSRCOFFSET
 #define LM_SETSRCOFFSET(x)            \
 	(x) = current_params->x + Offset; \

@@ -1952,7 +1952,7 @@ Error ShaderLanguage::parse_expression(Parser &parser, Node *p_parent, Node **r_
 					priority = 2;
 					break;
 
-				// shift left/right =2
+					// shift left/right =2
 
 				case TK_OP_LESS: priority = 4; break;
 				case TK_OP_LESS_EQUAL: priority = 4; break;
@@ -1964,16 +1964,16 @@ Error ShaderLanguage::parse_expression(Parser &parser, Node *p_parent, Node **r_
 					priority = 5;
 					break;
 
-				//bit and =5
-				//bit xor =6
-				//bit or=7
+					//bit and =5
+					//bit xor =6
+					//bit or=7
 
 				case TK_OP_AND: priority = 8; break;
 				case TK_OP_OR:
 					priority = 9;
 					break;
 
-				// ?: = 10
+					// ?: = 10
 
 				case TK_OP_ASSIGN_ADD: priority = 11; break;
 				case TK_OP_ASSIGN_SUB: priority = 11; break;

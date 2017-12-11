@@ -114,8 +114,7 @@ class CreateDialog : public ConfirmationDialog {
 	void update_tree();
 	void _create();
 	void _cancel();
-	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem
-																					  *p_root);
+	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root);
 
 	String base;
 	void _text_changed(String p_text);

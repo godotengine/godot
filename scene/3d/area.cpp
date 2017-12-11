@@ -639,8 +639,8 @@ void Area::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision/mask", PROPERTY_HINT_ALL_FLAGS), _SCS("set_collision_mask"), _SCS("get_collision_mask"));
 }
 
-Area::Area()
-	: CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
+Area::Area() :
+		CollisionObject(PhysicsServer::get_singleton()->area_create(), true) {
 
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);

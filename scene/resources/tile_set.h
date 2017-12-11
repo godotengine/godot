@@ -57,8 +57,9 @@ class TileSet : public Resource {
 		Ref<CanvasItemMaterial> material;
 		Color modulate;
 
-		explicit Data()
-			: one_way_collision_max_depth(0.0f), modulate(1, 1, 1) {}
+		explicit Data() :
+				one_way_collision_max_depth(0.0f),
+				modulate(1, 1, 1) {}
 	};
 
 	Map<int, Data> tile_map;

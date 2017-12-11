@@ -63,12 +63,16 @@ private:
 	unsigned int _size;
 
 public:
-	nrex_array()
-		: _data(NREX_NEW_ARRAY(T, 2)), _reserved(2), _size(0) {
+	nrex_array() :
+			_data(NREX_NEW_ARRAY(T, 2)),
+			_reserved(2),
+			_size(0) {
 	}
 
-	nrex_array(unsigned int reserved)
-		: _data(NREX_NEW_ARRAY(T, reserved ? reserved : 1)), _reserved(reserved ? reserved : 1), _size(0) {
+	nrex_array(unsigned int reserved) :
+			_data(NREX_NEW_ARRAY(T, reserved ? reserved : 1)),
+			_reserved(reserved ? reserved : 1),
+			_size(0) {
 	}
 
 	~nrex_array() {
@@ -179,8 +183,11 @@ struct nrex_search {
 		return str[pos];
 	}
 
-	nrex_search(const nrex_char *str, nrex_result *captures, int lookahead)
-		: str(str), captures(captures), end(0), lookahead_pos(lookahead) {
+	nrex_search(const nrex_char *str, nrex_result *captures, int lookahead) :
+			str(str),
+			captures(captures),
+			end(0),
+			lookahead_pos(lookahead) {
 	}
 };
 
@@ -191,8 +198,12 @@ struct nrex_node {
 	bool quantifiable;
 	int length;
 
-	nrex_node(bool quantify = false)
-		: next(NULL), previous(NULL), parent(NULL), quantifiable(quantify), length(-1) {
+	nrex_node(bool quantify = false) :
+			next(NULL),
+			previous(NULL),
+			parent(NULL),
+			quantifiable(quantify),
+			length(-1) {
 	}
 
 	virtual ~nrex_node() {
@@ -252,8 +263,12 @@ struct nrex_node_group : public nrex_node {
 	nrex_array<nrex_node *> childset;
 	nrex_node *back;
 
-	nrex_node_group(nrex_group_type type, int id = 0)
-		: nrex_node(true), type(type), id(id), negate(false), back(NULL) {
+	nrex_node_group(nrex_group_type type, int id = 0) :
+			nrex_node(true),
+			type(type),
+			id(id),
+			negate(false),
+			back(NULL) {
 		if (type != nrex_group_bracket) {
 			length = 0;
 		} else {
@@ -386,8 +401,9 @@ struct nrex_node_group : public nrex_node {
 struct nrex_node_char : public nrex_node {
 	nrex_char ch;
 
-	nrex_node_char(nrex_char c)
-		: nrex_node(true), ch(c) {
+	nrex_node_char(nrex_char c) :
+			nrex_node(true),
+			ch(c) {
 		length = 1;
 	}
 
@@ -403,8 +419,10 @@ struct nrex_node_range : public nrex_node {
 	nrex_char start;
 	nrex_char end;
 
-	nrex_node_range(nrex_char s, nrex_char e)
-		: nrex_node(true), start(s), end(e) {
+	nrex_node_range(nrex_char s, nrex_char e) :
+			nrex_node(true),
+			start(s),
+			end(e) {
 		length = 1;
 	}
 
@@ -474,8 +492,9 @@ static nrex_class_type nrex_parse_class(const nrex_char **pos) {
 struct nrex_node_class : public nrex_node {
 	nrex_class_type type;
 
-	nrex_node_class(nrex_class_type t)
-		: nrex_node(true), type(t) {
+	nrex_node_class(nrex_class_type t) :
+			nrex_node(true),
+			type(t) {
 		length = 1;
 	}
 
@@ -614,8 +633,9 @@ static bool nrex_is_shorthand(nrex_char repr) {
 struct nrex_node_shorthand : public nrex_node {
 	nrex_char repr;
 
-	nrex_node_shorthand(nrex_char c)
-		: nrex_node(true), repr(c) {
+	nrex_node_shorthand(nrex_char c) :
+			nrex_node(true),
+			repr(c) {
 		length = 1;
 	}
 
@@ -676,8 +696,12 @@ struct nrex_node_quantifier : public nrex_node {
 	bool greedy;
 	nrex_node *child;
 
-	nrex_node_quantifier(int min, int max)
-		: nrex_node(), min(min), max(max), greedy(true), child(NULL) {
+	nrex_node_quantifier(int min, int max) :
+			nrex_node(),
+			min(min),
+			max(max),
+			greedy(true),
+			child(NULL) {
 	}
 
 	virtual ~nrex_node_quantifier() {
@@ -747,8 +771,9 @@ struct nrex_node_quantifier : public nrex_node {
 struct nrex_node_anchor : public nrex_node {
 	bool end;
 
-	nrex_node_anchor(bool end)
-		: nrex_node(), end(end) {
+	nrex_node_anchor(bool end) :
+			nrex_node(),
+			end(end) {
 		length = 0;
 	}
 
@@ -765,8 +790,9 @@ struct nrex_node_anchor : public nrex_node {
 struct nrex_node_word_boundary : public nrex_node {
 	bool inverse;
 
-	nrex_node_word_boundary(bool inverse)
-		: nrex_node(), inverse(inverse) {
+	nrex_node_word_boundary(bool inverse) :
+			nrex_node(),
+			inverse(inverse) {
 		length = 0;
 	}
 
@@ -795,8 +821,9 @@ struct nrex_node_word_boundary : public nrex_node {
 struct nrex_node_backreference : public nrex_node {
 	int ref;
 
-	nrex_node_backreference(int ref)
-		: nrex_node(true), ref(ref) {
+	nrex_node_backreference(int ref) :
+			nrex_node(true),
+			ref(ref) {
 		length = -1;
 	}
 
@@ -823,12 +850,16 @@ bool nrex_has_lookbehind(nrex_array<nrex_node_group *> &stack) {
 	return false;
 }
 
-nrex::nrex()
-	: _capturing(0), _lookahead_depth(0), _root(NULL) {
+nrex::nrex() :
+		_capturing(0),
+		_lookahead_depth(0),
+		_root(NULL) {
 }
 
-nrex::nrex(const nrex_char *pattern, int captures)
-	: _capturing(0), _lookahead_depth(0), _root(NULL) {
+nrex::nrex(const nrex_char *pattern, int captures) :
+		_capturing(0),
+		_lookahead_depth(0),
+		_root(NULL) {
 	compile(pattern, captures);
 }
 

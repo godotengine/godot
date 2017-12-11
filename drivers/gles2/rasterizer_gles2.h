@@ -210,8 +210,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 		SelfList<Shader> dirty_list;
 
-		Shader()
-			: dirty_list(this) {
+		Shader() :
+				dirty_list(this) {
 
 			valid = false;
 			custom_code_id = 0;
@@ -480,8 +480,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 		SelfList<MultiMesh> dirty_list;
 
-		MultiMesh()
-			: dirty_list(this) {
+		MultiMesh() :
+				dirty_list(this) {
 
 			tw = 1;
 			th = 1;
@@ -612,8 +612,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 		SelfList<Skeleton> dirty_list;
 
-		Skeleton()
-			: dirty_list(this) {
+		Skeleton() :
+				dirty_list(this) {
 			tex_id = 0;
 			pixel_size = 1.0;
 		}

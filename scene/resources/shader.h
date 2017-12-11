@@ -103,8 +103,8 @@ class MaterialShader : public Shader {
 	OBJ_TYPE(MaterialShader, Shader);
 
 public:
-	MaterialShader()
-		: Shader(MODE_MATERIAL){};
+	MaterialShader() :
+			Shader(MODE_MATERIAL){};
 };
 
 class CanvasItemShader : public Shader {
@@ -112,8 +112,8 @@ class CanvasItemShader : public Shader {
 	OBJ_TYPE(CanvasItemShader, Shader);
 
 public:
-	CanvasItemShader()
-		: Shader(MODE_CANVAS_ITEM){};
+	CanvasItemShader() :
+			Shader(MODE_CANVAS_ITEM){};
 };
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {

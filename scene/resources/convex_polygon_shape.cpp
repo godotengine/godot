@@ -81,8 +81,8 @@ void ConvexPolygonShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "points"), _SCS("set_points"), _SCS("get_points"));
 }
 
-ConvexPolygonShape::ConvexPolygonShape()
-	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
+ConvexPolygonShape::ConvexPolygonShape() :
+		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
 
 	//set_points(Vector3(1,1,1));
 }

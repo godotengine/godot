@@ -49,6 +49,6 @@ void test() {
 	PyRun_SimpleString("b.mooch();\n");
 	PyRun_SimpleString("b.meis();\n");
 }
-}
+} // namespace TestPython
 
 #endif

@@ -4091,7 +4091,7 @@ void RasterizerGLES2::capture_viewport(Image *r_capture) {
 
 	w = DVector<uint8_t>::Write();
 	r_capture->create(viewport.width, viewport.height, 0, Image::FORMAT_RGBA, pixels);
-//r_capture->flip_y();
+	//r_capture->flip_y();
 
 #endif
 }
@@ -7686,7 +7686,7 @@ void RasterizerGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertice
 
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
 
-//#define GLES_USE_PRIMITIVE_BUFFER
+	//#define GLES_USE_PRIMITIVE_BUFFER
 
 #ifndef GLES_NO_CLIENT_ARRAYS
 
@@ -9805,10 +9805,10 @@ void RasterizerGLES2::_update_framebuffer() {
 	glGenFramebuffers(1, &framebuffer.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
 
-//print_line("generating fbo, id: "+itos(framebuffer.fbo));
-//depth
+	//print_line("generating fbo, id: "+itos(framebuffer.fbo));
+	//depth
 
-// Create a render buffer
+	// Create a render buffer
 
 #if 0
 	glGenTextures(1, &framebuffer.depth);
@@ -10341,7 +10341,7 @@ void RasterizerGLES2::init() {
 
 	full_float_fb_supported = extensions.has("GL_EXT_color_buffer_float");
 
-//etc_supported=false;
+	//etc_supported=false;
 
 #endif
 

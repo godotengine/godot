@@ -198,4 +198,4 @@ MainLoop *test() {
 
 	return memnew(TestMainLoop);
 }
-}
+} // namespace TestMultiMesh

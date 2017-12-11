@@ -488,8 +488,8 @@ void BodyPairSW::shift_shape_indices(const CollisionObjectSW *p_object, int p_re
 	}
 }
 
-BodyPairSW::BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B)
-	: ConstraintSW(_arr, 2) {
+BodyPairSW::BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B) :
+		ConstraintSW(_arr, 2) {
 
 	A = p_A;
 	B = p_B;

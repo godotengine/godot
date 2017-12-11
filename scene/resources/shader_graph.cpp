@@ -1324,8 +1324,8 @@ void ShaderGraph::node_set_state(ShaderType p_type, int p_id, const Variant &p_s
 	}
 }
 
-ShaderGraph::ShaderGraph(Mode p_mode)
-	: Shader(p_mode) {
+ShaderGraph::ShaderGraph(Mode p_mode) :
+		Shader(p_mode) {
 
 	//shader = VisualServer::get_singleton()->shader_create();
 	_pending_update_shader = false;

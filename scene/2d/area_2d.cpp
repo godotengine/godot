@@ -643,8 +643,8 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "collision/mask", PROPERTY_HINT_ALL_FLAGS), _SCS("set_collision_mask"), _SCS("get_collision_mask"));
 }
 
-Area2D::Area2D()
-	: CollisionObject2D(Physics2DServer::get_singleton()->area_create(), true) {
+Area2D::Area2D() :
+		CollisionObject2D(Physics2DServer::get_singleton()->area_create(), true) {
 
 	space_override = SPACE_OVERRIDE_DISABLED;
 	set_gravity(98);

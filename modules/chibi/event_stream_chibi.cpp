@@ -683,8 +683,8 @@ float EventStreamPlaybackChibi::get_last_note_time(int p_channel) const {
 	return v;
 }
 
-EventStreamPlaybackChibi::EventStreamPlaybackChibi(Ref<EventStreamChibi> p_stream)
-	: mixer(_get_mixer()) {
+EventStreamPlaybackChibi::EventStreamPlaybackChibi(Ref<EventStreamChibi> p_stream) :
+		mixer(_get_mixer()) {
 
 	stream = p_stream;
 	player = memnew(CPPlayer(&mixer, &p_stream->song));

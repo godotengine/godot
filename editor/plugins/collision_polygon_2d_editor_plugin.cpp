@@ -392,7 +392,7 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	button_edit->set_toggle_mode(true);
 	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 
-//add_constant_override("separation",0);
+	//add_constant_override("separation",0);
 
 #if 0
 	options = memnew( MenuButton );

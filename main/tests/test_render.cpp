@@ -240,4 +240,4 @@ MainLoop *test() {
 
 	return memnew(TestMainLoop);
 }
-}
+} // namespace TestRender

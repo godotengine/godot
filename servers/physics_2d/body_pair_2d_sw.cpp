@@ -418,7 +418,7 @@ bool BodyPair2DSW::setup(float p_step) {
 
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
-//c.acc_bias_impulse=0;
+		//c.acc_bias_impulse=0;
 
 #ifdef ACCUMULATE_IMPULSES
 		{
@@ -516,8 +516,8 @@ void BodyPair2DSW::shift_shape_indices(const CollisionObject2DSW *p_object, int 
 	}
 }
 
-BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B)
-	: Constraint2DSW(_arr, 2) {
+BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B) :
+		Constraint2DSW(_arr, 2) {
 
 	A = p_A;
 	B = p_B;

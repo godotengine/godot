@@ -182,19 +182,28 @@ ASN1_SEQUENCE(SPCIndirectDataContent) = {
 } ASN1_SEQUENCE_END(SPCIndirectDataContent)
 
 		IMPLEMENT_ASN1_FUNCTIONS(SPCAttributeTypeAndOptionalValue) ASN1_SEQUENCE(SPCAttributeTypeAndOptionalValue) = {
-			ASN1_SIMPLE(SPCAttributeTypeAndOptionalValue, type, ASN1_OBJECT), ASN1_OPT(SPCAttributeTypeAndOptionalValue, value, ASN1_ANY),
+			ASN1_SIMPLE(SPCAttributeTypeAndOptionalValue, type, ASN1_OBJECT),
+			ASN1_OPT(SPCAttributeTypeAndOptionalValue, value, ASN1_ANY),
 		} ASN1_SEQUENCE_END(SPCAttributeTypeAndOptionalValue)
 
 				IMPLEMENT_ASN1_FUNCTIONS(SPCInfoValue) ASN1_SEQUENCE(SPCInfoValue) = {
-					ASN1_SIMPLE(SPCInfoValue, i1, ASN1_INTEGER), ASN1_SIMPLE(SPCInfoValue, s1, ASN1_OCTET_STRING), ASN1_SIMPLE(SPCInfoValue, i2, ASN1_INTEGER), ASN1_SIMPLE(SPCInfoValue, i3, ASN1_INTEGER), ASN1_SIMPLE(SPCInfoValue, i4, ASN1_INTEGER), ASN1_SIMPLE(SPCInfoValue, i5, ASN1_INTEGER), ASN1_SIMPLE(SPCInfoValue, i6, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, i1, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, s1, ASN1_OCTET_STRING),
+					ASN1_SIMPLE(SPCInfoValue, i2, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, i3, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, i4, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, i5, ASN1_INTEGER),
+					ASN1_SIMPLE(SPCInfoValue, i6, ASN1_INTEGER),
 				} ASN1_SEQUENCE_END(SPCInfoValue)
 
 						IMPLEMENT_ASN1_FUNCTIONS(DigestInfo) ASN1_SEQUENCE(DigestInfo) = {
-							ASN1_SIMPLE(DigestInfo, digestAlgorithm, X509_ALGOR), ASN1_SIMPLE(DigestInfo, digest, ASN1_OCTET_STRING),
+							ASN1_SIMPLE(DigestInfo, digestAlgorithm, X509_ALGOR),
+							ASN1_SIMPLE(DigestInfo, digest, ASN1_OCTET_STRING),
 						} ASN1_SEQUENCE_END(DigestInfo)
 
 								ASN1_SEQUENCE(SPCSpOpusInfo) = {
-									ASN1_OPT(SPCSpOpusInfo, programName, ASN1_ANY), ASN1_OPT(SPCSpOpusInfo, moreInfo, ASN1_ANY),
+									ASN1_OPT(SPCSpOpusInfo, programName, ASN1_ANY),
+									ASN1_OPT(SPCSpOpusInfo, moreInfo, ASN1_ANY),
 								} ASN1_SEQUENCE_END(SPCSpOpusInfo) IMPLEMENT_ASN1_FUNCTIONS(SPCSpOpusInfo)
 
 										ASN1_SEQUENCE(SPCStatementType) = {
@@ -1095,7 +1104,7 @@ AppxPackager::AppxPackager() {}
 
 AppxPackager::~AppxPackager() {}
 
-////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
 
 #ifdef OPENSSL_ENABLED
 Error AppxPackager::openssl_error(unsigned long p_err) {
@@ -1115,8 +1124,22 @@ void AppxPackager::MakeSPCInfoValue(asn1::SPCInfoValue &info) {
 
 	// I have no idea what these numbers mean.
 	static uint8_t s1Magic[] = {
-		0x4B, 0xDF, 0xC5, 0x0A, 0x07, 0xCE, 0xE2, 0x4D,
-		0xB7, 0x6E, 0x23, 0xC8, 0x39, 0xA0, 0x9F, 0xD1,
+		0x4B,
+		0xDF,
+		0xC5,
+		0x0A,
+		0x07,
+		0xCE,
+		0xE2,
+		0x4D,
+		0xB7,
+		0x6E,
+		0x23,
+		0xC8,
+		0x39,
+		0xA0,
+		0x9F,
+		0xD1,
 	};
 	ASN1_INTEGER_set(info.i1, 0x01010000);
 	ASN1_OCTET_STRING_set(info.s1, s1Magic, sizeof(s1Magic));

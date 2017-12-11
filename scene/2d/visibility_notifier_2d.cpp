@@ -34,7 +34,6 @@
 #include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
-#include "scene/scene_string_names.h"
 
 void VisibilityNotifier2D::_enter_viewport(Viewport *p_viewport) {
 

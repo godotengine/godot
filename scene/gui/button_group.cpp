@@ -156,6 +156,6 @@ void ButtonGroup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_selected", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }
 
-ButtonGroup::ButtonGroup()
-	: BoxContainer(true) {
+ButtonGroup::ButtonGroup() :
+		BoxContainer(true) {
 }

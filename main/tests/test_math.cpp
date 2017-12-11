@@ -358,4 +358,4 @@ MainLoop *test() {
 #endif
 	return NULL;
 }
-}
+} // namespace TestMath

@@ -511,8 +511,8 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport()
-			: update_list(this) {
+		Viewport() :
+				update_list(this) {
 			transparent_bg = false;
 			render_target_update_mode = RENDER_TARGET_UPDATE_WHEN_VISIBLE;
 			queue_capture = false;

@@ -480,7 +480,7 @@ void AudioMixerSW::mix_channel(Channel &c) {
 		rstate.amount = target;
 		rstate.pos = offset;
 
-/* Macros to call the resample function for all possibilities, creating a dedicated-non branchy function call for each thanks to template magic*/
+		/* Macros to call the resample function for all possibilities, creating a dedicated-non branchy function call for each thanks to template magic*/
 
 #define CALL_RESAMPLE_FUNC(m_depth, m_stereo, m_ima_adpcm, m_use_filter, m_use_fx, m_interp, m_mode) \
 	do_resample<m_depth, m_stereo, m_ima_adpcm, m_use_filter, m_use_fx, m_interp, m_mode>(           \

@@ -69,7 +69,6 @@ class VisualServerWrapMT : public VisualServer {
 	List<RID> mesh_id_pool;
 
 //#define DEBUG_SYNC
-
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else

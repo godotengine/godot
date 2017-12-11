@@ -1086,8 +1086,8 @@ Rect2 CanvasItem::get_item_and_children_rect() const {
 	return rect;
 }
 
-CanvasItem::CanvasItem()
-	: xform_change(this) {
+CanvasItem::CanvasItem() :
+		xform_change(this) {
 
 	canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	hidden = false;

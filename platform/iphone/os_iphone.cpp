@@ -144,7 +144,7 @@ void OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_
 
 	input = memnew(InputDefault);
 
-/*
+	/*
 #ifdef IOS_SCORELOOP_ENABLED
 	scoreloop = memnew(ScoreloopIOS);
 	Globals::get_singleton()->add_singleton(Globals::Singleton("Scoreloop", scoreloop));

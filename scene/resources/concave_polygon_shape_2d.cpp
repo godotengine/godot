@@ -84,6 +84,6 @@ void ConcavePolygonShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2_ARRAY, "segments"), _SCS("set_segments"), _SCS("get_segments"));
 }
 
-ConcavePolygonShape2D::ConcavePolygonShape2D()
-	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CONCAVE_POLYGON)) {
+ConcavePolygonShape2D::ConcavePolygonShape2D() :
+		Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CONCAVE_POLYGON)) {
 }

@@ -45,7 +45,6 @@
 #include "scene/animation/animation_cache.h"
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
-#include "scene_tree_editor.h"
 
 class AnimationKeyEdit;
 class AnimationCurveEdit;
