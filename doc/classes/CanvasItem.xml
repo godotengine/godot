@@ -36,7 +36,7 @@
 			<argument index="4" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
-				Draw a string character using a custom font. Returns the advance, depending on the char width and kerning with an optional next char.
+				Draws a string character using a custom font. Returns the advance, depending on the char width and kerning with an optional next char.
 			</description>
 		</method>
 		<method name="draw_circle">
@@ -49,7 +49,7 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Draw a colored circle.
+				Draws a colored circle.
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -68,7 +68,7 @@
 			<argument index="5" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draw a colored polygon of any amount of points, convex or concave.
+				Draws a colored polygon of any amount of points, convex or concave.
 			</description>
 		</method>
 		<method name="draw_line">
@@ -85,7 +85,7 @@
 			<argument index="4" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draw a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
+				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
 			</description>
 		</method>
 		<method name="draw_multiline">
@@ -100,6 +100,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Draws multiple, parallel lines with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing.
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -114,6 +115,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
+				Draws multiple, parallel lines with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 			</description>
 		</method>
 		<method name="draw_polygon">
@@ -132,7 +134,7 @@
 			<argument index="5" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draw a polygon of any amount of points, convex or concave.
+				Draws a polygon of any amount of points, convex or concave.
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -147,7 +149,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draw a polyline with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing.
+				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code] and optional antialiasing.
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -162,7 +164,7 @@
 			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
-				Draw a polyline with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+				Draws interconnected line segments with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -181,7 +183,7 @@
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
 			<description>
-				Draw a custom primitive, 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
+				Draws a custom primitive, 1 point for a point, 2 points for a line, 3 points for a triangle and 4 points for a quad.
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -194,7 +196,7 @@
 			<argument index="2" name="filled" type="bool" default="true">
 			</argument>
 			<description>
-				Draw a colored rectangle.
+				Draws a colored rectangle.
 			</description>
 		</method>
 		<method name="draw_set_transform">
@@ -233,7 +235,7 @@
 			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
-				Draw a string using a custom font.
+				Draws a string using a custom font.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -244,7 +246,7 @@
 			<argument index="1" name="rect" type="Rect2">
 			</argument>
 			<description>
-				Draw a styled rectangle.
+				Draws a styled rectangle.
 			</description>
 		</method>
 		<method name="draw_texture">
@@ -259,7 +261,7 @@
 			<argument index="3" name="normal_map" type="Texture" default="null">
 			</argument>
 			<description>
-				Draw a texture at a given position.
+				Draws a texture at a given position.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
@@ -278,7 +280,7 @@
 			<argument index="5" name="normal_map" type="Texture" default="null">
 			</argument>
 			<description>
-				Draw a textured rectangle at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
+				Draws a textured rectangle at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -299,7 +301,7 @@
 			<argument index="6" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
-				Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
+				Draws a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
 		<method name="get_canvas" qualifiers="const">
