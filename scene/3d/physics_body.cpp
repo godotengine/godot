@@ -1118,8 +1118,8 @@ void KinematicBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &KinematicBody::is_on_wall);
 	ClassDB::bind_method(D_METHOD("get_floor_velocity"), &KinematicBody::get_floor_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &RigidBody::set_axis_lock);
-	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody::get_axis_lock);
+	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &KinematicBody::set_axis_lock);
+	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &KinematicBody::get_axis_lock);
 
 	ClassDB::bind_method(D_METHOD("set_safe_margin", "pixels"), &KinematicBody::set_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_safe_margin"), &KinematicBody::get_safe_margin);
