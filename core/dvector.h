@@ -35,6 +35,7 @@
 #include "os/rw_lock.h"
 #include "pool_allocator.h"
 #include "safe_refcount.h"
+#include "typetraits.h"
 #include "ustring.h"
 
 struct MemoryPool {
@@ -134,7 +135,8 @@ class PoolVector {
 			alloc->mem = memalloc(alloc->size);
 		}
 
-		{
+		if (!is_scalar<T>::value) {
+
 			Write w;
 			w._ref(alloc);
 			Read r;
@@ -157,7 +159,8 @@ class PoolVector {
 			MemoryPool::alloc_mutex->unlock();
 #endif
 
-			{
+			if (!is_scalar<T>::value) {
+
 				Write w;
 				w._ref(old_alloc);
 
@@ -215,7 +218,8 @@ class PoolVector {
 
 		//must be disposed!
 
-		{
+		if (!is_scalar<T>::value) {
+
 			int cur_elements = alloc->size / sizeof(T);
 
 			// Don't use write() here because it could otherwise provoke COW,
@@ -581,16 +585,20 @@ Error PoolVector<T>::resize(int p_size) {
 
 		alloc->size = new_size;
 
-		Write w = write();
+		if (!is_scalar<T>::value) {
 
-		for (int i = cur_elements; i < p_size; i++) {
+			Write w = write();
 
-			memnew_placement(&w[i], T);
+			for (int i = cur_elements; i < p_size; i++) {
+
+				memnew_placement(&w[i], T);
+			}
 		}
 
 	} else {
 
-		{
+		if (!is_scalar<T>::value) {
+
 			Write w = write();
 			for (int i = p_size; i < cur_elements; i++) {
 
