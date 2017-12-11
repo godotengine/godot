@@ -39,6 +39,7 @@ class CheckButton : public Button {
 	GDCLASS(CheckButton, Button);
 
 protected:
+	Size2 get_icon_size() const;
 	virtual Size2 get_minimum_size() const;
 	void _notification(int p_what);
 

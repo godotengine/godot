@@ -350,15 +350,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_default_margin(MARGIN_LEFT, 22 * scale);
+	cbx_empty->set_default_margin(MARGIN_LEFT, 4 * scale);
 	cbx_empty->set_default_margin(MARGIN_RIGHT, 4 * scale);
 	cbx_empty->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_empty->set_default_margin(MARGIN_BOTTOM, 5 * scale);
+	cbx_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
 	Ref<StyleBox> cbx_focus = focus;
 	cbx_focus->set_default_margin(MARGIN_LEFT, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_RIGHT, 22 * scale);
+	cbx_focus->set_default_margin(MARGIN_RIGHT, 4 * scale);
 	cbx_focus->set_default_margin(MARGIN_TOP, 4 * scale);
-	cbx_focus->set_default_margin(MARGIN_BOTTOM, 5 * scale);
+	cbx_focus->set_default_margin(MARGIN_BOTTOM, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
@@ -385,7 +385,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
 	cb_empty->set_default_margin(MARGIN_LEFT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_RIGHT, 70 * scale);
+	cb_empty->set_default_margin(MARGIN_RIGHT, 6 * scale);
 	cb_empty->set_default_margin(MARGIN_TOP, 4 * scale);
 	cb_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
 
