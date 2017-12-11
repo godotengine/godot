@@ -4532,6 +4532,7 @@ void SectionedPropertyEditor::update_category_list() {
 		for (int i = 0; i < sc; i++) {
 
 			TreeItem *parent = section_map[metasection];
+			parent->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -4585,7 +4586,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	search_box = NULL;
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
-	left_vb->set_custom_minimum_size(Size2(160, 0) * EDSCALE);
+	left_vb->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
 	add_child(left_vb);
 
 	sections = memnew(Tree);
