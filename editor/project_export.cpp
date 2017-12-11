@@ -421,7 +421,7 @@ void ProjectExportDialog::_export_action(const String &p_file) {
 
 	while (true) {
 
-		print_line("TESTING: " + location.plus_file("engine.cfg"));
+		print_line("Loading engine file: " + location.plus_file("engine.cfg"));
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
 			error->set_text(TTR("Please export outside the project folder!"));

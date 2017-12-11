@@ -130,16 +130,16 @@ void VisualServerWrapMT::init() {
 	if (create_thread) {
 
 		draw_mutex = Mutex::create();
-		print_line("CREATING RENDER THREAD");
+		print_line("Creating render thread");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
-			print_line("STARTING RENDER THREAD");
+			print_line("Starting render thread");
 		}
 		while (!draw_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
-		print_line("DONE RENDER THREAD");
+		print_line("Done render thread");
 	} else {
 
 		visual_server->init();

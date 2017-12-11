@@ -230,7 +230,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (success) {
 		return flags.st_mtime;
 	} else {
-		print_line("ERROR IN: " + p_file);
+		print_line("Cannot open: " + p_file);
 
 		ERR_FAIL_V(0);
 	};

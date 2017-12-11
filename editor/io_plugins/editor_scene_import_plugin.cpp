@@ -2683,7 +2683,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String &p_dest_path, c
 	//packer->set_path(p_dest_path); do not take over, let the changed files reload themselves
 	packer->set_import_metadata(from);
 
-	print_line("SAVING TO: " + p_dest_path);
+	print_line("Saving to: " + p_dest_path);
 	err = ResourceSaver::save(p_dest_path, packer); //do not take over, let the changed files reload themselves
 
 	//EditorFileSystem::get_singleton()->update_resource(packer);

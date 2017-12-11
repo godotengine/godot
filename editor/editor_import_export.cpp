@@ -227,8 +227,6 @@ static void _edit_files_with_filter(DirAccess *da, const List<String> &p_filters
 
 	String f = da->get_next();
 	while (f != "") {
-
-		print_line("HOHO: " + f);
 		if (da->current_is_dir())
 			dirs.push_back(f);
 		else
@@ -240,8 +238,6 @@ static void _edit_files_with_filter(DirAccess *da, const List<String> &p_filters
 	String r = da->get_current_dir().replace("\\", "/");
 	if (!r.ends_with("/"))
 		r += "/";
-
-	print_line("AT: " + r);
 
 	for (List<String>::Element *E = files.front(); E; E = E->next()) {
 		String fullpath = r + E->get();
@@ -977,7 +973,6 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		if (remap_files.size()) {
 			Vector<String> remapsprop;
 			for (Map<StringName, StringName>::Element *E = remap_files.front(); E; E = E->next()) {
-				print_line("REMAP: " + String(E->key()) + " -> " + E->get());
 				remapsprop.push_back(E->key());
 				remapsprop.push_back(E->get());
 			}

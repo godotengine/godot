@@ -940,7 +940,7 @@ void ProjectManager::_open_project_confirm() {
 	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Opening project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -986,7 +986,7 @@ void ProjectManager::_run_project_confirm() {
 
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Opening project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -1048,7 +1048,7 @@ void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<Strin
 
 void ProjectManager::_scan_begin(const String &p_base) {
 
-	print_line("SCAN PROJECTS AT: " + p_base);
+	print_line("Scan project at: " + p_base);
 	List<String> projects;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->change_dir(p_base);
