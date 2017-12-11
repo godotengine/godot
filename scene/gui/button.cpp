@@ -140,11 +140,11 @@ void Button::_notification(int p_what) {
 
 		Point2 icon_ofs = (!_icon.is_null()) ? Point2(_icon->get_width() + get_constant("hseparation"), 0) : Point2();
 		int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT], 0)) / 2.0;
+		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
 
 		switch (align) {
 			case ALIGN_LEFT: {
-				text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
+				text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
 				text_ofs.y += style->get_offset().y;
 			} break;
 			case ALIGN_CENTER: {
@@ -154,7 +154,11 @@ void Button::_notification(int p_what) {
 				text_ofs += style->get_offset();
 			} break;
 			case ALIGN_RIGHT: {
-				text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x - _internal_margin[MARGIN_RIGHT];
+				if (_internal_margin[MARGIN_RIGHT] > 0) {
+					text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x - _internal_margin[MARGIN_RIGHT] - get_constant("hseparation");
+				} else {
+					text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x;
+				}
 				text_ofs.y += style->get_offset().y;
 			} break;
 		}
@@ -166,7 +170,11 @@ void Button::_notification(int p_what) {
 			int valign = size.height - style->get_minimum_size().y;
 			if (is_disabled())
 				color_icon.a = 0.4;
-			_icon->draw(ci, style->get_offset() + Point2(0, Math::floor((valign - _icon->get_height()) / 2.0)), color_icon);
+			if (_internal_margin[MARGIN_LEFT] > 0) {
+				_icon->draw(ci, style->get_offset() + Point2(_internal_margin[MARGIN_LEFT] + get_constant("hseparation"), Math::floor((valign - _icon->get_height()) / 2.0)), color_icon);
+			} else {
+				_icon->draw(ci, style->get_offset() + Point2(0, Math::floor((valign - _icon->get_height()) / 2.0)), color_icon);
+			}
 		}
 	}
 }
