@@ -1140,6 +1140,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			bool unary = false;
 			bool ternary = false;
 			bool error = false;
+			bool right_to_left = false;
 
 			switch (expression[i].op) {
 
@@ -1194,11 +1195,13 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				case OperatorNode::OP_TERNARY_IF:
 					priority = 14;
 					ternary = true;
+					right_to_left = true;
 					break;
 				case OperatorNode::OP_TERNARY_ELSE:
 					priority = 14;
 					error = true;
-					break; // Errors out when found without IF (since IF would consume it)
+					// Rigth-to-left should be false in this case, otherwise it would always error.
+					break;
 
 				case OperatorNode::OP_ASSIGN: priority = 15; break;
 				case OperatorNode::OP_ASSIGN_ADD: priority = 15; break;
@@ -1218,13 +1221,13 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 			}
 
-			if (priority < min_priority) {
+			if (priority < min_priority || (right_to_left && priority == min_priority)) {
+				// < is used for left to right (default)
+				// <= is used for right to left
 				if (error) {
 					_set_error("Unexpected operator");
 					return NULL;
 				}
-				// < is used for left to right (default)
-				// <= is used for right to left
 				next_op = i;
 				min_priority = priority;
 				is_unary = unary;
