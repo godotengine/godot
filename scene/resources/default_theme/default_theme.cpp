@@ -385,7 +385,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
 	cb_empty->set_default_margin(MARGIN_LEFT, 6 * scale);
-	cb_empty->set_default_margin(MARGIN_RIGHT, 70 * scale);
+	cb_empty->set_default_margin(MARGIN_RIGHT, 6 * scale);
 	cb_empty->set_default_margin(MARGIN_TOP, 4 * scale);
 	cb_empty->set_default_margin(MARGIN_BOTTOM, 4 * scale);
 

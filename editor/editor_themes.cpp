@@ -587,9 +587,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
-	// HACK, in reality, the checkbox draws the text over the icon by default, so the margin compensates that.
-	const int cb_w = theme->get_icon("GuiChecked", "EditorIcons")->get_width() + default_margin_size;
-	sb_checkbox->set_default_margin(MARGIN_LEFT, cb_w * EDSCALE);
+	sb_checkbox->set_default_margin(MARGIN_LEFT, default_margin_size * EDSCALE);
 	sb_checkbox->set_default_margin(MARGIN_RIGHT, default_margin_size * EDSCALE);
 	sb_checkbox->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
 	sb_checkbox->set_default_margin(MARGIN_BOTTOM, default_margin_size * EDSCALE);

@@ -55,6 +55,10 @@ Size2 Button::get_minimum_size() const {
 	return get_stylebox("normal")->get_minimum_size() + minsize;
 }
 
+void Button::_set_internal_margin(Margin p_margin, float p_value) {
+	_internal_margin[p_margin] = p_value;
+}
+
 void Button::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
@@ -136,7 +140,7 @@ void Button::_notification(int p_what) {
 
 		Point2 icon_ofs = (!_icon.is_null()) ? Point2(_icon->get_width() + get_constant("hseparation"), 0) : Point2();
 		int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text)) / 2.0;
+		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT], 0)) / 2.0;
 
 		switch (align) {
 			case ALIGN_LEFT: {
@@ -150,7 +154,7 @@ void Button::_notification(int p_what) {
 				text_ofs += style->get_offset();
 			} break;
 			case ALIGN_RIGHT: {
-				text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x;
+				text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x - _internal_margin[MARGIN_RIGHT];
 				text_ofs.y += style->get_offset().y;
 			} break;
 		}
@@ -263,6 +267,10 @@ Button::Button(const String &p_text) {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
 	align = ALIGN_CENTER;
+
+	for (int i = 0; i < 4; i++) {
+		_internal_margin[i] = 0;
+	}
 }
 
 Button::~Button() {
