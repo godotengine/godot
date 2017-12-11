@@ -351,15 +351,6 @@
 				Creates a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
 			</description>
 		</method>
-		<method name="body_get_axis_lock" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<description>
-				Gets the information, which Axis is locked if any. The can be any calue from the constants BODY_AXIS_LOCK*
-			</description>
-		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -485,6 +476,16 @@
 				Returns a body state.
 			</description>
 		</method>
+		<method name="body_is_axis_locked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxis">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_is_continuous_collision_detection_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -540,7 +541,7 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="axis" type="int">
+			<argument index="1" name="axis" type="int" enum="PhysicsServer.BodyAxis">
 			</argument>
 			<argument index="2" name="lock" type="bool">
 			</argument>
@@ -1519,6 +1520,18 @@
 		</constant>
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
+		</constant>
+		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">
+		</constant>
+		<constant name="BODY_AXIS_LINEAR_Y" value="2" enum="BodyAxis">
+		</constant>
+		<constant name="BODY_AXIS_LINEAR_Z" value="4" enum="BodyAxis">
+		</constant>
+		<constant name="BODY_AXIS_ANGULAR_X" value="8" enum="BodyAxis">
+		</constant>
+		<constant name="BODY_AXIS_ANGULAR_Y" value="16" enum="BodyAxis">
+		</constant>
+		<constant name="BODY_AXIS_ANGULAR_Z" value="32" enum="BodyAxis">
 		</constant>
 	</constants>
 </class>

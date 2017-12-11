@@ -203,7 +203,7 @@
 		<constant name="METHOD_GET" value="0" enum="Method">
 			HTTP GET method. The GET method requests a representation of the specified resource. Requests using GET should only retrieve data.
 		</constant>
-		<constant name="METHOD_HEAD" value="1" enum="Method">#
+		<constant name="METHOD_HEAD" value="1" enum="Method">
 			HTTP HEAD method. The HEAD method asks for a response identical to that of a GET request, but without the response body. This is useful to request metadata like HTTP headers or to check if a resource exists.
 		</constant>
 		<constant name="METHOD_POST" value="2" enum="Method">

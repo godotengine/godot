@@ -59,11 +59,17 @@
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
 			RigidBody's rotational velocity.
 		</member>
-		<member name="axis_lock_x" type="bool" setter="set_axis_lock_x" getter="get_axis_lock_x">
+		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
 		</member>
-		<member name="axis_lock_y" type="bool" setter="set_axis_lock_y" getter="get_axis_lock_y">
+		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
 		</member>
-		<member name="axis_lock_z" type="bool" setter="set_axis_lock_z" getter="get_axis_lock_z">
+		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		</member>
+		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		</member>
+		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+		</member>
+		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
