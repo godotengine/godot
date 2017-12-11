@@ -2137,10 +2137,9 @@ void GDParser::_parse_extends(ClassNode *p_class) {
 
 			case GDTokenizer::TK_IDENTIFIER: {
 
-					StringName identifier = tokenizer->get_token_identifier();
-					p_class->extends_class.push_back(identifier);
-				}
-				break;
+				StringName identifier = tokenizer->get_token_identifier();
+				p_class->extends_class.push_back(identifier);
+			} break;
 
 			case GDTokenizer::TK_PERIOD:
 				break;

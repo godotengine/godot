@@ -81,8 +81,8 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 
 	switch (wasapi_channels) {
 		case 2: // Stereo
-//		case 6: // Surround 5.1
-//		case 8: // Surround 7.1
+			//case 6: // Surround 5.1
+			//case 8: // Surround 7.1
 			channels = wasapi_channels;
 			break;
 

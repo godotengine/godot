@@ -282,7 +282,7 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
-	
+
 	virtual Error move_path_to_trash(String p_dir);
 
 	void disable_crash_handler();

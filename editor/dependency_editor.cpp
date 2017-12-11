@@ -307,12 +307,12 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 void DependencyEditorOwners::_file_option(int p_option) {
 
 	switch (p_option) {
-	case FILE_OPEN: {
-		int idx = owners->get_current();
-		if (idx < 0 || idx >= owners->get_item_count())
-			break;
-		_select_file(idx);
-	} break;
+		case FILE_OPEN: {
+			int idx = owners->get_current();
+			if (idx < 0 || idx >= owners->get_item_count())
+				break;
+			_select_file(idx);
+		} break;
 	}
 }
 
@@ -461,11 +461,10 @@ void DependencyRemoveDialog::show(const Vector<String> &to_erase) {
 }
 
 void DependencyRemoveDialog::ok_pressed() {
-	
+
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (Map<String, TreeItem *>::Element *E = files.front(); E; E = E->next()) {
-		if (da->dir_exists(E->key()))
-		{
+		if (da->dir_exists(E->key())) {
 			String path = OS::get_singleton()->get_resource_dir() + E->key().replace_first("res://", "/");
 			OS::get_singleton()->move_path_to_trash(path);
 			EditorFileSystem::get_singleton()->scan();

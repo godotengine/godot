@@ -34,7 +34,7 @@ void Navigation::_navmesh_link(int p_id) {
 	ERR_FAIL_COND(!navmesh_map.has(p_id));
 	NavMesh &nm = navmesh_map[p_id];
 	ERR_FAIL_COND(nm.linked);
-	
+
 	DVector<Vector3> vertices = nm.navmesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0)

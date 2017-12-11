@@ -117,7 +117,7 @@ private:
 
 	PanelContainer *fps;
 	Label *fps_label;
-	
+
 	struct _RayResult {
 
 		Spatial *item;

@@ -124,9 +124,9 @@ void ScriptCreateDialog::_create_new() {
 		cname = class_name->get_text();
 
 	String text;
-	if (template_select==0) {
+	if (template_select == 0) {
 		text = ScriptServer::get_language(language_menu->get_selected())->get_template(cname, parent_name->get_text());
-	} else if (template_select==1) {
+	} else if (template_select == 1) {
 		text = ScriptServer::get_language(language_menu->get_selected())->get_empty_template(cname, parent_name->get_text());
 	} else if (template_select == 2) {
 		text = ScriptServer::get_language(language_menu->get_selected())->get_nocomment_template(cname, parent_name->get_text());

@@ -633,7 +633,6 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 			} else {
 				err = ERR_CANT_OPEN;
 			}
-
 		}
 	}
 
