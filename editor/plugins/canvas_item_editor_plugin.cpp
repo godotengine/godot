@@ -4730,6 +4730,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 			list.push_back(root_node);
 		} else {
 			drop_pos = p_point;
+			target_node = NULL;
 			_show_resource_type_selector();
 			return;
 		}
