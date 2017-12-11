@@ -294,10 +294,14 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			if (get_tab_count() > 0) {
-				call_deferred("set_current_tab", get_current_tab()); //wait until all changed theme
-			}
+			call_deferred("_on_theme_changed"); //wait until all changed theme
 		} break;
+	}
+}
+
+void TabContainer::_on_theme_changed() {
+	if (get_tab_count() > 0) {
+		set_current_tab(get_current_tab());
 	}
 }
 
@@ -658,6 +662,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
 
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));

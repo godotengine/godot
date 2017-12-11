@@ -60,6 +60,7 @@ private:
 
 	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
+	void _on_theme_changed();
 
 protected:
 	void _child_renamed_callback();
