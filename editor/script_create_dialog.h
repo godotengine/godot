@@ -73,6 +73,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<String> template_list;
 
 	void _path_changed(const String &p_path = String());
+	void _path_entered(const String &p_path = String());
 	void _lang_changed(int l = 0);
 	void _built_in_pressed();
 	bool _validate(const String &p_string);
