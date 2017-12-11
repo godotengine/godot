@@ -26,9 +26,6 @@ if env['builtin_libwebp']:
         "dsp/alpha_processing_neon.c",
         "dsp/alpha_processing_sse2.c",
         "dsp/alpha_processing_sse41.c",
-        "dsp/argb.c",
-        "dsp/argb_mips_dsp_r2.c",
-        "dsp/argb_sse2.c",
         "dsp/cost.c",
         "dsp/cost_mips32.c",
         "dsp/cost_mips_dsp_r2.c",
@@ -36,6 +33,9 @@ if env['builtin_libwebp']:
         "dsp/cpu.c",
         "dsp/dec.c",
         "dsp/dec_clip_tables.c",
+        "dsp/ssim.c",
+        "dsp/ssim_sse2.c",
+        "dsp/yuv_neon.c",
         "dsp/dec_mips32.c",
         "dsp/dec_mips_dsp_r2.c",
         "dsp/dec_msa.c",
@@ -84,6 +84,7 @@ if env['builtin_libwebp']:
         "dsp/yuv_sse2.c",
         "enc/alpha_enc.c",
         "enc/analysis_enc.c",
+        "enc/backward_references_cost_enc.c",
         "enc/backward_references_enc.c",
         "enc/config_enc.c",
         "enc/cost_enc.c",
@@ -122,10 +123,10 @@ if env['builtin_libwebp']:
         "utils/thread_utils.c",
         "utils/utils.c",
     ]
-    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+    thirdparty_sources = [thirdparty_dir + "src/" + file for file in thirdparty_sources]
 
     env_webp.add_source_files(env.modules_sources, thirdparty_sources)
-    env_webp.Append(CPPPATH=[thirdparty_dir])
+    env_webp.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "src/"])
 
 # Godot source files
 env_webp.add_source_files(env.modules_sources, "*.cpp")
