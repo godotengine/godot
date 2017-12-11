@@ -39,6 +39,11 @@ class RigidBodyBullet;
 class Generic6DOFJointBullet : public JointBullet {
 	class btGeneric6DofConstraint *sixDOFConstraint;
 
+	// First is linear second is angular
+	Vector3 limits_lower[2];
+	Vector3 limits_upper[2];
+	bool flags[3][PhysicsServer::G6DOF_JOINT_FLAG_MAX];
+
 public:
 	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
 

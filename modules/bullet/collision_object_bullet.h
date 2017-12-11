@@ -114,7 +114,7 @@ protected:
 	bool m_isStatic;
 	bool ray_pickable;
 	btCollisionObject *bt_collision_object;
-	btVector3 body_scale;
+	Vector3 body_scale;
 	SpaceBullet *space;
 
 	VSet<RID> exceptions;
@@ -146,6 +146,8 @@ public:
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
 	void set_body_scale(const Vector3 &p_new_scale);
+	const Vector3 &get_body_scale() const { return body_scale; }
+	btVector3 get_bt_body_scale() const;
 	virtual void on_body_scale_changed();
 
 	void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);

@@ -198,6 +198,8 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 
 	const CollisionObjectBullet::ShapeWrapper *shape_wrapper;
 
+	btVector3 owner_body_scale(owner->get_bt_body_scale());
+
 	for (int i = shapes_count - 1; 0 <= i; --i) {
 		shape_wrapper = &shapes_wrappers[i];
 		if (!shape_wrapper->active) {
@@ -210,28 +212,29 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE: {
 				SphereShapeBullet *sphere = static_cast<SphereShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * owner->body_scale[0] + safe_margin);
+				kin_shape_ref = ShapeBullet::create_shape_sphere(sphere->get_radius() * owner_body_scale[0] + safe_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_BOX: {
 				BoxShapeBullet *box = static_cast<BoxShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_box((box->get_half_extents() * owner->body_scale) + btVector3(safe_margin, safe_margin, safe_margin));
+				kin_shape_ref = ShapeBullet::create_shape_box((box->get_half_extents() * owner_body_scale) + btVector3(safe_margin, safe_margin, safe_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_CAPSULE: {
 				CapsuleShapeBullet *capsule = static_cast<CapsuleShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * owner->body_scale[0] + safe_margin, capsule->get_height() * owner->body_scale[1] + safe_margin);
+
+				kin_shape_ref = ShapeBullet::create_shape_capsule(capsule->get_radius() * owner_body_scale[0] + safe_margin, capsule->get_height() * owner_body_scale[1] + safe_margin);
 				break;
 			}
 			case PhysicsServer::SHAPE_CONVEX_POLYGON: {
 				ConvexPolygonShapeBullet *godot_convex = static_cast<ConvexPolygonShapeBullet *>(shape_wrapper->shape);
 				kin_shape_ref = ShapeBullet::create_shape_convex(godot_convex->vertices);
-				kin_shape_ref->setLocalScaling(owner->body_scale + btVector3(safe_margin, safe_margin, safe_margin));
+				kin_shape_ref->setLocalScaling(owner_body_scale + btVector3(safe_margin, safe_margin, safe_margin));
 				break;
 			}
 			case PhysicsServer::SHAPE_RAY: {
 				RayShapeBullet *godot_ray = static_cast<RayShapeBullet *>(shape_wrapper->shape);
-				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * owner->body_scale[1] + safe_margin);
+				kin_shape_ref = ShapeBullet::create_shape_ray(godot_ray->length * owner_body_scale[1] + safe_margin);
 				break;
 			}
 			default:

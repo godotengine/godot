@@ -37,11 +37,21 @@
 
 ConeTwistJointBullet::ConeTwistJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &rbAFrame, const Transform &rbBFrame) :
 		JointBullet() {
+
+	Transform scaled_AFrame(rbAFrame.scaled(rbA->get_body_scale()));
+	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
+
 	btTransform btFrameA;
-	G_TO_B(rbAFrame, btFrameA);
+	G_TO_B(scaled_AFrame, btFrameA);
+
 	if (rbB) {
+
+		Transform scaled_BFrame(rbBFrame.scaled(rbB->get_body_scale()));
+		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
+
 		btTransform btFrameB;
-		G_TO_B(rbBFrame, btFrameB);
+		G_TO_B(scaled_BFrame, btFrameB);
+
 		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
 	} else {
 		coneConstraint = bulletnew(btConeTwistConstraint(*rbA->get_bt_rigid_body(), btFrameA));

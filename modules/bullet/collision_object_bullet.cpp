@@ -76,9 +76,15 @@ bool equal(real_t first, real_t second) {
 
 void CollisionObjectBullet::set_body_scale(const Vector3 &p_new_scale) {
 	if (!equal(p_new_scale[0], body_scale[0]) || !equal(p_new_scale[1], body_scale[1]) || !equal(p_new_scale[2], body_scale[2])) {
-		G_TO_B(p_new_scale, body_scale);
+		body_scale = p_new_scale;
 		on_body_scale_changed();
 	}
+}
+
+btVector3 CollisionObjectBullet::get_bt_body_scale() const {
+	btVector3 s;
+	G_TO_B(body_scale, s);
+	return s;
 }
 
 void CollisionObjectBullet::on_body_scale_changed() {
@@ -160,6 +166,7 @@ void CollisionObjectBullet::set_transform(const Transform &p_global_transform) {
 Transform CollisionObjectBullet::get_transform() const {
 	Transform t;
 	B_TO_G(get_transform__bullet(), t);
+	t.basis.scale(body_scale);
 	return t;
 }
 
@@ -302,7 +309,7 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 		}
 	}
 
-	compoundShape->setLocalScaling(body_scale);
+	compoundShape->setLocalScaling(get_bt_body_scale());
 	compoundShape->recalculateLocalAabb();
 }
 
