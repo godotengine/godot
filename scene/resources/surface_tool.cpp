@@ -768,7 +768,7 @@ void SurfaceTool::generate_normals() {
 			vertex_hash.clear();
 			if (E) {
 				smooth = smooth_groups[count];
-				print_line("SMOOTH AT " + itos(count) + ": " + itos(smooth));
+				print_line("Smooth at " + itos(count) + ": " + itos(smooth));
 			}
 		}
 	}

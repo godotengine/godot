@@ -715,8 +715,6 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 	if (p_status == HTTPRequest::RESULT_SUCCESS) {
 
-		print_line("GOT IMAGE YAY!");
-
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag

@@ -2274,7 +2274,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	}
 
 	f->seek_end();
-	print_line("SAVING: " + p_path);
+	print_line("Saving: " + p_path);
 	if (p_resource->get_import_metadata().is_valid()) {
 		uint64_t md_pos = f->get_pos();
 		Ref<ResourceImportMetadata> imd = p_resource->get_import_metadata();
@@ -2283,8 +2283,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		for (int i = 0; i < imd->get_source_count(); i++) {
 			save_unicode_string(imd->get_source_path(i));
 			save_unicode_string(imd->get_source_md5(i));
-			print_line("SAVE PATH: " + imd->get_source_path(i));
-			print_line("SAVE MD5: " + imd->get_source_md5(i));
 		}
 		List<String> options;
 		imd->get_options(&options);
