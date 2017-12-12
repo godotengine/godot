@@ -391,7 +391,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_item_statable">
+		<method name="set_item_multistate">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
@@ -441,7 +441,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="toggle_item_statable">
+		<method name="toggle_item_multistate">
 			<return type="void">
 			</return>
 			<argument index="0" name="idx" type="int">
