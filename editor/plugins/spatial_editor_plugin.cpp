@@ -4268,7 +4268,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		case MENU_VISIBILITY_SKELETON: {
 
 			const int idx = view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON);
-			view_menu->get_popup()->toggle_item_statable(idx);
+			view_menu->get_popup()->toggle_item_multistate(idx);
 
 			// Change icon
 			const int state = view_menu->get_popup()->get_item_state(idx);
@@ -5077,8 +5077,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
 
 	p->add_separator();
-	p->add_statable_item(TTR("Skeleton Gizmo visibility"), 3, 1, MENU_VISIBILITY_SKELETON);
-	p->add_separator();
+	p->add_multistate_item(TTR("Skeleton Gizmo visibility"), 3, 1, MENU_VISIBILITY_SKELETON);
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);

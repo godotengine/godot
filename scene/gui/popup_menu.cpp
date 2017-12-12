@@ -624,7 +624,7 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bo
 	update();
 }
 
-void PopupMenu::add_statable_item(const String &p_label, int p_max_states, int p_default_state, int p_ID, uint32_t p_accel) {
+void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_ID, uint32_t p_accel) {
 
 	Item item;
 	item.text = p_label;
@@ -839,14 +839,14 @@ void PopupMenu::set_item_h_offset(int p_idx, int p_offset) {
 	update();
 }
 
-void PopupMenu::set_item_statable(int p_idx, int p_state) {
+void PopupMenu::set_item_multistate(int p_idx, int p_state) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items[p_idx].state = p_state;
 	update();
 }
 
-void PopupMenu::toggle_item_statable(int p_idx) {
+void PopupMenu::toggle_item_multistate(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 	if (0 >= items[p_idx].max_states) {
@@ -940,7 +940,7 @@ void PopupMenu::activate_item(int p_item) {
 			if (!hide_on_checkable_item_selection || !pop->is_hide_on_checkable_item_selection())
 				break;
 		} else if (0 < items[p_item].max_states) {
-			if (!hide_on_statable_item_selection || !pop->is_hide_on_statable_item_selection())
+			if (!hide_on_multistate_item_selection || !pop->is_hide_on_multistate_item_selection())
 				break;
 		} else if (!hide_on_item_selection || !pop->is_hide_on_item_selection())
 			break;
@@ -957,7 +957,7 @@ void PopupMenu::activate_item(int p_item) {
 		if (!hide_on_checkable_item_selection)
 			return;
 	} else if (0 < items[p_item].max_states) {
-		if (!hide_on_statable_item_selection)
+		if (!hide_on_multistate_item_selection)
 			return;
 	} else if (!hide_on_item_selection)
 		return;
@@ -1093,14 +1093,14 @@ bool PopupMenu::is_hide_on_checkable_item_selection() const {
 	return hide_on_checkable_item_selection;
 }
 
-void PopupMenu::set_hide_on_statable_item_selection(bool p_enabled) {
+void PopupMenu::set_hide_on_multistate_item_selection(bool p_enabled) {
 
-	hide_on_statable_item_selection = p_enabled;
+	hide_on_multistate_item_selection = p_enabled;
 }
 
-bool PopupMenu::is_hide_on_statable_item_selection() const {
+bool PopupMenu::is_hide_on_multistate_item_selection() const {
 
-	return hide_on_statable_item_selection;
+	return hide_on_multistate_item_selection;
 }
 
 String PopupMenu::get_tooltip(const Point2 &p_pos) const {
@@ -1161,10 +1161,10 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_as_checkable", "idx", "enable"), &PopupMenu::set_item_as_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &PopupMenu::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "idx", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_item_statable", "idx", "state"), &PopupMenu::set_item_statable);
+	ClassDB::bind_method(D_METHOD("set_item_multistate", "idx", "state"), &PopupMenu::set_item_multistate);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "idx"), &PopupMenu::toggle_item_checked);
-	ClassDB::bind_method(D_METHOD("toggle_item_statable", "idx"), &PopupMenu::toggle_item_statable);
+	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "idx"), &PopupMenu::toggle_item_multistate);
 
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &PopupMenu::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &PopupMenu::get_item_icon);
@@ -1196,8 +1196,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_on_checkable_item_selection", "enable"), &PopupMenu::set_hide_on_checkable_item_selection);
 	ClassDB::bind_method(D_METHOD("is_hide_on_checkable_item_selection"), &PopupMenu::is_hide_on_checkable_item_selection);
 
-	ClassDB::bind_method(D_METHOD("set_hide_on_state_item_selection", "enable"), &PopupMenu::set_hide_on_statable_item_selection);
-	ClassDB::bind_method(D_METHOD("is_hide_on_state_item_selection"), &PopupMenu::is_hide_on_statable_item_selection);
+	ClassDB::bind_method(D_METHOD("set_hide_on_state_item_selection", "enable"), &PopupMenu::set_hide_on_multistate_item_selection);
+	ClassDB::bind_method(D_METHOD("is_hide_on_state_item_selection"), &PopupMenu::is_hide_on_multistate_item_selection);
 
 	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
 
@@ -1222,7 +1222,7 @@ PopupMenu::PopupMenu() {
 	set_as_toplevel(true);
 	set_hide_on_item_selection(true);
 	set_hide_on_checkable_item_selection(true);
-	set_hide_on_statable_item_selection(false);
+	set_hide_on_multistate_item_selection(false);
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
