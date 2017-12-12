@@ -19,7 +19,7 @@
 #endif
 
 #define NV_FASTCALL		__attribute__((fastcall))
-#define NV_FORCEINLINE	__attribute__((always_inline))
+#define NV_FORCEINLINE	__attribute__((always_inline)) inline
 #define NV_DEPRECATED   __attribute__((deprecated))
 
 #if __GNUC__ > 2

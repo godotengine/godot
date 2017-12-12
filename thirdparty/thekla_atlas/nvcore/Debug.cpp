@@ -14,17 +14,15 @@
 #   define VC_EXTRALEAN
 #   include <windows.h>
 #   include <direct.h>
-#   if NV_CC_MSVC
-#       include <crtdbg.h>
-#       if _MSC_VER < 1300
-#           define DECLSPEC_DEPRECATED
+#   include <crtdbg.h>
+#   if _MSC_VER < 1300
+#       define DECLSPEC_DEPRECATED
 // VC6: change this path to your Platform SDK headers
-#           include <dbghelp.h> // must be XP version of file
-//          include "M:\\dev7\\vs\\devtools\\common\\win32sdk\\include\\dbghelp.h"
-#       else
+#       include <dbghelp.h> // must be XP version of file
+//      include "M:\\dev7\\vs\\devtools\\common\\win32sdk\\include\\dbghelp.h"
+#   else
 // VC7: ships with updated headers
-#           include <dbghelp.h>
-#       endif
+#       include <dbghelp.h>
 #   endif
 #   pragma comment(lib,"dbghelp.lib")
 #endif
@@ -110,7 +108,7 @@ namespace
 #endif
 
 
-#if (NV_OS_WIN32 && NV_CC_MSVC) || NV_OS_DURANGO
+#if NV_OS_WIN32 || NV_OS_DURANGO
 
     // We should try to simplify the top level filter as much as possible.
     // http://www.nynaeve.net/?p=128
