@@ -36,7 +36,6 @@ void HTTPRequest::_redirect_request(const String &p_new_url) {
 
 Error HTTPRequest::_request() {
 
-	//print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
 	return client->connect_to_host(url, port, use_ssl, validate_ssl);
 }
 
@@ -54,36 +53,31 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	downloaded = 0;
 	redirections = 0;
 
-	//print_line("1 url: "+url);
-	if (url.begins_with("http://")) {
-
+	String url_lower = url.to_lower();
+	if (url_lower.begins_with("http://")) {
 		url = url.substr(7, url.length() - 7);
-		//print_line("no SSL");
-
-	} else if (url.begins_with("https://")) {
+	} else if (url_lower.begins_with("https://")) {
 		url = url.substr(8, url.length() - 8);
 		use_ssl = true;
 		port = 443;
-		//print_line("yes SSL");
 	} else {
 		ERR_EXPLAIN("Malformed URL");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
 
-	//print_line("2 url: "+url);
+	if (url.length() < 1) {
+		ERR_EXPLAIN("URL too short");
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
 
 	int slash_pos = url.find("/");
 
 	if (slash_pos != -1) {
 		request_string = url.substr(slash_pos, url.length());
 		url = url.substr(0, slash_pos);
-		//print_line("request string: "+request_string);
 	} else {
 		request_string = "/";
-		//print_line("no request");
 	}
-
-	//print_line("3 url: "+url);
 
 	int colon_pos = url.find(":");
 	if (colon_pos != -1) {
@@ -91,8 +85,6 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 		url = url.substr(0, colon_pos);
 		ERR_FAIL_COND_V(port < 1 || port > 65535, ERR_INVALID_PARAMETER);
 	}
-
-	//print_line("4 url: "+url);
 
 	return OK;
 }
@@ -198,10 +190,8 @@ void HTTPRequest::cancel_request() {
 	}
 	client->close();
 	body.resize(0);
-	//downloaded=0;
 	got_response = false;
 	response_code = -1;
-	//body_len=-1;
 	request_sent = false;
 	requesting = false;
 }
@@ -221,12 +211,12 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	response_headers.resize(0);
 	downloaded = 0;
 	for (List<String>::Element *E = rheaders.front(); E; E = E->next()) {
-		//print_line("HEADER: "+E->get());
 		response_headers.push_back(E->get());
 	}
 
 	if (response_code == 301 || response_code == 302) {
-		//redirect
+		// Handle redirect
+
 		if (max_redirects >= 0 && redirections >= max_redirects) {
 
 			call_deferred("_request_done", RESULT_REDIRECT_LIMIT_REACHED, response_code, response_headers, PoolByteArray());
@@ -242,15 +232,13 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			}
 		}
 
-		//print_line("NEW LOCATION: "+new_request);
-
 		if (new_request != "") {
-			//process redirect
+			// Process redirect
 			client->close();
-			int new_redirs = redirections + 1; //because _request() will clear it
+			int new_redirs = redirections + 1; // Because _request() will clear it
 			Error err;
 			if (new_request.begins_with("http")) {
-				//new url, request all again
+				// New url, request all again
 				err = _parse_url(new_request);
 			} else {
 				request_string = new_request;
@@ -258,7 +246,6 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 			err = _request();
 
-			//print_line("new connection: "+itos(err));
 			if (err == OK) {
 				request_sent = false;
 				got_response = false;
@@ -280,11 +267,11 @@ bool HTTPRequest::_update_connection() {
 	switch (client->get_status()) {
 		case HTTPClient::STATUS_DISCONNECTED: {
 			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
-			return true; //end it, since it's doing something
+			return true; // End it, since it's doing something
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
 			client->poll();
-			//must wait
+			// Must wait
 			return false;
 		} break;
 		case HTTPClient::STATUS_CANT_RESOLVE: {
@@ -294,9 +281,9 @@ bool HTTPRequest::_update_connection() {
 		} break;
 		case HTTPClient::STATUS_CONNECTING: {
 			client->poll();
-			//must wait
+			// Must wait
 			return false;
-		} break; //connecting to ip
+		} break; // Connecting to IP
 		case HTTPClient::STATUS_CANT_CONNECT: {
 
 			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
@@ -309,7 +296,7 @@ bool HTTPRequest::_update_connection() {
 
 				if (!got_response) {
 
-					//no body
+					// No body
 
 					bool ret_value;
 
@@ -320,16 +307,16 @@ bool HTTPRequest::_update_connection() {
 					return true;
 				}
 				if (got_response && body_len < 0) {
-					//chunked transfer is done
+					// Chunked transfer is done
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
 
 				call_deferred("_request_done", RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PoolByteArray());
 				return true;
-				//request migh have been done
+				// Request migh have been done
 			} else {
-				//did not request yet, do request
+				// Did not request yet, do request
 
 				Error err = client->request(method, request_string, headers, request_data);
 				if (err != OK) {
@@ -340,13 +327,13 @@ bool HTTPRequest::_update_connection() {
 				request_sent = true;
 				return false;
 			}
-		} break; //connected: { } break requests only accepted here
+		} break; // Connected: break requests only accepted here
 		case HTTPClient::STATUS_REQUESTING: {
-			//must wait, it's requesting
+			// Must wait, still requesting
 			client->poll();
 			return false;
 
-		} break; // request in progress
+		} break; // Request in progress
 		case HTTPClient::STATUS_BODY: {
 
 			if (!got_response) {
@@ -363,7 +350,7 @@ bool HTTPRequest::_update_connection() {
 				}
 
 				if (client->is_response_chunked()) {
-					body_len = -1; //no body len because chunked, change your webserver configuration if you want body len
+					body_len = -1; // No body len because chunked, change your webserver configuration if you want body len
 				} else {
 					body_len = client->get_response_body_length();
 
@@ -383,7 +370,6 @@ bool HTTPRequest::_update_connection() {
 				}
 			}
 
-			//print_line("BODY: "+itos(body.size()));
 			client->poll();
 
 			PoolByteArray chunk = client->read_response_body_chunk();
@@ -411,15 +397,11 @@ bool HTTPRequest::_update_connection() {
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
-				/*if (body.size()>=body_len) {
-					call_deferred("_request_done",RESULT_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
-					return true;
-				}*/
 			}
 
 			return false;
 
-		} break; // request resulted in body: { } break which must be read
+		} break; // Request resulted in body: break which must be read
 		case HTTPClient::STATUS_CONNECTION_ERROR: {
 			call_deferred("_request_done", RESULT_CONNECTION_ERROR, 0, PoolStringArray(), PoolByteArray());
 			return true;
@@ -449,7 +431,7 @@ void HTTPRequest::_notification(int p_what) {
 		if (done) {
 
 			set_process_internal(false);
-			//cancel_request(); called from _request done now
+			// cancel_request(); called from _request done now
 		}
 	}
 
@@ -543,7 +525,7 @@ void HTTPRequest::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,1024"), "set_max_redirects", "get_max_redirects");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::POOL_STRING_ARRAY, "headers"), PropertyInfo(Variant::POOL_BYTE_ARRAY, "body")));
 
