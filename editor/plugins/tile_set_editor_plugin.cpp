@@ -244,7 +244,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	MenuButton *options = memnew(MenuButton);
 	panel->add_child(options);
 	options->set_position(Point2(1, 1));
-	options->set_text("Theme");
+	options->set_text(TTR("Tile Set"));
 	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	options->get_popup()->add_item(TTR("Remove Item"), MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
