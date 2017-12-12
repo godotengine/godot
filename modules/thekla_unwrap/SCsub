@@ -59,11 +59,15 @@ if env['builtin_thekla_atlas']:
     env_thekla_unwrap.Append(CXXFLAGS="-std=gnu++11")
 
     if env["platform"] == 'x11':
-        env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX"])
+        env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX", "-DPOSH_COMPILER_GCC"])
     elif env["platform"] == 'osx':
-        env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_DARWIN"])
+        env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_DARWIN", "-DPOSH_COMPILER_GCC"])
     elif env["platform"] == 'windows':
-        env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32"])
+        if env.msvc:
+            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC" ])
+        else:
+            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC"])
+            env.Append(LIBS=["dbghelp"])
         
 # Godot source files
 env_thekla_unwrap.add_source_files(env.modules_sources, "*.cpp")
