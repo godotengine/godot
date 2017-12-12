@@ -1013,7 +1013,7 @@ public:
 		return "UWP";
 	}
 
-	virtual String get_binary_extension() const {
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
 		return "appx";
 	}
 

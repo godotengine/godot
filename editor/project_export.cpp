@@ -718,7 +718,9 @@ void ProjectExportDialog::_export_project() {
 	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
 	export_project->clear_filters();
 	export_project->set_current_file(default_filename);
-	String extension = platform->get_binary_extension();
+
+	String extension = platform->get_binary_extension(current);
+
 	if (extension != String()) {
 		export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
 	}

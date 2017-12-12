@@ -1305,7 +1305,7 @@ public:
 		return valid;
 	}
 
-	virtual String get_binary_extension() const {
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
 		return "apk";
 	}
 
