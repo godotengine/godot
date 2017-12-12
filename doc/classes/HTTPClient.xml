@@ -224,7 +224,10 @@
 		<constant name="METHOD_CONNECT" value="7" enum="Method">
 			HTTP CONNECT method. The CONNECT method establishes a tunnel to the server identified by the target resource. Rarely used.
 		</constant>
-		<constant name="METHOD_MAX" value="8" enum="Method">
+		<constant name="METHOD_PATCH" value="8" enum="Method">
+			HTTP PATCH method. The PATCH method is used to apply partial modifications to a resource.
+		</constant>
+		<constant name="METHOD_MAX" value="9" enum="Method">
 			Marker for end of [code]METHOD_*[/code] enum. Not used.
 		</constant>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
@@ -290,6 +293,9 @@
 		<constant name="RESPONSE_MULTI_STATUS" value="207" enum="ResponseCode">
 			HTTP status code [code]207 Multi-Status[/code] (WebDAV). A Multi-Status response conveys information about multiple resources in situations where multiple status codes might be appropriate.
 		</constant>
+		<constant name="RESPONSE_ALREADY_REPORTED" value="208" enum="ResponseCode">
+			HTTP status code [code]208 Already Reported[/code] (WebDAV). Used inside a DAV: propstat response element to avoid enumerating the internal members of multiple bindings to the same collection repeatedly.
+		</constant>
 		<constant name="RESPONSE_IM_USED" value="226" enum="ResponseCode">
 			HTTP status code [code]226 IM Used[/code] (WebDAV). The server has fulfilled a GET request for the resource, and the response is a representation of the result of one or more instance-manipulations applied to the current instance.
 		</constant>
@@ -311,8 +317,14 @@
 		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
 			HTTP status code [code]305 Use Proxy[/code]. Deprecated. Do not use.
 		</constant>
+		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode">
+			HTTP status code [code]306 Switch Proxy[/code]. Deprecated. Do not use.
+		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.
+		</constant>
+		<constant name="RESPONSE_PERMANENT_REDIRECT" value="308" enum="ResponseCode">
+			HTTP status code [code]308 Permanent Redirect[/code]. The target resource has been assigned a new permanent URI and any future references to this resource ought to use one of the enclosed URIs.
 		</constant>
 		<constant name="RESPONSE_BAD_REQUEST" value="400" enum="ResponseCode">
 			HTTP status code [code]400 Bad Request[/code]. The request was invalid. The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, invalid request contents, or deceptive request routing).
@@ -368,6 +380,12 @@
 		<constant name="RESPONSE_EXPECTATION_FAILED" value="417" enum="ResponseCode">
 			HTTP status code [code]417 Expectation Failed[/code]. The expectation given in the request's Expect header field could not be met by at least one of the inbound servers.
 		</constant>
+		<constant name="RESPONSE_IM_A_TEAPOT" value="418" enum="ResponseCode">
+			HTTP status code [code]418 I'm A Teapot[/code]. Any attempt to brew coffee with a teapot should result in the error code "418 I'm a teapot". The resulting entity body MAY be short and stout.
+		</constant>
+		<constant name="RESPONSE_MISDIRECTED_REQUEST" value="421" enum="ResponseCode">
+			HTTP status code [code]421 Misdirected Request[/code]. The request was directed at a server that is not able to produce a response. This can be sent by a server that is not configured to produce responses for the combination of scheme and authority that are included in the request URI.
+		</constant>
 		<constant name="RESPONSE_UNPROCESSABLE_ENTITY" value="422" enum="ResponseCode">
 			HTTP status code [code]422 Unprocessable Entity[/code] (WebDAV). The server understands the content type of the request entity (hence a 415 Unsupported Media Type status code is inappropriate), and the syntax of the request entity is correct (thus a 400 Bad Request status code is inappropriate) but was unable to process the contained instructions.
 		</constant>
@@ -379,6 +397,18 @@
 		</constant>
 		<constant name="RESPONSE_UPGRADE_REQUIRED" value="426" enum="ResponseCode">
 			HTTP status code [code]426 Upgrade Required[/code]. The server refuses to perform the request using the current protocol but might be willing to do so after the client upgrades to a different protocol.
+		</constant>
+		<constant name="RESPONSE_PRECONDITION_REQUIRED" value="428" enum="ResponseCode">
+			HTTP status code [code]428 Precondition Required[/code]. The origin server requires the request to be conditional.
+		</constant>
+		<constant name="RESPONSE_TOO_MANY_REQUESTS" value="429" enum="ResponseCode">
+			HTTP status code [code]429 Too Many Requests[/code]. The user has sent too many requests in a given amount of time (see "rate limiting"). Back off and increase time between requests or try again later.
+		</constant>
+		<constant name="RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE" value="431" enum="ResponseCode">
+			HTTP status code [code]431 Rquest Header Fields Too Large[/code]. The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
+		</constant>
+		<constant name="RESPONSE_UNAVAILABLE_FOR_LEGAL_REASONS" value="451" enum="ResponseCode">
+			HTTP status code [code]451 Response Unavailable For Legal Reasons[/code]. The server is denying access to the resource as a consequence of a legal demand.
 		</constant>
 		<constant name="RESPONSE_INTERNAL_SERVER_ERROR" value="500" enum="ResponseCode">
 			HTTP status code [code]500 Internal Server Error[/code]. The server encountered an unexpected condition that prevented it from fulfilling the request.
@@ -398,11 +428,20 @@
 		<constant name="RESPONSE_HTTP_VERSION_NOT_SUPPORTED" value="505" enum="ResponseCode">
 			HTTP status code [code]505 HTTP Version Not Supported[/code]. The server does not support, or refuses to support, the major version of HTTP that was used in the request message.
 		</constant>
+		<constant name="RESPONSE_VARIANT_ALSO_NEGOTIATES" value="506" enum="ResponseCode">
+			HTTP status code [code]506 Variant Also Negotiates[/code]. The server has an internal configuration error: the chosen variant resource is configured to engage in transparent content negotiation itself, and is therefore not a proper end point in the negotiation process.
+		</constant>
 		<constant name="RESPONSE_INSUFFICIENT_STORAGE" value="507" enum="ResponseCode">
 			HTTP status code [code]507 Insufficient Storage[/code]. The method could not be performed on the resource because the server is unable to store the representation needed to successfully complete the request.
 		</constant>
+		<constant name="RESPONSE_LOOP_DETECTED" value="508" enum="ResponseCode">
+			HTTP status code [code]508 Loop Detected[/code]. The server terminated an operation because it encountered an infinite loop while processing a request with "Depth: infinity". This status indicates that the entire operation failed.
+		</constant>
 		<constant name="RESPONSE_NOT_EXTENDED" value="510" enum="ResponseCode">
 			HTTP status code [code]510 Not Extended[/code]. The policy for accessing the resource has not been met in the request. The server should send back all the information necessary for the client to issue an extended request.
+		</constant>
+		<constant name="RESPONSE_NETWORK_AUTH_REQUIRED" value="511" enum="ResponseCode">
+			HTTP status code [code]511 Network Authentication Required[/code]. The client needs to authenticate to gain network access.
 		</constant>
 	</constants>
 </class>
