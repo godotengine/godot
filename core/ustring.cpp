@@ -734,7 +734,7 @@ Vector<String> String::split_spaces() const {
 	return ret;
 }
 
-Vector<String> String::split(const String &p_splitter, bool p_allow_empty) const {
+Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p_maxsplit) const {
 
 	Vector<String> ret;
 	int from = 0;
@@ -745,8 +745,21 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty) const
 		int end = find(p_splitter, from);
 		if (end < 0)
 			end = len;
-		if (p_allow_empty || (end > from))
-			ret.push_back(substr(from, end - from));
+		if (p_allow_empty || (end > from)) {
+			if (p_maxsplit <= 0)
+				ret.push_back(substr(from, end - from));
+			else if (p_maxsplit > 0) {
+
+				// Put rest of the string and leave cycle.
+				if (p_maxsplit == ret.size()) {
+					ret.push_back(substr(from, len));
+					break;
+				}
+
+				// Otherwise, push items until positive limit is reached.
+				ret.push_back(substr(from, end - from));
+			}
+		}
 
 		if (end == len)
 			break;

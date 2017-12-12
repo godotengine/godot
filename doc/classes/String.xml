@@ -662,8 +662,11 @@
 			</argument>
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
+			<argument index="2" name="maxsplit" type="int" default="0">
+			</argument>
 			<description>
 				Splits the string by a divisor string and returns an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
 			</description>
 		</method>
 		<method name="split_floats">
