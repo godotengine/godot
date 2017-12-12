@@ -531,7 +531,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			Variant old_val = ProjectSettings::get_singleton()->get(name);
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
-			undo_redo->create_action(TTR("Add Input Action"));
+			undo_redo->create_action(TTR("Erase Input Action"));
 			undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", name);
 			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
 			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
@@ -852,7 +852,7 @@ void ProjectSettingsEditor::_action_add() {
 
 	Array va;
 	String name = "input/" + action_name->get_text();
-	undo_redo->create_action(TTR("Add Input Action Event"));
+	undo_redo->create_action(TTR("Add Input Action"));
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, va);
 	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 	undo_redo->add_do_method(this, "_update_actions");

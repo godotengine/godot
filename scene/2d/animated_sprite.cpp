@@ -355,37 +355,20 @@ void AnimatedSprite::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 
-			if (frames.is_null()) {
-				print_line("no draw no faemos");
+			if (frames.is_null())
 				return;
-			}
-
-			if (frame < 0) {
-				print_line("no draw frame <0");
+			if (frame < 0)
 				return;
-			}
-
-			if (!frames->has_animation(animation)) {
-				print_line("no draw no anim: " + String(animation));
+			if (!frames->has_animation(animation))
 				return;
-			}
 
 			Ref<Texture> texture = frames->get_frame(animation, frame);
-			if (texture.is_null()) {
-				print_line("no draw texture is null");
+			if (texture.is_null())
 				return;
-			}
 
 			Ref<Texture> normal = frames->get_normal_frame(animation, frame);
 
-			//print_line("DECIDED TO DRAW");
-
 			RID ci = get_canvas_item();
-
-			/*
-			texture->draw(ci,Point2());
-			break;
-			*/
 
 			Size2i s;
 			s = texture->get_size();
@@ -403,9 +386,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y = -dst_rect.size.y;
 
-			//texture->draw_rect(ci,dst_rect,false,modulate);
 			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal);
-			//VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;
 	}

@@ -77,11 +77,6 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		case MENU_CLEAR_EMISSION_MASK: {
 
 			emission_mask->popup_centered_minsize();
-
-			/*undo_redo->create_action(TTR("Clear Emission Mask"));
-			undo_redo->add_do_method(particles, "set_emission_points", PoolVector<Vector2>());
-			undo_redo->add_undo_method(particles, "set_emission_points", particles->get_emission_points());
-			undo_redo->commit_action();*/
 		} break;
 	}
 }
@@ -309,14 +304,6 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 	} else {
 		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
 	}
-
-	/*undo_redo->create_action(TTR("Set Emission Mask"));
-	undo_redo->add_do_method(particles, "set_emission_points", epoints);
-	undo_redo->add_do_method(particles, "set_emission_half_extents", extents);
-	undo_redo->add_undo_method(particles, "set_emission_points", particles->get_emission_points());
-	undo_redo->add_undo_method(particles, "set_emission_half_extents", particles->get_emission_half_extents());
-	undo_redo->commit_action();
-	*/
 }
 
 void Particles2DEditorPlugin::_notification(int p_what) {

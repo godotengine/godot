@@ -73,7 +73,6 @@ class ParticlesEditor : public Control {
 
 	void _generate_aabb();
 	void _generate_emission_points();
-	void _resource_seleted(const String &p_res);
 	void _node_selected(const NodePath &p_path);
 
 	void _menu_option(int);

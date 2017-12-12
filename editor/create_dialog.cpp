@@ -370,7 +370,7 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String &p_base) {
 
 	base_type = p_base;
-	set_title(TTR("Create New") + " " + p_base);
+	set_title(vformat(TTR("Create New %s"), p_base));
 	_update_search();
 }
 

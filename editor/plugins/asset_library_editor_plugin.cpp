@@ -340,7 +340,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
-			status->set_text(TTR("Req. Failed."));
+			status->set_text(TTR("Request Failed."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");

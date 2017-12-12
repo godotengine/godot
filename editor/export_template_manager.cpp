@@ -385,7 +385,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 			template_list_state->set_text(TTR("No response."));
 		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
-			template_list_state->set_text(TTR("Req. Failed."));
+			template_list_state->set_text(TTR("Request Failed."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			template_list_state->set_text(TTR("Redirect Loop."));
@@ -465,7 +465,7 @@ void ExportTemplateManager::_notification(int p_what) {
 				break;
 			case HTTPClient::STATUS_CONNECTING: status = TTR("Connecting.."); break;
 			case HTTPClient::STATUS_CANT_CONNECT:
-				status = TTR("Can't Conect");
+				status = TTR("Can't Connect");
 				errored = true;
 				break;
 			case HTTPClient::STATUS_CONNECTED: status = TTR("Connected"); break;

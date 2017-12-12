@@ -40,11 +40,6 @@ void ParticlesEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void ParticlesEditor::_resource_seleted(const String &p_res) {
-
-	//print_line("selected resource path: "+p_res);
-}
-
 void ParticlesEditor::_node_selected(const NodePath &p_path) {
 
 	Node *sel = get_node(p_path);
@@ -84,23 +79,6 @@ void ParticlesEditor::_node_selected(const NodePath &p_path) {
 	emission_dialog->popup_centered(Size2(300, 130));
 }
 
-/*
-
-void ParticlesEditor::_populate() {
-
-	if(!node)
-		return;
-
-
-	if (node->get_particles().is_null())
-		return;
-
-	node->get_particles()->set_instance_count(populate_amount->get_text().to_int());
-	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_text().to_double(),populate_scale->get_text().to_double());
-
-}
-*/
-
 void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
@@ -132,13 +110,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
 				return;
 			}
-			/*
-			Node *root = get_scene()->get_root_node();
-			ERR_FAIL_COND(!root);
-			EditorNode *en = Object::cast_to<EditorNode>(root);
-			ERR_FAIL_COND(!en);
-			Node * node = en->get_edited_scene();
-*/
+
 			emission_tree_dialog->popup_centered_ratio();
 
 		} break;
@@ -365,20 +337,14 @@ void ParticlesEditor::_generate_emission_points() {
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
 	}
-
-	//print_line("point count: "+itos(points.size()));
-	//node->set_emission_points(points);
 }
 
 void ParticlesEditor::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &ParticlesEditor::_menu_option);
-	ClassDB::bind_method("_resource_seleted", &ParticlesEditor::_resource_seleted);
 	ClassDB::bind_method("_node_selected", &ParticlesEditor::_node_selected);
 	ClassDB::bind_method("_generate_emission_points", &ParticlesEditor::_generate_emission_points);
 	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
-
-	//ClassDB::bind_method("_populate",&ParticlesEditor::_populate);
 }
 
 ParticlesEditor::ParticlesEditor() {
@@ -394,8 +360,6 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
-	//	options->get_popup()->add_item(TTR("Clear Emitter"), MENU_OPTION_CLEAR_EMISSION_VOLUME);
-
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	emission_dialog = memnew(ConfirmationDialog);
@@ -420,7 +384,6 @@ ParticlesEditor::ParticlesEditor() {
 	emission_dialog->connect("confirmed", this, "_generate_emission_points");
 
 	err_dialog = memnew(ConfirmationDialog);
-	//err_dialog->get_cancel()->hide();
 	add_child(err_dialog);
 
 	emission_file_dialog = memnew(EditorFileDialog);
@@ -454,9 +417,6 @@ ParticlesEditor::ParticlesEditor() {
 	add_child(generate_aabb);
 
 	generate_aabb->connect("confirmed", this, "_generate_aabb");
-
-	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
 }
 
 void ParticlesEditorPlugin::edit(Object *p_object) {
