@@ -453,7 +453,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						for (int i = 0; i < frame->lines.size(); i++) {
 
 							_process_line(frame, Point2(), ly, p_width, i, PROCESS_CACHE, cfont, Color());
-							table->columns[column].min_width = MAX(table->columns[i].min_width, frame->lines[i].minimum_width);
+							table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 						}
 						idx++;
 					}
