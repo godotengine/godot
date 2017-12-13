@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 Import('env')
+Import('env_modules')
 
 # build only version 2
 # Bullet 2.87
+
+env_bullet = env_modules.Clone()
+
 bullet_src__2_x = [
         # BulletCollision
           "BulletCollision/BroadphaseCollision/btAxisSweep3.cpp"
@@ -181,11 +185,11 @@ thirdparty_src = thirdparty_dir + "src/"
 bullet_sources = [thirdparty_src + file for file in bullet_src__2_x]
 
 # include headers
-env.Append(CPPPATH=[thirdparty_src])
+env_bullet.Append(CPPPATH=[thirdparty_src])
 
-env.add_source_files(env.modules_sources, bullet_sources)
+env_bullet.add_source_files(env.modules_sources, bullet_sources)
 
 # Godot source files
-env.add_source_files(env.modules_sources, "*.cpp")
+env_bullet.add_source_files(env.modules_sources, "*.cpp")
 
 Export('env')
