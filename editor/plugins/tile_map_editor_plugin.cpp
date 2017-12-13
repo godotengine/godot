@@ -751,6 +751,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						if (id != TileMap::INVALID_CELL) {
 
+							_set_cell(over_tile, id, flip_h, flip_v, transpose);
 							undo_redo->add_do_method(node, "set", "tile_data", node->get("tile_data"));
 							undo_redo->commit_action();
 
