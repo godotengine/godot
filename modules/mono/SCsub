@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 Import('env')
+Import('env_modules')
+
+env_mono = env_modules.Clone()
 
 from compat import byte_to_str
 
@@ -43,12 +46,12 @@ def make_cs_files_header(src, dst):
         header.write('#endif // _CS_FILES_DATA_H')
 
 
-env.add_source_files(env.modules_sources, '*.cpp')
-env.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
-env.add_source_files(env.modules_sources, 'utils/*.cpp')
+env_mono.add_source_files(env.modules_sources, '*.cpp')
+env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
+env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 
 if env['tools']:
-    env.add_source_files(env.modules_sources, 'editor/*.cpp')
+    env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
     make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h')
 
 vars = Variables()
@@ -58,12 +61,12 @@ vars.Update(env)
 
 # Glue sources
 if env['mono_glue']:
-    env.add_source_files(env.modules_sources, 'glue/*.cpp')
+    env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
 else:
-    env.Append(CPPDEFINES=['MONO_GLUE_DISABLED'])
+    env_mono.Append(CPPDEFINES=['MONO_GLUE_DISABLED'])
 
 if ARGUMENTS.get('yolo_copy', False):
-    env.Append(CPPDEFINES=['YOLO_COPY'])
+    env_mono.Append(CPPDEFINES=['YOLO_COPY'])
 
 
 # Build GodotSharpTools solution
@@ -201,8 +204,8 @@ def mono_build_solution(source, target, env):
 
 
 mono_sln_builder = Builder(action = mono_build_solution)
-env.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
-env.MonoBuildSolution(
+env_mono.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
+env_mono.MonoBuildSolution(
     os.path.join(Dir('#bin').abspath, 'GodotSharpTools.dll'),
     'editor/GodotSharpTools/GodotSharpTools.sln'
 )
