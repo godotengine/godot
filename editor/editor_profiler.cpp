@@ -69,12 +69,12 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 
 	if (!frame_delay->is_processing()) {
 
-		frame_delay->set_wait_time(p_final ? 0.1 : 1);
+		frame_delay->set_time_interval(p_final ? 0.1 : 1);
 		frame_delay->start();
 	}
 
 	if (!plot_delay->is_processing()) {
-		plot_delay->set_wait_time(0.1);
+		plot_delay->set_time_interval(0.1);
 		plot_delay->start();
 	}
 }
@@ -154,7 +154,7 @@ void EditorProfiler::_item_edited() {
 		plot_sigs.erase(signature);
 
 	if (!frame_delay->is_processing()) {
-		frame_delay->set_wait_time(0.1);
+		frame_delay->set_time_interval(0.1);
 		frame_delay->start();
 	}
 
@@ -555,7 +555,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			seeking = true;
 
 			if (!frame_delay->is_processing()) {
-				frame_delay->set_wait_time(0.1);
+				frame_delay->set_time_interval(0.1);
 				frame_delay->start();
 			}
 		}
@@ -703,14 +703,14 @@ EditorProfiler::EditorProfiler() {
 	//display_mode=DISPLAY_FRAME_TIME;
 
 	frame_delay = memnew(Timer);
-	frame_delay->set_wait_time(0.1);
-	frame_delay->set_one_shot(true);
+	frame_delay->set_time_interval(0.1);
+	frame_delay->set_repeat(false);
 	add_child(frame_delay);
 	frame_delay->connect("timeout", this, "_update_frame");
 
 	plot_delay = memnew(Timer);
-	plot_delay->set_wait_time(0.1);
-	plot_delay->set_one_shot(true);
+	plot_delay->set_time_interval(0.1);
+	plot_delay->set_repeat(false);
 	add_child(plot_delay);
 	plot_delay->connect("timeout", this, "_update_plot");
 

@@ -904,12 +904,12 @@ void LineEdit::cursor_set_blink_enabled(const bool p_enabled) {
 }
 
 float LineEdit::cursor_get_blink_speed() const {
-	return caret_blink_timer->get_wait_time();
+	return caret_blink_timer->get_time_interval();
 }
 
 void LineEdit::cursor_set_blink_speed(const float p_speed) {
 	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_timer->set_wait_time(p_speed);
+	caret_blink_timer->set_time_interval(p_speed);
 }
 
 void LineEdit::_reset_caret_blink_timer() {
@@ -1467,7 +1467,7 @@ LineEdit::LineEdit() {
 	caret_blink_enabled = false;
 	caret_blink_timer = memnew(Timer);
 	add_child(caret_blink_timer);
-	caret_blink_timer->set_wait_time(0.65);
+	caret_blink_timer->set_time_interval(0.65);
 	caret_blink_timer->connect("timeout", this, "_toggle_draw_caret");
 	cursor_set_blink_enabled(false);
 

@@ -4557,19 +4557,19 @@ void EditorNode::_start_dimming(bool p_dimming) {
 
 void EditorNode::_dim_timeout() {
 
-	_dim_time += _dim_timer->get_wait_time();
-	float wait_time = EditorSettings::get_singleton()->get("interface/editor/dim_transition_time");
+	_dim_time += _dim_timer->get_time_interval();
+	float time_interval = EditorSettings::get_singleton()->get("interface/editor/dim_transition_time");
 
 	float c = 1.0f - (float)EditorSettings::get_singleton()->get("interface/editor/dim_amount");
 
 	Color base = _dimming ? Color(1, 1, 1) : Color(c, c, c);
 	Color final = _dimming ? Color(c, c, c) : Color(1, 1, 1);
 
-	if (_dim_time + _dim_timer->get_wait_time() >= wait_time) {
+	if (_dim_time + _dim_timer->get_time_interval() >= time_interval) {
 		gui_base->set_modulate(final);
 		_dim_timer->stop();
 	} else {
-		gui_base->set_modulate(base.linear_interpolate(final, _dim_time / wait_time));
+		gui_base->set_modulate(base.linear_interpolate(final, _dim_time / time_interval));
 	}
 }
 
@@ -4969,8 +4969,8 @@ EditorNode::EditorNode() {
 
 	dock_drag_timer = memnew(Timer);
 	add_child(dock_drag_timer);
-	dock_drag_timer->set_wait_time(0.5);
-	dock_drag_timer->set_one_shot(true);
+	dock_drag_timer->set_time_interval(0.5);
+	dock_drag_timer->set_repeat(false);
 	dock_drag_timer->connect("timeout", this, "_save_docks");
 
 	top_split = memnew(VSplitContainer);
@@ -5812,7 +5812,7 @@ EditorNode::EditorNode() {
 	_dimming = false;
 	_dim_time = 0.0f;
 	_dim_timer = memnew(Timer);
-	_dim_timer->set_wait_time(0.01666f);
+	_dim_timer->set_time_interval(0.01666f);
 	_dim_timer->connect("timeout", this, "_dim_timeout");
 	add_child(_dim_timer);
 

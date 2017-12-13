@@ -1163,7 +1163,7 @@ void CodeTextEditor::_on_settings_change() {
 	text_editor->set_auto_brace_completion(
 			EDITOR_DEF("text_editor/completion/auto_brace_complete", true));
 
-	code_complete_timer->set_wait_time(
+	code_complete_timer->set_time_interval(
 			EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
 	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
@@ -1239,15 +1239,15 @@ CodeTextEditor::CodeTextEditor() {
 
 	idle = memnew(Timer);
 	add_child(idle);
-	idle->set_one_shot(true);
-	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2));
+	idle->set_repeat(false);
+	idle->set_time_interval(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2));
 
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
-	code_complete_timer->set_one_shot(true);
+	code_complete_timer->set_repeat(false);
 	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
 
-	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
+	code_complete_timer->set_time_interval(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
 	error = memnew(Label);
 	status_bar->add_child(error);
@@ -1315,8 +1315,8 @@ CodeTextEditor::CodeTextEditor() {
 	font_size = -1;
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
-	font_resize_timer->set_one_shot(true);
-	font_resize_timer->set_wait_time(0.07);
+	font_resize_timer->set_repeat(false);
+	font_resize_timer->set_time_interval(0.07);
 	font_resize_timer->connect("timeout", this, "_font_resize_timeout");
 
 	EditorSettings::get_singleton()->connect("settings_changed", this, "_on_settings_change");

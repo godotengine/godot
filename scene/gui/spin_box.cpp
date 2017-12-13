@@ -75,9 +75,9 @@ void SpinBox::_range_click_timeout() {
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
-		if (range_click_timer->is_one_shot()) {
-			range_click_timer->set_wait_time(0.075);
-			range_click_timer->set_one_shot(false);
+		if (!(range_click_timer->is_repeat())) {
+			range_click_timer->set_time_interval(0.075);
+			range_click_timer->set_repeat(true);
 			range_click_timer->start();
 		}
 
@@ -104,8 +104,8 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 				set_value(get_value() + (up ? get_step() : -get_step()));
 
-				range_click_timer->set_wait_time(0.6);
-				range_click_timer->set_one_shot(true);
+				range_click_timer->set_time_interval(0.6);
+				range_click_timer->set_repeat(false);
 				range_click_timer->start();
 
 				line_edit->grab_focus();

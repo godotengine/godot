@@ -435,9 +435,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	//get_cancel()->set_text("Close");
 
 	timer = memnew(Timer);
-	timer->set_wait_time(1.5);
+	timer->set_time_interval(1.5);
 	timer->connect("timeout", this, "_settings_save");
-	timer->set_one_shot(true);
+	timer->set_repeat(false);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed", this, "_settings_changed");
 	get_ok()->set_text(TTR("Close"));
