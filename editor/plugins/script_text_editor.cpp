@@ -537,10 +537,6 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	code_editor->get_text_edit()->cursor_set_line(state["row"]);
 	code_editor->get_text_edit()->set_v_scroll(state["scroll_position"]);
 	code_editor->get_text_edit()->grab_focus();
-
-	//int scroll_pos;
-	//int cursor_column;
-	//int cursor_row;
 }
 
 String ScriptTextEditor::get_name() {

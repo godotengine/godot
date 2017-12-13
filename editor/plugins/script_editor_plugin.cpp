@@ -1329,12 +1329,12 @@ void ScriptEditor::_members_overview_selected(int p_idx) {
 	if (!se) {
 		return;
 	}
-	Dictionary state;
-	state["scroll_position"] = members_overview->get_item_metadata(p_idx);
+	// Go to the member's line and reset the cursor column. We can't just change scroll_position
+	// directly, since code might be folded.
+	se->goto_line(members_overview->get_item_metadata(p_idx));
+	Dictionary state = se->get_edit_state();
 	state["column"] = 0;
-	state["row"] = members_overview->get_item_metadata(p_idx);
 	se->set_edit_state(state);
-	se->ensure_focus();
 }
 
 void ScriptEditor::_help_overview_selected(int p_idx) {
