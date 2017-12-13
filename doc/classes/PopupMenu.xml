@@ -379,6 +379,16 @@
 				Sets the metadata of an item, which might be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
 			</description>
 		</method>
+		<method name="set_item_multistate">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="state" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_shortcut">
 			<return type="void">
 			</return>
@@ -387,16 +397,6 @@
 			<argument index="1" name="shortcut" type="ShortCut">
 			</argument>
 			<argument index="2" name="global" type="bool" default="false">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_item_multistate">
-			<return type="void">
-			</return>
-			<argument index="0" name="idx" type="int">
-			</argument>
-			<argument index="1" name="state" type="int">
 			</argument>
 			<description>
 			</description>

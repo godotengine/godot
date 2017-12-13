@@ -233,7 +233,6 @@ void AnimationPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			//stop_all();
 			clear_caches();
 		} break;
 	}
@@ -738,7 +737,7 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 	ERR_FAIL_COND(!animation_set.has(p_name));
 
-	stop_all();
+	stop();
 	_unref_anim(animation_set[p_name].animation);
 	animation_set.erase(p_name);
 
@@ -775,9 +774,7 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 	ERR_FAIL_COND(String(p_new_name).find("/") != -1 || String(p_new_name).find(":") != -1);
 	ERR_FAIL_COND(animation_set.has(p_new_name));
 
-	//print_line("Rename anim: "+String(p_name)+" name: "+String(p_new_name));
-
-	stop_all();
+	stop();
 	AnimationData ad = animation_set[p_name];
 	ad.name = p_new_name;
 	animation_set.erase(p_name);
@@ -1017,13 +1014,6 @@ void AnimationPlayer::stop(bool p_reset) {
 	_set_process(false);
 	queued.clear();
 	playing = false;
-}
-
-void AnimationPlayer::stop_all() {
-
-	stop();
-
-	_set_process(false); // always process when starting an animation
 }
 
 void AnimationPlayer::set_speed_scale(float p_speed) {
@@ -1307,8 +1297,8 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("stop", "reset"), &AnimationPlayer::stop, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("stop_all"), &AnimationPlayer::stop_all);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
+
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);
 	ClassDB::bind_method(D_METHOD("queue", "name"), &AnimationPlayer::queue);
@@ -1326,9 +1316,6 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root", "path"), &AnimationPlayer::set_root);
 	ClassDB::bind_method(D_METHOD("get_root"), &AnimationPlayer::get_root);
 
-	ClassDB::bind_method(D_METHOD("seek", "seconds", "update"), &AnimationPlayer::seek, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
-
 	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationPlayer::find_animation);
 
 	ClassDB::bind_method(D_METHOD("clear_caches"), &AnimationPlayer::clear_caches);
@@ -1339,15 +1326,13 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);
 	ClassDB::bind_method(D_METHOD("get_current_animation_length"), &AnimationPlayer::get_current_animation_length);
 
+	ClassDB::bind_method(D_METHOD("seek", "seconds", "update"), &AnimationPlayer::seek, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
+
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
-
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "autoplay"), "set_autoplay", "get_autoplay");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_animation"), "set_current_animation", "get_current_animation");
 
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
