@@ -232,8 +232,11 @@
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
+			<argument index="1" name="compare" type="int" default="STRING_COMPARE_DEFAULT">
+			</argument>
 			<description>
 				Returns [code]true[/code] if the string begins with the given string.
+                Parameter [code]compare[/code] can accept STRING_COMPARE_DEFAULT (case-sensitive) or STRING_COMPARE_IGNORE_CASE (case-insensitive), to allow you control whether you want to ignore case or not 
 			</description>
 		</method>
 		<method name="bigrams">
@@ -291,8 +294,11 @@
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
+			<argument index="1" name="compare" type="int" default="STRING_COMPARE_DEFAULT">
+			</argument>
 			<description>
 				Returns [code]true[/code] if the string ends with the given string.
+                Parameter [code]compare[/code] can accept STRING_COMPARE_DEFAULT (case-sensitive) or STRING_COMPARE_IGNORE_CASE (case-insensitive), to allow you control whether you want to ignore case or not 
 			</description>
 		</method>
 		<method name="erase">
