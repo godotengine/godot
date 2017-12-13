@@ -34,7 +34,8 @@ env_etc.Append(CPPPATH=[thirdparty_dir])
 env_etc.add_source_files(env.modules_sources, "*.cpp")
 
 # upstream uses c++11
-env_etc.Append(CCFLAGS="-std=gnu++11")
+if (not env_etc.msvc):
+	env_etc.Append(CCFLAGS="-std=c++11")
 # -ffast-math seems to be incompatible with ec2comp on recent versions of
 # GCC and Clang
 if '-ffast-math' in env_etc['CCFLAGS']:
