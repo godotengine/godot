@@ -412,8 +412,12 @@ void StreamPeerOpenSSL::_print_error(int err) {
 
 	err = SSL_get_error(ssl, err);
 	switch (err) {
-		case SSL_ERROR_NONE: ERR_PRINT("NO ERROR: The TLS/SSL I/O operation completed"); break;
-		case SSL_ERROR_ZERO_RETURN: ERR_PRINT("The TLS/SSL connection has been closed.");
+		case SSL_ERROR_NONE:
+			ERR_PRINT("NO ERROR: The TLS/SSL I/O operation completed");
+			break;
+		case SSL_ERROR_ZERO_RETURN:
+			ERR_PRINT("The TLS/SSL connection has been closed.");
+			break;
 		case SSL_ERROR_WANT_READ:
 		case SSL_ERROR_WANT_WRITE:
 			ERR_PRINT("The operation did not complete.");
