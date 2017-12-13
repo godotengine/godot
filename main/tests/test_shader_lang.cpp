@@ -318,6 +318,7 @@ MainLoop *test() {
 
 	Map<StringName, SL::FunctionInfo> dt;
 	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
+	dt["fragment"].readonly_built_ins = Vector<StringName>();
 	dt["fragment"].can_discard = true;
 
 	Set<String> rm;
