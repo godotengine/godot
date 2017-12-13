@@ -360,6 +360,7 @@ public:
 
 	void ensure_focus_current();
 	void apply_scripts() const;
+	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 
 	void ensure_select_current();
 
