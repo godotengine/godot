@@ -55,7 +55,6 @@ class ConnectDialog : public ConfirmationDialog {
 	LineEdit *dst_path;
 	LineEdit *dst_method;
 	SceneTreeEditor *tree;
-	//MenuButton *dst_method_list;
 	OptionButton *type_list;
 	CheckButton *deferred;
 	CheckButton *oneshot;
@@ -66,7 +65,6 @@ class ConnectDialog : public ConfirmationDialog {
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
-	void _dst_method_list_selected(int p_idx);
 	void _add_bind();
 	void _remove_bind();
 
@@ -84,8 +82,6 @@ public:
 	void set_dst_method(const StringName &p_method);
 	void set_dst_node(Node *p_node);
 
-	//Button *get_ok() { return ok; }
-	//Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
 
 	ConnectDialog();

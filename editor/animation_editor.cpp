@@ -324,7 +324,7 @@ public:
 			int existing = animation->track_find_key(track, new_time, true);
 
 			setting = true;
-			undo_redo->create_action(TTR("Move Add Key"), UndoRedo::MERGE_ENDS);
+			undo_redo->create_action(TTR("Anim Change Keyframe Time"), UndoRedo::MERGE_ENDS);
 
 			Variant val = animation->track_get_key_value(track, key);
 			float trans = animation->track_get_key_transition(track, key);
@@ -391,7 +391,7 @@ public:
 					}
 
 					setting = true;
-					undo_redo->create_action(TTR("Anim Change Value"), UndoRedo::MERGE_ENDS);
+					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 					Variant prev = animation->track_get_key_value(track, key);
 					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
