@@ -757,6 +757,46 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty) const
 	return ret;
 }
 
+Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int maxsplit) const {
+
+	Vector<String> ret;
+	const int len = length();
+	int from = len;
+
+	while (true) {
+
+		int end = rfind(p_splitter, from);
+		if (end < 0)
+			end = 0;
+
+		if (p_allow_empty || (end < from)) {
+			const String str = substr(end > 0 ? end + p_splitter.length() : end, end > 0 ? from - end : from + 2);
+
+			if (maxsplit <= 0) {
+				ret.push_back(str);
+			} else if (maxsplit > 0) {
+
+				// Put rest of the string and leave cycle.
+				if (maxsplit == ret.size()) {
+					ret.push_back(substr(0, from + 2));
+					break;
+				}
+
+				// Otherwise, push items until positive limit is reached.
+				ret.push_back(str);
+			}
+		}
+
+		if (end == 0)
+			break;
+
+		from = end - p_splitter.length();
+	}
+
+	ret.invert();
+	return ret;
+}
+
 Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty) const {
 
 	Vector<float> ret;
