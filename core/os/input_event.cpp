@@ -897,7 +897,7 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 
 String InputEventAction::as_text() const {
 
-	return "InputEventAction : action=" + action + ", pressed=(" + (pressed ? "true" : "false");
+	return "InputEventAction : action=" + action + ", pressed=" + (pressed ? "true" : "false");
 }
 
 void InputEventAction::_bind_methods() {
@@ -916,6 +916,51 @@ void InputEventAction::_bind_methods() {
 
 InputEventAction::InputEventAction() {
 	pressed = false;
+}
+/////////////////////////////
+
+void InputEventAxis::set_axis(const StringName &p_axis) {
+	axis = p_axis;
+}
+
+StringName InputEventAxis::get_axis() const {
+	return axis;
+}
+
+void InputEventAxis::set_value(float p_value) {
+	value = p_value;
+}
+
+float InputEventAxis::get_value() const {
+	return value;
+}
+
+bool InputEventAxis::is_axis(const StringName &p_axis) const {
+
+	return axis == p_axis;
+}
+
+String InputEventAxis::as_text() const {
+
+	return "InputEventAxis : axis=" + axis + ", pressed=" + (is_pressed() ? "true" : "false") + ", value=" + rtos(value);
+}
+
+void InputEventAxis::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventAxis::set_axis);
+	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventAxis::get_axis);
+
+	ClassDB::bind_method(D_METHOD("set_value", "value"), &InputEventAxis::set_value);
+	ClassDB::bind_method(D_METHOD("get_value"), &InputEventAxis::get_value);
+
+	ClassDB::bind_method(D_METHOD("is_axis", "name"), &InputEventAxis::is_axis);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "axis"), "set_axis", "get_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "value"), "set_value", "get_value");
+}
+
+InputEventAxis::InputEventAxis() {
+	value = 0.0f;
 }
 /////////////////////////////
 

@@ -467,6 +467,36 @@ public:
 	InputEventAction();
 };
 
+class InputEventAxis : public InputEvent {
+
+	GDCLASS(InputEventAxis, InputEvent)
+
+	StringName axis;
+	float value;
+	bool pressed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_axis(const StringName &p_axis);
+	StringName get_axis() const;
+
+	void set_value(float p_value);
+	float get_value() const;
+	virtual bool is_pressed() const { return get_value() != 0.0f; };
+
+	bool is_axis(const StringName &p_action) const;
+	virtual bool is_action(const StringName &p_action) const {
+		return is_axis(p_action);
+	};
+
+	virtual bool is_action_type() const { return true; }
+	virtual String as_text() const;
+
+	InputEventAxis();
+};
+
 class InputEventGesture : public InputEventWithModifiers {
 
 	GDCLASS(InputEventGesture, InputEventWithModifiers)
