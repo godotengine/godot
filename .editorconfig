@@ -8,6 +8,10 @@ indent_style = tab
 [*.{cpp,hpp,c,h,mm}]
 trim_trailing_whitespace = true
 
+[*.py]
+indent_style = space
+indent_size = 4
+
 [.travis.yml]
 indent_style = space
 indent_size = 2

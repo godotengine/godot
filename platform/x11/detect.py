@@ -266,8 +266,8 @@ def configure(env):
 
 
     if (env["openmp"]):
-	env.Append(CPPFLAGS=['-fopenmp'])
-	env.Append(LIBS=['gomp'])
+        env.Append(CPPFLAGS=['-fopenmp'])
+        env.Append(LIBS=['gomp'])
 
     if env['use_static_cpp']:
         env.Append(LINKFLAGS=['-static-libstdc++'])
