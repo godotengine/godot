@@ -265,9 +265,10 @@ def configure(env):
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
 
 
-    if (env["openmp"]):
+    if env["openmp"]:
         env.Append(CPPFLAGS=['-fopenmp'])
-        env.Append(LIBS=['gomp'])
+        if not env['use_llvm']:
+            env.Append(LIBS=['gomp'])
 
     if env['use_static_cpp']:
         env.Append(LINKFLAGS=['-static-libstdc++'])
