@@ -1069,6 +1069,38 @@ public:
 	virtual RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression);
 	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data);
 
+	/* LIGHTMAP CAPTURE */
+
+	virtual RID lightmap_capture_create();
+	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds);
+	virtual AABB lightmap_capture_get_bounds(RID p_capture) const;
+	virtual void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree);
+	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const;
+	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform);
+	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const;
+	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv);
+	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const;
+
+	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy);
+	virtual float lightmap_capture_get_energy(RID p_capture) const;
+
+	virtual const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const;
+
+	struct LightmapCapture : public Instantiable {
+
+		PoolVector<LightmapCaptureOctree> octree;
+		AABB bounds;
+		Transform cell_xform;
+		int cell_subdiv;
+		float energy;
+		LightmapCapture() {
+			energy = 1.0;
+			cell_subdiv = 1;
+		}
+	};
+
+	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
+
 	/* PARTICLES */
 
 	struct Particles : public GeometryOwner {

@@ -287,6 +287,8 @@ public:
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
+	void force_process_input();
+
 	virtual Error move_to_trash(const String &p_path);
 
 	OS_Windows(HINSTANCE _hInstance);

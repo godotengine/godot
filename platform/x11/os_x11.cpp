@@ -2264,6 +2264,13 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 	XFlush(x11_display);
 }
 
+void OS_X11::force_process_input() {
+	process_xevents(); // get rid of pending events
+#ifdef JOYDEV_ENABLED
+	joypad->process_joypads();
+#endif
+}
+
 void OS_X11::run() {
 
 	force_quit = false;

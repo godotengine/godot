@@ -279,6 +279,7 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
+	virtual void force_process_input();
 	void run();
 
 	void disable_crash_handler();

@@ -163,7 +163,7 @@ void ProgressDialog::_popup() {
 	popup_centered(ms);
 }
 
-void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps) {
+void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
 	ERR_FAIL_COND(tasks.has(p_task));
 	Task t;
@@ -180,17 +180,24 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	main->add_child(t.vb);
 
 	tasks[p_task] = t;
+	if (p_can_cancel) {
+		cancel_hb->show();
+	} else {
+		cancel_hb->hide();
+	}
+	cancel_hb->raise();
+	cancelled = false;
 	_popup();
 }
 
-void ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
+bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
 
-	ERR_FAIL_COND(!tasks.has(p_task));
+	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
 
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
 		if (tus - last_progress_tick < 50000) //50ms
-			return;
+			return cancelled;
 	}
 
 	Task &t = tasks[p_task];
@@ -201,7 +208,11 @@ void ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 
 	t.state->set_text(p_state);
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
+	if (cancel_hb->is_visible()) {
+		OS::get_singleton()->force_process_input();
+	}
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
+	return cancelled;
 }
 
 void ProgressDialog::end_task(const String &p_task) {
@@ -218,6 +229,14 @@ void ProgressDialog::end_task(const String &p_task) {
 		_popup();
 }
 
+void ProgressDialog::_cancel_pressed() {
+	cancelled = true;
+}
+
+void ProgressDialog::_bind_methods() {
+	ClassDB::bind_method("_cancel_pressed", &ProgressDialog::_cancel_pressed);
+}
+
 ProgressDialog::ProgressDialog() {
 
 	main = memnew(VBoxContainer);
@@ -226,4 +245,13 @@ ProgressDialog::ProgressDialog() {
 	set_exclusive(true);
 	last_progress_tick = 0;
 	singleton = this;
+	cancel_hb = memnew(HBoxContainer);
+	main->add_child(cancel_hb);
+	cancel_hb->hide();
+	cancel = memnew(Button);
+	cancel_hb->add_spacer();
+	cancel_hb->add_child(cancel);
+	cancel->set_text(TTR("Cancel"));
+	cancel_hb->add_spacer();
+	cancel->connect("pressed", this, "_cancel_pressed");
 }

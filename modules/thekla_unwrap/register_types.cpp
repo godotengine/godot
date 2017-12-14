@@ -42,7 +42,7 @@ bool thekla_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		input_mesh.face_array[i].vertex_index[0] = p_indices[i * 3 + 0];
 		input_mesh.face_array[i].vertex_index[1] = p_indices[i * 3 + 1];
 		input_mesh.face_array[i].vertex_index[2] = p_indices[i * 3 + 2];
-		printf("face %i - %i, %i, %i - mat %i\n", i, input_mesh.face_array[i].vertex_index[0], input_mesh.face_array[i].vertex_index[1], input_mesh.face_array[i].vertex_index[2], p_face_materials[i]);
+		//printf("face %i - %i, %i, %i - mat %i\n", i, input_mesh.face_array[i].vertex_index[0], input_mesh.face_array[i].vertex_index[1], input_mesh.face_array[i].vertex_index[2], p_face_materials[i]);
 		input_mesh.face_array[i].material_index = p_face_materials[i];
 	}
 	input_mesh.vertex_array = new Thekla::Atlas_Input_Vertex[p_vertex_count];
@@ -54,8 +54,8 @@ bool thekla_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		}
 		input_mesh.vertex_array[i].uv[0] = 0;
 		input_mesh.vertex_array[i].uv[1] = 0;
-		printf("vertex %i - %f, %f, %f\n", i, input_mesh.vertex_array[i].position[0], input_mesh.vertex_array[i].position[1], input_mesh.vertex_array[i].position[2]);
-		printf("normal %i - %f, %f, %f\n", i, input_mesh.vertex_array[i].normal[0], input_mesh.vertex_array[i].normal[1], input_mesh.vertex_array[i].normal[2]);
+		//printf("vertex %i - %f, %f, %f\n", i, input_mesh.vertex_array[i].position[0], input_mesh.vertex_array[i].position[1], input_mesh.vertex_array[i].position[2]);
+		//printf("normal %i - %f, %f, %f\n", i, input_mesh.vertex_array[i].normal[0], input_mesh.vertex_array[i].normal[1], input_mesh.vertex_array[i].normal[2]);
 	}
 	input_mesh.face_count = p_index_count / 3;
 	input_mesh.vertex_count = p_vertex_count;
@@ -65,6 +65,7 @@ bool thekla_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	Thekla::atlas_set_default_options(&options);
 	options.packer_options.witness.packing_quality = 1;
 	options.packer_options.witness.texel_area = 1.0 / p_texel_size;
+	options.packer_options.witness.conservative = true;
 
 	//generate
 	Thekla::Atlas_Error err;

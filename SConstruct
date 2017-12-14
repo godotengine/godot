@@ -168,6 +168,7 @@ opts.Add(BoolVariable('vsproj', "Generate Visual Studio Project.", False))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('progress', "Show a progress indicator during build", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add(BoolVariable('openmp', "If yes, enable OpenMP", True))
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_enet', "Use the builtin enet library", True))

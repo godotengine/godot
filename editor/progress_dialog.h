@@ -31,6 +31,7 @@
 #define PROGRESS_DIALOG_H
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/progress_bar.h"
@@ -76,6 +77,8 @@ class ProgressDialog : public Popup {
 		ProgressBar *progress;
 		Label *state;
 	};
+	HBoxContainer *cancel_hb;
+	Button *cancel;
 
 	Map<String, Task> tasks;
 	VBoxContainer *main;
@@ -84,13 +87,17 @@ class ProgressDialog : public Popup {
 	static ProgressDialog *singleton;
 	void _popup();
 
+	void _cancel_pressed();
+	bool cancelled;
+
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	static ProgressDialog *get_singleton() { return singleton; }
-	void add_task(const String &p_task, const String &p_label, int p_steps);
-	void task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_redraw = true);
+	void add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
+	bool task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_redraw = true);
 	void end_task(const String &p_task);
 
 	ProgressDialog();

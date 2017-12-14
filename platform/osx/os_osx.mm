@@ -1971,6 +1971,13 @@ void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 	input->parse_input_event(ev);
 }
 
+void OS_OSX::force_process_input() {
+
+	process_events(); // get rid of pending events
+	joypad_osx->process_joypads();
+
+}
+
 void OS_OSX::run() {
 
 	force_quit = false;

@@ -294,6 +294,22 @@ public:
 	FUNC2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
 	FUNC1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 
+	/* LIGHTMAP CAPTURE */
+
+	FUNCRID(lightmap_capture)
+
+	FUNC2(lightmap_capture_set_bounds, RID, const AABB &)
+	FUNC1RC(AABB, lightmap_capture_get_bounds, RID)
+
+	FUNC2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
+	FUNC1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
+	FUNC2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
+	FUNC1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
+	FUNC2(lightmap_capture_set_octree_cell_subdiv, RID, int)
+	FUNC1RC(int, lightmap_capture_get_octree_cell_subdiv, RID)
+	FUNC2(lightmap_capture_set_energy, RID, float)
+	FUNC1RC(float, lightmap_capture_get_energy, RID)
+
 	/* PARTICLES */
 
 	FUNCRID(particles)
@@ -425,6 +441,8 @@ public:
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
+	FUNC3(instance_set_use_lightmap, RID, RID, RID)
+
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 
 	FUNC2(instance_attach_skeleton, RID, RID)

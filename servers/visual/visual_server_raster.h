@@ -361,6 +361,24 @@ public:
 	BIND2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
 	BIND1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 
+	/* LIGHTMAP CAPTURE */
+
+	BIND0R(RID, lightmap_capture_create)
+
+	BIND2(lightmap_capture_set_bounds, RID, const AABB &)
+	BIND1RC(AABB, lightmap_capture_get_bounds, RID)
+
+	BIND2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
+	BIND1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
+
+	BIND2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
+	BIND1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
+	BIND2(lightmap_capture_set_octree_cell_subdiv, RID, int)
+	BIND1RC(int, lightmap_capture_get_octree_cell_subdiv, RID)
+
+	BIND2(lightmap_capture_set_energy, RID, float)
+	BIND1RC(float, lightmap_capture_get_energy, RID)
+
 	/* PARTICLES */
 
 	BIND0R(RID, particles_create)
@@ -504,6 +522,7 @@ public:
 	BIND3(instance_set_blend_shape_weight, RID, int, float)
 	BIND3(instance_set_surface_material, RID, int, RID)
 	BIND2(instance_set_visible, RID, bool)
+	BIND3(instance_set_use_lightmap, RID, RID, RID)
 
 	BIND2(instance_set_custom_aabb, RID, AABB)
 

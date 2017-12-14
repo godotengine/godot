@@ -133,6 +133,19 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 		geom->reflection_dirty = true;
 
 		return E; //this element should make freeing faster
+	} else if (B->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE && ((1 << A->base_type) & VS::INSTANCE_GEOMETRY_MASK)) {
+
+		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(B->base_data);
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
+
+		InstanceLightmapCaptureData::PairInfo pinfo;
+		pinfo.geometry = A;
+		pinfo.L = geom->lightmap_captures.push_back(B);
+
+		List<InstanceLightmapCaptureData::PairInfo>::Element *E = lightmap_capture->geometries.push_back(pinfo);
+		((VisualServerScene *)p_self)->_instance_queue_update(A, false, false); //need to update capture
+
+		return E; //this element should make freeing faster
 	} else if (B->base_type == VS::INSTANCE_GI_PROBE && ((1 << A->base_type) & VS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
@@ -193,6 +206,16 @@ void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance
 		reflection_probe->geometries.erase(E);
 
 		geom->reflection_dirty = true;
+	} else if (B->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE && ((1 << A->base_type) & VS::INSTANCE_GEOMETRY_MASK)) {
+
+		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(B->base_data);
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
+
+		List<InstanceLightmapCaptureData::PairInfo>::Element *E = reinterpret_cast<List<InstanceLightmapCaptureData::PairInfo>::Element *>(udata);
+
+		geom->lightmap_captures.erase(E->get().L);
+		lightmap_capture->geometries.erase(E);
+		((VisualServerScene *)p_self)->_instance_queue_update(A, false, false); //need to update capture
 
 	} else if (B->base_type == VS::INSTANCE_GI_PROBE && ((1 << A->base_type) & VS::INSTANCE_GEOMETRY_MASK)) {
 
@@ -344,6 +367,14 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 					reflection_probe_render_list.remove(&reflection_probe->update_list);
 				}
 			} break;
+			case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+
+				InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(instance->base_data);
+				//erase dependencies, since no longer a lightmap
+				while (lightmap_capture->users.front()) {
+					instance_set_use_lightmap(lightmap_capture->users.front()->get()->self, RID(), RID());
+				}
+			} break;
 			case VS::INSTANCE_GI_PROBE: {
 
 				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
@@ -353,6 +384,14 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				}
 				if (gi_probe->dynamic.probe_data.is_valid()) {
 					VSG::storage->free(gi_probe->dynamic.probe_data);
+				}
+
+				if (instance->lightmap_capture) {
+					Instance *capture = (Instance *)instance->lightmap_capture;
+					InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(capture->base_data);
+					lightmap_capture->users.erase(instance);
+					instance->lightmap_capture = NULL;
+					instance->lightmap = RID();
 				}
 
 				VSG::scene_render->free(gi_probe->probe_instance);
@@ -411,6 +450,12 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = reflection_probe;
 
 				reflection_probe->instance = VSG::scene_render->reflection_probe_instance_create(p_base);
+			} break;
+			case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+
+				InstanceLightmapCaptureData *lightmap_capture = memnew(InstanceLightmapCaptureData);
+				instance->base_data = lightmap_capture;
+				//lightmap_capture->instance = VSG::scene_render->lightmap_capture_instance_create(p_base);
 			} break;
 			case VS::INSTANCE_GI_PROBE: {
 
@@ -591,6 +636,12 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 			}
 
 		} break;
+		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+			if (instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+			}
+
+		} break;
 		case VS::INSTANCE_GI_PROBE: {
 			if (instance->octree_id && instance->scenario) {
 				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
@@ -599,9 +650,33 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 		} break;
 	}
 }
-
 inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
 	return p_type == VS::INSTANCE_MESH || p_type == VS::INSTANCE_MULTIMESH || p_type == VS::INSTANCE_PARTICLES || p_type == VS::INSTANCE_IMMEDIATE;
+}
+
+void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+	ERR_FAIL_COND(!is_geometry_instance(instance->base_type));
+
+	if (instance->lightmap_capture) {
+		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
+		lightmap_capture->users.erase(instance);
+		instance->lightmap = RID();
+		instance->lightmap_capture = NULL;
+	}
+
+	if (p_lightmap_instance.is_valid()) {
+		Instance *lightmap_instance = instance_owner.get(p_lightmap_instance);
+		ERR_FAIL_COND(!lightmap_instance);
+		ERR_FAIL_COND(lightmap_instance->base_type != VS::INSTANCE_LIGHTMAP_CAPTURE);
+		instance->lightmap_capture = lightmap_instance;
+
+		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
+		lightmap_capture->users.insert(instance);
+		instance->lightmap = p_lightmap;
+	}
 }
 
 void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
@@ -811,6 +886,15 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 				light->shadow_dirty = true;
 			}
 		}
+
+		if (!p_instance->lightmap_capture && geom->lightmap_captures.size()) {
+			//affected by lightmap captures, must update capture info!
+			_update_instance_lightmap_captures(p_instance);
+		} else {
+			if (!p_instance->lightmap_capture_data.empty()) {
+				!p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
+			}
+		}
 	}
 
 	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
@@ -832,7 +916,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		uint32_t pairable_mask = 0;
 		bool pairable = false;
 
-		if (p_instance->base_type == VS::INSTANCE_LIGHT || p_instance->base_type == VS::INSTANCE_REFLECTION_PROBE) {
+		if (p_instance->base_type == VS::INSTANCE_LIGHT || p_instance->base_type == VS::INSTANCE_REFLECTION_PROBE || p_instance->base_type == VS::INSTANCE_LIGHTMAP_CAPTURE) {
 
 			pairable_mask = p_instance->visible ? VS::INSTANCE_GEOMETRY_MASK : 0;
 			pairable = true;
@@ -917,6 +1001,11 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->gi_probe_get_bounds(p_instance->base);
 
 		} break;
+		case VisualServer::INSTANCE_LIGHTMAP_CAPTURE: {
+
+			new_aabb = VSG::storage->lightmap_capture_get_bounds(p_instance->base);
+
+		} break;
 
 		default: {}
 	}
@@ -926,6 +1015,237 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 		new_aabb.grow_by(p_instance->extra_margin);
 
 	p_instance->aabb = new_aabb;
+}
+
+_FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage::LightmapCaptureOctree *p_octree, int p_cell_subdiv, const Vector3 &p_pos, const Vector3 &p_dir, float p_level, Vector3 &r_color, float &r_alpha) {
+
+	static const Vector3 aniso_normal[6] = {
+		Vector3(-1, 0, 0),
+		Vector3(1, 0, 0),
+		Vector3(0, -1, 0),
+		Vector3(0, 1, 0),
+		Vector3(0, 0, -1),
+		Vector3(0, 0, 1)
+	};
+
+	int size = 1 << (p_cell_subdiv - 1);
+
+	int clamp_v = size - 1;
+	//first of all, clamp
+	Vector3 pos;
+	pos.x = CLAMP(p_pos.x, 0, clamp_v);
+	pos.y = CLAMP(p_pos.y, 0, clamp_v);
+	pos.z = CLAMP(p_pos.z, 0, clamp_v);
+
+	float level = (p_cell_subdiv - 1) - p_level;
+
+	int target_level;
+	float level_filter;
+	if (level <= 0.0) {
+		level_filter = 0;
+		target_level = 0;
+	} else {
+		target_level = Math::ceil(level);
+		level_filter = target_level - level;
+	}
+
+	Vector3 color[2][8];
+	float alpha[2][8];
+	zeromem(alpha, sizeof(float) * 2 * 8);
+
+	//find cell at given level first
+
+	for (int c = 0; c < 2; c++) {
+
+		int current_level = MAX(0, target_level - c);
+		int level_cell_size = (1 << (p_cell_subdiv - 1)) >> current_level;
+
+		for (int n = 0; n < 8; n++) {
+
+			int x = int(pos.x);
+			int y = int(pos.y);
+			int z = int(pos.z);
+
+			if (n & 1)
+				x += level_cell_size;
+			if (n & 2)
+				y += level_cell_size;
+			if (n & 4)
+				z += level_cell_size;
+
+			int ofs_x = 0;
+			int ofs_y = 0;
+			int ofs_z = 0;
+
+			x = CLAMP(x, 0, clamp_v);
+			y = CLAMP(y, 0, clamp_v);
+			z = CLAMP(z, 0, clamp_v);
+
+			int half = size / 2;
+			uint32_t cell = 0;
+			for (int i = 0; i < current_level; i++) {
+
+				const RasterizerStorage::LightmapCaptureOctree *bc = &p_octree[cell];
+
+				int child = 0;
+				if (x >= ofs_x + half) {
+					child |= 1;
+					ofs_x += half;
+				}
+				if (y >= ofs_y + half) {
+					child |= 2;
+					ofs_y += half;
+				}
+				if (z >= ofs_z + half) {
+					child |= 4;
+					ofs_z += half;
+				}
+
+				cell = bc->children[child];
+				if (cell == RasterizerStorage::LightmapCaptureOctree::CHILD_EMPTY)
+					break;
+
+				half >>= 1;
+			}
+
+			if (cell == RasterizerStorage::LightmapCaptureOctree::CHILD_EMPTY) {
+				alpha[c][n] = 0;
+			} else {
+				alpha[c][n] = p_octree[cell].alpha;
+
+				for (int i = 0; i < 6; i++) {
+					//anisotropic read light
+					float amount = p_dir.dot(aniso_normal[i]);
+					if (amount < 0)
+						amount = 0;
+					color[c][n].x += p_octree[cell].light[i][0] / 1024.0 * amount;
+					color[c][n].y += p_octree[cell].light[i][1] / 1024.0 * amount;
+					color[c][n].z += p_octree[cell].light[i][2] / 1024.0 * amount;
+				}
+			}
+
+			//print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
+		}
+	}
+
+	float target_level_size = size >> target_level;
+	Vector3 pos_fract[2];
+
+	pos_fract[0].x = Math::fmod(pos.x, target_level_size) / target_level_size;
+	pos_fract[0].y = Math::fmod(pos.y, target_level_size) / target_level_size;
+	pos_fract[0].z = Math::fmod(pos.z, target_level_size) / target_level_size;
+
+	target_level_size = size >> MAX(0, target_level - 1);
+
+	pos_fract[1].x = Math::fmod(pos.x, target_level_size) / target_level_size;
+	pos_fract[1].y = Math::fmod(pos.y, target_level_size) / target_level_size;
+	pos_fract[1].z = Math::fmod(pos.z, target_level_size) / target_level_size;
+
+	float alpha_interp[2];
+	Vector3 color_interp[2];
+
+	for (int i = 0; i < 2; i++) {
+
+		Vector3 color_x00 = color[i][0].linear_interpolate(color[i][1], pos_fract[i].x);
+		Vector3 color_xy0 = color[i][2].linear_interpolate(color[i][3], pos_fract[i].x);
+		Vector3 blend_z0 = color_x00.linear_interpolate(color_xy0, pos_fract[i].y);
+
+		Vector3 color_x0z = color[i][4].linear_interpolate(color[i][5], pos_fract[i].x);
+		Vector3 color_xyz = color[i][6].linear_interpolate(color[i][7], pos_fract[i].x);
+		Vector3 blend_z1 = color_x0z.linear_interpolate(color_xyz, pos_fract[i].y);
+
+		color_interp[i] = blend_z0.linear_interpolate(blend_z1, pos_fract[i].z);
+
+		float alpha_x00 = Math::lerp(alpha[i][0], alpha[i][1], pos_fract[i].x);
+		float alpha_xy0 = Math::lerp(alpha[i][2], alpha[i][3], pos_fract[i].x);
+		float alpha_z0 = Math::lerp(alpha_x00, alpha_xy0, pos_fract[i].y);
+
+		float alpha_x0z = Math::lerp(alpha[i][4], alpha[i][5], pos_fract[i].x);
+		float alpha_xyz = Math::lerp(alpha[i][6], alpha[i][7], pos_fract[i].x);
+		float alpha_z1 = Math::lerp(alpha_x0z, alpha_xyz, pos_fract[i].y);
+
+		alpha_interp[i] = Math::lerp(alpha_z0, alpha_z1, pos_fract[i].z);
+	}
+
+	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
+	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
+
+	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
+}
+
+_FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
+
+	float bias = 0.0; //no need for bias here
+	float max_distance = (Vector3(1, 1, 1) * (1 << (p_cell_subdiv - 1))).length();
+
+	float dist = bias;
+	float alpha = 0.0;
+	Vector3 color;
+
+	Vector3 scolor;
+	float salpha;
+
+	while (dist < max_distance && alpha < 0.95) {
+		float diameter = MAX(1.0, 2.0 * p_aperture * dist);
+		_light_capture_sample_octree(p_octree, p_cell_subdiv, p_pos + dist * p_dir, p_dir, log2(diameter), scolor, salpha);
+		float a = (1.0 - alpha);
+		color += scolor * a;
+		alpha += a * salpha;
+		dist += diameter * 0.5;
+	}
+
+	return Color(color.x, color.y, color.z, alpha);
+}
+
+void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance) {
+
+	InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
+
+	static const Vector3 cone_traces[12] = {
+		Vector3(0, 0, 1),
+		Vector3(0.866025, 0, 0.5),
+		Vector3(0.267617, 0.823639, 0.5),
+		Vector3(-0.700629, 0.509037, 0.5),
+		Vector3(-0.700629, -0.509037, 0.5),
+		Vector3(0.267617, -0.823639, 0.5),
+		Vector3(0, 0, -1),
+		Vector3(0.866025, 0, -0.5),
+		Vector3(0.267617, 0.823639, -0.5),
+		Vector3(-0.700629, 0.509037, -0.5),
+		Vector3(-0.700629, -0.509037, -0.5),
+		Vector3(0.267617, -0.823639, -0.5)
+	};
+
+	float cone_aperture = 0.577; // tan(angle) 60 degrees
+
+	if (p_instance->lightmap_capture_data.empty()) {
+		p_instance->lightmap_capture_data.resize(12);
+	}
+
+	//print_line("update captures for pos: " + p_instance->transform.origin);
+
+	zeromem(p_instance->lightmap_capture_data.ptrw(), 12 * sizeof(Color));
+	//this could use some sort of blending..
+	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
+		const PoolVector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
+		//print_line("octree size: " + itos(octree->size()));
+		if (octree->size() == 0)
+			continue;
+		Transform to_cell_xform = VSG::storage->lightmap_capture_get_octree_cell_transform(E->get()->base);
+		int cell_subdiv = VSG::storage->lightmap_capture_get_octree_cell_subdiv(E->get()->base);
+		to_cell_xform = to_cell_xform * E->get()->transform.affine_inverse();
+
+		PoolVector<RasterizerStorage::LightmapCaptureOctree>::Read octree_r = octree->read();
+
+		Vector3 pos = to_cell_xform.xform(p_instance->transform.origin);
+
+		for (int i = 0; i < 12; i++) {
+
+			Vector3 dir = to_cell_xform.basis.xform(cone_traces[i]).normalized();
+			Color capture = _light_capture_voxel_cone_trace(octree_r.ptr(), pos, dir, cone_aperture, cell_subdiv);
+			p_instance->lightmap_capture_data[i] += capture;
+		}
+	}
 }
 
 void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
@@ -2188,6 +2508,8 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 				InstanceGIProbeData::LocalData *light = &local_data[idx];
 
 				Vector3 to(light->pos[0] + 0.5, light->pos[1] + 0.5, light->pos[2] + 0.5);
+				to += -light_axis.sign() * 0.47; //make it more likely to receive a ray
+
 				Vector3 norm(
 						(((cells[idx].normal >> 16) & 0xFF) / 255.0) * 2.0 - 1.0,
 						(((cells[idx].normal >> 8) & 0xFF) / 255.0) * 2.0 - 1.0,
@@ -2254,6 +2576,8 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 				InstanceGIProbeData::LocalData *light = &local_data[idx];
 
 				Vector3 to(light->pos[0] + 0.5, light->pos[1] + 0.5, light->pos[2] + 0.5);
+				to += (light_pos - to).sign() * 0.47; //make it more likely to receive a ray
+
 				Vector3 norm(
 						(((cells[idx].normal >> 16) & 0xFF) / 255.0) * 2.0 - 1.0,
 						(((cells[idx].normal >> 8) & 0xFF) / 255.0) * 2.0 - 1.0,
@@ -2927,12 +3251,12 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 		}
 	}
 
+	_instance_update_list.remove(&p_instance->update_item);
+
 	_update_instance(p_instance);
 
 	p_instance->update_aabb = false;
 	p_instance->update_materials = false;
-
-	_instance_update_list.remove(&p_instance->update_item);
 }
 
 void VisualServerScene::update_dirty_instances() {

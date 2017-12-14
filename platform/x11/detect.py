@@ -158,6 +158,7 @@ def configure(env):
     if not env['builtin_libwebp']:
         env.ParseConfig('pkg-config libwebp --cflags --libs')
 
+
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
     if env['builtin_freetype'] or env['builtin_libpng'] or env['builtin_zlib']:
@@ -262,6 +263,11 @@ def configure(env):
     elif (not is64 and env["bits"] == "64"):
         env.Append(CPPFLAGS=['-m64'])
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
+
+
+    if (env["openmp"]):
+	env.Append(CPPFLAGS=['-fopenmp'])
+	env.Append(LIBS=['gomp'])
 
     if env['use_static_cpp']:
         env.Append(LINKFLAGS=['-static-libstdc++'])

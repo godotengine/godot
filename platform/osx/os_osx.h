@@ -228,6 +228,8 @@ public:
 
 	virtual Error move_to_trash(const String &p_path);
 
+	void force_process_input();
+
 	OS_OSX();
 
 private:

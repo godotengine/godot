@@ -2156,6 +2156,10 @@ void OS_Windows::swap_buffers() {
 	gl_context->swap_buffers();
 }
 
+void OS_Windows::force_process_input() {
+	process_events(); // get rid of pending events
+}
+
 void OS_Windows::run() {
 
 	if (!main_loop)

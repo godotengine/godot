@@ -177,8 +177,8 @@ void Node::_propagate_ready() {
 	}
 	data.blocked--;
 	if (data.ready_first) {
-		notification(NOTIFICATION_READY);
 		data.ready_first = false;
+		notification(NOTIFICATION_READY);
 	}
 }
 

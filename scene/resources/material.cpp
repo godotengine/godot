@@ -645,7 +645,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tvec2 base_uv = UV;\n";
 	}
 
-	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2])) {
+	if ((features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2]) || (features[FEATURE_EMISSION] && flags[FLAG_EMISSION_ON_UV2])) {
 		code += "\tvec2 base_uv2 = UV2;\n";
 	}
 
@@ -729,11 +729,20 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (features[FEATURE_EMISSION]) {
-		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
-			code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+		if (flags[FLAG_EMISSION_ON_UV2]) {
+			if (flags[FLAG_UV2_USE_TRIPLANAR]) {
+				code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv2_power_normal,uv2_triplanar_pos).rgb;\n";
+			} else {
+				code += "\tvec3 emission_tex = texture(texture_emission,base_uv2).rgb;\n";
+			}
 		} else {
-			code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
+			if (flags[FLAG_UV1_USE_TRIPLANAR]) {
+				code += "\tvec3 emission_tex = triplanar_texture(texture_emission,uv1_power_normal,uv1_triplanar_pos).rgb;\n";
+			} else {
+				code += "\tvec3 emission_tex = texture(texture_emission,base_uv).rgb;\n";
+			}
 		}
+
 		if (emission_op == EMISSION_OP_ADD) {
 			code += "\tEMISSION = (emission.rgb+emission_tex)*emission_energy;\n";
 		} else {
@@ -1892,6 +1901,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_emission_energy", "get_emission_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_on_uv2"), "set_flag", "get_flag", FLAG_EMISSION_ON_UV2);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_EMISSION);
 
 	ADD_GROUP("NormalMap", "normal_");
@@ -2034,6 +2044,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_UV1_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_UV2_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_AO_ON_UV2);
+	BIND_ENUM_CONSTANT(FLAG_EMISSION_ON_UV2);
 	BIND_ENUM_CONSTANT(FLAG_USE_ALPHA_SCISSOR);
 	BIND_ENUM_CONSTANT(FLAG_TRIPLANAR_USE_WORLD);
 	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_FORCE_SRGB);

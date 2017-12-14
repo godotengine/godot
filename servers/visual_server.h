@@ -485,6 +485,20 @@ public:
 	virtual void gi_probe_set_compress(RID p_probe, bool p_enable) = 0;
 	virtual bool gi_probe_is_compressed(RID p_probe) const = 0;
 
+	/* LIGHTMAP CAPTURE */
+
+	virtual RID lightmap_capture_create() = 0;
+	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
+	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) = 0;
+	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
+	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) = 0;
+	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
+	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
+	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
+	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create() = 0;
@@ -735,6 +749,7 @@ public:
 		INSTANCE_LIGHT,
 		INSTANCE_REFLECTION_PROBE,
 		INSTANCE_GI_PROBE,
+		INSTANCE_LIGHTMAP_CAPTURE,
 		INSTANCE_MAX,
 		/*INSTANCE_BAKED_LIGHT_SAMPLER,*/
 
@@ -754,6 +769,8 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
+
+	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 
