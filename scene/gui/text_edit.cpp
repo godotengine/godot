@@ -1664,17 +1664,22 @@ void TextEdit::backspace_at_cursor() {
 	cursor_set_column(prev_column);
 }
 
-void TextEdit::indent_selection_right() {
+void TextEdit::indent_right() {
 
-	if (!is_selection_active()) {
-		return;
-	}
+	int start_line;
+	int end_line;
 	begin_complex_operation();
-	int start_line = get_selection_from_line();
-	int end_line = get_selection_to_line();
+
+	if (is_selection_active()) {
+		start_line = get_selection_from_line();
+		end_line = get_selection_to_line();
+	} else {
+		start_line = cursor.line;
+		end_line = start_line;
+	}
 
 	// ignore if the cursor is not past the first column
-	if (get_selection_to_column() == 0) {
+	if (is_selection_active() && get_selection_to_column() == 0) {
 		end_line--;
 	}
 
@@ -1688,23 +1693,32 @@ void TextEdit::indent_selection_right() {
 		set_line(i, line_text);
 	}
 
-	// fix selection being off by one on the last line
-	selection.to_column++;
+	// fix selection and cursor being off by one on the last line
+	if (is_selection_active()) {
+		selection.to_column++;
+		selection.from_column++;
+	}
+	cursor.column++;
 	end_complex_operation();
 	update();
 }
 
-void TextEdit::indent_selection_left() {
+void TextEdit::indent_left() {
 
-	if (!is_selection_active()) {
-		return;
-	}
+	int start_line;
+	int end_line;
 	begin_complex_operation();
-	int start_line = get_selection_from_line();
-	int end_line = get_selection_to_line();
+
+	if (is_selection_active()) {
+		start_line = get_selection_from_line();
+		end_line = get_selection_to_line();
+	} else {
+		start_line = cursor.line;
+		end_line = start_line;
+	}
 
 	// ignore if the cursor is not past the first column
-	if (get_selection_to_column() == 0) {
+	if (is_selection_active() && get_selection_to_column() == 0) {
 		end_line--;
 	}
 	String last_line_text = get_line(end_line);
@@ -1721,9 +1735,15 @@ void TextEdit::indent_selection_left() {
 		}
 	}
 
-	// fix selection being off by one on the last line
-	if (last_line_text != get_line(end_line) && selection.to_column > 0) {
-		selection.to_column--;
+	// fix selection and cursor being off by one on the last line
+	if (is_selection_active() && last_line_text != get_line(end_line)) {
+		if (selection.to_column > 0)
+			selection.to_column--;
+		if (selection.from_column > 0)
+			selection.from_column--;
+	}
+	if (cursor.column > 0) {
+		cursor.column--;
 	}
 	end_complex_operation();
 	update();
@@ -2216,9 +2236,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				case KEY_TAB: {
 					if (k->get_shift()) {
-						indent_selection_left();
+						indent_left();
 					} else {
-						indent_selection_right();
+						indent_right();
 					}
 					dobreak = true;
 					accept_event();
@@ -2389,8 +2409,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (readonly)
 					break;
 
-				if (selection.active) {
-
+				if (is_selection_active()) {
+					if (k->get_shift()) {
+						indent_left();
+					} else {
+						indent_right();
+					}
 				} else {
 					if (k->get_shift()) {
 

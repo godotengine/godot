@@ -379,26 +379,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			if (shader.is_null())
 				return;
 
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				tx->indent_selection_left();
-			} else {
-				int begin = tx->cursor_get_line();
-				String line_text = tx->get_line(begin);
-				// begins with tab
-				if (line_text.begins_with("\t")) {
-					line_text = line_text.substr(1, line_text.length());
-					tx->set_line(begin, line_text);
-				}
-				// begins with 4 spaces
-				else if (line_text.begins_with("    ")) {
-					line_text = line_text.substr(4, line_text.length());
-					tx->set_line(begin, line_text);
-				}
-			}
-			tx->end_complex_operation();
-			tx->update();
-			//tx->deselect();
+			tx->indent_left();
 
 		} break;
 		case EDIT_INDENT_RIGHT: {
@@ -407,18 +388,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			if (shader.is_null())
 				return;
 
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				tx->indent_selection_right();
-			} else {
-				int begin = tx->cursor_get_line();
-				String line_text = tx->get_line(begin);
-				line_text = '\t' + line_text;
-				tx->set_line(begin, line_text);
-			}
-			tx->end_complex_operation();
-			tx->update();
-			//tx->deselect();
+			tx->indent_right();
 
 		} break;
 		case EDIT_DELETE_LINE: {

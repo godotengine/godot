@@ -443,8 +443,8 @@ public:
 	void set_line(int line, String new_text);
 	void backspace_at_cursor();
 
-	void indent_selection_left();
-	void indent_selection_right();
+	void indent_left();
+	void indent_right();
 	int get_indent_level(int p_line) const;
 
 	inline void set_scroll_pass_end_of_file(bool p_enabled) {
