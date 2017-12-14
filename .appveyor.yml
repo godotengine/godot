@@ -1,4 +1,4 @@
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 environment:
   HOME: "%HOMEDRIVE%%HOMEPATH%"
@@ -7,6 +7,11 @@ environment:
   SCONS_CACHE_LIMIT: 512
   matrix:
     - VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      GD_PLATFORM: windows
+      TOOLS: yes
+      TARGET: release_debug
+      ARCH: amd64
+    - VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
       GD_PLATFORM: windows
       TOOLS: yes
       TARGET: release_debug
