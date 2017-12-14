@@ -511,8 +511,8 @@ protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Object *_create_item(Object *p_parent) {
-		return create_item(Object::cast_to<TreeItem>(p_parent));
+	Object *_create_item(Object *p_parent, int p_idx = -1) {
+		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
 	}
 
 	TreeItem *_get_next_selected(Object *p_item) {
@@ -532,7 +532,7 @@ public:
 
 	void clear();
 
-	TreeItem *create_item(TreeItem *p_parent = 0);
+	TreeItem *create_item(TreeItem *p_parent = 0, int p_idx = -1);
 	TreeItem *get_root();
 	TreeItem *get_last_item();
 
