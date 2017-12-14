@@ -72,6 +72,19 @@ def configure(env):
         else: # 64-bit, default
             env.Append(CCFLAGS=['-arch', 'x86_64'])
             env.Append(LINKFLAGS=['-arch', 'x86_64'])
+        if (env["macports_clang"]):
+            mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
+            env["CC"] = mpprefix + "/libexec/llvm-5.0/bin/clang"
+            env["LD"] = mpprefix + "/libexec/llvm-5.0/bin/clang++"
+            env["CXX"] = mpprefix + "/libexec/llvm-5.0/bin/clang++"
+            env['AR'] = mpprefix + "/libexec/llvm-5.0/bin/llvm-ar"
+            env['RANLIB'] = mpprefix + "/libexec/llvm-5.0/bin/llvm-ranlib"
+            env['AS'] = mpprefix + "/libexec/llvm-5.0/bin/llvm-as"
+            env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+            if (env["openmp"]):
+                env.Append(CPPFLAGS=['-fopenmp'])
+                env.Append(LINKFLAGS=['-L' + mpprefix + '/lib/libomp/'])
+                env.Append(LIBS=['gomp'])
 
     else: # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)
