@@ -48,14 +48,14 @@ addons:
       - pkg-config
       - libx11-dev
       - libxcursor-dev
-      - libasound2-dev
-      - libfreetype6-dev
-      - libgl1-mesa-dev
-      - libglu1-mesa-dev
-      - libssl-dev
+      - libxi-dev
       - libxinerama-dev
       - libxrandr-dev
-      - libxi-dev
+      - libgl1-mesa-dev
+      - libglu1-mesa-dev
+      - libasound2-dev
+      - libfreetype6-dev
+      - libssl-dev
 
       # For cross-compiling to Windows.
       #- binutils-mingw-w64-i686
@@ -90,5 +90,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no openmp=no;
     fi
