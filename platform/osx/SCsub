@@ -4,9 +4,10 @@ import os
 Import('env')
 
 def make_debug(target, source, env):
-    if (env["macports_clang"]):
+    if (env["macports_clang"] != 'no'):
         mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
-        os.system(mpprefix + '/libexec/llvm-5.0/bin/llvm-dsymutil %s -o %s.dSYM' % (target[0], target[0]))
+        mpclangver = env["macports_clang"]
+        os.system(mpprefix + '/libexec/llvm-' + mpclangver + '/bin/llvm-dsymutil %s -o %s.dSYM' % (target[0], target[0]))
     else:
         os.system('dsymutil %s -o %s.dSYM' % (target[0], target[0]))
 
