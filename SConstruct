@@ -169,6 +169,7 @@ opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during comp
 opts.Add(BoolVariable('progress', "Show a progress indicator during build", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 opts.Add(BoolVariable('openmp', "If yes, enable OpenMP", True))
+opts.Add(BoolVariable('macports_clang', "Build using clang-5.0 from MacPorts", False))
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_enet', "Use the builtin enet library", True))

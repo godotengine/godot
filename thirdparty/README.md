@@ -179,6 +179,9 @@ Files extracted from upstream source:
 
 TODO.
 
+Important: File `libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c` has
+Godot-made change marked with `// -- GODOT --` comments.
+
 
 ## libwebp
 
