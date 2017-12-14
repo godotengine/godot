@@ -256,9 +256,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			bool v = p_node->call("is_visible");
 			if (v)
-				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			else
-				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 
 			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
@@ -272,9 +272,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 			bool v = p_node->call("is_visible");
 			if (v)
-				item->add_button(0, get_icon("Visible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_icon("GuiVisibilityVisible", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			else
-				item->add_button(0, get_icon("Hidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
+				item->add_button(0, get_icon("GuiVisibilityHidden", "EditorIcons"), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 
 			if (!p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
@@ -337,9 +337,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	}
 
 	if (visible)
-		item->set_button(0, idx, get_icon("Visible", "EditorIcons"));
+		item->set_button(0, idx, get_icon("GuiVisibilityVisible", "EditorIcons"));
 	else
-		item->set_button(0, idx, get_icon("Hidden", "EditorIcons"));
+		item->set_button(0, idx, get_icon("GuiVisibilityHidden", "EditorIcons"));
 
 	_update_visibility_color(p_node, item);
 }

@@ -1,7 +1,5 @@
 <svg width="10" height="10" version="1.1" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1042.4)">
-<ellipse cx="5" cy="1047.4" rx="5" ry="5" fill-opacity=".29412"/>
-<ellipse cx="5" cy="1047.4" rx="4" ry="4" fill="#fff"/>
-<ellipse cx="5" cy="1047.4" rx="3" ry="3" fill="#ff8484"/>
-</g>
+<circle cx="5" cy="5" r="5" fill-opacity=".29412"/>
+<circle cx="5" cy="5" r="4" fill="#fff"/>
+<circle cx="5" cy="5" r="3" fill="#ff8484"/>
 </svg>

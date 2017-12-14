@@ -2817,7 +2817,7 @@ void BakedIndirectLightGizmo::redraw() {
 
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/baked_indirect_light");
 	Ref<Material> material = create_material("baked_indirect_light_material", gizmo_color);
-	Ref<Material> icon = create_icon_material("baked_indirect_light_icon", SpatialEditor::get_singleton()->get_icon("GizmoGIProbe", "EditorIcons"));
+	Ref<Material> icon = create_icon_material("baked_indirect_light_icon", SpatialEditor::get_singleton()->get_icon("GizmoBakedLightmap", "EditorIcons"));
 	Color gizmo_color_internal = gizmo_color;
 	gizmo_color_internal.a = 0.1;
 	Ref<Material> material_internal = create_material("baked_indirect_light_internal_material", gizmo_color_internal);
