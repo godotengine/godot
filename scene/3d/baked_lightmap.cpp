@@ -254,7 +254,7 @@ bool BakedLightmap::_bake_time(void *ud, float p_secs, float p_progress) {
 	if (time - btd->last_step > 1000000) {
 
 		int mins_left = p_secs / 60;
-		int secs_left = Math::fmod(p_secs, 60.0);
+		int secs_left = Math::fmod(p_secs, 60.0f);
 		int percent = p_progress * 100;
 		bool abort = bake_step_function(btd->pass + percent, btd->text + " " + itos(percent) + "% (Time Left: " + itos(mins_left) + ":" + itos(secs_left) + "s)");
 		btd->last_step = time;
