@@ -5533,6 +5533,12 @@
         ]
       },
       {
+        "name": "godot_get_stack_bottom",
+        "return_type": "void *",
+        "arguments": [
+        ]
+      },
+      {
         "name": "godot_method_bind_get_method",
         "return_type": "godot_method_bind *",
         "arguments": [
@@ -5566,6 +5572,12 @@
         "return_type": "godot_class_constructor",
         "arguments": [
           ["const char *", "p_classname"]
+        ]
+      },
+      {
+        "name": "godot_get_global_constants",
+        "return_type": "godot_dictionary",
+        "arguments": [
         ]
       },
       {
