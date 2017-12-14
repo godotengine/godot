@@ -1696,6 +1696,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 
 		if (menu->get_item_count() == 0) {
 			menu->add_item(TTR("Sub-Resources:"));
+			menu->set_item_h_offset(0, -20 * EDSCALE);
 			menu->set_item_disabled(0, true);
 		}
 		int index = menu->get_item_count();
