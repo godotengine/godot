@@ -30,6 +30,7 @@
 #include "register_types.h"
 
 #include "gdscript.h"
+#include "gdscript_tokenizer.h"
 #include "io/file_access_encrypted.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
@@ -37,6 +38,45 @@
 GDScriptLanguage *script_language_gd = NULL;
 ResourceFormatLoaderGDScript *resource_loader_gd = NULL;
 ResourceFormatSaverGDScript *resource_saver_gd = NULL;
+
+#ifdef TOOLS_ENABLED
+
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+
+class EditorExportGDScript : public EditorExportPlugin {
+
+	GDCLASS(EditorExportGDScript, EditorExportPlugin);
+
+public:
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+
+		if (!p_path.ends_with(".gd"))
+			return;
+
+		Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
+		if (file.empty())
+			return;
+		String txt;
+		txt.parse_utf8((const char *)file.ptr(), file.size());
+		file = GDScriptTokenizerBuffer::parse_code_string(txt);
+
+		if (file.empty())
+			return;
+
+		add_file(p_path.get_basename() + ".gdc", file, true);
+	}
+};
+
+static void _editor_init() {
+
+	Ref<EditorExportGDScript> gd_export;
+	gd_export.instance();
+	EditorExport::get_singleton()->add_export_plugin(gd_export);
+}
+
+#endif
 
 void register_gdscript_types() {
 
@@ -49,6 +89,10 @@ void register_gdscript_types() {
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
 	resource_saver_gd = memnew(ResourceFormatSaverGDScript);
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(_editor_init);
+#endif
 }
 
 void unregister_gdscript_types() {

@@ -91,6 +91,7 @@ class ResourceLoader {
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
 	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, String> path_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
 	friend class Resource;
@@ -136,6 +137,9 @@ public:
 
 	static String path_remap(const String &p_path);
 	static String import_remap(const String &p_path);
+
+	static void load_path_remaps();
+	static void clear_path_remaps();
 
 	static void reload_translation_remaps();
 	static void load_translation_remaps();

@@ -1136,6 +1136,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	translation_server->load_translations();
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
+	ResourceLoader::load_path_remaps();
+
 	audio_server->load_default_bus_layout();
 
 	if (use_debug_profiler && script_debugger) {
@@ -1815,6 +1817,9 @@ void Main::cleanup() {
 	OS::get_singleton()->_cmdline.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
+
+	ResourceLoader::clear_translation_remaps();
+	ResourceLoader::clear_path_remaps();
 
 	ScriptServer::finish_languages();
 

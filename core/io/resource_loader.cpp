@@ -196,18 +196,18 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 	else
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
+	if (!p_no_cache && ResourceCache::has(local_path)) {
+
+		if (OS::get_singleton()->is_stdout_verbose())
+			print_line("load resource: " + local_path + " (cached)");
+
+		return RES(ResourceCache::get(local_path));
+	}
+
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
 
 	ERR_FAIL_COND_V(path == "", RES());
-
-	if (!p_no_cache && ResourceCache::has(path)) {
-
-		if (OS::get_singleton()->is_stdout_verbose())
-			print_line("load resource: " + path + " (cached)");
-
-		return RES(ResourceCache::get(path));
-	}
 
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: " + path);
@@ -247,22 +247,22 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	else
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	bool xl_remapped = false;
-	String path = _path_remap(local_path, &xl_remapped);
-
-	ERR_FAIL_COND_V(path == "", Ref<ResourceInteractiveLoader>());
-
-	if (!p_no_cache && ResourceCache::has(path)) {
+	if (!p_no_cache && ResourceCache::has(local_path)) {
 
 		if (OS::get_singleton()->is_stdout_verbose())
-			print_line("load resource: " + path + " (cached)");
+			print_line("load resource: " + local_path + " (cached)");
 
-		Ref<Resource> res_cached = ResourceCache::get(path);
+		Ref<Resource> res_cached = ResourceCache::get(local_path);
 		Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
 
 		ril->resource = res_cached;
 		return ril;
 	}
+
+	bool xl_remapped = false;
+	String path = _path_remap(local_path, &xl_remapped);
+
+	ERR_FAIL_COND_V(path == "", Ref<ResourceInteractiveLoader>());
 
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: ");
@@ -426,9 +426,11 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {
 
-	if (translation_remaps.has(p_path)) {
+	String new_path = p_path;
 
-		Vector<String> &v = *translation_remaps.getptr(p_path);
+	if (translation_remaps.has(new_path)) {
+
+		Vector<String> &v = *translation_remaps.getptr(new_path);
 		String locale = TranslationServer::get_singleton()->get_locale();
 		if (r_translation_remapped) {
 			*r_translation_remapped = true;
@@ -443,12 +445,16 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 				continue;
 
 			if (l.begins_with(locale)) {
-				return v[i].left(split);
+				new_path = v[i].left(split);
+				break;
 			}
 		}
 	}
 
-	return p_path;
+	if (path_remaps.has(new_path)) {
+		new_path = path_remaps[new_path];
+	}
+	return new_path;
 }
 
 String ResourceLoader::import_remap(const String &p_path) {
@@ -515,6 +521,27 @@ void ResourceLoader::clear_translation_remaps() {
 	translation_remaps.clear();
 }
 
+void ResourceLoader::load_path_remaps() {
+
+	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths"))
+		return;
+
+	PoolVector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
+	int rc = remaps.size();
+	ERR_FAIL_COND(rc & 1); //must be even
+	PoolVector<String>::Read r = remaps.read();
+
+	for (int i = 0; i < rc; i += 2) {
+
+		path_remaps[r[i]] = r[i + 1];
+	}
+}
+
+void ResourceLoader::clear_path_remaps() {
+
+	path_remaps.clear();
+}
+
 ResourceLoadErrorNotify ResourceLoader::err_notify = NULL;
 void *ResourceLoader::err_notify_ud = NULL;
 
@@ -526,3 +553,4 @@ bool ResourceLoader::timestamp_on_load = false;
 
 SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String> > ResourceLoader::translation_remaps;
+HashMap<String, String> ResourceLoader::path_remaps;
