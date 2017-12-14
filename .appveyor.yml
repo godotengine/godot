@@ -11,7 +11,7 @@ environment:
       TOOLS: yes
       TARGET: release_debug
       ARCH: amd64
-    - VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
+    - VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
       GD_PLATFORM: windows
       TOOLS: yes
       TARGET: release_debug
