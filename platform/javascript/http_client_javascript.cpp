@@ -42,12 +42,12 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 	host = p_host;
 
-	String host_lower = conn_host.to_lower();
+	String host_lower = host.to_lower();
 	if (host_lower.begins_with("http://")) {
-		host.replace_first("http://", "");
+		host = host.substr(7, host.length() - 7);
 	} else if (host_lower.begins_with("https://")) {
 		use_tls = true;
-		host.replace_first("https://", "");
+		host = host.substr(8, host.length() - 8);
 	}
 
 	ERR_FAIL_COND_V(host.length() < HOST_MIN_LEN, ERR_INVALID_PARAMETER);
