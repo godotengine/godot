@@ -154,6 +154,16 @@ bool EditorRunNative::is_deploy_dumb_enabled() const {
 	return deploy_dumb;
 }
 
+void EditorRunNative::set_run_in_editor(bool p_enabled) {
+
+	run_in_editor = p_enabled;
+}
+
+bool EditorRunNative::is_run_in_editor_enabled() const {
+
+	return run_in_editor;
+}
+
 void EditorRunNative::set_deploy_debug_remote(bool p_enabled) {
 
 	deploy_debug_remote = p_enabled;

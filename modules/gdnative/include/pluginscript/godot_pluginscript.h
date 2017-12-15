@@ -139,6 +139,7 @@ typedef struct {
 	void (*auto_indent_code)(godot_pluginscript_language_data *p_data, godot_string *p_code, int p_from_line, int p_to_line);
 
 	void (*add_global_constant)(godot_pluginscript_language_data *p_data, const godot_string *p_variable, const godot_variant *p_value);
+	void (*remove_global_constant)(godot_pluginscript_language_data *p_data, const godot_string *p_variable);
 	godot_string (*debug_get_error)(godot_pluginscript_language_data *p_data);
 	int (*debug_get_stack_level_count)(godot_pluginscript_language_data *p_data);
 	int (*debug_get_stack_level_line)(godot_pluginscript_language_data *p_data, int p_level);

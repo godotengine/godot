@@ -572,6 +572,7 @@ public:
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
+	virtual void remove_global_constant(const StringName &p_variable);
 
 	/* DEBUGGER FUNCTIONS */
 
