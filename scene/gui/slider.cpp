@@ -184,10 +184,10 @@ void Slider::_notification(int p_what) {
 					focus->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
 				*/
 				if (ticks > 1) {
-					int tickarea = size.height - tick->get_height();
+					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) continue;
-						int ofs = i * tickarea / (ticks - 1);
+						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
@@ -205,10 +205,10 @@ void Slider::_notification(int p_what) {
 				*/
 
 				if (ticks > 1) {
-					int tickarea = size.width - tick->get_width();
+					int grabber_offset = (grabber->get_size().width / 2 - tick->get_width() / 2);
 					for (int i = 0; i < ticks; i++) {
 						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) continue;
-						int ofs = i * tickarea / (ticks - 1);
+						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
