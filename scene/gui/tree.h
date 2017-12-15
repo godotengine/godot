@@ -496,6 +496,7 @@ private:
 	bool click_handled;
 	bool allow_rmb_select;
 	bool scrolling;
+	bool drag_exited;
 
 	bool allow_reselect;
 
