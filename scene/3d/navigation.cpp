@@ -202,7 +202,7 @@ void Navigation::_navmesh_unlink(int p_id) {
 	nm.linked = false;
 }
 
-int Navigation::navmesh_create(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner) {
+int Navigation::navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner) {
 
 	int id = last_id++;
 	NavMesh nm;
@@ -686,7 +686,7 @@ Vector3 Navigation::get_up_vector() const {
 
 void Navigation::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("navmesh_create", "mesh", "xform", "owner"), &Navigation::navmesh_create, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("navmesh_add", "mesh", "xform", "owner"), &Navigation::navmesh_add, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("navmesh_set_transform", "id", "xform"), &Navigation::navmesh_set_transform);
 	ClassDB::bind_method(D_METHOD("navmesh_remove", "id"), &Navigation::navmesh_remove);
 

@@ -486,7 +486,7 @@ void TileMap::_update_dirty_quadrants() {
 					xform.set_origin(offset.floor() + q.pos);
 					_fix_cell_transform(xform, c, npoly_ofs + center_ofs, s);
 
-					int pid = navigation->navpoly_create(navpoly, nav_rel * xform);
+					int pid = navigation->navpoly_add(navpoly, nav_rel * xform);
 
 					Quadrant::NavPoly np;
 					np.id = pid;

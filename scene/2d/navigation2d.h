@@ -159,7 +159,7 @@ protected:
 
 public:
 	//API should be as dynamic as possible
-	int navpoly_create(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = NULL);
+	int navpoly_add(const Ref<NavigationPolygon> &p_mesh, const Transform2D &p_xform, Object *p_owner = NULL);
 	void navpoly_set_transform(int p_id, const Transform2D &p_xform);
 	void navpoly_remove(int p_id);
 

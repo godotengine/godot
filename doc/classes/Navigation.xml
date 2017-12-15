@@ -57,7 +57,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="navmesh_create">
+		<method name="navmesh_add">
 			<return type="int">
 			</return>
 			<argument index="0" name="mesh" type="NavigationMesh">
