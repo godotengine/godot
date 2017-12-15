@@ -64,7 +64,7 @@
 				Returns a path of points as a [code]PoolVector3Array[/code]. If [code]optimize[/code] is false the [code]NavigationMesh[/code] agent properties will be taken into account, otherwise it will return the nearest path and ignore agent radius, height, etc.
 			</description>
 		</method>
-		<method name="navmesh_create">
+		<method name="navmesh_add">
 			<return type="int">
 			</return>
 			<argument index="0" name="mesh" type="NavigationMesh">

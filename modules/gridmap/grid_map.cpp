@@ -469,7 +469,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			nm.xform = xform;
 
 			if (navigation) {
-				nm.id = navigation->navmesh_create(navmesh, xform, this);
+				nm.id = navigation->navmesh_add(navmesh, xform, this);
 			} else {
 				nm.id = -1;
 			}
@@ -556,7 +556,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 			if (cell_map.has(F->key()) && F->get().id < 0) {
 				Ref<NavigationMesh> nm = theme->get_item_navmesh(cell_map[F->key()].item);
 				if (nm.is_valid()) {
-					F->get().id = navigation->navmesh_create(nm, F->get().xform, this);
+					F->get().id = navigation->navmesh_add(nm, F->get().xform, this);
 				}
 			}
 		}

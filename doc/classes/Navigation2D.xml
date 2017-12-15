@@ -37,7 +37,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="navpoly_create">
+		<method name="navpoly_add">
 			<return type="int">
 			</return>
 			<argument index="0" name="mesh" type="NavigationPolygon">
