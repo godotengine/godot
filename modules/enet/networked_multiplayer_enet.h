@@ -86,12 +86,12 @@ private:
 
 	CompressionMode compression_mode;
 
-	mutable List<Packet> incoming_packets;
+	List<Packet> incoming_packets;
 
-	mutable Packet current_packet;
+	Packet current_packet;
 
 	uint32_t _gen_unique_id() const;
-	void _pop_current_packet() const;
+	void _pop_current_packet();
 
 	Vector<uint8_t> src_compressor_mem;
 	Vector<uint8_t> dst_compressor_mem;
@@ -123,7 +123,7 @@ public:
 	virtual bool is_server() const;
 
 	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const; ///< buffer is GONE after next get_packet
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	virtual int get_max_packet_size() const;

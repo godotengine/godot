@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  tcp_server_winsock.h                                                 */
+/*  stream_peer_winsock.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,30 +27,65 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TCP_SERVER_WINSOCK_H
-#define TCP_SERVER_WINSOCK_H
+#ifdef WINDOWS_ENABLED
 
-#include "core/io/tcp_server.h"
+#ifndef STREAM_PEER_TCP_WINSOCK_H
+#define STREAM_PEER_TCP_WINSOCK_H
 
-class TCPServerWinsock : public TCP_Server {
+#include "error_list.h"
 
-	int listen_sockfd;
+#include "core/io/ip_address.h"
+#include "core/io/stream_peer_tcp.h"
+
+class StreamPeerTCPWinsock : public StreamPeerTCP {
+
+protected:
+	mutable Status status;
 	IP::Type sock_type;
 
-	static TCP_Server *_create();
+	int sockfd;
+
+	Error _block(int p_sockfd, bool p_read, bool p_write) const;
+
+	Error _poll_connection() const;
+
+	IP_Address peer_host;
+	int peer_port;
+
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
+
+	static StreamPeerTCP *_create();
 
 public:
-	virtual Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
-	virtual bool is_connection_available() const;
-	virtual Ref<StreamPeerTCP> take_connection();
+	virtual Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
 
-	virtual void stop(); //stop listening
+	virtual Error put_data(const uint8_t *p_data, int p_bytes);
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+
+	virtual int get_available_bytes() const;
+
+	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_sock_type);
+
+	virtual IP_Address get_connected_host() const;
+	virtual uint16_t get_connected_port() const;
+
+	virtual bool is_connected_to_host() const;
+	virtual Status get_status() const;
+	virtual void disconnect_from_host();
 
 	static void make_default();
 	static void cleanup();
 
-	TCPServerWinsock();
-	~TCPServerWinsock();
+	virtual void set_nodelay(bool p_enabled);
+
+	StreamPeerTCPWinsock();
+	~StreamPeerTCPWinsock();
 };
+
+#endif // STREAM_PEER_TCP_WINSOCK_H
 
 #endif

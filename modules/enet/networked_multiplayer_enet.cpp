@@ -386,7 +386,7 @@ int NetworkedMultiplayerENet::get_available_packet_count() const {
 
 	return incoming_packets.size();
 }
-Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) const {
+Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	ERR_FAIL_COND_V(incoming_packets.size() == 0, ERR_UNAVAILABLE);
 
@@ -480,7 +480,7 @@ int NetworkedMultiplayerENet::get_max_packet_size() const {
 	return 1 << 24; //anything is good
 }
 
-void NetworkedMultiplayerENet::_pop_current_packet() const {
+void NetworkedMultiplayerENet::_pop_current_packet() {
 
 	if (current_packet.packet) {
 		enet_packet_destroy(current_packet.packet);

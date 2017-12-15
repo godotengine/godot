@@ -65,7 +65,7 @@ int PacketPeerUDPPosix::get_available_packet_count() const {
 	return queue_count;
 }
 
-Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer, int &r_buffer_size) const {
+Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	Error err = const_cast<PacketPeerUDPPosix *>(this)->_poll(false);
 	if (err != OK)

@@ -49,7 +49,7 @@ bool PacketPeer::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
-Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) const {
+Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -78,7 +78,7 @@ Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet(&r[0], len);
 }
 
-Error PacketPeer::get_var(Variant &r_variant) const {
+Error PacketPeer::get_var(Variant &r_variant) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -107,7 +107,7 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 	return put_packet(buf, len);
 }
 
-Variant PacketPeer::_bnd_get_var() const {
+Variant PacketPeer::_bnd_get_var() {
 	Variant var;
 	get_var(var);
 
@@ -117,7 +117,7 @@ Variant PacketPeer::_bnd_get_var() const {
 Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet_buffer(p_buffer);
 }
-PoolVector<uint8_t> PacketPeer::_get_packet() const {
+PoolVector<uint8_t> PacketPeer::_get_packet() {
 
 	PoolVector<uint8_t> raw;
 	last_get_error = get_packet_buffer(raw);
@@ -202,7 +202,7 @@ int PacketPeerStream::get_available_packet_count() const {
 	return count;
 }
 
-Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size) const {
+Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
 	_poll_buffer();

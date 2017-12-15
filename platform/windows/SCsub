@@ -19,9 +19,6 @@ common_win = [
     "os_windows.cpp",
     "ctxgl_procaddr.cpp",
     "key_mapping_win.cpp",
-    "tcp_server_winsock.cpp",
-    "packet_peer_udp_winsock.cpp",
-    "stream_peer_winsock.cpp",
     "joypad.cpp",
     "power_windows.cpp",
     "windows_terminal_logger.cpp"

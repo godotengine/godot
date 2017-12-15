@@ -4,9 +4,6 @@ Import('env')
 
 files = [
     'thread_uwp.cpp',
-    '#platform/windows/tcp_server_winsock.cpp',
-    '#platform/windows/packet_peer_udp_winsock.cpp',
-    '#platform/windows/stream_peer_winsock.cpp',
     '#platform/windows/key_mapping_win.cpp',
     '#platform/windows/windows_terminal_logger.cpp',
     'joypad_uwp.cpp',

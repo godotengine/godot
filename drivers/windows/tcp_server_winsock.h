@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  packet_peer_udp_winsock.h                                            */
+/*  tcp_server_winsock.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,58 +27,34 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PACKET_PEER_UDP_WINSOCK_H
-#define PACKET_PEER_UDP_WINSOCK_H
+#ifdef WINDOWS_ENABLED
 
-#include "io/packet_peer_udp.h"
-#include "ring_buffer.h"
+#ifndef TCP_SERVER_WINSOCK_H
+#define TCP_SERVER_WINSOCK_H
 
-class PacketPeerUDPWinsock : public PacketPeerUDP {
+#include "core/io/tcp_server.h"
 
-	enum {
-		PACKET_BUFFER_SIZE = 65536
-	};
+class TCPServerWinsock : public TCP_Server {
 
-	mutable RingBuffer<uint8_t> rb;
-	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
-	mutable uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	mutable IP_Address packet_ip;
-	mutable int packet_port;
-	mutable int queue_count;
-	int sockfd;
-	bool sock_blocking;
+	int listen_sockfd;
 	IP::Type sock_type;
 
-	IP_Address peer_addr;
-	int peer_port;
-
-	_FORCE_INLINE_ int _get_socket();
-
-	static PacketPeerUDP *_create();
-
-	void _set_sock_blocking(bool p_blocking);
-
-	Error _poll(bool p_wait);
+	static TCP_Server *_create();
 
 public:
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const;
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
+	virtual bool is_connection_available() const;
+	virtual Ref<StreamPeerTCP> take_connection();
 
-	virtual int get_max_packet_size() const;
-
-	virtual Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
-	virtual void close();
-	virtual Error wait();
-	virtual bool is_listening() const;
-
-	virtual IP_Address get_packet_address() const;
-	virtual int get_packet_port() const;
-
-	virtual void set_dest_address(const IP_Address &p_address, int p_port);
+	virtual void stop(); //stop listening
 
 	static void make_default();
-	PacketPeerUDPWinsock();
-	~PacketPeerUDPWinsock();
+	static void cleanup();
+
+	TCPServerWinsock();
+	~TCPServerWinsock();
 };
-#endif // PACKET_PEER_UDP_WINSOCK_H
+
+#endif
+
+#endif
