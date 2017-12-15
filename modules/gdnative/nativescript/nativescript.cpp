@@ -904,7 +904,7 @@ Script *NativeScriptLanguage::create_script() const {
 	return script;
 }
 bool NativeScriptLanguage::has_named_classes() const {
-	return true;
+	return false;
 }
 bool NativeScriptLanguage::supports_builtin_mode() const {
 	return true;
