@@ -39,10 +39,10 @@
 #include "io/zip_io.h"
 #include "os/file_access.h"
 #include "project_settings.h"
+#include "scene/resources/scene_format_text.h"
 #include "script_language.h"
-#include "version.h"
-
 #include "thirdparty/misc/md5.h"
+#include "version.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 
@@ -1398,4 +1398,31 @@ void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
 EditorExportPlatformPC::EditorExportPlatformPC() {
 
 	chmod_flags = -1;
+}
+
+///////////////////////
+
+void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+
+	String extension = p_path.get_extension().to_lower();
+	if (extension != "tres" && extension != "tscn") {
+		return;
+	}
+
+	print_line("exporting " + p_path);
+
+	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
+	if (!convert)
+		return;
+	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("file.res");
+	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
+	ERR_FAIL_COND(err != OK);
+	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
+	ERR_FAIL_COND(data.size() == 0);
+	add_file(p_path + ".converted.res", data, true);
+}
+
+EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
+
+	GLOBAL_DEF("editor/convert_text_resources_to_binary_on_export", false);
 }

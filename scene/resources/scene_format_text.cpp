@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scene_format_text.h"
-
+#include "core/io/resource_format_binary.h"
 #include "os/dir_access.h"
 #include "project_settings.h"
 #include "version.h"
@@ -51,6 +51,60 @@ void ResourceInteractiveLoaderText::set_local_path(const String &p_local_path) {
 Ref<Resource> ResourceInteractiveLoaderText::get_resource() {
 
 	return resource;
+}
+
+Error ResourceInteractiveLoaderText::_parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_NUMBER) {
+		r_err_str = "Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
+	}
+
+	int index = token.value;
+
+	if (!p_data->resource_map.has(index)) {
+		Ref<DummyResource> dr;
+		dr.instance();
+		dr->set_subindex(index);
+		p_data->resource_map[index] = dr;
+		p_data->resource_set.insert(dr);
+	}
+
+	r_res = p_data->resource_map[index];
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str = "Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
+}
+
+Error ResourceInteractiveLoaderText::_parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_NUMBER) {
+		r_err_str = "Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
+	}
+
+	int id = token.value;
+
+	ERR_FAIL_COND_V(!p_data->rev_external_resources.has(id), ERR_PARSE_ERROR);
+
+	r_res = p_data->rev_external_resources[id];
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str = "Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
 }
 
 Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
@@ -129,6 +183,203 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream *
 	}
 
 	return OK;
+}
+
+Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
+	Ref<PackedScene> packed_scene;
+	packed_scene.instance();
+
+	while (true) {
+
+		if (next_tag.name == "node") {
+
+			int parent = -1;
+			int owner = -1;
+			int type = -1;
+			int name = -1;
+			int instance = -1;
+			//int base_scene=-1;
+
+			if (next_tag.fields.has("name")) {
+				name = packed_scene->get_state()->add_name(next_tag.fields["name"]);
+			}
+
+			if (next_tag.fields.has("parent")) {
+				NodePath np = next_tag.fields["parent"];
+				np.prepend_period(); //compatible to how it manages paths internally
+				parent = packed_scene->get_state()->add_node_path(np);
+			}
+
+			if (next_tag.fields.has("type")) {
+				type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
+			} else {
+				type = SceneState::TYPE_INSTANCED; //no type? assume this was instanced
+			}
+
+			if (next_tag.fields.has("instance")) {
+
+				instance = packed_scene->get_state()->add_value(next_tag.fields["instance"]);
+
+				if (packed_scene->get_state()->get_node_count() == 0 && parent == -1) {
+					packed_scene->get_state()->set_base_scene(instance);
+					instance = -1;
+				}
+			}
+
+			if (next_tag.fields.has("instance_placeholder")) {
+
+				String path = next_tag.fields["instance_placeholder"];
+
+				int path_v = packed_scene->get_state()->add_value(path);
+
+				if (packed_scene->get_state()->get_node_count() == 0) {
+					error = ERR_FILE_CORRUPT;
+					error_text = "Instance Placeholder can't be used for inheritance.";
+					_printerr();
+					return Ref<PackedScene>();
+				}
+
+				instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
+			}
+
+			if (next_tag.fields.has("owner")) {
+				owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
+			} else {
+				if (parent != -1 && !(type == SceneState::TYPE_INSTANCED && instance == -1))
+					owner = 0; //if no owner, owner is root
+			}
+
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance);
+
+			if (next_tag.fields.has("groups")) {
+
+				Array groups = next_tag.fields["groups"];
+				for (int i = 0; i < groups.size(); i++) {
+					packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
+				}
+			}
+
+			while (true) {
+
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
+
+				if (error) {
+					if (error != ERR_FILE_EOF) {
+						_printerr();
+						return Ref<PackedScene>();
+					} else {
+						return packed_scene;
+					}
+				}
+
+				if (assign != String()) {
+					int nameidx = packed_scene->get_state()->add_name(assign);
+					int valueidx = packed_scene->get_state()->add_value(value);
+					packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
+					//it's assignment
+				} else if (next_tag.name != String()) {
+					break;
+				}
+			}
+		} else if (next_tag.name == "connection") {
+
+			if (!next_tag.fields.has("from")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'from' field fron connection tag";
+				return Ref<PackedScene>();
+			}
+
+			if (!next_tag.fields.has("to")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'to' field fron connection tag";
+				return Ref<PackedScene>();
+			}
+
+			if (!next_tag.fields.has("signal")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'signal' field fron connection tag";
+				return Ref<PackedScene>();
+			}
+
+			if (!next_tag.fields.has("method")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'method' field fron connection tag";
+				return Ref<PackedScene>();
+			}
+
+			NodePath from = next_tag.fields["from"];
+			NodePath to = next_tag.fields["to"];
+			StringName method = next_tag.fields["method"];
+			StringName signal = next_tag.fields["signal"];
+			int flags = CONNECT_PERSIST;
+			Array binds;
+
+			if (next_tag.fields.has("flags")) {
+				flags = next_tag.fields["flags"];
+			}
+
+			if (next_tag.fields.has("binds")) {
+				binds = next_tag.fields["binds"];
+			}
+
+			Vector<int> bind_ints;
+			for (int i = 0; i < binds.size(); i++) {
+				bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
+			}
+
+			packed_scene->get_state()->add_connection(
+					packed_scene->get_state()->add_node_path(from.simplified()),
+					packed_scene->get_state()->add_node_path(to.simplified()),
+					packed_scene->get_state()->add_name(signal),
+					packed_scene->get_state()->add_name(method),
+					flags,
+					bind_ints);
+
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+
+			if (error) {
+				if (error != ERR_FILE_EOF) {
+					_printerr();
+					return Ref<PackedScene>();
+				} else {
+					return packed_scene;
+				}
+			}
+		} else if (next_tag.name == "editable") {
+
+			if (!next_tag.fields.has("path")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'path' field fron connection tag";
+				_printerr();
+				return Ref<PackedScene>();
+			}
+
+			NodePath path = next_tag.fields["path"];
+
+			packed_scene->get_state()->add_editable_instance(path.simplified());
+
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+
+			if (error) {
+				if (error != ERR_FILE_EOF) {
+					_printerr();
+					return Ref<PackedScene>();
+				} else {
+					return packed_scene;
+				}
+			}
+		} else {
+
+			error = ERR_FILE_CORRUPT;
+			_printerr();
+			return Ref<PackedScene>();
+		}
+	}
+
+	return packed_scene;
 }
 
 Error ResourceInteractiveLoaderText::poll() {
@@ -364,231 +615,21 @@ Error ResourceInteractiveLoaderText::poll() {
 			return error;
 		}
 
-		/*
-		int add_name(const StringName& p_name);
-		int add_value(const Variant& p_value);
-		int add_node_path(const NodePath& p_path);
-		int add_node(int p_parent,int p_owner,int p_type,int p_name, int p_instance);
-		void add_node_property(int p_node,int p_name,int p_value);
-		void add_node_group(int p_node,int p_group);
-		void set_base_scene(int p_idx);
-		void add_connection(int p_from,int p_to, int p_signal, int p_method, int p_flags,const Vector<int>& p_binds);
-		void add_editable_instance(const NodePath& p_path);
+		Ref<PackedScene> packed_scene = _parse_node_tag(rp);
 
-		*/
-
-		int parent = -1;
-		int owner = -1;
-		int type = -1;
-		int name = -1;
-		int instance = -1;
-		//int base_scene=-1;
-
-		if (next_tag.fields.has("name")) {
-			name = packed_scene->get_state()->add_name(next_tag.fields["name"]);
-		}
-
-		if (next_tag.fields.has("parent")) {
-			NodePath np = next_tag.fields["parent"];
-			np.prepend_period(); //compatible to how it manages paths internally
-			parent = packed_scene->get_state()->add_node_path(np);
-		}
-
-		if (next_tag.fields.has("type")) {
-			type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
-		} else {
-			type = SceneState::TYPE_INSTANCED; //no type? assume this was instanced
-		}
-
-		if (next_tag.fields.has("instance")) {
-
-			instance = packed_scene->get_state()->add_value(next_tag.fields["instance"]);
-
-			if (packed_scene->get_state()->get_node_count() == 0 && parent == -1) {
-				packed_scene->get_state()->set_base_scene(instance);
-				instance = -1;
-			}
-		}
-
-		if (next_tag.fields.has("instance_placeholder")) {
-
-			String path = next_tag.fields["instance_placeholder"];
-
-			int path_v = packed_scene->get_state()->add_value(path);
-
-			if (packed_scene->get_state()->get_node_count() == 0) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Instance Placeholder can't be used for inheritance.";
-				_printerr();
-				return error;
-			}
-
-			instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
-		}
-
-		if (next_tag.fields.has("owner")) {
-			owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
-		} else {
-			if (parent != -1 && !(type == SceneState::TYPE_INSTANCED && instance == -1))
-				owner = 0; //if no owner, owner is root
-		}
-
-		int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance);
-
-		if (next_tag.fields.has("groups")) {
-
-			Array groups = next_tag.fields["groups"];
-			for (int i = 0; i < groups.size(); i++) {
-				packed_scene->get_state()->add_node_group(node_id, packed_scene->get_state()->add_name(groups[i]));
-			}
-		}
-
-		while (true) {
-
-			String assign;
-			Variant value;
-
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
-
-			if (error) {
-				if (error != ERR_FILE_EOF) {
-					_printerr();
-				} else {
-					resource = packed_scene;
-					if (!ResourceCache::has(res_path)) {
-						packed_scene->set_path(res_path);
-					}
-				}
-				return error;
-			}
-
-			if (assign != String()) {
-				int nameidx = packed_scene->get_state()->add_name(assign);
-				int valueidx = packed_scene->get_state()->add_value(value);
-				packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
-				//it's assignment
-			} else if (next_tag.name != String()) {
-
-				error = OK;
-				return error;
-			} else {
-
-				resource = packed_scene;
-				error = ERR_FILE_EOF;
-				return error;
-			}
-		}
-
-		return OK;
-
-	} else if (next_tag.name == "connection") {
-
-		if (!is_scene) {
-
-			error_text += "found the 'connection' tag on a resource file!";
-			_printerr();
-			error = ERR_FILE_CORRUPT;
+		if (!packed_scene.is_valid())
 			return error;
+
+		error = OK;
+		//get it here
+		resource = packed_scene;
+		if (!ResourceCache::has(res_path)) {
+			packed_scene->set_path(res_path);
 		}
 
-		if (!next_tag.fields.has("from")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "missing 'from' field fron connection tag";
-			return error;
-		}
-
-		if (!next_tag.fields.has("to")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "missing 'to' field fron connection tag";
-			return error;
-		}
-
-		if (!next_tag.fields.has("signal")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "missing 'signal' field fron connection tag";
-			return error;
-		}
-
-		if (!next_tag.fields.has("method")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "missing 'method' field fron connection tag";
-			return error;
-		}
-
-		NodePath from = next_tag.fields["from"];
-		NodePath to = next_tag.fields["to"];
-		StringName method = next_tag.fields["method"];
-		StringName signal = next_tag.fields["signal"];
-		int flags = CONNECT_PERSIST;
-		Array binds;
-
-		if (next_tag.fields.has("flags")) {
-			flags = next_tag.fields["flags"];
-		}
-
-		if (next_tag.fields.has("binds")) {
-			binds = next_tag.fields["binds"];
-		}
-
-		Vector<int> bind_ints;
-		for (int i = 0; i < binds.size(); i++) {
-			bind_ints.push_back(packed_scene->get_state()->add_value(binds[i]));
-		}
-
-		packed_scene->get_state()->add_connection(
-				packed_scene->get_state()->add_node_path(from.simplified()),
-				packed_scene->get_state()->add_node_path(to.simplified()),
-				packed_scene->get_state()->add_name(signal),
-				packed_scene->get_state()->add_name(method),
-				flags,
-				bind_ints);
-
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
-
-		if (error) {
-			if (error != ERR_FILE_EOF) {
-				_printerr();
-			} else {
-				resource = packed_scene;
-			}
-		}
-
-		return error;
-	} else if (next_tag.name == "editable") {
-
-		if (!is_scene) {
-
-			error_text += "found the 'editable' tag on a resource file!";
-			_printerr();
-			error = ERR_FILE_CORRUPT;
-			return error;
-		}
-
-		if (!next_tag.fields.has("path")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "missing 'path' field fron connection tag";
-			_printerr();
-			return error;
-		}
-
-		NodePath path = next_tag.fields["path"];
-
-		packed_scene->get_state()->add_editable_instance(path.simplified());
-
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
-
-		if (error) {
-			if (error != ERR_FILE_EOF) {
-				_printerr();
-			} else {
-				resource = packed_scene;
-			}
-		}
-
-		return error;
+		return ERR_FILE_EOF;
 
 	} else {
-
 		error_text += "Unknown tag in file: " + next_tag.name;
 		_printerr();
 		error = ERR_FILE_CORRUPT;
@@ -804,7 +845,6 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f, bool p_skip_first_tag)
 
 	if (tag.name == "gd_scene") {
 		is_scene = true;
-		packed_scene.instance();
 
 	} else if (tag.name == "gd_resource") {
 		if (!tag.fields.has("type")) {
@@ -844,6 +884,281 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f, bool p_skip_first_tag)
 	rp.sub_func = _parse_sub_resources;
 	rp.func = NULL;
 	rp.userdata = this;
+}
+
+static void bs_save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false) {
+
+	CharString utf8 = p_string.utf8();
+	if (p_bit_on_len) {
+		f->store_32(utf8.length() + 1 | 0x80000000);
+	} else {
+		f->store_32(utf8.length() + 1);
+	}
+	f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+}
+
+Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const String &p_path) {
+
+	if (error)
+		return error;
+
+	FileAccessRef wf = FileAccess::open(p_path, FileAccess::WRITE);
+	if (!wf) {
+		return ERR_CANT_OPEN;
+	}
+
+	//save header compressed
+	static const uint8_t header[4] = { 'R', 'S', 'R', 'C' };
+	wf->store_buffer(header, 4);
+
+	wf->store_32(0); //endianness, little endian
+	wf->store_32(0); //64 bits file, false for now
+	wf->store_32(VERSION_MAJOR);
+	wf->store_32(VERSION_MINOR);
+	static const int save_format_version = 3; //use format version 3 for saving
+	wf->store_32(save_format_version);
+
+	bs_save_unicode_string(wf.f, is_scene ? "PackedScene" : resource_type);
+	wf->store_64(0); //offset to import metadata, this is no longer used
+	for (int i = 0; i < 14; i++)
+		wf->store_32(0); // reserved
+
+	wf->store_32(0); //string table size, will not be in use
+	size_t ext_res_count_pos = wf->get_position();
+
+	wf->store_32(0); //zero ext resources, still parsing them
+
+	//go with external resources
+
+	DummyReadData dummy_read;
+	VariantParser::ResourceParser rp;
+	rp.ext_func = _parse_ext_resource_dummys;
+	rp.sub_func = _parse_sub_resource_dummys;
+	rp.userdata = &dummy_read;
+
+	while (next_tag.name == "ext_resource") {
+
+		if (!next_tag.fields.has("path")) {
+			error = ERR_FILE_CORRUPT;
+			error_text = "Missing 'path' in external resource tag";
+			_printerr();
+			return error;
+		}
+
+		if (!next_tag.fields.has("type")) {
+			error = ERR_FILE_CORRUPT;
+			error_text = "Missing 'type' in external resource tag";
+			_printerr();
+			return error;
+		}
+
+		if (!next_tag.fields.has("id")) {
+			error = ERR_FILE_CORRUPT;
+			error_text = "Missing 'id' in external resource tag";
+			_printerr();
+			return error;
+		}
+
+		String path = next_tag.fields["path"];
+		String type = next_tag.fields["type"];
+		int index = next_tag.fields["id"];
+
+		bs_save_unicode_string(wf.f, type);
+		bs_save_unicode_string(wf.f, path);
+
+		int lindex = dummy_read.external_resources.size();
+		Ref<DummyResource> dr;
+		dr.instance();
+		dr->set_path("res://dummy" + itos(lindex)); //anything is good to detect it for saving as external
+		dummy_read.external_resources[dr] = lindex;
+		dummy_read.rev_external_resources[index] = dr;
+
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+
+		if (error) {
+			_printerr();
+			return error;
+		}
+	}
+
+	// save external resource table
+	wf->seek(ext_res_count_pos);
+	wf->store_32(dummy_read.external_resources.size());
+	wf->seek_end();
+
+	//now, save resources to a separate file, for now
+
+	size_t sub_res_count_pos = wf->get_position();
+	wf->store_32(0); //zero sub resources, still parsing them
+
+	String temp_file = p_path + ".temp";
+	FileAccessRef wf2 = FileAccess::open(temp_file, FileAccess::WRITE);
+	if (!wf2) {
+		return ERR_CANT_OPEN;
+	}
+
+	Vector<size_t> local_offsets;
+	Vector<size_t> local_pointers_pos;
+
+	while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
+
+		String type;
+		int id = -1;
+		bool main_res;
+
+		if (next_tag.name == "sub_resource") {
+			if (!next_tag.fields.has("type")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Missing 'type' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			if (!next_tag.fields.has("id")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Missing 'index' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			type = next_tag.fields["type"];
+			id = next_tag.fields["id"];
+			main_res = false;
+		} else {
+			type = res_type;
+			id = 0; //used for last anyway
+			main_res = true;
+		}
+
+		local_offsets.push_back(wf2->get_position());
+
+		bs_save_unicode_string(wf, "local://" + itos(id));
+		local_pointers_pos.push_back(wf->get_position());
+		wf->store_64(0); //temp local offset
+
+		bs_save_unicode_string(wf2, type);
+		size_t propcount_ofs = wf2->get_position();
+		wf2->store_32(0);
+
+		int prop_count = 0;
+
+		while (true) {
+
+			String assign;
+			Variant value;
+
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+
+			if (error) {
+				if (main_res && error == ERR_FILE_EOF) {
+					next_tag.name = ""; //exit
+					break;
+				}
+
+				_printerr();
+				return error;
+			}
+
+			if (assign != String()) {
+
+				Map<StringName, int> empty_string_map; //unused
+				bs_save_unicode_string(wf2, assign, true);
+				ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_set, dummy_read.external_resources, empty_string_map);
+				prop_count++;
+
+			} else if (next_tag.name != String()) {
+
+				error = OK;
+				break;
+			} else {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Premature end of file while parsing [sub_resource]";
+				_printerr();
+				return error;
+			}
+		}
+
+		wf2->seek(propcount_ofs);
+		wf2->store_32(prop_count);
+		wf2->seek_end();
+	}
+
+	if (next_tag.name == "node") {
+		//this is a node, must save one more!
+
+		if (!is_scene) {
+
+			error_text += "found the 'node' tag on a resource file!";
+			_printerr();
+			error = ERR_FILE_CORRUPT;
+			return error;
+		}
+
+		Ref<PackedScene> packed_scene = _parse_node_tag(rp);
+
+		if (!packed_scene.is_valid())
+			return error;
+
+		error = OK;
+		//get it here
+		List<PropertyInfo> props;
+		packed_scene->get_property_list(&props);
+
+		bs_save_unicode_string(wf, "local://0");
+		local_pointers_pos.push_back(wf->get_position());
+		wf->store_64(0); //temp local offset
+
+		local_offsets.push_back(wf2->get_position());
+		bs_save_unicode_string(wf2, "PackedScene");
+		size_t propcount_ofs = wf2->get_position();
+		wf2->store_32(0);
+
+		int prop_count = 0;
+
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+				continue;
+
+			String name = E->get().name;
+			Variant value = packed_scene->get(name);
+
+			Map<StringName, int> empty_string_map; //unused
+			bs_save_unicode_string(wf2, name, true);
+			ResourceFormatSaverBinaryInstance::write_variant(wf2, value, dummy_read.resource_set, dummy_read.external_resources, empty_string_map);
+			prop_count++;
+		}
+
+		wf2->seek(propcount_ofs);
+		wf2->store_32(prop_count);
+		wf2->seek_end();
+	}
+
+	wf2->close();
+
+	size_t offset_from = wf->get_position();
+	wf->seek(sub_res_count_pos); //plus one because the saved one
+	wf->store_32(local_offsets.size());
+
+	for (int i = 0; i < local_offsets.size(); i++) {
+		wf->seek(local_pointers_pos[i]);
+		wf->store_64(local_offsets[i] + offset_from);
+	}
+
+	wf->seek_end();
+
+	Vector<uint8_t> data = FileAccess::get_file_as_array(temp_file);
+	wf->store_buffer(data.ptr(), data.size());
+	{
+		DirAccessRef dar = DirAccess::open(temp_file.get_base_dir());
+		dar->remove(temp_file);
+	}
+
+	wf->store_buffer((const uint8_t *)"RSRC", 4); //magic at end
+
+	wf->close();
+
+	return OK;
 }
 
 String ResourceInteractiveLoaderText::recognize(FileAccess *p_f) {
@@ -989,6 +1304,25 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
 	return ria->rename_dependencies(f, p_path, p_map);
+}
+
+Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path, const String &p_dst_path) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
+
+	if (err != OK) {
+
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
+	}
+
+	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
+	String path = p_src_path;
+	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
+	ria->res_path = ria->local_path;
+	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
+	ria->open(f);
+	return ria->save_as_binary(f, p_dst_path);
 }
 
 /*****************************************************************************************************/

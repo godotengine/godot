@@ -5718,6 +5718,11 @@ EditorNode::EditorNode() {
 	editor_plugins_force_over = memnew(EditorPluginList);
 	editor_plugins_force_input_forwarding = memnew(EditorPluginList);
 
+	Ref<EditorExportTextSceneToBinaryPlugin> export_text_to_binary_plugin;
+	export_text_to_binary_plugin.instance();
+
+	EditorExport::get_singleton()->add_export_plugin(export_text_to_binary_plugin);
+
 	_edit_current();
 	current = NULL;
 

@@ -408,4 +408,13 @@ public:
 	EditorExportPlatformPC();
 };
 
+class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
+
+	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin)
+
+public:
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+	EditorExportTextSceneToBinaryPlugin();
+};
+
 #endif // EDITOR_IMPORT_EXPORT_H
