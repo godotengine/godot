@@ -42,7 +42,6 @@ class HTTPRequest : public Node {
 public:
 	enum Result {
 		RESULT_SUCCESS,
-		//RESULT_NO_BODY,
 		RESULT_CHUNKED_BODY_SIZE_MISMATCH,
 		RESULT_CANT_CONNECT,
 		RESULT_CANT_RESOLVE,

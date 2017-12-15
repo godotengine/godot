@@ -37,16 +37,31 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 		WARN_PRINT("Disabling HTTPClient's host verification is not supported for the HTML5 platform, host will be verified");
 	}
 
+	port = p_port;
+	use_tls = p_ssl;
+
 	host = p_host;
-	if (host.begins_with("http://")) {
+
+	String host_lower = conn_host.to_lower();
+	if (host_lower.begins_with("http://")) {
 		host.replace_first("http://", "");
-	} else if (host.begins_with("https://")) {
+	} else if (host_lower.begins_with("https://")) {
+		use_tls = true;
 		host.replace_first("https://", "");
 	}
 
+	ERR_FAIL_COND_V(host.length() < HOST_MIN_LEN, ERR_INVALID_PARAMETER);
+
+	if (port < 0) {
+		if (use_tls) {
+			port = PORT_HTTPS;
+		} else {
+			port = PORT_HTTP;
+		}
+	}
+
 	status = host.is_valid_ip_address() ? STATUS_CONNECTING : STATUS_RESOLVING;
-	port = p_port;
-	use_tls = p_ssl;
+
 	return OK;
 }
 
@@ -68,17 +83,7 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(host.empty(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
-
-	static const char *_methods[HTTPClient::METHOD_MAX] = {
-		"GET",
-		"HEAD",
-		"POST",
-		"PUT",
-		"DELETE",
-		"OPTIONS",
-		"TRACE",
-		"CONNECT"
-	};
+	ERR_FAIL_COND_V(!p_url.begins_with("/"), ERR_INVALID_PARAMETER);
 
 	String url = (use_tls ? "https://" : "http://") + host + ":" + itos(port) + "/" + p_url;
 	godot_xhr_reset(xhr_id);
