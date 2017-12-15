@@ -186,6 +186,11 @@ class GridMap : public Spatial {
 
 	Vector3 _get_offset() const;
 
+	struct BakedMesh {
+		Ref<Mesh> mesh;
+		Transform transform;
+	};
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
