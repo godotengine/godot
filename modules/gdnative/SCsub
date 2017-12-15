@@ -3,12 +3,12 @@
 Import('env')
 
 gdn_env = env.Clone()
-
-gdn_env.add_source_files(env.modules_sources, "gd_native_library_editor.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
 gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
 gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
 gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
+gdn_env.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
+gdn_env.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
 
 gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
 
