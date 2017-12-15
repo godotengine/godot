@@ -30,6 +30,7 @@
 
 #include "variant.h"
 
+#include "core/color_names.inc"
 #include "core_string_names.h"
 #include "io/compression.h"
 #include "object.h"
@@ -991,6 +992,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 		List<StringName> value_ordered;
 #endif
+		Map<StringName, Variant> variant_value;
 	};
 
 	static ConstantData *constant_data;
@@ -1001,6 +1003,11 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 		constant_data[p_type].value_ordered.push_back(p_constant_name);
 #endif
+	}
+
+	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
+
+		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
 	}
 };
 
@@ -1354,7 +1361,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 	}
 }
 
-void Variant::get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
+void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
@@ -1370,16 +1377,21 @@ void Variant::get_numeric_constants_for_type(Variant::Type p_type, List<StringNa
 		p_constants->push_back(E->key());
 #endif
 	}
+
+	for (Map<StringName, Variant>::Element *E = cd.variant_value.front(); E; E = E->next()) {
+
+		p_constants->push_back(E->key());
+	}
 }
 
-bool Variant::has_numeric_constant(Variant::Type p_type, const StringName &p_value) {
+bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	_VariantCall::ConstantData &cd = _VariantCall::constant_data[p_type];
-	return cd.value.has(p_value);
+	return cd.value.has(p_value) || cd.variant_value.has(p_value);
 }
 
-int Variant::get_numeric_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
+Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
 
 	if (r_valid)
 		*r_valid = false;
@@ -1389,7 +1401,14 @@ int Variant::get_numeric_constant_value(Variant::Type p_type, const StringName &
 
 	Map<StringName, int>::Element *E = cd.value.find(p_value);
 	if (!E) {
-		return -1;
+		Map<StringName, Variant>::Element *E = cd.variant_value.find(p_value);
+		if (E) {
+			if (r_valid)
+				*r_valid = true;
+			return E->get();
+		} else {
+			return -1;
+		}
 	}
 	if (r_valid)
 		*r_valid = true;
@@ -1858,9 +1877,62 @@ void register_variant_methods() {
 
 	/* REGISTER CONSTANTS */
 
+	_populate_named_colors();
+	for (Map<String, Color>::Element *color = _named_colors.front(); color; color = color->next()) {
+		_VariantCall::add_variant_constant(Variant::COLOR, color->key(), color->value());
+	}
+
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_X", Vector3::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Y", Vector3::AXIS_Y);
 	_VariantCall::add_constant(Variant::VECTOR3, "AXIS_Z", Vector3::AXIS_Z);
+
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(Math_INF, Math_INF, Math_INF));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3(0, -1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
+
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(Math_INF, Math_INF));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
+
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D(1, 0, 0, 1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
+
+	Transform identity_transform, transform_x, transform_y, transform_z;
+	identity_transform.set(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "IDENTITY", identity_transform);
+	transform_x.set(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_X", transform_x);
+	transform_x.set(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Y", transform_y);
+	transform_x.set(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", transform_z);
+
+	_VariantCall::add_variant_constant(Variant::PLANE, "X", Plane(Vector3(1, 0, 0), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "Y", Plane(Vector3(0, 1, 0), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "Z", Plane(Vector3(0, 0, 1), 0));
+
+	_VariantCall::add_variant_constant(Variant::QUAT, "IDENTITY", Quat(0, 0, 0, 1));
+
+	CharType black_circle[2] = { 0x25CF, 0 };
+	_VariantCall::add_variant_constant(Variant::STRING, "BLACK_CIRCLE", String(black_circle));
+	CharType white_circle[2] = { 0x25CB, 0 };
+	_VariantCall::add_variant_constant(Variant::STRING, "WHITE_CIRCLE", String(white_circle));
+	CharType black_diamond[2] = { 0x25C6, 0 };
+	_VariantCall::add_variant_constant(Variant::STRING, "BLACK_DIAMOND", String(black_diamond));
+	CharType white_diamond[2] = { 0x25C7, 0 };
+	_VariantCall::add_variant_constant(Variant::STRING, "WHITE_DIAMOND", String(white_diamond));
+
+	_VariantCall::add_variant_constant(Variant::NODE_PATH, "CURRENT", String("."));
+	_VariantCall::add_variant_constant(Variant::NODE_PATH, "PARENT", String(".."));
 }
 
 void unregister_variant_methods() {

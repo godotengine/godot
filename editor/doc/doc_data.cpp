@@ -535,13 +535,14 @@ void DocData::generate(bool p_basic_types) {
 		}
 
 		List<StringName> constants;
-		Variant::get_numeric_constants_for_type(Variant::Type(i), &constants);
+		Variant::get_constants_for_type(Variant::Type(i), &constants);
 
 		for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
 
 			ConstantDoc constant;
 			constant.name = E->get();
-			constant.value = itos(Variant::get_numeric_constant_value(Variant::Type(i), E->get()));
+			Variant value = Variant::get_constant_value(Variant::Type(i), E->get());
+			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string();
 			c.constants.push_back(constant);
 		}
 	}

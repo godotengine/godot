@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some methods (such as set_modulate(color)) may accept values &gt; 1.
-		You can also create a color from standardised color names with [method @GDScript.ColorN].
+		You can also create a color from standardised color names with Color.ColorN (e.g. Color.green) or [method @GDScript.ColorN].
 	</description>
 	<tutorials>
 	</tutorials>
