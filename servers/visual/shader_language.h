@@ -539,6 +539,7 @@ public:
 
 	struct FunctionInfo {
 		Map<StringName, DataType> built_ins;
+		Vector<StringName> readonly_built_ins;
 		bool can_discard;
 	};
 
@@ -604,6 +605,7 @@ private:
 	bool _find_identifier(const BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL);
 
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
+	bool _is_builtin_readonly(Node *p_node, const Vector<StringName> &p_builtin_consts);
 
 	struct BuiltinFuncDef {
 
@@ -625,14 +627,14 @@ private:
 	static const BuiltinFuncDef builtin_func_defs[];
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 
-	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const Vector<StringName> &p_builtin_readonly, OperatorNode *p_func, int *r_complete_arg = NULL);
 
-	Node *_parse_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types);
+	Node *_parse_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const Vector<StringName> &p_builtin_readonly);
 
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
-	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types);
+	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const Vector<StringName> &p_builtin_readonly);
 
-	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
+	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const Vector<StringName> &p_builtin_readonly, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
 
