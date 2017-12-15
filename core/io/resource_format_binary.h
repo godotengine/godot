@@ -140,15 +140,14 @@ class ResourceFormatSaverBinaryInstance {
 		List<Property> properties;
 	};
 
-	static void _pad_buffer(FileAccess *f, int p_bytes);
-	void _write_variant(const Variant &p_property, const PropertyInfo &p_hint = PropertyInfo());
+	void _pad_buffer(int p_bytes);
+	void write_variant(const Variant &p_property, const PropertyInfo &p_hint = PropertyInfo());
 	void _find_resources(const Variant &p_variant, bool p_main = false);
-	static void save_unicode_string(FileAccess *f, const String &p_string, bool p_bit_on_len = false);
+	void save_unicode_string(const String &p_string);
 	int get_string_index(const String &p_string);
 
 public:
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
-	static void write_variant(FileAccess *f, const Variant &p_property, Set<RES> &resource_set, Map<RES, int> &external_resources, Map<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {

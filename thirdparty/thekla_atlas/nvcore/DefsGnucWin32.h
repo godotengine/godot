@@ -19,9 +19,7 @@
 #endif
 
 #define NV_FASTCALL		__attribute__((fastcall))
-// -- GODOT start -
 #define NV_FORCEINLINE	__attribute__((always_inline)) inline
-// -- GODOT end -
 #define NV_DEPRECATED   __attribute__((deprecated))
 
 #if __GNUC__ > 2

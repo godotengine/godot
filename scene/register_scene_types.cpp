@@ -160,7 +160,6 @@
 #include "scene/3d/area.h"
 #include "scene/3d/arvr_nodes.h"
 #include "scene/3d/audio_stream_player_3d.h"
-#include "scene/3d/baked_lightmap.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_polygon.h"
@@ -376,8 +375,6 @@ void register_scene_types() {
 	ClassDB::register_class<ReflectionProbe>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
-	ClassDB::register_class<BakedLightmap>();
-	ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Particles>();
 	ClassDB::register_class<Position3D>();

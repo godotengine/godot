@@ -1098,7 +1098,7 @@ bool OS_X11::is_window_maximized() const {
 	return false;
 }
 
-void OS_X11::set_borderless_window(bool p_borderless) {
+void OS_X11::set_borderless_window(int p_borderless) {
 
 	if (current_videomode.borderless_window == p_borderless)
 		return;
@@ -2262,13 +2262,6 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 		XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
 	XFlush(x11_display);
-}
-
-void OS_X11::force_process_input() {
-	process_xevents(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-	joypad->process_joypads();
-#endif
 }
 
 void OS_X11::run() {

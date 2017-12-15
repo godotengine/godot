@@ -56,8 +56,7 @@ if env['builtin_thekla_atlas']:
     env_thekla_unwrap.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/poshlib", thirdparty_dir + "/nvcore", thirdparty_dir + "/nvmesh"])
 
     # upstream uses c++11
-    if (not env_thekla_unwrap.msvc):
-        env_thekla_unwrap.Append(CXXFLAGS="-std=c++11")
+    env_thekla_unwrap.Append(CXXFLAGS="-std=gnu++11")
 
     if env["platform"] == 'x11':
         env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX", "-DPOSH_COMPILER_GCC"])
@@ -67,7 +66,7 @@ if env['builtin_thekla_atlas']:
         if env.msvc:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC" ])
         else:
-            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
+            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC"])
             env.Append(LIBS=["dbghelp"])
         
 # Godot source files

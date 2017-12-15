@@ -35,14 +35,14 @@ layout(location=3) in vec4 color_attrib;
 layout(location=4) in vec2 uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 layout(location=5) in vec2 uv2_attrib;
 #endif
 
 uniform float normal_mult;
 
 #ifdef USE_SKELETON
-layout(location=6) in uvec4 bone_indices; // attrib:6
+layout(location=6) in ivec4 bone_indices; // attrib:6
 layout(location=7) in vec4 bone_weights; // attrib:7
 #endif
 
@@ -223,7 +223,7 @@ out vec4 color_interp;
 out vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined (USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 out vec2 uv2_interp;
 #endif
 
@@ -232,6 +232,9 @@ out vec2 uv2_interp;
 out vec3 tangent_interp;
 out vec3 binormal_interp;
 #endif
+
+
+
 
 
 #if defined(USE_MATERIAL)
@@ -299,16 +302,14 @@ void main() {
 #ifdef USE_SKELETON
 	{
 		//skeleton transform
-		ivec4 bone_indicesi = ivec4(bone_indices); // cast to signed int
-
-		ivec2 tex_ofs = ivec2( bone_indicesi.x%256, (bone_indicesi.x/256)*3 );
+		ivec2 tex_ofs = ivec2( bone_indices.x%256, (bone_indices.x/256)*3 );
 		highp mat3x4 m = mat3x4(
 			texelFetch(skeleton_texture,tex_ofs,0),
 			texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
 			texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
 		) * bone_weights.x;
 
-		tex_ofs = ivec2( bone_indicesi.y%256, (bone_indicesi.y/256)*3 );
+		tex_ofs = ivec2( bone_indices.y%256, (bone_indices.y/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
@@ -316,7 +317,7 @@ void main() {
 					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
 				) * bone_weights.y;
 
-		tex_ofs = ivec2( bone_indicesi.z%256, (bone_indicesi.z/256)*3 );
+		tex_ofs = ivec2( bone_indices.z%256, (bone_indices.z/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
@@ -325,7 +326,7 @@ void main() {
 				) * bone_weights.z;
 
 
-		tex_ofs = ivec2( bone_indicesi.w%256, (bone_indicesi.w/256)*3 );
+		tex_ofs = ivec2( bone_indices.w%256, (bone_indices.w/256)*3 );
 
 		m+= mat3x4(
 					texelFetch(skeleton_texture,tex_ofs,0),
@@ -353,7 +354,7 @@ void main() {
 	uv_interp = uv_attrib;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 	uv2_interp = uv2_attrib;
 #endif
 
@@ -546,7 +547,7 @@ in vec4 color_interp;
 in vec2 uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 in vec2 uv2_interp;
 #endif
 
@@ -1354,7 +1355,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 
 		reflection_accum+=reflection;
 	}
-#ifndef USE_LIGHTMAP
+
 	if (reflections[idx].ambient.a>0.0) { //compute ambient using skybox
 
 
@@ -1400,19 +1401,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 		ambient_accum+=ambient_out;
 
 	}
-#endif
 }
-
-#ifdef USE_LIGHTMAP
-uniform mediump sampler2D lightmap; //texunit:-9
-uniform mediump float lightmap_energy;
-#endif
-
-#ifdef USE_LIGHTMAP_CAPTURE
-uniform mediump vec4[12] lightmap_captures;
-uniform bool lightmap_capture_sky;
-
-#endif
 
 #ifdef USE_GI_PROBES
 
@@ -1641,7 +1630,7 @@ void main() {
 	vec2 uv = uv_interp;
 #endif
 
-#if defined(ENABLE_UV2_INTERP) || defined (USE_LIGHTMAP)
+#if defined(ENABLE_UV2_INTERP)
 	vec2 uv2 = uv2_interp;
 #endif
 
@@ -1754,7 +1743,7 @@ FRAGMENT_SHADER_CODE
 			//vec3 radiance = textureLod(radiance_cube, r, lod).xyz * ( brdf.x + brdf.y);
 
 		}
-#ifndef USE_LIGHTMAP
+
 		{
 
 			vec3 ambient_dir=normalize((radiance_inverse_xform * vec4(normal,0.0)).xyz);
@@ -1763,7 +1752,6 @@ FRAGMENT_SHADER_CODE
 			ambient_light=mix(ambient_light_color.rgb,env_ambient,radiance_ambient_contribution);
 			//ambient_light=vec3(0.0,0.0,0.0);
 		}
-#endif
 	}
 
 #else
@@ -1948,48 +1936,6 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-#ifdef USE_LIGHTMAP
-	ambient_light = texture(lightmap,uv2).rgb * lightmap_energy;
-#endif
-
-#ifdef USE_LIGHTMAP_CAPTURE
-	{
-		vec3 cone_dirs[12] = vec3[] (
-			vec3(0, 0, 1),
-			vec3(0.866025, 0, 0.5),
-			vec3(0.267617, 0.823639, 0.5),
-			vec3(-0.700629, 0.509037, 0.5),
-			vec3(-0.700629, -0.509037, 0.5),
-			vec3(0.267617, -0.823639, 0.5),
-			vec3(0, 0, -1),
-			vec3(0.866025, 0, -0.5),
-			vec3(0.267617, 0.823639, -0.5),
-			vec3(-0.700629, 0.509037, -0.5),
-			vec3(-0.700629, -0.509037, -0.5),
-			vec3(0.267617, -0.823639, -0.5)
-		);
-
-
-		vec3 local_normal = normalize(camera_matrix * vec4(normal,0.0)).xyz;
-		vec4 captured = vec4(0.0);
-		float sum = 0.0;
-		for(int i=0;i<12;i++) {
-			float amount = max(0.0,dot(local_normal,cone_dirs[i])); //not correct, but creates a nice wrap around effect
-			captured += lightmap_captures[i]*amount;
-			sum+=amount;
-		}
-
-		captured/=sum;
-
-		if (lightmap_capture_sky) {
-			ambient_light = mix( ambient_light, captured.rgb, captured.a);
-		} else {
-			ambient_light = captured.rgb;
-		}
-
-	}
-#endif
-
 #ifdef USE_FORWARD_LIGHTING
 
 
@@ -2004,11 +1950,11 @@ FRAGMENT_SHADER_CODE
 	} else {
 		specular_light+=env_reflection_light;
 	}
-#ifndef USE_LIGHTMAP
+
 	if (ambient_accum.a>0.0) {
 		ambient_light+=ambient_accum.rgb/ambient_accum.a;
 	}
-#endif
+
 
 
 #ifdef USE_VERTEX_LIGHTING

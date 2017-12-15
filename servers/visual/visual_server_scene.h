@@ -281,8 +281,6 @@ public:
 		List<Instance *> gi_probes;
 		bool gi_probes_dirty;
 
-		List<Instance *> lightmap_captures;
-
 		InstanceGeometryData() {
 
 			lighting_dirty = false;
@@ -447,20 +445,6 @@ public:
 
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
-	struct InstanceLightmapCaptureData : public InstanceBaseData {
-
-		struct PairInfo {
-			List<Instance *>::Element *L; //iterator in geometry
-			Instance *geometry;
-		};
-		List<PairInfo> geometries;
-
-		Set<Instance *> users;
-
-		InstanceLightmapCaptureData() {
-		}
-	};
-
 	Instance *instance_cull_result[MAX_INSTANCE_CULL];
 	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
 	Instance *light_cull_result[MAX_LIGHTS_CULLED];
@@ -482,7 +466,6 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
-	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap);
 
 	virtual void instance_set_custom_aabb(RID p_insatnce, AABB aabb);
 
@@ -506,7 +489,6 @@ public:
 	_FORCE_INLINE_ void _update_instance(Instance *p_instance);
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
-	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 
 	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
 

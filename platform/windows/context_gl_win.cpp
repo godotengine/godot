@@ -181,6 +181,8 @@ Error ContextGL_Win::initialize() {
 			MessageBox(NULL, "Can't Activate The GL 3.3 Rendering Context.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return ERR_CANT_CREATE; // Return FALSE
 		}
+
+		printf("Activated GL 3.3 context");
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");

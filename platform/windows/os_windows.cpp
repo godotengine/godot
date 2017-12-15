@@ -1598,7 +1598,7 @@ bool OS_Windows::is_window_maximized() const {
 	return maximized;
 }
 
-void OS_Windows::set_borderless_window(bool p_borderless) {
+void OS_Windows::set_borderless_window(int p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
 
@@ -2154,10 +2154,6 @@ void OS_Windows::make_rendering_thread() {
 void OS_Windows::swap_buffers() {
 
 	gl_context->swap_buffers();
-}
-
-void OS_Windows::force_process_input() {
-	process_events(); // get rid of pending events
 }
 
 void OS_Windows::run() {

@@ -62,8 +62,8 @@ Use UI font if exists, because it has tight vertical metrics and good for UI.
 ### Hack Regular
 
 - Upstream: https://github.com/source-foundry/Hack
-- Version: 3.000
-- License: MIT + Bitstream Vera License
+- Version: 2.020
+- License: Hack Open Font License v2.0
 
 ### DroidSans*.ttf
 
@@ -179,9 +179,6 @@ Files extracted from upstream source:
 
 TODO.
 
-Important: File `libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c` has
-Godot-made change marked with `// -- GODOT --` comments.
-
 
 ## libwebp
 
@@ -272,7 +269,7 @@ Collection of single-file libraries used in Godot components.
 ### poshlib
 
 - Upstream: http://poshlib.hookatooka.com/poshlib/trac.cgi (username guest, password guest123)
-- Version: 1.3.002
+- Version: 1.3.002 
 - License: MIT
 
 Files extracted from the upstream source:
@@ -307,10 +304,6 @@ Files extracted from the upstream source:
 
 - Relevant sources from src/
 - License.txt
-
-Important: Some files have Godot-made changes, those
-changes are marked with `// -- GODOT --` comments.
-
 
 ## nanosvg
 

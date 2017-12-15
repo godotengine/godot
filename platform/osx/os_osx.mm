@@ -1818,7 +1818,7 @@ void OS_OSX::request_attention() {
 	[NSApp requestUserAttention:NSCriticalRequest];
 }
 
-void OS_OSX::set_borderless_window(bool p_borderless) {
+void OS_OSX::set_borderless_window(int p_borderless) {
 
 	// OrderOut prevents a lose focus bug with the window
 	[window_object orderOut:nil];
@@ -1969,12 +1969,6 @@ void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEvent> ev = p_event;
 	input->parse_input_event(ev);
-}
-
-void OS_OSX::force_process_input() {
-
-	process_events(); // get rid of pending events
-	joypad_osx->process_joypads();
 }
 
 void OS_OSX::run() {
