@@ -158,6 +158,10 @@ public:
 	virtual bool is_action(const StringName &p_action) const;
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_released(const StringName &p_action) const;
+
+	virtual bool is_axis(const StringName &p_axis) const;
+	virtual float get_input_axis_value(const StringName &p_axis) const;
+
 	virtual bool is_echo() const;
 	virtual String as_text() const;
 
@@ -351,6 +355,8 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
+	virtual float get_input_axis_value(const StringName &p_axis) const;
+
 	virtual bool is_pressed() const;
 	virtual bool action_match(const Ref<InputEvent> &p_event) const;
 
@@ -472,8 +478,7 @@ class InputEventAxis : public InputEvent {
 	GDCLASS(InputEventAxis, InputEvent)
 
 	StringName axis;
-	float value;
-	bool pressed;
+	float axis_value;
 
 protected:
 	static void _bind_methods();
@@ -482,14 +487,14 @@ public:
 	void set_axis(const StringName &p_axis);
 	StringName get_axis() const;
 
-	void set_value(float p_value);
-	float get_value() const;
-	virtual bool is_pressed() const { return get_value() != 0.0f; };
+	void set_axis_value(float p_value);
+	float get_axis_value() const;
 
-	bool is_axis(const StringName &p_action) const;
-	virtual bool is_action(const StringName &p_action) const {
-		return is_axis(p_action);
-	};
+	virtual float get_input_axis_value(const StringName &p_axis) const;
+
+	virtual bool is_pressed() const { return axis_value != 0.0f; };
+	virtual bool is_axis(const StringName &p_axis) const { return axis == p_axis; };
+	virtual bool is_action(const StringName &p_action) const { return is_axis(p_action); };
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;

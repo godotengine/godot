@@ -94,6 +94,7 @@ public:
 
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
 	bool event_is_axis(const Ref<InputEvent> &p_event, const StringName &p_axis) const;
+	float event_get_axis_value(const Ref<InputEvent> &p_event, const StringName &p_axis);
 
 	const Map<StringName, Action> &get_action_map() const;
 	const Map<StringName, Axis> &get_axis_map() const;

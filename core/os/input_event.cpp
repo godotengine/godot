@@ -60,6 +60,17 @@ bool InputEvent::is_action_released(const StringName &p_action) const {
 	return (!is_pressed() && is_action(p_action));
 }
 
+bool InputEvent::is_axis(const StringName &p_axis) const {
+	return InputMap::get_singleton()->event_is_axis(Ref<InputEvent>((InputEvent *)this), p_axis);
+}
+
+float InputEvent::get_input_axis_value(const StringName &p_axis) const {
+	if (!is_axis(p_axis))
+		return 0.0f;
+
+	return InputMap::get_singleton()->event_get_axis_value(Ref<InputEvent>((InputEvent *) this), p_axis);
+}
+
 bool InputEvent::is_echo() const {
 
 	return false;
@@ -99,6 +110,10 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_released", "action"), &InputEvent::is_action_released);
+
+	ClassDB::bind_method(D_METHOD("is_axis", "axis"), &InputEvent::is_axis);
+	ClassDB::bind_method(D_METHOD("get_input_axis_value", "axis"), &InputEvent::get_input_axis_value);
+
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
@@ -615,6 +630,10 @@ float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
 }
 
+float InputEventJoypadMotion::get_input_axis_value(const StringName &p_axis) const {
+	return InputEvent::get_input_axis_value(p_axis) * axis_value;
+}
+
 bool InputEventJoypadMotion::is_pressed() const {
 
 	return Math::abs(axis_value) > 0.5f;
@@ -927,22 +946,21 @@ StringName InputEventAxis::get_axis() const {
 	return axis;
 }
 
-void InputEventAxis::set_value(float p_value) {
-	value = p_value;
+void InputEventAxis::set_axis_value(float p_value) {
+	axis_value = p_value;
 }
 
-float InputEventAxis::get_value() const {
-	return value;
+float InputEventAxis::get_axis_value() const {
+	return axis_value;
 }
 
-bool InputEventAxis::is_axis(const StringName &p_axis) const {
-
-	return axis == p_axis;
+float InputEventAxis::get_input_axis_value(const StringName &p_axis) const {
+	return is_axis(p_axis) ? axis_value : 0.0f;
 }
 
 String InputEventAxis::as_text() const {
 
-	return "InputEventAxis : axis=" + axis + ", pressed=" + (is_pressed() ? "true" : "false") + ", value=" + rtos(value);
+	return "InputEventAxis : axis=" + axis + ", pressed=" + (is_pressed() ? "true" : "false") + ", value=" + rtos(axis_value);
 }
 
 void InputEventAxis::_bind_methods() {
@@ -950,17 +968,17 @@ void InputEventAxis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventAxis::set_axis);
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventAxis::get_axis);
 
-	ClassDB::bind_method(D_METHOD("set_value", "value"), &InputEventAxis::set_value);
-	ClassDB::bind_method(D_METHOD("get_value"), &InputEventAxis::get_value);
+	ClassDB::bind_method(D_METHOD("set_axis_value", "value"), &InputEventAxis::set_axis_value);
+	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventAxis::get_axis_value);
 
 	ClassDB::bind_method(D_METHOD("is_axis", "name"), &InputEventAxis::is_axis);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "axis"), "set_axis", "get_axis");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "value"), "set_value", "get_value");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "axis_value"), "set_axis_value", "get_axis_value");
 }
 
 InputEventAxis::InputEventAxis() {
-	value = 0.0f;
+	axis_value = 0.0f;
 }
 /////////////////////////////
 

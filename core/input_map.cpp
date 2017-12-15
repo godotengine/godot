@@ -318,6 +318,15 @@ bool InputMap::event_is_axis(const Ref<InputEvent> &p_event, const StringName &p
 	return _find_event(E->get().inputs, p_event, true) != NULL;
 }
 
+float InputMap::event_get_axis_value(const Ref<InputEvent> &p_event, const StringName &p_axis) {
+	if (!event_is_axis(p_event, p_axis))
+		return 0.0f;
+
+	// If event_is_axis returned true, these will be valid pointers.
+	List<Map<Ref<InputEvent>, float> >::Element *E = _find_event(input_axis_map.find(p_axis)->get().inputs, p_event, true);
+	return E->get().front()->get();
+}
+
 const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
 	return input_map;
 }
