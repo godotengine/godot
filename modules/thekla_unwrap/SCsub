@@ -67,7 +67,7 @@ if env['builtin_thekla_atlas']:
         if env.msvc:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC" ])
         else:
-            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC"])
+            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
             env.Append(LIBS=["dbghelp"])
         
 # Godot source files

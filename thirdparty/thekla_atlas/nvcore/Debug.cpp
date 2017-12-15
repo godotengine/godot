@@ -14,6 +14,7 @@
 #   define VC_EXTRALEAN
 #   include <windows.h>
 #   include <direct.h>
+// -- GODOT start -
 #   include <crtdbg.h>
 #   if _MSC_VER < 1300
 #       define DECLSPEC_DEPRECATED
@@ -24,6 +25,7 @@
 // VC7: ships with updated headers
 #       include <dbghelp.h>
 #   endif
+// -- GODOT end -
 #   pragma comment(lib,"dbghelp.lib")
 #endif
 
@@ -107,8 +109,9 @@ namespace
 
 #endif
 
-
+// -- GODOT start -
 #if NV_OS_WIN32 || NV_OS_DURANGO
+// -- GODOT end -
 
     // We should try to simplify the top level filter as much as possible.
     // http://www.nynaeve.net/?p=128

@@ -308,6 +308,10 @@ Files extracted from the upstream source:
 - Relevant sources from src/
 - License.txt
 
+Important: Some files have Godot-made changes, those
+changes are marked with `// -- GODOT --` comments.
+
+
 ## nanosvg
 
 - Upstream: https://github.com/memononen/nanosvg
