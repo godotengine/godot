@@ -331,6 +331,12 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 	} else {
 		file_path->set_text(p);
 		_path_changed(p);
+
+		String filename = p.get_file().get_basename();
+		int select_start = p.find_last(filename);
+		file_path->select(select_start, select_start + filename.length());
+		file_path->set_cursor_position(select_start + filename.length());
+		file_path->grab_focus();
 	}
 }
 
