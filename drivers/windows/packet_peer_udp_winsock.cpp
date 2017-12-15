@@ -27,6 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef WINDOWS_ENABLED
+
 #include "packet_peer_udp_winsock.h"
 
 #include <winsock2.h>
@@ -291,3 +293,5 @@ PacketPeerUDPWinsock::~PacketPeerUDPWinsock() {
 
 	close();
 }
+
+#endif

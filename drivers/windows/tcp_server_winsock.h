@@ -27,6 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef WINDOWS_ENABLED
+
 #ifndef TCP_SERVER_WINSOCK_H
 #define TCP_SERVER_WINSOCK_H
 
@@ -52,5 +54,7 @@ public:
 	TCPServerWinsock();
 	~TCPServerWinsock();
 };
+
+#endif
 
 #endif
