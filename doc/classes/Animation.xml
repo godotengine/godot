@@ -38,6 +38,7 @@
 			<argument index="1" name="to_animation" type="Animation">
 			</argument>
 			<description>
+				Adds a new track that is a copy of the given track from [code]to_animation[/code].
 			</description>
 		</method>
 		<method name="find_track" qualifiers="const">
@@ -260,6 +261,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the track at index [code]idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="track_is_imported" qualifiers="const">
@@ -319,6 +321,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
+				Enables/disables the given track. Tracks are enabled by default.	
 			</description>
 		</method>
 		<method name="track_set_imported">
