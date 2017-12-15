@@ -459,7 +459,7 @@ void ScriptCreateDialog::_update_dialog() {
 			script_ok = false;
 		}
 	}
-	if (has_named_classes && (!is_class_name_valid)) {
+	if (has_named_classes && (is_new_script_created && !is_class_name_valid)) {
 		_msg_script_valid(false, TTR("Invalid class name"));
 		script_ok = false;
 	}
