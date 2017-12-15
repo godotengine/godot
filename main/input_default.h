@@ -57,7 +57,12 @@ class InputDefault : public Input {
 		bool pressed;
 	};
 
+	struct Axis {
+		float value;
+	};
+
 	Map<StringName, Action> action_state;
+	Map<StringName, Axis> axis_state;
 
 	bool emulate_touch;
 
@@ -182,6 +187,8 @@ public:
 	virtual bool is_action_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_pressed(const StringName &p_action) const;
 	virtual bool is_action_just_released(const StringName &p_action) const;
+
+	virtual float get_input_axis(const StringName &p_axis) const;
 
 	virtual float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);
