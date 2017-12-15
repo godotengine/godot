@@ -43,7 +43,7 @@ int PacketPeerUDPWinsock::get_available_packet_count() const {
 	return queue_count;
 }
 
-Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer, int &r_buffer_size) const {
+Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	Error err = const_cast<PacketPeerUDPWinsock *>(this)->_poll(false);
 	if (err != OK)
