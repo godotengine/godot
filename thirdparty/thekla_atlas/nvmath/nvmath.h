@@ -14,10 +14,12 @@
 #include <float.h>  // finite, isnan
 #endif
 
-#if NV_CPU_X86 || NV_CPU_X86_64
-    //#include <intrin.h>
-    #include <xmmintrin.h>
-#endif
+// -- GODOT start --
+//#if NV_CPU_X86 || NV_CPU_X86_64
+//    //#include <intrin.h>
+//    #include <xmmintrin.h>
+//#endif
+// -- GODOT end --
 
 
 
@@ -64,6 +66,13 @@
 #	error "Cannot enable both altivec and sse!"
 #endif
 
+
+// -- GODOT start --
+#if NV_USE_SSE
+    //#include <intrin.h>
+    #include <xmmintrin.h>
+#endif
+// -- GODOT end --
 
 
 #ifndef PI
