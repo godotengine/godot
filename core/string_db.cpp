@@ -73,11 +73,7 @@ void StringName::cleanup() {
 			lost_strings++;
 			if (OS::get_singleton()->is_stdout_verbose()) {
 
-				if (d->cname) {
-					print_line("Orphan StringName: " + String(d->cname));
-				} else {
-					print_line("Orphan StringName: " + String(d->name));
-				}
+				print_line("Orphan StringName: " + String(d->name));
 			}
 
 			_table[i] = _table[i]->next;
@@ -221,7 +217,6 @@ StringName::StringName(const char *p_name) {
 	_data->refcount.init();
 	_data->hash = hash;
 	_data->idx = idx;
-	_data->cname = NULL;
 	_data->next = _table[idx];
 	_data->prev = NULL;
 	if (_table[idx])
@@ -269,7 +264,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 	_data->refcount.init();
 	_data->hash = hash;
 	_data->idx = idx;
-	_data->cname = p_static_string.ptr;
+	_data->name = String(p_static_string.ptr);
 	_data->next = _table[idx];
 	_data->prev = NULL;
 	if (_table[idx])
@@ -317,7 +312,6 @@ StringName::StringName(const String &p_name) {
 	_data->refcount.init();
 	_data->hash = hash;
 	_data->idx = idx;
-	_data->cname = NULL;
 	_data->next = _table[idx];
 	_data->prev = NULL;
 	if (_table[idx])

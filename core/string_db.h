@@ -55,16 +55,14 @@ class StringName {
 
 	struct _Data {
 		SafeRefCount refcount;
-		const char *cname;
 		String name;
 
-		String get_name() const { return cname ? String(cname) : name; }
+		const String &get_name() const { return name; }
 		int idx;
 		uint32_t hash;
 		_Data *prev;
 		_Data *next;
 		_Data() {
-			cname = NULL;
 			next = prev = NULL;
 			hash = 0;
 		}
@@ -92,7 +90,7 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.empty())) ? (void *)1 : 0; }
+	operator const void *() const { return (_data && !_data->name.empty()) ? (void *)1 : 0; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
@@ -121,10 +119,7 @@ public:
 	_FORCE_INLINE_ operator String() const {
 
 		if (_data) {
-			if (_data->cname)
-				return String(_data->cname);
-			else
-				return _data->name;
+			return _data->name;
 		}
 
 		return String();
