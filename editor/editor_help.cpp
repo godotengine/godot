@@ -522,6 +522,19 @@ EditorHelpIndex::EditorHelpIndex() {
 /// /////////////////////////////////
 DocData *EditorHelp::doc = NULL;
 
+void EditorHelp::_init_colors() {
+
+	title_color = get_color("accent_color", "Editor");
+	text_color = get_color("default_color", "RichTextLabel");
+	headline_color = get_color("headline_color", "EditorHelp");
+	base_type_color = title_color.linear_interpolate(text_color, 0.5);
+	comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
+	symbol_color = comment_color;
+	value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
+	qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+}
+
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 
 	if (!is_visible_in_tree())
@@ -638,8 +651,6 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			t = p_enum.get_slice(".", 0);
 		}
 	}
-	const Color text_color = get_color("default_color", "RichTextLabel");
-	const Color type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->push_color(type_color);
 	if (can_ref) {
 		if (p_enum == "") {
@@ -652,6 +663,112 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (can_ref)
 		class_desc->pop();
 	class_desc->pop();
+}
+
+void EditorHelp::_add_method(const DocData::MethodDoc &p_method, int p_columns, bool p_meta) {
+
+	ERR_FAIL_COND(p_columns < 1 || p_columns > 2);
+
+	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
+
+	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
+
+	class_desc->push_cell();
+	if (p_columns == 2) {
+		class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
+	}
+
+	_add_type(p_method.return_type, p_method.return_enum);
+
+	if (p_columns == 2) {
+		class_desc->pop(); //align
+		class_desc->pop(); //cell
+		class_desc->push_cell();
+	} else {
+		class_desc->add_text(" ");
+	}
+
+	if (p_meta && p_method.description != "") {
+		class_desc->push_meta("@method" + p_method.name);
+	}
+
+	class_desc->push_color(headline_color);
+	_add_text(p_method.name);
+	class_desc->pop();
+
+	if (p_meta && p_method.description != "") {
+		class_desc->pop(); //meta
+	}
+
+	class_desc->push_color(symbol_color);
+	class_desc->add_text(p_method.arguments.size() || is_vararg ? "( " : "(");
+	class_desc->pop();
+
+	const int n_arguments = p_method.arguments.size();
+	const int n_arguments_and_vararg = n_arguments + (is_vararg ? 1 : 0);
+	const bool vertical_layout = n_arguments_and_vararg >= 2;
+
+	if (vertical_layout && n_arguments_and_vararg > 0) {
+		class_desc->pop(); //cell
+	}
+
+	for (int j = 0; j < n_arguments_and_vararg; j++) {
+		if (vertical_layout) {
+			if (j > 0) {
+				class_desc->pop(); //indent
+				class_desc->pop(); //cell
+			}
+
+			if (p_columns == 2) {
+				class_desc->push_cell();
+				class_desc->pop(); //cell
+			}
+
+			class_desc->push_cell();
+			class_desc->push_indent(1);
+		}
+
+		if (j < n_arguments) {
+
+			class_desc->push_color(text_color);
+			_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration);
+			class_desc->add_text(" ");
+			_add_text(p_method.arguments[j].name);
+			if (p_method.arguments[j].default_value != "") {
+
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("=");
+				class_desc->pop();
+				_add_text(p_method.arguments[j].default_value);
+			}
+
+			if (j < n_arguments - 1 || is_vararg)
+				class_desc->add_text(", ");
+
+			class_desc->pop(); //text_color
+		} else {
+
+			class_desc->push_color(symbol_color);
+			class_desc->add_text("...");
+			class_desc->pop();
+		}
+	}
+
+	class_desc->push_color(symbol_color);
+	class_desc->add_text(p_method.arguments.size() || is_vararg ? " )" : ")");
+	class_desc->pop();
+	if (p_method.qualifiers != "") {
+
+		class_desc->push_color(qualifier_color);
+		class_desc->add_text(" ");
+		_add_text(p_method.qualifiers);
+		class_desc->pop();
+	}
+
+	if (vertical_layout && n_arguments_and_vararg > 0)
+		class_desc->pop(); //indent
+
+	class_desc->pop(); //cell
 }
 
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
@@ -680,14 +797,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	//edited_class->show();
 
 	// Colors
-	const Color title_color = get_color("accent_color", "Editor");
-	const Color text_color = get_color("default_color", "RichTextLabel");
-	const Color headline_color = get_color("headline_color", "EditorHelp");
-	const Color base_type_color = title_color.linear_interpolate(text_color, 0.5);
-	const Color comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
-	const Color symbol_color = comment_color;
-	const Color value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
-	const Color qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	_init_colors();
 
 	DocData::ClassDoc cd = doc->class_list[p_class]; //make a copy, so we can sort without worrying
 
@@ -888,83 +998,28 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		//class_desc->add_newline();
 		//class_desc->add_newline();
 
+		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
 
 		for (int i = 0; i < methods.size(); i++) {
 
-			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
+			if (i > 0 && methods[i - 1].name.length() > 0 && methods[i].name.length() > 0 && methods[i - 1].name[0] != methods[i].name[0]) {
 
-			method_line[methods[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
-
-			class_desc->push_cell();
-			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
-			class_desc->push_font(doc_code_font);
-			_add_type(methods[i].return_type, methods[i].return_enum);
-			//class_desc->add_text(" ");
-			class_desc->pop(); //align
-			class_desc->pop(); //font
-			class_desc->pop(); //cell
-
-			class_desc->push_cell();
-			class_desc->push_font(doc_code_font);
-
-			if (methods[i].description != "") {
-				method_descr = true;
-				class_desc->push_meta("@method" + methods[i].name);
-			}
-			class_desc->push_color(headline_color);
-			_add_text(methods[i].name);
-			class_desc->pop();
-			if (methods[i].description != "")
-				class_desc->pop(); // pop meta
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
-			class_desc->pop();
-			for (int j = 0; j < methods[i].arguments.size(); j++) {
-				class_desc->push_color(text_color);
-				if (j > 0)
-					class_desc->add_text(", ");
-				_add_type(methods[i].arguments[j].type, methods[i].arguments[j].enumeration);
-				class_desc->add_text(" ");
-				_add_text(methods[i].arguments[j].name);
-				if (methods[i].arguments[j].default_value != "") {
-
-					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
+				for (int i = 0; i < 2; i++) {
+					class_desc->push_cell();
 					class_desc->pop();
-					_add_text(methods[i].arguments[j].default_value);
 				}
-
-				class_desc->pop();
 			}
 
-			if (is_vararg) {
-				class_desc->push_color(text_color);
-				if (methods[i].arguments.size())
-					class_desc->add_text(", ");
-				class_desc->push_color(symbol_color);
-				class_desc->add_text("...");
-				class_desc->pop();
-				class_desc->pop();
-			}
+			_add_method(methods[i], 2, true);
 
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
-			class_desc->pop();
-			if (methods[i].qualifiers != "") {
-
-				class_desc->push_color(qualifier_color);
-				class_desc->add_text(" ");
-				_add_text(methods[i].qualifiers);
-				class_desc->pop();
-			}
-			class_desc->pop(); //monofont
-			//class_desc->add_newline();
-			class_desc->pop(); //cell
+			if (methods[i].description != "")
+				method_descr = true;
 		}
 		class_desc->pop(); //table
+		class_desc->pop(); //monofont
 		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
@@ -1366,65 +1421,17 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < methods.size(); i++) {
 
-			bool is_vararg = methods[i].qualifiers.find("vararg") != -1;
-
-			method_line[methods[i].name] = class_desc->get_line_count() - 2;
-
 			class_desc->push_font(doc_code_font);
-			_add_type(methods[i].return_type, methods[i].return_enum);
+			class_desc->push_table(1);
 
-			class_desc->add_text(" ");
-			class_desc->push_color(headline_color);
-			_add_text(methods[i].name);
-			class_desc->pop();
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? "( " : "(");
-			class_desc->pop();
-			for (int j = 0; j < methods[i].arguments.size(); j++) {
-				class_desc->push_color(text_color);
-				if (j > 0)
-					class_desc->add_text(", ");
-				_add_type(methods[i].arguments[j].type, methods[i].arguments[j].enumeration);
-				class_desc->add_text(" ");
-				_add_text(methods[i].arguments[j].name);
-				if (methods[i].arguments[j].default_value != "") {
+			_add_method(methods[i]);
 
-					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
-					class_desc->pop();
-					_add_text(methods[i].arguments[j].default_value);
-				}
+			class_desc->pop(); //table
+			class_desc->pop(); //font
 
-				class_desc->pop();
-			}
-
-			if (is_vararg) {
-				class_desc->push_color(text_color);
-				if (methods[i].arguments.size())
-					class_desc->add_text(", ");
-				class_desc->push_color(symbol_color);
-				class_desc->add_text("...");
-				class_desc->pop();
-				class_desc->pop();
-			}
-
-			class_desc->push_color(symbol_color);
-			class_desc->add_text(methods[i].arguments.size() || is_vararg ? " )" : ")");
-			class_desc->pop();
-			if (methods[i].qualifiers != "") {
-
-				class_desc->push_color(qualifier_color);
-				class_desc->add_text(" ");
-				_add_text(methods[i].qualifiers);
-				class_desc->pop();
-			}
-
-			class_desc->pop();
-
-			class_desc->add_newline();
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
-			class_desc->push_indent(1);
+			class_desc->push_indent(2);
 			if (methods[i].description.strip_edges() != String()) {
 				_add_text(methods[i].description);
 			} else {

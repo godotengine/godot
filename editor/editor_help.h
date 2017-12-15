@@ -134,10 +134,22 @@ class EditorHelp : public VBoxContainer {
 	HSplitContainer *h_split;
 	static DocData *doc;
 
+	Color title_color;
+	Color text_color;
+	Color headline_color;
+	Color base_type_color;
+	Color type_color;
+	Color comment_color;
+	Color symbol_color;
+	Color value_color;
+	Color qualifier_color;
+
 	ConfirmationDialog *search_dialog;
 	LineEdit *search;
 
 	String base_path;
+
+	void _init_colors();
 
 	void _help_callback(const String &p_topic);
 
@@ -146,6 +158,7 @@ class EditorHelp : public VBoxContainer {
 
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
+	void _add_method(const DocData::MethodDoc &p_method, int p_columns = 1, bool p_meta = false);
 
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
