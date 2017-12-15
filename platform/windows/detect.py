@@ -269,7 +269,7 @@ def configure(env):
 
         if (env["openmp"]):
             env.Append(CPPFLAGS=['-fopenmp'])
-            env.Append(LIBS=['gomp'])
+            env.Append(LINKFLAGS=['-fopenmp'])
 
         ## Compile flags
 

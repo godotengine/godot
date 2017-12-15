@@ -394,8 +394,10 @@ namespace
 #pragma warning(disable:4748)
     static NV_NOINLINE int backtrace(void * trace[], int maxcount) {
         CONTEXT ctx = { 0 };
+// -- GODOT start --
 #if NV_CPU_X86 && !NV_CPU_X86_64
         ctx.ContextFlags = CONTEXT_CONTROL;
+#if NV_CC_MSVC
         _asm {
              call x
           x: pop eax
@@ -403,6 +405,13 @@ namespace
              mov ctx.Ebp, ebp
              mov ctx.Esp, esp
         }
+#else
+        register long unsigned int ebp asm("ebp");
+        ctx.Eip = (DWORD) __builtin_return_address(0);
+        ctx.Ebp = ebp;
+        ctx.Esp = (DWORD) __builtin_frame_address(0);
+#endif
+// -- GODOT end --
 #else
         RtlCaptureContext(&ctx); // Not implemented correctly in x86.
 #endif
