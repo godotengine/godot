@@ -175,6 +175,7 @@ BakedLightmap::Subdiv BakedLightmap::get_capture_subdiv() const {
 
 void BakedLightmap::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
+	update_gizmo();
 }
 
 Vector3 BakedLightmap::get_extents() const {
