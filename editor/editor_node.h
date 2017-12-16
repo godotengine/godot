@@ -316,6 +316,7 @@ private:
 	ToolButton *resource_new_button;
 	ToolButton *resource_load_button;
 	MenuButton *resource_save_button;
+	ToolButton *resource_help_button;
 	MenuButton *editor_history_menu;
 
 	EditorLog *log;
