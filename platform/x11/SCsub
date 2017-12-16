@@ -4,9 +4,9 @@ import os
 Import('env')
 
 def make_debug(target, source, env):
-    os.system('objcopy --only-keep-debug %s %s.debug' % (target[0], target[0]))
+    os.system('objcopy --only-keep-debug %s %s.debugsymbols' % (target[0], target[0]))
     os.system('strip --strip-debug --strip-unneeded %s' % (target[0]))
-    os.system('objcopy --add-gnu-debuglink=%s.debug %s' % (target[0], target[0]))
+    os.system('objcopy --add-gnu-debuglink=%s.debugsymbols %s' % (target[0], target[0]))
 
 common_x11 = [
     "context_gl_x11.cpp",
