@@ -551,6 +551,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				text_edit->show();
 				text_edit->set_text(v);
+				text_edit->deselect();
 
 				int button_margin = get_constant("button_margin", "Dialogs");
 				int margin = get_constant("margin", "Dialogs");
