@@ -4265,6 +4265,7 @@ PropertyEditor::PropertyEditor() {
 	tree->set_column_min_width(0, 30);
 	tree->set_column_expand(1, true);
 	tree->set_column_min_width(1, 18);
+	tree->set_indent_children(false);
 	add_child(tree);
 
 	tree->connect("item_edited", this, "_item_edited", varray(), CONNECT_DEFERRED);
