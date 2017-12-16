@@ -536,12 +536,21 @@ String OS::get_joy_guid(int p_device) const {
 
 void OS::set_context(int p_context) {
 }
+
+OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = NULL;
+
 void OS::set_use_vsync(bool p_enable) {
+	_use_vsync = p_enable;
+	if (switch_vsync_function) { //if a function was set, use function
+		switch_vsync_function(p_enable);
+	} else { //otherwise just call here
+		_set_use_vsync(p_enable);
+	}
 }
 
 bool OS::is_vsync_enabled() const {
 
-	return true;
+	return _use_vsync;
 }
 
 OS::PowerState OS::get_power_state() {

@@ -668,6 +668,8 @@ public:
 	virtual bool has_os_feature(const String &p_feature) const;
 	virtual void set_debug_generate_wireframes(bool p_generate);
 
+	virtual void call_set_use_vsync(bool p_enable);
+
 	VisualServerRaster();
 	~VisualServerRaster();
 

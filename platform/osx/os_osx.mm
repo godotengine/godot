@@ -2063,14 +2063,14 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-void OS_OSX::set_use_vsync(bool p_enable) {
+void OS_OSX::_set_use_vsync(bool p_enable) {
 	CGLContextObj ctx = CGLGetCurrentContext();
 	if (ctx) {
 		GLint swapInterval = p_enable ? 1 : 0;
 		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
 	}
 }
-
+/*
 bool OS_OSX::is_vsync_enabled() const {
 	GLint swapInterval = 0;
 	CGLContextObj ctx = CGLGetCurrentContext();
@@ -2079,7 +2079,7 @@ bool OS_OSX::is_vsync_enabled() const {
 	}
 	return swapInterval ? true : false;
 }
-
+*/
 OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {

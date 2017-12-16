@@ -270,8 +270,8 @@ public:
 
 	virtual void set_context(int p_context);
 
-	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsync_enabled() const;
+	virtual void _set_use_vsync(bool p_enable);
+	//virtual bool is_vsync_enabled() const;
 
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();

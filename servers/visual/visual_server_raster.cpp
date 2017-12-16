@@ -181,6 +181,10 @@ void VisualServerRaster::set_debug_generate_wireframes(bool p_generate) {
 	VSG::storage->set_debug_generate_wireframes(p_generate);
 }
 
+void VisualServerRaster::call_set_use_vsync(bool p_enable) {
+	OS::get_singleton()->_set_use_vsync(p_enable);
+}
+
 VisualServerRaster::VisualServerRaster() {
 
 	VSG::canvas = memnew(VisualServerCanvas);

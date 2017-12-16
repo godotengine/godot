@@ -215,8 +215,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
-	virtual void set_use_vsync(bool p_enable);
-	virtual bool is_vsync_enabled() const;
+	virtual void _set_use_vsync(bool p_enable);
+	//virtual bool is_vsync_enabled() const;
 
 	void run();
 

@@ -1922,6 +1922,7 @@ VisualServer::VisualServer() {
 
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
+
 	GLOBAL_DEF("rendering/vram_compression/import_s3tc", true);
 	GLOBAL_DEF("rendering/vram_compression/import_etc", false);
 	GLOBAL_DEF("rendering/vram_compression/import_etc2", true);

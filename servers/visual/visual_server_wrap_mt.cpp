@@ -158,8 +158,18 @@ void VisualServerWrapMT::finish() {
 	canvas_occluder_polygon_free_cached_ids();
 }
 
+void VisualServerWrapMT::set_use_vsync_callback(bool p_enable) {
+
+	singleton_mt->call_set_use_vsync(p_enable);
+}
+
+VisualServerWrapMT *VisualServerWrapMT::singleton_mt = NULL;
+
 VisualServerWrapMT::VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
+
+	singleton_mt = this;
+	OS::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
 
 	visual_server = p_contained;
 	create_thread = p_create_thread;

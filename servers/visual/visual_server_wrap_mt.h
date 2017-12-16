@@ -64,6 +64,8 @@ class VisualServerWrapMT : public VisualServer {
 
 	//#define DEBUG_SYNC
 
+	static VisualServerWrapMT *singleton_mt;
+
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
@@ -583,6 +585,10 @@ public:
 
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
 	virtual bool has_os_feature(const String &p_feature) const { return visual_server->has_os_feature(p_feature); }
+
+	FUNC1(call_set_use_vsync, bool)
+
+	static void set_use_vsync_callback(bool p_enable);
 
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);
 	~VisualServerWrapMT();
