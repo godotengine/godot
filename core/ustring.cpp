@@ -393,7 +393,7 @@ bool String::operator<(const CharType *p_str) const {
 	return false; //should never reach here anyway
 }
 
-bool String::operator<=(String p_str) const {
+bool String::operator<=(const String &p_str) const {
 
 	return (*this < p_str) || (*this == p_str);
 }
@@ -426,7 +426,7 @@ bool String::operator<(const char *p_str) const {
 	return false; //should never reach here anyway
 }
 
-bool String::operator<(String p_str) const {
+bool String::operator<(const String &p_str) const {
 
 	return operator<(p_str.c_str());
 }
@@ -902,7 +902,10 @@ String String::to_upper() const {
 
 	for (int i = 0; i < upper.size(); i++) {
 
-		upper[i] = _find_upper(upper[i]);
+		const char s = upper[i];
+		const char t = _find_upper(s);
+		if (s != t) // avoid copy on write
+			upper[i] = t;
 	}
 
 	return upper;
@@ -910,20 +913,17 @@ String String::to_upper() const {
 
 String String::to_lower() const {
 
-	String upper = *this;
+	String lower = *this;
 
-	for (int i = 0; i < upper.size(); i++) {
+	for (int i = 0; i < lower.size(); i++) {
 
-		upper[i] = _find_lower(upper[i]);
+		const char s = lower[i];
+		const char t = _find_lower(s);
+		if (s != t) // avoid copy on write
+			lower[i] = t;
 	}
 
-	return upper;
-}
-
-int String::length() const {
-
-	int s = size();
-	return s ? (s - 1) : 0; // length does not include zero
+	return lower;
 }
 
 const CharType *String::c_str() const {
@@ -2175,7 +2175,7 @@ Vector<uint8_t> String::sha256_buffer() const {
 	return ret;
 }
 
-String String::insert(int p_at_pos, String p_string) const {
+String String::insert(int p_at_pos, const String &p_string) const {
 
 	if (p_at_pos < 0)
 		return *this;
@@ -2203,10 +2203,15 @@ String String::substr(int p_from, int p_chars) const {
 		p_chars = length() - p_from;
 	}
 
+	if (p_from == 0 && p_chars >= length()) {
+
+		return String(*this);
+	}
+
 	return String(&c_str()[p_from], p_chars);
 }
 
-int String::find_last(String p_str) const {
+int String::find_last(const String &p_str) const {
 
 	int pos = -1;
 	int findfrom = 0;
@@ -2219,19 +2224,21 @@ int String::find_last(String p_str) const {
 
 	return pos;
 }
-int String::find(String p_str, int p_from) const {
+
+int String::find(const String &p_str, int p_from) const {
 
 	if (p_from < 0)
 		return -1;
 
-	int src_len = p_str.length();
+	const int src_len = p_str.length();
 
-	int len = length();
+	const int len = length();
 
 	if (src_len == 0 || len == 0)
 		return -1; //wont find anything!
 
 	const CharType *src = c_str();
+	const CharType *str = p_str.c_str();
 
 	for (int i = p_from; i <= (len - src_len); i++) {
 
@@ -2246,7 +2253,7 @@ int String::find(String p_str, int p_from) const {
 				return -1;
 			};
 
-			if (src[read_pos] != p_str[j]) {
+			if (src[read_pos] != str[j]) {
 				found = false;
 				break;
 			}
@@ -2254,6 +2261,62 @@ int String::find(String p_str, int p_from) const {
 
 		if (found)
 			return i;
+	}
+
+	return -1;
+}
+
+int String::find(const char *p_str, int p_from) const {
+
+	if (p_from < 0)
+		return -1;
+
+	const int len = length();
+
+	if (len == 0)
+		return -1; //wont find anything!
+
+	const CharType *src = c_str();
+
+	int src_len = 0;
+	while (p_str[src_len] != '\0')
+		src_len++;
+
+	if (src_len == 1) {
+
+		const char needle = p_str[0];
+
+		for (int i = p_from; i < len; i++) {
+
+			if (src[i] == needle) {
+				return i;
+			}
+		}
+
+	} else {
+
+		for (int i = p_from; i <= (len - src_len); i++) {
+
+			bool found = true;
+			for (int j = 0; j < src_len; j++) {
+
+				int read_pos = i + j;
+
+				if (read_pos >= len) {
+
+					ERR_PRINT("read_pos>=len");
+					return -1;
+				};
+
+				if (src[read_pos] != p_str[j]) {
+					found = false;
+					break;
+				}
+			}
+
+			if (found)
+				return i;
+		}
 	}
 
 	return -1;
@@ -2313,7 +2376,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	return -1;
 }
 
-int String::findn(String p_str, int p_from) const {
+int String::findn(const String &p_str, int p_from) const {
 
 	if (p_from < 0)
 		return -1;
@@ -2354,7 +2417,7 @@ int String::findn(String p_str, int p_from) const {
 	return -1;
 }
 
-int String::rfind(String p_str, int p_from) const {
+int String::rfind(const String &p_str, int p_from) const {
 
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -2400,7 +2463,7 @@ int String::rfind(String p_str, int p_from) const {
 
 	return -1;
 }
-int String::rfindn(String p_str, int p_from) const {
+int String::rfindn(const String &p_str, int p_from) const {
 
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -2700,7 +2763,7 @@ String String::format(const Variant &values, String placeholder) const {
 	return new_string;
 }
 
-String String::replace(String p_key, String p_with) const {
+String String::replace(const String &p_key, const String &p_with) const {
 
 	String new_string;
 	int search_from = 0;
@@ -2713,12 +2776,43 @@ String String::replace(String p_key, String p_with) const {
 		search_from = result + p_key.length();
 	}
 
+	if (search_from == 0) {
+
+		return *this;
+	}
+
 	new_string += substr(search_from, length() - search_from);
 
 	return new_string;
 }
 
-String String::replace_first(String p_key, String p_with) const {
+String String::replace(const char *p_key, const char *p_with) const {
+
+	String new_string;
+	int search_from = 0;
+	int result = 0;
+
+	while ((result = find(p_key, search_from)) >= 0) {
+
+		new_string += substr(search_from, result - search_from);
+		new_string += p_with;
+		int k = 0;
+		while (p_key[k] != '\0')
+			k++;
+		search_from = result + k;
+	}
+
+	if (search_from == 0) {
+
+		return *this;
+	}
+
+	new_string += substr(search_from, length() - search_from);
+
+	return new_string;
+}
+
+String String::replace_first(const String &p_key, const String &p_with) const {
 
 	String new_string;
 	int search_from = 0;
@@ -2732,11 +2826,16 @@ String String::replace_first(String p_key, String p_with) const {
 		break;
 	}
 
+	if (search_from == 0) {
+
+		return *this;
+	}
+
 	new_string += substr(search_from, length() - search_from);
 
 	return new_string;
 }
-String String::replacen(String p_key, String p_with) const {
+String String::replacen(const String &p_key, const String &p_with) const {
 
 	String new_string;
 	int search_from = 0;
@@ -2747,6 +2846,11 @@ String String::replacen(String p_key, String p_with) const {
 		new_string += substr(search_from, result - search_from);
 		new_string += p_with;
 		search_from = result + p_key.length();
+	}
+
+	if (search_from == 0) {
+
+		return *this;
 	}
 
 	new_string += substr(search_from, length() - search_from);
