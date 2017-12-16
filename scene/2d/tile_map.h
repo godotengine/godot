@@ -245,6 +245,7 @@ public:
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
+	void update_bitmask_region(const Vector2 &p_start = Vector2(), const Vector2 &p_end = Vector2());
 	void update_cell_bitmask(int p_x, int p_y);
 	void update_dirty_bitmask();
 

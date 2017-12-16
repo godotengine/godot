@@ -739,6 +739,26 @@ void TileMap::update_bitmask_area(const Vector2 &p_pos) {
 	}
 }
 
+void TileMap::update_bitmask_region(const Vector2 &p_start, const Vector2 &p_end) {
+
+	if ((p_end.x < p_start.x || p_end.y < p_start.y) || (p_end.x == p_start.x && p_end.y == p_start.y)) {
+		int i;
+		Array a = get_used_cells();
+		for (i = 0; i < a.size(); i++) {
+			// update_bitmask_area() in order to update cells adjacent to the
+			// current cell, since ordering in array may not be reliable
+			Vector2 vector = (Vector2)a[i];
+			update_bitmask_area(Vector2(vector.x, vector.y));
+		}
+		return;
+	}
+	for (int x = p_start.x - 1; x <= p_end.x + 1; x++) {
+		for (int y = p_start.y - 1; y <= p_end.y + 1; y++) {
+			update_cell_bitmask(x, y);
+		}
+	}
+}
+
 void TileMap::update_cell_bitmask(int p_x, int p_y) {
 
 	PosKey p(p_x, p_y);
@@ -1506,6 +1526,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
 	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
+
+	ClassDB::bind_method(D_METHOD("update_bitmask_area"), &TileMap::update_bitmask_area);
+	ClassDB::bind_method(D_METHOD("update_bitmask_region", "start", "end"), &TileMap::update_bitmask_region, DEFVAL(Vector2()), DEFVAL(Vector2()));
 
 	ClassDB::bind_method(D_METHOD("_set_tile_data"), &TileMap::_set_tile_data);
 	ClassDB::bind_method(D_METHOD("_get_tile_data"), &TileMap::_get_tile_data);
