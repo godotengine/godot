@@ -35,9 +35,9 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/spin_box.h"
 
-class MeshInstanceEditor : public Node {
+class MeshInstanceEditor : public Control {
 
-	GDCLASS(MeshInstanceEditor, Node);
+	GDCLASS(MeshInstanceEditor, Control);
 
 	enum Menu {
 
