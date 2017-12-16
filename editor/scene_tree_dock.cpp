@@ -1373,77 +1373,81 @@ void SceneTreeDock::_create() {
 		}
 
 	} else if (current_option == TOOL_REPLACE) {
-		Node *n = scene_tree->get_selected();
-		ERR_FAIL_COND(!n);
+		List<Node *> selection = editor_selection->get_selected_node_list();
+		ERR_FAIL_COND(selection.size() <= 0);
+		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			Node *n = E->get();
+			ERR_FAIL_COND(!n);
 
-		Object *c = create_dialog->instance_selected();
+			Object *c = create_dialog->instance_selected();
 
-		ERR_FAIL_COND(!c);
-		Node *newnode = Object::cast_to<Node>(c);
-		ERR_FAIL_COND(!newnode);
+			ERR_FAIL_COND(!c);
+			Node *newnode = Object::cast_to<Node>(c);
+			ERR_FAIL_COND(!newnode);
 
-		List<PropertyInfo> pinfo;
-		n->get_property_list(&pinfo);
+			List<PropertyInfo> pinfo;
+			n->get_property_list(&pinfo);
 
-		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-				continue;
-			if (E->get().name == "__meta__")
-				continue;
-			newnode->set(E->get().name, n->get(E->get().name));
-		}
-
-		editor->push_item(NULL);
-
-		//reconnect signals
-		List<MethodInfo> sl;
-
-		n->get_signal_list(&sl);
-		for (List<MethodInfo>::Element *E = sl.front(); E; E = E->next()) {
-
-			List<Object::Connection> cl;
-			n->get_signal_connection_list(E->get().name, &cl);
-
-			for (List<Object::Connection>::Element *F = cl.front(); F; F = F->next()) {
-
-				Object::Connection &c = F->get();
-				if (!(c.flags & Object::CONNECT_PERSIST))
+			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+				if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 					continue;
-				newnode->connect(c.signal, c.target, c.method, varray(), Object::CONNECT_PERSIST);
+				if (E->get().name == "__meta__")
+					continue;
+				newnode->set(E->get().name, n->get(E->get().name));
 			}
-		}
 
-		String newname = n->get_name();
+			editor->push_item(NULL);
 
-		List<Node *> to_erase;
-		for (int i = 0; i < n->get_child_count(); i++) {
-			if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
-				to_erase.push_back(n->get_child(i));
+			//reconnect signals
+			List<MethodInfo> sl;
+
+			n->get_signal_list(&sl);
+			for (List<MethodInfo>::Element *E = sl.front(); E; E = E->next()) {
+
+				List<Object::Connection> cl;
+				n->get_signal_connection_list(E->get().name, &cl);
+
+				for (List<Object::Connection>::Element *F = cl.front(); F; F = F->next()) {
+
+					Object::Connection &c = F->get();
+					if (!(c.flags & Object::CONNECT_PERSIST))
+						continue;
+					newnode->connect(c.signal, c.target, c.method, varray(), Object::CONNECT_PERSIST);
+				}
 			}
-		}
-		n->replace_by(newnode, true);
 
-		if (n == edited_scene) {
-			edited_scene = newnode;
-			editor->set_edited_scene(newnode);
-			newnode->set_editable_instances(n->get_editable_instances());
-		}
+			String newname = n->get_name();
 
-		//small hack to make collisionshapes and other kind of nodes to work
-		for (int i = 0; i < newnode->get_child_count(); i++) {
-			Node *c = newnode->get_child(i);
-			c->call("set_transform", c->call("get_transform"));
-		}
-		editor_data->get_undo_redo().clear_history();
-		newnode->set_name(newname);
+			List<Node *> to_erase;
+			for (int i = 0; i < n->get_child_count(); i++) {
+				if (n->get_child(i)->get_owner() == NULL && n->is_owned_by_parent()) {
+					to_erase.push_back(n->get_child(i));
+				}
+			}
+			n->replace_by(newnode, true);
 
-		editor->push_item(newnode);
+			if (n == edited_scene) {
+				edited_scene = newnode;
+				editor->set_edited_scene(newnode);
+				newnode->set_editable_instances(n->get_editable_instances());
+			}
 
-		memdelete(n);
+			//small hack to make collisionshapes and other kind of nodes to work
+			for (int i = 0; i < newnode->get_child_count(); i++) {
+				Node *c = newnode->get_child(i);
+				c->call("set_transform", c->call("get_transform"));
+			}
+			editor_data->get_undo_redo().clear_history();
+			newnode->set_name(newname);
 
-		while (to_erase.front()) {
-			memdelete(to_erase.front()->get());
-			to_erase.pop_front();
+			editor->push_item(newnode);
+
+			memdelete(n);
+
+			while (to_erase.front()) {
+				memdelete(to_erase.front()->get());
+				to_erase.pop_front();
+			}
 		}
 	}
 }
@@ -1737,13 +1741,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
-		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
 	}
-
+	menu->add_icon_shortcut(get_icon("Reload", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("MoveUp", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
 	menu->add_icon_shortcut(get_icon("MoveDown", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
 	menu->add_icon_shortcut(get_icon("Duplicate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
