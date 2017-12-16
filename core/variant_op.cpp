@@ -1057,7 +1057,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					_RETURN("Division By Zero");
 				}
 #endif
-				_RETURN(p_a._data._int % p_b._data._int);
+				// The modulo operator in C++ is more a "reminder" operator than a true mathematical modulo operation.
+				// This fixes the problem. It also makes the modulo operator work the same as in python.
+				_RETURN(((p_a._data._int % p_b._data._int) + p_b._data._int) % p_b._data._int);
 			}
 
 			CASE_TYPE(math, OP_MODULE, STRING) {
