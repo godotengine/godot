@@ -188,6 +188,7 @@ opts.Add(BoolVariable('builtin_squish', "Use the builtin squish library", True))
 opts.Add(BoolVariable('builtin_thekla_atlas', "Use the builtin thekla_altas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the builtin zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the builtin zstd library", True))
+opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 
 # Environment setup
 opts.Add("CXX", "C++ compiler")
@@ -238,6 +239,9 @@ sys.modules.pop('detect')
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
     env_base.Append(CPPFLAGS=['-DSCI_NAMESPACE'])
+
+if (env_base['no_editor_splash']):
+    env_base.Append(CPPFLAGS=['-DNO_EDITOR_SPLASH'])
 
 if not env_base['deprecated']:
     env_base.Append(CPPFLAGS=['-DDISABLE_DEPRECATED'])
