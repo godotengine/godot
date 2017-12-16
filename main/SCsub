@@ -72,7 +72,7 @@ Export('env')
 env.Depends("#main/splash.gen.h", "#main/splash.png")
 env.Command("#main/splash.gen.h", "#main/splash.png", make_splash)
 
-env.Depends("#main/splash_editor.gen.h", "#main/splash.png")
+env.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
 env.Command("#main/splash_editor.gen.h", "#main/splash_editor.png", make_splash_editor)
 
 env.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
