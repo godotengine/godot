@@ -606,10 +606,6 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
-void *OS::get_stack_bottom() const {
-	return _stack_bottom;
-}
-
 OS::OS() {
 	void *volatile stack_bottom;
 

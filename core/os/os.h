@@ -445,13 +445,6 @@ public:
 	virtual void force_process_input(){};
 	bool has_feature(const String &p_feature);
 
-	/**
-	 * Returns the stack bottom of the main thread of the application.
-	 * This may be of use when integrating languages with garbage collectors that
-	 * need to check whether a pointer is on the stack.
-	 */
-	virtual void *get_stack_bottom() const;
-
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();
 	virtual ~OS();
