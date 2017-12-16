@@ -348,10 +348,11 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
 
 				for (int i = 0; i < mb->get_argument_count(); i++) {
-					hash = hash_djb2_one_64(mb->get_argument_info(i).type, hash);
-					hash = hash_djb2_one_64(mb->get_argument_info(i).name.hash(), hash);
-					hash = hash_djb2_one_64(mb->get_argument_info(i).hint, hash);
-					hash = hash_djb2_one_64(mb->get_argument_info(i).hint_string.hash(), hash);
+					const PropertyInfo info = mb->get_argument_info(i);
+					hash = hash_djb2_one_64(info.type, hash);
+					hash = hash_djb2_one_64(info.name.hash(), hash);
+					hash = hash_djb2_one_64(info.hint, hash);
+					hash = hash_djb2_one_64(info.hint_string.hash(), hash);
 				}
 
 				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
