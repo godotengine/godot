@@ -1725,14 +1725,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (mb->get_button_index() == BUTTON_LEFT) { //assign focus
 				CanvasItem *ci = gui.mouse_focus;
+				bool should_release_focus = true;
 				while (ci) {
 
 					Control *control = Object::cast_to<Control>(ci);
 					if (control) {
 						if (control->get_focus_mode() != Control::FOCUS_NONE) {
 							if (control != gui.key_focus) {
+								// grabbing focus also releases existing focus
 								control->grab_focus();
 							}
+							should_release_focus = false;
 							break;
 						}
 
@@ -1744,6 +1747,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						break;
 
 					ci = ci->get_parent_item();
+				}
+
+				// if no item to grab the focus was found, simply release currently focused item
+				if (should_release_focus) {
+					get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 				}
 			}
 
