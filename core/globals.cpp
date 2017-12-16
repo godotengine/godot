@@ -169,6 +169,7 @@ bool Globals::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (!props.has(p_name))
 		return false;
+
 	r_ret = props[p_name].variant;
 	return true;
 }
@@ -700,9 +701,15 @@ static Variant _decode_variant(const String &p_string) {
 	}
 
 	if (str.find(",") != -1) { //vector2 or vector3
-		Vector<float> farr = str.split_floats(",", true);
+		// Since the data could be stored as Vector2(0, 0)
+		// We need to first remove any string from the data.
+		// To do that, we split the data using '(' as delimiter
+		// and keep the last element only.
+		// Then using the "split_floats" function should work like a charm
+		Vector<String> sarr = str.split("(", true);
+		Vector<float> farr = sarr[sarr.size() - 1].split_floats(",", true);
 		if (farr.size() == 2) {
-			return Point2(farr[0], farr[1]);
+			return Vector2(farr[0], farr[1]);
 		}
 		if (farr.size() == 3) {
 			return Vector3(farr[0], farr[1], farr[2]);
