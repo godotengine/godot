@@ -15,6 +15,8 @@
 	<members>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
 		</member>
+		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light.BakeMode">
+		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color">
 		</member>
 		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
@@ -70,6 +72,12 @@
 		<constant name="PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="Param">
 		</constant>
 		<constant name="PARAM_MAX" value="15" enum="Param">
+		</constant>
+		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
+		</constant>
+		<constant name="BAKE_INDIRECT" value="1" enum="BakeMode">
+		</constant>
+		<constant name="BAKE_ALL" value="2" enum="BakeMode">
 		</constant>
 	</constants>
 </class>

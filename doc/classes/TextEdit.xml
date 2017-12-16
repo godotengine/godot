@@ -109,6 +109,13 @@
 				Cut the current selection.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void">
+			</return>
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
 		<method name="fold_all_lines">
 			<return type="void">
 			</return>

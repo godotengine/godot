@@ -321,7 +321,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				Enables/disables the given track. Tracks are enabled by default.	
+				Enables/disables the given track. Tracks are enabled by default.
 			</description>
 		</method>
 		<method name="track_set_imported">

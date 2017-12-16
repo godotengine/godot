@@ -2315,7 +2315,9 @@
 		</constant>
 		<constant name="INSTANCE_GI_PROBE" value="7" enum="InstanceType">
 		</constant>
-		<constant name="INSTANCE_MAX" value="8" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="8" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_MAX" value="9" enum="InstanceType">
 			The max value for INSTANCE_* constants, used internally.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">

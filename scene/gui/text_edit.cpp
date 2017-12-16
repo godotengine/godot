@@ -5468,8 +5468,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
 	ClassDB::bind_method(D_METHOD("paste"), &TextEdit::paste);
-	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
+
 	ClassDB::bind_method(D_METHOD("select", "from_line", "from_column", "to_line", "to_column"), &TextEdit::select);
+	ClassDB::bind_method(D_METHOD("select_all"), &TextEdit::select_all);
+	ClassDB::bind_method(D_METHOD("deselect"), &TextEdit::deselect);
 
 	ClassDB::bind_method(D_METHOD("is_selection_active"), &TextEdit::is_selection_active);
 	ClassDB::bind_method(D_METHOD("get_selection_from_line"), &TextEdit::get_selection_from_line);

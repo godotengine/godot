@@ -107,9 +107,9 @@
 			<return type="float">
 			</return>
 			<argument index="0" name="offset" type="float">
-				Returns the y value for the point that would exist at x-position [code]offset[/code] along the curve using the baked cache. Bakes the curve's points if not already baked.
 			</argument>
 			<description>
+				Returns the y value for the point that would exist at x-position [code]offset[/code] along the curve using the baked cache. Bakes the curve's points if not already baked.
 			</description>
 		</method>
 		<method name="remove_point">

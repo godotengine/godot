@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BakedLightmapData" inherits="Resource" category="Core" version="3.0-beta">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_user">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<argument index="1" name="lightmap" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_users">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_space_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_subdiv" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_octree" qualifiers="const">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_user_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_user_lightmap" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="user_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_user_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="user_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bounds">
+			<return type="void">
+			</return>
+			<argument index="0" name="bounds" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_space_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell_subdiv">
+			<return type="void">
+			</return>
+			<argument index="0" name="cell_subdiv" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_octree">
+			<return type="void">
+			</return>
+			<argument index="0" name="octree" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

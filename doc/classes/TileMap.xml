@@ -182,6 +182,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="update_bitmask_area">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="update_bitmask_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="start" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="1" name="end" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="world_to_map" qualifiers="const">
 			<return type="Vector2">
 			</return>

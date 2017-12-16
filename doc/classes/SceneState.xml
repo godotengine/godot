@@ -88,6 +88,14 @@
 				Returns the list of group names associated with the node at [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_node_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_node_instance" qualifiers="const">
 			<return type="PackedScene">
 			</return>

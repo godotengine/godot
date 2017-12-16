@@ -57,6 +57,16 @@
 				Returns an array with all [Script] objects which are currently open in editor.
 			</description>
 		</method>
+		<method name="open_script_create_dialog">
+			<return type="void">
+			</return>
+			<argument index="0" name="base_name" type="String">
+			</argument>
+			<argument index="1" name="base_path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">

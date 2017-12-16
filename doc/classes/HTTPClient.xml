@@ -26,7 +26,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="port" type="int">
+			<argument index="1" name="port" type="int" default="-1">
 			</argument>
 			<argument index="2" name="use_ssl" type="bool" default="false">
 			</argument>
@@ -35,6 +35,7 @@
 			<description>
 				Connect to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
+				If no [code]port[/code] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [code]use_ssl[/code] is enabled).
 				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
 			</description>
 		</method>

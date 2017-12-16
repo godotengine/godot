@@ -75,6 +75,8 @@
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy">
 		</member>
+		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag">
+		</member>
 		<member name="emission_operator" type="int" setter="set_emission_operator" getter="get_emission_operator" enum="SpatialMaterial.EmissionOperator">
 		</member>
 		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture">
@@ -305,13 +307,15 @@
 		</constant>
 		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_ALPHA_SCISSOR" value="11" enum="Flags">
+		<constant name="FLAG_EMISSION_ON_UV2" value="11" enum="Flags">
+		</constant>
+		<constant name="FLAG_USE_ALPHA_SCISSOR" value="12" enum="Flags">
 		</constant>
 		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9" enum="Flags">
 		</constant>
-		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
+		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="13" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="13" enum="Flags">
+		<constant name="FLAG_MAX" value="14" enum="Flags">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>
