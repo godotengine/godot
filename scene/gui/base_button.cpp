@@ -75,7 +75,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 					status.press_attempt = true;
 					status.pressing_inside = true;
-
+					status.pressing_pos = b->get_position();
 					pressed();
 					if (get_script_instance()) {
 						Variant::CallError ce;
@@ -119,13 +119,16 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 			status.press_attempt = true;
 			status.pressing_inside = true;
+			status.pressing_pos = b->get_position();
 			emit_signal("button_down");
 
 		} else {
 
 			emit_signal("button_up");
+			const float drag_detect_threshold_squared = 4000;
 
-			if (status.press_attempt && status.pressing_inside) {
+			if (status.press_attempt && status.pressing_inside &&
+				(status.pressing_pos - b->get_position()).length_squared() < drag_detect_threshold_squared) {
 
 				if (!toggle_mode) { //mouse press attempt
 
@@ -192,6 +195,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 				status.pressing_button++;
 				status.press_attempt = true;
 				status.pressing_inside = true;
+				status.pressing_pos = b->get_position();
 				emit_signal("button_down");
 
 			} else if (status.press_attempt) {
