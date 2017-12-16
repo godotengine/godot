@@ -52,10 +52,6 @@ godot_object GDAPI *godot_global_get_singleton(char *p_name) {
 	return (godot_object *)Engine::get_singleton()->get_singleton_object(String(p_name));
 } // result shouldn't be freed
 
-void GDAPI *godot_get_stack_bottom() {
-	return OS::get_singleton()->get_stack_bottom();
-}
-
 // MethodBind API
 
 godot_method_bind GDAPI *godot_method_bind_get_method(const char *p_classname, const char *p_methodname) {
