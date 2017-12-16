@@ -135,7 +135,10 @@ void Decompress( u8* rgba, void const* block, int flags )
         colourBlock = reinterpret_cast< u8 const* >( block ) + 8;
 
     // decompress colour
-    DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
+    if(( flags & ( kBc5 ) ) != 0)
+        DecompressColourBc5( rgba, colourBlock);
+    else
+        DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
 
     // decompress alpha separately if necessary
     if( ( flags & kDxt3 ) != 0 )
