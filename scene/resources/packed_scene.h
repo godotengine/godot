@@ -48,6 +48,8 @@ class SceneState : public Reference {
 
 	enum {
 		NO_PARENT_SAVED = 0x7FFFFFFF,
+		NAME_INDEX_BITS = 18,
+		NAME_MASK = (1 << NAME_INDEX_BITS) - 1,
 	};
 
 	struct NodeData {

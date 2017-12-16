@@ -1117,9 +1117,11 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			nd.parent = r[idx++];
 			nd.owner = r[idx++];
 			nd.type = r[idx++];
-			nd.name = r[idx++];
+			uint32_t name_index = r[idx++];
+			nd.name = name_index & ((1 << NAME_INDEX_BITS) - 1);
+			nd.index = (name_index >> NAME_INDEX_BITS);
+			nd.index--; //0 is invaild, stored as 1
 			nd.instance = r[idx++];
-			nd.index = r[idx++];
 			nd.properties.resize(r[idx++]);
 			for (int j = 0; j < nd.properties.size(); j++) {
 
@@ -1210,9 +1212,12 @@ Dictionary SceneState::get_bundled_scene() const {
 		rnodes.push_back(nd.parent);
 		rnodes.push_back(nd.owner);
 		rnodes.push_back(nd.type);
-		rnodes.push_back(nd.name);
+		uint32_t name_index = nd.name;
+		if (nd.index < (1 << (32 - NAME_INDEX_BITS))) { //save if less than 16k childs
+			name_index |= uint32_t(nd.index + 1) << NAME_INDEX_BITS; //for backwards compatibility, index 0 is no index
+		}
+		rnodes.push_back(name_index);
 		rnodes.push_back(nd.instance);
-		rnodes.push_back(nd.index);
 		rnodes.push_back(nd.properties.size());
 		for (int j = 0; j < nd.properties.size(); j++) {
 
