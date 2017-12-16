@@ -980,6 +980,11 @@ public:
 
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
+	/* VSYNC */
+
+	virtual void set_use_vsync(bool p_enable);
+	virtual bool is_vsync_enabled() const;
+
 	VisualServer();
 	virtual ~VisualServer();
 };

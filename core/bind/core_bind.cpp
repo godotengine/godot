@@ -433,15 +433,6 @@ Error _OS::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
 };
 
-void _OS::set_use_vsync(bool p_enable) {
-	OS::get_singleton()->set_use_vsync(p_enable);
-}
-
-bool _OS::is_vsync_enabled() const {
-
-	return OS::get_singleton()->is_vsync_enabled();
-}
-
 _OS::PowerState _OS::get_power_state() {
 	return _OS::PowerState(OS::get_singleton()->get_power_state());
 }
@@ -1112,9 +1103,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &_OS::alert, DEFVAL("Alert!"));
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
-
-	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &_OS::set_use_vsync);
-	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &_OS::is_vsync_enabled);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &_OS::has_feature);
 
