@@ -597,12 +597,36 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			OperatorNode *op = alloc_node<OperatorNode>();
 			op->op = OperatorNode::OP_CALL;
 
-			if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+			//Do a quick Array and Dictionary Check.  Replace if either require no arguments.
+			bool replaced = false;
 
-				TypeNode *tn = alloc_node<TypeNode>();
-				tn->vtype = tokenizer->get_token_type();
-				op->arguments.push_back(tn);
-				tokenizer->advance(2);
+			if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+				Variant::Type ct = tokenizer->get_token_type();
+				if (p_parsing_constant == false) {
+					if (ct == Variant::ARRAY) {
+						if (tokenizer->get_token(2) == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							ArrayNode *arr = alloc_node<ArrayNode>();
+							expr = arr;
+							replaced = true;
+							tokenizer->advance(3);
+						}
+					}
+					if (ct == Variant::DICTIONARY) {
+						if (tokenizer->get_token(2) == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							DictionaryNode *dict = alloc_node<DictionaryNode>();
+							expr = dict;
+							replaced = true;
+							tokenizer->advance(3);
+						}
+					}
+				}
+
+				if (!replaced) {
+					TypeNode *tn = alloc_node<TypeNode>();
+					tn->vtype = tokenizer->get_token_type();
+					op->arguments.push_back(tn);
+					tokenizer->advance(2);
+				}
 			} else if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_FUNC) {
 
 				BuiltInFunctionNode *bn = alloc_node<BuiltInFunctionNode>();
@@ -628,11 +652,11 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				_make_completable_call(0);
 				completion_node = op;
 			}
-			if (!_parse_arguments(op, op->arguments, p_static, true))
-				return NULL;
-
-			expr = op;
-
+			if (!replaced) {
+				if (!_parse_arguments(op, op->arguments, p_static, true))
+					return NULL;
+				expr = op;
+			}
 		} else if (tokenizer->is_token_literal(0, true)) {
 			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			//identifier (reference)
