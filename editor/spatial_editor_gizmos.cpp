@@ -2964,21 +2964,276 @@ NavigationMeshSpatialGizmo::NavigationMeshSpatialGizmo(NavigationMeshInstance *p
 	navmesh = p_navmesh;
 }
 
-//////
-///
-///
+	//////
+	///
+	///
+	///
+
+#define BODY_A_RADIUS 0.25
+#define BODY_B_RADIUS 0.27
+
+Basis JointGizmosDrawer::look_body(const Transform &p_joint_transform, const Transform &p_body_transform) {
+	const Vector3 &p_eye(p_joint_transform.origin);
+	const Vector3 &p_target(p_body_transform.origin);
+
+	Vector3 v_x, v_y, v_z;
+
+	// Look the body with X
+	v_x = p_target - p_eye;
+	v_x.normalize();
+
+	v_z = v_x.cross(Vector3(0, 1, 0));
+	v_z.normalize();
+
+	v_y = v_z.cross(v_x);
+	v_y.normalize();
+
+	Basis base;
+	base.set(v_x, v_y, v_z);
+
+	// Absorb current joint transform
+	base = p_joint_transform.basis.inverse() * base;
+
+	return base;
+}
+
+Basis JointGizmosDrawer::look_body_toward(Vector3::Axis p_axis, const Transform &joint_transform, const Transform &body_transform) {
+
+	switch (p_axis) {
+		case Vector3::AXIS_X:
+			return look_body_toward_x(joint_transform, body_transform);
+		case Vector3::AXIS_Y:
+			return look_body_toward_y(joint_transform, body_transform);
+		case Vector3::AXIS_Z:
+			return look_body_toward_z(joint_transform, body_transform);
+		default:
+			return Basis();
+	}
+}
+
+Basis JointGizmosDrawer::look_body_toward_x(const Transform &p_joint_transform, const Transform &p_body_transform) {
+
+	const Vector3 &p_eye(p_joint_transform.origin);
+	const Vector3 &p_target(p_body_transform.origin);
+
+	const Vector3 p_front(p_joint_transform.basis.get_axis(0));
+
+	Vector3 v_x, v_y, v_z;
+
+	// Look the body with X
+	v_x = p_target - p_eye;
+	v_x.normalize();
+
+	v_y = p_front.cross(v_x);
+	v_y.normalize();
+
+	v_z = v_y.cross(p_front);
+	v_z.normalize();
+
+	// Clamp X to FRONT axis
+	v_x = p_front;
+	v_x.normalize();
+
+	Basis base;
+	base.set(v_x, v_y, v_z);
+
+	// Absorb current joint transform
+	base = p_joint_transform.basis.inverse() * base;
+
+	return base;
+}
+
+Basis JointGizmosDrawer::look_body_toward_y(const Transform &p_joint_transform, const Transform &p_body_transform) {
+
+	const Vector3 &p_eye(p_joint_transform.origin);
+	const Vector3 &p_target(p_body_transform.origin);
+
+	const Vector3 p_up(p_joint_transform.basis.get_axis(1));
+
+	Vector3 v_x, v_y, v_z;
+
+	// Look the body with X
+	v_x = p_target - p_eye;
+	v_x.normalize();
+
+	v_z = v_x.cross(p_up);
+	v_z.normalize();
+
+	v_x = p_up.cross(v_z);
+	v_x.normalize();
+
+	// Clamp Y to UP axis
+	v_y = p_up;
+	v_y.normalize();
+
+	Basis base;
+	base.set(v_x, v_y, v_z);
+
+	// Absorb current joint transform
+	base = p_joint_transform.basis.inverse() * base;
+
+	return base;
+}
+
+Basis JointGizmosDrawer::look_body_toward_z(const Transform &p_joint_transform, const Transform &p_body_transform) {
+
+	const Vector3 &p_eye(p_joint_transform.origin);
+	const Vector3 &p_target(p_body_transform.origin);
+
+	const Vector3 p_lateral(p_joint_transform.basis.get_axis(2));
+
+	Vector3 v_x, v_y, v_z;
+
+	// Look the body with X
+	v_x = p_target - p_eye;
+	v_x.normalize();
+
+	v_z = p_lateral;
+	v_z.normalize();
+
+	v_y = v_z.cross(v_x);
+	v_y.normalize();
+
+	// Clamp X to Z axis
+	v_x = v_y.cross(v_z);
+	v_x.normalize();
+
+	Basis base;
+	base.set(v_x, v_y, v_z);
+
+	// Absorb current joint transform
+	base = p_joint_transform.basis.inverse() * base;
+
+	return base;
+}
+
+void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse) {
+
+	if (p_limit_lower == p_limit_upper) {
+
+		r_points.push_back(p_offset.translated(Vector3()).origin);
+		r_points.push_back(p_offset.translated(p_base.xform(Vector3(0.5, 0, 0))).origin);
+
+	} else {
+
+		if (p_limit_lower > p_limit_upper) {
+			p_limit_lower = -Math_PI;
+			p_limit_upper = Math_PI;
+		}
+
+		const int points = 32;
+
+		for (int i = 0; i < points; i++) {
+
+			real_t s = p_limit_lower + i * (p_limit_upper - p_limit_lower) / points;
+			real_t n = p_limit_lower + (i + 1) * (p_limit_upper - p_limit_lower) / points;
+
+			Vector3 from;
+			Vector3 to;
+			switch (p_axis) {
+				case Vector3::AXIS_X:
+					if (p_inverse) {
+						from = p_base.xform(Vector3(0, Math::sin(s), Math::cos(s))) * p_radius;
+						to = p_base.xform(Vector3(0, Math::sin(n), Math::cos(n))) * p_radius;
+					} else {
+						from = p_base.xform(Vector3(0, -Math::sin(s), Math::cos(s))) * p_radius;
+						to = p_base.xform(Vector3(0, -Math::sin(n), Math::cos(n))) * p_radius;
+					}
+					break;
+				case Vector3::AXIS_Y:
+					if (p_inverse) {
+						from = p_base.xform(Vector3(Math::cos(s), 0, -Math::sin(s))) * p_radius;
+						to = p_base.xform(Vector3(Math::cos(n), 0, -Math::sin(n))) * p_radius;
+					} else {
+						from = p_base.xform(Vector3(Math::cos(s), 0, Math::sin(s))) * p_radius;
+						to = p_base.xform(Vector3(Math::cos(n), 0, Math::sin(n))) * p_radius;
+					}
+					break;
+				case Vector3::AXIS_Z:
+					from = p_base.xform(Vector3(Math::cos(s), Math::sin(s), 0)) * p_radius;
+					to = p_base.xform(Vector3(Math::cos(n), Math::sin(n), 0)) * p_radius;
+					break;
+			}
+
+			if (i == points - 1) {
+				r_points.push_back(p_offset.translated(to).origin);
+				r_points.push_back(p_offset.translated(Vector3()).origin);
+			}
+			if (i == 0) {
+				r_points.push_back(p_offset.translated(from).origin);
+				r_points.push_back(p_offset.translated(Vector3()).origin);
+			}
+
+			r_points.push_back(p_offset.translated(from).origin);
+			r_points.push_back(p_offset.translated(to).origin);
+		}
+
+		r_points.push_back(p_offset.translated(Vector3(0, p_radius * 1.5, 0)).origin);
+		r_points.push_back(p_offset.translated(Vector3()).origin);
+	}
+}
+
+void JointGizmosDrawer::draw_cone(const Transform &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points) {
+
+	float r = 1.0;
+	float w = r * Math::sin(p_swing);
+	float d = r * Math::cos(p_swing);
+
+	//swing
+	for (int i = 0; i < 360; i += 10) {
+
+		float ra = Math::deg2rad((float)i);
+		float rb = Math::deg2rad((float)i + 10);
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
+
+		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, b.x, b.y))).origin);
+
+		if (i % 90 == 0) {
+
+			r_points.push_back(p_offset.translated(p_base.xform(Vector3(d, a.x, a.y))).origin);
+			r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
+		}
+	}
+
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3())).origin);
+	r_points.push_back(p_offset.translated(p_base.xform(Vector3(1, 0, 0))).origin);
+
+	/// Twist
+	float ts = Math::rad2deg(p_twist);
+	ts = MIN(ts, 720);
+
+	for (int i = 0; i < int(ts); i += 5) {
+
+		float ra = Math::deg2rad((float)i);
+		float rb = Math::deg2rad((float)i + 5);
+		float c = i / 720.0;
+		float cn = (i + 5) / 720.0;
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;
+		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w * cn;
+
+		r_points.push_back(p_offset.translated(p_base.xform(Vector3(c, a.x, a.y))).origin);
+		r_points.push_back(p_offset.translated(p_base.xform(Vector3(cn, b.x, b.y))).origin);
+	}
+}
+
+void PinJointSpatialGizmo::CreateGizmo(const Transform &p_offset, Vector<Vector3> &r_cursor_points) {
+	float cs = 0.25;
+
+	r_cursor_points.push_back(p_offset.translated(Vector3(+cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated(Vector3(-cs, 0, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated(Vector3(0, +cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated(Vector3(0, -cs, 0)).origin);
+	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, +cs)).origin);
+	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, -cs)).origin);
+}
 
 void PinJointSpatialGizmo::redraw() {
 
 	clear();
 	Vector<Vector3> cursor_points;
-	float cs = 0.25;
-	cursor_points.push_back(Vector3(+cs, 0, 0));
-	cursor_points.push_back(Vector3(-cs, 0, 0));
-	cursor_points.push_back(Vector3(0, +cs, 0));
-	cursor_points.push_back(Vector3(0, -cs, 0));
-	cursor_points.push_back(Vector3(0, 0, +cs));
-	cursor_points.push_back(Vector3(0, 0, -cs));
+	CreateGizmo(Transform(), cursor_points);
 	add_collision_segments(cursor_points);
 
 	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
@@ -2994,70 +3249,71 @@ PinJointSpatialGizmo::PinJointSpatialGizmo(PinJoint *p_p3d) {
 
 ////
 
-void HingeJointSpatialGizmo::redraw() {
+void HingeJointSpatialGizmo::CreateGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
 
-	clear();
-	Vector<Vector3> cursor_points;
-	float cs = 0.25;
-	/*cursor_points.push_back(Vector3(+cs,0,0));
-	cursor_points.push_back(Vector3(-cs,0,0));
-	cursor_points.push_back(Vector3(0,+cs,0));
-	cursor_points.push_back(Vector3(0,-cs,0));*/
-	cursor_points.push_back(Vector3(0, 0, +cs * 2));
-	cursor_points.push_back(Vector3(0, 0, -cs * 2));
+	r_common_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
+	r_common_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
 
-	float ll = p3d->get_param(HingeJoint::PARAM_LIMIT_LOWER);
-	float ul = p3d->get_param(HingeJoint::PARAM_LIMIT_UPPER);
-
-	if (p3d->get_flag(HingeJoint::FLAG_USE_LIMIT) && ll < ul) {
-
-		const int points = 32;
-
-		for (int i = 0; i < points; i++) {
-
-			float s = ll + i * (ul - ll) / points;
-			float n = ll + (i + 1) * (ul - ll) / points;
-
-			Vector3 from = Vector3(-Math::sin(s), Math::cos(s), 0) * cs;
-			Vector3 to = Vector3(-Math::sin(n), Math::cos(n), 0) * cs;
-
-			if (i == points - 1) {
-				cursor_points.push_back(to);
-				cursor_points.push_back(Vector3());
-			}
-			if (i == 0) {
-				cursor_points.push_back(from);
-				cursor_points.push_back(Vector3());
-			}
-
-			cursor_points.push_back(from);
-			cursor_points.push_back(to);
-		}
-
-		cursor_points.push_back(Vector3(0, cs * 1.5, 0));
-		cursor_points.push_back(Vector3());
-
-	} else {
-
-		const int points = 32;
-
-		for (int i = 0; i < points; i++) {
-
-			float s = ll + i * (Math_PI * 2.0) / points;
-			float n = ll + (i + 1) * (Math_PI * 2.0) / points;
-
-			Vector3 from = Vector3(-Math::sin(s), Math::cos(s), 0) * cs;
-			Vector3 to = Vector3(-Math::sin(n), Math::cos(n), 0) * cs;
-
-			cursor_points.push_back(from);
-			cursor_points.push_back(to);
-		}
+	if (!p_use_limit) {
+		p_limit_upper = -1;
+		p_limit_lower = 0;
 	}
 
-	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+	if (r_body_a_points) {
 
-	add_collision_segments(cursor_points);
-	add_lines(cursor_points, material);
+		JointGizmosDrawer::draw_circle(Vector3::AXIS_Z,
+				BODY_A_RADIUS,
+				p_offset,
+				JointGizmosDrawer::look_body_toward_z(p_trs_joint, p_trs_body_a),
+				p_limit_lower,
+				p_limit_upper,
+				*r_body_a_points);
+	}
+
+	if (r_body_b_points) {
+		JointGizmosDrawer::draw_circle(Vector3::AXIS_Z,
+				BODY_B_RADIUS,
+				p_offset,
+				JointGizmosDrawer::look_body_toward_z(p_trs_joint, p_trs_body_b),
+				p_limit_lower,
+				p_limit_upper,
+				*r_body_b_points);
+	}
+}
+
+void HingeJointSpatialGizmo::redraw() {
+
+	const Spatial *node_body_a = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_a()));
+	const Spatial *node_body_b = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_b()));
+
+	Vector<Vector3> points;
+	Vector<Vector3> body_a_points;
+	Vector<Vector3> body_b_points;
+	CreateGizmo(
+			Transform(),
+			p3d->get_global_transform(),
+			node_body_a ? node_body_a->get_global_transform() : Transform(),
+			node_body_b ? node_body_b->get_global_transform() : Transform(),
+			p3d->get_param(HingeJoint::PARAM_LIMIT_LOWER),
+			p3d->get_param(HingeJoint::PARAM_LIMIT_UPPER),
+			p3d->get_flag(HingeJoint::FLAG_USE_LIMIT),
+			points,
+			node_body_a ? &body_a_points : NULL,
+			node_body_b ? &body_b_points : NULL);
+
+	clear();
+
+	Ref<Material> common_material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+	Ref<Material> body_a_material = create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	Ref<Material> body_b_material = create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
+
+	add_collision_segments(points);
+	add_collision_segments(body_a_points);
+	add_collision_segments(body_b_points);
+
+	add_lines(points, common_material);
+	add_lines(body_a_points, body_a_material);
+	add_lines(body_b_points, body_b_material);
 }
 
 HingeJointSpatialGizmo::HingeJointSpatialGizmo(HingeJoint *p_p3d) {
@@ -3070,101 +3326,100 @@ HingeJointSpatialGizmo::HingeJointSpatialGizmo(HingeJoint *p_p3d) {
 ///
 ////
 
+void SliderJointSpatialGizmo::CreateGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_angular_limit_lower, real_t p_angular_limit_upper, real_t p_linear_limit_lower, real_t p_linear_limit_upper, Vector<Vector3> &r_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+
+	p_linear_limit_lower = -p_linear_limit_lower;
+	p_linear_limit_upper = -p_linear_limit_upper;
+
+	float cs = 0.25;
+	r_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
+	r_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
+
+	if (p_linear_limit_lower >= p_linear_limit_upper) {
+
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, 0, 0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, 0, 0)).origin);
+
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_upper, -cs, -cs)).origin);
+
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, cs, -cs)).origin);
+		r_points.push_back(p_offset.translated(Vector3(p_linear_limit_lower, -cs, -cs)).origin);
+
+	} else {
+
+		r_points.push_back(p_offset.translated(Vector3(+cs * 2, 0, 0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(-cs * 2, 0, 0)).origin);
+	}
+
+	if (r_body_a_points)
+		JointGizmosDrawer::draw_circle(
+				Vector3::AXIS_X,
+				BODY_A_RADIUS,
+				p_offset,
+				JointGizmosDrawer::look_body_toward(Vector3::AXIS_X, p_trs_joint, p_trs_body_a),
+				p_angular_limit_lower,
+				p_angular_limit_upper,
+				*r_body_a_points);
+
+	if (r_body_b_points)
+		JointGizmosDrawer::draw_circle(
+				Vector3::AXIS_X,
+				BODY_B_RADIUS,
+				p_offset,
+				JointGizmosDrawer::look_body_toward(Vector3::AXIS_X, p_trs_joint, p_trs_body_b),
+				p_angular_limit_lower,
+				p_angular_limit_upper,
+				*r_body_b_points,
+				true);
+}
+
 void SliderJointSpatialGizmo::redraw() {
+
+	const Spatial *node_body_a = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_a()));
+	const Spatial *node_body_b = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_b()));
 
 	clear();
 	Vector<Vector3> cursor_points;
-	float cs = 0.25;
-	/*cursor_points.push_back(Vector3(+cs,0,0));
-	cursor_points.push_back(Vector3(-cs,0,0));
-	cursor_points.push_back(Vector3(0,+cs,0));
-	cursor_points.push_back(Vector3(0,-cs,0));*/
-	cursor_points.push_back(Vector3(0, 0, +cs * 2));
-	cursor_points.push_back(Vector3(0, 0, -cs * 2));
+	Vector<Vector3> body_a_points;
+	Vector<Vector3> body_b_points;
 
-	float ll = p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_LOWER);
-	float ul = p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_UPPER);
-	float lll = p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_LOWER);
-	float lul = p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_UPPER);
-
-	if (lll <= lul) {
-
-		cursor_points.push_back(Vector3(lul, 0, 0));
-		cursor_points.push_back(Vector3(lll, 0, 0));
-
-		cursor_points.push_back(Vector3(lul, -cs, -cs));
-		cursor_points.push_back(Vector3(lul, -cs, cs));
-		cursor_points.push_back(Vector3(lul, -cs, cs));
-		cursor_points.push_back(Vector3(lul, cs, cs));
-		cursor_points.push_back(Vector3(lul, cs, cs));
-		cursor_points.push_back(Vector3(lul, cs, -cs));
-		cursor_points.push_back(Vector3(lul, cs, -cs));
-		cursor_points.push_back(Vector3(lul, -cs, -cs));
-
-		cursor_points.push_back(Vector3(lll, -cs, -cs));
-		cursor_points.push_back(Vector3(lll, -cs, cs));
-		cursor_points.push_back(Vector3(lll, -cs, cs));
-		cursor_points.push_back(Vector3(lll, cs, cs));
-		cursor_points.push_back(Vector3(lll, cs, cs));
-		cursor_points.push_back(Vector3(lll, cs, -cs));
-		cursor_points.push_back(Vector3(lll, cs, -cs));
-		cursor_points.push_back(Vector3(lll, -cs, -cs));
-
-	} else {
-
-		cursor_points.push_back(Vector3(+cs * 2, 0, 0));
-		cursor_points.push_back(Vector3(-cs * 2, 0, 0));
-	}
-
-	if (ll < ul) {
-
-		const int points = 32;
-
-		for (int i = 0; i < points; i++) {
-
-			float s = ll + i * (ul - ll) / points;
-			float n = ll + (i + 1) * (ul - ll) / points;
-
-			Vector3 from = Vector3(0, Math::cos(s), -Math::sin(s)) * cs;
-			Vector3 to = Vector3(0, Math::cos(n), -Math::sin(n)) * cs;
-
-			if (i == points - 1) {
-				cursor_points.push_back(to);
-				cursor_points.push_back(Vector3());
-			}
-			if (i == 0) {
-				cursor_points.push_back(from);
-				cursor_points.push_back(Vector3());
-			}
-
-			cursor_points.push_back(from);
-			cursor_points.push_back(to);
-		}
-
-		cursor_points.push_back(Vector3(0, cs * 1.5, 0));
-		cursor_points.push_back(Vector3());
-
-	} else {
-
-		const int points = 32;
-
-		for (int i = 0; i < points; i++) {
-
-			float s = ll + i * (Math_PI * 2.0) / points;
-			float n = ll + (i + 1) * (Math_PI * 2.0) / points;
-
-			Vector3 from = Vector3(0, Math::cos(s), -Math::sin(s)) * cs;
-			Vector3 to = Vector3(0, Math::cos(n), -Math::sin(n)) * cs;
-
-			cursor_points.push_back(from);
-			cursor_points.push_back(to);
-		}
-	}
+	CreateGizmo(
+			Transform(),
+			p3d->get_global_transform(),
+			node_body_a ? node_body_a->get_global_transform() : Transform(),
+			node_body_b ? node_body_b->get_global_transform() : Transform(),
+			p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_LOWER),
+			p3d->get_param(SliderJoint::PARAM_ANGULAR_LIMIT_UPPER),
+			p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_LOWER),
+			p3d->get_param(SliderJoint::PARAM_LINEAR_LIMIT_UPPER),
+			cursor_points,
+			node_body_a ? &body_a_points : NULL,
+			node_body_b ? &body_b_points : NULL);
 
 	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+	Ref<Material> body_a_material = create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	Ref<Material> body_b_material = create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
 
 	add_collision_segments(cursor_points);
+	add_collision_segments(body_a_points);
+	add_collision_segments(body_b_points);
+
 	add_lines(cursor_points, material);
+	add_lines(body_a_points, body_a_material);
+	add_lines(body_b_points, body_b_material);
 }
 
 SliderJointSpatialGizmo::SliderJointSpatialGizmo(SliderJoint *p_p3d) {
@@ -3177,67 +3432,57 @@ SliderJointSpatialGizmo::SliderJointSpatialGizmo(SliderJoint *p_p3d) {
 ///
 ////
 
+void ConeTwistJointSpatialGizmo::CreateGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+
+	if (r_body_a_points)
+		JointGizmosDrawer::draw_cone(
+				p_offset,
+				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_a),
+				p_swing,
+				p_twist,
+				*r_body_a_points);
+
+	if (r_body_b_points)
+		JointGizmosDrawer::draw_cone(
+				p_offset,
+				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_b),
+				p_swing,
+				p_twist,
+				*r_body_b_points);
+}
+
 void ConeTwistJointSpatialGizmo::redraw() {
+
+	const Spatial *node_body_a = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_a()));
+	const Spatial *node_body_b = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_b()));
 
 	clear();
 	Vector<Vector3> points;
+	Vector<Vector3> body_a_points;
+	Vector<Vector3> body_b_points;
 
-	float r = 1.0;
-	float w = r * Math::sin(p3d->get_param(ConeTwistJoint::PARAM_SWING_SPAN));
-	float d = r * Math::cos(p3d->get_param(ConeTwistJoint::PARAM_SWING_SPAN));
-
-	//swing
-	for (int i = 0; i < 360; i += 10) {
-
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 10);
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
-
-		/*points.push_back(Vector3(a.x,0,a.y));
-		points.push_back(Vector3(b.x,0,b.y));
-		points.push_back(Vector3(0,a.x,a.y));
-		points.push_back(Vector3(0,b.x,b.y));*/
-		points.push_back(Vector3(d, a.x, a.y));
-		points.push_back(Vector3(d, b.x, b.y));
-
-		if (i % 90 == 0) {
-
-			points.push_back(Vector3(d, a.x, a.y));
-			points.push_back(Vector3());
-		}
-	}
-
-	points.push_back(Vector3());
-	points.push_back(Vector3(1, 0, 0));
-
-	//twist
-	/*
-	 */
-	float ts = Math::rad2deg(p3d->get_param(ConeTwistJoint::PARAM_TWIST_SPAN));
-	ts = MIN(ts, 720);
-
-	for (int i = 0; i < int(ts); i += 5) {
-
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 5);
-		float c = i / 720.0;
-		float cn = (i + 5) / 720.0;
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w * cn;
-
-		/*points.push_back(Vector3(a.x,0,a.y));
-		points.push_back(Vector3(b.x,0,b.y));
-		points.push_back(Vector3(0,a.x,a.y));
-		points.push_back(Vector3(0,b.x,b.y));*/
-
-		points.push_back(Vector3(c, a.x, a.y));
-		points.push_back(Vector3(cn, b.x, b.y));
-	}
+	CreateGizmo(
+			Transform(),
+			p3d->get_global_transform(),
+			node_body_a ? node_body_a->get_global_transform() : Transform(),
+			node_body_b ? node_body_b->get_global_transform() : Transform(),
+			p3d->get_param(ConeTwistJoint::PARAM_SWING_SPAN),
+			p3d->get_param(ConeTwistJoint::PARAM_TWIST_SPAN),
+			points,
+			node_body_a ? &body_a_points : NULL,
+			node_body_b ? &body_b_points : NULL);
 
 	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+	Ref<Material> body_a_material = create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	Ref<Material> body_b_material = create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
+
 	add_collision_segments(points);
+	add_collision_segments(body_a_points);
+	add_collision_segments(body_b_points);
+
 	add_lines(points, material);
+	add_lines(body_a_points, body_a_material);
+	add_lines(body_b_points, body_b_material);
 }
 
 ConeTwistJointSpatialGizmo::ConeTwistJointSpatialGizmo(ConeTwistJoint *p_p3d) {
@@ -3246,26 +3491,46 @@ ConeTwistJointSpatialGizmo::ConeTwistJointSpatialGizmo(ConeTwistJoint *p_p3d) {
 	set_spatial_node(p3d);
 }
 
-////////
-/// \brief SpatialEditorGizmos::singleton
-///
 ///////
 ///
 ////
 
-void Generic6DOFJointSpatialGizmo::redraw() {
+void Generic6DOFJointSpatialGizmo::CreateGizmo(
+		const Transform &p_offset,
+		const Transform &p_trs_joint,
+		const Transform &p_trs_body_a,
+		const Transform &p_trs_body_b,
+		real_t p_angular_limit_lower_x,
+		real_t p_angular_limit_upper_x,
+		real_t p_linear_limit_lower_x,
+		real_t p_linear_limit_upper_x,
+		bool p_enable_angular_limit_x,
+		bool p_enable_linear_limit_x,
+		real_t p_angular_limit_lower_y,
+		real_t p_angular_limit_upper_y,
+		real_t p_linear_limit_lower_y,
+		real_t p_linear_limit_upper_y,
+		bool p_enable_angular_limit_y,
+		bool p_enable_linear_limit_y,
+		real_t p_angular_limit_lower_z,
+		real_t p_angular_limit_upper_z,
+		real_t p_linear_limit_lower_z,
+		real_t p_linear_limit_upper_z,
+		bool p_enable_angular_limit_z,
+		bool p_enable_linear_limit_z,
+		Vector<Vector3> &r_points,
+		Vector<Vector3> *r_body_a_points,
+		Vector<Vector3> *r_body_b_points) {
 
-	clear();
-	Vector<Vector3> cursor_points;
 	float cs = 0.25;
 
 	for (int ax = 0; ax < 3; ax++) {
-		/*cursor_points.push_back(Vector3(+cs,0,0));
-		cursor_points.push_back(Vector3(-cs,0,0));
-		cursor_points.push_back(Vector3(0,+cs,0));
-		cursor_points.push_back(Vector3(0,-cs,0));
-		cursor_points.push_back(Vector3(0,0,+cs*2));
-		cursor_points.push_back(Vector3(0,0,-cs*2)); */
+		/*r_points.push_back(p_offset.translated(Vector3(+cs,0,0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(-cs,0,0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(0,+cs,0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(0,-cs,0)).origin);
+		r_points.push_back(p_offset.translated(Vector3(0,0,+cs*2)).origin);
+		r_points.push_back(p_offset.translated(Vector3(0,0,-cs*2)).origin); */
 
 		float ll;
 		float ul;
@@ -3278,61 +3543,50 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 
 		switch (ax) {
 			case 0:
-				ll = p3d->get_param_x(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT);
-				ul = p3d->get_param_x(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT);
-				lll = p3d->get_param_x(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT);
-				lul = p3d->get_param_x(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT);
-				enable_ang = p3d->get_flag_x(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT);
-				enable_lin = p3d->get_flag_x(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT);
+				ll = p_angular_limit_lower_x;
+				ul = p_angular_limit_upper_x;
+				lll = -p_linear_limit_lower_x;
+				lul = -p_linear_limit_upper_x;
+				enable_ang = p_enable_angular_limit_x;
+				enable_lin = p_enable_linear_limit_x;
 				a1 = 0;
 				a2 = 1;
 				a3 = 2;
 				break;
 			case 1:
-				ll = p3d->get_param_y(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT);
-				ul = p3d->get_param_y(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT);
-				lll = p3d->get_param_y(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT);
-				lul = p3d->get_param_y(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT);
-				enable_ang = p3d->get_flag_y(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT);
-				enable_lin = p3d->get_flag_y(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT);
-
+				ll = p_angular_limit_lower_y;
+				ul = p_angular_limit_upper_y;
+				lll = -p_linear_limit_lower_y;
+				lul = -p_linear_limit_upper_y;
+				enable_ang = p_enable_angular_limit_y;
+				enable_lin = p_enable_linear_limit_y;
 				a1 = 1;
 				a2 = 2;
 				a3 = 0;
 				break;
 			case 2:
-				ll = p3d->get_param_z(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT);
-				ul = p3d->get_param_z(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT);
-				lll = p3d->get_param_z(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT);
-				lul = p3d->get_param_z(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT);
-				enable_ang = p3d->get_flag_z(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT);
-				enable_lin = p3d->get_flag_z(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT);
-
+				ll = p_angular_limit_lower_z;
+				ul = p_angular_limit_upper_z;
+				lll = -p_linear_limit_lower_z;
+				lul = -p_linear_limit_upper_z;
+				enable_ang = p_enable_angular_limit_z;
+				enable_lin = p_enable_linear_limit_z;
 				a1 = 2;
 				a2 = 0;
 				a3 = 1;
 				break;
 		}
 
-#define ADD_VTX(x, y, z)            \
-	{                               \
-		Vector3 v;                  \
-		v[a1] = (x);                \
-		v[a2] = (y);                \
-		v[a3] = (z);                \
-		cursor_points.push_back(v); \
+#define ADD_VTX(x, y, z)                                   \
+	{                                                      \
+		Vector3 v;                                         \
+		v[a1] = (x);                                       \
+		v[a2] = (y);                                       \
+		v[a3] = (z);                                       \
+		r_points.push_back(p_offset.translated(v).origin); \
 	}
 
-#define SET_VTX(what, x, y, z) \
-	{                          \
-		Vector3 v;             \
-		v[a1] = (x);           \
-		v[a2] = (y);           \
-		v[a3] = (z);           \
-		what = v;              \
-	}
-
-		if (enable_lin && lll <= lul) {
+		if (enable_lin && lll >= lul) {
 
 			ADD_VTX(lul, 0, 0);
 			ADD_VTX(lll, 0, 0);
@@ -3361,69 +3615,88 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 			ADD_VTX(-cs * 2, 0, 0);
 		}
 
-		if (enable_ang && ll <= ul) {
-
-			const int points = 32;
-
-			for (int i = 0; i < points; i++) {
-
-				float s = ll + i * (ul - ll) / points;
-				float n = ll + (i + 1) * (ul - ll) / points;
-
-				Vector3 from;
-				SET_VTX(from, 0, Math::cos(s), -Math::sin(s));
-				from *= cs;
-				Vector3 to;
-				SET_VTX(to, 0, Math::cos(n), -Math::sin(n));
-				to *= cs;
-
-				if (i == points - 1) {
-					cursor_points.push_back(to);
-					cursor_points.push_back(Vector3());
-				}
-				if (i == 0) {
-					cursor_points.push_back(from);
-					cursor_points.push_back(Vector3());
-				}
-
-				cursor_points.push_back(from);
-				cursor_points.push_back(to);
-			}
-
-			ADD_VTX(0, cs * 1.5, 0);
-			cursor_points.push_back(Vector3());
-
-		} else {
-
-			const int points = 32;
-
-			for (int i = 0; i < points; i++) {
-
-				float s = ll + i * (Math_PI * 2.0) / points;
-				float n = ll + (i + 1) * (Math_PI * 2.0) / points;
-
-				//Vector3 from=Vector3(0,Math::cos(s),-Math::sin(s) )*cs;
-				//Vector3 to=Vector3( 0,Math::cos(n),-Math::sin(n) )*cs;
-
-				Vector3 from;
-				SET_VTX(from, 0, Math::cos(s), -Math::sin(s));
-				from *= cs;
-				Vector3 to;
-				SET_VTX(to, 0, Math::cos(n), -Math::sin(n));
-				to *= cs;
-
-				cursor_points.push_back(from);
-				cursor_points.push_back(to);
-			}
+		if (!enable_ang) {
+			ll = 0;
+			ul = -1;
 		}
+
+		if (r_body_a_points)
+			JointGizmosDrawer::draw_circle(
+					static_cast<Vector3::Axis>(ax),
+					BODY_A_RADIUS,
+					p_offset,
+					JointGizmosDrawer::look_body_toward(static_cast<Vector3::Axis>(ax), p_trs_joint, p_trs_body_a),
+					ll,
+					ul,
+					*r_body_a_points,
+					true);
+
+		if (r_body_b_points)
+			JointGizmosDrawer::draw_circle(
+					static_cast<Vector3::Axis>(ax),
+					BODY_B_RADIUS,
+					p_offset,
+					JointGizmosDrawer::look_body_toward(static_cast<Vector3::Axis>(ax), p_trs_joint, p_trs_body_b),
+					ll,
+					ul,
+					*r_body_b_points);
 	}
 
 #undef ADD_VTX
-#undef SET_VTX
+}
+
+void Generic6DOFJointSpatialGizmo::redraw() {
+
+	const Spatial *node_body_a = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_a()));
+	const Spatial *node_body_b = Object::cast_to<Spatial>(p3d->get_node(p3d->get_node_b()));
+
+	clear();
+	Vector<Vector3> cursor_points;
+	Vector<Vector3> body_a_points;
+	Vector<Vector3> body_b_points;
+
+	CreateGizmo(
+			Transform(),
+			p3d->get_global_transform(),
+			node_body_a ? node_body_a->get_global_transform() : Transform(),
+			node_body_b ? node_body_b->get_global_transform() : Transform(),
+
+			p3d->get_param_x(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT),
+			p3d->get_param_x(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT),
+			p3d->get_param_x(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT),
+			p3d->get_param_x(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT),
+			p3d->get_flag_x(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT),
+			p3d->get_flag_x(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT),
+
+			p3d->get_param_y(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT),
+			p3d->get_param_y(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT),
+			p3d->get_param_y(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT),
+			p3d->get_param_y(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT),
+			p3d->get_flag_y(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT),
+			p3d->get_flag_y(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT),
+
+			p3d->get_param_z(Generic6DOFJoint::PARAM_ANGULAR_LOWER_LIMIT),
+			p3d->get_param_z(Generic6DOFJoint::PARAM_ANGULAR_UPPER_LIMIT),
+			p3d->get_param_z(Generic6DOFJoint::PARAM_LINEAR_LOWER_LIMIT),
+			p3d->get_param_z(Generic6DOFJoint::PARAM_LINEAR_UPPER_LIMIT),
+			p3d->get_flag_z(Generic6DOFJoint::FLAG_ENABLE_ANGULAR_LIMIT),
+			p3d->get_flag_z(Generic6DOFJoint::FLAG_ENABLE_LINEAR_LIMIT),
+
+			cursor_points,
+			node_body_a ? &body_a_points : NULL,
+			node_body_a ? &body_b_points : NULL);
 
 	Ref<Material> material = create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
+	Ref<Material> body_a_material = create_material("joint_body_a_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_a"));
+	Ref<Material> body_b_material = create_material("joint_body_b_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint_body_b"));
+
 	add_collision_segments(cursor_points);
+	add_collision_segments(body_a_points);
+	add_collision_segments(body_b_points);
+
 	add_lines(cursor_points, material);
+	add_lines(body_a_points, body_a_material);
+	add_lines(body_b_points, body_b_material);
 }
 
 Generic6DOFJointSpatialGizmo::Generic6DOFJointSpatialGizmo(Generic6DOFJoint *p_p3d) {
@@ -3616,6 +3889,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/baked_indirect_light", Color(0.5, 0.6, 1));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_a", Color(0.6, 0.8, 1));
+	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint_body_b", Color(0.6, 0.9, 1));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7));
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4));
