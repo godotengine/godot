@@ -2953,14 +2953,19 @@ void PropertyEditor::update_tree() {
 			if (!found) {
 				DocData *dd = EditorHelp::get_doc_data();
 				Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(classname);
-				if (E) {
+				while (E && descr == String()) {
 					for (int i = 0; i < E->get().properties.size(); i++) {
 						if (E->get().properties[i].name == propname.operator String()) {
 							descr = E->get().properties[i].description.strip_edges().word_wrap(80);
+							break;
 						}
 					}
+					if (!E->get().inherits.empty()) {
+						E = dd->class_list.find(E->get().inherits);
+					} else {
+						break;
+					}
 				}
-
 				descr_cache[classname][propname] = descr;
 			}
 
