@@ -2206,12 +2206,12 @@ String String::substr(int p_from, int p_chars) const {
 	return String(&c_str()[p_from], p_chars);
 }
 
-int String::find_last(String p_str) const {
+int String::find_last(String p_str, bool ignore_case) const {
 
 	int pos = -1;
 	int findfrom = 0;
 	int findres = -1;
-	while ((findres = find(p_str, findfrom)) != -1) {
+	while ((findres = find(p_str, findfrom, ignore_case)) != -1) {
 
 		pos = findres;
 		findfrom = pos + 1;
@@ -2219,7 +2219,8 @@ int String::find_last(String p_str) const {
 
 	return pos;
 }
-int String::find(String p_str, int p_from) const {
+
+int String::find(String p_str, int p_from, bool ignore_case) const {
 
 	if (p_from < 0)
 		return -1;
@@ -2246,7 +2247,12 @@ int String::find(String p_str, int p_from) const {
 				return -1;
 			};
 
-			if (src[read_pos] != p_str[j]) {
+			if (ignore_case) {
+				if (char_lowercase(src[read_pos]) != char_lowercase(p_str[j])) {
+					found = false;
+					break;
+				}
+			} else if (src[read_pos] != p_str[j]) {
 				found = false;
 				break;
 			}
@@ -2450,15 +2456,15 @@ int String::rfindn(String p_str, int p_from) const {
 	return -1;
 }
 
-bool String::ends_with(const String &p_string) const {
+bool String::ends_with(const String &p_string, int compare) const {
 
-	int pos = find_last(p_string);
+	int pos = find_last(p_string, compare == STRING_COMPARE_IGNORE_CASE ? true : false);
 	if (pos == -1)
 		return false;
 	return pos + p_string.length() == length();
 }
 
-bool String::begins_with(const String &p_string) const {
+bool String::begins_with(const String &p_string, int compare) const {
 
 	if (p_string.length() > length())
 		return false;
@@ -2473,7 +2479,10 @@ bool String::begins_with(const String &p_string) const {
 	int i = 0;
 	for (; i < l; i++) {
 
-		if (src[i] != str[i])
+		if (compare == STRING_COMPARE_IGNORE_CASE) {
+			if (char_lowercase(src[i]) != char_lowercase(str[i]))
+				return false;
+		} else if (src[i] != str[i])
 			return false;
 	}
 

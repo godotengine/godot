@@ -59,6 +59,11 @@ struct StrRange {
 	}
 };
 
+enum StringCompareMode {
+	STRING_COMPARE_DEFAULT = 0,
+	STRING_COMPARE_IGNORE_CASE,
+};
+
 class String : public Vector<CharType> {
 
 	void copy_from(const char *p_cstr);
@@ -107,17 +112,17 @@ public:
 
 	/* complex helpers */
 	String substr(int p_from, int p_chars) const;
-	int find(String p_str, int p_from = 0) const; ///< return <0 if failed
-	int find_last(String p_str) const; ///< return <0 if failed
+	int find(String p_str, int p_from = 0, bool ignore_case = false) const; ///< return <0 if failed
+	int find_last(String p_str, bool ignore_case = false) const; ///< return <0 if failed
 	int findn(String p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int rfind(String p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(String p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = NULL) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
-	bool begins_with(const String &p_string) const;
+	bool begins_with(const String &p_string, int compare = STRING_COMPARE_DEFAULT) const;
 	bool begins_with(const char *p_string) const;
-	bool ends_with(const String &p_string) const;
+	bool ends_with(const String &p_string, int compare = STRING_COMPARE_DEFAULT) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofi(const String &p_string) const;
