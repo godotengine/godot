@@ -198,6 +198,7 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 			int type = -1;
 			int name = -1;
 			int instance = -1;
+			int index = -1;
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
@@ -249,7 +250,11 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 					owner = 0; //if no owner, owner is root
 			}
 
-			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance);
+			if (next_tag.fields.has("index")) {
+				index = next_tag.fields["index"];
+			}
+
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index);
 
 			if (next_tag.fields.has("groups")) {
 
@@ -1609,6 +1614,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 			StringName type = state->get_node_type(i);
 			StringName name = state->get_node_name(i);
+			int index = state->get_node_index(i);
 			NodePath path = state->get_node_path(i, true);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
@@ -1625,6 +1631,9 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 			if (owner != NodePath() && owner != NodePath(".")) {
 				header += " owner=\"" + String(owner.simplified()) + "\"";
+			}
+			if (index >= 0) {
+				header += " index=\"" + itos(index) + "\"";
 			}
 
 			if (groups.size()) {

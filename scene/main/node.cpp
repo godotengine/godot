@@ -2110,6 +2110,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 
 	StringName script_property_name = CoreStringNames::get_singleton()->_script;
 
+	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
 	node_tree.push_front(this);
 
@@ -2120,11 +2121,16 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
 			for (int i = 0; i < N->get()->get_child_count(); ++i) {
 
+				Node *descendant = N->get()->get_child(i);
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
-				if (N->get()->get_child(i)->data.owner != this)
+				// but remember non-instanced nodes that are hidden below instanced ones
+				if (descendant->data.owner != this) {
+					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this)
+						hidden_roots.push_back(descendant);
 					continue;
+				}
 
-				node_tree.push_back(N->get()->get_child(i));
+				node_tree.push_back(descendant);
 			}
 		}
 	}
@@ -2201,6 +2207,34 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 		}
 
 		node->add_child(dup);
+		if (i < node->get_child_count() - 1) {
+			node->move_child(dup, i);
+		}
+	}
+
+	for (List<const Node *>::Element *E = hidden_roots.front(); E; E = E->next()) {
+
+		Node *parent = node->get_node(get_path_to(E->get()->data.parent));
+		if (!parent) {
+
+			memdelete(node);
+			return NULL;
+		}
+
+		Node *dup = E->get()->_duplicate(p_flags, r_duplimap);
+		if (!dup) {
+
+			memdelete(node);
+			return NULL;
+		}
+
+		parent->add_child(dup);
+		int pos = E->get()->get_position_in_parent();
+
+		if (pos < parent->get_child_count() - 1) {
+
+			parent->move_child(dup, pos);
+		}
 	}
 
 	return node;

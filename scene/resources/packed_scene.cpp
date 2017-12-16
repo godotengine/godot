@@ -270,6 +270,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				if (i > 0) {
 					if (parent) {
 						parent->_add_child_nocheck(node, snames[n.name]);
+						if (n.index >= 0 && n.index < parent->get_child_count() - 1)
+							parent->move_child(node, n.index);
 					} else {
 						//it may be possible that an instanced scene has changed
 						//and the node has nowhere to go anymore
@@ -386,6 +388,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	nd.name = _nm_get_string(p_node->get_name(), name_map);
 	nd.instance = -1; //not instanced by default
+	nd.index = p_node->get_index();
 
 	// if this node is part of an instanced scene or sub-instanced scene
 	// we need to get the corresponding instance states.
@@ -1116,6 +1119,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			nd.type = r[idx++];
 			nd.name = r[idx++];
 			nd.instance = r[idx++];
+			nd.index = r[idx++];
 			nd.properties.resize(r[idx++]);
 			for (int j = 0; j < nd.properties.size(); j++) {
 
@@ -1208,6 +1212,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		rnodes.push_back(nd.type);
 		rnodes.push_back(nd.name);
 		rnodes.push_back(nd.instance);
+		rnodes.push_back(nd.index);
 		rnodes.push_back(nd.properties.size());
 		for (int j = 0; j < nd.properties.size(); j++) {
 
@@ -1282,6 +1287,11 @@ StringName SceneState::get_node_name(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), StringName());
 	return names[nodes[p_idx].name];
+}
+
+int SceneState::get_node_index(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, nodes.size(), -1);
+	return nodes[p_idx].index;
 }
 
 bool SceneState::is_node_instance_placeholder(int p_idx) const {
@@ -1524,7 +1534,7 @@ int SceneState::add_node_path(const NodePath &p_path) {
 	node_paths.push_back(p_path);
 	return (node_paths.size() - 1) | FLAG_ID_IS_PATH;
 }
-int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance) {
+int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index) {
 
 	NodeData nd;
 	nd.parent = p_parent;
@@ -1532,6 +1542,7 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 	nd.type = p_type;
 	nd.name = p_name;
 	nd.instance = p_instance;
+	nd.index = p_index;
 
 	nodes.push_back(nd);
 
@@ -1605,6 +1616,7 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_instance_placeholder", "idx"), &SceneState::get_node_instance_placeholder);
 	ClassDB::bind_method(D_METHOD("get_node_instance", "idx"), &SceneState::get_node_instance);
 	ClassDB::bind_method(D_METHOD("get_node_groups", "idx"), &SceneState::_get_node_groups);
+	ClassDB::bind_method(D_METHOD("get_node_index", "idx"), &SceneState::get_node_index);
 	ClassDB::bind_method(D_METHOD("get_node_property_count", "idx"), &SceneState::get_node_property_count);
 	ClassDB::bind_method(D_METHOD("get_node_property_name", "idx", "prop_idx"), &SceneState::get_node_property_name);
 	ClassDB::bind_method(D_METHOD("get_node_property_value", "idx", "prop_idx"), &SceneState::get_node_property_value);

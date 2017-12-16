@@ -57,6 +57,7 @@ class SceneState : public Reference {
 		int type;
 		int name;
 		int instance;
+		int index;
 
 		struct Property {
 
@@ -151,6 +152,7 @@ public:
 	String get_node_instance_placeholder(int p_idx) const;
 	bool is_node_instance_placeholder(int p_idx) const;
 	Vector<StringName> get_node_groups(int p_idx) const;
+	int get_node_index(int p_idx) const;
 
 	int get_node_property_count(int p_idx) const;
 	StringName get_node_property_name(int p_idx, int p_prop) const;
@@ -174,7 +176,7 @@ public:
 	int find_name(const StringName &p_name) const;
 	int add_value(const Variant &p_value);
 	int add_node_path(const NodePath &p_path);
-	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance);
+	int add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index);
 	void add_node_property(int p_node, int p_name, int p_value);
 	void add_node_group(int p_node, int p_group);
 	void set_base_scene(int p_idx);
