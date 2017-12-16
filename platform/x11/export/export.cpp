@@ -44,7 +44,8 @@ void register_x11_exporter() {
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Linux/X11");
-	platform->set_extension("bin");
+	platform->set_extension("x86");
+	platform->set_extension("x86_64", "binary_format/64_bits");
 	platform->set_release_32("linux_x11_32_release");
 	platform->set_debug_32("linux_x11_32_debug");
 	platform->set_release_64("linux_x11_64_release");

@@ -240,7 +240,7 @@ public:
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
 
-	virtual String get_binary_extension() const = 0;
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
 	virtual void get_platform_features(List<String> *r_features) = 0;
 
@@ -363,7 +363,7 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	Ref<ImageTexture> logo;
 	String name;
 	String os_name;
-	String extension;
+	Map<String, String> extensions;
 
 	String release_file_32;
 	String release_file_64;
@@ -385,10 +385,10 @@ public:
 	virtual Ref<Texture> get_logo() const;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
-	virtual String get_binary_extension() const;
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
-	void set_extension(const String &p_extension);
+	void set_extension(const String &p_extension, const String &p_feature_key = "default");
 	void set_name(const String &p_name);
 	void set_os_name(const String &p_name);
 

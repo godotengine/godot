@@ -108,7 +108,7 @@ public:
 	virtual String get_os_name() const { return "iOS"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
-	virtual String get_binary_extension() const { return "ipa"; }
+	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const { return "ipa"; }
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;

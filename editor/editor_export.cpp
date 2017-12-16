@@ -1288,8 +1288,18 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	return valid;
 }
 
-String EditorExportPlatformPC::get_binary_extension() const {
-	return extension;
+String EditorExportPlatformPC::get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
+	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
+		if (p_preset->get(E->key())) {
+			return extensions[E->key()];
+		}
+	}
+
+	if (extensions.has("default")) {
+		return extensions["default"];
+	}
+
+	return "";
 }
 
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
@@ -1337,8 +1347,8 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	return save_pack(p_preset, pck_path);
 }
 
-void EditorExportPlatformPC::set_extension(const String &p_extension) {
-	extension = p_extension;
+void EditorExportPlatformPC::set_extension(const String &p_extension, const String &p_feature_key) {
+	extensions[p_feature_key] = p_extension;
 }
 
 void EditorExportPlatformPC::set_name(const String &p_name) {
