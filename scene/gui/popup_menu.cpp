@@ -211,11 +211,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 						mouse_over = i;
 						update();
-
-						if (items[i].submenu != "" && submenu_over != i) {
-							submenu_over = i;
-							submenu_timer->start();
-						}
 						break;
 					}
 				}
@@ -231,19 +226,39 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 						mouse_over = i;
 						update();
-
-						if (items[i].submenu != "" && submenu_over != i) {
-							submenu_over = i;
-							submenu_timer->start();
-						}
 						break;
 					}
 				}
 			} break;
+
+			case KEY_LEFT: {
+
+				Node *n = get_parent();
+				if (!n)
+					break;
+
+				PopupMenu *pm = Object::cast_to<PopupMenu>(n);
+				if (!pm)
+					break;
+
+				hide();
+			} break;
+
+			case KEY_RIGHT: {
+
+				if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over)
+					_activate_submenu(mouse_over);
+			} break;
+
 			case KEY_ENTER:
 			case KEY_KP_ENTER: {
 
 				if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
+
+					if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+						_activate_submenu(mouse_over);
+						break;
+					}
 
 					activate_item(mouse_over);
 				}
