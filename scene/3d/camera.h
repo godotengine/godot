@@ -95,10 +95,8 @@ protected:
 	virtual void _request_camera_update();
 	void _update_camera_mode();
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo &property) const;
 
 	static void _bind_methods();
 
@@ -111,9 +109,11 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
+	void set_projection(Camera::Projection p_mode);
 
 	void make_current();
 	void clear_current();
+	void set_current(bool p_current);
 	bool is_current() const;
 
 	RID get_camera() const;
@@ -123,6 +123,11 @@ public:
 	float get_zfar() const;
 	float get_znear() const;
 	Projection get_projection() const;
+
+	void set_fov(float p_fov);
+	void set_size(float p_size);
+	void set_zfar(float p_zfar);
+	void set_znear(float p_znear);
 
 	virtual Transform get_camera_transform() const;
 
@@ -143,6 +148,8 @@ public:
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
+	void set_vaspect(bool p_vaspect);
+	bool get_vaspect() const;
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;
