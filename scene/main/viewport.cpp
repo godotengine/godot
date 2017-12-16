@@ -1811,7 +1811,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_gui_call_input(gui.mouse_focus, mb);
 			}
 
-			if (mb->get_button_index() == gui.mouse_focus_button) {
+			if (mb->get_button_mask() == 0) {
+				// Last mouse button was released
 				gui.mouse_focus = NULL;
 				gui.mouse_focus_button = -1;
 			}
