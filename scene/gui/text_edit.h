@@ -31,6 +31,7 @@
 #ifndef TEXT_EDIT_H
 #define TEXT_EDIT_H
 
+#include "scene/gui/color_picker.h"
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
@@ -117,6 +118,23 @@ public:
 		void clear_wrap_cache();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 		Text() { indent_size = 4; }
+	};
+
+	struct Inline {
+
+		int line;
+		int insert;
+
+		int begin;
+		int end;
+
+		bool editable;
+		CharType symbol;
+		Color color;
+
+		int pixel_width : 8;
+		int pixel_height : 8;
+		Rect2i rect;
 	};
 
 private:
@@ -359,8 +377,8 @@ private:
 
 	int get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 	int get_column_x_offset_for_line(int p_char, int p_line) const;
-	int get_char_pos_for(int p_px, String p_str) const;
-	int get_column_x_offset(int p_char, String p_str) const;
+	int get_char_pos_for(int p_px, const String &p_str, const Vector<Inline> &p_inlines) const;
+	int get_column_x_offset(int p_char, const String &p_str, const Vector<Inline> &p_inlines) const;
 
 	void adjust_viewport_to_cursor();
 	double get_scroll_line_diff() const;
@@ -382,12 +400,11 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
+	void _color_changed(const Color &p_color);
 	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
-
-	int get_row_height() const;
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -456,6 +473,23 @@ public:
 		SEARCH_WHOLE_WORDS = 2,
 		SEARCH_BACKWARDS = 4
 	};
+
+	struct InlineComparator {
+
+		bool operator()(const Inline &p_a, const Inline &p_b) const {
+
+			return p_a.line < p_b.line || (p_a.line == p_b.line && p_a.insert < p_b.insert);
+		}
+	};
+
+	class InlineProcessor {
+	public:
+		virtual void _parse_inline(const TextEdit &text, int p_line, const String &p_str, Vector<Inline> &r_inlines) = 0;
+		virtual void _edit_inline(const Inline &p_inline) = 0;
+	};
+
+	InlineProcessor *_get_inline_processor() const;
+	void _set_inline_processor(InlineProcessor *p_processor);
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
@@ -673,9 +707,15 @@ public:
 	String get_text_for_completion();
 	String get_text_for_lookup_completion();
 
+	int get_row_height() const;
+
 	virtual bool is_text_field() const;
 	TextEdit();
 	~TextEdit();
+
+private:
+	InlineProcessor *inline_processor;
+	Vector<Inline> drawn_inlines;
 };
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
