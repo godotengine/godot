@@ -338,8 +338,7 @@ const Map<StringName, InputMap::Axis> &InputMap::get_axis_map() const {
 void InputMap::load_from_globals() {
 
 	input_map.clear();
-	// TODO: add input axis map loading.
-	// Also TODO: figure out what exactly is going on here.
+	input_axis_map.clear();
 
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
@@ -362,6 +361,32 @@ void InputMap::load_from_globals() {
 			if (ie.is_null())
 				continue;
 			action_add_event(name, ie);
+		}
+	}
+
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		const PropertyInfo &pi = E->get();
+
+		if (!pi.name.begins_with("input_axes"))
+			continue;
+
+		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+
+		add_axis(name);
+
+		Array va = ProjectSettings::get_singleton()->get(pi.name);
+
+		for (int i = 0; i < va.size(); i++) {
+			Array binding = va[i];
+			if (binding.size() < 2)
+				continue;
+
+			Ref<InputEvent> ie = binding[1];
+			float val = binding[2];
+			if (ie.is_null())
+				continue;
+
+			axis_add_event(name, ie, val);
 		}
 	}
 }

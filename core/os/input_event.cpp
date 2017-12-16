@@ -68,7 +68,7 @@ float InputEvent::get_input_axis_value(const StringName &p_axis) const {
 	if (!is_axis(p_axis))
 		return 0.0f;
 
-	return InputMap::get_singleton()->event_get_axis_value(Ref<InputEvent>((InputEvent *) this), p_axis);
+	return InputMap::get_singleton()->event_get_axis_value(Ref<InputEvent>((InputEvent *)this), p_axis);
 }
 
 bool InputEvent::is_echo() const {
