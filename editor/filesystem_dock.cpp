@@ -591,9 +591,7 @@ void FileSystemDock::_select_file(int p_idx) {
 		if (fpath != "res://") {
 			fpath = fpath.substr(0, fpath.length() - 1);
 		}
-		path = fpath;
-		_update_files(false);
-		navigate_to_path(path);
+		navigate_to_path(fpath);
 	} else {
 		if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
 			editor->open_request(fpath);
