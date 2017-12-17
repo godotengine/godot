@@ -313,7 +313,7 @@ public:
 
 	_FORCE_INLINE_ TData *getptr(const TKey &p_key) {
 
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return NULL;
 
 		Element *e = const_cast<Element *>(get_element(p_key));
@@ -326,7 +326,7 @@ public:
 
 	_FORCE_INLINE_ const TData *getptr(const TKey &p_key) const {
 
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return NULL;
 
 		const Element *e = const_cast<Element *>(get_element(p_key));
@@ -345,7 +345,7 @@ public:
 	template <class C>
 	_FORCE_INLINE_ TData *custom_getptr(C p_custom_key, uint32_t p_custom_hash) {
 
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return NULL;
 
 		uint32_t hash = p_custom_hash;
@@ -371,7 +371,7 @@ public:
 	template <class C>
 	_FORCE_INLINE_ const TData *custom_getptr(C p_custom_key, uint32_t p_custom_hash) const {
 
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return NULL;
 
 		uint32_t hash = p_custom_hash;
@@ -400,7 +400,7 @@ public:
 
 	bool erase(const TKey &p_key) {
 
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return false;
 
 		uint32_t hash = Hasher::hash(p_key);
@@ -478,7 +478,8 @@ public:
 	*/
 	const TKey *next(const TKey *p_key) const {
 
-		if (!hash_table) return NULL;
+		if (unlikely(!hash_table))
+			return NULL;
 
 		if (!p_key) { /* get the first key */
 
@@ -559,7 +560,7 @@ public:
 	}
 
 	void get_key_value_ptr_array(const Pair **p_pairs) const {
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return;
 		for (int i = 0; i < (1 << hash_table_power); i++) {
 
@@ -573,7 +574,7 @@ public:
 	}
 
 	void get_key_list(List<TKey> *p_keys) const {
-		if (!hash_table)
+		if (unlikely(!hash_table))
 			return;
 		for (int i = 0; i < (1 << hash_table_power); i++) {
 

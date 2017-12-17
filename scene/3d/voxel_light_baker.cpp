@@ -1692,7 +1692,7 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 				}
 
 				cell = bc->childs[child];
-				if (cell == CHILD_EMPTY)
+				if (unlikely(cell == CHILD_EMPTY))
 					break;
 
 				half >>= 1;
@@ -1701,12 +1701,12 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 			pos += advance;
 		}
 
-		if (cell != CHILD_EMPTY) {
+		if (unlikely(cell != CHILD_EMPTY)) {
 			for (int i = 0; i < 6; i++) {
 				//anisotropic read light
 				float amount = direction.dot(aniso_normal[i]);
-				if (amount < 0)
-					amount = 0;
+				if (amount <= 0)
+					continue;
 				accum.x += light[cell].accum[i][0] * amount;
 				accum.y += light[cell].accum[i][1] * amount;
 				accum.z += light[cell].accum[i][2] * amount;
