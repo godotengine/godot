@@ -106,7 +106,6 @@ private:
 	int index;
 	String name;
 	void _menu_option(int p_option);
-	Size2 prev_size;
 
 	Spatial *preview_node;
 	AABB *preview_bounds;
@@ -136,10 +135,7 @@ private:
 	bool freelook_active;
 	real_t freelook_speed;
 
-	PanelContainer *info;
 	Label *info_label;
-
-	PanelContainer *fps;
 	Label *fps_label;
 
 	struct _RayResult {

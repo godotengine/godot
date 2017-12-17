@@ -999,6 +999,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("bg", "ColorPickerButton", theme->get_icon("GuiMiniCheckerboard", "EditorIcons"));
 
+	// Information on 3D viewport
+	Ref<StyleBoxFlat> style_info_3d_viewport = style_default->duplicate();
+	style_info_3d_viewport->set_bg_color(style_info_3d_viewport->get_bg_color() * Color(1, 1, 1, 0.5));
+	style_info_3d_viewport->set_border_width_all(0);
+	theme->set_stylebox("Information3dViewport", "EditorStyles", style_info_3d_viewport);
+
 	// adaptive script theme constants
 	// for comments and elements with lower relevance
 	const Color dim_color = Color(font_color.r, font_color.g, font_color.b, 0.5);
