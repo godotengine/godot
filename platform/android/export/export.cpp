@@ -352,10 +352,11 @@ class EditorExportAndroid : public EditorExportPlatform {
 				ea->device_lock->unlock();
 			}
 
+			uint64_t sleep = OS::get_singleton()->get_power_state() == OS::POWERSTATE_ON_BATTERY ? 1000 : 100;
 			uint64_t wait = 3000000;
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
-				OS::get_singleton()->delay_usec(1000);
+				OS::get_singleton()->delay_usec(1000 * sleep);
 				if (ea->quit_request)
 					break;
 			}
