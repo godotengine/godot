@@ -188,6 +188,9 @@ def configure(env):
         else:
             VC_PATH = ""
 
+        if (env["use_lto"]):
+            env.Append(CCFLAGS=['/GL'])
+            env.Append(LINKFLAGS=['/LTCG'])
         if (env["openmp"]):
             env.Append(CPPFLAGS=['/openmp'])
 
