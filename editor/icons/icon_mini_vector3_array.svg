@@ -1,7 +1,0 @@
-<svg width="16" height="12" version="1.1" viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(0 -1040.4)">
-<path transform="translate(0 1040.4)" d="m0 0v2 8 2h4v-2h-2v-8h2v-2h-2-2zm12 0v2h2v8h-2v2h4v-2-10h-4z" fill="#e0e0e0"/>
-<path transform="translate(0 1040.4)" d="m8 1v2h1 1a1 1 0 0 1 -1 1v2a1 1 0 0 1 1 1 1 1 0 0 1 -1 1h-1v2h1a3 3 0 0 0 2.5977 -1.5 3 3 0 0 0 0 -3 3 3 0 0 0 -0.36523 -0.50195 3 3 0 0 0 0.36523 -0.49805 3 3 0 0 0 0.39844 -1.5h0.003906v-2h-0.76562-2.2344-1zm0 2h-2v3a1 1 0 0 1 -1 1v-4h-2v6h2a3 3 0 0 0 3 -3v-3z" fill="#e286f0"/>
-<path transform="translate(0 1040.4)" d="m8 1v2h1 1a1 1 0 0 1 -1 1v2a1 1 0 0 1 1 1 1 1 0 0 1 -1 1h-1v2h1a3 3 0 0 0 2.5977 -1.5 3 3 0 0 0 0 -3 3 3 0 0 0 -0.36523 -0.50195 3 3 0 0 0 0.36523 -0.49805 3 3 0 0 0 0.39844 -1.5h0.003906v-2h-0.76562-2.2344-1z" fill="#fff" fill-opacity=".39216"/>
-</g>
-</svg>
