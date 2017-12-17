@@ -1781,7 +1781,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 1)
 #endif
 			for (int j = 0; j < width; j++) {
 
@@ -1878,12 +1878,14 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			LightMap *lightmap_ptr = lightmap.ptrw();
 			const Cell *cells = bake_cells.ptr();
 			const Light *light = bake_light.ptr();
-
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
 			for (int i = 0; i < height; i++) {
 
 			//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic, 1)
 #endif
 				for (int j = 0; j < width; j++) {
 
