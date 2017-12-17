@@ -1257,6 +1257,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				exit_ok = true;
 				OPCODE_BREAK;
 			}
+
+// Enable for debugging
 #if 0
 			default: {
 

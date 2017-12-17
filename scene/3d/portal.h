@@ -39,7 +39,8 @@
    If a portal is placed next (very close to) a similar, opposing portal, they automatically connect,
    otherwise, a portal connects to the parent room
 */
-//this will be redone and replaced by area portals, left for reference since a new class with this name will have to exist and want to reuse the gizmos
+// FIXME: This will be redone and replaced by area portals, left for reference
+// since a new class with this name will have to exist and want to reuse the gizmos
 #if 0
 class Portal : public VisualInstance {
 
