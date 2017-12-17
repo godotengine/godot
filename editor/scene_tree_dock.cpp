@@ -1699,12 +1699,11 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 			icon = get_icon("Object", "EditorIcons");
 
 		if (menu->get_item_count() == 0) {
-			menu->add_item(TTR("Sub-Resources:"));
-			menu->set_item_disabled(0, true);
+			menu->add_submenu_item(TTR("Sub-Resources:"), "Sub-Resources");
 		}
-		int index = menu->get_item_count();
-		menu->add_icon_item(icon, E->get().name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
-		menu->set_item_h_offset(index, p_depth * 10 * EDSCALE);
+		int index = menu_subresources->get_item_count();
+		menu_subresources->add_icon_item(icon, E->get().name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
+		menu_subresources->set_item_h_offset(index, p_depth * 10 * EDSCALE);
 		subresources.push_back(obj->get_instance_id());
 
 		_add_children_to_popup(obj, p_depth + 1);
@@ -2049,6 +2048,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect("id_pressed", this, "_tool_selected");
+	menu_subresources = memnew(PopupMenu);
+	menu_subresources->set_name("Sub-Resources");
+	menu->add_child(menu_subresources);
 	first_enter = true;
 	restore_script_editor_on_drag = false;
 
