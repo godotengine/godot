@@ -85,7 +85,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				if ((cursor_pos < selection.begin) || (cursor_pos > selection.end) || !selection.enabled) {
 
-					selection_clear();
+					deselect();
 					selection.cursor_start = cursor_pos;
 					selection.creating = true;
 				} else if (selection.enabled) {
@@ -99,7 +99,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		} else {
 
 			if ((!selection.creating) && (!selection.doubleclick)) {
-				selection_clear();
+				deselect();
 			}
 			selection.creating = false;
 			selection.doubleclick = false;
@@ -175,7 +175,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 					if (editable) {
 
-						selection_clear();
+						deselect();
 						text = text.substr(cursor_pos, text.length() - cursor_pos);
 
 						Ref<Font> font = get_font("font");
@@ -204,7 +204,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 					if (editable) {
 
-						selection_clear();
+						deselect();
 						text = text.substr(0, cursor_pos);
 						_text_changed();
 					}
@@ -827,7 +827,7 @@ void LineEdit::shift_selection_check_pre(bool p_shift) {
 		selection.cursor_start = cursor_pos;
 	}
 	if (!p_shift)
-		selection_clear();
+		deselect();
 }
 
 void LineEdit::shift_selection_check_post(bool p_shift) {
@@ -880,13 +880,6 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	}
 
 	set_cursor_position(ofs);
-
-	/*
-	int new_cursor_pos=p_x;
-	int charwidth=draw_area->get_font_char_width(' ',0);
-	new_cursor_pos=( ( (new_cursor_pos-2)+ (charwidth/2) ) /charwidth );
-	if (new_cursor_pos>(int)text.length()) new_cursor_pos=text.length();
-	set_cursor_position(window_pos+new_cursor_pos); */
 }
 
 bool LineEdit::cursor_get_blink_enabled() const {
@@ -940,11 +933,6 @@ void LineEdit::delete_char() {
 	text.erase(cursor_pos - 1, 1);
 
 	set_cursor_position(get_cursor_position() - 1);
-
-	if (cursor_pos == window_pos) {
-
-		//set_window_pos(cursor_pos-get_window_length());
-	}
 
 	_text_changed();
 }
@@ -1143,7 +1131,7 @@ Size2 LineEdit::get_minimum_size() const {
 
 /* selection */
 
-void LineEdit::selection_clear() {
+void LineEdit::deselect() {
 
 	selection.begin = 0;
 	selection.end = 0;
@@ -1159,7 +1147,7 @@ void LineEdit::selection_delete() {
 	if (selection.enabled)
 		delete_text(selection.begin, selection.end);
 
-	selection_clear();
+	deselect();
 }
 
 void LineEdit::set_max_length(int p_max_length) {
@@ -1224,7 +1212,7 @@ bool LineEdit::is_secret() const {
 void LineEdit::select(int p_from, int p_to) {
 
 	if (p_from == 0 && p_to == 0) {
-		selection_clear();
+		deselect();
 		return;
 	}
 
@@ -1383,7 +1371,9 @@ void LineEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &LineEdit::_gui_input);
 	ClassDB::bind_method(D_METHOD("clear"), &LineEdit::clear);
+	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
+	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LineEdit::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LineEdit::get_text);
 	ClassDB::bind_method(D_METHOD("set_placeholder", "text"), &LineEdit::set_placeholder);
@@ -1405,7 +1395,6 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &LineEdit::is_editable);
 	ClassDB::bind_method(D_METHOD("set_secret", "enabled"), &LineEdit::set_secret);
 	ClassDB::bind_method(D_METHOD("is_secret"), &LineEdit::is_secret);
-	ClassDB::bind_method(D_METHOD("select", "from", "to"), &LineEdit::select, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &LineEdit::menu_option);
 	ClassDB::bind_method(D_METHOD("get_menu"), &LineEdit::get_menu);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &LineEdit::set_context_menu_enabled);
@@ -1457,7 +1446,7 @@ LineEdit::LineEdit() {
 	pass = false;
 	placeholder_alpha = 0.6;
 
-	selection_clear();
+	deselect();
 	set_focus_mode(FOCUS_ALL);
 	editable = true;
 	set_default_cursor_shape(CURSOR_IBEAM);

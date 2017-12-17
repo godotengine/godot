@@ -119,7 +119,6 @@ private:
 	void shift_selection_check_pre(bool);
 	void shift_selection_check_post(bool);
 
-	void selection_clear();
 	void selection_fill_at_cursor();
 	void selection_delete();
 	void set_window_pos(int p_pos);
@@ -155,7 +154,9 @@ public:
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
 
+	void select(int p_from = 0, int p_to = -1);
 	void select_all();
+	void deselect();
 
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
@@ -189,8 +190,6 @@ public:
 
 	void set_secret(bool p_secret);
 	bool is_secret() const;
-
-	void select(int p_from = 0, int p_to = -1);
 
 	virtual Size2 get_minimum_size() const;
 
