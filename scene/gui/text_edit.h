@@ -270,7 +270,7 @@ class TextEdit : public Control {
 	bool brace_matching_enabled;
 	bool highlight_current_line;
 	bool auto_indent;
-	bool cut_copy_line;
+	String cut_copy_line;
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
