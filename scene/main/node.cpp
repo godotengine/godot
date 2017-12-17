@@ -2162,7 +2162,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			Variant value = N->get()->get(name);
 			// Duplicate dictionaries and arrays, mainly needed for __meta__
 			if (value.get_type() == Variant::DICTIONARY) {
-				value = Dictionary(value).copy();
+				value = Dictionary(value).duplicate();
 			} else if (value.get_type() == Variant::ARRAY) {
 				value = Array(value).duplicate();
 			}
@@ -2303,7 +2303,7 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 		Variant value = get(name);
 		// Duplicate dictionaries and arrays, mainly needed for __meta__
 		if (value.get_type() == Variant::DICTIONARY) {
-			value = Dictionary(value).copy();
+			value = Dictionary(value).duplicate();
 		} else if (value.get_type() == Variant::ARRAY) {
 			value = Array(value).duplicate();
 		}

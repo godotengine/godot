@@ -215,7 +215,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	return NULL;
 }
 
-Dictionary Dictionary::copy() const {
+Dictionary Dictionary::duplicate() const {
 
 	Dictionary n;
 
