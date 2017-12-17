@@ -69,34 +69,6 @@ public:
 
 		Portal() { enabled=true; disable_distance=50; disable_color=Color(); connect_range=0.8; }
 	};
-
-	struct BakedLight {
-
-		Rasterizer::BakedLightData data;
-		PoolVector<int> sampler;
-		AABB octree_aabb;
-		Size2i octree_tex_size;
-		Size2i light_tex_size;
-
-	};
-
-	struct BakedLightSampler {
-
-		float params[BAKED_LIGHT_SAMPLER_MAX];
-		int resolution;
-		Vector<Vector3> dp_cache;
-
-		BakedLightSampler() {
-			params[BAKED_LIGHT_SAMPLER_STRENGTH]=1.0;
-			params[BAKED_LIGHT_SAMPLER_ATTENUATION]=1.0;
-			params[BAKED_LIGHT_SAMPLER_RADIUS]=1.0;
-			params[BAKED_LIGHT_SAMPLER_DETAIL_RATIO]=0.1;
-			resolution=16;
-		}
-	};
-
-	void _update_baked_light_sampler_dp_cache(BakedLightSampler * blsamp);
-
 #endif
 
 	/* CAMERA API */

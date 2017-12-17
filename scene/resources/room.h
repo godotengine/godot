@@ -36,7 +36,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-//left for reference but will be removed when portals are reimplemented using Area
+// FIXME: left for reference but will be removed when portals are reimplemented using Area
 #if 0
 
 class RoomBounds : public Resource {

@@ -897,17 +897,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 			float dt = CLAMP((d + distance_adv) / local_radius, 0, 1);
 			att *= powf(1.0 - dt, p_attenutation);
 		}
-#if 0
-		if (light_cache.type == VS::LIGHT_SPOT) {
 
-			float angle = Math::rad2deg(acos(light_axis.dot(spot_axis)));
-			if (angle > light_cache.spot_angle)
-				continue;
-
-			float d = CLAMP(angle / light_cache.spot_angle, 1, 0);
-			att *= powf(1.0 - d, light_cache.spot_attenuation);
-		}
-#endif
 		clip_planes = 0;
 
 		for (int c = 0; c < 3; c++) {
@@ -1041,17 +1031,7 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 			float dt = CLAMP((d + distance_adv) / local_radius, 0, 1);
 			att *= powf(1.0 - dt, p_attenutation);
 		}
-#if 0
-		if (light_cache.type == VS::LIGHT_SPOT) {
 
-			float angle = Math::rad2deg(acos(light_axis.dot(spot_axis)));
-			if (angle > light_cache.spot_angle)
-				continue;
-
-			float d = CLAMP(angle / light_cache.spot_angle, 1, 0);
-			att *= powf(1.0 - d, light_cache.spot_attenuation);
-		}
-#endif
 		clip_planes = 0;
 
 		for (int c = 0; c < 3; c++) {
@@ -2016,6 +1996,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 			}
 		}
 
+// Enable for debugging
 #if 0
 		{
 			PoolVector<uint8_t> img;

@@ -1529,6 +1529,8 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton *p_skel) {
 	skel = p_skel;
 	set_spatial_node(p_skel);
 }
+
+// FIXME: Kept as reference for reimplementation in 3.1+
 #if 0
 void RoomSpatialGizmo::redraw() {
 

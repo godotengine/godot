@@ -279,21 +279,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("precision highp sampler2DArray;\n");
 #endif
 
-#if 0
-	if (cc) {
-
-		String _code_string = "#define VERTEX_SHADER_CODE "+cc->vertex+"\n";
-		String _code_globals = "#define VERTEX_SHADER_GLOBALS "+cc->vertex_globals+"\n";
-
-		code_string=_code_string.ascii();
-		code_globals=_code_globals.ascii();
-		DEBUG_PRINT( code_globals.get_data() );
-		DEBUG_PRINT( code_string.get_data() );
-		strings.push_back(code_globals);
-		strings.push_back(code_string);
-	}
-#endif
-
 	strings.push_back(vertex_code0.get_data());
 
 	if (cc) {
@@ -380,21 +365,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("precision highp sampler2D;\n");
 	strings.push_back("precision highp samplerCube;\n");
 	strings.push_back("precision highp sampler2DArray;\n");
-#endif
-
-#if 0
-	if (cc) {
-
-		String _code_string = "#define FRAGMENT_SHADER_CODE "+cc->fragment+"\n";
-		String _code_globals = "#define FRAGMENT_SHADER_GLOBALS "+cc->fragment_globals+"\n";
-
-		code_string=_code_string.ascii();
-		code_globals=_code_globals.ascii();
-		DEBUG_PRINT( code_globals.get_data() );
-		DEBUG_PRINT( code_string.get_data() );
-		strings.push_back(code_globals);
-		strings.push_back(code_string);
-	}
 #endif
 
 	strings.push_back(fragment_code0.get_data());

@@ -44,7 +44,7 @@
 
 */
 
-//this will be removed, left for reference
+// FIXME: this will be removed, left for reference
 #if 0
 
 class Room : public VisualInstance {

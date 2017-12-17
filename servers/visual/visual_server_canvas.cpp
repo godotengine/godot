@@ -499,7 +499,6 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	pline->antialiased = false; //todo
 	pline->multiline = true;
 
-	//	if (p_width <= 1) {
 	pline->lines = p_points;
 	pline->line_colors = p_colors;
 	if (pline->line_colors.size() == 0) {
@@ -507,66 +506,7 @@ void VisualServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	} else if (pline->line_colors.size() > 1 && pline->line_colors.size() != pline->lines.size()) {
 		pline->line_colors.resize(1);
 	}
-#if 0
-//width not yet
-	} else {
-		//make a trianglestrip for drawing the line...
-		Vector2 prev_t;
-		pline->triangles.resize(p_points.size() * 2);
-		if (p_antialiased) {
-			pline->lines.resize(p_points.size() * 2);
-		}
 
-		if (p_colors.size() == 0) {
-			pline->triangle_colors.push_back(Color(1, 1, 1, 1));
-			if (p_antialiased) {
-				pline->line_colors.push_back(Color(1, 1, 1, 1));
-			}
-		}
-		if (p_colors.size() == 1) {
-			pline->triangle_colors = p_colors;
-			pline->line_colors = p_colors;
-		} else {
-			pline->triangle_colors.resize(pline->triangles.size());
-			pline->line_colors.resize(pline->lines.size());
-		}
-
-		for (int i = 0; i < p_points.size(); i++) {
-
-			Vector2 t;
-			if (i == p_points.size() - 1) {
-				t = prev_t;
-			} else {
-				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
-				if (i == 0) {
-					prev_t = t;
-				}
-			}
-
-			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
-
-			if (p_antialiased) {
-				pline->lines[i] = p_points[i] + tangent;
-				pline->lines[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
-				if (pline->line_colors.size() > 1) {
-					pline->line_colors[i] = p_colors[i];
-					pline->line_colors[p_points.size() * 2 - i - 1] = p_colors[i];
-				}
-			}
-
-			pline->triangles[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles[i * 2 + 1] = p_points[i] - tangent;
-
-			if (pline->triangle_colors.size() > 1) {
-
-				pline->triangle_colors[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors[i * 2 + 1] = p_colors[i];
-			}
-
-			prev_t = t;
-		}
-	}
-#endif
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(pline);
 }

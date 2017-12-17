@@ -228,40 +228,6 @@ public:
 	VisualScriptSwitch();
 };
 
-#if 0
-class VisualScriptInputFilter : public VisualScriptNode {
-
-	GDCLASS(VisualScriptInputFilter, VisualScriptNode)
-
-	Vector<Ref<InputEvent>> filters;
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-public:
-	virtual int get_output_sequence_port_count() const;
-	virtual bool has_input_sequence_port() const;
-
-	virtual String get_output_sequence_port_text(int p_port) const;
-
-	virtual int get_input_value_port_count() const;
-	virtual int get_output_value_port_count() const;
-
-	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
-	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
-
-	virtual String get_caption() const;
-	virtual String get_text() const;
-	virtual String get_category() const { return "flow_control"; }
-
-	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
-
-	VisualScriptInputFilter();
-};
-#endif
-
 class VisualScriptTypeCast : public VisualScriptNode {
 
 	GDCLASS(VisualScriptTypeCast, VisualScriptNode)

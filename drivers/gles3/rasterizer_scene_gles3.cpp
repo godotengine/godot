@@ -2786,12 +2786,6 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 				copymem(&state.omni_array_tmp[li->light_index * state.ubo_light_size], &ubo_data, state.ubo_light_size);
 				state.omni_light_count++;
 
-#if 0
-				if (li->light_ptr->shadow_enabled) {
-					li->shadow_projection[0] = Transform(camera_transform_inverse * li->transform).inverse();
-					lights_use_shadow=true;
-				}
-#endif
 			} break;
 			case VS::LIGHT_SPOT: {
 

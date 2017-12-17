@@ -1897,62 +1897,6 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 		return false;
 	}
 
-#if 0
-	if (found_builtin) {
-
-		if (p_func->op==OP_CONSTRUCT && all_const) {
-
-
-			Vector<float> cdata;
-			for(int i=0;i<argcount;i++) {
-
-				Variant v = static_cast<ConstantNode*>(p_func->arguments[i+1])->value;
-				switch(v.get_type()) {
-
-					case Variant::REAL: cdata.push_back(v); break;
-					case Variant::INT: cdata.push_back(v); break;
-					case Variant::VECTOR2: { Vector2 v2=v; cdata.push_back(v2.x); cdata.push_back(v2.y); } break;
-					case Variant::VECTOR3: { Vector3 v3=v; cdata.push_back(v3.x); cdata.push_back(v3.y); cdata.push_back(v3.z);} break;
-					case Variant::PLANE: { Plane v4=v; cdata.push_back(v4.normal.x); cdata.push_back(v4.normal.y); cdata.push_back(v4.normal.z); cdata.push_back(v4.d); } break;
-					default: ERR_FAIL_V(NULL);
-
-				}
-
-			}
-
-			ConstantNode *cn = parser.create_node<ConstantNode>(p_func->parent);
-			Variant data;
-			switch(p_func->return_cache) {
-				case TYPE_FLOAT: data = cdata[0]; break;
-				case TYPE_VEC2:
-					if (cdata.size()==1)
-						data = Vector2(cdata[0],cdata[0]);
-					else
-						data = Vector2(cdata[0],cdata[1]);
-
-					break;
-				case TYPE_VEC3:
-					if (cdata.size()==1)
-						data = Vector3(cdata[0],cdata[0],cdata[0]);
-					else
-						data = Vector3(cdata[0],cdata[1],cdata[2]);
-					break;
-				case TYPE_VEC4:
-					if (cdata.size()==1)
-						data = Plane(cdata[0],cdata[0],cdata[0],cdata[0]);
-					else
-						data = Plane(cdata[0],cdata[1],cdata[2],cdata[3]);
-					break;
-			}
-
-			cn->datatype=p_func->return_cache;
-			cn->value=data;
-			return cn;
-
-		}
-		return p_func;
-	}
-#endif
 	// try existing functions..
 
 	StringName exclude_function;

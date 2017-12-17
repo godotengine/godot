@@ -444,15 +444,7 @@ void EditorNode::_fs_changed() {
 				continue;
 
 			if (E->get()->get_import_path() != String()) {
-//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
-//imported resource
-#if 0
-				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
-
-				if (mt != E->get()->get_import_last_modified_time()) {
-					changed.push_back(E->get());
-				}
-#endif
+				//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
 				continue;
 			}
 
