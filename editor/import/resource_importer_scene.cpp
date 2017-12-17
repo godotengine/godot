@@ -849,15 +849,15 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 
 		if (mesh.is_valid() && !meshes.has(mesh)) {
 			Spatial *s = mi;
-			while (s->get_parent_spatial()) {
+			Transform transform;
+			while (s) {
+				transform = transform * s->get_transform();
 				s = s->get_parent_spatial();
 			}
 
-			if (s == mi) {
-				meshes[mesh] = s->get_transform();
-			} else {
-				meshes[mesh] = s->get_transform() * mi->get_relative_transform(s);
-			}
+			meshes[mesh] = transform;
+
+			print_line("mesh transform: " + meshes[mesh]);
 		}
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {

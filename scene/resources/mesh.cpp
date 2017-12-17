@@ -1111,13 +1111,14 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		for (int j = 0; j < vc; j++) {
 
 			Vector3 v = p_base_transform.xform(r[j]);
+			Vector3 n = p_base_transform.basis.xform(rn[j]).normalized();
 
 			vertices[(j + vertex_ofs) * 3 + 0] = v.x;
 			vertices[(j + vertex_ofs) * 3 + 1] = v.y;
 			vertices[(j + vertex_ofs) * 3 + 2] = v.z;
-			normals[(j + vertex_ofs) * 3 + 0] = rn[j].x;
-			normals[(j + vertex_ofs) * 3 + 1] = rn[j].y;
-			normals[(j + vertex_ofs) * 3 + 2] = rn[j].z;
+			normals[(j + vertex_ofs) * 3 + 0] = n.x;
+			normals[(j + vertex_ofs) * 3 + 1] = n.y;
+			normals[(j + vertex_ofs) * 3 + 2] = n.z;
 			uv_index[j + vertex_ofs] = Pair<int, int>(i, j);
 		}
 
