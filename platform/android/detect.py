@@ -277,7 +277,7 @@ def get_ndk_version(path):
     try:
         with open(prop_file_path) as prop_file:
             for line in prop_file:
-                key_value = map(lambda x: string.strip(x), line.split("="))
+                key_value = list(map(lambda x: x.strip(), line.split("=")))
                 if key_value[0] == "Pkg.Revision":
                     return key_value[1]
     except:
