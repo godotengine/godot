@@ -294,6 +294,7 @@ SpriteBase3D::SpriteBase3D() {
 	for (int i = 0; i < FLAG_MAX; i++)
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
+	alpha_cut = ALPHA_CUT_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);
