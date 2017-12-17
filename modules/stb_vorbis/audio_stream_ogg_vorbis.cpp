@@ -42,12 +42,17 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	int todo = p_frames;
 
-	while (todo && active) {
+	int start_buffer = 0;
 
-		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, (float *)p_buffer, todo * 2);
+	while (todo && active) {
+		float *buffer = (float *)p_buffer;
+		if (start_buffer > 0) {
+			buffer = (buffer + start_buffer * 2);
+		}
+		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, buffer, todo * 2);
 		if (vorbis_stream->channels == 1 && mixed > 0) {
 			//mix mono to stereo
-			for (int i = 0; i < mixed; i++) {
+			for (int i = start_buffer; i < mixed; i++) {
 				p_buffer[i].r = p_buffer[i].l;
 			}
 		}
@@ -60,11 +65,14 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 				//loop
 				seek(vorbis_stream->loop_offset);
 				loops++;
+				// we still have buffer to fill, start from this element in the next iteration.
+				start_buffer = p_frames - todo;
 			} else {
-				for (int i = mixed; i < p_frames; i++) {
+				for (int i = p_frames - todo; i < p_frames; i++) {
 					p_buffer[i] = AudioFrame(0, 0);
 				}
 				active = false;
+				todo = 0;
 			}
 		}
 	}
