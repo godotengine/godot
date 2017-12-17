@@ -27,6 +27,13 @@
 				Erases the [LineEdit] text.
 			</description>
 		</method>
+		<method name="deselect">
+			<return type="void">
+			</return>
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
 		<method name="get_cursor_position" qualifiers="const">
 			<return type="int">
 			</return>
