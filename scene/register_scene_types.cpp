@@ -268,11 +268,11 @@ void register_scene_types() {
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
-	ClassDB::register_class<ScrollBar>();
+	ClassDB::register_virtual_class<ScrollBar>();
 	ClassDB::register_class<HScrollBar>();
 	ClassDB::register_class<VScrollBar>();
 	ClassDB::register_class<ProgressBar>();
-	ClassDB::register_class<Slider>();
+	ClassDB::register_virtual_class<Slider>();
 	ClassDB::register_class<HSlider>();
 	ClassDB::register_class<VSlider>();
 	ClassDB::register_class<Popup>();
@@ -283,7 +283,7 @@ void register_scene_types() {
 	ClassDB::register_class<ToolButton>();
 	ClassDB::register_class<LinkButton>();
 	ClassDB::register_class<Panel>();
-	ClassDB::register_class<Range>();
+	ClassDB::register_virtual_class<Range>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
