@@ -107,6 +107,8 @@ private:
 
 	real_t icon_scale;
 
+	bool do_autoscroll_to_bottom;
+
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
@@ -211,6 +213,8 @@ public:
 	bool has_auto_height() const;
 
 	Size2 get_minimum_size() const;
+
+	void set_autoscroll_to_bottom(const bool p_enable);
 
 	VScrollBar *get_v_scroll() { return scroll_bar; }
 

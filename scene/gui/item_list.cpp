@@ -930,6 +930,9 @@ void ItemList::_notification(int p_what) {
 						scroll_bar->hide();
 					} else {
 						scroll_bar->show();
+
+						if (do_autoscroll_to_bottom)
+							scroll_bar->set_value(max);
 					}
 					break;
 				}
@@ -1313,6 +1316,11 @@ Size2 ItemList::get_minimum_size() const {
 	return Size2();
 }
 
+void ItemList::set_autoscroll_to_bottom(const bool p_enable) {
+
+	do_autoscroll_to_bottom = p_enable;
+}
+
 void ItemList::set_auto_height(bool p_enable) {
 
 	auto_height = p_enable;
@@ -1466,6 +1474,7 @@ ItemList::ItemList() {
 	ensure_selected_visible = false;
 	defer_select_single = -1;
 	allow_rmb_select = false;
+	do_autoscroll_to_bottom = false;
 
 	icon_scale = 1.0f;
 	set_clip_contents(true);
