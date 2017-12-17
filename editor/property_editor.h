@@ -314,9 +314,9 @@ public:
 
 class SectionedPropertyEditorFilter;
 
-class SectionedPropertyEditor : public HBoxContainer {
+class SectionedPropertyEditor : public HSplitContainer {
 
-	GDCLASS(SectionedPropertyEditor, HBoxContainer);
+	GDCLASS(SectionedPropertyEditor, HSplitContainer);
 
 	ObjectID obj;
 

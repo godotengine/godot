@@ -1690,12 +1690,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
 	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 
-	l = memnew(Label);
-	vbc->add_child(l);
-	l->set_text(TTR("Action:"));
-
 	hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
+
+	l = memnew(Label);
+	hbc->add_child(l);
+	l->set_text(TTR("Action:"));
 
 	action_name = memnew(LineEdit);
 	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
