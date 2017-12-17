@@ -100,6 +100,8 @@ void EditorSettingsDialog::popup_edit_settings() {
 	} else {
 		popup_centered_ratio(0.7);
 	}
+
+	_focus_current_search_box();
 }
 
 void EditorSettingsDialog::_clear_search_box() {
@@ -137,12 +139,17 @@ void EditorSettingsDialog::_notification(int p_what) {
 			undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			clear_button->set_icon(get_icon("Close", "EditorIcons"));
-			shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
+			_update_icons();
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/editor_settings_bounds", get_rect());
 			set_process_unhandled_input(false);
+		} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_icons();
+			// Update theme colors.
+			property_editor->update_category_list();
+			_update_shortcuts();
 		} break;
 	}
 }
@@ -177,6 +184,14 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+}
+
+void EditorSettingsDialog::_update_icons() {
+
+	search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	shortcut_search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	clear_button->set_icon(get_icon("Close", "EditorIcons"));
+	shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
 }
 
 void EditorSettingsDialog::_update_shortcuts() {
@@ -329,6 +344,26 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 	undo_redo->commit_action();
 }
 
+void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
+
+	_focus_current_search_box();
+}
+
+void EditorSettingsDialog::_focus_current_search_box() {
+
+	Control *tab = tabs->get_current_tab_control();
+	LineEdit* current_search_box;
+	if (tab == tab_general)
+		current_search_box = search_box;
+	else if (tab == tab_shortcuts)
+		current_search_box = shortcut_search_box;
+
+	if (current_search_box) {
+		current_search_box->grab_focus();
+		current_search_box->select_all();
+	}
+}
+
 void EditorSettingsDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
@@ -342,6 +377,7 @@ void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &EditorSettingsDialog::_press_a_key_confirm);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &EditorSettingsDialog::_wait_for_key);
+	ClassDB::bind_method(D_METHOD("_tabs_tab_changed"), &EditorSettingsDialog::_tabs_tab_changed);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -352,20 +388,19 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	tabs->connect("tab_changed", this, "_tabs_tab_changed");
 	add_child(tabs);
 	//set_child_rect(tabs);
 
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	tabs->add_child(vbc);
-	vbc->set_name(TTR("General"));
+	// General Tab
+
+	tab_general = memnew(VBoxContainer);
+	tabs->add_child(tab_general);
+	tab_general->set_name(TTR("General"));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	vbc->add_child(hbc);
-
-	Label *l = memnew(Label);
-	l->set_text(TTR("Search:") + " ");
-	hbc->add_child(l);
+	tab_general->add_child(hbc);
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -381,20 +416,18 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor->register_search_box(search_box);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	property_editor->get_property_editor()->set_undo_redo(undo_redo);
-	vbc->add_child(property_editor);
+	tab_general->add_child(property_editor);
 	property_editor->get_property_editor()->connect("property_edited", this, "_settings_property_edited");
 
-	vbc = memnew(VBoxContainer);
-	tabs->add_child(vbc);
-	vbc->set_name(TTR("Shortcuts"));
+	// Shortcuts Tab
+
+	tab_shortcuts = memnew(VBoxContainer);
+	tabs->add_child(tab_shortcuts);
+	tab_shortcuts->set_name(TTR("Shortcuts"));
 
 	hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	vbc->add_child(hbc);
-
-	l = memnew(Label);
-	l->set_text(TTR("Search:") + " ");
-	hbc->add_child(l);
+	tab_shortcuts->add_child(hbc);
 
 	shortcut_search_box = memnew(LineEdit);
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -406,7 +439,8 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_clear_button->connect("pressed", this, "_clear_shortcut_search_box");
 
 	shortcuts = memnew(Tree);
-	vbc->add_margin_child(TTR("Shortcut List:"), shortcuts, true);
+	tab_shortcuts->add_child(shortcuts, true);
+	shortcuts->set_v_size_flags(SIZE_EXPAND_FILL);
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	//shortcuts->set_hide_folding(true);
@@ -419,7 +453,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	press_a_key->set_focus_mode(FOCUS_ALL);
 	add_child(press_a_key);
 
-	l = memnew(Label);
+	Label *l = memnew(Label);
 	l->set_text(TTR("Press a Key.."));
 	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	l->set_align(Label::ALIGN_CENTER);

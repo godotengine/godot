@@ -548,34 +548,28 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
-	VBoxContainer *vbc_path = memnew(VBoxContainer);
-	vbc_path->set_h_size_flags(SIZE_EXPAND_FILL);
+	Label *l = memnew(Label);
+	l->set_text(TTR("Path:"));
+	hbc->add_child(l);
 
 	autoload_add_path = memnew(EditorLineEditFileChooser);
 	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
-
 	autoload_add_path->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	autoload_add_path->get_file_dialog()->connect("file_selected", this, "_autoload_file_callback");
+	hbc->add_child(autoload_add_path);
 
-	vbc_path->add_margin_child(TTR("Path:"), autoload_add_path);
-	hbc->add_child(vbc_path);
-
-	VBoxContainer *vbc_name = memnew(VBoxContainer);
-	vbc_name->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	HBoxContainer *hbc_name = memnew(HBoxContainer);
+	l = memnew(Label);
+	l->set_text(TTR("Node Name:"));
+	hbc->add_child(l);
 
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc_name->add_child(autoload_add_name);
+	hbc->add_child(autoload_add_name);
 
 	Button *add_autoload = memnew(Button);
 	add_autoload->set_text(TTR("Add"));
-	hbc_name->add_child(add_autoload);
 	add_autoload->connect("pressed", this, "_autoload_add");
-
-	vbc_name->add_margin_child(TTR("Node Name:"), hbc_name);
-	hbc->add_child(vbc_name);
+	hbc->add_child(add_autoload);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
@@ -606,5 +600,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", this, "_autoload_edited");
 	tree->connect("button_pressed", this, "_autoload_button_pressed");
 
-	add_margin_child(TTR("List:"), tree, true);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	add_child(tree, true);
 }

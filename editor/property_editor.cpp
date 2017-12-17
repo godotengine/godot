@@ -4599,7 +4599,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
 
-	left_vb->add_margin_child(TTR("Sections:"), sections, true);
+	left_vb->add_child(sections, true);
 
 	VBoxContainer *right_vb = memnew(VBoxContainer);
 	right_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -4608,7 +4608,7 @@ SectionedPropertyEditor::SectionedPropertyEditor() {
 	filter = memnew(SectionedPropertyEditorFilter);
 	editor = memnew(PropertyEditor);
 	editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	right_vb->add_margin_child(TTR("Properties:"), editor, true);
+	right_vb->add_child(editor, true);
 
 	editor->get_scene_tree()->set_column_titles_visible(false);
 
