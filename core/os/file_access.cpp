@@ -273,9 +273,62 @@ String FileAccess::get_token() const {
 	return String::utf8(token.get_data());
 }
 
+class CharBuffer {
+	Vector<char> vector;
+	char stack_buffer[256];
+
+	char *buffer;
+	int capacity;
+	int written;
+
+	bool grow() {
+
+		if (vector.resize(next_power_of_2(1 + written)) != OK) {
+
+			return false;
+		}
+
+		if (buffer == stack_buffer) { // first chunk?
+
+			for (int i = 0; i < written; i++) {
+
+				vector[i] = stack_buffer[i];
+			}
+		}
+
+		buffer = vector.ptrw();
+		capacity = vector.size();
+		ERR_FAIL_COND_V(written >= capacity, false);
+
+		return true;
+	}
+
+public:
+	_FORCE_INLINE_ CharBuffer() :
+			buffer(stack_buffer),
+			capacity(sizeof(stack_buffer) / sizeof(char)),
+			written(0) {
+	}
+
+	_FORCE_INLINE_ void push_back(char c) {
+
+		if (written >= capacity) {
+
+			ERR_FAIL_COND(!grow());
+		}
+
+		buffer[written++] = c;
+	}
+
+	_FORCE_INLINE_ const char *get_data() const {
+
+		return buffer;
+	}
+};
+
 String FileAccess::get_line() const {
 
-	CharString line;
+	CharBuffer line;
 
 	CharType c = get_8();
 
