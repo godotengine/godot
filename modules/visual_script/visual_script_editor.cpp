@@ -481,9 +481,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("Variant", "EditorIcons"),
-		Control::get_icon("Bool", "EditorIcons"),
-		Control::get_icon("Int", "EditorIcons"),
-		Control::get_icon("Float", "EditorIcons"),
+		Control::get_icon("bool", "EditorIcons"),
+		Control::get_icon("int", "EditorIcons"),
+		Control::get_icon("float", "EditorIcons"),
 		Control::get_icon("String", "EditorIcons"),
 		Control::get_icon("Vector2", "EditorIcons"),
 		Control::get_icon("Rect2", "EditorIcons"),
@@ -491,7 +491,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("Transform2D", "EditorIcons"),
 		Control::get_icon("Plane", "EditorIcons"),
 		Control::get_icon("Quat", "EditorIcons"),
-		Control::get_icon("Aabb", "EditorIcons"),
+		Control::get_icon("AABB", "EditorIcons"),
 		Control::get_icon("Basis", "EditorIcons"),
 		Control::get_icon("Transform", "EditorIcons"),
 		Control::get_icon("Color", "EditorIcons"),
@@ -775,9 +775,9 @@ void VisualScriptEditor::_update_members() {
 
 	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
 		Control::get_icon("Variant", "EditorIcons"),
-		Control::get_icon("Bool", "EditorIcons"),
-		Control::get_icon("Int", "EditorIcons"),
-		Control::get_icon("Float", "EditorIcons"),
+		Control::get_icon("bool", "EditorIcons"),
+		Control::get_icon("int", "EditorIcons"),
+		Control::get_icon("float", "EditorIcons"),
 		Control::get_icon("String", "EditorIcons"),
 		Control::get_icon("Vector2", "EditorIcons"),
 		Control::get_icon("Rect2", "EditorIcons"),
@@ -785,7 +785,7 @@ void VisualScriptEditor::_update_members() {
 		Control::get_icon("Transform2D", "EditorIcons"),
 		Control::get_icon("Plane", "EditorIcons"),
 		Control::get_icon("Quat", "EditorIcons"),
-		Control::get_icon("Aabb", "EditorIcons"),
+		Control::get_icon("AABB", "EditorIcons"),
 		Control::get_icon("Basis", "EditorIcons"),
 		Control::get_icon("Transform", "EditorIcons"),
 		Control::get_icon("Color", "EditorIcons"),
