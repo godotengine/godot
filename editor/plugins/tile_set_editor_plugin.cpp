@@ -1435,13 +1435,13 @@ bool AutotileEditorHelper::_get(const StringName &p_name, Variant &r_ret) const 
 		return false;
 
 	String name = p_name.operator String();
+	bool v = false;
 	if (name == "bitmask_mode") {
-		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile/bitmask_mode");
+		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile/bitmask_mode", &v);
 	} else if (name.left(7) == "layout/") {
-		bool v;
 		r_ret = tile_set->get(String::num(autotile_editor->get_current_tile(), 0) + "/autotile" + name.right(6), &v);
-		return v;
 	}
+	return v;
 }
 
 void AutotileEditorHelper::_get_property_list(List<PropertyInfo> *p_list) const {
