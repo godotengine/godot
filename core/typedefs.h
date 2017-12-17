@@ -37,6 +37,14 @@
 
 #include "platform_config.h"
 
+#ifdef __GNUC__
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+#define likely(x) x
+#define unlikely(x) x
+#endif
+
 #ifndef _STR
 #define _STR(m_x) #m_x
 #define _MKSTR(m_x) _STR(m_x)
@@ -166,6 +174,9 @@ inline void __swap_tmpl(T &x, T &y) {
 
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
 
+	if (unlikely(x & (1 << 30)))
+		return 0xFFFFFFFF;
+
 	--x;
 	x |= x >> 1;
 	x |= x >> 2;
@@ -289,13 +300,5 @@ struct _GlobalLock {
 
 #define __STRX(m_index) #m_index
 #define __STR(m_index) __STRX(m_index)
-
-#ifdef __GNUC__
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-#else
-#define likely(x) x
-#define unlikely(x) x
-#endif
 
 #endif /* typedefs.h */
