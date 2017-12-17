@@ -176,7 +176,7 @@ void ExportTemplateManager::_uninstall_template_confirm() {
 	_update_template_list();
 }
 
-void ExportTemplateManager::_install_from_file(const String &p_file) {
+void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_progress) {
 
 	FileAccess *fa = NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&fa);
@@ -259,7 +259,10 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 
 	ret = unzGoToFirstFile(pkg);
 
-	EditorProgress p("ltask", TTR("Extracting Export Templates"), fc);
+	EditorProgress *p = NULL;
+	if (p_use_progress) {
+		p = memnew(EditorProgress("ltask", TTR("Extracting Export Templates"), fc));
+	}
 
 	fc = 0;
 
@@ -288,8 +291,9 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 		*/
 
 		file = file.get_file();
-
-		p.step(TTR("Importing:") + " " + file, fc);
+		if (p) {
+			p->step(TTR("Importing:") + " " + file, fc);
+		}
 
 		FileAccess *f = FileAccess::open(template_path.plus_file(file), FileAccess::WRITE);
 
@@ -300,6 +304,10 @@ void ExportTemplateManager::_install_from_file(const String &p_file) {
 
 		ret = unzGoToNextFile(pkg);
 		fc++;
+	}
+
+	if (p) {
+		memdelete(p);
 	}
 
 	unzClose(pkg);
@@ -405,7 +413,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 					memdelete(f);
 					template_list_state->set_text(TTR("Download Complete."));
 					template_downloader->hide();
-					_install_from_file(path);
+					_install_from_file(path, false);
 				}
 			}
 		} break;
