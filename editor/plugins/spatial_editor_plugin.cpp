@@ -2219,15 +2219,9 @@ void SpatialEditorViewport::_notification(int p_what) {
 		viewport->set_hdr(hdr);
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
-		if (show_info != info->is_visible()) {
-			if (show_info)
-				info->show();
-			else
-				info->hide();
-		}
+		info_label->set_visible(show_info);
 
 		if (show_info) {
-
 			String text;
 			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
 			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
@@ -2235,38 +2229,19 @@ void SpatialEditorViewport::_notification(int p_what) {
 			text += TTR("Surface Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SURFACE_CHANGES_IN_FRAME)) + "\n";
 			text += TTR("Draw Calls") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME)) + "\n";
 			text += TTR("Vertices") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_VERTICES_IN_FRAME));
-
-			if (info_label->get_text() != text || surface->get_size() != prev_size) {
-				info_label->set_text(text);
-				Size2 ms = info->get_minimum_size();
-				info->set_position(surface->get_size() - ms - Vector2(20, 20) * EDSCALE);
-			}
+			info_label->set_text(text);
 		}
 
 		// FPS Counter.
 		bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FPS));
-		if (show_fps != fps->is_visible()) {
-			if (show_fps)
-				fps->show();
-			else
-				fps->hide();
-		}
+		fps_label->set_visible(show_fps);
 
 		if (show_fps) {
 			String text;
 			const float temp_fps = Engine::get_singleton()->get_frames_per_second();
 			text += TTR("FPS") + ": " + itos(temp_fps) + " (" + String::num(1000.0f / temp_fps, 2) + " ms)";
-
-			if (fps_label->get_text() != text || surface->get_size() != prev_size) {
-				fps_label->set_text(text);
-				Size2 ms = fps->get_size();
-				Size2 size = surface->get_size();
-				size.y = ms.y + 20;
-				fps->set_position(size - ms - Vector2(20, 0) * EDSCALE);
-			}
+			fps_label->set_text(text);
 		}
-
-		prev_size = surface->get_size();
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2275,8 +2250,8 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("gui_input", this, "_sinput");
 		surface->connect("mouse_entered", this, "_smouseenter");
 		surface->connect("mouse_exited", this, "_smouseexit");
-		info->add_style_override("panel", get_stylebox("panel", "Panel"));
-		fps->add_style_override("panel", get_stylebox("panel", "Panel"));
+		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
 		_init_gizmo_instance(index);
 	}
@@ -2773,8 +2748,10 @@ void SpatialEditorViewport::set_can_preview(Camera *p_preview) {
 	if (!preview_camera->is_pressed()) {
 
 		if (p_preview) {
+			fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 15 * EDSCALE + preview_camera->get_size().height);
 			preview_camera->show();
 		} else {
+			fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
 			preview_camera->hide();
 		}
 	}
@@ -3399,20 +3376,24 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	preview_node = NULL;
 
-	info = memnew(PanelContainer);
-	info->set_self_modulate(Color(1, 1, 1, 0.4));
-	surface->add_child(info);
 	info_label = memnew(Label);
-	info->add_child(info_label);
-	info->hide();
+	info_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
+	info_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -90 * EDSCALE);
+	info_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	info_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	info_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	info_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	surface->add_child(info_label);
+	info_label->hide();
 
 	// FPS Counter.
-	fps = memnew(PanelContainer);
-	fps->set_self_modulate(Color(1, 1, 1, 0.4));
-	surface->add_child(fps);
 	fps_label = memnew(Label);
-	fps->add_child(fps_label);
-	fps->hide();
+	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
+	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	fps_label->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	surface->add_child(fps_label);
+	fps_label->hide();
 
 	accept = NULL;
 
