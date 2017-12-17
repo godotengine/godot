@@ -298,7 +298,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	Ref<BakedLightmapData> new_light_data;
 	new_light_data.instance();
 
-	static const int subdiv_value[SUBDIV_MAX] = { 8, 9, 10, 11, 12, 13 };
+	static const int subdiv_value[SUBDIV_MAX] = { 8, 9, 10, 11 };
 
 	VoxelLightBaker baker;
 
@@ -678,7 +678,7 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_bake"), &BakedLightmap::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_subdiv", PROPERTY_HINT_ENUM, "128,256,512,1024,2048,4096"), "set_bake_subdiv", "get_bake_subdiv");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_subdiv", PROPERTY_HINT_ENUM, "128,256,512,1024"), "set_bake_subdiv", "get_bake_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "capture_subdiv", PROPERTY_HINT_ENUM, "128,256,512"), "set_capture_subdiv", "get_capture_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_bake_quality", "get_bake_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mode", PROPERTY_HINT_ENUM, "ConeTrace,RayTrace"), "set_bake_mode", "get_bake_mode");
@@ -693,8 +693,6 @@ void BakedLightmap::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUBDIV_256);
 	BIND_ENUM_CONSTANT(SUBDIV_512);
 	BIND_ENUM_CONSTANT(SUBDIV_1024);
-	BIND_ENUM_CONSTANT(SUBDIV_2048);
-	BIND_ENUM_CONSTANT(SUBDIV_4096);
 	BIND_ENUM_CONSTANT(SUBDIV_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
