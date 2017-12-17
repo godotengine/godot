@@ -119,6 +119,7 @@ class SceneTreeDock : public VBoxContainer {
 	TextureRect *filter_icon;
 
 	PopupMenu *menu;
+	PopupMenu *menu_subresources;
 	ConfirmationDialog *clear_inherit_confirm;
 
 	bool first_enter;
