@@ -74,7 +74,7 @@ public:
 	Array keys() const;
 	Array values() const;
 
-	Dictionary copy() const;
+	Dictionary duplicate() const;
 
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
