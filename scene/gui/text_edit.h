@@ -346,12 +346,16 @@ public:
 		MENU_COPY,
 		MENU_PASTE,
 		MENU_CLEAR,
+		MENU_UPPERCASE,
+		MENU_LOWERCASE,
 		MENU_SELECT_ALL,
 		MENU_UNDO,
 		MENU_MAX
-
 	};
-
+	enum Case {
+		UPPERCASE,
+		LOWERCASE
+	};
 	enum SearchFlags {
 
 		SEARCH_MATCH_CASE = 1,
@@ -428,6 +432,7 @@ public:
 	bool is_syntax_coloring_enabled() const;
 
 	void cut();
+	void convert_case(int p_case);
 	void copy();
 	void paste();
 	void select_all();
