@@ -333,7 +333,7 @@ if webm_cpu_x86:
 if webm_cpu_arm:
     if env["platform"] == 'iphone':
         env_libvpx["ASFLAGS"] = '-arch armv7'
-    elif env["platform"] == 'android' or env["platform"] == 'x11' or env["platform"] == 'server':
+    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'x11' or env["platform"] == 'server':
         env_libvpx["ASFLAGS"] = '-mfpu=neon'
     elif env["platform"] == 'uwp':
         env_libvpx["AS"] = 'armasm'
@@ -389,5 +389,5 @@ elif webm_cpu_arm:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
     elif env["platform"] == 'iphone':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
-    else:
+    elif not env["android_arch"] == 'arm64v8':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)

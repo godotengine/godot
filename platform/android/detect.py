@@ -14,8 +14,11 @@ def get_name():
 
 
 def can_build():
-
     return ("ANDROID_NDK_ROOT" in os.environ)
+
+
+def get_platform(platform):
+    return int(platform.split("-")[1])
 
 
 def get_opts():
@@ -124,6 +127,9 @@ def configure(env):
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
+        if get_platform(env["ndk_platform"]) < 21:
+            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than andorid-21; setting ndk_platform=android-21")
+            env["ndk_platform"] = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
         abi_subpath = "aarch64-linux-android"
@@ -160,11 +166,12 @@ def configure(env):
     elif (sys.platform.startswith('win')):
         if (platform.machine().endswith('64')):
             host_subpath = "windows-x86_64"
-            if env["android_arch"] == "arm64v8":
-                mt_link = False
         else:
             mt_link = False
             host_subpath = "windows"
+
+    if env["android_arch"] == "arm64v8":
+        mt_link = False
 
     compiler_path = env["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/" + host_subpath + "/bin"
     gcc_toolchain_path = env["ANDROID_NDK_ROOT"] + "/toolchains/" + target_subpath + "/prebuilt/" + host_subpath
@@ -199,7 +206,7 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         # For unified headers this define has to be set manually
-        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(int(env['ndk_platform'].split("-")[1]))])
+        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(env['ndk_platform']))])
     else:
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
@@ -254,10 +261,10 @@ def configure(env):
     env.Append(LINKFLAGS=target_opts)
     env.Append(LINKFLAGS=common_opts)
 
-    env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + '/toolchains/arm-linux-androideabi-4.9/prebuilt/' +
+    env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + '/toolchains/' + target_subpath + '/prebuilt/' +
                         host_subpath + '/lib/gcc/' + abi_subpath + '/4.9.x'])
     env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] +
-                        '/toolchains/arm-linux-androideabi-4.9/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
+                        '/toolchains/' + target_subpath + '/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
 
     env.Append(CPPPATH=['#platform/android'])
     env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL', '-DMPC_FIXED_POINT'])
