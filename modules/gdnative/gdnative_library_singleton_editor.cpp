@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_native_library_editor.cpp                                         */
+/*  gdnative_library_singleton_editor.cpp                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #ifdef TOOLS_ENABLED
-#include "gd_native_library_editor.h"
-
+#include "gdnative_library_singleton_editor.h"
 #include "gdnative.h"
 
-void GDNativeLibraryEditor::_find_gdnative_singletons(EditorFileSystemDirectory *p_dir, const Set<String> &enabled_list) {
+void GDNativeLibrarySingletonEditor::_find_gdnative_singletons(EditorFileSystemDirectory *p_dir, const Set<String> &enabled_list) {
 
 	// check children
 
@@ -65,7 +64,7 @@ void GDNativeLibraryEditor::_find_gdnative_singletons(EditorFileSystemDirectory 
 	}
 }
 
-void GDNativeLibraryEditor::_update_libraries() {
+void GDNativeLibrarySingletonEditor::_update_libraries() {
 
 	updating = true;
 	libraries->clear();
@@ -88,7 +87,7 @@ void GDNativeLibraryEditor::_update_libraries() {
 	updating = false;
 }
 
-void GDNativeLibraryEditor::_item_edited() {
+void GDNativeLibrarySingletonEditor::_item_edited() {
 	if (updating)
 		return;
 
@@ -119,7 +118,7 @@ void GDNativeLibraryEditor::_item_edited() {
 	}
 }
 
-void GDNativeLibraryEditor::_notification(int p_what) {
+void GDNativeLibrarySingletonEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (is_visible_in_tree()) {
@@ -128,12 +127,12 @@ void GDNativeLibraryEditor::_notification(int p_what) {
 	}
 }
 
-void GDNativeLibraryEditor::_bind_methods() {
+void GDNativeLibrarySingletonEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_item_edited"), &GDNativeLibraryEditor::_item_edited);
+	ClassDB::bind_method(D_METHOD("_item_edited"), &GDNativeLibrarySingletonEditor::_item_edited);
 }
 
-GDNativeLibraryEditor::GDNativeLibraryEditor() {
+GDNativeLibrarySingletonEditor::GDNativeLibrarySingletonEditor() {
 	libraries = memnew(Tree);
 	libraries->set_columns(2);
 	libraries->set_column_titles_visible(true);

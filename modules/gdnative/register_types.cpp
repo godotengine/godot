@@ -45,7 +45,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "gd_native_library_editor.h"
+#include "gdnative_library_editor_plugin.h"
+#include "gdnative_library_singleton_editor.h"
 // Class used to discover singleton gdnative files
 
 static void actual_discoverer_handler();
@@ -267,7 +268,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 static void editor_init_callback() {
 
-	GDNativeLibraryEditor *library_editor = memnew(GDNativeLibraryEditor);
+	GDNativeLibrarySingletonEditor *library_editor = memnew(GDNativeLibrarySingletonEditor);
 	library_editor->set_name(TTR("GDNative"));
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
 
@@ -278,6 +279,8 @@ static void editor_init_callback() {
 	export_plugin.instance();
 
 	EditorExport::get_singleton()->add_export_plugin(export_plugin);
+
+	EditorNode::get_singleton()->add_editor_plugin(memnew(GDNativeLibraryEditorPlugin(EditorNode::get_singleton())));
 }
 
 #endif
