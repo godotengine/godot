@@ -740,7 +740,24 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	ProjectSettings::CustomMap custom_map;
 	if (path_remaps.size()) {
-		custom_map["path_remap/remapped_paths"] = path_remaps;
+		if (1) { //new remap mode, use always as it's friendlier with multiple .pck exports
+			for (int i = 0; i < path_remaps.size(); i += 2) {
+				String from = path_remaps[i];
+				String to = path_remaps[i + 1];
+				String remap_file = "[remap]\n\npath=\"" + to.c_escape() + "\"\n";
+				CharString utf8 = remap_file.utf8();
+				Vector<uint8_t> new_file;
+				new_file.resize(utf8.length());
+				for (int j = 0; j < utf8.length(); j++) {
+					new_file[j] = utf8[j];
+				}
+
+				p_func(p_udata, from + ".remap", new_file, idx, total);
+			}
+		} else {
+			//old remap mode, will still work, but it's unused because it's not multiple pck export friendly
+			custom_map["path_remap/remapped_paths"] = path_remaps;
+		}
 	}
 
 	// Store icon and splash images directly, they need to bypass the import system and be loaded as images
