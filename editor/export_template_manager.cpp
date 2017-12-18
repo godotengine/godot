@@ -273,7 +273,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file = fname;
+		String file = fname.get_file();
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
@@ -283,21 +283,18 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
-		print_line(fname);
-		/*
-		for(int i=0;i<512;i++) {
-			print_line(itos(data[i]));
-		}
-		*/
-
-		file = file.get_file();
 		if (p) {
 			p->step(TTR("Importing:") + " " + file, fc);
 		}
 
 		FileAccess *f = FileAccess::open(template_path.plus_file(file), FileAccess::WRITE);
 
-		ERR_CONTINUE(!f);
+		if (!f) {
+			ret = unzGoToNextFile(pkg);
+			fc++;
+			ERR_CONTINUE(!f);
+		}
+
 		f->store_buffer(data.ptr(), data.size());
 
 		memdelete(f);
