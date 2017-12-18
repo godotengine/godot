@@ -388,5 +388,5 @@ elif webm_cpu_arm:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
     elif env["platform"] == 'iphone':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
-    elif (is_x11_or_server_arm and cpu_bits == '32') or (env["platform"] == 'android' and not env["android_arch"] == 'arm64v8'):
+    elif not env["android_arch"] == 'arm64v8':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)
