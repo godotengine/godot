@@ -2693,7 +2693,7 @@ TreeItem *PropertyEditor::get_parent_node(String p_path, HashMap<String, TreeIte
 		item->set_editable(1, false);
 		item->set_selectable(1, subsection_selectable);
 
-		if (use_folding) { //
+		if (use_folding) {
 			if (!obj->editor_is_section_unfolded(p_path)) {
 				updating_folding = true;
 				item->set_collapsed(true);
@@ -3013,7 +3013,7 @@ void PropertyEditor::update_tree() {
 				item->set_tooltip(1, obj->get(p.name) ? "True" : "False");
 				item->set_checked(1, obj->get(p.name));
 				if (show_type_icons)
-					item->set_icon(0, get_icon("Bool", "EditorIcons"));
+					item->set_icon(0, get_icon("bool", "EditorIcons"));
 				item->set_editable(1, !read_only);
 
 			} break;
@@ -3133,12 +3133,12 @@ void PropertyEditor::update_tree() {
 
 				if (p.type == Variant::REAL) {
 					if (show_type_icons)
-						item->set_icon(0, get_icon("Real", "EditorIcons"));
+						item->set_icon(0, get_icon("float", "EditorIcons"));
 					item->set_range(1, obj->get(p.name));
 
 				} else {
 					if (show_type_icons)
-						item->set_icon(0, get_icon("Integer", "EditorIcons"));
+						item->set_icon(0, get_icon("int", "EditorIcons"));
 					item->set_range(1, obj->get(p.name));
 				}
 
@@ -3244,7 +3244,7 @@ void PropertyEditor::update_tree() {
 					item->set_text(1, type_name + "[]");
 
 				if (show_type_icons)
-					item->set_icon(0, get_icon("ArrayData", "EditorIcons"));
+					item->set_icon(0, get_icon("PoolByteArray", "EditorIcons"));
 
 			} break;
 			case Variant::DICTIONARY: {
@@ -3256,7 +3256,7 @@ void PropertyEditor::update_tree() {
 				item->add_button(1, get_icon("EditResource", "EditorIcons"));
 
 				if (show_type_icons)
-					item->set_icon(0, get_icon("DictionaryData", "EditorIcons"));
+					item->set_icon(0, get_icon("Dictionary", "EditorIcons"));
 
 			} break;
 
@@ -3271,7 +3271,7 @@ void PropertyEditor::update_tree() {
 				else
 					item->set_text(1, "IntArray[]");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("ArrayInt", "EditorIcons"));
+					item->set_icon(0, get_icon("PoolIntArray", "EditorIcons"));
 
 			} break;
 			case Variant::POOL_REAL_ARRAY: {
@@ -3285,7 +3285,7 @@ void PropertyEditor::update_tree() {
 				else
 					item->set_text(1, "FloatArray[]");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("ArrayReal", "EditorIcons"));
+					item->set_icon(0, get_icon("PoolRealArray", "EditorIcons"));
 
 			} break;
 			case Variant::POOL_STRING_ARRAY: {
@@ -3299,7 +3299,7 @@ void PropertyEditor::update_tree() {
 				else
 					item->set_text(1, "String[]");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("ArrayString", "EditorIcons"));
+					item->set_icon(0, get_icon("PoolStringArray", "EditorIcons"));
 
 			} break;
 			case Variant::POOL_BYTE_ARRAY: {
@@ -3313,7 +3313,7 @@ void PropertyEditor::update_tree() {
 				else
 					item->set_text(1, "Byte[]");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("ArrayData", "EditorIcons"));
+					item->set_icon(0, get_icon("PoolByteArray", "EditorIcons"));
 
 			} break;
 			case Variant::POOL_VECTOR2_ARRAY: {
@@ -3341,7 +3341,7 @@ void PropertyEditor::update_tree() {
 				else
 					item->set_text(1, "Vector3[]");
 				if (show_type_icons)
-					item->set_icon(0, get_icon("Vector", "EditorIcons"));
+					item->set_icon(0, get_icon("Vector3", "EditorIcons"));
 
 			} break;
 			case Variant::POOL_COLOR_ARRAY: {
@@ -3382,7 +3382,7 @@ void PropertyEditor::update_tree() {
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
-					item->set_icon(0, get_icon("Vector", "EditorIcons"));
+					item->set_icon(0, get_icon("Vector3", "EditorIcons"));
 
 			} break;
 			case Variant::TRANSFORM2D:
@@ -3391,6 +3391,7 @@ void PropertyEditor::update_tree() {
 				item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
+
 			} break;
 			case Variant::TRANSFORM: {
 
@@ -3398,7 +3399,7 @@ void PropertyEditor::update_tree() {
 				item->set_editable(1, true);
 				item->set_text(1, obj->get(p.name));
 				if (show_type_icons)
-					item->set_icon(0, get_icon("Matrix", "EditorIcons"));
+					item->set_icon(0, get_icon("Transform", "EditorIcons"));
 
 			} break;
 			case Variant::PLANE: {
@@ -3417,6 +3418,7 @@ void PropertyEditor::update_tree() {
 				item->set_text(1, "AABB");
 				if (show_type_icons)
 					item->set_icon(0, get_icon("AABB", "EditorIcons"));
+
 			} break;
 
 			case Variant::QUAT: {
@@ -3444,6 +3446,8 @@ void PropertyEditor::update_tree() {
 				item->set_editable(1, !read_only);
 				item->set_text(1, obj->get(p.name));
 				item->add_button(1, get_icon("CopyNodePath", "EditorIcons"));
+				if (show_type_icons)
+					item->set_icon(0, get_icon("NodePath", "EditorIcons"));
 
 			} break;
 			case Variant::OBJECT: {
@@ -4330,7 +4334,7 @@ PropertyEditor::PropertyEditor() {
 	use_filter = false;
 	subsection_selectable = false;
 	property_selectable = false;
-	show_type_icons = false; // maybe one day will return.
+	show_type_icons = EDITOR_DEF("interface/editor/show_type_icons", false);
 }
 
 PropertyEditor::~PropertyEditor() {
