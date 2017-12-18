@@ -241,7 +241,6 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	String name = _get_class_name(env, c, &array);
 	//print_line("name is " + name + ", array "+Variant(array));
 
-	print_line("ARGNAME: " + name);
 	if (name == "java.lang.String") {
 
 		return String::utf8(env->GetStringUTFChars((jstring)obj, NULL));
@@ -1513,7 +1512,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, j
 
 	int stringCount = env->GetArrayLength(args);
 
-	print_line("Singl:  " + singname + " Method: " + mname + " RetVal: " + retval);
 	for (int i = 0; i < stringCount; i++) {
 
 		jstring string = (jstring)env->GetObjectArrayElement(args, i);
@@ -1525,7 +1523,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_method(JNIEnv *env, j
 	cs += ")";
 	cs += get_jni_sig(retval);
 	jclass cls = env->GetObjectClass(s->get_instance());
-	print_line("METHOD: " + mname + " sig: " + cs);
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 

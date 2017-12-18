@@ -465,7 +465,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 			if (feedbacks[i].conditional == -1 || (1 << feedbacks[i].conditional) & conditional_version.version) {
 				//conditional for this feedback is enabled
-				print_line("tf varying: " + itos(feedback.size()) + " " + String(feedbacks[i].name));
 				feedback.push_back(feedbacks[i].name);
 			}
 		}
