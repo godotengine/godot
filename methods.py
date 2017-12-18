@@ -1755,16 +1755,16 @@ def precious_program(env, program, sources, **args):
     return program
 
 def add_shared_library(env, name, sources, **args):
-	library = env.SharedLibrary(name, sources, **args)
-	env.NoCache(library)
-	return library
+    library = env.SharedLibrary(name, sources, **args)
+    env.NoCache(library)
+    return library
 
 def add_library(env, name, sources, **args):
-	library = env.Library(name, sources, **args)
-	env.NoCache(library)
-	return library
+    library = env.Library(name, sources, **args)
+    env.NoCache(library)
+    return library
 
 def add_program(env, name, sources, **args):
-	program = env.Program(name, sources, **args)
-	env.NoCache(program)
-	return program
+    program = env.Program(name, sources, **args)
+    env.NoCache(program)
+    return program

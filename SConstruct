@@ -557,9 +557,9 @@ class cache_progress:
         # decay since the ctime, and return a list with the entries
         # (filename, size, weight).
         current_time = time.time()
-        file_stat = [(x[0], x[1][0], x[1][0] * math.exp(self.exponent_scale * (x[1][1] - current_time))) for x in file_stat]
-        # Sort by highest weight (most sensible to keep) first
-        file_stat.sort(key=lambda x: x[2], reverse=True)
+        file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
+        # Sort by the most resently accessed files (most sensible to keep) first
+        file_stat.sort(key=lambda x: x[2])
         # Search for the first entry where the storage limit is
         # reached
         sum, mark = 0, None
