@@ -18,6 +18,7 @@ class BakedLightmapData : public Resource {
 
 		NodePath path;
 		Ref<Texture> lightmap;
+		int instance_index;
 	};
 
 	Vector<User> users;
@@ -44,10 +45,11 @@ public:
 	void set_energy(float p_energy);
 	float get_energy() const;
 
-	void add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap);
+	void add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance = -1);
 	int get_user_count() const;
 	NodePath get_user_path(int p_user) const;
 	Ref<Texture> get_user_lightmap(int p_user) const;
+	int get_user_instance(int p_user) const;
 	void clear_users();
 
 	virtual RID get_rid() const;
@@ -111,6 +113,7 @@ private:
 		Ref<Mesh> mesh;
 		Transform local_xform;
 		NodePath path;
+		int instance_idx;
 	};
 
 	struct PlotLight {

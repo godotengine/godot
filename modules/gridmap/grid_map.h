@@ -148,6 +148,9 @@ class GridMap : public Spatial {
 	bool clip;
 	bool clip_above;
 	int clip_floor;
+
+	bool recreating_octants;
+
 	Vector3::Axis clip_axis;
 
 	Ref<MeshLibrary> theme;
@@ -188,8 +191,10 @@ class GridMap : public Spatial {
 
 	struct BakedMesh {
 		Ref<Mesh> mesh;
-		Transform transform;
+		RID instance;
 	};
+
+	Vector<BakedMesh> baked_meshes;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -237,7 +242,13 @@ public:
 
 	Array get_meshes();
 
+	void clear_baked_meshes();
+	void make_baked_meshes(bool p_gen_lightmap_uv = false, float p_lightmap_uv_texel_size = 0.1);
+
 	void clear();
+
+	Array get_bake_meshes();
+	RID get_bake_mesh_instance(int p_idx);
 
 	GridMap();
 	~GridMap();

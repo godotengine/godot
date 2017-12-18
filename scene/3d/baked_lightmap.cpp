@@ -55,12 +55,13 @@ float BakedLightmapData::get_energy() const {
 	return energy;
 }
 
-void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap) {
+void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance) {
 
 	ERR_FAIL_COND(p_lightmap.is_null());
 	User user;
 	user.path = p_path;
 	user.lightmap = p_lightmap;
+	user.instance_index = p_instance;
 	users.push_back(user);
 }
 
@@ -79,16 +80,22 @@ Ref<Texture> BakedLightmapData::get_user_lightmap(int p_user) const {
 	return users[p_user].lightmap;
 }
 
+int BakedLightmapData::get_user_instance(int p_user) const {
+
+	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
+	return users[p_user].instance_index;
+}
+
 void BakedLightmapData::clear_users() {
 	users.clear();
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
 
-	ERR_FAIL_COND(p_data.size() & 1);
+	ERR_FAIL_COND((p_data.size() % 3) != 0);
 
-	for (int i = 0; i < p_data.size(); i += 2) {
-		add_user(p_data[i], p_data[i + 1]);
+	for (int i = 0; i < p_data.size(); i += 3) {
+		add_user(p_data[i], p_data[i + 1], p_data[i + 2]);
 	}
 }
 
@@ -98,6 +105,7 @@ Array BakedLightmapData::_get_user_data() const {
 	for (int i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
 		ret.push_back(users[i].lightmap);
+		ret.push_back(users[i].instance_index);
 	}
 	return ret;
 }
@@ -209,12 +217,33 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plo
 					pm.local_xform = xf;
 					pm.mesh = mesh;
 					pm.path = get_path_to(mi);
+					pm.instance_idx = -1;
 					for (int i = 0; i < mesh->get_surface_count(); i++) {
 						pm.instance_materials.push_back(mi->get_surface_material(i));
 					}
 					pm.override_material = mi->get_material_override();
 					plot_meshes.push_back(pm);
 				}
+			}
+		}
+	}
+
+	Spatial *s = Object::cast_to<Spatial>(p_at_node);
+
+	if (!mi && s) {
+		Array meshes = p_at_node->call("get_bake_meshes");
+		if (meshes.size() && (meshes.size() & 1) == 0) {
+			Transform xf = get_global_transform().affine_inverse() * s->get_global_transform();
+			for (int i = 0; i < meshes.size(); i += 2) {
+				PlotMesh pm;
+				Transform mesh_xf = meshes[i + 1];
+				pm.local_xform = xf * mesh_xf;
+				pm.mesh = meshes[i];
+				pm.instance_idx = i / 2;
+				if (!pm.mesh.is_valid())
+					continue;
+				pm.path = get_path_to(s);
+				plot_meshes.push_back(pm);
 			}
 		}
 	}
@@ -477,7 +506,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			if (set_path) {
 				tex->set_path(image_path);
 			}
-			new_light_data->add_user(E->get().path, tex);
+			new_light_data->add_user(E->get().path, tex, E->get().instance_idx);
 		}
 	}
 
@@ -547,12 +576,21 @@ void BakedLightmap::_assign_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
-		VisualInstance *vi = Object::cast_to<VisualInstance>(node);
-		ERR_CONTINUE(!vi);
 		Ref<Texture> lightmap = light_data->get_user_lightmap(i);
 		ERR_CONTINUE(!lightmap.is_valid());
-		VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid());
+
+		Node *node = get_node(light_data->get_user_path(i));
+		int instance_idx = light_data->get_user_instance(i);
+		if (instance_idx >= 0) {
+			RID instance = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance.is_valid()) {
+				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), lightmap->get_rid());
+			}
+		} else {
+			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
+			ERR_CONTINUE(!vi);
+			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), lightmap->get_rid());
+		}
 	}
 }
 
@@ -560,9 +598,17 @@ void BakedLightmap::_clear_lightmaps() {
 	ERR_FAIL_COND(!light_data.is_valid());
 	for (int i = 0; i < light_data->get_user_count(); i++) {
 		Node *node = get_node(light_data->get_user_path(i));
-		VisualInstance *vi = Object::cast_to<VisualInstance>(node);
-		ERR_CONTINUE(!vi);
-		VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), RID(), RID());
+		int instance_idx = light_data->get_user_instance(i);
+		if (instance_idx >= 0) {
+			RID instance = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance.is_valid()) {
+				VS::get_singleton()->instance_set_use_lightmap(instance, get_instance(), RID());
+			}
+		} else {
+			VisualInstance *vi = Object::cast_to<VisualInstance>(node);
+			ERR_CONTINUE(!vi);
+			VS::get_singleton()->instance_set_use_lightmap(vi->get_instance(), get_instance(), RID());
+		}
 	}
 }
 

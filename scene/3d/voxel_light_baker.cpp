@@ -833,11 +833,13 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 				}
 			}
 
-			for (int i = 0; i < 6; i++) {
-				float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
-				light->direct_accum[i][0] += light_energy.x * s;
-				light->direct_accum[i][1] += light_energy.y * s;
-				light->direct_accum[i][2] += light_energy.z * s;
+			if (p_direct) {
+				for (int i = 0; i < 6; i++) {
+					float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
+					light->direct_accum[i][0] += light_energy.x * s;
+					light->direct_accum[i][1] += light_energy.y * s;
+					light->direct_accum[i][2] += light_energy.z * s;
+				}
 			}
 			success_count++;
 		}
@@ -962,11 +964,13 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 				}
 			}
 
-			for (int i = 0; i < 6; i++) {
-				float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
-				light->direct_accum[i][0] += light_energy.x * s * att;
-				light->direct_accum[i][1] += light_energy.y * s * att;
-				light->direct_accum[i][2] += light_energy.z * s * att;
+			if (p_direct) {
+				for (int i = 0; i < 6; i++) {
+					float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
+					light->direct_accum[i][0] += light_energy.x * s * att;
+					light->direct_accum[i][1] += light_energy.y * s * att;
+					light->direct_accum[i][2] += light_energy.z * s * att;
+				}
 			}
 		}
 
@@ -1095,11 +1099,13 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 				}
 			}
 
-			for (int i = 0; i < 6; i++) {
-				float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
-				light->direct_accum[i][0] += light_energy.x * s * att;
-				light->direct_accum[i][1] += light_energy.y * s * att;
-				light->direct_accum[i][2] += light_energy.z * s * att;
+			if (p_direct) {
+				for (int i = 0; i < 6; i++) {
+					float s = MAX(0.0, aniso_normal[i].dot(-light_axis)); //light depending on normal for direct
+					light->direct_accum[i][0] += light_energy.x * s * att;
+					light->direct_accum[i][1] += light_energy.y * s * att;
+					light->direct_accum[i][2] += light_energy.z * s * att;
+				}
 			}
 		}
 

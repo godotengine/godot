@@ -101,6 +101,27 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 			}
 		}
 		_recreate_octant_data();
+	} else if (name == "baked_meshes") {
+
+		clear_baked_meshes();
+
+		Array meshes = p_value;
+
+		for (int i = 0; i < meshes.size(); i++) {
+			BakedMesh bm;
+			bm.mesh = meshes[i];
+			ERR_CONTINUE(!bm.mesh.is_valid());
+			bm.instance = VS::get_singleton()->instance_create();
+			VS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
+			VS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
+			if (is_inside_tree()) {
+				VS::get_singleton()->instance_set_scenario(bm.instance, get_world()->get_scenario());
+				VS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
+			}
+			baked_meshes.push_back(bm);
+		}
+
+		_recreate_octant_data();
 
 	} else
 		return false;
@@ -145,6 +166,15 @@ bool GridMap::_get(const StringName &p_name, Variant &r_ret) const {
 		d["cells"] = cells;
 
 		r_ret = d;
+	} else if (name == "baked_meshes") {
+
+		Array ret;
+		ret.resize(baked_meshes.size());
+		for (int i = 0; i < baked_meshes.size(); i++) {
+			ret.push_back(baked_meshes[i].mesh);
+		}
+		r_ret = ret;
+
 	} else
 		return false;
 
@@ -161,6 +191,9 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "cell_center_y"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "cell_center_z"));
 	p_list->push_back(PropertyInfo(Variant::REAL, "cell_scale"));
+	if (baked_meshes.size()) {
+		p_list->push_back(PropertyInfo(Variant::ARRAY, "baked_meshes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+	}
 
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 }
@@ -234,6 +267,12 @@ bool GridMap::get_center_z() const {
 }
 
 void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
+
+	if (baked_meshes.size() && !recreating_octants) {
+		//if you set a cell item, baked meshes go good bye
+		clear_baked_meshes();
+		_recreate_octant_data();
+	}
 
 	ERR_FAIL_INDEX(ABS(p_x), 1 << 20);
 	ERR_FAIL_INDEX(ABS(p_y), 1 << 20);
@@ -477,41 +516,44 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 	}
 
-	//update multimeshes
-	for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
-		Octant::MultimeshInstance mmi;
+	//update multimeshes, only if not baked
+	if (baked_meshes.size() == 0) {
 
-		RID mm = VS::get_singleton()->multimesh_create();
-		VS::get_singleton()->multimesh_allocate(mm, E->get().size(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_NONE);
-		VS::get_singleton()->multimesh_set_mesh(mm, theme->get_item_mesh(E->key())->get_rid());
+		for (Map<int, List<Pair<Transform, IndexKey> > >::Element *E = multimesh_items.front(); E; E = E->next()) {
+			Octant::MultimeshInstance mmi;
 
-		int idx = 0;
-		for (List<Pair<Transform, IndexKey> >::Element *F = E->get().front(); F; F = F->next()) {
-			VS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
+			RID mm = VS::get_singleton()->multimesh_create();
+			VS::get_singleton()->multimesh_allocate(mm, E->get().size(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_NONE);
+			VS::get_singleton()->multimesh_set_mesh(mm, theme->get_item_mesh(E->key())->get_rid());
+
+			int idx = 0;
+			for (List<Pair<Transform, IndexKey> >::Element *F = E->get().front(); F; F = F->next()) {
+				VS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
 #ifdef TOOLS_ENABLED
 
-			Octant::MultimeshInstance::Item it;
-			it.index = idx;
-			it.transform = F->get().first;
-			it.key = F->get().second;
-			mmi.items.push_back(it);
+				Octant::MultimeshInstance::Item it;
+				it.index = idx;
+				it.transform = F->get().first;
+				it.key = F->get().second;
+				mmi.items.push_back(it);
 #endif
 
-			idx++;
+				idx++;
+			}
+
+			RID instance = VS::get_singleton()->instance_create();
+			VS::get_singleton()->instance_set_base(instance, mm);
+
+			if (is_inside_tree()) {
+				VS::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
+				VS::get_singleton()->instance_set_transform(instance, get_global_transform());
+			}
+
+			mmi.multimesh = mm;
+			mmi.instance = instance;
+
+			g.multimesh_instances.push_back(mmi);
 		}
-
-		RID instance = VS::get_singleton()->instance_create();
-		VS::get_singleton()->instance_set_base(instance, mm);
-
-		if (is_inside_tree()) {
-			VS::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
-			VS::get_singleton()->instance_set_transform(instance, get_global_transform());
-		}
-
-		mmi.multimesh = mm;
-		mmi.instance = instance;
-
-		g.multimesh_instances.push_back(mmi);
 	}
 
 	if (col_debug.size()) {
@@ -642,6 +684,11 @@ void GridMap::_notification(int p_what) {
 				_octant_enter_world(E->key());
 			}
 
+			for (int i = 0; i < baked_meshes.size(); i++) {
+				VS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world()->get_scenario());
+				VS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
+			}
+
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
@@ -655,6 +702,10 @@ void GridMap::_notification(int p_what) {
 
 			last_transform = new_xform;
 
+			for (int i = 0; i < baked_meshes.size(); i++) {
+				VS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
+			}
+
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
@@ -667,6 +718,9 @@ void GridMap::_notification(int p_what) {
 			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
 			//_update_octants_callback();
 			//_update_area_instances();
+			for (int i = 0; i < baked_meshes.size(); i++) {
+				VS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
+			}
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -701,12 +755,14 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 
+	recreating_octants = true;
 	Map<IndexKey, Cell> cell_copy = cell_map;
 	_clear_internal();
 	for (Map<IndexKey, Cell>::Element *E = cell_copy.front(); E; E = E->next()) {
 
 		set_cell_item(E->key().x, E->key().y, E->key().z, E->get().item, E->get().rot);
 	}
+	recreating_octants = false;
 }
 
 void GridMap::_clear_internal() {
@@ -726,6 +782,7 @@ void GridMap::_clear_internal() {
 void GridMap::clear() {
 
 	_clear_internal();
+	clear_baked_meshes();
 }
 
 void GridMap::resource_changed(const RES &p_res) {
@@ -791,6 +848,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
+	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
+	ClassDB::bind_method(D_METHOD("get_bake_mesh_instance", "idx"), &GridMap::get_bake_mesh_instance);
+
+	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
+	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 }
@@ -883,10 +945,129 @@ Vector3 GridMap::_get_offset() const {
 			cell_size.z * 0.5 * int(center_z));
 }
 
+void GridMap::clear_baked_meshes() {
+
+	for (int i = 0; i < baked_meshes.size(); i++) {
+		VS::get_singleton()->free(baked_meshes[i].instance);
+	}
+	baked_meshes.clear();
+
+	_recreate_octant_data();
+}
+
+void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texel_size) {
+
+	if (!theme.is_valid())
+		return;
+
+	//generate
+	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > > surface_map;
+
+	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
+
+		IndexKey key = E->key();
+
+		int item = E->get().item;
+		if (!theme->has_item(item))
+			continue;
+
+		Ref<Mesh> mesh = theme->get_item_mesh(item);
+		if (!mesh.is_valid())
+			continue;
+
+		Vector3 cellpos = Vector3(key.x, key.y, key.z);
+		Vector3 ofs = _get_offset();
+
+		Transform xform;
+
+		xform.basis.set_orthogonal_index(E->get().rot);
+		xform.set_origin(cellpos * cell_size + ofs);
+		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+
+		OctantKey ok;
+		ok.x = key.x / octant_size;
+		ok.y = key.y / octant_size;
+		ok.z = key.z / octant_size;
+
+		if (!surface_map.has(ok)) {
+			surface_map[ok] = Map<Ref<Material>, Ref<SurfaceTool> >();
+		}
+
+		Map<Ref<Material>, Ref<SurfaceTool> > &mat_map = surface_map[ok];
+
+		for (int i = 0; i < mesh->get_surface_count(); i++) {
+
+			if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+				continue;
+
+			Ref<Material> surf_mat = mesh->surface_get_material(i);
+			if (!mat_map.has(surf_mat)) {
+				Ref<SurfaceTool> st;
+				st.instance();
+				st->begin(Mesh::PRIMITIVE_TRIANGLES);
+				st->set_material(surf_mat);
+				mat_map[surf_mat] = st;
+			}
+
+			mat_map[surf_mat]->append_from(mesh, i, xform);
+		}
+	}
+
+	int ofs = 0;
+
+	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > >::Element *E = surface_map.front(); E; E = E->next()) {
+
+		print_line("generating mesh " + itos(ofs++) + "/" + itos(surface_map.size()));
+		Ref<ArrayMesh> mesh;
+		mesh.instance();
+		for (Map<Ref<Material>, Ref<SurfaceTool> >::Element *F = E->get().front(); F; F = F->next()) {
+			F->get()->commit(mesh);
+		}
+
+		BakedMesh bm;
+		bm.mesh = mesh;
+		bm.instance = VS::get_singleton()->instance_create();
+		VS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
+		VS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
+		if (is_inside_tree()) {
+			VS::get_singleton()->instance_set_scenario(bm.instance, get_world()->get_scenario());
+			VS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
+		}
+
+		if (p_gen_lightmap_uv) {
+			mesh->lightmap_unwrap(get_global_transform(), p_lightmap_uv_texel_size);
+		}
+		baked_meshes.push_back(bm);
+	}
+
+	_recreate_octant_data();
+}
+
+Array GridMap::get_bake_meshes() {
+
+	if (!baked_meshes.size()) {
+		make_baked_meshes(true);
+	}
+
+	Array arr;
+	for (int i = 0; i < baked_meshes.size(); i++) {
+		arr.push_back(baked_meshes[i].mesh);
+		arr.push_back(Transform());
+	}
+
+	return arr;
+}
+
+RID GridMap::get_bake_mesh_instance(int p_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx, baked_meshes.size(), RID());
+	return baked_meshes[p_idx].instance;
+}
+
 GridMap::GridMap() {
 
 	cell_size = Vector3(2, 2, 2);
-	octant_size = 4;
+	octant_size = 8;
 	awaiting_update = false;
 	_in_tree = false;
 	center_x = true;
@@ -901,6 +1082,7 @@ GridMap::GridMap() {
 
 	navigation = NULL;
 	set_notify_transform(true);
+	recreating_octants = false;
 }
 
 GridMap::~GridMap() {
